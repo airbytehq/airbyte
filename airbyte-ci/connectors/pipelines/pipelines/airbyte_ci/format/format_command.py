@@ -14,7 +14,7 @@ import dagger
 from pipelines import main_logger
 from pipelines.airbyte_ci.format.actions import list_files_in_directory
 from pipelines.airbyte_ci.format.configuration import Formatter
-from pipelines.airbyte_ci.format.consts import FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS
+from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.cli import LogOptions, log_command_results
 from pipelines.helpers.utils import sh_dash_c
@@ -75,16 +75,53 @@ class FormatCommand(click.Command):
             message = f"{message}."
         return message
 
-    def get_dir_to_format(self, dagger_client: dagger.Client) -> dagger.Directory:
-        """Get the directory to format according to the file_filter.
+    async def get_dir_to_format(self, dagger_client) -> Directory:
+        """Get a directory with all the source code to format according to the file_filter.
+        We mount the the files to format in a git container and remove all gitignored files.
+        It ensures we're not formatting files that are gitignored.
 
         Args:
-            dagger_client (dagger.Client): The dagger client to use to get the directory
+            dagger_client (dagger.Client): The dagger client to use to get the directory.
 
         Returns:
-            dagger.Directory: The directory to format
+            Directory: The directory with the files to format that are not gitignored.
         """
-        return dagger_client.host().directory(self.LOCAL_REPO_PATH, include=self.file_filter, exclude=FORMAT_IGNORE_LIST)
+        # Load a directory from the host with all the files to format according to the file_filter and the .gitignore files
+        dir_to_format = dagger_client.host().directory(
+            self.LOCAL_REPO_PATH, include=self.file_filter + ["**/.gitignore", ".gitignore"], exclude=DEFAULT_FORMAT_IGNORE_LIST
+        )
+
+        return (
+            dagger_client.container()
+            .from_("alpine:latest")
+            .with_exec(
+                sh_dash_c(
+                    [
+                        "apk update",
+                        "apk add git",
+                    ]
+                )
+            )
+            .with_workdir(REPO_MOUNT_PATH)
+            .with_mounted_directory(REPO_MOUNT_PATH, dir_to_format)
+            # All with_exec commands below will re-run if the to_format directory changes
+            .with_exec(["git", "init"])
+            # This is needed to avoid git complaining about the user not being set
+            .with_exec(["git", "config", "user.email", "ci@airbyte.io"])
+            .with_exec(["git", "config", "user.name", "Airbyte CI"])
+            # Add all files to the git index
+            .with_exec(["git", "add", "."])
+            # Commit all files
+            .with_exec(["git", "commit", "--message", "Commit for formatting"])
+            # Remove all gitignored files
+            .with_exec(["git", "clean", "-dfX"])
+            # Delete all .gitignore files
+            .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']))
+            # Delete .git
+            .with_exec(["rm", "-rf", ".git"])
+            .directory(REPO_MOUNT_PATH)
+            .with_timestamps(0)
+        )
 
     @pass_pipeline_context
     @sentry_utils.with_command_context
@@ -108,7 +145,7 @@ class FormatCommand(click.Command):
         dagger_client = await click_pipeline_context.get_dagger_client(
             pipeline_name=f"Format {self.formatter.value}", log_output=dagger_logs
         )
-        dir_to_format = self.get_dir_to_format(dagger_client)
+        dir_to_format = await self.get_dir_to_format(dagger_client)
         container = self.get_format_container_fn(dagger_client, dir_to_format)
         command_result = await self.get_format_command_result(dagger_client, container, dir_to_format)
 
@@ -159,7 +196,7 @@ class FormatCommand(click.Command):
         format_container = container.with_exec(sh_dash_c(format_commands), skip_entrypoint=True)
         formatted_directory = format_container.directory(REPO_MOUNT_PATH)
         if warmup_inclusion := WARM_UP_INCLUSIONS.get(self.formatter):
-            warmup_dir = dagger_client.host().directory(".", include=warmup_inclusion, exclude=FORMAT_IGNORE_LIST)
+            warmup_dir = dagger_client.host().directory(".", include=warmup_inclusion, exclude=DEFAULT_FORMAT_IGNORE_LIST)
             not_formatted_code = not_formatted_code.with_directory(".", warmup_dir)
             formatted_directory = formatted_directory.with_directory(".", warmup_dir)
         return (

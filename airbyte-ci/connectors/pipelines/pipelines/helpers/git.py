@@ -87,12 +87,3 @@ def get_git_repo() -> git.Repo:
 def get_git_repo_path() -> str:
     """Retrieve the git repo path."""
     return get_git_repo().working_tree_dir
-
-
-@functools.cache
-def find_all_git_ignored_items() -> List[str]:
-    """Retrieve all the git ignore rules declared in the directory."""
-    status_output = get_git_repo().git.status(["--short", "--ignored"])
-    main_logger.info("Running git status --short --ignored to find all git ignored files or directories")
-    # Return all paths prefixed with '!! ' in the `git status --short` output stripped of any trailing slashes.
-    return re.findall(r"^!! (.+?)/*$", status_output, re.MULTILINE)

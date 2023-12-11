@@ -3,35 +3,42 @@
 #
 from enum import Enum
 
-from pipelines.helpers.git import find_all_git_ignored_items
-
 REPO_MOUNT_PATH = "/src"
 CACHE_MOUNT_PATH = "/cache"
 
 LICENSE_FILE_NAME = "LICENSE_SHORT"
 
-
+# TODO create .airbyte_ci_ignore files?
 DEFAULT_FORMAT_IGNORE_LIST = [
+    "**/__init__.py",  # These files has never been formatted and we don't want to start now (for now) see https://github.com/airbytehq/airbyte/issues/33296
+    "**/__pycache__",
+    "**/.eggs",
     "**/.git",
-    "**/dbt-project-template",
+    "**/.gradle",
+    "**/.mypy_cache",
+    "**/.pytest_cache",
+    "**/.tox",
+    "**/.venv",
+    "**/*.egg-info",
+    "**/airbyte-ci/connectors/metadata_service/lib/tests/fixtures/**/invalid",  # These are deliberately invalid and unformattable.
+    "**/build",
+    "**/charts",  # Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+    "**/dbt_test_config",
+    "**/dbt-project-template-clickhouse",
+    "**/dbt-project-template-duckdb",
     "**/dbt-project-template-mssql",
     "**/dbt-project-template-mysql",
     "**/dbt-project-template-oracle",
-    "**/dbt-project-template-clickhouse",
     "**/dbt-project-template-snowflake",
     "**/dbt-project-template-tidb",
-    "**/dbt-project-template-duckdb",
-    "**/dbt_test_config",
+    "**/dbt-project-template",
+    "**/node_modules",
     "**/normalization_test_output",
-    "**/charts",  # Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
     "**/source-amplitude/unit_tests/api_data/zipped.json",  # Zipped file presents as non-UTF-8 making spotless sad
-    "**/airbyte-ci/connectors/metadata_service/lib/tests/fixtures/**/invalid",  # These are deliberately invalid and unformattable.
     "**/tools/git_hooks/tests/test_spec_linter.py",
+    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/**",  # These files are generated and should not be formatted
     "airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code",  # This is a test directory with badly formatted code
-    "**/__init__.py",  # These files has never been formatted and we don't want to start now (for now) see https://github.com/airbytehq/airbyte/issues/33296
 ]
-
-FORMAT_IGNORE_LIST = list(set(find_all_git_ignored_items() + DEFAULT_FORMAT_IGNORE_LIST))
 
 
 class Formatter(Enum):
