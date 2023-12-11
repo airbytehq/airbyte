@@ -31,7 +31,15 @@ from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError, codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
-from source_hubspot.helpers import APIv1Property, APIv2Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
+from source_hubspot.helpers import (
+    APIv1Property,
+    APIv2Property,
+    APIv3Property,
+    GroupByKey,
+    IRecordPostProcessor,
+    IURLPropertyRepresentation,
+    StoreAsIs,
+)
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -356,7 +364,7 @@ class Stream(HttpStream, ABC):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-        properties: IURLPropertyRepresentation = None
+        properties: IURLPropertyRepresentation = None,
     ) -> str:
         return self.url
 
@@ -412,7 +420,7 @@ class Stream(HttpStream, ABC):
             default_props = json_schema["properties"]
             json_schema["properties"] = {**default_props, **properties, **unnested_properties}
         return json_schema
-    
+
     def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
         if properties:
             params.update(properties.as_url_param())
@@ -910,7 +918,7 @@ class AssociationsStream(Stream):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-        properties: IURLPropertyRepresentation = None
+        properties: IURLPropertyRepresentation = None,
     ) -> str:
         return f"/crm/v4/associations/{self.parent_stream.entity}/{stream_slice}/batch/read"
 
@@ -1676,7 +1684,7 @@ class FormSubmissions(ClientSideIncrementalStream):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-        properties: IURLPropertyRepresentation = None
+        properties: IURLPropertyRepresentation = None,
     ) -> str:
         return f"{self.url}/{stream_slice['form_id']}"
 
@@ -1816,7 +1824,7 @@ class PropertyHistory(ClientSideIncrementalStream):
     @abstractmethod
     def entity(self) -> str:
         """
-        CRM object entity name. 
+        CRM object entity name.
         This is usually a part of some URL or key that contains data in response
         """
 
@@ -1985,12 +1993,18 @@ class CompaniesPropertyHistory(PropertyHistory):
     def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
         pass
 
-    def path(self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, properties: IURLPropertyRepresentation = None) -> str:
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
+    ) -> str:
         return f"{self.url}?{properties.as_url_param_with_history()}"
 
 
 class DealsPropertyHistory(PropertyHistory):
-
     @property
     def scopes(self) -> set:
         return {"crm.objects.deals.read"}
@@ -2042,7 +2056,14 @@ class DealsPropertyHistory(PropertyHistory):
     def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
         pass
 
-    def path(self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, properties: IURLPropertyRepresentation = None) -> str:
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
+    ) -> str:
         return f"{self.url}?{properties.as_url_param_with_history()}"
 
 

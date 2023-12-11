@@ -69,7 +69,7 @@ class IURLPropertyRepresentation(abc.ABC):
     @abc.abstractmethod
     def as_url_param(self):
         """"""
-    
+
     @property
     @abc.abstractmethod
     def as_url_param_with_history(self) -> str:
