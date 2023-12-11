@@ -258,11 +258,13 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConfigs }
                   <Separator height="24px" />
                   <Footer>
                     <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />
-                    <Pagination
-                      pages={total / pageSize}
-                      value={filters.pageCurrent}
-                      onChange={(value: number) => onSelectFilter("pageCurrent", value)}
-                    />
+                    <Box paddingLeft="20px">
+                      <Pagination
+                        pages={total / pageSize}
+                        value={filters.pageCurrent}
+                        onChange={(value: number) => onSelectFilter("pageCurrent", value)}
+                      />
+                    </Box>
                   </Footer>
                   <Separator height="24px" />
                 </Box>

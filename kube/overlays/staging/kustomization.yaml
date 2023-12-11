@@ -1,26 +1,24 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: default
+namespace: staging
 
 bases:
   - ../../resources-dev
 
 images:
-  #- name: yuanrui2014/db
-  #  newTag: dev
   - name: yuanrui2014/bootloader
-    newTag: dev
+    newTag: 0.0.51
   - name: yuanrui2014/server
-    newTag: dev
+    newTag: 0.0.51
   - name: yuanrui2014/webapp
-    newTag: dev
+    newTag: 0.0.51
   - name: yuanrui2014/worker
-    newTag: dev
+    newTag: 0.0.51
   - name: temporalio/auto-setup
     newTag: 1.13.0
   - name: yuanrui2014/cron
-    newTag: dev
+    newTag: 0.0.51
 
 configMapGenerator:
   - name: airbyte-env
@@ -32,4 +30,3 @@ secretGenerator:
 
 patchesStrategicMerge:
   - parallelize-worker.yaml
-
