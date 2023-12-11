@@ -1,4 +1,4 @@
-# Gradle Cheatsheet
+# (DEPRECATED) Gradle Cheatsheet
 
 ## Overview
 
