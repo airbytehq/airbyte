@@ -9,6 +9,7 @@ from time import sleep
 from typing import List
 
 import backoff
+import facebook_business.adobjects.business
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
@@ -157,14 +158,14 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
     @backoff_policy
     def call(
-        self,
-        method,
-        path,
-        params=None,
-        headers=None,
-        files=None,
-        url_override=None,
-        api_version=None,
+            self,
+            method,
+            path,
+            params=None,
+            headers=None,
+            files=None,
+            url_override=None,
+            api_version=None,
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
         if self._should_restore_default_page_size(params):
@@ -201,32 +202,22 @@ class API:
             return [self._find_account(acc.strip()) for acc in self._account_id.split(",")]
         else:
             ad_accounts = []
-            missing_permissions = []
-            google_service_account = json.loads(self._google_service_account)
-            bq_credentials = service_account.Credentials.from_service_account_info(google_service_account)
-            bq_client = bigquery.Client(credentials=bq_credentials)
 
-            query = bq_client.query(query="SELECT DISTINCT publisher_account_id, dolead_type "
-                                          "FROM `dolead-gsp-2020.dbt_mart.new_core_ppc_accounts` "
-                                          "WHERE publisher = 'FB_ADS' "
-                                          "AND is_active = TRUE "
-                                          "AND archived <> TRUE AND parent_archived <> TRUE AND disabled <> TRUE "
-                                          )
-            results = query.result()
-            for res in results:
-                id = str(res.publisher_account_id)
-                try:
-                    account = self._find_account(id)
-                    account["dolead_type"] = res.dolead_type or "NOT GEOLOC"
-                    ad_accounts.append(account)
-                except FacebookRequestError as e:
-                    missing_permissions.append(id)
+            business = facebook_business.adobjects.business.Business(fbid="1605818716400473")
+            accounts = business.get_owned_ad_accounts(fields=["name", "account_id"])
+            for account in accounts:
+                account_name = account["name"]
+                if "geoloc" in str.lower(account_name):
+                    account["dolead_type"] = "GEOLOC"
+                else:
+                    account["dolead_type"] = "NOT GEOLOC"
+                ad_accounts.append(account)
 
-            logger.info("Missing permissions on following accounts : " + str(missing_permissions))
+        return ad_accounts
 
-            return ad_accounts
 
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:
         """Actual implementation of find account"""
+
         return AdAccount(f"act_{account_id}").api_get()
