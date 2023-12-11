@@ -473,7 +473,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                 call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
             ],
             False,
-             [
+            [
                 {
                     "content": None,
                     "document_key": FILE_URI,
