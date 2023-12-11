@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.57.1
+Improve integration tests tooling
+
 ## 0.57.0
 low-code: cache requests sent for parent streams
 File-based CDK: Add support for automatic primary key for document file type format

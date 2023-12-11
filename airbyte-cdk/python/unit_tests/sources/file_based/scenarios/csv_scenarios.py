@@ -5,7 +5,9 @@
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import SyncMode
 from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
@@ -1639,6 +1641,7 @@ schemaless_with_user_input_schema_fails_connection_check_scenario: TestScenario[
         )
         .set_file_type("csv")
     )
+    .set_catalog(CatalogBuilder().with_stream("stream1", SyncMode.full_refresh).build())
     .set_expected_catalog(
         {
             "streams": [
@@ -1712,6 +1715,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario: 
         )
         .set_file_type("csv")
     )
+    .set_catalog(CatalogBuilder().with_stream("stream1", SyncMode.full_refresh).with_stream("stream2", SyncMode.full_refresh).build())
     .set_expected_catalog(
         {
             "streams": [
