@@ -1,4 +1,6 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 # HELPERS
 
@@ -10,6 +12,7 @@ import sys
 import asyncclick as click
 import requests
 from pipelines import main_logger
+from pipelines.cli.confirm_prompt import confirm
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
 from pipelines.external_scripts.airbyte_ci_install import RELEASE_URL, get_airbyte_os_name
 
@@ -17,6 +20,14 @@ __installed_version__ = importlib.metadata.version("pipelines")
 
 PROD_COMMAND = "airbyte-ci"
 DEV_COMMAND = "airbyte-ci-dev"
+AUTO_UPDATE_AGREE_KEY = "yes_auto_update"
+
+
+def pre_confirm_auto_update_flag(f):
+    """Decorator to add a --yes-auto-update flag to a command."""
+    return click.option(
+        "--yes-auto-update", AUTO_UPDATE_AGREE_KEY, is_flag=True, default=False, help="Skip prompts and automatically upgrade pipelines"
+    )(f)
 
 
 def _is_version_available(version: str, is_dev: bool) -> bool:
@@ -102,7 +113,9 @@ def check_for_upgrade(
     logging.warning(upgrade_error_message)
 
     # Ask the user if they want to upgrade
-    if enable_auto_update and click.confirm("Do you want to automatically upgrade?", default=True):
+    if enable_auto_update and confirm(
+        "Do you want to automatically upgrade?", default=True, additional_pre_confirm_key=AUTO_UPDATE_AGREE_KEY
+    ):
         # if the current command contains `airbyte-ci-dev` is the dev version of the command
         logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")
 

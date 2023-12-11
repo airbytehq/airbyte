@@ -12,8 +12,9 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import java.util.stream.Stream;
+import org.apache.commons.lang3.ArrayUtils;
 
 public class CloudDeploymentMySqlSslCaCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 
@@ -25,8 +26,8 @@ public class CloudDeploymentMySqlSslCaCertificateSourceAcceptanceTest extends My
   }
 
   @Override
-  protected Stream<String> extraContainerFactoryMethods() {
-    return Stream.of("withRootAndServerCertificates");
+  protected ContainerModifier[] getContainerModifiers() {
+    return ArrayUtils.toArray(ContainerModifier.ROOT_AND_SERVER_CERTIFICATES);
   }
 
   @Override

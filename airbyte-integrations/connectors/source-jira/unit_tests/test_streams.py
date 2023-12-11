@@ -352,7 +352,8 @@ def test_board_issues_stream(config, mock_board_response, board_issues_response)
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/agile/1.0/board/2/issue?maxResults=50&fields=key&fields=created&fields=updated",
-        json={},
+        json={'errorMessages': ['This board has no columns with a mapped status.'], 'errors': {}},
+        status=500,
     )
     responses.add(
         responses.GET,

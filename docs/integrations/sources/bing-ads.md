@@ -169,6 +169,22 @@ The Bing Ads source connector supports the following streams. For more informati
 - [Search Query Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
 - [Search Query Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
 
+:::info
+
+Ad Group Impression Performance Report, Geographic Performance Report, Account Impression Performance Report have user-defined primary key. 
+This means that you can define your own primary key in Replication tab in your connection for these streams. 
+
+Example pk:
+Ad Group Impression Performance Report: composite pk - [AdGroupId, Status, TimePeriod, AccountId] 
+Geographic Performance Report: composite pk - [AdGroupId, Country, State, MetroArea, City] 
+Account Impression Performance Report: composite pk - [AccountName, AccountNumber, AccountId, TimePeriod]
+
+Note: These are just examples, and you should consider your own data and needs in order to correctly define the primary key.
+
+See more info about user-defined pk [here](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped#user-defined-primary-key).
+
+:::
+
 ### Custom Reports
 You can build your own report by providing:
 - *Report Name* - name of the stream
