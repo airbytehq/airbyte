@@ -47,7 +47,8 @@ class AsyncFlush implements DestinationFlushFunction {
                     final TyperDeduper typerDeduper,
                     final boolean useDestinationsV2Columns,
                     final BiFunction<String, String, Long> getRecordCountFunction) {
-    this(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, 50 * 1024 * 1024, useDestinationsV2Columns, getRecordCountFunction);
+    this(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, 50 * 1024 * 1024, useDestinationsV2Columns,
+        getRecordCountFunction);
   }
 
   public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,

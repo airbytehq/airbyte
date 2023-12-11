@@ -130,8 +130,8 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
     recordCounts
         .get(new StreamDescriptor()
             .withName(streamId.getName())
-            .withNamespace(streamId.getNamespace())
-        ).incrementAndGet();
+            .withNamespace(streamId.getNamespace()))
+        .incrementAndGet();
   }
 
   @Override
@@ -142,8 +142,7 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
 
     Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries = AsyncStreamConsumer.getSyncSummaries(
         catalog.streams().stream().map(stream -> stream.id().asStreamDescriptor()).toList(),
-        recordCounts
-    );
+        recordCounts);
     typerDeduper.typeAndDedupe(streamSyncSummaries);
     typerDeduper.commitFinalTables();
     typerDeduper.cleanup();

@@ -11,13 +11,11 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartF
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
-import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
-import java.util.function.BiFunction;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -72,7 +70,7 @@ public class GeneralStagingFunctions {
    * upload was unsuccessful
    *
    * @param recordCount The total number of records written to this stream across the entire sync,
-   *                    including this batch.
+   *        including this batch.
    */
   public static void copyIntoTableFromStage(final JdbcDatabase database,
                                             final String stageName,

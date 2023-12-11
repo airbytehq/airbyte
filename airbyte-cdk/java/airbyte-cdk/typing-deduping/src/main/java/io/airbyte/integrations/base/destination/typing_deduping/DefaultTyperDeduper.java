@@ -20,7 +20,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -39,7 +38,8 @@ import org.slf4j.LoggerFactory;
  * In a typical sync, destinations should call the methods:
  * <ol>
  * <li>{@link #prepareTables()} once at the start of the sync</li>
- * <li>{@link #typeAndDedupe(String, String, boolean, StreamSyncSummary)} as needed throughout the sync</li>
+ * <li>{@link #typeAndDedupe(String, String, boolean, StreamSyncSummary)} as needed throughout the
+ * sync</li>
  * <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
  * Note that #prepareTables() initializes some internal state. The other methods will throw an
@@ -179,7 +179,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   }
 
   @Override
-  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun, final StreamSyncSummary streamSyncSummary) throws Exception {
+  public void typeAndDedupe(final String originalNamespace,
+                            final String originalName,
+                            final boolean mustRun,
+                            final StreamSyncSummary streamSyncSummary)
+      throws Exception {
     // TODO
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
     final CompletableFuture<Optional<Exception>> task = typeAndDedupeTask(streamConfig, mustRun);
@@ -269,11 +273,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                 // After running T+D, there are no unprocessed records.
                 initialRawTableStateByStream.put(
                     streamConfig.id(),
-                    initialRawTableState.withHasUnprocessedRecords(false)
-                );
+                    initialRawTableState.withHasUnprocessedRecords(false));
                 return newCount > previousCount;
               })
-              // If we didn't track record counts during the sync, assume we had nonzero new records for this stream
+              // If we didn't track record counts during the sync, assume we had nonzero new records for this
+              // stream
               .orElse(true);
           final boolean unprocessedRecordsPreexist = initialRawTableState.hasUnprocessedRecords();
           // If this sync emitted records, or the previous sync left behind some unprocessed records,
