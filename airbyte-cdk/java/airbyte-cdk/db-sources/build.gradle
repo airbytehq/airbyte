@@ -97,7 +97,6 @@ dependencies {
     implementation libs.debezium.postgres
     implementation libs.debezium.mongodb
 
-
     implementation libs.bundles.datadog
     // implementation 'com.datadoghq:dd-trace-api'
     implementation 'org.apache.sshd:sshd-mina:2.8.0'
