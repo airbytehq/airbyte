@@ -1244,6 +1244,11 @@ definitions:
           - query: 'last_event_time BETWEEN TIMESTAMP "{{ stream_interval.start_time }}" AND TIMESTAMP "{{ stream_interval.end_time }}"'
           - searchIn: "{{ ','.join(config.get('search_in', [])) }}"
           - sort_by[asc]: updated_at
+      use_cache:
+        title: Use Cache
+        description: Enables stream requests caching. This field is automatically set by the CDK.
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
