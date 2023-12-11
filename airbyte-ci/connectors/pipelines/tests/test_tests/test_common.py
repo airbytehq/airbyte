@@ -147,9 +147,10 @@ class TestAcceptanceTests:
         return dagger_client.host().directory(str(tmpdir))
 
     def get_patched_acceptance_test_step(self, dagger_client, mocker, test_context, test_input_dir):
+        test_secrets = {"config.json": dagger_client.set_secret("config.json", "connector_secret")}
         test_context.get_connector_dir = mocker.AsyncMock(return_value=test_input_dir)
         test_context.connector_acceptance_test_image = "bash:latest"
-        test_context.connector_secrets = {"config.json": dagger_client.set_secret("config.json", "connector_secret")}
+        test_context.connector_secrets = mocker.AsyncMock(return_value=test_secrets)
 
         mocker.patch.object(docker, "load_image_to_docker_host", return_value="image_sha")
         mocker.patch.object(docker, "with_bound_docker_host", lambda _, cat_container: cat_container)

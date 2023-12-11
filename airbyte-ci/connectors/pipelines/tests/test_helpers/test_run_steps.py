@@ -242,7 +242,7 @@ async def test_run_steps_concurrency_of_1():
 
     await run_steps(steps, options=RunStepOptions(concurrency=1))
 
-    # assert that step4 is the first step to finish
+    # Assert that they run sequentially
     assert ran_at["step1"] < ran_at["step2"]
     assert ran_at["step2"] < ran_at["step3"]
     assert ran_at["step3"] < ran_at["step4"]
