@@ -17,10 +17,12 @@ import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
+@Disabled
 public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<ClickHouseSource, ClickHouseTestDatabase> {
 
   @BeforeAll

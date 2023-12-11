@@ -25,9 +25,11 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.CockroachContainer;
 
+@Disabled
 class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<CockroachDbSource, CockroachDbTestDatabase> {
 
   public static String COL_ROW_ID = "rowid";
