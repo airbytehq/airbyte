@@ -89,7 +89,10 @@ class HttpMocker(contextlib.ContextDecorator):
 
                 # We validate the matchers before raising the assertion error because we want to show the tester if a HTTP request wasn't
                 # mocked correctly
-                self._validate_all_matchers_called()
+                try:
+                    self._validate_all_matchers_called()
+                except ValueError as http_mocker_exception:
+                    raise ValueError(http_mocker_exception) from None
                 if assertion_error:
                     raise assertion_error
                 return result
