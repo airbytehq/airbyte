@@ -24,7 +24,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -83,11 +82,11 @@ public class DefaultTyperDeduperTest {
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
-    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false);
+    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false, StreamSyncSummary.DEFAULT);
     verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING");
-    typerDeduper.typeAndDedupe("append_ns", "append_stream", false);
+    typerDeduper.typeAndDedupe("append_ns", "append_stream", false, StreamSyncSummary.DEFAULT);
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING");
-    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
+    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false, StreamSyncSummary.DEFAULT);
     verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
@@ -116,11 +115,11 @@ public class DefaultTyperDeduperTest {
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
-    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false);
+    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false, StreamSyncSummary.DEFAULT);
     verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING");
-    typerDeduper.typeAndDedupe("append_ns", "append_stream", false);
+    typerDeduper.typeAndDedupe("append_ns", "append_stream", false, StreamSyncSummary.DEFAULT);
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING");
-    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
+    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false, StreamSyncSummary.DEFAULT);
     verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
@@ -168,13 +167,13 @@ public class DefaultTyperDeduperTest {
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
-    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false);
+    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false, StreamSyncSummary.DEFAULT);
     // NB: no airbyte_tmp suffix on the non-overwrite streams
     verify(destinationHandler)
         .execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z");
-    typerDeduper.typeAndDedupe("append_ns", "append_stream", false);
+    typerDeduper.typeAndDedupe("append_ns", "append_stream", false, StreamSyncSummary.DEFAULT);
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z");
-    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
+    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false, StreamSyncSummary.DEFAULT);
     verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
@@ -205,7 +204,7 @@ public class DefaultTyperDeduperTest {
   @Test
   void nonexistentStream() {
     assertThrows(IllegalArgumentException.class,
-        () -> typerDeduper.typeAndDedupe("nonexistent_ns", "nonexistent_stream", false));
+        () -> typerDeduper.typeAndDedupe("nonexistent_ns", "nonexistent_stream", false, StreamSyncSummary.DEFAULT));
     verifyNoInteractions(ignoreStubs(destinationHandler));
   }
 
@@ -216,7 +215,7 @@ public class DefaultTyperDeduperTest {
     assertThrows(Exception.class, () -> typerDeduper.prepareTables());
     clearInvocations(destinationHandler);
 
-    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
+    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false, StreamSyncSummary.DEFAULT);
     typerDeduper.commitFinalTables();
 
     verifyNoInteractions(ignoreStubs(destinationHandler));
@@ -260,6 +259,34 @@ public class DefaultTyperDeduperTest {
     verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
     verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
+  }
+
+  /**
+   * TODO comment
+   */
+  @Test
+  void multiplTdExecutions() throws Exception {
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(false, Optional.empty()));
+    typerDeduper.prepareTables();
+    clearInvocations(destinationHandler);
+
+    typerDeduper.typeAndDedupe(Map.of(
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new StreamSyncSummary(Optional.of(0L)),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new StreamSyncSummary(Optional.of(1L))));
+
+    // Only append_stream should be T+D-ed. overwrite_stream has explicitly 0 records, and dedup_stream
+    // is missing from the map, so implicitly has 0 records.
+    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING");
+    verifyNoMoreInteractions(destinationHandler);
+
+    clearInvocations(destinationHandler);
+    // Identical record counts to the previous T+D invocation.
+    typerDeduper.typeAndDedupe(Map.of(
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new StreamSyncSummary(Optional.of(0L)),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new StreamSyncSummary(Optional.of(1L))));
+
+    // No streams received
+    verifyNoInteractions(destinationHandler);
   }
 
 }

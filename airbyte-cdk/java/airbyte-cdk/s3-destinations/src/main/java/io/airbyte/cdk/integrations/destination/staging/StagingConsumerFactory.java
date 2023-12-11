@@ -115,8 +115,7 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
                 stagingOperations,
                 writeConfigs,
                 purgeStagingData,
-                typerDeduper
-            ).accept(false, streamSyncSummaries);
+                typerDeduper).accept(false, streamSyncSummaries);
           } catch (final Exception e) {
             throw new RuntimeException(e);
           }
