@@ -151,4 +151,3 @@ The supported scope types are listed below.
 | Scope Type | Value Type | Value Description |
 |------------|------------|------------------|
 | stream     | `list[str]`  | List of stream names |
-| streamField  | `list[dict[str, str]]`  | List of stream fields: dict of \{stream name: field name\} |
