@@ -134,7 +134,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final Set<String> pks = getPks(stream);
 
     // Check that the columns match, with special handling for the metadata columns.
-    final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
+    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
             LinkedHashMap::putAll);
@@ -478,7 +478,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         clearLoadedAt(stream.id())));
   }
 
-  private String clearLoadedAt(final StreamId streamId) {
+  @Override
+  public String clearLoadedAt(final StreamId streamId) {
     return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
         .replace("""
                  UPDATE ${raw_table_id} SET "_airbyte_loaded_at" = NULL;

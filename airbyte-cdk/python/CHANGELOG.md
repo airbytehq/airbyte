@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.57.1
+Improve integration tests tooling
+
+## 0.57.0
+low-code: cache requests sent for parent streams
+
+## 0.56.1
+no-op to verify pypi publish flow
+
+## 0.56.0
+Allow for connectors to continue syncing when a stream fails
+
+## 0.55.5
+File-based CDK: hide source-defined primary key; users can define primary keys in the connection's configuration
+
+## 0.55.4
+Source Integration tests: decoupling entrypoint wrapper from pytest
+
 ## 0.55.3
 First iteration of integration tests tooling (http mocker and response builder)
 
