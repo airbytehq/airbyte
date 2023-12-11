@@ -3,7 +3,7 @@
 #
 from enum import Enum
 
-from pipelines.helpers.git import find_all_git_ignore_rules
+from pipelines.helpers.git import find_all_git_ignored_items
 
 REPO_MOUNT_PATH = "/src"
 CACHE_MOUNT_PATH = "/cache"
@@ -31,7 +31,7 @@ DEFAULT_FORMAT_IGNORE_LIST = [
     "**/__init__.py",  # These files has never been formatted and we don't want to start now (for now) see https://github.com/airbytehq/airbyte/issues/33296
 ]
 
-FORMAT_IGNORE_LIST = list(set(find_all_git_ignore_rules() + DEFAULT_FORMAT_IGNORE_LIST))
+FORMAT_IGNORE_LIST = list(set(find_all_git_ignored_items() + DEFAULT_FORMAT_IGNORE_LIST))
 
 
 class Formatter(Enum):
