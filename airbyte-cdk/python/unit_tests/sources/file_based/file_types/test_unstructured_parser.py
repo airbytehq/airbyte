@@ -9,11 +9,13 @@ from unittest.mock import MagicMock, call, mock_open, patch
 
 import pytest
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.unstructured_format import APIParameterConfigModel, APIProcessingConfigModel, UnstructuredFormat
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError
 from airbyte_cdk.sources.file_based.file_types import UnstructuredParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unstructured.documents.elements import ElementMetadata, Formula, ListItem, Text, Title
 from unstructured.file_utils.filetype import FileType
 
@@ -488,8 +490,10 @@ def test_parse_records_remotely(
     requests_mock.exceptions.RequestException = requests.exceptions.RequestException
 
     if raises:
-        with pytest.raises(Exception):
+        with pytest.raises(AirbyteTracedException) as exc:
             list(UnstructuredParser().parse_records(config, fake_file, stream_reader, logger, MagicMock()))
+        # Failures from the API are treated as config errors
+        assert exc.value.failure_type == FailureType.config_error
     else:
         assert list(UnstructuredParser().parse_records(config, fake_file, stream_reader, logger, MagicMock())) == expected_records
 

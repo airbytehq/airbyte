@@ -3,6 +3,8 @@
 from typing import Any, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
 
+ANY_QUERY_PARAMS = "any query_parameters"
+
 
 def _is_subdict(small: Mapping[str, str], big: Mapping[str, str]) -> bool:
     return dict(big, **small) == big
@@ -16,6 +18,7 @@ class HttpRequest:
         headers: Optional[Mapping[str, str]] = None,
     ) -> None:
         self._parsed_url = urlparse(url)
+        self._query_params = query_params
         if not self._parsed_url.query and query_params:
             self._parsed_url = urlparse(f"{url}?{self._encode_qs(query_params)}")
         elif self._parsed_url.query and query_params:
@@ -37,7 +40,10 @@ class HttpRequest:
                 self._parsed_url.scheme == other._parsed_url.scheme
                 and self._parsed_url.hostname == other._parsed_url.hostname
                 and self._parsed_url.path == other._parsed_url.path
-                and parse_qs(self._parsed_url.query) == parse_qs(other._parsed_url.query)
+                and (
+                    ANY_QUERY_PARAMS in [self._query_params, other._query_params]
+                    or parse_qs(self._parsed_url.query) == parse_qs(other._parsed_url.query)
+                )
                 and _is_subdict(other._headers, self._headers)
             )
         return False
