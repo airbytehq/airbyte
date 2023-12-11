@@ -44,7 +44,6 @@ definitions:
       scopedImpact:
         description: List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.
         type: array
-        default: []
         minItems: 1
         items:
           $ref: "#/definitions/BreakingChangeScope"

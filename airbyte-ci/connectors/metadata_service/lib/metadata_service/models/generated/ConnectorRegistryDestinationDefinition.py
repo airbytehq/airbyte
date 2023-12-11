@@ -163,7 +163,7 @@ class VersionBreakingChange(BaseModel):
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
     )
     scopedImpact: Optional[List[BreakingChangeScope]] = Field(
-        [],
+        None,
         description="List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.",
         min_items=1,
     )
