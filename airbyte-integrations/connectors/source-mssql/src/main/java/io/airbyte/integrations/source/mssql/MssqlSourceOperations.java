@@ -84,7 +84,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
       case TIME -> putTime(json, columnName, resultSet, colIndex);
       case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet,
-                                                               colIndex);
+          colIndex);
       case ARRAY -> putArray(json, columnName, resultSet, colIndex);
       default -> putDefault(json, columnName, resultSet, colIndex);
     }
@@ -115,10 +115,10 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
-                                field.get(INTERNAL_COLUMN_NAME),
-                                field.get(INTERNAL_SCHEMA_NAME),
-                                field.get(INTERNAL_TABLE_NAME),
-                                field.get(INTERNAL_COLUMN_TYPE)));
+          field.get(INTERNAL_COLUMN_NAME),
+          field.get(INTERNAL_SCHEMA_NAME),
+          field.get(INTERNAL_TABLE_NAME),
+          field.get(INTERNAL_COLUMN_TYPE)));
       return JDBCType.VARCHAR;
     }
   }

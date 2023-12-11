@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class MssqlSourceOperationsTest {
+
   private final MssqlSourceOperations mssqlSourceOperations = new MssqlSourceOperations();
 
   private MsSQLTestDatabase testdb;
@@ -40,8 +41,8 @@ public class MssqlSourceOperationsTest {
   public void setDateTimeOffsetColumnAsCursor() throws SQLException {
     final String tableName = "datetimeoffset_table";
     final String createTableQuery = String.format("CREATE TABLE %s(id INTEGER PRIMARY KEY IDENTITY(1,1), %s DATETIMEOFFSET(7));",
-                                                  tableName,
-                                                  cursorColumn);
+        tableName,
+        cursorColumn);
     executeQuery(createTableQuery);
     final List<JsonNode> expectedRecords = new ArrayList<>();
     for (int i = 1; i <= 4; i++) {
@@ -62,10 +63,9 @@ public class MssqlSourceOperationsTest {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
       mssqlSourceOperations.setCursorField(preparedStatement,
-                                           1,
-                                           JDBCType.TIMESTAMP_WITH_TIMEZONE,
-                                           cursorAnchorValue
-                                           );
+          1,
+          JDBCType.TIMESTAMP_WITH_TIMEZONE,
+          cursorAnchorValue);
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         final int columnCount = resultSet.getMetaData().getColumnCount();
@@ -86,4 +86,5 @@ public class MssqlSourceOperationsTest {
       connection.createStatement().execute(query);
     }
   }
+
 }
