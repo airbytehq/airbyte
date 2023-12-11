@@ -1,5 +1,10 @@
 # Amazon Seller Partner Migration Guide
 
+## Upgrading to 3.0.0
+
+Streams 'GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL' and 'GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL' now have updated schemas.
+Users will need to refresh the source schemas and reset these streams after upgrading.
+
 ## Upgrading to 2.0.0
 
 This change removes Brand Analytics and permanently removes deprecated FBA reports (from Airbyte Cloud).
