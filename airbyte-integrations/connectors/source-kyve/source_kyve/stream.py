@@ -61,14 +61,14 @@ class KYVEStream(HttpStream, IncrementalMixin):
         self.page_size = config["page_size"]
         self.max_pages = config.get("max_pages", None)
         # For incremental querying
-        self._cursor_value = None
+        self._cursor_value = self._offset
 
     def get_json_schema(self) -> Mapping[str, Any]:
         # This is KYVE's default schema and won't be changed.
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",
-            "properties": {"key": {"type": "string"}, "value": {"type": "object"}},
+            "properties": {"key": {"type": "string"}, "value": {"type": "any"}},
             "required": ["key", "value"],
         }
 
@@ -88,14 +88,14 @@ class KYVEStream(HttpStream, IncrementalMixin):
         # Set the pagesize in the request parameters
         params = {"pagination.limit": self.page_size}
 
-        # Handle pagination by inserting the next page's token in the request parameters
+        if self._offset == 0:
+            # Handle pagination by inserting the next page's token in the request parameters
+            self._offset = stream_state.get(self.cursor_field, self._cursor_value) or 0
+        params["pagination.offset"] = self._offset
+
+        # Use next_page_token if existing
         if next_page_token:
-            params["next_page_token"] = next_page_token
-
-        # In case we use incremental streaming, we start with the stored _offset
-        offset = stream_state.get(self.cursor_field, self._offset) or 0
-
-        params["pagination.offset"] = offset
+            params["pagination.offset"] = next_page_token
 
         return params
 
@@ -109,64 +109,65 @@ class KYVEStream(HttpStream, IncrementalMixin):
         try:
             # set the state to store the latest bundle_id
             bundles = response.json().get("finalized_bundles")
-            latest_bundle = bundles[-1]
-
-            self._cursor_value = latest_bundle.get("id")
+            if not len(bundles):
+                self._offset = -float("inf")
         except IndexError:
             bundles = []
 
         for bundle in bundles:
-            storage_id = bundle.get("storage_id")
-            storage_provider_id = bundle.get("storage_provider_id")
+            if int(bundle.get("id")) >= self._cursor_value or self._cursor_value == 0:
+                storage_id = bundle.get("storage_id")
+                storage_provider_id = bundle.get("storage_provider_id")
 
-            # Load endpoints for each storage_provider
-            gateway_endpoints = storage_provider_gateways.get(storage_provider_id)
+                # Load endpoints for each storage_provider
+                gateway_endpoints = storage_provider_gateways.get(storage_provider_id)
 
-            # If storage_provider provides gateway_endpoints, query endpoint - otherwise stop syncing.
-            if gateway_endpoints is not None:
-                # Try to query each endpoint in the given order and break loop if query was successful
-                # If no endpoint is successful, skip the bundle
-                for endpoint in gateway_endpoints:
-                    response_from_storage_provider = query_endpoint(f"{endpoint}{storage_id}")
-                    if response_from_storage_provider is not None:
-                        break
+                # If storage_provider provides gateway_endpoints, query endpoint - otherwise stop syncing.
+                if gateway_endpoints is not None:
+                    # Try to query each endpoint in the given order and break loop if query was successful
+                    # If no endpoint is successful, skip the bundle
+                    for endpoint in gateway_endpoints:
+                        response_from_storage_provider = query_endpoint(f"{endpoint}{storage_id}")
+                        if response_from_storage_provider is not None:
+                            break
+                    else:
+                        logger.error(f"couldn't query any endpoint successfully with storage_id {storage_id}; skipping bundle...")
+                        continue
                 else:
-                    logger.error(f"couldn't query any endpoint successfully with storage_id {storage_id}; skipping bundle...")
+                    logger.error(f"storage provider with id {storage_provider_id} is not supported ")
+                    raise Exception("unsupported storage provider")
+
+                if not response_from_storage_provider.ok:
+                    # TODO: add fallback to different storage provider in case resource is unavailable
+                    logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
+
+                try:
+                    decompressed = gzip.decompress(response_from_storage_provider.content)
+                except gzip.BadGzipFile as e:
+                    logger.error(f"Decompressing bundle {storage_id} failed with '{e}'")
                     continue
-            else:
-                logger.error(f"storage provider with id {storage_provider_id} is not supported ")
-                raise Exception("unsupported storage provider")
 
-            if not response_from_storage_provider.ok:
-                # TODO: add fallback to different storage provider in case resource is unavailable
-                logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
+                # Compare hash of the downloaded data from Arweave with the hash from KYVE.
+                # This is required to make sure, that the Arweave Gateway provided the correct data.
+                bundle_hash = bundle.get("data_hash")
+                local_hash = hashlib.sha256(response_from_storage_provider.content).hexdigest()
+                assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
+                decompressed_as_json = json.loads(decompressed)
 
-            try:
-                decompressed = gzip.decompress(response_from_storage_provider.content)
-            except gzip.BadGzipFile as e:
-                logger.error(f"Decompressing bundle {storage_id} failed with '{e}'")
-                continue
-
-            # Compare hash of the downloaded data from Arweave with the hash from KYVE.
-            # This is required to make sure, that the Arweave Gateway provided the correct data.
-            bundle_hash = bundle.get("data_hash")
-            local_hash = hashlib.sha256(response_from_storage_provider.content).hexdigest()
-            assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
-            decompressed_as_json = json.loads(decompressed)
-
-            # extract the value from the key -> value mapping
-            yield from decompressed_as_json
+                # Set cursor value to next bundle id
+                self._cursor_value = int(bundle.get("id")) + 1
+                # extract the value from the key -> value mapping
+                yield from decompressed_as_json
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # in case we set a max_pages parameter we need to abort
-        if self.max_pages and self._offset >= self.max_pages * self.page_size:
+        if self.max_pages and self._cursor_value >= self.max_pages * self.page_size:
             return
 
-        json_response = response.json()
-        next_key = json_response.get("pagination", {}).get("next_key")
-        if next_key:
-            self._offset += self.page_size
-            return {"pagination.offset": self._offset}
+        if self._offset > -float("inf"):
+            self._offset = self._cursor_value
+            return str(self._offset)
+        self._offset = self._cursor_value
 
     @property
     def state(self) -> Mapping[str, Any]:
