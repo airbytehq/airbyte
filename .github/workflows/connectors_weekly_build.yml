@@ -34,11 +34,12 @@ jobs:
       - name: Test connectors
         uses: ./.github/actions/run-dagger-pipeline
         with:
-          context: "nightly_builds"
+          context: "master"
           ci_job_key: "weekly_alpha_test"
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: '--show-dagger-logs connectors ${{ inputs.test-connectors-options || ''--concurrency=3 --metadata-query="(data.ab_internal.ql > 100) & (data.ab_internal.sl < 200)"'' }} test'

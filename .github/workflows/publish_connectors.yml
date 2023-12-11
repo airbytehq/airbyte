@@ -18,6 +18,10 @@ on:
         type: string
         default: ci-runner-connector-publish-large-dagger-0-6-4
         required: true
+      airbyte-ci-binary-url:
+        description: "URL to airbyte-ci binary"
+        required: false
+        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
 jobs:
   publish_connectors:
     name: Publish connectors
@@ -42,6 +46,7 @@ jobs:
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "connectors --concurrency=1 --execute-timeout=3600 --metadata-changes-only publish --main-release"
 
       - name: Publish connectors [manual]
@@ -61,7 +66,9 @@ jobs:
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
+          airbyte_ci_binary_url: ${{ github.event.inputs.airbyte-ci-binary-url }}
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure

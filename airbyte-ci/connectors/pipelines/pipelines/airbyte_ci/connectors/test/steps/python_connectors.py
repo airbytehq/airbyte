@@ -203,7 +203,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         List[StepResult]: The results of all the steps that ran or were skipped.
     """
     step_results = []
-    build_connector_image_results = await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run()
+    build_connector_image_results = await BuildConnectorImages(context).run()
     if build_connector_image_results.status is StepStatus.FAILURE:
         return [build_connector_image_results]
     step_results.append(build_connector_image_results)

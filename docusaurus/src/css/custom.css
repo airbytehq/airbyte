@@ -124,9 +124,17 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
   font-weight: 700;
   font-size: 0.8em;
   padding: 0.4em 0 0.4em 0.4em;
-  margin-top: 1.1em;
   color: var(--docsearch-text-color);
   background-color: var(--ifm-hover-overlay);
+}
+
+.navbar__category:not(:first-child) {
+  margin-top: 1.1em;
+}
+
+/* Hide the breadcrumbs if they have only the house as an entry (i.e. on the start page) */
+.breadcrumbs:has(li:first-child:last-child) {
+  display: none;
 }
 
 .cloudStatusLink {

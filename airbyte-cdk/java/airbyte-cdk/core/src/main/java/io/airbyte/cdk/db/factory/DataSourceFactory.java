@@ -11,8 +11,10 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.io.Closeable;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import javax.sql.DataSource;
 
 /**
@@ -188,10 +190,10 @@ public class DataSourceFactory {
     private DataSourceBuilder() {}
 
     /**
-     * Retrieves connectionTimeout value from connection properties in seconds, default minimum timeout
+     * Retrieves connectionTimeout value from connection properties in millis, default minimum timeout
      * is 60 seconds since Hikari default of 30 seconds is not enough for acceptance tests. In the case
      * the value is 0, pass the value along as Hikari and Postgres use default max value for 0 timeout
-     * value
+     * value.
      *
      * NOTE: HikariCP uses milliseconds for all time values:
      * https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby whereas Postgres is
@@ -203,27 +205,32 @@ public class DataSourceFactory {
      * @return DataSourceBuilder class used to create dynamic fields for DataSource
      */
     private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties, String driverClassName) {
-      // TODO: the usage of CONNECT_TIMEOUT is Postgres specific, may need to extend for other databases
-      if (driverClassName.equals(DatabaseDriver.POSTGRESQL.getDriverClassName())) {
-        final String pgPropertyConnectTimeout = CONNECT_TIMEOUT.getName();
-        // If the PGProperty.CONNECT_TIMEOUT was set by the user, then take its value, if not take the
-        // default
-        if (connectionProperties.containsKey(pgPropertyConnectTimeout)
-            && (Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout)) >= 0)) {
-          return Duration.ofSeconds(Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout))).toMillis();
-        } else {
-          return Duration.ofSeconds(Long.parseLong(Objects.requireNonNull(CONNECT_TIMEOUT.getDefaultValue()))).toMillis();
-        }
+      final Optional<Duration> parsedConnectionTimeout = switch (DatabaseDriver.findByDriverClassName(driverClassName)) {
+        case POSTGRESQL -> maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
+            .or(() -> maybeParseDuration(CONNECT_TIMEOUT.getDefaultValue(), ChronoUnit.SECONDS));
+        case MYSQL -> maybeParseDuration(connectionProperties.get("connectTimeout"), ChronoUnit.MILLIS);
+        case MSSQLSERVER -> maybeParseDuration(connectionProperties.get("loginTimeout"), ChronoUnit.SECONDS);
+        default -> maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
+            // Enforce minimum timeout duration for unspecified data sources.
+            .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0);
+      };
+      return parsedConnectionTimeout.orElse(CONNECT_TIMEOUT_DEFAULT).toMillis();
+    }
+
+    private static Optional<Duration> maybeParseDuration(final String stringValue, TemporalUnit unit) {
+      if (stringValue == null) {
+        return Optional.empty();
       }
-      final Duration connectionTimeout;
-      connectionTimeout =
-          connectionProperties.containsKey(CONNECT_TIMEOUT_KEY) ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(CONNECT_TIMEOUT_KEY)))
-              : CONNECT_TIMEOUT_DEFAULT;
-      if (connectionTimeout.getSeconds() == 0) {
-        return connectionTimeout.toMillis();
-      } else {
-        return (connectionTimeout.compareTo(CONNECT_TIMEOUT_DEFAULT) > 0 ? connectionTimeout : CONNECT_TIMEOUT_DEFAULT).toMillis();
+      final long number;
+      try {
+        number = Long.parseLong(stringValue);
+      } catch (NumberFormatException __) {
+        return Optional.empty();
       }
+      if (number < 0) {
+        return Optional.empty();
+      }
+      return Optional.of(Duration.of(number, unit));
     }
 
     public DataSourceBuilder withConnectionProperties(final Map<String, String> connectionProperties) {

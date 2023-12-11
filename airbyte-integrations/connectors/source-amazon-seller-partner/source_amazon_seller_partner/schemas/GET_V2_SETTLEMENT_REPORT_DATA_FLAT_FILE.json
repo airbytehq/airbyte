@@ -40,6 +40,7 @@
     "direct-payment-type": { "type": ["null", "string"] },
     "direct-payment-amount": { "type": ["null", "string"] },
     "other-amount": { "type": ["null", "string"] },
-    "report_id": { "type": ["null", "string"] }
+    "report_id": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

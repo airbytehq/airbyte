@@ -3,7 +3,9 @@
 #
 
 import copy
+import json
 import xml.etree.ElementTree as ET
+from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 from urllib.parse import urlparse
 
@@ -11,7 +13,9 @@ import _csv
 import pendulum
 import pytest
 import source_bing_ads
+from airbyte_cdk.models import SyncMode
 from bingads.service_info import SERVICE_INFO_DICT_V13
+from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
 from source_bing_ads.base_streams import Accounts
 from source_bing_ads.report_streams import (
@@ -200,7 +204,7 @@ def test_get_report_record_timestamp_hourly(stream_report_hourly_cls):
 
 def test_report_get_start_date_wo_stream_state():
     expected_start_date = "2020-01-01"
-    test_report = TestReport()
+    test_report = GeographicPerformanceReportDaily(client=Mock(), config=TEST_CONFIG)
     test_report.client.reports_start_date = "2020-01-01"
     stream_state = {}
     account_id = "123"
@@ -209,20 +213,18 @@ def test_report_get_start_date_wo_stream_state():
 
 def test_report_get_start_date_with_stream_state():
     expected_start_date = pendulum.parse("2023-04-17T21:29:57")
-    test_report = TestReport()
-    test_report.cursor_field = "cursor_field"
+    test_report = GeographicPerformanceReportDaily(client=Mock(), config=TEST_CONFIG)
     test_report.client.reports_start_date = "2020-01-01"
-    stream_state = {"123": {"cursor_field": "2023-04-17T21:29:57+00:00"}}
+    stream_state = {"123": {"TimePeriod": "2023-04-17T21:29:57+00:00"}}
     account_id = "123"
     assert expected_start_date == test_report.get_start_date(stream_state, account_id)
 
 
 def test_report_get_start_date_performance_report_with_stream_state():
     expected_start_date = pendulum.parse("2023-04-07T21:29:57")
-    test_report = TestPerformanceReport()
-    test_report.cursor_field = "cursor_field"
+    test_report = GeographicPerformanceReportDaily(client=Mock(), config=TEST_CONFIG)
     test_report.config = {"lookback_window": 10}
-    stream_state = {"123": {"cursor_field": "2023-04-17T21:29:57+00:00"}}
+    stream_state = {"123": {"TimePeriod": "2023-04-17T21:29:57+00:00"}}
     account_id = "123"
     assert expected_start_date == test_report.get_start_date(stream_state, account_id)
 
@@ -230,8 +232,7 @@ def test_report_get_start_date_performance_report_with_stream_state():
 def test_report_get_start_date_performance_report_wo_stream_state():
     days_to_subtract = 10
     reports_start_date = pendulum.parse("2021-04-07T00:00:00")
-    test_report = TestPerformanceReport()
-    test_report.cursor_field = "cursor_field"
+    test_report = GeographicPerformanceReportDaily(client=Mock(), config=TEST_CONFIG)
     test_report.client.reports_start_date = reports_start_date
     test_report.config = {"lookback_window": days_to_subtract}
     stream_state = {}
@@ -427,3 +428,29 @@ def test_custom_performance_report_no_last_year_stream_slices(mocked_client, con
             {"account_id": 180519267, "customer_id": 100, "time_period": "ThisYear"},
             {"account_id": 180278106, "customer_id": 200, "time_period": "ThisYear"},
         ]
+
+
+@pytest.mark.parametrize(
+    "stream, response, records",
+    [
+        (CampaignPerformanceReportHourly, "hourly_reports/campaign_performance.csv", "hourly_reports/campaign_performance_records.json"),
+        (AccountPerformanceReportHourly, "hourly_reports/account_performance.csv", "hourly_reports/account_performance_records.json"),
+        (AdGroupPerformanceReportHourly, "hourly_reports/ad_group_performance.csv", "hourly_reports/ad_group_performance_records.json"),
+        (AdPerformanceReportHourly, "hourly_reports/ad_performance.csv", "hourly_reports/ad_performance_records.json"),
+        (CampaignImpressionPerformanceReportHourly, "hourly_reports/campaign_impression_performance.csv", "hourly_reports/campaign_impression_performance_records.json"),
+        (KeywordPerformanceReportHourly, "hourly_reports/keyword_performance.csv", "hourly_reports/keyword_performance_records.json"),
+        (GeographicPerformanceReportHourly, "hourly_reports/geographic_performance.csv", "hourly_reports/geographic_performance_records.json"),
+        (AgeGenderAudienceReportHourly, "hourly_reports/age_gender_audience.csv", "hourly_reports/age_gender_audience_records.json"),
+        (SearchQueryPerformanceReportHourly, "hourly_reports/search_query_performance.csv", "hourly_reports/search_query_performance_records.json"),
+        (UserLocationPerformanceReportHourly, "hourly_reports/user_location_performance.csv", "hourly_reports/user_location_performance_records.json"),
+        (AccountImpressionPerformanceReportHourly, "hourly_reports/account_impression_performance.csv", "hourly_reports/account_impression_performance_records.json"),
+        (AdGroupImpressionPerformanceReportHourly, "hourly_reports/ad_group_impression_performance.csv", "hourly_reports/ad_group_impression_performance_records.json"),
+    ],
+)
+@patch.object(source_bing_ads.source, "Client")
+def test_hourly_reports(mocked_client, config, stream, response, records):
+    stream_object = stream(mocked_client, config)
+    with patch.object(stream, "send_request", return_value=_RowReport(file=Path(__file__).parent / response)):
+        with open(Path(__file__).parent / records, "r") as file:
+            assert list(stream_object.read_records(sync_mode=SyncMode.full_refresh, stream_slice={}, stream_state={})) == json.load(file)
+

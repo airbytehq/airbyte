@@ -154,7 +154,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
         if stream_state and account_id:
             if stream_state.get(account_id, {}).get(self.cursor_field):
-                return pendulum.parse(self.get_report_record_timestamp(stream_state[account_id][self.cursor_field]))
+                return pendulum.parse(stream_state[account_id][self.cursor_field])
 
         return self.client.reports_start_date
 

@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 # The earlier versions of airbyte-cdk (0.28.0<=) had the airbyte_protocol python classes
 # declared inline in the airbyte-cdk code. However, somewhere around Feb 2023 the
 # Airbyte Protocol moved to its own repo/PyPi package, called airbyte-protocol-models.
