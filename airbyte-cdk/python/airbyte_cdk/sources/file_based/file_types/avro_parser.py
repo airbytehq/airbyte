@@ -3,7 +3,7 @@
 #
 
 import logging
-from typing import Any, Dict, Iterable, Mapping, Optional
+from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
 import fastavro
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
@@ -40,6 +40,12 @@ AVRO_LOGICAL_TYPE_TO_JSON = {
 
 class AvroParser(FileTypeParser):
     ENCODING = None
+
+    def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
+        """
+        AvroParser does not require config checks, implicit pydantic validation is enough.
+        """
+        return True, None
 
     async def infer_schema(
         self,
@@ -134,7 +140,7 @@ class AvroParser(FileTypeParser):
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
-        avro_format = config.format or AvroFormat()
+        avro_format = config.format or AvroFormat(filetype="avro")
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 

@@ -23,6 +23,15 @@ public class TestJdbcSqlOperations extends JdbcSqlOperations {
     // Not required for the testing
   }
 
+  @Override
+  protected void insertRecordsInternalV2(final JdbcDatabase database,
+                                         final List<PartialAirbyteMessage> records,
+                                         final String schemaName,
+                                         final String tableName)
+      throws Exception {
+    // Not required for the testing
+  }
+
   @Test
   public void testCreateSchemaIfNotExists() {
     final JdbcDatabase db = Mockito.mock(JdbcDatabase.class);
