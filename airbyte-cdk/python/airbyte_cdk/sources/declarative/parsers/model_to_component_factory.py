@@ -723,6 +723,7 @@ class ModelToComponentFactory:
             disable_retries=self._disable_retries,
             parameters=model.parameters or {},
             message_repository=self._message_repository,
+            use_cache=model.use_cache,
         )
 
     @staticmethod
