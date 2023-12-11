@@ -26,6 +26,7 @@ from airbyte_protocol.models import (
     Type,
 )
 
+
 def _a_state_message(state: Any) -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.STATE,
