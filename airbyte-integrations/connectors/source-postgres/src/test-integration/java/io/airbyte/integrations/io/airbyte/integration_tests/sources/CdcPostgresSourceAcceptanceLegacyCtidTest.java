@@ -10,7 +10,7 @@ public class CdcPostgresSourceAcceptanceLegacyCtidTest extends CdcPostgresSource
 
   @Override
   protected BaseImage getServerImage() {
-    return BaseImage.POSTGRES_12_BULLSEYE;
+    return BaseImage.POSTGRES_12;
   }
 
 }
