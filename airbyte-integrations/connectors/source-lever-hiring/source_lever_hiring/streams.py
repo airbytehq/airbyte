@@ -14,7 +14,6 @@ from .schemas import Application, BaseSchemaModel, Interview, Note, Offer, Oppor
 
 
 class LeverHiringStream(HttpStream, ABC):
-
     primary_key = "id"
     page_size = 50
 
@@ -58,7 +57,6 @@ class LeverHiringStream(HttpStream, ABC):
 
 
 class IncrementalLeverHiringStream(LeverHiringStream, ABC):
-
     state_checkpoint_interval = 100
     cursor_field = "updatedAt"
 

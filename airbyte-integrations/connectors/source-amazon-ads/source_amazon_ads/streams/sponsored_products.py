@@ -90,7 +90,6 @@ class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
         )
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
         resp = response.json()
         if response.status_code == HTTPStatus.OK:
             yield resp

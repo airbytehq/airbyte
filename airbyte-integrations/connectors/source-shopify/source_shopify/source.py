@@ -27,7 +27,6 @@ from .utils import ShopifyWrongShopNameError
 
 
 class ShopifyStream(HttpStream, ABC):
-
     # define default logger
     logger = logging.getLogger("airbyte")
 
@@ -119,7 +118,6 @@ class ShopifyStream(HttpStream, ABC):
 
 
 class ShopifyDeletedEventsStream(ShopifyStream):
-
     data_field = "events"
     primary_key = "id"
     cursor_field = "deleted_at"
@@ -182,7 +180,6 @@ class ShopifyDeletedEventsStream(ShopifyStream):
 
 
 class IncrementalShopifyStream(ShopifyStream, ABC):
-
     # Setting the check point interval to the limit of the records output
     @property
     def state_checkpoint_interval(self) -> int:

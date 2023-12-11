@@ -27,7 +27,6 @@ BATCH_SIZE = 128
 
 
 class DestinationChroma(Destination):
-
     indexer: Indexer
     embedder: Embedder
 
@@ -42,7 +41,6 @@ class DestinationChroma(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         """
         Reads the input stream of messages, config, and catalog to write data to the destination.
 

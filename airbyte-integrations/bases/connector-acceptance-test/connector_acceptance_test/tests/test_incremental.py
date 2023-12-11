@@ -153,9 +153,7 @@ class TestIncremental(BaseTest):
         records_2 = filter_output(output_2, type_=Type.RECORD)
 
         diff = naive_diff_records(records_1, records_2)
-        assert (
-            diff
-        ), f"Records should change between reads but did not.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_2: {records_2} \n\n diff: {diff}"
+        assert diff, f"Records should change between reads but did not.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_2: {records_2} \n\n diff: {diff}"
 
     async def test_read_sequential_slices(
         self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, docker_runner: ConnectorRunner
@@ -226,14 +224,10 @@ class TestIncremental(BaseTest):
 
             output_N = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
             records_N = filter_output(output_N, type_=Type.RECORD)
-            assert (
-                records_N
-            ), f"Read {idx + 2} of {len(unique_state_messages)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 2}: {records_N}"
+            assert records_N, f"Read {idx + 2} of {len(unique_state_messages)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 2}: {records_N}"
 
             diff = naive_diff_records(records_1, records_N)
-            assert (
-                diff
-            ), f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 2}: {records_N} \n\n diff: {diff}"
+            assert diff, f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 2}: {records_N} \n\n diff: {diff}"
 
     async def test_state_with_abnormally_large_values(
         self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner

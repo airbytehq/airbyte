@@ -15,7 +15,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 # Basic full refresh stream
 class RkiCovidStream(HttpStream, ABC):
-
     url_base = "https://api.corona-zahlen.org/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -106,7 +105,6 @@ class GermanyStatesAgeGroups(RkiCovidStream):
 
 # Basic incremental stream
 class IncrementalRkiCovidStream(RkiCovidStream, ABC):
-
     state_checkpoint_interval = None
 
     @property

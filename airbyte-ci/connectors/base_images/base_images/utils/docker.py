@@ -30,7 +30,6 @@ def get_credentials() -> Tuple[str, str]:
 
 
 class CraneClient:
-
     CRANE_IMAGE_ADDRESS = (
         "gcr.io/go-containerregistry/crane/debug:v0.15.1@sha256:f6ddf8e2c47df889e06e33c3e83b84251ac19c8728a670ff39f2ca9e90c4f905"
     )
@@ -40,7 +39,8 @@ class CraneClient:
         self.docker_hub_username_password = dagger_client.set_secret("DOCKER_HUB_PASSWORD", docker_credentials[1])
 
         self.bare_container = (
-            dagger_client.container().from_(self.CRANE_IMAGE_ADDRESS)
+            dagger_client.container()
+            .from_(self.CRANE_IMAGE_ADDRESS)
             # We don't want to cache any subsequent commands that might run in this container
             # because we want to have fresh output data every time we run this command.
             .with_env_variable("CACHE_BUSTER", str(uuid.uuid4()))

@@ -251,7 +251,6 @@ class ConnectorSpecificationRenderer(BaseRenderer):
 
 
 class ConnectionRenderer(BaseRenderer):
-
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
     definition = ConnectionDefinition
     KEYS_TO_REMOVE_FROM_REMOTE_CONFIGURATION = [

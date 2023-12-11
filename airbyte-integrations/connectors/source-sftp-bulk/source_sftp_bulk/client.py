@@ -64,7 +64,7 @@ class SFTPClient:
             # set request timeout
             socket.settimeout(self.timeout)
 
-        except (AuthenticationException) as ex:
+        except AuthenticationException as ex:
             raise Exception("Authentication failed: %s" % ex)
         except Exception as ex:
             raise Exception("SSH Connection failed: %s" % ex)

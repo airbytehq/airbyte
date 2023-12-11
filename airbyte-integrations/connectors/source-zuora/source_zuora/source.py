@@ -361,7 +361,6 @@ class ZuoraSubmitJob(ZuoraStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> List[str]:
-
         """
         Response example:
         {'data':
@@ -399,7 +398,6 @@ class ZuoraJobStatusCheck(ZuoraStream):
         return [response.json()["data"]["dataFile"]]
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-
         """
         Override of default CDK method _send_request to check the status of submited job iteratevely,
         until it's either "completed" or "failed" or "canceled" for any reason.

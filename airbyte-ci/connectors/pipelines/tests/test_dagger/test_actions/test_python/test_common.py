@@ -53,7 +53,6 @@ def python_connector_base_image_address(python_connector_with_setup_not_latest_c
 
 
 async def test_with_python_connector_installed_from_setup(context_with_setup, python_connector_base_image_address, latest_cdk_version):
-
     python_container = context_with_setup.dagger_client.container().from_(python_connector_base_image_address)
 
     container = await common.with_python_connector_installed(

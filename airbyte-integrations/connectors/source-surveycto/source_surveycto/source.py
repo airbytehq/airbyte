@@ -111,7 +111,6 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
 # Source
 class SourceSurveycto(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
-
         form_ids = config["form_id"]
 
         try:

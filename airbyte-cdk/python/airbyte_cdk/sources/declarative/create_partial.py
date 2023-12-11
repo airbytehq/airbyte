@@ -24,7 +24,6 @@ def create(func, /, *args, **keywords):
     """
 
     def newfunc(*fargs, **fkeywords):
-
         all_keywords = {**keywords}
         all_keywords.update(fkeywords)
 

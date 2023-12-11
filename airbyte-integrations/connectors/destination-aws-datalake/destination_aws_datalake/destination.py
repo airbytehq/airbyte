@@ -35,7 +35,6 @@ class DestinationAwsDatalake(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         """
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
@@ -67,7 +66,6 @@ class DestinationAwsDatalake(Destination):
         for message in input_messages:
             if message.type == Type.STATE:
                 if not message.state.data:
-
                     if message.state.stream:
                         stream = message.state.stream.stream_descriptor.name
                         logger.info(f"Received empty state for stream {stream}, resetting stream")

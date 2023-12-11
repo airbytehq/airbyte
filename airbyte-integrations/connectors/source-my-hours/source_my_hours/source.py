@@ -88,7 +88,6 @@ class TimeLogs(MyHoursStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
         if next_page_token is None:
             return {"DateFrom": self.start_date.to_date_string(), "DateTo": self.start_date.add(days=self.batch_size - 1).to_date_string()}
         return next_page_token

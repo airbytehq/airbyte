@@ -198,7 +198,6 @@ class IterableExportStream(IterableStream, ABC):
         stream_slice: StreamSlice,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
         params = super().request_params(stream_state=stream_state)
         params.update(
             {
@@ -246,7 +245,6 @@ class IterableExportStream(IterableStream, ABC):
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[StreamSlice]]:
-
         start_datetime = self.get_start_date(stream_state)
         return [StreamSlice(start_datetime, self._end_date or pendulum.now("UTC"))]
 
@@ -264,7 +262,6 @@ class IterableExportStreamRanged(IterableExportStream, ABC):
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[StreamSlice]]:
-
         start_datetime = self.get_start_date(stream_state)
 
         return RangeSliceGenerator(start_datetime, self._end_date)
@@ -299,7 +296,6 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[StreamSlice]]:
-
         start_datetime = self.get_start_date(stream_state)
         self._adjustable_generator = AdjustableSliceGenerator(start_datetime, self._end_date)
         return self._adjustable_generator
@@ -314,7 +310,6 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
         start_time = pendulum.now()
         for _ in range(self.CHUNKED_ENCODING_ERROR_RETRIES):
             try:
-
                 self.logger.info(
                     f"Processing slice of {(stream_slice.end_date - stream_slice.start_date).total_days()} days for stream {self.name}"
                 )

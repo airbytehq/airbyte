@@ -13,7 +13,6 @@ def mock_spec_cache():
     with patch("google.cloud.storage.Client.create_anonymous_client") as MockClient, patch(
         "google.cloud.storage.Client.bucket"
     ) as MockBucket:
-
         # Create stub mock client and bucket
         MockClient.return_value
         MockBucket.return_value

@@ -223,9 +223,8 @@ def with_crane(
 
     if context.docker_hub_username_secret and context.docker_hub_password_secret:
         base_container = (
-            base_container.with_secret_variable("DOCKER_HUB_USERNAME", context.docker_hub_username_secret).with_secret_variable(
-                "DOCKER_HUB_PASSWORD", context.docker_hub_password_secret
-            )
+            base_container.with_secret_variable("DOCKER_HUB_USERNAME", context.docker_hub_username_secret)
+            .with_secret_variable("DOCKER_HUB_PASSWORD", context.docker_hub_password_secret)
             # We need to use skip_entrypoint=True to avoid the entrypoint to be overridden by the crane command
             # We use sh -c to be able to use environment variables in the command
             # This is a workaround as the default crane entrypoint doesn't support environment variables

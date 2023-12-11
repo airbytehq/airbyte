@@ -111,7 +111,6 @@ class FreshdeskStream(HttpStream, ABC):
 
 
 class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
-
     cursor_filter = "updated_since"  # Name of filter that corresponds to the state
     state_checkpoint_interval = 100
 

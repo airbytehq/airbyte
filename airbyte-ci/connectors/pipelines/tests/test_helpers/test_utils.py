@@ -217,7 +217,6 @@ async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_
 
 @pytest.mark.anyio
 async def test_export_container_to_tarball_failure(mocker, tmp_path):
-
     context = mocker.Mock(
         connector=mocker.Mock(technical_name="my_connector"),
         host_image_export_dir_path=tmp_path,

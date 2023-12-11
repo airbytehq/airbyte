@@ -99,7 +99,6 @@ class Explainer:
 
 @dataclass
 class CustomReportsValidator:
-
     custom_reports: Union[List[Dict], Dict] = Field(default_factory=list)
 
     def __post_init__(self):
@@ -108,7 +107,6 @@ class CustomReportsValidator:
         self.explainer: Explainer = Explainer()
 
     def validate(self):
-
         # local import of airbyte_cdk dependencies
         from airbyte_cdk.models import FailureType
         from airbyte_cdk.utils.traced_exception import AirbyteTracedException

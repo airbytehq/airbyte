@@ -156,7 +156,6 @@ class AddBuildInstructionsToReadme(Step):
         )
 
     def add_build_instructions(self, og_doc_content) -> str:
-
         build_instructions_template = Template(
             textwrap.dedent(
                 """

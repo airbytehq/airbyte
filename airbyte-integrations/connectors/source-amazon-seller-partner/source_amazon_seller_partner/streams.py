@@ -901,7 +901,6 @@ class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
 
 
 class IncrementalAnalyticsStream(AnalyticsStream):
-
     fixed_period_in_days = 0
 
     @property
@@ -930,7 +929,6 @@ class IncrementalAnalyticsStream(AnalyticsStream):
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
-
         payload = response.json()
 
         document = self.download_and_decompress_report_document(payload)
@@ -955,7 +953,6 @@ class IncrementalAnalyticsStream(AnalyticsStream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         start_date = pendulum.parse(self._replication_start_date)
         end_date = pendulum.now("utc").subtract(days=self.availability_sla_days)
 
@@ -1139,12 +1136,10 @@ class ListFinancialEvents(FinanceStream):
 
 
 class FbaCustomerReturnsReports(ReportsAmazonSPStream):
-
     name = "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"
 
 
 class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
-
     name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
     cursor_field = "dataEndTime"
 
@@ -1155,7 +1150,6 @@ class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-
         # For backwards
         return {"reportId": stream_slice.get("report_id")}
 

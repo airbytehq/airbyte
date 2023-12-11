@@ -189,8 +189,8 @@ class TestSpec(BaseTest):
                 assert (
                     "default" not in prop_obj or prop_obj["default"] == prop_obj["const"]
                 ), f"'default' needs to be identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
-                assert "enum" not in prop_obj or (
-                    len(prop_obj["enum"]) == 1 and prop_obj["enum"][0] == prop_obj["const"]
+                assert (
+                    "enum" not in prop_obj or (len(prop_obj["enum"]) == 1 and prop_obj["enum"][0] == prop_obj["const"])
                 ), f"'enum' needs to be an array with a single item identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
 
     def test_required(self):
@@ -831,9 +831,7 @@ class TestBasicRead(BaseTest):
             record_fields = set(get_object_structure(record.data))
             common_fields = set.intersection(record_fields, schema_pathes)
 
-            assert (
-                common_fields
-            ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_pathes}"
+            assert common_fields, f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_pathes}"
 
     @staticmethod
     def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: Boolean):

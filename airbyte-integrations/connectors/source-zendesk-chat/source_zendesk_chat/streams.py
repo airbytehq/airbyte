@@ -31,7 +31,6 @@ class Stream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-
         return {"timeout": 60}
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -108,7 +107,6 @@ class BaseIncrementalStream(Stream, ABC):
 
 
 class TimeIncrementalStream(BaseIncrementalStream, ABC):
-
     state_checkpoint_interval = 1000
 
     def __init__(self, start_date, **kwargs):

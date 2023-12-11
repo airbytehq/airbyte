@@ -44,7 +44,6 @@ class MailChimpStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
         params = {"count": self.page_size}
 
         # Handle pagination by inserting the next page's token in the request parameters
@@ -276,7 +275,6 @@ class InterestCategories(MailChimpStream, HttpSubStream):
         return f"lists/{list_id}/interest-categories"
 
     def request_params(self, **kwargs):
-
         # Exclude the _links field, as it is not user-relevant data
         params = super().request_params(**kwargs)
         params["exclude_fields"] = "categories._links"
@@ -300,7 +298,6 @@ class Interests(MailChimpStream, HttpSubStream):
         return f"lists/{list_id}/interest-categories/{category_id}/interests"
 
     def request_params(self, **kwargs):
-
         # Exclude the _links field, as it is not user-relevant data
         params = super().request_params(**kwargs)
         params["exclude_fields"] = "interests._links"
@@ -471,7 +468,6 @@ class Unsubscribes(IncrementalMailChimpStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         if self.campaign_id:
             # Similar to EmailActivity stream, this is a workaround to speed up SATs
             # and enable incremental tests by reading from a single campaign
@@ -492,7 +488,6 @@ class Unsubscribes(IncrementalMailChimpStream):
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-
         response = super().parse_response(response, **kwargs)
 
         # Unsubscribes endpoint does not support sorting, so we need to filter out records that are older than the current state
