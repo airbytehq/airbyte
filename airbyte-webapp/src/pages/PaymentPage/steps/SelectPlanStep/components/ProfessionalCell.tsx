@@ -63,8 +63,6 @@ const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability
   const { formatMessage } = useIntl();
   const userPlanDetail = useUserPlanDetail();
   const { expiresTime } = userPlanDetail;
-  // const time = remainingDaysForFreeTrial(expiresTime);
-  // console.log(time, "time");
   // console.log(user, "User ");
   // console.log(userPlanDetail, "userPlanDetail");
   // console.log(selectPlanBtnDisability, "planDisablity");
