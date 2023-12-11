@@ -38,7 +38,7 @@ If you are interested in learning more about the Webflow API and implementation 
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
-| 0.1.3   | 2022-12-08 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Updates CDK to latest version    |
-| 0.1.2   | 2022-07-14 | [14689](https://github.com/airbytehq/airbyte/pull/14689) | Webflow add ids to streams    |
-| 0.1.1   | 2022-06-22 | [13617](https://github.com/airbytehq/airbyte/pull/13617) | Update Spec Documentation URL |
+| 0.1.3   | 2022-12-11 | [33315](https://github.com/airbytehq/airbyte/pull/33315) | Updates CDK to latest version and adds additional properties to schema    |
+| 0.1.2   | 2022-07-14 | [14689](https://github.com/airbytehq/airbyte/pull/14689) | Webflow added IDs to streams    |
+| 0.1.1   | 2022-06-22 | [13617](https://github.com/airbytehq/airbyte/pull/13617) | Updates Spec Documentation URL |
 | 0.1.0   | 2022-06-22 | [13617](https://github.com/airbytehq/airbyte/pull/13617) | Initial release               |
