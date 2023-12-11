@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from .annotations import Annotations
 from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
 from .cohort_members import CohortMembers
