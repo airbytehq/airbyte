@@ -63,6 +63,13 @@ class HttpMocker(contextlib.ContextDecorator):
 
         return matches
 
+    def assert_number_of_calls(self, request: HttpRequest, number_of_calls: int) -> None:
+        corresponding_matchers = list(filter(lambda matcher: matcher.request == request, self._matchers))
+        if len(corresponding_matchers) != 1:
+            raise ValueError(f"Was expecting only one matcher to match the request but got `{corresponding_matchers}`")
+
+        assert corresponding_matchers[0].actual_number_of_matches == number_of_calls
+
     def __call__(self, f):  # type: ignore  # trying to type that using callables provides the error `incompatible with return type "_F" in supertype "ContextDecorator"`
         @functools.wraps(f)
         def wrapper(*args, **kwargs):  # type: ignore  # this is a very generic wrapper that does not need to be typed
