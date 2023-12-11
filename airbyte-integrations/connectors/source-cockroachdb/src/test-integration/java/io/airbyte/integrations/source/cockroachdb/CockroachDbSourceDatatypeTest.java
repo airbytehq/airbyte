@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.CockroachContainer;
+
 @Disabled
 public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 

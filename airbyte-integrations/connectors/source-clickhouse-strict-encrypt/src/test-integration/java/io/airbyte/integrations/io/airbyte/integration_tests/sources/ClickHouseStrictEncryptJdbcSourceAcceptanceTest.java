@@ -25,6 +25,7 @@ import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
+
 @Disabled
 public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest
     extends JdbcSourceAcceptanceTest<ClickHouseStrictEncryptSource, ClickHouseStrictEncryptTestDatabase> {

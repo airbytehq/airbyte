@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.tidb.TiDBContainer;
 import org.testcontainers.utility.DockerImageName;
+
 @Disabled
 class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<TiDBSource, TiDBTestDatabase> {
 
