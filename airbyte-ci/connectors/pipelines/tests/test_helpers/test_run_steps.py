@@ -292,9 +292,19 @@ async def test_run_steps_passes_results():
 
 
 @pytest.mark.anyio
-async def test_run_steps_throws_on_invalid_args():
+@pytest.mark.parametrize(
+    "invalid_args",
+    [
+        1,
+        True,
+        "string",
+        [1, 2],
+        None,
+    ],
+)
+async def test_run_steps_throws_on_invalid_args(invalid_args):
     steps = [
-        [StepToRun(id="step1", step=TestStep(test_context), args=1)],
+        [StepToRun(id="step1", step=TestStep(test_context), args=invalid_args)],
     ]
 
     with pytest.raises(TypeError):
