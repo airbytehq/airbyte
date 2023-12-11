@@ -42,17 +42,7 @@ class SourceNetsuiteOdbc(AbstractSource):
             cursor = cursor_constructor.create_database_cursor(config)
 
             cursor.execute("SELECT * FROM OA_TABLES")
-            row = cursor.fetchone()
-            print(row)
-            row = cursor.fetchone()
-            print(row)
-
-            cursor.execute("SELECT column_name, COUNT(*) FROM OA_COLUMNS WHERE oa_userdata LIKE '%M-%' GROUP BY column_name")
-            while True:
-                row = cursor.fetchone()
-                if not row:
-                    break
-                print(row)
+            cursor.fetchone()
             return True, None
         except Exception as e:
             logger.error(e)

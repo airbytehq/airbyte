@@ -1,14 +1,14 @@
 import pytest
 
 from source_netsuite_odbc.odbc_utils import NetsuiteODBCCursorConstructor
-from source_netsuite_odbc.errors import AIRBYTE_ODBC_DRIVER_DOES_NOT_EXIST_ERROR
+from source_netsuite_odbc.errors import AIRBYTE_ODBC_DRIVER_HOST_RESOLUTION_FAILURE
 
 @pytest.fixture
 def config_one():
     return {
       "service_host": "aaaaaa-sb1.connect.api.netsuite.com",
       "service_port": "1708",
-      "realm": "aaaaaaa_SB1",
+      "account_id": "aaaaaaa_SB1",
       "consumer_key": "0b6c796a-e4d4-4bd9-adf5-e4a63d8d8c15",
       "consumer_secret": "f92911a7-9667-4b7a-b99d-e1bd0024434f",
       "token_key": "87ab1c97-1034-4845-bbf0-104b27152acc",
@@ -21,7 +21,7 @@ def config_two():
     return {
       "service_host": "bbbbbb-sb1.connect.api.netsuite.com",
       "service_port": "1708",
-      "realm": "bbbbbbb_SB1",
+      "account_id": "bbbbbbb_SB1",
       "consumer_key": "06beb54f-f872-4107-90f0-97d26c2909ce",
       "consumer_secret": "1f9a4ea1-7c5f-4b45-a2b5-d6bd1b7b6667",
       "token_key": "b75375ca-8c09-416e-825a-53a20138f74a",
@@ -53,8 +53,8 @@ class TestNetsuiteODBCCursorConstructor:
     assert connection_string_one == CONNECTION_STRING_ONE
     assert connection_string_two == CONNECTION_STRING_TWO
   
-  def test_properly_handled_failure_for_no_driver_exists(self, config_one):
-    with pytest.raises(Exception, match=AIRBYTE_ODBC_DRIVER_DOES_NOT_EXIST_ERROR):
+  def test_properly_handled_failure_for_host_resolution_failure(self, config_one):
+    with pytest.raises(Exception, match=AIRBYTE_ODBC_DRIVER_HOST_RESOLUTION_FAILURE):
       constructor = NetsuiteODBCCursorConstructor()
       constructor.create_database_cursor(config_one)
 

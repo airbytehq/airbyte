@@ -30,7 +30,7 @@ class NetsuiteODBCStream(Stream):
     def get_primary_key_from_stream(self, stream):
       key = stream.primary_key
       if not key:
-        return "id"
+        return None
       elif len(key) > 1:
         raise Exception('Assumption Broken: Primary Key should always be a top level field.  Instead, we\'re receiving a sub-field as a primary key.')
       else:
@@ -117,6 +117,8 @@ class NetsuiteODBCStream(Stream):
           self.incremental_most_recent_value_seen = max(self.incremental_most_recent_value_seen, date_value_received)
 
     def find_highest_id(self, result):
+      if self.primary_key_column is None:
+        return
       if self.primary_key_column in result:
           self.cursor_value_last_id_seen = max(self.cursor_value_last_id_seen, result[self.primary_key_column])
 
@@ -126,10 +128,12 @@ class NetsuiteODBCStream(Stream):
       incremental_column_sorter = f", {self.incremental_column} ASC" if self.incremental_column else ""
       # per https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_156257805177.html#subsect_156330163819
       # date literals need to be warpped in a to_date function
-      incremental_column_filter = f" AND {self.incremental_column} >= to_timestamp('{stream_slice['first_day']}', 'YYYY-MM-DD') AND {self.incremental_column} <= to_timestamp('{stream_slice['last_day']}', 'YYYY-MM-DD')"
+      incremental_column_filter = f"{self.incremental_column} >= to_timestamp('{stream_slice['first_day']}', 'YYYY-MM-DD') AND {self.incremental_column} <= to_timestamp('{stream_slice['last_day']}', 'YYYY-MM-DD')"
+      primary_key_filter = f"{self.primary_key_column} > {self.cursor_value_last_id_seen}" if self.primary_key_column is not None else ""
+      and_connector = " AND " if primary_key_filter != "" else ""
       query = f"""
         SELECT TOP {NETSUITE_PAGINATION_INTERVAL} {values} FROM {self.table_name} 
-        WHERE {self.primary_key_column} > {self.cursor_value_last_id_seen}{incremental_column_filter}
+        WHERE {primary_key_filter}{and_connector}{incremental_column_filter}
         ORDER BY {self.primary_key_column} ASC""" + incremental_column_sorter
       return query
   
@@ -160,7 +164,7 @@ class NetsuiteODBCStream(Stream):
     def get_range_to_fetch(self, sync_mode: SyncMode, stream_state: Optional[Mapping[str, Any]] = None):
       end_slice_range = date.today()
       # we fetch data for some years in the future because accountants can book transactions in the future
-      end_slice_range = end_slice_range.replace(year=end_slice_range.year + YEARS_FORWARD_LOOKING) 
+      end_slice_range = end_slice_range.replace(year=end_slice_range.year + YEARS_FORWARD_LOOKING, day=1) 
       # we use an earliest date of 1980 since 1998 was when netsuite was founded.  Note that in some cases customers might have ported over older historical data
       start_slice_range = EARLIEST_DATE
       if sync_mode == SyncMode.incremental:

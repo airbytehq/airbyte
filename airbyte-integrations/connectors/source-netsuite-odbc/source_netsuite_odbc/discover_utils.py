@@ -32,7 +32,8 @@ class NetsuiteODBCTableDiscoverer():
        return table[2]
 
     def get_tables(self) -> list[Mapping[str, Any]]:
-      self.cursor.execute("SELECT * FROM OA_TABLES")
+      self.cursor.execute("SELECT TOP 1 * FROM OA_TABLES WHERE TABLE_NAME = 'Customer'")
+      # self.cursor.execute("SELECT COUNT(*) FROM OA_TABLES")
       tables = []
       while True:
           row = self.cursor.fetchone()
@@ -97,6 +98,7 @@ class NetsuiteODBCTableDiscoverer():
       table_name = self.get_table_name(table)
       self.cursor.execute(f"SELECT * FROM OA_FKEYS WHERE PKTABLE_NAME = '{table_name}'")
       row = self.cursor.fetchone()
+      print(row)
       if row is None:
         return None
       return row[3] # return the column name for primary key

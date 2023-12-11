@@ -10,3 +10,6 @@ AIRBYTE_ODBC_DRIVER_DOES_NOT_EXIST_ERROR = """Cannot connect to ODBC Driver beca
 NETSUITE_INCORRECT_PASSWORD = "Failed to login using TBA"
 AIRBYTE_ODBC_DRIVER_INCORRECT_PASSWORD_ERROR = """We failed to login using TBA.  This typically happens due to an incorrect ODBC password due
  an incorrect config.  Please check that your config is accurate."""
+
+NETSUITE_HOST_RESOLUTION_FAILURE = "Network problem, host resolution failure"
+AIRBYTE_ODBC_DRIVER_HOST_RESOLUTION_FAILURE = "We received a host resolution failure from netsuite.  Please make sure your host subdomains are correct."
