@@ -94,9 +94,5 @@ def find_all_git_ignored_items() -> List[str]:
     """Retrieve all the git ignore rules declared in the directory."""
     status_output = get_git_repo().git.status(["--short", "--ignored"])
     main_logger.info("Running git status --short --ignored to find all git ignored files or directories")
-    # Use re.findall to extract all matches in a single call
-    # Ignored files/dirs are prefixed with "!!" in the git status --short output
-    ignored = re.findall(r"^!! (.+?)(/)?$", status_output, re.MULTILINE)
-    # Process the matches to remove trailing slashes
-    ignored = [item[0] if item[:-1] != "/" else item[0][:-1] for item in ignored]
-    return ignored
+    # Return all paths prefixed with '!! ' in the `git status --short` output stripped of any trailing slashes.
+    return re.findall(r"^!! (.+?)/*$", status_output, re.MULTILINE)
