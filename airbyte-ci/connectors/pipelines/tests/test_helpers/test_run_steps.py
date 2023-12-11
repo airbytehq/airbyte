@@ -164,6 +164,28 @@ class TestStep(Step):
             {"step1": StepStatus.SUCCESS, "step2": StepStatus.SUCCESS, "step3": StepStatus.SUCCESS, "step4": StepStatus.SUCCESS},
             RunStepOptions(fail_fast=False),
         ),
+        (
+            "skip_steps skips the specified steps",
+            [
+                StepToRun(id="step1", step=TestStep(test_context)),
+                StepToRun(id="step2", step=TestStep(test_context)),
+                StepToRun(id="step3", step=TestStep(test_context)),
+                StepToRun(id="step4", step=TestStep(test_context)),
+            ],
+            {"step1": StepStatus.SUCCESS, "step2": StepStatus.SKIPPED, "step3": StepStatus.SUCCESS, "step4": StepStatus.SUCCESS},
+            RunStepOptions(fail_fast=False, skip_steps=["step2"]),
+        ),
+        (
+            "step is skipped if the dependency fails",
+            [
+                StepToRun(id="step1", step=TestStep(test_context)),
+                StepToRun(id="step2", step=TestStep(test_context), args={"result_status": StepStatus.FAILURE}),
+                StepToRun(id="step3", step=TestStep(test_context)),
+                StepToRun(id="step4", step=TestStep(test_context), depends_on=["step2"]),
+            ],
+            {"step1": StepStatus.SUCCESS, "step2": StepStatus.FAILURE, "step3": StepStatus.SUCCESS, "step4": StepStatus.SKIPPED},
+            RunStepOptions(fail_fast=False),
+        ),
     ],
 )
 async def test_run_steps_output(desc, steps, expected_results, options):

@@ -148,7 +148,6 @@ def _log_step_tree(step_tree: STEP_TREE, options: RunStepOptions, depth: int = 0
     indent = "    "
     for steps in step_tree:
         if isinstance(steps, list):
-            main_logger.info(f"{indent * depth}- {steps[0].id} (parallel)")
             _log_step_tree(steps, options, depth + 1)
         else:
             if steps.id in options.skip_steps:
@@ -203,8 +202,7 @@ async def run_steps(
     # Log the step tree
     if options.log_step_tree:
         main_logger.info(f"STEP TREE: {runnables}")
-        # TODO ben reenable
-        # _log_step_tree(runnables, options)
+        _log_step_tree(runnables, options)
         options.log_step_tree = False
 
     # If any of the previous steps failed, skip the remaining steps
