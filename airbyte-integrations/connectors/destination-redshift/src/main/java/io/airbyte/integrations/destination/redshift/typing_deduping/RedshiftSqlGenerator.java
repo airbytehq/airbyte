@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jooq.CommonTableExpression;
@@ -122,14 +121,6 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   protected DSLContext getDslContext() {
     return DSL.using(getDialect());
-  }
-
-  @Override
-  protected DataType<?> toDialectType(final AirbyteProtocolType airbyteProtocolType) {
-    if (airbyteProtocolType == AirbyteProtocolType.STRING) {
-      return new DefaultDataType<>(null, String.class, "varchar");
-    }
-    return super.toDialectType(airbyteProtocolType);
   }
 
   /**
