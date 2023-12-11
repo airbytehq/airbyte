@@ -222,10 +222,12 @@ public class MongoUtil {
     final boolean isCatalogSchemaEnforcing = !catalog.getStreams().stream()
         .allMatch(stream -> verifySchemaless(stream.getStream().getJsonSchema()));
 
+    final String remedy = isConfigSchemaEnforced == isCatalogSchemaEnforcing
+        ? "Please reset your data."
+        : "Please refresh source schema and reset streams.";
     if (Stream.of(isConfigSchemaEnforced, isStateSchemaEnforced, isCatalogSchemaEnforcing).distinct().count() > 1) {
-      throw new ConfigErrorException("Mismatch between schema enforcing mode in sync configuration (%b), catalog (%b) and saved state (%b). "
-          .formatted(isConfigSchemaEnforced, isCatalogSchemaEnforcing, isStateSchemaEnforced)
-          + "Please refresh source schema and reset streams.");
+      throw new ConfigErrorException("Mismatch between schema enforcing mode in sync configuration (%b), catalog (%b) and saved state (%b). %s"
+          .formatted(isConfigSchemaEnforced, isCatalogSchemaEnforcing, isStateSchemaEnforced, remedy));
     }
   }
 

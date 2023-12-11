@@ -138,7 +138,7 @@ public class MongoDbCdcEventUtils {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
     formatDocumentNoSchema(document, objectNode);
-    return normalizeObjectId(objectNode);
+    return normalizeObjectIdNoSchema(objectNode);
   }
 
   public static JsonNode toJsonNode(final Document document, final Set<String> columnNames) {

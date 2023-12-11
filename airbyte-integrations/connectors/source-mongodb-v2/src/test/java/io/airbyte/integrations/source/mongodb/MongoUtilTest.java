@@ -216,6 +216,56 @@ public class MongoUtilTest {
   }
 
   @Test
+  void testonlyStateMismatchError() throws IOException {
+    final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
+    final MongoCursor<Document> cursor = mock(MongoCursor.class);
+    final String databaseName = "database";
+    final Document authorizedCollectionsResponse = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoCollection mongoCollection = mock(MongoCollection.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final List<Map<String, Object>> schemaDiscoveryJsonResponses =
+        Jsons.deserialize(MoreResources.readResource("schema_discovery_response_different_datatypes.json"), new TypeReference<>() {});
+    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(Document::new).toList();
+
+    when(cursor.hasNext()).thenReturn(true, true, false);
+    when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
+    when(aggregateIterable.cursor()).thenReturn(cursor);
+    when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
+    when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
+    when(mongoDatabase.runCommand(any())).thenReturn(authorizedCollectionsResponse);
+    when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
+    when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
+
+    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true);
+    assertNotNull(streams);
+    assertEquals(1, streams.size());
+    assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
+    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
+        streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get("total").get(JSON_TYPE_PROPERTY_NAME).asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
+        streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get(CDC_UPDATED_AT).get(JSON_TYPE_PROPERTY_NAME).asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
+        streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get(CDC_DELETED_AT).get(JSON_TYPE_PROPERTY_NAME).asText());
+    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
+        streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get(MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR)
+            .get(JSON_TYPE_PROPERTY_NAME).asText());
+
+    // Test the schema mismatch logic
+    final List<ConfiguredAirbyteStream> configuredAirbyteStreams =
+        streams.stream()
+            .map(stream -> new ConfiguredAirbyteStream().withStream(stream))
+            .collect(Collectors.toList());
+    final ConfiguredAirbyteCatalog schemaEnforcedCatalog =
+        new ConfiguredAirbyteCatalog().withStreams(configuredAirbyteStreams);
+    Throwable throwable = catchThrowable(() -> checkSchemaModeMismatch(true, false, schemaEnforcedCatalog));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+        .hasMessageContaining(formatMismatchException(true, true, false));
+    throwable = catchThrowable(() -> checkSchemaModeMismatch(true, true, schemaEnforcedCatalog));
+    assertThat(throwable).isNull();
+  }
+
+  @Test
   void testGetAuthorizedCollections() {
     final String databaseName = "test-database";
     final String collectionName = "test-collection";
@@ -376,9 +426,12 @@ public class MongoUtilTest {
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
                                                 final boolean isCatalogSchemaEnforcing,
                                                 final boolean isStateSchemaEnforced) {
+    final String remedy = isConfigSchemaEnforced == isCatalogSchemaEnforcing
+        ? "Please reset your data."
+        : "Please refresh source schema and reset streams.";
     return "Mismatch between schema enforcing mode in sync configuration (%b), catalog (%b) and saved state (%b). "
         .formatted(isConfigSchemaEnforced, isCatalogSchemaEnforcing, isStateSchemaEnforced)
-        + "Please refresh source schema and reset streams.";
+        + remedy;
   }
 
 }
