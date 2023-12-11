@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from typing import Any, Mapping, Type
 
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
