@@ -21,6 +21,7 @@ from source_stripe.availability_strategy import StripeAvailabilityStrategy, Stri
 
 STRIPE_API_VERSION = "2022-11-15"
 CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
+IS_TESTING = os.environ.get("IS_TESTING")
 USE_CACHE = not CACHE_DISABLED
 
 
@@ -196,6 +197,12 @@ class StripeStream(HttpStream, ABC):
         if self.account_id:
             headers["Stripe-Account"] = self.account_id
         return headers
+
+    def retry_factor(self) -> float:
+        """
+        Override for testing purposes
+        """
+        return 0.001 if IS_TESTING else super().retry_factor()
 
 
 class IStreamSelector(ABC):

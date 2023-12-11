@@ -510,7 +510,8 @@ class SourceStripe(AbstractSource):
         streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
         return [
-            StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, self._create_empty_state(), NoopCursor())
+            # Should hopefully align with https://github.com/airbytehq/airbyte/pull/32908
+            StreamFacade.create_from_stream(stream, self, entrypoint_logger, self._create_empty_state(), NoopCursor())
             if stream.name in self._streams_configured_as_full_refresh
             else stream
             for stream in streams
