@@ -161,4 +161,3 @@ debezium-bundle = ["debezium-api", "debezium-embedded", "debezium-sqlserver", "d
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
