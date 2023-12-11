@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -77,18 +78,12 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
 
   @Override
   public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
-    final boolean rawTableExists = database.queryInt(
-        """
-        SELECT count(1)
-        FROM information_schema.tables
-        WHERE table_catalog = ?
-          AND table_schema = ?
-          AND table_name = ?
-        """,
-        databaseName.toUpperCase(),
+    final ResultSet tables = database.getMetaData().getTables(
+        databaseName,
         id.rawNamespace(),
-        id.rawName()) == 1;
-    if (!rawTableExists) {
+        id.rawName(),
+        null);
+    if (!tables.next()) {
       return Optional.empty();
     }
     // Snowflake timestamps have nanosecond precision, so decrement by 1ns
@@ -131,7 +126,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
       return;
     }
     final UUID queryId = UUID.randomUUID();
-    LOGGER.info("Executing sql {}: {}", queryId, sql);
+    LOGGER.debug("Executing sql {}: {}", queryId, sql);
     final long startTime = System.currentTimeMillis();
 
     try {
@@ -150,7 +145,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
       throw new RuntimeException(trimmedMessage, e);
     }
 
-    LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
+    LOGGER.debug("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
   }
 
   /**

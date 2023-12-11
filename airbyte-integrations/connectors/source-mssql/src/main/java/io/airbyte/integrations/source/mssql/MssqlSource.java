@@ -27,6 +27,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
@@ -41,6 +42,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -86,6 +88,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private static final String HIERARCHYID = "hierarchyid";
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
+  public static final String TUNNEL_METHOD = "tunnel_method";
+  public static final String NO_TUNNEL = "NO_TUNNEL";
+  public static final String SSL_METHOD = "ssl_method";
+  public static final String SSL_METHOD_UNENCRYPTED = "unencrypted";
   private List<String> schemas;
 
   public static Source sshWrappedSource(MssqlSource source) {
@@ -94,6 +100,29 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   public MssqlSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
+    // and not over SSH tunnel
+    if (cloudDeploymentMode()) {
+      if (config.has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
+        // If no SSH tunnel.
+        if (config.has(SSL_METHOD) && config.get(SSL_METHOD).has(SSL_METHOD) &&
+            SSL_METHOD_UNENCRYPTED.equalsIgnoreCase(config.get(SSL_METHOD).get(SSL_METHOD).asText())) {
+          // Fail in case SSL method is unencrypted.
+          return new AirbyteConnectionStatus()
+              .withStatus(AirbyteConnectionStatus.Status.FAILED)
+              .withMessage("Unsecured connection not allowed. " +
+                  "If no SSH Tunnel set up, please use one of the following SSL methods: " +
+                  "encrypted_trust_server_certificate, encrypted_verify_certificate.");
+        }
+      }
+    }
+    return super.check(config);
   }
 
   @Override
@@ -567,6 +596,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         }
       }
     }
+  }
+
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
 
   public static void main(final String[] args) throws Exception {
