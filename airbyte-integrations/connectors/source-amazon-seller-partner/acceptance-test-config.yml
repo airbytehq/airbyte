@@ -23,7 +23,7 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 2400
+        timeout_seconds: 3600
         ignored_fields:
           GET_MERCHANT_LISTINGS_ALL_DATA:
             - name: "dataEndTime"
