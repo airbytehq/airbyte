@@ -113,10 +113,6 @@ class StreamFieldBreakingChangeScope(BaseModel):
     )
 
 
-class FieldBreakingChangeScope(BaseModel):
-    __root__: Any
-
-
 class AirbyteInternal(BaseModel):
     class Config:
         extra = Extra.allow
@@ -144,7 +140,7 @@ class JobTypeResourceLimit(BaseModel):
 
 
 class BreakingChangeScope(BaseModel):
-    __root__: Union[StreamBreakingChangeScope, FieldBreakingChangeScope] = Field(
+    __root__: Union[StreamBreakingChangeScope, StreamFieldBreakingChangeScope] = Field(
         ...,
         description="A scope that can be used to limit the impact of a breaking change.",
     )
@@ -177,7 +173,7 @@ class VersionBreakingChange(BaseModel):
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
     )
     scopedImpact: Optional[List[BreakingChangeScope]] = Field(
-        None,
+        [],
         description="List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.",
         min_items=1,
     )

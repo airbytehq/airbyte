@@ -1,4 +1,3 @@
----
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/ConnectorReleases.yaml
 title: ConnectorReleases
@@ -45,6 +44,7 @@ definitions:
       scopedImpact:
         description: List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.
         type: array
+        default: []
         minItems: 1
         items:
           $ref: "#/definitions/BreakingChangeScope"
@@ -53,7 +53,7 @@ definitions:
     type: object
     oneOf:
       - $ref: "#/definitions/StreamBreakingChangeScope"
-      - $ref: "#/definitions/FieldBreakingChangeScope"
+      - $ref: "#/definitions/StreamFieldBreakingChangeScope"
   StreamBreakingChangeScope:
     description: A scope that can be used to limit the impact of a breaking change to specific streams.
     type: object
