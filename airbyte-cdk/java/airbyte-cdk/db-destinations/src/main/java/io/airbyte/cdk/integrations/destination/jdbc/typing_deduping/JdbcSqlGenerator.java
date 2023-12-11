@@ -63,7 +63,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   protected DataType<?> toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
       case STRING -> SQLDataType.VARCHAR;
-      case NUMBER -> SQLDataType.FLOAT;
+      case NUMBER -> SQLDataType.NUMERIC;
       case INTEGER -> SQLDataType.BIGINT;
       case BOOLEAN -> SQLDataType.BOOLEAN;
       case TIMESTAMP_WITH_TIMEZONE -> SQLDataType.TIMESTAMPWITHTIMEZONE;
