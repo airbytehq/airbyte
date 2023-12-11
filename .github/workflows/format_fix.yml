@@ -23,6 +23,7 @@ jobs:
 
       - name: Run airbyte-ci format fix all
         uses: ./.github/actions/run-dagger-pipeline
+        continue-on-error: true
         with:
           context: "manual"
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -42,6 +43,6 @@ jobs:
         # Don't commit if we're on master
         if: github.ref != 'refs/heads/master'
         with:
-          commit_message: Automated Commit - Formatting Changes
+          commit_message: "chore: format code"
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
