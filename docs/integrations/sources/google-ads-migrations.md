@@ -2,7 +2,7 @@
 
 ## Upgrading to 3.0.0
 
-This release upgrades the Google Ads API to version 15 which causes the following changes in the schemas:
+This release upgrades the Google Ads API from Version 13 to Version 15 which causes the following changes in the schemas:
 
 | Stream                     | Current field name                                                         | New field name                                                           |
 |----------------------------|----------------------------------------------------------------------------|--------------------------------------------------------------------------|
@@ -17,7 +17,7 @@ This release upgrades the Google Ads API to version 15 which causes the followin
 
 Users should:
 - Refresh the source schema
-- And reset affected streams after upgrading to ensure uninterrupted syncs.
+- Reset affected streams after upgrading to ensure uninterrupted syncs.
 
 ## Upgrading to 2.0.0
 
