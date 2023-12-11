@@ -10,7 +10,9 @@ class StateBuilder:
             "type": "STREAM",
             "stream": {
                 "stream_state": state,
-                "stream_descriptor": { "name": stream_name }
+                "stream_descriptor": {
+                    "name": stream_name
+                }
             }
         })
         return self
