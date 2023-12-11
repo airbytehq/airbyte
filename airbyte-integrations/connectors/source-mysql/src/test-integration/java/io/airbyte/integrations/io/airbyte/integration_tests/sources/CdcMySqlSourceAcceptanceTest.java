@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
@@ -131,7 +132,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
-    final JsonNode latestState = Jsons.jsonNode(stateMessages);
+    final JsonNode latestState = Jsons.jsonNode(List.of(Iterables.getLast(stateMessages)));
     // RESET MASTER removes all binary log files that are listed in the index file,
     // leaving only a single, empty binary log file with a numeric suffix of .000001
     testdb.with("RESET MASTER;");
