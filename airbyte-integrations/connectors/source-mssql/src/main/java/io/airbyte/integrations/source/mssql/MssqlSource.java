@@ -83,6 +83,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
+  public static final String IS_COMPRESSED = "is_compressed";
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_EVENT_SERIAL_NO = "_ab_cdc_event_serial_no";
   private static final String HIERARCHYID = "hierarchyid";
