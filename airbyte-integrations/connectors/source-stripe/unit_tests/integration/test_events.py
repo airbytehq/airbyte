@@ -12,7 +12,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read, EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
-from airbyte_cdk.test.mock_http.response_builder import create_builders_from_resource, find_template, FieldPath, HttpResponseBuilder, RecordBuilder
+from airbyte_cdk.test.mock_http.response_builder import create_record_builder, create_response_builder, find_template, FieldPath, HttpResponseBuilder, RecordBuilder
 from airbyte_protocol.models import SyncMode, ConfiguredAirbyteCatalog, AirbyteStreamStatus
 from source_stripe import SourceStripe
 from integration.config import ConfigBuilder
@@ -36,6 +36,7 @@ _AVOIDING_INCLUSIVE_BOUNDARIES = 1
 _SECOND_REQUEST = 1
 _THIRD_REQUEST = 2
 
+
 def _config() -> ConfigBuilder:
     return ConfigBuilder().with_account_id(_ACCOUNT_ID).with_client_secret(_CLIENT_SECRET)
 
@@ -48,22 +49,17 @@ def _source(catalog: ConfiguredAirbyteCatalog) -> SourceStripe:
     return SourceStripe(catalog)
 
 
-def _create_builders() -> Tuple[RecordBuilder, HttpResponseBuilder]:
-    return create_builders_from_resource(
+def _a_record() -> RecordBuilder:
+    return create_record_builder(
         find_template("events", __file__),
         FieldPath("data"),
         record_id_path=FieldPath("id"),
         record_cursor_path=FieldPath("created"),
-        pagination_strategy=StripePaginationStrategy(),
     )
 
 
-def _a_record() -> RecordBuilder:
-    return _create_builders()[0]
-
-
 def _a_response() -> HttpResponseBuilder:
-    return _create_builders()[1]
+    return create_response_builder(find_template("events", __file__), FieldPath("data"), pagination_strategy=StripePaginationStrategy())
 
 
 def _read(
