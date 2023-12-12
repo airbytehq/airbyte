@@ -65,7 +65,7 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
-        "airbyte-protocol-models==0.4.2",
+        "airbyte-protocol-models==0.5.1",
         "backoff",
         "dpath~=2.0.1",
         "isodate~=0.6.1",
