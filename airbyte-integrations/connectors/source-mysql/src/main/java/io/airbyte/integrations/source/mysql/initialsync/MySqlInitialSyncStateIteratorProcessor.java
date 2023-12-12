@@ -16,7 +16,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlInitialSyncStateIteratorProcessor implements SourceStateIteratorProcessor {
+public class MySqlInitialSyncStateIteratorProcessor implements SourceStateIteratorProcessor<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialSyncStateIteratorProcessor.class);
 
@@ -49,7 +49,7 @@ public class MySqlInitialSyncStateIteratorProcessor implements SourceStateIterat
   }
 
   @Override
-  public void processRecordMessage(final AirbyteMessage message) {
+  public AirbyteMessage processRecordMessage(final AirbyteMessage message) {
     if (Objects.nonNull(message)) {
       final String lastPk = message.getRecord().getData().get(pkFieldName).asText();
       pkStatus = new PrimaryKeyLoadStatus()
@@ -60,6 +60,7 @@ public class MySqlInitialSyncStateIteratorProcessor implements SourceStateIterat
           .withIncrementalState(streamStateForIncrementalRun);
       stateManager.updatePrimaryKeyLoadState(pair, pkStatus);
     }
+    return message;
   }
 
   @Override
