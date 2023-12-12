@@ -4,7 +4,6 @@
 
 import logging
 from datetime import datetime
-from copy import deepcopy
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests

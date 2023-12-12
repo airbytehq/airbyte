@@ -718,11 +718,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
             where_conditions.append(f"{self.cursor_field} < {end_date}")
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
-
         query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
-
-        print(f"++++++{self.name} query IncrementalRestSalesforceStream +++++++++++++++++++++++++++++++++++++")
-        print(query)
 
         return {"q": query}
 
@@ -760,7 +756,6 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
-
         return {"q": query}
 
 

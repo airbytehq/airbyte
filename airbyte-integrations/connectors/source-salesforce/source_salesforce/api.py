@@ -297,7 +297,6 @@ class Salesforce:
             }
 
         stream_names = list(stream_objects.keys())
-
         if config.get("streams_criteria"):
             filtered_stream_list = []
             for stream_criteria in config["streams_criteria"]:
@@ -307,7 +306,6 @@ class Salesforce:
             stream_names = list(set(filtered_stream_list))
 
         validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
-
         return {stream_name: sobject_options for stream_name, sobject_options in stream_objects.items() if stream_name in validated_streams}
 
     @default_backoff_handler(max_tries=5, factor=5)
