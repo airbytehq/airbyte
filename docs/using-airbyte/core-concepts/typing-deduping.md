@@ -34,7 +34,7 @@ SELECT COUNT(*) FROM _table_ WHERE json_array_length(_airbyte_meta ->> errors) =
 The types of errors which will be stored in `_airbyte_meta.errors` include:
 
 - **Typing errors**: the source declared that the type of the column `id` should be an integer, but a string value was returned.
-- **Size errors**: the source returned content which cannot be stored within this this row or column (e.g. [a Redshift Super column has a 16mb limit](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html)).
+- **Size errors (coming soon)**: the source returned content which cannot be stored within this this row or column (e.g. [a Redshift Super column has a 16mb limit](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html)). Destinations V2 will allow us to trim records which cannot fit into destinations, but retain the primary key(s) and cursors and include "too big" error messages.
 
 Depending on your use-case, it may still be valuable to consider rows with errors, especially for aggregations. For example, you may have a table `user_reviews`, and you would like to know the count of new reviews received today. You can choose to include reviews regardless of whether your data warehouse had difficulty storing the full contents of the `message` column. For this use case, `SELECT COUNT(*) from user_reviews WHERE DATE(created_at) = DATE(NOW())` is still valid.
 
@@ -60,8 +60,8 @@ The data from one stream will now be mapped to one table in your schema as below
 
 | _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_extracted_at | \_airbyte_meta                                               | id  | first_name | age  | address                                 |
 | -------------------------------------------- | ---------------- | ---------------------- | ------------------------------------------------------------ | --- | ---------- | ---- | --------------------------------------- |
-| Successful typing and de-duping ⟶            | xxx-xxx-xxx      | 2022-01-01 12:00:00    | {}                                                           | 1   | sarah      | 39   | { city: “San Francisco”, zip: “94131” } |
-| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | 2022-01-01 12:00:00    | { errors: {[“fish” is not a valid integer for column “age”]} | 2   | evan       | NULL | { city: “Menlo Park”, zip: “94002” }    |
+| Successful typing and de-duping ⟶            | xxx-xxx-xxx      | 2022-01-01 12:00:00    | `{}`                                                           | 1   | sarah      | 39   | `{ city: “San Francisco”, zip: “94131” }` |
+| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | 2022-01-01 12:00:00    | `{ errors: {[“fish” is not a valid integer for column “age”]}` | 2   | evan       | NULL | `{ city: “Menlo Park”, zip: “94002” }`    |
 | Not-yet-typed ⟶                              |                  |                        |                                                              |     |            |      |                                         |
 
 In legacy normalization, columns of [Airbyte type](/understanding-airbyte/supported-data-types/#the-types) `Object` in the Destination were "unnested" into separate tables. In this example, with Destinations V2, the previously unnested `public.users_address` table with columns `city` and `zip` will no longer be generated.
@@ -70,9 +70,9 @@ In legacy normalization, columns of [Airbyte type](/understanding-airbyte/suppor
 
 | _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_data﻿                                                                           | \_airbyte_loaded_at  | \_airbyte_extracted_at |
 | -------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------- | -------------------- | ---------------------- |
-| Successful typing and de-duping ⟶            | xxx-xxx-xxx      | { id: 1, first_name: “sarah”, age: 39, address: { city: “San Francisco”, zip: “94131” } } | 2022-01-01 12:00:001 | 2022-01-01 12:00:00﻿   |
-| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | { id: 2, first_name: “evan”, age: “fish”, address: { city: “Menlo Park”, zip: “94002” } } | 2022-01-01 12:00:001 | 2022-01-01 12:00:00﻿   |
-| Not-yet-typed ⟶                              | zzz-zzz-zzz      | { id: 3, first_name: “edward”, age: 35, address: { city: “Sunnyvale”, zip: “94003” } }    | NULL                 | 2022-01-01 13:00:00﻿   |
+| Successful typing and de-duping ⟶            | xxx-xxx-xxx      | `{ id: 1, first_name: “sarah”, age: 39, address: { city: “San Francisco”, zip: “94131” } }` | 2022-01-01 12:00:001 | 2022-01-01 12:00:00﻿   |
+| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | `{ id: 2, first_name: “evan”, age: “fish”, address: { city: “Menlo Park”, zip: “94002” } }` | 2022-01-01 12:00:001 | 2022-01-01 12:00:00﻿   |
+| Not-yet-typed ⟶                              | zzz-zzz-zzz      | `{ id: 3, first_name: “edward”, age: 35, address: { city: “Sunnyvale”, zip: “94003” } }`    | NULL                 | 2022-01-01 13:00:00﻿   |
 
 You also now see the following changes in Airbyte-provided columns:
 

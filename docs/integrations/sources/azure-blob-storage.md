@@ -126,8 +126,8 @@ Or any other reason! The schema must be provided as valid JSON as a map of `{"co
 
 For example:
 
-- {"id": "integer", "location": "string", "longitude": "number", "latitude": "number"}
-- {"username": "string", "friends": "array", "information": "object"}
+- `{"id": "integer", "location": "string", "longitude": "number", "latitude": "number"}`
+- `{"username": "string", "friends": "array", "information": "object"}`
 
 ## File Format Settings
 
@@ -191,11 +191,12 @@ To perform the text extraction from PDF and Docx files, the connector uses the [
 
 ## Changelog
 
-| Version | Date       | Pull Request                                    | Subject                                                                 |
-|:--------|:-----------|:------------------------------------------------|:------------------------------------------------------------------------|
-| 0.2.4 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser |
-| 0.2.3 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
-| 0.2.2 | 2023-10-30 | [31904](https://github.com/airbytehq/airbyte/pull/31904) | Update CDK to support document file types |
-| 0.2.1 | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.0   | 2023-10-10 | https://github.com/airbytehq/airbyte/pull/31336 | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files   |
-| 0.1.0   | 2023-02-17 | https://github.com/airbytehq/airbyte/pull/23222 | Initial release with full-refresh and incremental sync with JSONL files |
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 0.2.5   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key                             |
+| 0.2.4   | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser                                               |
+| 0.2.3   | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                             |
+| 0.2.2   | 2023-10-30 | [31904](https://github.com/airbytehq/airbyte/pull/31904) | Update CDK to support document file types                                       |
+| 0.2.1   | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.0   | 2023-10-10 | https://github.com/airbytehq/airbyte/pull/31336          | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files           |
+| 0.1.0   | 2023-02-17 | https://github.com/airbytehq/airbyte/pull/23222          | Initial release with full-refresh and incremental sync with JSONL files         |
