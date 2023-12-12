@@ -69,65 +69,6 @@ UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
 class SourceFacebookMarketing(AbstractSource):
-    def _read_incremental(
-            self,
-            logger: logging.Logger,
-            stream_instance: Stream,
-            configured_stream: ConfiguredAirbyteStream,
-            state_manager: ConnectorStateManager,
-            internal_config: InternalConfig,
-    ) -> Iterator[AirbyteMessage]:
-        """Read stream using incremental algorithm
-
-        :param logger:
-        :param stream_instance:
-        :param configured_stream:
-        :param state_manager:
-        :param internal_config:
-        :return:
-        """
-        stream_name = configured_stream.stream.name
-        stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
-
-        if stream_state and "state" in dir(stream_instance):
-            stream_instance.state = stream_state
-            logger.info(f"Setting state of {stream_name} stream to {stream_state}")
-
-        slices = stream_instance.stream_slices(
-            cursor_field=configured_stream.cursor_field,
-            sync_mode=SyncMode.incremental,
-            stream_state=stream_state,
-        )
-        logger.debug(f"Processing stream slices for {stream_name} (sync_mode: incremental)", extra={"stream_slices": slices})
-
-        total_records_counter = 0
-        has_slices = False
-        for _slice in slices:
-            has_slices = True
-            if logger.isEnabledFor(logging.DEBUG):
-                yield AirbyteMessage(
-                    type=MessageType.LOG,
-                    log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(_slice, default=str)}"),
-                )
-            records = stream_instance.read_records(
-                sync_mode=SyncMode.incremental,
-                stream_slice=_slice,
-                stream_state=stream_state,
-                cursor_field=configured_stream.cursor_field or None,
-            )
-            record_counter = 0
-            for message_counter, record_data_or_message in enumerate(records, start=1):
-                message = self._get_message(record_data_or_message, stream_instance)
-                yield message
-                if message.type == MessageType.RECORD:
-                    record = message.record
-                    account_id = stream_instance._api.account._data["id"]
-                    stream_state = stream_instance.get_updated_state(stream_state, record.data, account_id=account_id)
-                    checkpoint_interval = stream_instance.state_checkpoint_interval
-                    record_counter += 1
-                    if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                        yield self._checkpoint_state(stream_instance, stream_state, state_manager)
-
     # Skip exceptions on missing streams
     raise_exception_on_missing_stream = False
 

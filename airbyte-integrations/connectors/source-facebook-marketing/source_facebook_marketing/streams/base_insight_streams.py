@@ -121,56 +121,26 @@ class AdsInsights(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
-        # time_start: datetime = datetime.datetime.now()
         job = stream_slice["insight_job"]
-        # docs = []
+        account_id = job._edge_object.get("account_id")
         try:
             for obj in job.get_result():
-                # docs.append(obj.export_all_data())
-                yield obj.export_all_data()
+                data = obj.export_all_data()
+                if self._response_data_is_valid(data):
+                    yield data
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
-                        f"Please try again later",
+                f"Please try again later",
                 failure_type=FailureType.system_error,
             ) from e
+        except FacebookRequestError as exc:
+            raise traced_exception(exc)
 
-        # job = InsightAsyncJob(api=job._api, interval=job.interval, edge_object=job.edge_object, params=job._params)
-        # job = ParentAsyncJob(jobs=[], api=job._api, interval=job.interval)
-        # time_end: datetime = datetime.datetime.now()
-        # time = time_end - time_start
-        # with open("test_results_dev_version.txt", "a") as file:
-        #     file.write("{} documents were exported for account id {} and date {}. The sync took {} \n".format(
-        #         len(docs),
-        #         job._edge_object.get("account_id"),
-        #         job.interval.start,
-        #         time))
-        if type(job) != ParentAsyncJob:
-            account_id = job._edge_object.get("account_id")
-
-            self._completed_slices[account_id] = self._completed_slices.get(account_id, set())
-            self._completed_slices[account_id].add(job.interval.start)
-            if job.interval.start == self._next_cursor_value.get(account_id, self._next_cursor_value.get(None)):
-                self._advance_cursor(account_id)
-
-        elif len(job._jobs) > 0:
-            # TODO: At this point we would sometimes get ParentAsyncJob. Should not happen. To debug.
-            # In the meantime we get the account ID of the 1st job
-            self.logger.error("This job {} has no edge_object. It is of type {}".format(str(job), str(type(job))))
-            if type(job) == ParentAsyncJob:
-                self.logger.error("This group of jobs has the following jobs : ")
-                for j in job._jobs:
-                    self.logger.error(str(j))
-            self.logger.error("We will select the account ID of the first job of the list of jobs")
-            account_id = job._jobs[0]._edge_object.get("account_id")
-
-            self._completed_slices[account_id] = self._completed_slices.get(account_id, set())
-            self._completed_slices[account_id].add(job.interval.start)
-            if job.interval.start == self._next_cursor_value.get(account_id, self._next_cursor_value.get(None)):
-                self._advance_cursor(account_id)
-
-        elif len(job._jobs) == 0:
-            self.logger.error("This group of jobs {} is over. Continue...".format(str(job), str(type(job))))
+        self._completed_slices[account_id] = self._completed_slices.get(account_id, set())
+        self._completed_slices[account_id].add(job.interval.start)
+        if job.interval.start == self._next_cursor_value.get(account_id, self._next_cursor_value.get(None)):
+            self._advance_cursor(account_id)
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -270,6 +240,12 @@ class AdsInsights(FBMarketingIncrementalStream):
             "fields": ["account_id"],
         }
         self._api.account.get_insights(params=params, is_async=False)
+
+    def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
+        """
+        Ensure data contains all the fields specified in self.breakdowns
+        """
+        return all([breakdown in data for breakdown in self.breakdowns])
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
