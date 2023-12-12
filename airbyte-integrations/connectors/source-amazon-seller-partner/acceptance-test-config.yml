@@ -1,4 +1,5 @@
 connector_image: airbyte/source-amazon-seller-partner:dev
+test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
