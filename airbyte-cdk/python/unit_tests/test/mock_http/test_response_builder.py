@@ -40,6 +40,10 @@ def _record_builder(
     return create_builders_from_resource(deepcopy(response_template), records_path, record_id_path, record_cursor_path)[0]
 
 
+def _any_record_builder() -> RecordBuilder:
+    return create_builders_from_resource({"record_path": [{"a_record": "record value"}]}, FieldPath("record_path"))[0]
+
+
 def _response_builder(
     response_template: Dict[str, Any],
     records_path: Union[FieldPath, NestedPath],
@@ -89,6 +93,16 @@ class RecordBuilderTest(TestCase):
         )
         record = builder.with_cursor("another cursor").build()
         assert record["nested"][_CURSOR_FIELD] == "another cursor"
+
+    def test_given_with_field_when_build_then_write_field(self) -> None:
+        builder = _any_record_builder()
+        record = builder.with_field(FieldPath("to_write_field"), "a field value").build()
+        assert record["to_write_field"] == "a field value"
+
+    def test_given_nested_cursor_when_build_then_write_field(self) -> None:
+        builder = _any_record_builder()
+        record = builder.with_field(NestedPath(["path", "to_write_field"]), "a field value").build()
+        assert record["path"]["to_write_field"] == "a field value"
 
     def test_given_cursor_path_not_provided_but_with_id_when_build_then_raise_error(self) -> None:
         builder = _record_builder(_A_RESPONSE_TEMPLATE, FieldPath(_RECORDS_FIELD))

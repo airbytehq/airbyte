@@ -129,7 +129,7 @@ def read(
             "--catalog",
             make_file(tmp_directory_path / "catalog.json", catalog.json()),
         ]
-        if state:
+        if state is not None:
             args.extend(
                 [
                     "--state",
