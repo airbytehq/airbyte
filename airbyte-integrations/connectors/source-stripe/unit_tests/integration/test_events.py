@@ -33,7 +33,8 @@ _HTTP_RESPONSE_STATUS_500 = HttpResponse(
     500
 )
 _AVOIDING_INCLUSIVE_BOUNDARIES = 1
-
+_SECOND_REQUEST = 1
+_THIRD_REQUEST = 2
 
 def _config() -> ConfigBuilder:
     return ConfigBuilder().with_account_id(_ACCOUNT_ID).with_client_secret(_CLIENT_SECRET)
@@ -118,17 +119,49 @@ class FullRefreshTest(TestCase):
         assert len(output.records) == 3
 
     @HttpMocker()
-    def test_given_start_date_before_30_days_stripe_limit_when_read_then_request_more_than_30_days(self, http_mocker: HttpMocker) -> None:
-        start_date = _NOW - timedelta(days=60)
-        http_mocker.get(
+    def test_given_start_date_before_30_days_stripe_limit_and_slice_range_when_read_then_perform_request_before_30_days(self, http_mocker: HttpMocker) -> None:
+        start_date = _NOW - timedelta(days=61)
+        slice_range = timedelta(days=30)
+        slice_datetime = start_date + slice_range
+        http_mocker.get(  # this first request has both gte and lte before 30 days even though we know there should not be records returned
             HttpRequest(
                 url="https://api.stripe.com/v1/events",
-                query_params={"created[gte]": str(int(start_date.timestamp())), "created[lte]": str(int(_NOW.timestamp())), "limit": 100},
+                query_params={
+                    "created[gte]": str(int(start_date.timestamp())),
+                    "created[lte]": str(int(slice_datetime.timestamp())),
+                    "limit": 100
+                },
                 headers=_AUTHENTICATION_HEADERS,
             ),
             _a_response().build()
         )
-        self._read(_config().with_start_date(start_date))
+        http_mocker.get(
+            HttpRequest(
+                url="https://api.stripe.com/v1/events",
+                query_params={
+                    "created[gte]": str(int(slice_datetime.timestamp()) + _SECOND_REQUEST),
+                    "created[lte]": str(int((slice_datetime + slice_range).timestamp() + _SECOND_REQUEST)),
+                    "limit": 100
+                },
+                headers=_AUTHENTICATION_HEADERS,
+            ),
+            _a_response().build()
+        )
+        http_mocker.get(
+            HttpRequest(
+                url="https://api.stripe.com/v1/events",
+                query_params={
+                    "created[gte]": str(int((slice_datetime + slice_range).timestamp() + _THIRD_REQUEST)),
+                    "created[lte]": str(int(_NOW.timestamp())),
+                    "limit": 100
+                },
+                headers=_AUTHENTICATION_HEADERS,
+            ),
+            _a_response().build()
+        )
+
+        self._read(_config().with_start_date(start_date).with_slice_range_in_days(slice_range.days))
+
         # request matched http_mocker
 
     @HttpMocker()
@@ -156,7 +189,11 @@ class FullRefreshTest(TestCase):
         http_mocker.get(
             HttpRequest(
                 url="https://api.stripe.com/v1/events",
-                query_params={"created[gte]": str(int(start_date.timestamp())), "created[lte]": str(int(slice_datetime.timestamp())), "limit": 100},
+                query_params={
+                    "created[gte]": str(int(start_date.timestamp())),
+                    "created[lte]": str(int(slice_datetime.timestamp())),
+                    "limit": 100
+                },
                 headers=_AUTHENTICATION_HEADERS,
             ),
             _a_response().build()
@@ -164,7 +201,11 @@ class FullRefreshTest(TestCase):
         http_mocker.get(
             HttpRequest(
                 url="https://api.stripe.com/v1/events",
-                query_params={"created[gte]": str(int(slice_datetime.timestamp()) + 1), "created[lte]": str(int(_NOW.timestamp())), "limit": 100},
+                query_params={
+                    "created[gte]": str(int(slice_datetime.timestamp()) + _SECOND_REQUEST),
+                    "created[lte]": str(int(_NOW.timestamp())),
+                    "limit": 100
+                },
                 headers=_AUTHENTICATION_HEADERS,
             ),
             _a_response().build()
