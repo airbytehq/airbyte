@@ -178,5 +178,6 @@
         "title": "Advanced"
       }
     ]
-  }
+  },
+  "supported_destination_sync_modes": []
 }

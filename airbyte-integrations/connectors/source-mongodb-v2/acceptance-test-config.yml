@@ -9,7 +9,6 @@ acceptance_tests:
               disable_for_version: "0.2.5"
             config_path: "secrets/credentials.json"
             timeout_seconds: 60
-    #bypass_reason: "TEMP TEMP."
   connection:
     tests:
       - config_path: "secrets/credentials.json"
