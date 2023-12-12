@@ -45,8 +45,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
   private static final String CONFIG_FORMAT_KEY = "snowflake_file_format";
 
   // https://docs.snowflake.com/en/sql-reference/sql/copy-into-table#optional-parameters
-  // can be 1000, but making it less so the queries aren't as slow to test out dropping messages.
-  private static final int MAX_BULK_FILES = 500;
+  private static final int MAX_BULK_FILES = 1000;
 
   private final JsonNode config;
   private final Consumer<AirbyteMessage> outputRecordCollector;
@@ -133,7 +132,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
 
   @Override
   public void accept(final AirbyteMessage message) throws Exception {
-    LOGGER.info("AtDest: {}", message);
+    // LOGGER.info("AtDest: {}", message);
     if (message.getType() == Type.STATE) {
       LOGGER.info("Emitting state: {}", message);
       outputRecordCollector.accept(message);
