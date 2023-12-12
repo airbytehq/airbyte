@@ -23,6 +23,7 @@ dbt-duckdb = "^1.7.0"
 dbt = "^1.0.0.34.14"
 # SQLAlchemy = "^2.0.23"
 # duckdb = "^0.9.2"
+dulwich = "^0.21.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
