@@ -19,7 +19,9 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
 import java.util.List;
@@ -78,7 +80,12 @@ public class LegacyExceptionAfterNSource extends BaseConnector implements Source
           hasEmittedStateAtCount.set(true);
           return new AirbyteMessage()
               .withType(Type.STATE)
-              .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))));
+              .withState(new AirbyteStateMessage()
+                  .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                  .withStream(new AirbyteStreamState()
+                      .withStreamDescriptor(new StreamDescriptor().withName(LegacyConstants.DEFAULT_STREAM))
+                      .withStreamState(Jsons.jsonNode(ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))))
+                  .withData(Jsons.jsonNode(ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))));
         } else if (throwAfterNRecords > recordsEmitted.get()) {
           recordsEmitted.incrementAndGet();
           recordValue.incrementAndGet();
