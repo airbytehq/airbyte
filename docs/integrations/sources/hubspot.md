@@ -95,6 +95,10 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 3. Enter a **Source name** of your choosing.
 4. From the **Authentication** dropdown, select your chosen authentication method:
     - **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+    :::tip HubSpot Authentication issues
+    You might encounter errors during the connection process in the popup window, such as `An invalid scope name was provided`.
+    To resolve this, close the window and attempt authentication again.
+    :::
     - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
