@@ -46,7 +46,11 @@ class JiraStream(HttpStream, ABC):
     primary_key: Optional[str] = "id"
     extract_field: Optional[str] = None
     api_v1 = False
-    skip_http_status_codes = []
+    # Defines the HTTP status codes for which the slice should be skipped.
+    # Refernce issue: https://github.com/airbytehq/oncall/issues/2133
+    # we should skip the slice with `board id` which doesn't support `sprints`
+    # it's generally applied to all streams that might have the same error hit in the future.
+    skip_http_status_codes = [requests.codes.BAD_REQUEST]
     raise_on_http_errors = True
     transformer: TypeTransformer = DateTimeTransformer(TransformConfig.DefaultSchemaNormalization)
 
@@ -64,6 +68,10 @@ class JiraStream(HttpStream, ABC):
     @property
     def availability_strategy(self) -> HttpAvailabilityStrategy:
         return JiraAvailabilityStrategy()
+
+    def _get_custom_error(self, response: requests.Response) -> str:
+        """Method for specifying custom error messages for errors that will be skipped."""
+        return ""
 
     @property
     def max_retries(self) -> Union[int, None]:
@@ -121,19 +129,9 @@ class JiraStream(HttpStream, ABC):
         except HTTPError as e:
             if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
                 raise e
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == requests.codes.bad_request:
-            # Refernce issue: https://github.com/airbytehq/oncall/issues/2133
-            # we should skip the slice with `board id` which doesn't support `sprints`
-            # it's generally applied to all streams that might have the same error hit in the future.
-            errors = response.json().get("errorMessages")
-            self.logger.error(f"Stream `{self.name}`. An error occured, details: {errors}. Skipping.")
-            setattr(self, "raise_on_http_errors", False)
-            return False
-        else:
-            # for all other HTTP errors the defaul handling is applied
-            return super().should_retry(response)
+            errors = e.response.json().get("errorMessages")
+            custom_error = self._get_custom_error(e.response)
+            self.logger.warning(f"Stream `{self.name}`. An error occurred, details: {errors}. Skipping for now. {custom_error}")
 
 
 class StartDateJiraStream(JiraStream, ABC):
@@ -373,7 +371,9 @@ class Issues(IncrementalJiraStream):
     use_cache = True
     _expand_fields_list = ["renderedFields", "transitions", "changelog"]
 
-    skip_http_status_codes = [requests.codes.FORBIDDEN]
+    # Issue: https://github.com/airbytehq/airbyte/issues/26712
+    # we should skip the slice with wrong permissions on project level
+    skip_http_status_codes = [requests.codes.FORBIDDEN, requests.codes.BAD_REQUEST]
     state_checkpoint_interval = 50  # default page size is 50
 
     def __init__(self, **kwargs):
@@ -431,20 +431,10 @@ class Issues(IncrementalJiraStream):
         else:
             yield from super().stream_slices(**kwargs)
 
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == requests.codes.bad_request:
-            # Issue: https://github.com/airbytehq/airbyte/issues/26712
-            # we should skip the slice with wrong permissions on project level
-            errors = response.json().get("errorMessages")
-            self.logger.error(
-                f"Stream `{self.name}`. An error occurred, details: {errors}."
-                f"Check permissions for this project. Skipping for now. "
-                f"The user doesn't have permission to the project. Please grant the user to the project."
-            )
-            setattr(self, "raise_on_http_errors", False)
-            return False
-        else:
-            return super().should_retry(response)
+    def _get_custom_error(self, response: requests.Response) -> str:
+        if response.status_code == requests.codes.BAD_REQUEST:
+            return "The user doesn't have permission to the project. Please grant the user to the project."
+        return ""
 
 
 class IssueComments(IncrementalJiraStream):
@@ -520,6 +510,7 @@ class IssueCustomFieldContexts(JiraStream):
         requests.codes.NOT_FOUND,
         # Only Jira administrators can access custom field contexts.
         requests.codes.FORBIDDEN,
+        requests.codes.BAD_REQUEST,
     ]
 
     def __init__(self, **kwargs):
@@ -551,6 +542,7 @@ class IssueCustomFieldOptions(JiraStream):
         requests.codes.NOT_FOUND,
         # Only Jira administrators can access custom field options.
         requests.codes.FORBIDDEN,
+        requests.codes.BAD_REQUEST,
     ]
 
     extract_field = "values"
@@ -628,7 +620,8 @@ class IssuePropertyKeys(JiraStream):
     use_cache = True
     skip_http_status_codes = [
         # Issue does not exist or you do not have permission to see it.
-        requests.codes.NOT_FOUND
+        requests.codes.NOT_FOUND,
+        requests.codes.BAD_REQUEST,
     ]
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -829,7 +822,8 @@ class IssueWatchers(StartDateJiraStream):
     primary_key = None
     skip_http_status_codes = [
         # Issue is not found or the user does not have permission to view it.
-        requests.codes.NOT_FOUND
+        requests.codes.NOT_FOUND,
+        requests.codes.BAD_REQUEST,
     ]
 
     def __init__(self, **kwargs):
@@ -1017,7 +1011,8 @@ class ProjectEmail(JiraStream):
     primary_key = "projectId"
     skip_http_status_codes = [
         # You cannot edit the configuration of this project.
-        requests.codes.FORBIDDEN
+        requests.codes.FORBIDDEN,
+        requests.codes.BAD_REQUEST,
     ]
 
     def __init__(self, **kwargs):
@@ -1264,28 +1259,17 @@ class Sprints(JiraStream):
         super().__init__(**kwargs)
         self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
-    def get_user_message_from_error_message(self, errors: List[str]) -> str:
-        for error_message in errors:
-            if "The board does not support sprints" in error_message:
-                return (
-                    "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
-                    "does it have sprints enabled under project settings? If it's a company-managed one,"
-                    " check that it has at least one Scrum board associated with it."
-                )
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == requests.codes.bad_request:
+    def _get_custom_error(self, response: requests.Response) -> str:
+        if response.status_code == requests.codes.BAD_REQUEST:
             errors = response.json().get("errorMessages")
-            message = self.get_user_message_from_error_message(errors)
-            if message:
-                self.logger.error(
-                    f"Stream `{self.name}`. An error occurred, details: {errors}."
-                    f"Skipping for now. {self.get_user_message_from_error_message(errors)}"
-                )
-                setattr(self, "raise_on_http_errors", False)
-                return False
-        else:
-            return super().should_retry(response)
+            for error_message in errors:
+                if "The board does not support sprints" in error_message:
+                    return (
+                        "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+                        "does it have sprints enabled under project settings? If it's a company-managed one,"
+                        " check that it has at least one Scrum board associated with it."
+                    )
+        return ""
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f"board/{stream_slice['board_id']}/sprint"
