@@ -21,7 +21,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -31,7 +30,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -213,9 +211,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries = streamNames.stream().collect(toMap(
         streamDescriptor -> streamDescriptor,
         streamDescriptor -> new StreamSyncSummary(
-            Optional.of(getRecordCounter(streamDescriptor).get())
-        )
-    ));
+            Optional.of(getRecordCounter(streamDescriptor).get()))));
     onClose.accept(hasFailed, streamSyncSummaries);
 
     // as this throws an exception, we need to be after all other close functions.

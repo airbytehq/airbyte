@@ -56,10 +56,10 @@ public interface TyperDeduper {
    * into the final table.
    *
    * @param streamSyncSummaries Information about what happened during the sync. Implementations
-   *                            SHOULD use this information to skip T+D when possible (this is not
-   *                            a requirement for correctness, but does allow us to save time/money).
-   *                            This parameter MUST NOT be null. Streams MAY be omitted, which will
-   *                            be treated as though they were mapped to {@link StreamSyncSummary#DEFAULT}.
+   *        SHOULD use this information to skip T+D when possible (this is not a requirement for
+   *        correctness, but does allow us to save time/money). This parameter MUST NOT be null.
+   *        Streams MAY be omitted, which will be treated as though they were mapped to
+   *        {@link StreamSyncSummary#DEFAULT}.
    */
   void typeAndDedupe(Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries) throws Exception;
 

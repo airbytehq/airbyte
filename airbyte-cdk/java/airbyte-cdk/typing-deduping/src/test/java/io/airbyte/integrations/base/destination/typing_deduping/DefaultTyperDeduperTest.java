@@ -235,7 +235,8 @@ public class DefaultTyperDeduperTest {
         new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new StreamSyncSummary(Optional.of(0L)),
         new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new StreamSyncSummary(Optional.of(1L))));
 
-    // append_stream and dedup_stream should be T+D-ed. overwrite_stream has explicitly 0 records, but dedup_stream
+    // append_stream and dedup_stream should be T+D-ed. overwrite_stream has explicitly 0 records, but
+    // dedup_stream
     // is missing from the map, so implicitly has nonzero records.
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING");
     verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING");
