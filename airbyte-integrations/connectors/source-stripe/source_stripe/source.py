@@ -58,9 +58,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         else:
             concurrency_level = _DEFAULT_CONCURRENCY
             max_concurrent_tasks = ThreadPoolManager.DEFAULT_MAX_QUEUE_SIZE
-        print(f"max_concurrent_tasks: {max_concurrent_tasks}")
-        exit()
-        logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+        logger.info(f"Using concurrent cdk with concurrency level {concurrency_level} and {max_concurrent_tasks} max concurrent tasks")
         concurrent_source = ConcurrentSource.create(
             concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository, max_concurrent_tasks=max_concurrent_tasks
         )
