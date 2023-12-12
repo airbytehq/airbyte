@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "updatedByUserId": {
+      "type": ["null", "number"]
+    },
+    "requestId": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "portalId": {
+      "type": ["null", "number"]
+    },
+    "isDeleted": {
+      "type": ["null", "boolean"]
+    },
+    "timestamp": {
+      "type": ["null", "number"]
+    },
+    "property": {
+      "type": ["null", "string"]
+    },
+    "persistenceTimestamp": {
+      "type": ["null", "number"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "sourceVid": {
+      "type": ["null", "array"]
+    },
+    "useTimestampAsPersistenceTimestamp": {
+      "type": ["null", "boolean"]
+    },
+    "sourceMetadata": {
+      "type": ["null", "string"]
+    },
+    "dealId": {
+      "type": ["null", "number"]
+    },
+    "sourceId": {
+      "type": ["null", "string"]
+    },
+    "value": {
+      "type": ["null", "string"]
+    }
+  }
+}
