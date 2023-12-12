@@ -39,7 +39,7 @@ Contributions outside of these will be evaluated on a case-by-case basis by our 
 The usual workflow of code contribution is:
 1. Fork the Airbyte repository.
 2. Clone the repository locally.
-3. Create a branch for your feature/bug fix with the format `{YOUR_USERNAME}/{FEATURE/BUG}`
+3. Create a branch for your feature/bug fix with the format `{YOUR_USERNAME}/{FEATURE/BUG}` (e.g. `jdoe/source-stock-api-stream-fix`)
 4. Make and commit changes.
 5. Push your local branch to your fork.
 6. Submit a Pull Request so that we can review your changes.
