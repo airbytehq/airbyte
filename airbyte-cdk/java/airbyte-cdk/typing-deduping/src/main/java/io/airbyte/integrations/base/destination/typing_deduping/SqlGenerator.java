@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction.SOFT_RESET_SUFFIX;
+
 import java.time.Instant;
 import java.util.Optional;
 
@@ -96,6 +98,22 @@ public interface SqlGenerator<DialectTableDefinition> {
    *
    * @return
    */
-  String prepareTablesForSoftReset(final StreamConfig stream);
+  default String prepareTablesForSoftReset(final StreamConfig stream) {
+    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
+    final String clearLoadedAt = clearLoadedAt(stream.id());
+    return String.join("\n", createTempTable, clearLoadedAt);
+  }
+
+  String clearLoadedAt(final StreamId streamId);
+
+  /**
+   * Implementation specific if there is no option to retry again with safe casted SQL or the specific
+   * cause of the exception can be retried or not.
+   *
+   * @return true if the exception should be retried with a safer query
+   */
+  default boolean shouldRetry(final Exception e) {
+    return true;
+  }
 
 }

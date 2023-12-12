@@ -48,9 +48,6 @@ acceptance_tests:
             bypass_reason: "Data expires every 30 days."
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
         ignored_fields:
           invoices:
             - name: invoice_pdf
