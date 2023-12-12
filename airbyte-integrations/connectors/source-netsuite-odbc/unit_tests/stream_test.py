@@ -1,7 +1,8 @@
 import pytest
-from source_netsuite_odbc.streams import NetsuiteODBCStream
+from source_netsuite_odbc.streams import NetsuiteODBCStream, NETSUITE_PAGINATION_INTERVAL
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from datetime import date
+
 
 @pytest.fixture
 def stream():
@@ -46,7 +47,7 @@ def test_generate_ordered_query(stream_state, stream):
   netsuite_stream = NetsuiteODBCStream({}, 'test', stream)
   query = netsuite_stream.generate_ordered_query({'first_day': date(2024, 1, 1), 'last_day': date(2024, 12, 31)})
   stripped_query = query.replace(" ", "").replace("\n", "")
-  expected_query = """SELECT TOP 10 accountnumber, acquisitionsource, alcoholrecipienttype, altemail, altname, altphone, assignedwebsite, lastmodifieddate FROM testWHERE id > -1 AND lastmodifieddate >= to_timestamp('2024-01-01', 'YYYY-MM-DD') AND lastmodifieddate <= to_timestamp('2024-12-31', 'YYYY-MM-DD')ORDER BY id ASC,lastmodifieddateASC""".replace(" ", "")
+  expected_query = f"""SELECT TOP {NETSUITE_PAGINATION_INTERVAL} accountnumber, acquisitionsource, alcoholrecipienttype, altemail, altname, altphone, assignedwebsite, lastmodifieddate FROM testWHERE id > -1 AND lastmodifieddate >= to_timestamp('2024-01-01', 'YYYY-MM-DD') AND lastmodifieddate <= to_timestamp('2024-12-31', 'YYYY-MM-DD')ORDER BY id ASC,lastmodifieddateASC""".replace(" ", "")
 
   assert stripped_query == expected_query
   

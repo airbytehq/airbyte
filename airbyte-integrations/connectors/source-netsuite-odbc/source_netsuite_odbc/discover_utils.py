@@ -4,6 +4,8 @@ from airbyte_cdk.models import (
 )
 import json
 from typing import Iterable, Mapping, Any
+from collections import defaultdict 
+
 
 # See https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4407755805.html#SuiteAnalytics-Connect-System-Tables
 # for descriptions of the system tables used
@@ -24,27 +26,28 @@ class NetsuiteODBCTableDiscoverer():
         }
 
     def get_streams(self) -> Iterable[AirbyteStream]:
-      tables = self.get_tables()
-      for table in tables:
-        yield self.get_table_stream(table)
+      tables = self.get_tables_with_join()
+      primary_keys = self.find_primary_keys_bulk()
+      for key in tables:
+        table_values = tables[key]
+        primary_key_for_table = primary_keys[key] if key in primary_keys else None
+        yield self.get_table_stream_with_join(key, table_values, primary_key_for_table)
 
+      
     def get_table_name(self, table: json) -> str:
-       return table[2]
+       return table[0]
 
-    def get_tables(self) -> list[Mapping[str, Any]]:
-      self.cursor.execute("SELECT TOP 1 * FROM OA_TABLES WHERE TABLE_NAME = 'Customer'")
-      # self.cursor.execute("SELECT COUNT(*) FROM OA_TABLES")
-      tables = []
-      while True:
-          row = self.cursor.fetchone()
-          if not row:
-              break
-          tables.append(row)
-      return tables
-   
-    def get_table_stream(self, table: json) -> AirbyteStream:
-      table_name = self.get_table_name(table)
-      primary_key_column = self.find_primary_key_for_table(table)
+    
+    def find_primary_keys_bulk(self):
+      self.cursor.execute(f"SELECT pktable_name, pkcolumn_name FROM OA_FKEYS WHERE pktable_name is not NULL and pkcolumn_name IS NOT NULL")
+      rows = self.cursor.fetchall()
+      d = dict()
+      for row in rows:
+        d[row[0]] = row[1]
+      return d
+      
+    def get_table_stream_with_join(self, table_name, table_columns, primary_key_column):
+      # primary_key_column = []
       if primary_key_column is None:
         primary_key_column = []
       else:
@@ -52,13 +55,11 @@ class NetsuiteODBCTableDiscoverer():
 
       properties = {}
       table_incremental_column = None
-      columns = self.get_columns(table)
-      for column in columns:
-        is_incremental = self.is_column_incremental(column)
-        if (is_incremental):
-          table_incremental_column = self.get_column_name(column)
-        properties[self.get_column_name(column)] = self.get_column_type(column)
-
+      for column in table_columns:
+        if (self.is_column_incremental_join(column)):
+          table_incremental_column = column['column_name']
+        properties[column['column_name']] = column['column_type']
+      
       json_schema = {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -69,38 +70,45 @@ class NetsuiteODBCTableDiscoverer():
         return AirbyteStream(name=table_name, json_schema=json_schema, supported_sync_modes=["full_refresh", "incremental"], source_defined_cursor=True, default_cursor_field=[table_incremental_column], primary_key=primary_key_column)
       else:
         return AirbyteStream(name=table_name, json_schema=json_schema, supported_sync_modes=["full_refresh"], primary_key=primary_key_column)
-    
-    def get_columns(self, table: json) -> Iterable[Mapping[str, Any]]:
-      table_name = self.get_table_name(table)
-      self.cursor.execute(f"SELECT * FROM OA_COLUMNS WHERE TABLE_NAME = '{table_name}'")
+
+    def get_tables_with_join(self):
+      self.cursor.execute("""
+                          SELECT tab.table_name, tab.oa_userdata, col.column_name, col.type_name, col.oa_userdata
+                          FROM OA_TABLES tab INNER JOIN OA_COLUMNS col ON col.table_name = tab.table_name
+                          """)
+
+      tables = []
       while True:
-        row = self.cursor.fetchone()
-        if not row:
-          break
-        yield row
+          row = self.cursor.fetchone()
+          if not row:
+              break
+          processed_row = self.process_table_result(row)
+          tables.append(processed_row)
+      grouped_tables = self.group_results_by_table_name(tables)
+      return grouped_tables
     
-    def get_column_name(self, column: json) -> str:
-      return column[3]
+    def process_table_result(self, result):
+      return {
+        'table_name': result[0],
+        'table_userdata': result[1],
+        'column_name': result[2],
+        'column_type': self.data_type_switcher[result[3]],
+        'column_userdata': result[4]
+      }
     
-    def get_column_type(self, column: json) -> str:
-      netsuite_data_type = column[5]
-      return self.data_type_switcher[netsuite_data_type]
-    
-    def is_column_incremental(self, column: json) -> bool:
-      column_meta_data = column[12]
-      column_name = self.get_column_name(column)
+    def group_results_by_table_name(self, results):
+      def default_value():
+        return []
+      d = defaultdict(default_value)
+      for result in results:
+        d[result['table_name']].append(result)
+      return d
+
+      
+    def is_column_incremental_join(self, column) -> bool:
+      column_meta_data = column['column_userdata']
+      column_name = column['column_name']
       if (column_meta_data is not None and 'M-' in column_meta_data) or column_name in ['datelastmodified', 'lastmodified', 'lastmodifieddate']:
         return True
       else:
         return False
-      
-    def find_primary_key_for_table(self, table: json) -> str or None:
-      table_name = self.get_table_name(table)
-      self.cursor.execute(f"SELECT * FROM OA_FKEYS WHERE PKTABLE_NAME = '{table_name}'")
-      row = self.cursor.fetchone()
-      print(row)
-      if row is None:
-        return None
-      return row[3] # return the column name for primary key
-
-    

@@ -19,11 +19,14 @@ class SourceNetsuiteOdbc(AbstractSource):
     
     def streams(self, config: Mapping[str, Any]) -> Iterable[Stream]:
         cursor_constructor = NetsuiteODBCCursorConstructor()
-        discoverer = NetsuiteODBCTableDiscoverer(cursor_constructor.create_database_cursor(config))
+        cursor = cursor_constructor.create_database_cursor(config)
+        discoverer = NetsuiteODBCTableDiscoverer(cursor)
         streams = discoverer.get_streams()
+        number_streams = 0
         for stream in streams:
             stream_name = stream.name
-            netsuite_stream = NetsuiteODBCStream(cursor=cursor_constructor.create_database_cursor(config), table_name=stream_name, stream=stream)
+            number_streams = number_streams + 1
+            netsuite_stream = NetsuiteODBCStream(cursor=cursor, table_name=stream_name, stream=stream)
             yield netsuite_stream
     
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:

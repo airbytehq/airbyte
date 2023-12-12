@@ -9,32 +9,32 @@ from airbyte_cdk.models import (
 
 @pytest.fixture
 def single_column():
-  return ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'accountnumber', -9, 'VARCHAR2', 198, 99, None, None, 1, None, 'SV--------------|None', None, 1, 0, 'Account')
+  return ('Customer', 'accountnumber','VARCHAR2', 'SV--------------|None')
 
 
 @pytest.fixture
 def incremental_column_without_name():
-  return ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'differentName', 93, 'TIMESTAMP', 13, 0, None, 0, 1, None, 'SVM-------------|None', None, 1, 0, 'Last Modified Date')
+  return ('Customer', 'differentName', 'TIMESTAMP', 'SVM-------------|None')
 
 @pytest.fixture
 def incremental_column_with_name():
-  return ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'lastmodifieddate', 93, 'TIMESTAMP', 13, 0, None, 0, 1, None, 'SV--------------|None', None, 1, 0, 'Last Modified Date')
+  return ('Customer', 'lastmodifieddate','TIMESTAMP', 'SV--------------|None')
 
 @pytest.fixture
 def table_row():
-  return ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'TABLE', None, 'SVMD------------|None', None, 'Customer')
+  return ('Customer','SVMD------------|None')
 
 @pytest.fixture
 def multiple_columns():
   return [
-    ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'accountnumber', -9, 'VARCHAR2', 198, 99, None, None, 1, None, 'SV--------------|None', None, 1, 0, 'Account'),
-    ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'acquisitionsource', -5, 'BIGINT', 8, 38, None, 0, 1, None, 'SV--D-----------|SuiteCommerce Analytics Data', None, 1, 0, 'Acquisition Source'),
-    ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'alcoholrecipienttype', -9, 'VARCHAR2', 64, 32, None, None, 1, None, 'SV--D-----------|None', None, 1, 0, 'Alcohol Recipient Type'),
-    ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'altemail', -9, 'VARCHAR2', 128, 254, None, None, 1, None, 'SV--------------|Is A Business', None, 1, 0, 'Alt. Email'),
-    ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'altname', -9, 'VARCHAR2', 3600, 1800, None, None, 1, None, 'SV--------------|None', None, 1, 0, 'Customer'),
-    ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'altphone', -9, 'VARCHAR2', 64, 100, None, None, 1, None, 'SV--------------|None', None, 1, 0, 'Alt. Phone'),
-    ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'assignedwebsite', -5, 'BIGINT', 8, 38, None, 0, 1, None, 'SV--D-----------|None', None, 1, 0, 'Assigned Web Site'),
-    ('Airbyte, Inc_', 'Data Warehouse Integrator', 'Customer', 'lastmodifieddate', 93, 'TIMESTAMP', 13, 0, None, 0, 1, None, 'SVM-------------|None', None, 1, 0, 'Last Modified Date')
+    ('Customer', 'accountnumber','VARCHAR2', 'SV--------------|None'),
+    ('Customer', 'acquisitionsource','BIGINT', 'SV--D-----------|SuiteCommerce Analytics Data'),
+    ('Customer', 'alcoholrecipienttype','VARCHAR2','SV--D-----------|None'),
+    ('Customer', 'altemail','VARCHAR2', 'SV--------------|Is A Business'),
+    ('Customer', 'altname','VARCHAR2', 'SV--------------|None'),
+    ('Customer', 'altphone','VARCHAR2', 'SV--------------|None'),
+    ('Customer', 'assignedwebsite','BIGINT', 'SV--D-----------|None'),
+    ('Customer', 'lastmodifieddate','TIMESTAMP', 'SVM-------------|None')
   ]
 
 def mock_pk_result(self, table):

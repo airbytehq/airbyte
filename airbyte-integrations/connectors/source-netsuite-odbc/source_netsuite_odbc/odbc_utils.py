@@ -1,3 +1,10 @@
+# import sys
+# import os
+# parent_dir_name = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+# # Add the ptdraft folder path to the sys.path list
+# sys.path.append(parent_dir_name)
+
+
 import base64
 import hmac
 import hashlib
