@@ -24,10 +24,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import microsoft.sql.DateTimeOffset;
@@ -172,53 +170,26 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     };
   }
 
-  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
-      throws SQLException {
-    final OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class);
-    final LocalDate localDate = timestamptz.toLocalDate();
-    node.put(columnName, resolveEra(localDate, timestamptz.format(OFFSETDATETIME_FORMATTER)));
-  }
-
+  /*
+  * This method overrides the parents' class method due to MSSQL Timestamp with TZ format being `yyyy-MM-dd HH:mm:ss.SSSSSSS XXX`
+  * instead of the ISO_OFFSET_DATE_TIME format of `YYYY-MM-DD'T'H:mm:ss XXXX`
+  *
+  * The conversion process:
+  * OffsetDateTime (Java) -> Timestamp (Java) -> DateTimeOffset(Microsoft)
+  * */
+  @Override
   protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
       throws SQLException {
     try {
+      // Parse the datetimeoffset value string into the Java OffsetDateTime using the correct format
       final OffsetDateTime offsetDateTime = OffsetDateTime.parse(value, OFFSETDATETIME_FORMATTER);
-      final Timestamp timestamp = Timestamp.valueOf(offsetDateTime.atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
-      // Create DateTimeOffset from Timestamp and Offset
+      // Convert to Timestamp as an intermediary step
+      final Timestamp timestamp = Timestamp.valueOf(offsetDateTime.atZoneSameInstant(offsetDateTime.getOffset()).toLocalDateTime());
+      // Convert the Timestamp object to the Microsoft SQL DateTimeOffset construct and provide the offset in minutes to the converter
       final DateTimeOffset datetimeoffset = DateTimeOffset.valueOf(timestamp, offsetDateTime.getOffset().getTotalSeconds() / 60);
       preparedStatement.setObject(parameterIndex, datetimeoffset);
     } catch (final DateTimeParseException e) {
       throw new RuntimeException(e);
     }
   }
-
-  @Override
-  public void setCursorField(final PreparedStatement preparedStatement,
-                             final int parameterIndex,
-                             final JDBCType cursorFieldType,
-                             final String value)
-      throws SQLException {
-    switch (cursorFieldType) {
-
-      case TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
-      case TIMESTAMP_WITH_TIMEZONE -> setTimestampWithTimezone(preparedStatement, parameterIndex, value);
-      case TIME -> setTime(preparedStatement, parameterIndex, value);
-      case TIME_WITH_TIMEZONE -> setTimeWithTimezone(preparedStatement, parameterIndex, value);
-      case DATE -> setDate(preparedStatement, parameterIndex, value);
-      case BIT -> setBit(preparedStatement, parameterIndex, value);
-      case BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value);
-      case TINYINT, SMALLINT -> setShortInt(preparedStatement, parameterIndex, value);
-      case INTEGER -> setInteger(preparedStatement, parameterIndex, value);
-      case BIGINT -> setBigInteger(preparedStatement, parameterIndex, value);
-      case FLOAT, DOUBLE -> setDouble(preparedStatement, parameterIndex, value);
-      case REAL -> setReal(preparedStatement, parameterIndex, value);
-      case NUMERIC, DECIMAL -> setDecimal(preparedStatement, parameterIndex, value);
-      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> setString(preparedStatement, parameterIndex, value);
-      case BINARY, BLOB -> setBinary(preparedStatement, parameterIndex, value);
-      // since cursor are expected to be comparable, handle cursor typing strictly and error on
-      // unrecognized types
-      default -> throw new IllegalArgumentException(String.format("%s cannot be used as a cursor.", cursorFieldType));
-    }
-  }
-
 }
