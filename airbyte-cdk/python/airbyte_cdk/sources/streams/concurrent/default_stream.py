@@ -34,8 +34,9 @@ class DefaultStream(AbstractStream):
         self._logger = logger
         self._namespace = namespace
 
-    def generate_partitions(self) -> Iterable[Partition]:
-        yield from self._stream_partition_generator.generate()
+    async def generate_partitions(self) -> Iterable[Partition]:
+        async for partition in self._stream_partition_generator.generate():
+            yield partition
 
     @property
     def name(self) -> str:

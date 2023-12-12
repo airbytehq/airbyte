@@ -107,7 +107,7 @@ class Stream(ABC):
         """
         return None
 
-    def read_full_refresh(
+    async def read_full_refresh(
         self,
         cursor_field: Optional[List[str]],
         logger: logging.Logger,
@@ -118,13 +118,14 @@ class Stream(ABC):
         for _slice in slices:
             if slice_logger.should_log_slice_message(logger):
                 yield slice_logger.create_slice_log_message(_slice)
-            yield from self.read_records(
+            async for record in self.read_records(
                 stream_slice=_slice,
                 sync_mode=SyncMode.full_refresh,
                 cursor_field=cursor_field,
-            )
+            ):
+                yield record
 
-    def read_incremental(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
+    async def read_incremental(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,
         cursor_field: Optional[List[str]],
         logger: logging.Logger,
@@ -176,7 +177,7 @@ class Stream(ABC):
             yield checkpoint
 
     @abstractmethod
-    def read_records(
+    async def read_records(
         self,
         sync_mode: SyncMode,
         cursor_field: Optional[List[str]] = None,

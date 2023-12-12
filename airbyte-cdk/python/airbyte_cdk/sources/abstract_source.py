@@ -2,9 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import asyncio
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from queue import Queue
+from threading import Thread
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -31,12 +34,50 @@ from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
+T = TypeVar("T")
+
+
+class Sentinel:
+    def __init__(self, name: str):
+        self.name = name
+
+
+class SourceReader(Iterator):
+    def __init__(self, queue: Queue, sentinels: Dict[str, Sentinel], reader_fn: Callable, *args: Any):
+        self.queue = queue
+        self.sentinels = sentinels
+        self.reader_fn = reader_fn
+        self.reader_args = args
+
+        self.thread = Thread(target=self._start_reader_thread)
+        self.thread.start()
+
+    def _start_reader_thread(self):
+        asyncio.run(self.reader_fn(*self.reader_args))
+
+    def __next__(self):
+        item = self.queue.get()
+        if isinstance(item, Sentinel):
+            print(f">>>>>>>>> Finished {item.name} stream")
+            self.sentinels.pop(item.name)  # TODO: error handling?
+            if not self.sentinels:
+                self.thread.join()
+                raise StopIteration
+            else:
+                return self.__next__()
+        else:
+            return item
+
 
 class AbstractSource(Source, ABC):
     """
     Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
     in this class to create an Airbyte Specification compliant Source.
     """
+
+    def __init__(self):
+        super().__init__()
+        self.queue = Queue()
 
     @abstractmethod
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -100,51 +141,61 @@ class AbstractSource(Source, ABC):
         state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         self._stream_to_instance_map = stream_instances
         with create_timer(self.name) as timer:
-            for configured_stream in catalog.streams:
-                stream_instance = stream_instances.get(configured_stream.stream.name)
-                if not stream_instance:
-                    if not self.raise_exception_on_missing_stream:
-                        continue
-                    raise KeyError(
-                        f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
-                        f"Refresh the schema in replication settings and remove this stream from future sync attempts."
-                    )
-
-                try:
-                    timer.start_event(f"Syncing stream {configured_stream.stream.name}")
-                    stream_is_available, reason = stream_instance.check_availability(logger, self)
-                    if not stream_is_available:
-                        logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
-                        continue
-                    logger.info(f"Marking stream {configured_stream.stream.name} as STARTED")
-                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.STARTED)
-                    yield from self._read_stream(
-                        logger=logger,
-                        stream_instance=stream_instance,
-                        configured_stream=configured_stream,
-                        state_manager=state_manager,
-                        internal_config=internal_config,
-                    )
-                    logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
-                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
-                except AirbyteTracedException as e:
-                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                    raise e
-                except Exception as e:
-                    yield from self._emit_queued_messages()
-                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
-                    logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
-                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                    display_message = stream_instance.get_error_display_message(e)
-                    if display_message:
-                        raise AirbyteTracedException.from_exception(e, message=display_message) from e
-                    raise e
-                finally:
-                    timer.finish_event()
-                    logger.info(f"Finished syncing {configured_stream.stream.name}")
-                    logger.info(timer.report())
+            for record in self._do_read(catalog, stream_instances, timer, logger, state_manager, internal_config):
+                yield record
 
         logger.info(f"Finished syncing {self.name}")
+
+    def _do_read(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
+        streams_in_progress = {s.stream.name: Sentinel(s.stream.name) for s in catalog.streams}
+        for record in SourceReader(self.queue, streams_in_progress, self._read_streams, catalog, stream_instances, timer, logger, state_manager, internal_config):
+            yield record
+
+    async def _read_streams(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
+        tasks = [asyncio.create_task(self._async_read_stream(s, stream_instances, timer, logger, state_manager, internal_config)) for s in catalog.streams]
+        await asyncio.gather(*tasks)
+
+    async def _async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
+        try:
+            await self._do_async_read_stream(configured_stream, stream_instances, timer, logger, state_manager, internal_config)
+        finally:
+            self.queue.put(Sentinel(configured_stream.stream.name))
+
+    async def _do_async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
+        stream_instance = stream_instances.get(configured_stream.stream.name)
+        if not stream_instance:
+            if not self.raise_exception_on_missing_stream:
+                return
+        try:
+            logger.info(f"Marking stream {configured_stream.stream.name} as STARTED")
+            self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.STARTED))
+            async for record in self._read_stream(
+                logger=logger,
+                stream_instance=stream_instance,
+                configured_stream=configured_stream,
+                state_manager=state_manager,
+                internal_config=internal_config,
+            ):
+                self.queue.put(record)
+            logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
+            self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE))
+        except AirbyteTracedException as e:
+            self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE))
+            raise e
+        except Exception as e:
+            for message in self._emit_queued_messages():
+                self.queue.put(message)
+            logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
+            logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
+            self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE))
+            display_message = stream_instance.get_error_display_message(e)
+            if display_message:
+                raise AirbyteTracedException.from_exception(e, message=display_message) from e
+            raise e
+        finally:
+            # timer.finish_event()
+            logger.info(f"Finished syncing {configured_stream.stream.name}")
+            # logger.info(timer.report())
 
     @property
     def raise_exception_on_missing_stream(self) -> bool:
@@ -154,7 +205,7 @@ class AbstractSource(Source, ABC):
     def per_stream_state_enabled(self) -> bool:
         return True
 
-    def _read_stream(
+    async def _read_stream(
         self,
         logger: logging.Logger,
         stream_instance: Stream,
@@ -190,19 +241,20 @@ class AbstractSource(Source, ABC):
         record_counter = 0
         stream_name = configured_stream.stream.name
         logger.info(f"Syncing stream: {stream_name} ")
-        for record in record_iterator:
+        async for record in record_iterator:
             if record.type == MessageType.RECORD:
                 record_counter += 1
                 if record_counter == 1:
                     logger.info(f"Marking stream {stream_name} as RUNNING")
                     # If we just read the first record of the stream, emit the transition to the RUNNING state
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.RUNNING)
-            yield from self._emit_queued_messages()
+            for message in self._emit_queued_messages():
+                yield message
             yield record
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 
-    def _read_incremental(
+    async def _read_incremental(
         self,
         logger: logging.Logger,
         stream_instance: Stream,
@@ -226,7 +278,7 @@ class AbstractSource(Source, ABC):
             stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
             logger.info(f"Setting state of {self.name} stream to {stream_state}")
 
-        for record_data_or_message in stream_instance.read_incremental(
+        async for record_data_or_message in stream_instance.read_incremental(
             configured_stream.cursor_field,
             logger,
             self._slice_logger,
@@ -242,7 +294,7 @@ class AbstractSource(Source, ABC):
             yield from self.message_repository.consume_queue()
         return
 
-    def _read_full_refresh(
+    async def _read_full_refresh(
         self,
         logger: logging.Logger,
         stream_instance: Stream,
@@ -250,7 +302,7 @@ class AbstractSource(Source, ABC):
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         total_records_counter = 0
-        for record_data_or_message in stream_instance.read_full_refresh(configured_stream.cursor_field, logger, self._slice_logger):
+        async for record_data_or_message in stream_instance.read_full_refresh(configured_stream.cursor_field, logger, self._slice_logger):
             message = self._get_message(record_data_or_message, stream_instance)
             yield message
             if message.type == MessageType.RECORD:

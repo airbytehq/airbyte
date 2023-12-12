@@ -5,46 +5,52 @@
 import logging
 import sys
 import time
-from typing import Any, Callable, Mapping, Optional
+from typing import Any, Callable, Coroutine, Mapping, Optional
 
+import aiohttp
 import backoff
-from requests import PreparedRequest, RequestException, Response, codes, exceptions
 
 from .exceptions import DefaultBackoffException, UserDefinedBackoffException
 
 TRANSIENT_EXCEPTIONS = (
     DefaultBackoffException,
-    exceptions.ConnectTimeout,
-    exceptions.ReadTimeout,
-    exceptions.ConnectionError,
-    exceptions.ChunkedEncodingError,
+    # TODO
+    # exceptions.ConnectTimeout,
+    # exceptions.ReadTimeout,
+    # exceptions.ConnectionError,
+    # exceptions.ChunkedEncodingError,
+    aiohttp.ServerTimeoutError,
+    aiohttp.ServerConnectionError,
+    aiohttp.ServerDisconnectedError,
+
 )
 
 logger = logging.getLogger("airbyte")
 
 
-SendRequestCallableType = Callable[[PreparedRequest, Mapping[str, Any]], Response]
-
+SendRequestCallableType = Callable[[aiohttp.ClientRequest, Mapping[str, Any]], Coroutine[Any, Any, aiohttp.ClientResponse]]
+TOO_MANY_REQUESTS_CODE = 429
 
 def default_backoff_handler(
     max_tries: Optional[int], factor: float, max_time: Optional[int] = None, **kwargs: Any
 ) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
     def log_retry_attempt(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
-        if isinstance(exc, RequestException) and exc.response:
-            logger.info(f"Status code: {exc.response.status_code}, Response Content: {exc.response.content}")
+        if isinstance(exc, aiohttp.ClientResponseError) and exc.history:
+            logger.info(f"Status code: {exc.status}, Response Content: {'FIX ME'}")  # TODO
         logger.info(
             f"Caught retryable error '{str(exc)}' after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         )
 
     def should_give_up(exc: Exception) -> bool:
+        from requests import codes
         # If a non-rate-limiting related 4XX error makes it this far, it means it was unexpected and probably consistent, so we shouldn't back off
-        if isinstance(exc, RequestException):
+        if isinstance(exc, aiohttp.ClientResponseError):
             give_up: bool = (
-                exc.response is not None and exc.response.status_code != codes.too_many_requests and 400 <= exc.response.status_code < 500
+                exc.history is not None and exc.status != TOO_MANY_REQUESTS_CODE and 400 <= exc.status < 500
             )
             if give_up:
-                logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}")
+                logger.info(f"Giving up for returned HTTP status: {exc.status}")
             return give_up
         # Only RequestExceptions are retryable, so if we get here, it's not retryable
         return False
@@ -68,16 +74,16 @@ def user_defined_backoff_handler(
     def sleep_on_ratelimit(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
         if isinstance(exc, UserDefinedBackoffException):
-            if exc.response:
-                logger.info(f"Status code: {exc.response.status_code}, Response Content: {exc.response.content}")
+            if exc.history:
+                logger.info(f"Status code: {exc.status}, Response Content: {'FIX ME'}")  # TODO
             retry_after = exc.backoff
             logger.info(f"Retrying. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
 
     def log_give_up(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
-        if isinstance(exc, RequestException):
-            logger.error(f"Max retry limit reached. Request: {exc.request}, Response: {exc.response}")
+        if isinstance(exc, aiohttp.ClientResponseError):
+            logger.error(f"Max retry limit reached. Request: {exc.request_info}, Response: {exc.history}")  # TODO: how does history get printed out
         else:
             logger.error("Max retry limit reached for unknown request and response")
 

@@ -36,5 +36,5 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
     """
     # We wrap the return output of read_records() because some implementations return types that are iterable,
     # but not iterators such as lists or tuples
-    records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
-    return next(records_for_slice)
+    records_for_slice = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+    return anext(records_for_slice)

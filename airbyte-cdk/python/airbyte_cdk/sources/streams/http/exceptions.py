@@ -5,15 +5,15 @@
 
 from typing import Union
 
-import requests
+import aiohttp
 
 
-class BaseBackoffException(requests.exceptions.HTTPError):
-    def __init__(self, request: requests.PreparedRequest, response: requests.Response, error_message: str = ""):
+class BaseBackoffException(aiohttp.ClientResponseError):
+    def __init__(self, response: aiohttp.ClientResponse, error_message: str = ""):
         error_message = (
-            error_message or f"Request URL: {request.url}, Response Code: {response.status_code}, Response Text: {response.text}"
+            error_message or f"Request URL: {response.request_info.url}, Response Code: {response.status}, Response Text: {response.text}"
         )
-        super().__init__(error_message, request=request, response=response)
+        super().__init__(request_info=response.request_info, history=(response,), status=response.status, message=error_message, headers=response.headers)
 
 
 class RequestBodyException(Exception):
@@ -27,14 +27,14 @@ class UserDefinedBackoffException(BaseBackoffException):
     An exception that exposes how long it attempted to backoff
     """
 
-    def __init__(self, backoff: Union[int, float], request: requests.PreparedRequest, response: requests.Response, error_message: str = ""):
+    def __init__(self, backoff: Union[int, float], response: aiohttp.ClientResponse, error_message: str = ""):
         """
         :param backoff: how long to backoff in seconds
         :param request: the request that triggered this backoff exception
         :param response: the response that triggered the backoff exception
         """
         self.backoff = backoff
-        super().__init__(request=request, response=response, error_message=error_message)
+        super().__init__(response=response, error_message=error_message)
 
 
 class DefaultBackoffException(BaseBackoffException):

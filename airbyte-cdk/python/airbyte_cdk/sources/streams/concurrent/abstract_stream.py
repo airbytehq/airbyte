@@ -37,7 +37,7 @@ class AbstractStream(ABC):
     """
 
     @abstractmethod
-    def generate_partitions(self) -> Iterable[Partition]:
+    async def generate_partitions(self) -> Iterable[Partition]:
         """
         Generates the partitions that will be read by this stream.
         :return: An iterable of partitions.

@@ -2,15 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import json
 import logging
 import os
 import urllib
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
 from urllib.parse import urljoin
+from yarl import URL
 
+import aiohttp
 import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
@@ -29,6 +31,7 @@ from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
+T = TypeVar("T")
 
 
 class HttpStream(Stream, ABC):
@@ -42,15 +45,9 @@ class HttpStream(Stream, ABC):
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
-        self._session = self.request_session()
-        self._session.mount(
-            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
-        )
-        self._authenticator: HttpAuthenticator = NoAuth()
-        if isinstance(authenticator, AuthBase):
-            self._session.auth = authenticator
-        elif authenticator:
-            self._authenticator = authenticator
+        self._session: aiohttp.ClientSession = None
+        assert authenticator
+        self._authenticator = authenticator  # TODO: handle the preexisting code paths
 
     @property
     def cache_filename(self) -> str:
@@ -143,7 +140,7 @@ class HttpStream(Stream, ABC):
         return HttpAvailabilityStrategy()
 
     @abstractmethod
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    async def next_page_token(self, response: aiohttp.ClientResponse) -> Optional[Mapping[str, Any]]:
         """
         Override this method to define a pagination strategy.
 
@@ -232,14 +229,14 @@ class HttpStream(Stream, ABC):
         return {}
 
     @abstractmethod
-    def parse_response(
+    async def parse_response(
         self,
         response: requests.Response,
         *,
         stream_state: Mapping[str, Any],
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    ) -> List[Mapping[str, Any]]:
         """
         Parses the raw response object into a list of records.
         By default, this returns an iterable containing the input. Override to parse differently.
@@ -251,7 +248,7 @@ class HttpStream(Stream, ABC):
         """
 
     # TODO move all the retry logic to a functor/decorator which is input as an init parameter
-    def should_retry(self, response: requests.Response) -> bool:
+    def should_retry(self, response: aiohttp.ClientResponse) -> bool:
         """
         Override to set different conditions for backoff based on the response from the server.
 
@@ -261,9 +258,9 @@ class HttpStream(Stream, ABC):
 
         Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
         """
-        return response.status_code == 429 or 500 <= response.status_code < 600
+        return response.status == 429 or 500 <= response.status < 600
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
+    def backoff_time(self, response: aiohttp.ClientResponse) -> Optional[float]:
         """
         Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
 
@@ -275,7 +272,7 @@ class HttpStream(Stream, ABC):
         """
         return None
 
-    def error_message(self, response: requests.Response) -> str:
+    def error_message(self, response: aiohttp.ClientResponse) -> str:
         """
         Override this method to specify a custom error message which can incorporate the HTTP response received
 
@@ -309,31 +306,40 @@ class HttpStream(Stream, ABC):
         params: Optional[Mapping[str, str]] = None,
         json: Optional[Mapping[str, Any]] = None,
         data: Optional[Union[str, Mapping[str, Any]]] = None,
-    ) -> requests.PreparedRequest:
-        url = self._join_url(self.url_base, path)
+    ) -> aiohttp.ClientRequest:
+        return self._create_aiohttp_client_request(path, headers, params, json, data)
+
+    def _create_aiohttp_client_request(
+        self,
+        path: str,
+        headers: Optional[Mapping[str, str]] = None,
+        params: Optional[Mapping[str, str]] = None,
+        json_data: Optional[Mapping[str, Any]] = None,
+        data: Optional[Union[str, Mapping[str, Any]]] = None,
+    ) -> aiohttp.ClientRequest:
+        str_url = self._join_url(self.url_base, path)
+        url = URL(str_url)
         if self.must_deduplicate_query_params():
-            query_params = self.deduplicate_query_params(url, params)
+            query_params = self.deduplicate_query_params(str_url, params)
         else:
             query_params = params or {}
-        args = {"method": self.http_method, "url": url, "headers": headers, "params": query_params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
-            if json and data:
+            if json_data and data:
                 raise RequestBodyException(
                     "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
                 )
-            elif json:
-                args["json"] = json
-            elif data:
-                args["data"] = data
-        prepared_request: requests.PreparedRequest = self._session.prepare_request(requests.Request(**args))
 
-        return prepared_request
+        client_request = aiohttp.ClientRequest(
+            self.http_method, url, headers=headers, params=query_params, data=json.dumps(json_data) if json_data else data
+        )  # TODO: add json header if json_data?
+
+        return client_request
 
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:
         return urljoin(url_base, path)
 
-    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    async def _send(self, request: aiohttp.ClientRequest, request_kwargs: Mapping[str, Any]) -> aiohttp.ClientResponse:
         """
         Wraps sending the request in rate limit and error handlers.
         Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
@@ -355,23 +361,25 @@ class HttpStream(Stream, ABC):
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
-        response: requests.Response = self._session.send(request, **request_kwargs)
+
+        # TODO: get headers and anything else off of request & combine with request_kwargs?
+        response = await self._session.request(request.method, request.url, **request_kwargs)
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
         if self.logger.isEnabledFor(logging.DEBUG):
             self.logger.debug(
-                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+                "Receiving response", extra={"headers": response.headers, "status": response.status, "body": response.text}
             )
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
             error_message = self.error_message(response)
             if custom_backoff_time:
                 raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time, request=request, response=response, error_message=error_message
+                    backoff=custom_backoff_time, response=response, error_message=error_message
                 )
             else:
-                raise DefaultBackoffException(request=request, response=response, error_message=error_message)
+                raise DefaultBackoffException(response=response, error_message=error_message)
         elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
             try:
@@ -381,7 +389,23 @@ class HttpStream(Stream, ABC):
                 raise exc
         return response
 
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    async def _ensure_session(self) -> aiohttp.ClientSession:
+        if self._session is None or self._session.closed:  # TODO: why is the session closing?
+            # TODO: figure out authentication
+            connector = aiohttp.TCPConnector(
+                limit_per_host=MAX_CONNECTION_POOL_SIZE,  # Max connections per host
+                limit=MAX_CONNECTION_POOL_SIZE,           # Max total connections
+            )
+            kwargs = {}
+            assert self._authenticator.get_auth_header()
+            if self._authenticator:
+                kwargs['headers'] = self._authenticator.get_auth_header()
+            session = aiohttp.ClientSession(connector=connector, **kwargs)
+            return session
+        else:
+            return self._session
+
+    async def _send_request(self, request: aiohttp.ClientRequest, request_kwargs: Mapping[str, Any]) -> aiohttp.ClientResponse:
         """
         Creates backoff wrappers which are responsible for retry logic
         """
@@ -416,10 +440,14 @@ class HttpStream(Stream, ABC):
         """
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
+        assert not self._session.closed
 
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
-        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self.retry_factor)
-        return backoff_handler(user_backoff_handler)(request, request_kwargs)
+        @default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self.retry_factor)
+        @user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)
+        async def send():
+            return await self._send(request, request_kwargs)
+
+        return await send()
 
     @classmethod
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
@@ -472,45 +500,59 @@ class HttpStream(Stream, ABC):
             return self.parse_response_error_message(exception.response)
         return None
 
-    def read_records(
+    async def read_records(
         self,
         sync_mode: SyncMode,
         cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
-        )
 
-    def _read_pages(
+        async for record in self._read_pages(
+            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice,
+            stream_state
+        ):
+            yield record
+
+    async def _read_pages(
         self,
         records_generator_fn: Callable[
-            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+            [aiohttp.ClientRequest, aiohttp.ClientResponse, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
         ],
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        stream_state = stream_state or {}
-        pagination_complete = False
-        next_page_token = None
-        while not pagination_complete:
-            request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token)
-            yield from records_generator_fn(request, response, stream_state, stream_slice)
+        self._session = await self._create_session()
+        assert self._session
+        assert not self._session.closed
+        try:
+            stream_state = stream_state or {}
+            pagination_complete = False
+            next_page_token = None
+            while not pagination_complete:
+                async def f():
+                    nonlocal next_page_token
+                    assert not self._session.closed
+                    request, response = await self._fetch_next_page(stream_slice, stream_state, next_page_token)
+                    next_page_token = await self.next_page_token(response)
+                    return request, response, next_page_token
 
-            next_page_token = self.next_page_token(response)
-            if not next_page_token:
-                pagination_complete = True
+                request, response, next_page_token = await f()
 
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
+                async for record in records_generator_fn(request, response, stream_state, stream_slice):
+                    yield record
 
-    def _fetch_next_page(
+                if not next_page_token:
+                    pagination_complete = True
+        finally:
+            await self._session.close()
+
+    async def _fetch_next_page(
         self,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Tuple[requests.PreparedRequest, requests.Response]:
+    ) -> Tuple[aiohttp.ClientRequest, aiohttp.ClientResponse]:  # TODO: maybe don't need to return request too since its on aiohttp.ClientResponse
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -521,7 +563,8 @@ class HttpStream(Stream, ABC):
         )
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-        response = self._send_request(request, request_kwargs)
+        assert not self._session.closed
+        response = await self._send_request(request, request_kwargs)
         return request, response
 
 

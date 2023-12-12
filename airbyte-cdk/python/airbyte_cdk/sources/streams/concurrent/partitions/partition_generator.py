@@ -10,7 +10,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 
 class PartitionGenerator(ABC):
     @abstractmethod
-    def generate(self) -> Iterable[Partition]:
+    async def generate(self) -> Iterable[Partition]:
         """
         Generates partitions for a given sync mode.
         :return: An iterable of partitions

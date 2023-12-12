@@ -140,7 +140,7 @@ class StreamFacade(Stream):
         self._slice_logger = slice_logger
         self._logger = logger
 
-    def read_full_refresh(
+    async def read_full_refresh(
         self,
         cursor_field: Optional[List[str]],
         logger: logging.Logger,
@@ -153,9 +153,10 @@ class StreamFacade(Stream):
         :param slice_logger: (ignored)
         :return: Iterable of StreamData
         """
-        yield from self._read_records()
+        async for record in self._read_records():
+            yield record
 
-    def read_incremental(
+    async def read_incremental(
         self,
         cursor_field: Optional[List[str]],
         logger: logging.Logger,
@@ -165,22 +166,24 @@ class StreamFacade(Stream):
         per_stream_state_enabled: bool,
         internal_config: InternalConfig,
     ) -> Iterable[StreamData]:
-        yield from self._read_records()
+        async for record in self._read_records():
+            yield record
 
-    def read_records(
+    async def read_records(
         self,
         sync_mode: SyncMode,
         cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._read_records()
+        async for record in self._read_records():
+            yield record
 
-    def _read_records(self) -> Iterable[StreamData]:
-        for partition in self._abstract_stream.generate_partitions():
+    async def _read_records(self) -> Iterable[StreamData]:
+        async for partition in self._abstract_stream.generate_partitions():
             if self._slice_logger.should_log_slice_message(self._logger):
                 yield self._slice_logger.create_slice_log_message(partition.to_slice())
-            for record in partition.read():
+            async for record in partition.read():
                 yield record.data
 
     @property
@@ -278,7 +281,7 @@ class StreamPartition(Partition):
         self._cursor = cursor
         self._is_closed = False
 
-    def read(self) -> Iterable[Record]:
+    async def read(self) -> Iterable[Record]:
         """
         Read messages from the stream.
         If the StreamData is a Mapping, it will be converted to a Record.
@@ -291,7 +294,7 @@ class StreamPartition(Partition):
             #  * parse_response
             #  Both are not used for Stripe so we should be good for the first iteration of Concurrent CDK. However, Stripe still do
             #  `if not stream_state` to know if it calls the Event stream or not
-            for record_data in self._stream.read_records(
+            async for record_data in self._stream.read_records(
                 cursor_field=self._cursor_field,
                 sync_mode=SyncMode.full_refresh,
                 stream_slice=copy.deepcopy(self._slice),
@@ -365,7 +368,7 @@ class StreamPartitionGenerator(PartitionGenerator):
         self._state = state
         self._cursor = cursor
 
-    def generate(self) -> Iterable[Partition]:
+    async def generate(self) -> Iterable[Partition]:
         for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
             yield StreamPartition(
                 self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor

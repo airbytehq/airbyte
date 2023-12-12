@@ -139,7 +139,7 @@ class SourceSalesforce(AbstractSource):
         for stream in streams:
             sync_mode = self._get_sync_mode_from_catalog(stream)
             if sync_mode == SyncMode.full_refresh:
-                configured_streams.append(StreamFacade.create_from_stream(stream, self, logger, self.MAX_WORKERS, None, NoopCursor()))
+                configured_streams.append(StreamFacade.create_from_stream(stream, self, logger, None, NoopCursor()))
             else:
                 configured_streams.append(stream)
         return configured_streams
@@ -165,7 +165,7 @@ class SourceSalesforce(AbstractSource):
         except AirbyteStopSync:
             logger.info(f"Finished syncing {self.name}")
 
-    def _read_stream(
+    async def _read_stream(
         self,
         logger: logging.Logger,
         stream_instance: Stream,
@@ -174,7 +174,8 @@ class SourceSalesforce(AbstractSource):
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         try:
-            yield from super()._read_stream(logger, stream_instance, configured_stream, state_manager, internal_config)
+            async for record in super()._read_stream(logger, stream_instance, configured_stream, state_manager, internal_config):
+                yield record
         except exceptions.HTTPError as error:
             error_data = error.response.json()[0]
             error_code = error_data.get("errorCode")
