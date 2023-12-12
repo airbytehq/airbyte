@@ -62,8 +62,12 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
 
   protected DataType<?> toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
-      case STRING -> SQLDataType.VARCHAR;
-      case NUMBER -> SQLDataType.FLOAT;
+      // Many destinations default to a very short length (e.g. Redshift defaults to 256).
+      // Explicitly set 64KiB here. Subclasses may want to override this value.
+      case STRING -> SQLDataType.VARCHAR(65535);
+      // We default to precision=38, scale=9 across destinations.
+      // This is the default numeric parameters for both redshift and bigquery.
+      case NUMBER -> SQLDataType.DECIMAL(38, 9);
       case INTEGER -> SQLDataType.BIGINT;
       case BOOLEAN -> SQLDataType.BOOLEAN;
       case TIMESTAMP_WITH_TIMEZONE -> SQLDataType.TIMESTAMPWITHTIMEZONE;

@@ -696,7 +696,7 @@ class PostgresSourceTest {
   @Test
   void testParseJdbcParameters() {
     final String jdbcPropertiesString = "foo=bar&options=-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000&baz=quux";
-    Map<String, String> parameters = PostgresSource.parseJdbcParameters(jdbcPropertiesString, "&");
+    final Map<String, String> parameters = PostgresSource.parseJdbcParameters(jdbcPropertiesString, "&");
     assertEquals("-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000", parameters.get("options"));
     assertEquals("bar", parameters.get("foo"));
     assertEquals("quux", parameters.get("baz"));
