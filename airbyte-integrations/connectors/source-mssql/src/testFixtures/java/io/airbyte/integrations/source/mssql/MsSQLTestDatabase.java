@@ -26,9 +26,8 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   public static enum BaseImage {
 
-    MSSQL_2022_UBUNTU_20_04("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04"),
-    MSSQL_2022_LATEST("mcr.microsoft.com/mssql/server:2022-latest"),
-    MSSQL_2017_LATEST("mcr.microsoft.com/mssql/server:2017-latest"),
+    MSSQL_2022("mcr.microsoft.com/mssql/server:2022-latest"),
+    MSSQL_2017("mcr.microsoft.com/mssql/server:2017-latest"),
     ;
 
     private final String reference;
@@ -39,8 +38,22 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   }
 
-  static public MsSQLTestDatabase in(BaseImage imageName, String... methods) {
-    final var container = new MsSQLContainerFactory().shared(imageName.reference, methods);
+  public static enum ContainerModifier {
+
+    NETWORK("withNetwork"),
+    AGENT("withAgent");
+
+    private final String methodName;
+
+    private ContainerModifier(String methodName) {
+      this.methodName = methodName;
+    }
+
+  }
+
+  static public MsSQLTestDatabase in(BaseImage imageName, ContainerModifier... methods) {
+    String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
+    final var container = new MsSQLContainerFactory().shared(imageName.reference, methodNames);
     final var testdb = new MsSQLTestDatabase(container);
     return testdb
         .withConnectionProperty("encrypt", "false")

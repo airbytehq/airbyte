@@ -48,7 +48,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
 
   @Override
   protected MsSQLTestDatabase createTestDatabase() {
-    return MsSQLTestDatabase.in(BaseImage.MSSQL_2022_LATEST);
+    return MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
   }
 
   @Override

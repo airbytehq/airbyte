@@ -36,7 +36,8 @@ public class GeneralStagingFunctions {
         final String dstTableName = writeConfig.getOutputTableName();
         final String stageName = stagingOperations.getStageName(schema, dstTableName);
         final String stagingPath =
-            stagingOperations.getStagingPath(SerialStagingConsumerFactory.RANDOM_CONNECTION_ID, schema, stream, writeConfig.getWriteDatetime());
+            stagingOperations.getStagingPath(SerialStagingConsumerFactory.RANDOM_CONNECTION_ID, schema, stream, writeConfig.getOutputTableName(),
+                writeConfig.getWriteDatetime());
 
         log.info("Preparing staging area in destination started for schema {} stream {}: target table: {}, stage: {}",
             schema, stream, dstTableName, stagingPath);

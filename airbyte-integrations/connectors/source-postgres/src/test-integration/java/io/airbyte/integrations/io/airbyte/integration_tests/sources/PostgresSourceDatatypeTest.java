@@ -22,7 +22,7 @@ public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTe
 
   @Override
   protected Database setupDatabase() throws SQLException {
-    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, ContainerModifier.CONF)
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.CONF)
         .with("CREATE SCHEMA %S;", SCHEMA_NAME)
         .with("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');")
         .with("CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);")

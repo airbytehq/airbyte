@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.57.1
+Improve integration tests tooling
+
+## 0.57.0
+low-code: cache requests sent for parent streams
+
+## 0.56.1
+no-op to verify pypi publish flow
+
 ## 0.56.0
 Allow for connectors to continue syncing when a stream fails
 
