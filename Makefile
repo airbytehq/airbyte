@@ -6,7 +6,7 @@ AIRBYTE_CI_VERSION ?= latest
 ## Detect the operating system
 OS := $(shell uname)
 
-tools.airbyte-ci.install: tools.airbyte-ci-binary.install tools.airbyte-ci.check
+tools.airbyte-ci.install: tools.airbyte-ci.clean tools.airbyte-ci-binary.install tools.airbyte-ci.check
 
 tools.airbyte-ci-binary.install: ## Install airbyte-ci
 	@python airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_install.py ${AIRBYTE_CI_VERSION}
