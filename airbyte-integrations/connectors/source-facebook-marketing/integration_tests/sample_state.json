@@ -1,4 +1,20 @@
 [
+    {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "1101472513921186": {
+          "slices": [
+            "2023-12-07"
+          ],
+          "updated_time": "2023-12-07"
+        }
+      },
+      "stream_descriptor": {
+        "name": "images"
+      }
+    }
+  },
   {
     "type": "STREAM",
     "stream": {
@@ -20,18 +36,6 @@
       },
       "stream_descriptor": {
         "name": "ads_insights"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date_start": "2023-10-19T00:00:00Z",
-        "include_deleted": true
-      },
-      "stream_descriptor": {
-        "name": "ads_insights_age_and_gender"
       }
     }
   },

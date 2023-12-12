@@ -3,16 +3,19 @@
 #
 import json
 import logging
-from typing import Any, List, Mapping, Optional, Tuple, Type, Iterator
+from typing import Any, List, Mapping, Optional, Tuple, Type, Iterator, Union, MutableMapping
 
 from airbyte_cdk.models import Type as MessageType
 import facebook_business
 import pendulum
+from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.models import (
     AdvancedAuth,
     AuthFlowType,
     AirbyteLogMessage,
+    AirbyteStateMessage,
     ConnectorSpecification,
+    ConfiguredAirbyteCatalog,
     DestinationSyncMode,
     FailureType,
     OAuthConfigSpecification,
@@ -20,6 +23,7 @@ from airbyte_cdk.models import (
     Level,
     ConfiguredAirbyteStream,
     AirbyteMessage,
+    AirbyteStreamStatus
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -62,13 +66,18 @@ from source_facebook_marketing.streams import (
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 
+from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
+
 from .utils import validate_end_date, validate_start_date
+
+from airbyte_cdk.sources.streams.http.http import HttpStream
 
 logger = logging.getLogger("airbyte")
 UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
 class SourceFacebookMarketing(AbstractSource):
+
     def _read_incremental(
             self,
             logger: logging.Logger,
@@ -121,7 +130,7 @@ class SourceFacebookMarketing(AbstractSource):
                 if message.type == MessageType.RECORD:
                     record = message.record
                     account_id = stream_instance._api.account._data["id"]
-                    stream_state = stream_instance.get_updated_state(stream_state, record.data, account_id=account_id)
+                    stream_state = stream_instance.get_updated_state(stream_state, record.data)
                     checkpoint_interval = stream_instance.state_checkpoint_interval
                     record_counter += 1
                     if checkpoint_interval and record_counter % checkpoint_interval == 0:
@@ -143,6 +152,49 @@ class SourceFacebookMarketing(AbstractSource):
             # Safety net to ensure we always emit at least one state message even if there are no slices
             checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
             yield checkpoint
+
+    def should_log_slice_message(self, logger: logging.Logger):
+        """
+
+        :param logger:
+        :return:
+        """
+        return logger.isEnabledFor(logging.DEBUG)
+
+    def _create_slice_log_message(self, _slice: Optional[Mapping[str, Any]]) -> AirbyteMessage:
+        """
+        Mapping is an interface that can be implemented in various ways. However, json.dumps will just do a `str(<object>)` if
+        the slice is a class implementing Mapping. Therefore, we want to cast this as a dict before passing this to json.dump
+        """
+        printable_slice = dict(_slice) if _slice else _slice
+        return AirbyteMessage(
+            type=MessageType.LOG,
+            log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(printable_slice, default=str)}"),
+        )
+
+    @staticmethod
+    def _limit_reached(internal_config: InternalConfig, records_counter: int) -> bool:
+        """
+        Check if record count reached limit set by internal config.
+        :param internal_config - internal CDK configuration separated from user defined config
+        :records_counter - number of records already red
+        :return True if limit reached, False otherwise
+        """
+        if internal_config.limit:
+            if records_counter >= internal_config.limit:
+                return True
+        return False
+
+    def _checkpoint_state(self, stream: Stream, stream_state, state_manager: ConnectorStateManager):
+        # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
+        # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
+        # instance's deprecated get_updated_state() method.
+        try:
+            state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
+
+        except AttributeError or TypeError:
+            state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
+        return state_manager.create_state_message(stream.name, stream.namespace, send_per_stream_state=self.per_stream_state_enabled)
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
         config.setdefault("action_breakdowns_allow_empty", False)
