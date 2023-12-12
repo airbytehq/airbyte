@@ -1,54 +1,63 @@
 # BigCommerce
 
-此页面包含BigCommerce的设置指南和参考信息。
+This page contains the setup guide and reference information for BigCommerce.
 
-## 功能
+## Features
 
-| 功能 | 是否支持 |
+| Feature | Supported? |
 | --- | --- |
-| 完全更新同步 | 支持 |
-| 增量 - 追加同步 | 支持 |
-| 命名空间 | 不支持 |
+| Full Refresh Sync | Yes |
+| Incremental - Append Sync | Yes |
+| Namespaces | No |
 
-## 设置指南
+## Setup guide
 
-1. 导航到您店铺的控制面板（Advanced Settings \> API Accounts \> Create API Account）
+1. Navigate to your store's control panel (Advanced Settings \> API Accounts \> Create API Account)
 
-2. 创建一个API帐户。
+2. Create an API account.
 
-3. 选择您要允许访问的资源。Daspire只需要读取级别的访问权限。
+3. Select the resources you want to allow access to. Daspire only needs read-level access.
 
-  > **注意：** 用户界面将显示所有可能的数据源，如果它没有访问资源的权限，则会在同步时显示错误。
+  > **Note:** The UI will show all possible data sources and will show errors when syncing if it doesn't have permissions to access a resource.
 
-4. 生成的刷新令牌将用作接口的access\_token。
+4. The generated Access Token is what you'll use as the access\_token for the integration.
 
-5. 您已准备好在Daspire中设置BigCommerce！
+5. You're ready to set up BigCommerce in Daspire!
 
-## 同步概览
+## Sync overview
 
-BigCommerce数据源支持**完全刷新复制**和**增量复制**同步。每次运行同步时，您可以选择仅复制新数据或更新数据，或您为复制设置的表和列中的所有行。
+The BigCommerce source supports both **Full Refresh** and **Incremental** syncs. You can choose to copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-Daspire可以为[BigCommerce API](https://developer.bigcommerce.com/api-docs/getting-started/making-requests)同步数据。
+Daspire can sync data for the [BigCommerce API](https://developer.bigcommerce.com/api-docs/getting-started/making-requests).
 
-## 支持的数据流
+## Output schema
 
-此数据源能够同步以下数据流：
+This Source is capable of syncing the following core Streams:
 
-* [顾客（Customers）](https://developer.bigcommerce.com/api-reference/store-management/customers-v3/customers/customersget)
-* [订单（Orders）](https://developer.bigcommerce.com/api-reference/store-management/orders/orders/getallorders)
-* [交易（Transactions）](https://developer.bigcommerce.com/api-reference/store-management/order-transactions/transactions/gettransactions)
-* [页面（Pages）](https://developer.bigcommerce.com/api-reference/store-management/store-content/pages/getallpages)
-* [产品（Products）](https://developer.bigcommerce.com/api-reference/store-management/catalog/products/getproducts)
+* [Customers](https://developer.bigcommerce.com/api-reference/store-management/customers-v3/customers/customersget)
+* [Orders](https://developer.bigcommerce.com/api-reference/store-management/orders/orders/getallorders)
+* [Transactions](https://developer.bigcommerce.com/docs/rest-management/transactions#get-transactions)
+* [Pages](https://developer.bigcommerce.com/api-reference/store-management/store-content/pages/getallpages)
+* [Products](https://developer.bigcommerce.com/api-reference/store-management/catalog/products/getproducts)
+* [Channels](https://developer.bigcommerce.com/api-reference/d2298071793d6-get-all-channels)
+* [Store](https://developer.bigcommerce.com/docs/rest-management/store-information#get-store-information)
+* [OrderProducts](https://developer.bigcommerce.com/api-reference/3b4dfef625708-list-order-products)
+* [Brands](https://developer.bigcommerce.com/api-reference/c2610608c20c8-get-all-brands)
+* [Categories](https://developer.bigcommerce.com/api-reference/9cc3a53863922-get-all-categories)
 
-## 数据类型映射
+## Data type mapping
 
-| 集成类型 | Daspire类型 |
+| Integration Type | Daspire Type |
 | --- | --- |
 | `string` | `string` |
 | `number` | `number` |
 | `array` | `array` |
 | `object` | `object` |
 
-## 性能考虑
+## Performance considerations
 
-BigCommerce有一些[速率限制](https://developer.bigcommerce.com/api-docs/getting-started/best-practices).
+BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com/api-docs/getting-started/best-practices).
+
+## Troubleshooting
+
+Max number of tables that can be synced at a time is 6,000. We advise you to adjust your settings if it fails to fetch schema due to max number of tables reached.
