@@ -24,7 +24,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -236,9 +235,10 @@ public class DefaultTyperDeduperTest {
         new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new StreamSyncSummary(Optional.of(0L)),
         new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new StreamSyncSummary(Optional.of(1L))));
 
-    // Only append_stream should be T+D-ed. overwrite_stream has explicitly 0 records, and dedup_stream
-    // is missing from the map, so implicitly has 0 records.
+    // append_stream and dedup_stream should be T+D-ed. overwrite_stream has explicitly 0 records, but dedup_stream
+    // is missing from the map, so implicitly has nonzero records.
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING");
+    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING");
     verifyNoMoreInteractions(destinationHandler);
   }
 
