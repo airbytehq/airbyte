@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+
 import pytest
 import requests
 import responses
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
 from responses import matchers
 from source_jira.source import SourceJira
@@ -69,10 +70,14 @@ def test_application_roles_stream_401_error(config, caplog):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ApplicationRoles(**args)
-    with pytest.raises(AirbyteTracedException) as e:
-        [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
-    assert e.value.message == "Config validation error: Invalid creds were provided, please check your api token, domain and/or email."
-    assert "Invalid creds were provided, please check your api token, domain and/or email." in caplog.text
+
+    is_available, reason = stream.check_availability(logger=logging.Logger, source=SourceJira())
+
+    assert is_available is False
+
+    assert reason == (
+        "Unable to read application_roles stream. The endpoint https://test_application_domain/rest/api/3/applicationrole?maxResults=50 returned 401: Unauthorized. Invalid creds were provided, please check your api token, domain and/or email.. Please visit https://docs.airbyte.com/integrations/sources/jira to learn more.  "
+    )
 
 
 @responses.activate
@@ -128,9 +133,19 @@ def test_board_stream_forbidden(config, boards_response, caplog):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Boards(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
-    assert records == []
-    assert "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access." in caplog.text
+    is_available, reason = stream.check_availability(logger=logging.Logger, source=SourceJira())
+
+    assert is_available is False
+
+    assert reason == (
+        "Unable to read boards stream. The endpoint "
+        "https://test_boards_domain/rest/agile/1.0/board?maxResults=50 returned 403: "
+        "Forbidden. Please check the 'READ' permission(Scopes for Connect apps) "
+        "and/or the user has Jira Software rights and access.. Please visit "
+        "https://docs.airbyte.com/integrations/sources/jira to learn more.  "
+        "403 Client Error: Forbidden for url: "
+        "https://test_boards_domain/rest/agile/1.0/board?maxResults=50"
+    )
 
 
 @responses.activate
@@ -352,7 +367,7 @@ def test_board_issues_stream(config, mock_board_response, board_issues_response)
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/agile/1.0/board/2/issue?maxResults=50&fields=key&fields=created&fields=updated",
-        json={'errorMessages': ['This board has no columns with a mapped status.'], 'errors': {}},
+        json={"errorMessages": ["This board has no columns with a mapped status."], "errors": {}},
         status=500,
     )
     responses.add(
