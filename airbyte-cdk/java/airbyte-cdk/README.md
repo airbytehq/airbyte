@@ -156,6 +156,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.1   | 2023-12-01 | [\#33027](https://github.com/airbytehq/airbyte/pull/33027) | Add the abstract DB source debugger.                                                                                                                           |
 | 0.7.0   | 2023-12-07 | [\#32326](https://github.com/airbytehq/airbyte/pull/32326) | Destinations V2 changes for JDBC destinations                                                                                                                  |
 | 0.6.4   | 2023-12-06 | [\#33082](https://github.com/airbytehq/airbyte/pull/33082) | Improvements to schema snapshot error handling + schema snapshot history scope (scoped to configured DB).                                                      |
 | 0.6.2   | 2023-11-30 | [\#32573](https://github.com/airbytehq/airbyte/pull/32573) | Update MSSQLConverter to enforce 6-digit microsecond precision for timestamp fields                                                                            |
