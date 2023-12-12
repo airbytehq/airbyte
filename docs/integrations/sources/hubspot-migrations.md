@@ -2,10 +2,10 @@
 
 ## Upgrading to 2.0.0
 
-Note: this change is only breaking if you are using PropertyHistory stream
+Note: this change is only breaking if you are using the PropertyHistory stream.
 
-With this update, we have access to historical property changes for Deals and Companies, just like we have it for Contacts. That is why Property History stream was renamed to Contacts Property History and two new streams were added: Deals Property History and Companies Property History.
-This is a breaking change because Property History by fact was replaced with Contacts Property History, so please follow the instructions below to migrate to version 2.0.0:
+With this update, you can now access historical property changes for Deals and Companies, in addition to Contacts. Property History stream has been renamed to Contacts Property History (since it historically contained historical property changes from Contacts) and two new streams were added: Deals Property History and Companies Property History.
+This is a breaking change because Property History has been replaced with Contacts Property History, so please follow the instructions below to migrate to version 2.0.0:
 
 1. Select **Connections** in the main navbar.
 1.1 Select the connection(s) affected by the update.
