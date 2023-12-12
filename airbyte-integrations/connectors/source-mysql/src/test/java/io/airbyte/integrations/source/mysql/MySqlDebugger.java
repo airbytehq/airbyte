@@ -15,4 +15,5 @@ public class MySqlDebugger {
     mysqlSource.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
     DebugUtil.debug(mysqlSource);
   }
+
 }

@@ -12,4 +12,5 @@ public class MongoDbDebugger {
     final MongoDbSource mongoDbSource = new MongoDbSource();
     DebugUtil.debug(mongoDbSource);
   }
+
 }
