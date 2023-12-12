@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
@@ -78,6 +79,14 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      return createTableQueryV2(schemaName, tableName);
+    } else {
+      return createTableQueryV1(schemaName, tableName);
+    }
+  }
+
+  protected String createTableQueryV1(final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -87,14 +96,32 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
+  protected String createTableQueryV2(final String schemaName, final String tableName) {
+    return String.format(
+        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+            + "%s VARCHAR PRIMARY KEY,\n"
+            + "%s JSONB,\n"
+            + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
+            + "%s TIMESTAMP WITH TIME ZONE DEFAULT NULL\n"
+            + ");\n",
+        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT);
+  }
+
+  // TODO: This method seems to be used by Postgres and others while staging to local temp files.
+  // Should there be a Local staging operations equivalent
   protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
     try (final PrintWriter writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
         final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
       for (final AirbyteRecordMessage record : records) {
         final var uuid = UUID.randomUUID().toString();
         final var jsonData = Jsons.serialize(formatData(record.getData()));
-        final var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
-        csvPrinter.printRecord(uuid, jsonData, emittedAt);
+        final var extractedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
+        if (TypingAndDedupingFlag.isDestinationV2()) {
+          csvPrinter.printRecord(uuid, jsonData, extractedAt, null);
+        } else {
+          csvPrinter.printRecord(uuid, jsonData, extractedAt);
+        }
       }
     }
   }
@@ -158,13 +185,23 @@ public abstract class JdbcSqlOperations implements SqlOperations {
       adapter.adapt(data);
       airbyteRecordMessage.setSerialized(Jsons.serialize(data));
     }));
-    insertRecordsInternal(database, records, schemaName, tableName);
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      insertRecordsInternalV2(database, records, schemaName, tableName);
+    } else {
+      insertRecordsInternal(database, records, schemaName, tableName);
+    }
   }
 
   protected abstract void insertRecordsInternal(JdbcDatabase database,
                                                 List<PartialAirbyteMessage> records,
                                                 String schemaName,
                                                 String tableName)
+      throws Exception;
+
+  protected abstract void insertRecordsInternalV2(JdbcDatabase database,
+                                                  List<PartialAirbyteMessage> records,
+                                                  String schemaName,
+                                                  String tableName)
       throws Exception;
 
 }

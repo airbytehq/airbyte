@@ -139,6 +139,7 @@ At this point you can run `airbyte-ci` commands.
 | `--pipeline-start-timestamp`                   | Current epoch time              | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.            |
 | `--show-dagger-logs/--hide-dagger-logs`        | `--hide-dagger-logs`            |                               | Flag to show or hide the dagger logs.                                                            |
 
+
 ### <a id="connectors-command-subgroup"></a>`connectors` command subgroup
 
 Available commands:
@@ -310,10 +311,10 @@ flowchart TD
 
 ### Options
 
-| Option                | Multiple | Default value  | Description                                                       |
-| --------------------- | -------- | -------------- | ----------------------------------------------------------------- |
+| Option                | Multiple | Default value  | Description                                                          |
+| --------------------- | -------- | -------------- | -------------------------------------------------------------------- |
 | `--architecture`/`-a` | True     | Local platform | Defines for which architecture(s) the connector image will be built. |
-| `--tag`               | False    | `dev`          | Image tag for the built image.                                    |
+| `--tag`               | False    | `dev`          | Image tag for the built image.                                       |
 
 
 ### <a id="connectors-publish-command"></a>`connectors publish` command
@@ -398,6 +399,13 @@ Available commands:
 * `airbyte-ci format check all`
 * `airbyte-ci format fix all`
 
+### Options
+| Option       | Required | Default | Mapped environment variable | Description                                    |
+| ------------ | -------- | ------- | --------------------------- | ---------------------------------------------- |
+| `--quiet/-q` | False    | False   |                             | Hide formatter execution details in reporting. |
+
+
+
 ### Examples
 - Check for formatting errors in the repository: `airbyte-ci format check all`
 - Fix formatting for only python files: `airbyte-ci format fix python`
@@ -454,13 +462,16 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.10.7  | [#33248](https://github.com/airbytehq/airbyte/pull/33248)  | Fix bug which broke airbyte-ci connectors tests when optional DockerHub credentials env vars are not set. |
+| 2.10.6  | [#33170](https://github.com/airbytehq/airbyte/pull/33170)  | Remove Dagger logs from console output of `format`.                                                       |
+| 2.10.5  | [#33097](https://github.com/airbytehq/airbyte/pull/33097)  | Improve `format` performances, exit with 1 status code when `fix` changes files.                          |
 | 2.10.4  | [#33206](https://github.com/airbytehq/airbyte/pull/33206)  | Add "-y/--yes" Flag to allow preconfirmation of prompts                                                    |
 | 2.10.3  | [#33080](https://github.com/airbytehq/airbyte/pull/33080)  | Fix update failing due to SSL error on install.                                                           |
 | 2.10.2  | [#33008](https://github.com/airbytehq/airbyte/pull/33008)  | Fix local `connector build`.                                                                              |
 | 2.10.1  | [#32928](https://github.com/airbytehq/airbyte/pull/32928)  | Fix BuildConnectorImages constructor.                                                                     |
 | 2.10.0  | [#32819](https://github.com/airbytehq/airbyte/pull/32819)  | Add `--tag` option to connector build.                                                                    |
 | 2.9.0   | [#32816](https://github.com/airbytehq/airbyte/pull/32816)  | Add `--architecture` option to connector build.                                                           |
-| 2.8.1   | [#32999](https://github.com/airbytehq/airbyte/pull/32999)  | Improve Java code formatting speed                       |
+| 2.8.1   | [#32999](https://github.com/airbytehq/airbyte/pull/32999)  | Improve Java code formatting speed                                                                        |
 | 2.8.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Move pipx install to `airbyte-ci-dev`, and add auto-update feature targeting binary                       |
 | 2.7.3   | [#32847](https://github.com/airbytehq/airbyte/pull/32847)  | Improve --modified behaviour for pull requests.                                                           |
 | 2.7.2   | [#32839](https://github.com/airbytehq/airbyte/pull/32839)  | Revert changes in v2.7.1.                                                                                 |

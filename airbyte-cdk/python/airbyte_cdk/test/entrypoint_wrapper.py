@@ -17,23 +17,28 @@ than that, there are integrations point that are annoying to integrate with usin
 import json
 import logging
 import tempfile
+import traceback
 from io import StringIO
 from pathlib import Path
 from typing import Any, List, Mapping, Optional, Union
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
+from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.sources import Source
-from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level, TraceType, Type
+from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, AirbyteStreamStatus, ConfiguredAirbyteCatalog, Level, TraceType, Type
 from pydantic.error_wrappers import ValidationError
 
 
 class EntrypointOutput:
-    def __init__(self, messages: List[str]):
+    def __init__(self, messages: List[str], uncaught_exception: Optional[BaseException] = None):
         try:
             self._messages = [self._parse_message(message) for message in messages]
         except ValidationError as exception:
             raise ValueError("All messages are expected to be AirbyteMessage") from exception
+
+        if uncaught_exception:
+            self._messages.append(assemble_uncaught_exception(type(uncaught_exception), uncaught_exception).as_airbyte_message())
 
     @staticmethod
     def _parse_message(message: str) -> AirbyteMessage:
@@ -65,15 +70,41 @@ class EntrypointOutput:
 
     @property
     def analytics_messages(self) -> List[AirbyteMessage]:
-        return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == TraceType.ANALYTICS]
+        return self._get_trace_message_by_trace_type(TraceType.ANALYTICS)
+
+    @property
+    def errors(self) -> List[AirbyteMessage]:
+        return self._get_trace_message_by_trace_type(TraceType.ERROR)
+
+    def get_stream_statuses(self, stream_name: str) -> List[AirbyteStreamStatus]:
+        status_messages = map(
+            lambda message: message.trace.stream_status.status,
+            filter(
+                lambda message: message.trace.stream_status.stream_descriptor.name == stream_name,
+                self._get_trace_message_by_trace_type(TraceType.STREAM_STATUS),
+            ),
+        )
+        return list(status_messages)
 
     def _get_message_by_types(self, message_types: List[Type]) -> List[AirbyteMessage]:
         return [message for message in self._messages if message.type in message_types]
 
+    def _get_trace_message_by_trace_type(self, trace_type: TraceType) -> List[AirbyteMessage]:
+        return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == trace_type]
 
-def read(source: Source, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: Optional[Any] = None) -> EntrypointOutput:
+
+def read(
+    source: Source,
+    config: Mapping[str, Any],
+    catalog: ConfiguredAirbyteCatalog,
+    state: Optional[Any] = None,
+    expecting_exception: bool = False,
+) -> EntrypointOutput:
     """
     config and state must be json serializable
+
+    :param expecting_exception: By default if there is an uncaught exception, the exception will be printed out. If this is expected, please
+        provide expecting_exception=True so that the test output logs are cleaner
     """
     log_capture_buffer = StringIO()
     stream_handler = logging.StreamHandler(log_capture_buffer)
@@ -100,12 +131,23 @@ def read(source: Source, config: Mapping[str, Any], catalog: ConfiguredAirbyteCa
             )
         source_entrypoint = AirbyteEntrypoint(source)
         parsed_args = source_entrypoint.parse_args(args)
-        messages = list(source_entrypoint.run(parsed_args))
+
+        messages = []
+        uncaught_exception = None
+        try:
+            for message in source_entrypoint.run(parsed_args):
+                messages.append(message)
+        except Exception as exception:
+            if not expecting_exception:
+                print("Printing unexpected error from entrypoint_wrapper")
+                print("".join(traceback.format_exception(None, exception, exception.__traceback__)))
+            uncaught_exception = exception
+
         captured_logs = log_capture_buffer.getvalue().split("\n")[:-1]
 
         parent_logger.removeHandler(stream_handler)
 
-        return EntrypointOutput(messages + captured_logs)
+        return EntrypointOutput(messages + captured_logs, uncaught_exception)
 
 
 def make_file(path: Path, file_contents: Optional[Union[str, Mapping[str, Any], List[Mapping[str, Any]]]]) -> str:
