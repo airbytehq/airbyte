@@ -11,10 +11,12 @@
       "type": ["null", "string"]
     },
     "purchase-date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "payments-date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "buyer-email": {
       "type": ["null", "string"]
@@ -125,7 +127,8 @@
       "type": ["null", "string"]
     },
     "license-expiration-date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "Address-Type": {
       "type": ["null", "string"]
@@ -183,6 +186,10 @@
     },
     "actual-ship-from-address-postal-code": {
       "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

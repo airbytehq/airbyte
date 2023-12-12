@@ -53,7 +53,8 @@
             "primary_key": {
               "title": "Primary Key",
               "description": "The column or columns (for a composite key) that serves as the unique identifier of a record.",
-              "type": "string"
+              "type": "string",
+              "airbyte_hidden": true
             },
             "days_to_sync_if_history_is_full": {
               "title": "Days To Sync If History Is Full",
@@ -304,6 +305,8 @@
           "https://drive.google.com/drive/folders/1Xaz0vXXXX2enKnNYU5qSt9NS70gvMyYn"
         ],
         "order": 0,
+        "pattern": "^https://drive.google.com/.+",
+        "pattern_descriptor": "https://drive.google.com/drive/folders/MY-FOLDER-ID",
         "type": "string"
       },
       "credentials": {

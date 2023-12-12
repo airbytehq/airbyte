@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.source.mssql.MssqlSource.IS_COMPRESSED;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
 
@@ -36,6 +37,7 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
     final Map<String, Object> state = new HashMap<>();
     state.put(MSSQL_CDC_OFFSET, offset);
     state.put(MSSQL_DB_HISTORY, dbHistory.schema());
+    state.put(IS_COMPRESSED, dbHistory.isCompressed());
 
     final JsonNode asJson = Jsons.jsonNode(state);
 
@@ -54,6 +56,11 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   @Override
   public AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams() {
     throw new RuntimeException("Snapshot of individual tables is not implemented in MSSQL");
+  }
+
+  @Override
+  public boolean compressSchemaHistoryForState() {
+    return true;
   }
 
 }

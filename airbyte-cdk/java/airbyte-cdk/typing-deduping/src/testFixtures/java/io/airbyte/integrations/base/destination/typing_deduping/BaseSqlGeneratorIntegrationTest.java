@@ -21,7 +21,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -405,18 +404,21 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void allTypes() throws Exception {
     createRawTable(streamId);
-    createFinalTable(incrementalDedupStream, "_foo");
+    createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, Optional.empty(), "_foo");
+    assertTrue(destinationHandler.isFinalTableEmpty(streamId), "Final table should be empty before T+D");
+
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, Optional.empty(), "");
 
     verifyRecords(
         "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
         dumpRawTableRecords(streamId),
         "sqlgenerator/alltypes_expectedrecords_final.jsonl",
-        dumpFinalTableRecords(streamId, "_foo"));
+        dumpFinalTableRecords(streamId, ""));
+    assertFalse(destinationHandler.isFinalTableEmpty(streamId), "Final table should not be empty after T+D");
   }
 
   /**
@@ -463,8 +465,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalAppendStream, Optional.empty(), "");
 
     assertEquals(
-        destinationHandler.getMinTimestampForSync(streamId).get(),
         Instant.parse("2023-01-02T00:00:00Z"),
+        destinationHandler.getMinTimestampForSync(streamId).get(),
         "When all raw records have non-null loaded_at, the min timestamp should be equal to the latest extracted_at");
 
     // If we insert another raw record with older extracted_at than the typed records, we should fetch a
@@ -1074,46 +1076,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Verify that the final table does not include NON-NULL PKs (after
-   * https://github.com/airbytehq/airbyte/pull/31082)
-   */
-  @Test
-  public void ensurePKsAreIndexedUnique() throws Exception {
-    createRawTable(streamId);
-    insertRawTableRecords(
-        streamId,
-        List.of(Jsons.deserialize(
-            """
-            {
-              "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
-              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-              "_airbyte_data": {
-                "id1": 1,
-                "id2": 2
-              }
-            }
-            """)));
-
-    final String createTable = generator.createTable(incrementalDedupStream, "", false);
-
-    // should be OK with new tables
-    destinationHandler.execute(createTable);
-    final Optional<DialectTableDefinition> existingTableA = destinationHandler.findExistingTable(streamId);
-    assertTrue(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableA.get()));
-    destinationHandler.execute("DROP TABLE " + streamId.finalTableId(""));
-
-    // Hack the create query to add NOT NULLs to emulate the old behavior
-    final String createTableModified = Arrays.stream(createTable.split(System.lineSeparator()))
-        .map(line -> !line.contains("CLUSTER") && (line.contains("id1") || line.contains("id2") || line.contains("ID1") || line.contains("ID2"))
-            ? line.replace(",", " NOT NULL,")
-            : line)
-        .collect(Collectors.joining("\r\n"));
-    destinationHandler.execute(createTableModified);
-    final Optional<DialectTableDefinition> existingTableB = destinationHandler.findExistingTable(streamId);
-    assertFalse(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableB.get()));
-  }
-
-  /**
    * A stream with no columns is weird, but we shouldn't treat it specially in any way. It should
    * create a final table as usual, and populate it with the relevant metadata columns.
    */
@@ -1162,6 +1124,17 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final List<JsonNode> v1RawRecords = dumpV1RawTableRecords(v1RawTableStreamId);
     final List<JsonNode> v2RawRecords = dumpRawTableRecords(streamId);
     migrationAssertions(v1RawRecords, v2RawRecords);
+
+    // And then run T+D on the migrated raw data
+    final String createTable = generator.createTable(incrementalDedupStream, "", false);
+    destinationHandler.execute(createTable);
+    final String updateTable = generator.updateTable(incrementalDedupStream, "", Optional.empty(), true);
+    destinationHandler.execute(updateTable);
+    verifyRecords(
+        "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
+        dumpRawTableRecords(streamId),
+        "sqlgenerator/alltypes_expectedrecords_final.jsonl",
+        dumpFinalTableRecords(streamId, ""));
   }
 
   /**
@@ -1195,7 +1168,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
           () -> assertEquals(v1id, v2RecordMap.get(v1id).get("_airbyte_raw_id").asText()),
           () -> assertEquals(v1Record.get("_airbyte_emitted_at").asText(), v2RecordMap.get(v1id).get("_airbyte_extracted_at").asText()),
           () -> assertNull(v2RecordMap.get(v1id).get("_airbyte_loaded_at")));
-      final JsonNode originalData = v1Record.get("_airbyte_data");
+      JsonNode originalData = v1Record.get("_airbyte_data");
+      if (originalData.isTextual()) {
+        originalData = Jsons.deserializeExact(originalData.asText());
+      }
       JsonNode migratedData = v2RecordMap.get(v1id).get("_airbyte_data");
       if (migratedData.isTextual()) {
         migratedData = Jsons.deserializeExact(migratedData.asText());

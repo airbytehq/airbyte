@@ -59,4 +59,9 @@ class MockSqlGenerator implements SqlGenerator<String> {
     return "PREPARE " + String.join(".", stream.id().originalNamespace(), stream.id().originalName()) + " FOR SOFT RESET";
   }
 
+  @Override
+  public String clearLoadedAt(final StreamId streamId) {
+    return null;
+  }
+
 }
