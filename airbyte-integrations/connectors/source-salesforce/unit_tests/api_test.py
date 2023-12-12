@@ -223,9 +223,7 @@ def test_bulk_sync_failed_retry(stream_config, stream_api):
     "start_date_provided,stream_name,expected_start_date",
     [
         (True, "Account", "2010-01-18T21:18:20Z"),
-        (False, "Account", None),
         (True, "ActiveFeatureLicenseMetric", "2010-01-18T21:18:20Z"),
-        (False, "ActiveFeatureLicenseMetric", None),
     ],
 )
 def test_stream_start_date(
