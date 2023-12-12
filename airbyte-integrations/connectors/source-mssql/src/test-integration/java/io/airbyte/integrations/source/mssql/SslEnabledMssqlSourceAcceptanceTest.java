@@ -19,7 +19,7 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) {
-    final var container = new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04");
+    final var container = new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2022-latest");
     testdb = new MsSQLTestDatabase(container);
     testdb = testdb
         .withConnectionProperty("encrypt", "true")

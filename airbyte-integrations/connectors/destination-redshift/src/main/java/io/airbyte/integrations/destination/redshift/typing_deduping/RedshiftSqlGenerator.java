@@ -75,7 +75,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   public static final String CASE_STATEMENT_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} ELSE {2} END ";
   public static final String CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} END ";
   private static final Map<String, String> REDSHIFT_TYPE_NAME_TO_JDBC_TYPE = ImmutableMap.of(
-      "float8", "float",
+      "numeric", "decimal",
       "int8", "bigint",
       "bool", "boolean",
       "timestamptz", "timestamp with time zone",
