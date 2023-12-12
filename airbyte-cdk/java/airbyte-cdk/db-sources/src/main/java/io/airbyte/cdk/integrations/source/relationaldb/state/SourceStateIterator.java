@@ -8,16 +8,19 @@ import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import java.time.Instant;
 import java.util.Iterator;
 import javax.annotation.CheckForNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class SourceStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage>  {
-  private final Iterator<AirbyteMessage> messageIterator;
+public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage>  {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SourceStateIterator.class);
+  private final Iterator<T> messageIterator;
   private boolean hasEmittedFinalState = false;
   private long recordCount = 0L;
   private Instant lastCheckpoint = Instant.now();
 
   private final SourceStateIteratorProcessor sourceStateIteratorProcessor;
 
-  public SourceStateIterator(final Iterator<AirbyteMessage> messageIterator,
+  public SourceStateIterator(final Iterator<T> messageIterator,
       final SourceStateIteratorProcessor sourceStateIteratorProcessor) {
     this.messageIterator = messageIterator;
     this.sourceStateIteratorProcessor = sourceStateIteratorProcessor;
@@ -26,7 +29,13 @@ public class SourceStateIterator extends AbstractIterator<AirbyteMessage> implem
   @CheckForNull
   @Override
   protected AirbyteMessage computeNext() {
-    if (messageIterator.hasNext()) {
+    boolean iteratorHasNextValue = false;
+    try {
+      iteratorHasNextValue = messageIterator.hasNext();
+    } catch (Exception ex) {
+      LOGGER.info("Caught exception while trying to get the next from message iterator. Treating hasNext to false. ", ex);
+    }
+    if (iteratorHasNextValue) {
       if (sourceStateIteratorProcessor.shouldEmitStateMessage(recordCount, lastCheckpoint)) {
         AirbyteStateMessage stateMessage = sourceStateIteratorProcessor.generateStateMessageAtCheckpoint();
         stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
@@ -39,10 +48,10 @@ public class SourceStateIterator extends AbstractIterator<AirbyteMessage> implem
       }
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
-        final AirbyteMessage message = messageIterator.next();
-        sourceStateIteratorProcessor.processRecordMessage(message);
+        final T message = messageIterator.next();
+        final AirbyteMessage processedMessage = sourceStateIteratorProcessor.processRecordMessage(message);
         recordCount++;
-        return message;
+        return processedMessage;
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }

@@ -5,7 +5,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import java.time.Instant;
 
-public interface SourceStateIteratorProcessor {
+public interface SourceStateIteratorProcessor<T> {
   /**
    * Returns a state message that should be emitted at checkpoint.
    */
@@ -14,7 +14,7 @@ public interface SourceStateIteratorProcessor {
   /**
    * For the incoming record message, this method defines how the connector will consume it.
    */
-  void processRecordMessage(final AirbyteMessage message);
+  AirbyteMessage processRecordMessage(final T message);
 
   /**
    * At the end of the iteration, this method will be called and it will generate the final state message.
