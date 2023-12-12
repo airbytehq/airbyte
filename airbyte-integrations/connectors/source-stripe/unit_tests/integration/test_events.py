@@ -26,18 +26,12 @@ _ACCOUNT_ID = "account_id"
 _CLIENT_SECRET = "client_secret"
 _AUTHENTICATION_HEADERS = {"Stripe-Account": _ACCOUNT_ID, "Authorization": f"Bearer {_CLIENT_SECRET}"}
 _NO_STATE = {}
-_HTTP_RESPONSE_STATUS_500 = HttpResponse(
-    json.dumps(
-        {"unknown": "maxi297: I could not reproduce the issue hence this response will not look like the actual 500 status response"}
-    ),
-    500
-)
 _AVOIDING_INCLUSIVE_BOUNDARIES = 1
 _SECOND_REQUEST = 1
 _THIRD_REQUEST = 2
 
 def _config() -> ConfigBuilder:
-    return ConfigBuilder().with_account_id(_ACCOUNT_ID).with_client_secret(_CLIENT_SECRET)
+    return ConfigBuilder().with_start_date(_NOW - timedelta(days=73)).with_account_id(_ACCOUNT_ID).with_client_secret(_CLIENT_SECRET)
 
 
 def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
@@ -56,6 +50,10 @@ def _create_builders() -> Tuple[RecordBuilder, HttpResponseBuilder]:
         record_cursor_path=FieldPath("created"),
         pagination_strategy=StripePaginationStrategy(),
     )
+
+
+def _response_with_status(status_code: int) -> HttpResponse:
+    return HttpResponse(json.dumps(find_template(str(status_code), __file__)), status_code)
 
 
 def _a_record() -> RecordBuilder:
@@ -221,20 +219,9 @@ class FullRefreshTest(TestCase):
                 query_params=ANY_QUERY_PARAMS,
                 headers=_AUTHENTICATION_HEADERS
             ),
-            HttpResponse(
-                json.dumps({
-                    "error": {
-                        "code": "parameter_invalid_integer",
-                        "doc_url": "https://stripe.com/docs/error-codes/parameter-invalid-integer",
-                        "message": "Invalid integer: not_an_integer",
-                        "param": "limit",
-                        "request_log_url": "https://dashboard.stripe.com/test/logs/req_yVDTOo9Jrd1suG?t=1701959063",
-                        "type": "invalid_request_error"
-                    }
-                }),
-                400)
+            _response_with_status(400),
         )
-        output = self._read(_config().with_start_date(_A_START_DATE))
+        output = self._read(_config())
         assert len(output.get_stream_statuses(_STREAM_NAME)) == 0
 
     @HttpMocker()
@@ -245,17 +232,9 @@ class FullRefreshTest(TestCase):
                 query_params=ANY_QUERY_PARAMS,
                 headers=_AUTHENTICATION_HEADERS
             ),
-            HttpResponse(
-                json.dumps({
-                    "error": {
-                        "message": "Invalid API Key provided: sk_test_*****************************************************mFeM",
-                        "type": "invalid_request_error"
-                    }
-                }),
-                401
-            )
+            _response_with_status(401),
         )
-        output = self._read(_config().with_start_date(_A_START_DATE), expecting_exception=True)
+        output = self._read(_config(), expecting_exception=True)
         assert output.get_stream_statuses(_STREAM_NAME) == [AirbyteStreamStatus.INCOMPLETE]
 
     @HttpMocker()
@@ -267,17 +246,7 @@ class FullRefreshTest(TestCase):
                 headers=_AUTHENTICATION_HEADERS
             ),
             [
-                HttpResponse(
-                    json.dumps({
-                        "error": {
-                            "message": "Request rate limit exceeded. Learn more about rate limits here https://stripe.com/docs/rate-limits.",
-                            "type": "invalid_request_error",
-                            "code": "rate_limit",
-                            "doc_url": "https://stripe.com/docs/error-codes/rate-limit"
-                        }
-                    }),
-                    429
-                ),
+                _response_with_status(429),
                 _a_response().with_record(_a_record()).build(),
             ]
         )
@@ -292,9 +261,9 @@ class FullRefreshTest(TestCase):
                 query_params=ANY_QUERY_PARAMS,
                 headers=_AUTHENTICATION_HEADERS
             ),
-            [_HTTP_RESPONSE_STATUS_500, _a_response().with_record(_a_record()).build()]
+            [_response_with_status(500), _a_response().with_record(_a_record()).build()]
         )
-        output = self._read(_config().with_start_date(_A_START_DATE))
+        output = self._read(_config())
         assert len(output.records) == 1
 
     @HttpMocker()
@@ -305,9 +274,9 @@ class FullRefreshTest(TestCase):
                 query_params=ANY_QUERY_PARAMS,
                 headers=_AUTHENTICATION_HEADERS
             ),
-            [_HTTP_RESPONSE_STATUS_500]
+            _response_with_status(500),
         )
-        output = self._read(_config().with_start_date(_A_START_DATE), expecting_exception=True)
+        output = self._read(_config(), expecting_exception=True)
         assert output.get_stream_statuses(_STREAM_NAME) == [AirbyteStreamStatus.INCOMPLETE]
 
     @HttpMocker()
@@ -338,7 +307,7 @@ class IncrementalTest(TestCase):
             ),
             _a_response().with_record(_a_record().with_cursor(cursor_value)).build()
         )
-        output = self._read(_config().with_start_date(_A_START_DATE), {})
+        output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
         assert output.most_recent_state == {"events": {"created": cursor_value}}
 
     @HttpMocker()
@@ -381,10 +350,12 @@ class IncrementalTest(TestCase):
             ),
             _a_response().with_record(_a_record().with_cursor(cursor_value)).build()
         )
+
         output = self._read(
             _config().with_start_date(_A_START_DATE),
             StateBuilder().with_stream_state("events", {"created": more_recent_than_record_cursor}).build()
         )
+
         assert output.most_recent_state == {"events": {"created": more_recent_than_record_cursor}}
 
     def _read(self, config: ConfigBuilder, state: Optional[Dict[str, Any]], expecting_exception: bool = False) -> EntrypointOutput:

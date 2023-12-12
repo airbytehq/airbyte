@@ -1,0 +1,10 @@
+{
+    "error": {
+        "code": "parameter_invalid_integer",
+        "doc_url": "https://stripe.com/docs/error-codes/parameter-invalid-integer",
+        "message": "Invalid integer: not_an_integer",
+        "param": "limit",
+        "request_log_url": "https://dashboard.stripe.com/test/logs/req_yVDTOo9Jrd1suG?t=1701959063",
+        "type": "invalid_request_error"
+    }
+}
