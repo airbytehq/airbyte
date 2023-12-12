@@ -312,7 +312,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       if (stateManager.listFlushed().isEmpty()) {
         // Not updating this class to track record count, because we want to kill it in favor of the
         // AsyncStreamConsumer
-        onClose.accept(hasFailed, null);
+        onClose.accept(hasFailed, new HashMap<>());
       } else {
         /*
          * if any state message was flushed that means we should try to commit what we have. if

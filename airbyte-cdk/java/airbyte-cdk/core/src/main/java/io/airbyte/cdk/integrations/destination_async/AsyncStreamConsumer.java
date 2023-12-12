@@ -157,7 +157,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
       }
       validateRecord(message);
 
-      recordCounts.get(message.getRecord().getStreamDescriptor()).incrementAndGet();
+      getRecordCounter(message.getRecord().getStreamDescriptor()).incrementAndGet();
     }
     bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
   }
@@ -213,7 +213,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries = streamNames.stream().collect(toMap(
         streamDescriptor -> streamDescriptor,
         streamDescriptor -> new StreamSyncSummary(
-            Optional.of(recordCounts.getOrDefault(streamDescriptor, new AtomicLong()).get())
+            Optional.of(getRecordCounter(streamDescriptor).get())
         )
     ));
     onClose.accept(hasFailed, streamSyncSummaries);
@@ -221,6 +221,10 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     // as this throws an exception, we need to be after all other close functions.
     propagateFlushWorkerExceptionIfPresent();
     LOGGER.info("{} closed", AsyncStreamConsumer.class);
+  }
+
+  private AtomicLong getRecordCounter(final StreamDescriptor streamDescriptor) {
+    return recordCounts.computeIfAbsent(streamDescriptor, sd -> new AtomicLong());
   }
 
   private void propagateFlushWorkerExceptionIfPresent() throws Exception {
