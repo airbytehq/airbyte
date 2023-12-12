@@ -4,12 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MSSQL Source Spec",
     "type": "object",
-    "required": [
-      "host",
-      "port",
-      "database",
-      "username"
-    ],
+    "required": ["host", "port", "database", "username"],
     "properties": {
       "host": {
         "description": "The hostname of the database.",
@@ -23,18 +18,14 @@
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
-        "examples": [
-          "1433"
-        ],
+        "examples": ["1433"],
         "order": 1
       },
       "database": {
         "description": "The name of the database.",
         "title": "Database",
         "type": "string",
-        "examples": [
-          "master"
-        ],
+        "examples": ["master"],
         "order": 2
       },
       "schemas": {
@@ -46,9 +37,7 @@
         },
         "minItems": 0,
         "uniqueItems": true,
-        "default": [
-          "dbo"
-        ],
+        "default": ["dbo"],
         "order": 3
       },
       "username": {
@@ -79,9 +68,7 @@
           {
             "title": "Unencrypted",
             "description": "Data transfer will not be encrypted.",
-            "required": [
-              "ssl_method"
-            ],
+            "required": ["ssl_method"],
             "properties": {
               "ssl_method": {
                 "type": "string",
@@ -92,9 +79,7 @@
           {
             "title": "Encrypted (trust server certificate)",
             "description": "Use the certificate provided by the server without verification. (For testing purposes only!)",
-            "required": [
-              "ssl_method"
-            ],
+            "required": ["ssl_method"],
             "properties": {
               "ssl_method": {
                 "type": "string",
@@ -105,11 +90,7 @@
           {
             "title": "Encrypted (verify certificate)",
             "description": "Verify and use the certificate provided by the server.",
-            "required": [
-              "ssl_method",
-              "trustStoreName",
-              "trustStorePassword"
-            ],
+            "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
             "properties": {
               "ssl_method": {
                 "type": "string",
@@ -136,9 +117,7 @@
           {
             "title": "Read Changes using Change Data Capture (CDC)",
             "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the SQL Server's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\">change data capture feature</a>. This must be enabled on your database.",
-            "required": [
-              "method"
-            ],
+            "required": ["method"],
             "properties": {
               "method": {
                 "type": "string",
@@ -149,10 +128,7 @@
                 "title": "Data to Sync",
                 "type": "string",
                 "default": "Existing and New",
-                "enum": [
-                  "Existing and New",
-                  "New Changes Only"
-                ],
+                "enum": ["Existing and New", "New Changes Only"],
                 "description": "What data should be synced under the CDC. \"Existing and New\" will read existing data as a snapshot, and sync new changes through CDC. \"New Changes Only\" will skip the initial snapshot, and only sync new changes through CDC.",
                 "order": 1
               },
@@ -160,10 +136,7 @@
                 "title": "Initial Snapshot Isolation Level",
                 "type": "string",
                 "default": "Snapshot",
-                "enum": [
-                  "Snapshot",
-                  "Read Committed"
-                ],
+                "enum": ["Snapshot", "Read Committed"],
                 "description": "Existing data in the database are synced through an initial snapshot. This parameter controls the isolation level that will be used during the initial snapshotting. If you choose the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\">snapshot isolation mode</a> on the database.",
                 "order": 2
               },
@@ -181,9 +154,7 @@
           {
             "title": "Scan Changes with User Defined Cursor",
             "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
-            "required": [
-              "method"
-            ],
+            "required": ["method"],
             "properties": {
               "method": {
                 "type": "string",
@@ -201,9 +172,7 @@
         "oneOf": [
           {
             "title": "No Tunnel",
-            "required": [
-              "tunnel_method"
-            ],
+            "required": ["tunnel_method"],
             "properties": {
               "tunnel_method": {
                 "description": "No ssh tunnel needed to connect to database",
@@ -242,9 +211,7 @@
                 "minimum": 0,
                 "maximum": 65536,
                 "default": 22,
-                "examples": [
-                  "22"
-                ],
+                "examples": ["22"],
                 "order": 2
               },
               "tunnel_user": {
@@ -292,9 +259,7 @@
                 "minimum": 0,
                 "maximum": 65536,
                 "default": 22,
-                "examples": [
-                  "22"
-                ],
+                "examples": ["22"],
                 "order": 2
               },
               "tunnel_user": {
