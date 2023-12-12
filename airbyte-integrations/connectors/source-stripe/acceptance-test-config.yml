@@ -84,9 +84,6 @@ acceptance_tests:
           invoice_line_items:
             - name: margins
               bypass_reason: "API randomly returns this field"
-          customers:
-            - name: next_invoice_sequence
-              bypass_reason: "This field is modified on every new invoice"
   incremental:
     tests:
       - config_path: "secrets/config.json"
