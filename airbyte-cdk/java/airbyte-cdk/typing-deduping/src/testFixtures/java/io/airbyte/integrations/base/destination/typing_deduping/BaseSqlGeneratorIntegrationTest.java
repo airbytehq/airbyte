@@ -1124,6 +1124,17 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final List<JsonNode> v1RawRecords = dumpV1RawTableRecords(v1RawTableStreamId);
     final List<JsonNode> v2RawRecords = dumpRawTableRecords(streamId);
     migrationAssertions(v1RawRecords, v2RawRecords);
+
+    // And then run T+D on the migrated raw data
+    final String createTable = generator.createTable(incrementalDedupStream, "", false);
+    destinationHandler.execute(createTable);
+    final String updateTable = generator.updateTable(incrementalDedupStream, "", Optional.empty(), true);
+    destinationHandler.execute(updateTable);
+    verifyRecords(
+        "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
+        dumpRawTableRecords(streamId),
+        "sqlgenerator/alltypes_expectedrecords_final.jsonl",
+        dumpFinalTableRecords(streamId, ""));
   }
 
   /**
