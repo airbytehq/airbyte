@@ -147,17 +147,19 @@ const SelectNewConnectionCard: React.FC<{
             currentStep: CreateStepTypes.CREATE_SOURCE,
           },
         });
-      } else {
-        // push("", {
-        //   state: locationState,
-        // });
+      } else if (locationState?.destinationId) {
         push(`../${RoutePaths.ConnectionNew}`, {
           state: {
             ...locationState,
             currentStep: sourceDefinitionId ? CreateStepTypes.CREATE_SOURCE : CreateStepTypes.CREATE_CONNECTION,
           },
         });
-        // setCurrentStep(CreateStepTypes.CREATE_DESTINATION);
+      } else {
+        push("", {
+          state: locationState,
+        });
+
+        setCurrentStep(CreateStepTypes.CREATE_DESTINATION);
       }
       return;
     }

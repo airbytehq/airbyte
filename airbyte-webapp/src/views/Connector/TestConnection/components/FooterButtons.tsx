@@ -11,7 +11,7 @@ interface Iprops {
 const FooterButtons: React.FC<Iprops> = ({ isLoading, onBack, onFinish }) => {
   return (
     <ButtonRows bottom="40" position="absolute">
-      <BigButton secondary type="button" onClick={onBack} disabled={isLoading}>
+      <BigButton secondary type="button" onClick={onBack}>
         <FormattedMessage id="form.button.back" />
       </BigButton>
       <BigButton onClick={onFinish} disabled={isLoading}>
