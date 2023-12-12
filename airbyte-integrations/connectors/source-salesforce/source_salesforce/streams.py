@@ -26,7 +26,7 @@ from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 from requests.models import PreparedRequest
 
-from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce, WHERE_QUERY_SALESFORCE_OBJECTS
+from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce, PARENT_SALESFORCE_OBJECTS
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
@@ -44,7 +44,7 @@ class SalesforceStream(HttpStream, ABC):
     encoding = DEFAULT_ENCODING
 
     def __init__(
-        self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
+        self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, start_date = None, **kwargs
     ):
         super().__init__(**kwargs)
         self.sf_api = sf_api
@@ -52,6 +52,14 @@ class SalesforceStream(HttpStream, ABC):
         self.stream_name = stream_name
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
+        self.start_date = self.format_start_date(start_date)
+
+    @staticmethod
+    def format_start_date(start_date: Optional[str]) -> Optional[str]:
+        """Transform the format `2021-07-25` into the format `2021-07-25T00:00:00Z`"""
+        if start_date:
+            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")  # type: ignore[attr-defined,no-any-return]
+        return None
 
     @property
     def max_properties_length(self) -> int:
@@ -140,27 +148,23 @@ class RestSalesforceStream(SalesforceStream):
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
         """
         if next_page_token:
-            """
-            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
-            """
+            # If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
             return {}
 
         property_chunk = property_chunk or {}
         query = f"SELECT {','.join(property_chunk.keys())} FROM {self.name} "
 
-        if self.name in WHERE_QUERY_SALESFORCE_OBJECTS:
-            content_document_id = stream_slice['parent']['Id']
-            query += f" WHERE ContentDocumentId = '{content_document_id}'"
+        if self.name in PARENT_SALESFORCE_OBJECTS:
+            # add where clause: " WHERE ContentDocumentId IN ('06905000000NMXXXXX', ...)"
+            parent_field = PARENT_SALESFORCE_OBJECTS[self.name]['field']
+            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice['parents']]
+            query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC"
 
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(f"++++++{self.name} query RestSalesforceStream+++++++++++++++++++++++++++++++++++++")
         print(query)
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
-
 
         return {"q": query}
 
@@ -292,7 +296,26 @@ class RestSalesforceStream(SalesforceStream):
         return request, response
 
 
-class RestSalesforceSubStream(HttpSubStream, RestSalesforceStream):
+class BatchedSubStream(HttpSubStream):
+    SLICE_BATCH_SIZE = 1000
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Instead of yielding one parent record at a time, make stream slice contain a batch of parent records.
+
+            It allows to get <SLICE_BATCH_SIZE> records by one requests (instead of only one).
+        """
+        batched_slice = []
+        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
+            if len(batched_slice) == self.SLICE_BATCH_SIZE:
+                yield {'parents': batched_slice}
+                batched_slice = []
+            batched_slice.append(stream_slice['parent'])
+        if batched_slice:
+            yield {'parents': batched_slice}
+
+
+class RestSalesforceSubStream(BatchedSubStream, RestSalesforceStream):
     pass
 
 
@@ -556,6 +579,15 @@ class BulkSalesforceStream(SalesforceStream):
         if next_page_token:
             query += next_page_token["next_token"]
 
+        if self.name in PARENT_SALESFORCE_OBJECTS:
+            # add where clause: " WHERE ContentDocumentId IN ('06905000000NMXXXXX', '06905000000Mxp7XXX', ...)"
+            parent_field = PARENT_SALESFORCE_OBJECTS[self.name]['field']
+            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice['parents']]
+            query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
+
+        print(f"++++++{self.name} query BulkSalesforceStream+++++++++++++++++++++++++++++++++++++")
+        print(query)
+
         return {"q": query}
 
     def read_records(
@@ -619,6 +651,10 @@ class BulkSalesforceStream(SalesforceStream):
         return new_cls(**stream_kwargs)
 
 
+class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
+    pass
+
+
 @BulkSalesforceStream.transformer.registerCustomTransform
 def transform_empty_string_to_none(instance: Any, schema: Any):
     """
@@ -636,17 +672,9 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     STREAM_SLICE_STEP = 30
     _slice = None
 
-    def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
+    def __init__(self, replication_key: str, **kwargs):
         super().__init__(**kwargs)
         self.replication_key = replication_key
-        self.start_date = self.format_start_date(start_date)
-
-    @staticmethod
-    def format_start_date(start_date: Optional[str]) -> Optional[str]:
-        """Transform the format `2021-07-25` into the format `2021-07-25T00:00:00Z`"""
-        if start_date:
-            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")  # type: ignore[attr-defined,no-any-return]
-        return None
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -698,11 +726,8 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
 
         query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
 
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(f"++++++{self.name} query IncrementalRestSalesforceStream +++++++++++++++++++++++++++++++++++++")
         print(query)
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
 
         return {"q": query}
 
@@ -741,13 +766,8 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
 
-
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(f"++++++{self.name} query BulkIncrementalSalesforceStream +++++++++++++++++++++++++++++++++++++")
         print(query)
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
-        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
-
 
         return {"q": query}
 

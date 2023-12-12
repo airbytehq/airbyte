@@ -4,8 +4,8 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 from copy import deepcopy
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -19,9 +19,9 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from dateutil.relativedelta import relativedelta
 from requests import codes, exceptions  # type: ignore[import]
 
-from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce, WHERE_QUERY_SALESFORCE_OBJECTS
+from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce, PARENT_SALESFORCE_OBJECTS
 from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalRestSalesforceStream, RestSalesforceStream, \
-    RestSalesforceSubStream
+    RestSalesforceSubStream, BulkSalesforceSubStream
 
 logger = logging.getLogger("airbyte")
 
@@ -82,6 +82,18 @@ class SourceSalesforce(AbstractSource):
         return "bulk"
 
     @classmethod
+    def get_stream_type(cls, stream_name, api_type, is_parent):
+        if api_type == "rest":
+            full_refresh = RestSalesforceSubStream if is_parent else RestSalesforceStream
+            incremental = IncrementalRestSalesforceStream
+        elif api_type == "bulk":
+            full_refresh = BulkSalesforceSubStream if is_parent else BulkSalesforceStream
+            incremental = BulkIncrementalSalesforceStream
+        else:
+            raise Exception(f"Stream {stream_name} cannot be processed by REST or BULK API.")
+        return full_refresh, incremental
+
+    @classmethod
     def generate_streams(
         cls,
         config: Mapping[str, Any],
@@ -93,47 +105,42 @@ class SourceSalesforce(AbstractSource):
         stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
         for stream_name, sobject_options in stream_objects.items():
-            parent_streams_kwargs = {}
+
             streams_kwargs = {"sobject_options": sobject_options}
             selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
 
-            if stream_name in WHERE_QUERY_SALESFORCE_OBJECTS:
-                parent_stream_name = WHERE_QUERY_SALESFORCE_OBJECTS[stream_name]['parent_stream_name']
-                parent_json_schema = stream_properties.get(parent_stream_name, {})
-                parent_pk, parent_replication_key = sf_object.get_pk_and_replication_key(parent_json_schema)
+            parent_streams_kwargs = {}
+            if stream_name in PARENT_SALESFORCE_OBJECTS:
+                parent_stream_name = PARENT_SALESFORCE_OBJECTS[stream_name]['parent_stream_name']
                 parent_streams_kwargs = deepcopy(streams_kwargs)
                 parent_streams_kwargs.update(dict(
                     sf_api=sf_object,
-                    pk=parent_pk,
+                    pk=None,
                     stream_name=parent_stream_name,
-                    schema=parent_json_schema,
+                    schema={},
                     authenticator=authenticator
                 ))
-
             api_type = cls._get_api_type(stream_name, selected_properties, config.get("force_use_bulk_api", False))
-            if api_type == "rest":
-                # full_refresh, incremental = RestSalesforceStream, IncrementalRestSalesforceStream
-                full_refresh = RestSalesforceSubStream if parent_streams_kwargs else RestSalesforceStream
-                incremental = IncrementalRestSalesforceStream
-            elif api_type == "bulk":
-                full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
-            else:
-                raise Exception(f"Stream {stream_name} cannot be processed by REST or BULK API.")
+            full_refresh, incremental = cls.get_stream_type(stream_name, api_type, is_parent=bool(parent_streams_kwargs))
 
             json_schema = stream_properties.get(stream_name, {})
-
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
-            streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
+            streams_kwargs.update(dict(
+                sf_api=sf_object,
+                pk=pk,
+                stream_name=stream_name,
+                schema=json_schema,
+                authenticator=authenticator,
+                start_date=config.get("start_date")
+            ))
+
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
-                start_date = config.get(
-                    "start_date", (datetime.now() - relativedelta(years=cls.START_DATE_OFFSET_IN_YEARS)).strftime(cls.DATETIME_FORMAT)
-                )
-                stream = incremental(**streams_kwargs, replication_key=replication_key, start_date=start_date)
+                stream = incremental(**streams_kwargs, replication_key=replication_key)
             else:
                 if parent_streams_kwargs:
-                    # init parent stream
                     streams_kwargs['parent'] = RestSalesforceStream(**parent_streams_kwargs)
                 stream = full_refresh(**streams_kwargs)
+
             if api_type == "rest" and not stream.primary_key and stream.too_many_properties:
                 logger.warning(
                     f"Can not instantiate stream {stream_name}. "
@@ -144,7 +151,11 @@ class SourceSalesforce(AbstractSource):
             streams.append(stream)
         return streams
 
+
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        if not config.get("start_date"):
+            config["start_date"] = (datetime.now() - relativedelta(years=self.START_DATE_OFFSET_IN_YEARS)).strftime(self.DATETIME_FORMAT)
         sf = self._get_sf_object(config)
         stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
         streams = self.generate_streams(config, stream_objects, sf)

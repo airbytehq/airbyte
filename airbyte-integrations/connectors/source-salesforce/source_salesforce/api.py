@@ -129,8 +129,8 @@ QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = [
     "UserRecordAccess",
 ]
 
-WHERE_QUERY_SALESFORCE_OBJECTS = {
-    "ContentDocumentLink": {"parent_stream_name": "ContentDocument", "query": 'WHERE ContentDocumentId in {content_Document_ids}'}
+PARENT_SALESFORCE_OBJECTS = {
+    "ContentDocumentLink": {"parent_stream_name": "ContentDocument", "field": "Id"}
 }
 
 # The following objects are not supported by the Bulk API. Listed objects are version specific.
@@ -141,7 +141,7 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "AttachedContentNote",
     "CaseStatus",
     "ContractStatus",
-    "ContentDocumentLink",
+    # "ContentDocumentLink",
     "DeclinedEventRelation",
     "EventWhoRelation",
     "FieldSecurityClassification",
