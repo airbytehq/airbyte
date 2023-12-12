@@ -203,23 +203,27 @@ To access the Airbyte UI, you will need to manually attach an ingress configurat
 ```yaml
 apiVersion: networking.k8s.io/v1
  kind: Ingress
+ metadata:
+   name: # ingress name, example: enterprise-demo
  spec:
    rules:
-   - host: ## example: enterprise-demo.airbyte.com
+   - host: # host, example: enterprise-demo.airbyte.com
      http:
        paths:
        - backend:
            service:
-             name: airbyte-pro-airbyte-webapp-svc
+             # format is ${RELEASE_NAME}-airbyte-webapp-svc
+             name: airbyte-pro-airbyte-webapp-svc 
              port:
-               number: ## example: 30080
+               number: # service port, example: 8080
          path: /
          pathType: Prefix
        - backend:
            service:
+             # format is ${RELEASE_NAME}-airbyte-keycloak-svc
              name: airbyte-pro-airbyte-keycloak-svc
              port:
-               number: ## example: 30081
+               number: # service port, example: 8180
          path: /auth
          pathType: Prefix
 ```
