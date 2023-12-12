@@ -170,26 +170,21 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     };
   }
 
-  /*
-  * This method overrides the parents' class method due to MSSQL Timestamp with TZ format being `yyyy-MM-dd HH:mm:ss.SSSSSSS XXX`
-  * instead of the ISO_OFFSET_DATE_TIME format of `YYYY-MM-DD'T'H:mm:ss XXXX`
-  *
-  * The conversion process:
-  * OffsetDateTime (Java) -> Timestamp (Java) -> DateTimeOffset(Microsoft)
-  * */
   @Override
   protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
       throws SQLException {
     try {
-      // Parse the datetimeoffset value string into the Java OffsetDateTime using the correct format
       final OffsetDateTime offsetDateTime = OffsetDateTime.parse(value, OFFSETDATETIME_FORMATTER);
-      // Convert to Timestamp as an intermediary step
       final Timestamp timestamp = Timestamp.valueOf(offsetDateTime.atZoneSameInstant(offsetDateTime.getOffset()).toLocalDateTime());
-      // Convert the Timestamp object to the Microsoft SQL DateTimeOffset construct and provide the offset in minutes to the converter
+      // Final step of conversion from
+      // OffsetDateTime (a Java construct) object -> Timestamp (a Java construct) ->
+      // DateTimeOffset (a Microsoft.sql specific construct)
+      // and provide the offset in minutes to the converter
       final DateTimeOffset datetimeoffset = DateTimeOffset.valueOf(timestamp, offsetDateTime.getOffset().getTotalSeconds() / 60);
       preparedStatement.setObject(parameterIndex, datetimeoffset);
     } catch (final DateTimeParseException e) {
       throw new RuntimeException(e);
     }
   }
+
 }
