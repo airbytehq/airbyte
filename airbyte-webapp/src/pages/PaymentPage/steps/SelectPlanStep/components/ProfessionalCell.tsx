@@ -7,6 +7,8 @@ import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
+import { useUserPlanDetail } from "services/payments/PaymentsService";
+import { remainingDaysForFreeTrial } from "utils/common";
 
 import { Mailto } from "./Mailto";
 
@@ -59,7 +61,11 @@ const Message = styled.div`
 const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability, paymentLoading, onSelectPlan }) => {
   const { user } = useUser();
   const { formatMessage } = useIntl();
-
+  const userPlanDetail = useUserPlanDetail();
+  const { expiresTime } = userPlanDetail;
+  // console.log(user, "User ");
+  // console.log(userPlanDetail, "userPlanDetail");
+  // console.log(selectPlanBtnDisability, "planDisablity");
   return (
     <Container>
       <PricingContainer>
@@ -97,8 +103,9 @@ const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability
           size="lg"
           onClick={onSelectPlan}
           disabled={
-            ((Number(price) > 0 ? false : true) || selectPlanBtnDisability) &&
-            getPaymentStatus(user.status) !== PAYMENT_STATUS.Pause_Subscription
+            ((Number(price) > 0 ? false : true) || remainingDaysForFreeTrial(expiresTime) <= 0
+              ? false
+              : selectPlanBtnDisability) && getPaymentStatus(user.status) !== PAYMENT_STATUS.Pause_Subscription
           }
           isLoading={paymentLoading}
         >
