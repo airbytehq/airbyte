@@ -11,7 +11,6 @@ To use incremental syncs, the API endpoint needs to fullfil the following requir
 - Records contain a top-level date/time field that defines when this record was last updated (the "cursor field")
   - If the record's cursor field is nested, you can use an "Add Field" transformation to copy it to the top-level, and a Remove Field to remove it from the object. This will effectively move the field to the top-level of the record
 - It's possible to filter/request records by the cursor field
-- The records are sorted in ascending order based on their cursor field
 
 The knowledge of a cursor value also allows the Airbyte system to automatically keep a history of changes to records in the destination. To learn more about how different modes of incremental syncs, check out the [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append/) and [Incremental Sync - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped) pages.
 
@@ -59,19 +58,13 @@ As this fulfills the requirements for incremental syncs, we can configure the "I
 
 <iframe width="640" height="835" src="https://www.loom.com/embed/78eb5da26e2e4f4aa9c3a48573d9ed3b" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-This API orders records by default from new to old, which is not optimal for a reliable sync as the last encountered cursor value will be the most recent date even if some older records did not get synced (for example if a sync fails halfway through). It's better to start with the oldest records and work your way up to make sure that all older records are synced already once a certain date is encountered on a record. In this case the API can be configured to behave like this by setting an additional parameter:
-
-- Add a new "Query Parameter" near the top of the page
-- Set the key to `order-by`
-- Set the value to `oldest`
-
 Setting the start date in the "Testing values" to a date in the past like **2023-04-09T00:00:00Z** results in the following request:
 
 <pre>
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-04-09T00:00:00Z</b>&to-date={`now`}'
+curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-09T00:00:00Z</b>&to-date={`now`}'
 </pre>
 
-The last encountered date will be saved as part of the connection - when the next sync is running, it picks up from the last record. Let's assume the last ecountered article looked like this:
+The most recent encountered date will be saved as part of the connection - when the next sync is running, it picks up from that date as the new start date. Let's assume the last ecountered article looked like this:
 
 <pre>
 {`{
@@ -86,7 +79,7 @@ The last encountered date will be saved as part of the connection - when the nex
 Then when a sync is triggered for the same connection the next day, the following request is made:
 
 <pre>
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-04-15T07:30:58Z</b>&to-date={`<now>`}'
+curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-15T07:30:58Z</b>&to-date={`<now>`}'
 </pre>
 
 The `from-date` is set to the cutoff date of articles synced already and the `to-date` is set to the current date.
@@ -118,9 +111,9 @@ The "cursor granularity" also needs to be set to an ISO 8601 duration - it repre
 For example if the "Step" is set to 10 days (`P10D`) and the "Cursor granularity" set to second (`PT1S`) for the Guardian articles stream described above and a longer time range, then the following requests will be performed:
 
 <pre>
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-01-01T00:00:00Z</b>&to-date=<b>2023-01-10T00:00:00Z</b>'{`\n`}
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-01-10T00:00:00Z</b>&to-date=<b>2023-01-20T00:00:00Z</b>'{`\n`}
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-01-20T00:00:00Z</b>&to-date=<b>2023-01-30T00:00:00Z</b>'{`\n`}
+curl 'https://content.guardianapis.com/search?from-date=<b>2023-01-01T00:00:00Z</b>&to-date=<b>2023-01-10T00:00:00Z</b>'{`\n`}
+curl 'https://content.guardianapis.com/search?from-date=<b>2023-01-10T00:00:00Z</b>&to-date=<b>2023-01-20T00:00:00Z</b>'{`\n`}
+curl 'https://content.guardianapis.com/search?from-date=<b>2023-01-20T00:00:00Z</b>&to-date=<b>2023-01-30T00:00:00Z</b>'{`\n`}
 ...
 </pre>
 
@@ -157,7 +150,7 @@ Reiterating the example from above with a "Lookback window" of 2 days configured
 Then when a sync is triggered for the same connection the next day, the following request is made:
 
 <pre>
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-04-13T07:30:58Z</b>&to-date={`<now>`}'
+curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-13T07:30:58Z</b>&to-date={`<now>`}'
 </pre>
 
 ## Custom parameter injection

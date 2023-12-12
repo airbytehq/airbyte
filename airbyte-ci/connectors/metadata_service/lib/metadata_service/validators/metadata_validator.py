@@ -16,6 +16,7 @@ from pydash.objects import get
 
 @dataclass(frozen=True)
 class ValidatorOptions:
+    docs_path: str
     prerelease_tag: Optional[str] = None
 
 
@@ -137,10 +138,44 @@ def validate_major_version_bump_has_breaking_change_entry(
     return True, None
 
 
+def validate_docs_path_exists(metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions) -> ValidationResult:
+    """Ensure that the doc_path exists."""
+    if not pathlib.Path(validator_opts.docs_path).exists():
+        return False, f"Could not find {validator_opts.docs_path}."
+
+    return True, None
+
+
+def validate_metadata_base_images_in_dockerhub(
+    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
+) -> ValidationResult:
+    metadata_definition_dict = metadata_definition.dict()
+
+    image_address = get(metadata_definition_dict, "data.connectorOptions.baseImage")
+    if image_address is None:
+        return True, None
+
+    try:
+        image_name, tag_with_sha_prefix, digest = image_address.split(":")
+        # As we query the DockerHub API we need to remove the docker.io prefix
+        image_name = image_name.replace("docker.io/", "")
+    except ValueError:
+        return False, f"Image {image_address} is not in the format <image>:<tag>@<sha>"
+    tag = tag_with_sha_prefix.split("@")[0]
+
+    print(f"Checking that the base images is on dockerhub: {image_address}")
+    if not is_image_on_docker_hub(image_name, tag, digest):
+        return False, f"Image {image_address} does not exist in DockerHub"
+
+    return True, None
+
+
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
     validate_major_version_bump_has_breaking_change_entry,
+    validate_docs_path_exists,
+    validate_metadata_base_images_in_dockerhub,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
@@ -151,7 +186,7 @@ POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
 def validate_and_load(
     file_path: pathlib.Path,
     validators_to_run: List[Validator],
-    validator_opts: ValidatorOptions = ValidatorOptions(),
+    validator_opts: ValidatorOptions,
 ) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
     """Load a metadata file from a path (runs jsonschema validation) and run optional extra validators.
 
@@ -167,6 +202,7 @@ def validate_and_load(
         return None, f"Validation error: {e}"
 
     for validator in validators_to_run:
+        print(f"Running validator: {validator.__name__}")
         is_valid, error = validator(metadata_model, validator_opts)
         if not is_valid:
             return None, f"Validation error: {error}"

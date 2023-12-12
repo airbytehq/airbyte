@@ -1,0 +1,60 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["entries"]
+
+  selector_categories:
+    type: RecordSelector
+    extractor:
+      type: CustomRecordExtractor
+      class_name: source_public_apis.components.CustomExtractor
+
+  requester:
+    type: HttpRequester
+    url_base: "https://api.publicapis.org/"
+    http_method: "GET"
+    authenticator:
+      type: NoAuth
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  categories_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_categories"
+    $parameters:
+      name: "categories"
+      path: "/categories"
+
+  services_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "services"
+      path: "/entries"
+
+streams:
+  - "#/definitions/categories_stream"
+  - "#/definitions/services_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "categories"

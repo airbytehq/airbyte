@@ -7,7 +7,9 @@ import sys
 
 from airbyte_cdk.entrypoint import launch
 from source_mixpanel import SourceMixpanel
+from source_mixpanel.config_migrations import MigrateProjectId
 
 if __name__ == "__main__":
     source = SourceMixpanel()
+    MigrateProjectId.migrate(sys.argv[1:], source)
     launch(source, sys.argv[1:])

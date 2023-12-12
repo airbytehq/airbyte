@@ -2,15 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
-from typing_extensions import Literal
 
 
 class AvroFormat(BaseModel):
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "Avro Format"
+        discriminator = "filetype"
 
-    filetype: Literal["avro"] = "avro"
+    filetype: str = Field(
+        "avro",
+        const=True,
+    )
 
     double_as_string: bool = Field(
         title="Convert Double Fields to Strings",

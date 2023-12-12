@@ -3,6 +3,9 @@
 #
 
 from enum import Enum
+from typing import Union
+
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class FileBasedSourceError(Enum):
@@ -22,6 +25,8 @@ class FileBasedSourceError(Enum):
     ERROR_PARSING_RECORD = "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable."
     ERROR_PARSING_USER_PROVIDED_SCHEMA = "The provided schema could not be transformed into valid JSON Schema."
     ERROR_VALIDATING_RECORD = "One or more records do not pass the schema validation policy. Please modify your input schema, or select a more lenient validation policy."
+    ERROR_PARSING_RECORD_MISMATCHED_COLUMNS = "A header field has resolved to `None`. This indicates that the CSV has more rows than the number of header fields. If you input your schema or headers, please verify that the number of columns corresponds to the number of columns in your CSV's rows."
+    ERROR_PARSING_RECORD_MISMATCHED_ROWS = "A row's value has resolved to `None`. This indicates that the CSV has more columns in the header field than the number of columns in the row(s). If you input your schema or headers, please verify that the number of columns corresponds to the number of columns in your CSV's rows."
     STOP_SYNC_PER_SCHEMA_VALIDATION_POLICY = (
         "Stopping sync in accordance with the configured validation policy. Records in file did not conform to the schema."
     )
@@ -36,10 +41,10 @@ class FileBasedSourceError(Enum):
 
 
 class BaseFileBasedSourceError(Exception):
-    def __init__(self, error: FileBasedSourceError, **kwargs):  # type: ignore # noqa
-        super().__init__(
-            f"{FileBasedSourceError(error).value} Contact Support if you need assistance.\n{' '.join([f'{k}={v}' for k, v in kwargs.items()])}"
-        )
+    def __init__(self, error: Union[FileBasedSourceError, str], **kwargs):  # type: ignore # noqa
+        if isinstance(error, FileBasedSourceError):
+            error = FileBasedSourceError(error).value
+        super().__init__(f"{error} Contact Support if you need assistance.\n{' '.join([f'{k}={v}' for k, v in kwargs.items()])}")
 
 
 class ConfigValidationError(BaseFileBasedSourceError):
@@ -51,6 +56,10 @@ class InvalidSchemaError(BaseFileBasedSourceError):
 
 
 class MissingSchemaError(BaseFileBasedSourceError):
+    pass
+
+
+class NoFilesMatchingError(BaseFileBasedSourceError):
     pass
 
 
@@ -75,4 +84,14 @@ class StopSyncPerValidationPolicy(BaseFileBasedSourceError):
 
 
 class ErrorListingFiles(BaseFileBasedSourceError):
+    pass
+
+
+class CustomFileBasedException(AirbyteTracedException):
+    """
+    A specialized exception for file-based connectors.
+
+    This exception is designed to bypass the default error handling in the file-based CDK, allowing the use of custom error messages.
+    """
+
     pass

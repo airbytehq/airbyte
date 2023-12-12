@@ -28,7 +28,6 @@ acceptance_tests:
         timeout_seconds: 2400
         future_state:
           future_state_path: integration_tests/abnormal_state.json
-        threshold_days: 2
   spec:
     tests:
       - spec_path: source_google_analytics_v4/spec.json

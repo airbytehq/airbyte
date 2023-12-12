@@ -32,8 +32,40 @@ _Note: Not all types of tests work for all connectors, only configure the ones t
 
 Build your connector image if needed.
 
-```text
-docker build .
+**Option A: Building the docker image with `airbyte-ci`**
+
+This is the preferred method for building and testing connectors.
+
+If you want to open source your connector we encourage you to use our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector. 
+It will not use a Dockerfile but will build the connector image from our [base image](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/README.md) and use our internal build logic to build an image from your Python connector code.
+
+Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
+Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
+
+
+
+**Option B: Building the docker image with a Dockerfile**
+
+If you don't want to rely on `airbyte-ci` to build your connector, you can build the docker image using your own Dockerfile. This method is not preferred, and is not supported for certified connectors.
+
+Create a `Dockerfile` in the root of your connector directory. The `Dockerfile` should look something like this:
+```Dockerfile
+
+FROM airbyte/python-connector-base:1.1.0
+
+COPY . ./airbyte/integration_code
+RUN pip install ./airbyte/integration_code
+
+# The entrypoint and default env vars are already set in the base image
+# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+```
+
+Please use this as an example. This is not optimized.
+
+Build your image:
+```bash
+docker build . -t airbyte/source-example-python:dev
 ```
 
 And test via one of the two following Options
@@ -227,9 +259,7 @@ This test verifies that all streams in the input catalog which support increment
 | :------------------------ | :----- | :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `config_path`             | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                                                                  |
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                                                                          |
-| `cursor_paths`            | dict   | {}                                          | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor_field. |
 | `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                                                                                                                   |
-| `threshold_days`          | int    | 0                                           | For date-based cursors, allow records to be emitted with a cursor value this number of days before the state value.                                                 |
 
 ### TestReadSequentialSlices
 
@@ -239,9 +269,7 @@ This test offers more comprehensive verification that all streams in the input c
 | :------------------------------------- | :----- | :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `config_path`                          | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                                                                  |
 | `configured_catalog_path`              | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                                                                          |
-| `cursor_paths`                         | dict   | {}                                          | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor_field. |
 | `timeout_seconds`                      | int    | 20\*60                                      | Test execution timeout in seconds                                                                                                                                   |
-| `threshold_days`                       | int    | 0                                           | For date-based cursors, allow records to be emitted with a cursor value this number of days before the state value.                                                 |
 | `skip_comprehensive_incremental_tests` | bool   | false                                       | For non-GA and in-development connectors, control whether the more comprehensive incremental tests will be skipped                                                  |
 
 **Note that this test samples a fraction of stream slices across an incremental sync in order to reduce test duration and avoid spamming partner APIs**
@@ -367,7 +395,6 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
-        cursor_paths:
           ...
         future_state:
           future_state_path: integration_tests/abnormal_state.json

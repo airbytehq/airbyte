@@ -39,6 +39,18 @@
       "properties": {},
       "type": ["null", "object"]
     },
+    "billable": {
+      "type": ["null", "boolean"]
+    },
+    "calendarIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "isApprover": {
+      "type": ["null", "boolean"]
+    },
     "billing": {
       "properties": {
         "useDefault": {

@@ -1,7 +1,15 @@
+# Vector db connectors
+/airbyte-integrations/connectors/destination-pinecone @airbytehq/ai-language-models
+/airbyte-integrations/connectors/destination-weaviate @airbytehq/ai-language-models
+/airbyte-integrations/connectors/destination-milvus @airbytehq/ai-language-models
+/airbyte-integrations/connectors/destination-qdrant @airbytehq/ai-language-models
+/airbyte-integrations/connectors/destination-chroma @airbytehq/ai-language-models
+/airbyte-cdk/python/airbyte_cdk/destinations/vector_db_based @airbytehq/ai-language-models
+
 # CDK and Connector Acceptance Tests
 /airbyte-cdk/python @airbytehq/connector-extensibility
 /airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
-/airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-operations
+/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/connector-operations @lazebnyi @oustynova
 
 # Protocol related items
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
@@ -30,6 +38,9 @@
 /airbyte-integrations/connectors/source-tidb/ @airbytehq/dbsources
 
 # Java-based destination connectors
+airbyte-cdk/java/airbyte-cdk/db-destinations/ @airbytehq/destinations
+airbyte-cdk/java/airbyte-cdk/s3-destinations/ @airbytehq/destinations
+airbyte-cdk/java/airbyte-cdk/typing-deduping/ @airbytehq/destinations
 /airbyte-integrations/bases/standard-destination-test/ @airbytehq/destinations
 /airbyte-integrations/bases/base-java-s3/ @airbytehq/destinations
 /airbyte-integrations/bases/bases-destination-jdbc/ @airbytehq/destinations
@@ -49,3 +60,9 @@
 /airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-tidb/ @airbytehq/destinations
+
+# Build customization file change
+/airbyte-integrations/connectors/**/build_customization.py @airbytehq/connector-operations
+
+# airbyte-ci
+/airbyte-ci @airbytehq/connector-operations

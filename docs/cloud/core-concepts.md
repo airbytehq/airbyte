@@ -1,6 +1,6 @@
 # Core Concepts
 
-Airbyte enables you to build data pipelines and replicate data from a source to a destination. You can configure how frequently the data is synced, what data is replicated, what format the data is written to in the destination, and if the data is stored in raw tables format or basic normalized (or JSON) format.
+Airbyte enables you to build data pipelines and replicate data from a source to a destination. You can configure how frequently the data is synced, what data is replicated, and how the data is written to in the destination.
 
 This page describes the concepts you need to know to use Airbyte.
 
@@ -18,49 +18,15 @@ An Airbyte component which pulls data from a source or pushes data to a destinat
 
 ## Connection
 
-A connection is an automated data pipeline that replicates data from a source to a destination.
+A connection is an automated data pipeline that replicates data from a source to a destination. Setting up a connection enables configuration of the following parameters:
 
-Setting up a connection involves configuring the following parameters:
-
-<table>
-  <tr>
-   <td><strong>Parameter</strong>
-   </td>
-   <td><strong>Description</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>Sync schedule
-   </td>
-   <td>When should a data sync be triggered?
-   </td>
-  </tr>
-  <tr>
-   <td>Destination Namespace and stream names
-   </td>
-   <td>Where should the replicated data be written?
-   </td>
-  </tr>
-  <tr>
-   <td>Catalog selection
-   </td>
-   <td>What data should be replicated from the source to the destination?
-   </td>
-  </tr>
-  <tr>
-   <td>Sync mode
-   </td>
-   <td>How should the streams be replicated (read and written)?
-   </td>
-  </tr>
-  <tr>
-   <td>Optional transformations
-   </td>
-   <td>How should Airbyte protocol messages (raw JSON blob) data be converted into other data representations?
-   </td>
-  </tr>
-</table>
-
+| Concept              | Description                                                                                                         |
+|---------------------|---------------------------------------------------------------------------------------------------------------------|
+| Replication Frequency | When should a data sync be triggered? | 
+| Destination Namespace and Stream Prefix | Where should the replicated data be written? | 
+| Catalog Selection | What data (streams and columns) should be replicated from the source to the destination? | 
+| Sync Mode | How should the streams be replicated (read and written)? | 
+| Schema Propagation | How should Airbyte handle schema drift in sources? | 
 ## Stream
 
 A stream is a group of related records.
@@ -82,49 +48,26 @@ Examples of fields:
 
 ## Namespace
 
-Namespace is a group of streams in a source or destination. Common use cases for namespaces are enforcing permissions, segregating test and production data, and general data organization.
+Namespace is a method of grouping streams in a source or destination. Namespaces are used to generally organize data, segregate tests and production data, and enforce permissions. In a relational database system, this is known as a schema.
 
-A schema in a relational database system is an example of a namespace.
+In a source, the namespace is the location from where the data is replicated to the destination. In a destination, the namespace is the location where the replicated data is stored in the destination. 
 
-In a source, the namespace is the location from where the data is replicated to the destination.
+Airbyte supports the following configuration options for a connection:
 
-In a destination, the namespace is the location where the replicated data is stored in the destination. Airbyte supports the following configuration options for destination namespaces:
-
-<table>
-  <tr>
-   <td><strong>Configuration</strong>
-   </td>
-   <td><strong>Description</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>Mirror source structure
-   </td>
-   <td>Some sources (for example, databases) provide namespace information for a stream. If a source provides the namespace information, the destination will reproduce the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option.
-   </td>
-  </tr>
-  <tr>
-   <td>Destination default
-   </td>
-   <td>All streams will be replicated and stored in the default namespace defined on the destination settings page. For settings for popular destinations, see<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#destination-connector-settings"> ​​Destination Connector Settings</a>
-   </td>
-  </tr>
-  <tr>
-   <td>Custom format
-   </td>
-   <td>All streams will be replicated and stored in a user-defined custom format. See<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#custom-format"> Custom format</a> for more details.
-   </td>
-  </tr>
-</table>
+   | Destination Namepsace | Description                |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Destination default | All streams will be replicated to the single default namespace defined by the Destination. For more details, see <a href="/understanding-airbyte/namespaces#--destination-connector-settings"> ​​Destination Connector Settings</a> |
+| Mirror source structure | Some sources (for example, databases) provide namespace information for a stream. If a source provides namespace information, the destination will mirror the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option.  |
+| Custom format | All streams will be replicated to a single user-defined namespace. See<a href="/understanding-airbyte/namespaces#--custom-format"> Custom format</a> for more details | 
 
 ## Connection sync modes
 
 A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides different sync modes to account for various use cases.
 
-- **Full Refresh | Overwrite:** Sync all records from the source and replace data in destination by overwriting it.
-- **Full Refresh | Append:** Sync all records from the source and add them to the destination without deleting any data.
-- **Incremental Sync | Append:** Sync new records from the source and add them to the destination without deleting any data.
-- **Incremental Sync | Append + Deduped:** Sync new records from the source and add them to the destination. Also provides a de-duplicated view mirroring the state of the stream in the source.
+- **Full Refresh | Overwrite:** Sync all records from the source and replace data in destination by overwriting it each time.
+- **Full Refresh | Append:** Sync all records from the source and add them to the destination without deleting any data. This creates a historical copy of all records each sync.
+- **Incremental Sync | Append:** Sync new records from the source and add them to the destination without deleting any data. This enables efficient historical tracking over time of data. 
+- **Incremental Sync | Append + Deduped:** Sync new records from the source and add them to the destination. Also provides a de-duplicated view mirroring the state of the stream in the source. This is the most common replication use case. 
 
 ## Normalization
 
@@ -132,8 +75,6 @@ Normalization is the process of structuring data from the source into a format a
 
 Note that normalization is only relevant for the following relational database & warehouse destinations:
 
-- BigQuery
-- Snowflake
 - Redshift
 - Postgres
 - Oracle

@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - app.smartsheet.com
@@ -8,6 +11,7 @@ data:
   definitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerImageTag: 1.1.1
   dockerRepository: airbyte/source-smartsheets
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smartsheets
   githubIssueLabel: source-smartsheets
   icon: smartsheet.svg
   license: MIT
@@ -18,11 +22,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/smartsheets
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
 metadataSpecVersion: "1.0"

@@ -6,6 +6,9 @@
     "id": {
       "type": "integer"
     },
+    "batches": {
+      "type": ["null", "array"]
+    },
     "externalVendor": {
       "type": ["null", "string"]
     },
@@ -18,8 +21,14 @@
     "note": {
       "type": ["null", "string"]
     },
+    "outboundVoicemail": {
+      "type": ["null", "array"]
+    },
     "outcome": {
       "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "array"]
     },
     "recordingUrl": {
       "type": ["null", "string"]
@@ -111,6 +120,9 @@
       "items": {
         "type": ["null", "integer"]
       }
+    },
+    "recordingDeletionReason": {
+      "type": ["null", "string"]
     },
     "sequence": {
       "type": ["null", "array"],

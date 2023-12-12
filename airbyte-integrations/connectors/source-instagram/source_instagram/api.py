@@ -17,7 +17,7 @@ from facebook_business.adobjects.page import Page
 from facebook_business.exceptions import FacebookRequestError
 from source_instagram.common import InstagramAPIException, retry_pattern
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5, max_time=600)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):

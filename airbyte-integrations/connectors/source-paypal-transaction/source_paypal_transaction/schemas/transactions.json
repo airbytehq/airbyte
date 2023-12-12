@@ -1,9 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "transaction_info": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "paypal_reference_id": {
           "type": ["null", "string"],
@@ -40,6 +42,7 @@
         },
         "transaction_amount": {
           "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "currency_code": {
               "type": "string",
@@ -54,6 +57,7 @@
         },
         "fee_amount": {
           "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "currency_code": {
               "type": "string",
@@ -68,6 +72,7 @@
         },
         "insurance_amount": {
           "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "currency_code": {
               "type": "string",
@@ -82,6 +87,7 @@
         },
         "shipping_amount": {
           "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "currency_code": {
               "type": "string",
@@ -96,6 +102,7 @@
         },
         "shipping_discount_amount": {
           "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "currency_code": {
               "type": "string",
@@ -137,8 +144,13 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "transaction_updated_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "payer_info": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "account_id": {
           "type": ["null", "string"],
@@ -158,6 +170,7 @@
         },
         "payer_name": {
           "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "given_name": {
               "type": ["null", "string"],
@@ -181,6 +194,7 @@
     },
     "shipping_info": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "name": {
           "type": ["null", "string"],
@@ -188,6 +202,7 @@
         },
         "address": {
           "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "line1": {
               "type": ["null", "string"]
@@ -213,11 +228,13 @@
     },
     "cart_info": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "item_details": {
           "type": "array",
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "item_code": {
                 "type": ["null", "string"],
@@ -235,6 +252,7 @@
               },
               "item_unit_price": {
                 "type": ["null", "object"],
+                "additionalProperties": true,
                 "properties": {
                   "currency_code": {
                     "type": "string",
@@ -249,6 +267,7 @@
               },
               "item_amount": {
                 "type": ["null", "object"],
+                "additionalProperties": true,
                 "properties": {
                   "currency_code": {
                     "type": "string",
@@ -265,9 +284,11 @@
                 "type": "array",
                 "items": {
                   "type": ["null", "object"],
+                  "additionalProperties": true,
                   "properties": {
                     "tax_amount": {
                       "type": ["null", "object"],
+                      "additionalProperties": true,
                       "properties": {
                         "currency_code": {
                           "type": "string",
@@ -285,6 +306,7 @@
               },
               "total_item_amount": {
                 "type": ["null", "object"],
+                "additionalProperties": true,
                 "properties": {
                   "currency_code": {
                     "type": "string",
@@ -308,6 +330,7 @@
     },
     "store_info": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "store_id": {
           "type": ["null", "string"],
@@ -321,6 +344,7 @@
     },
     "auction_info": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "auction_site": {
           "type": ["null", "string"],
@@ -341,11 +365,13 @@
     },
     "incentive_info": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "incentive_details": {
           "type": "array",
           "items": {
             "type": "object",
+            "additionalProperties": true,
             "properties": {
               "incentive_type": {
                 "type": ["null", "string"],
@@ -357,6 +383,7 @@
               },
               "incentive_amount": {
                 "type": "object",
+                "additionalProperties": true,
                 "properties": {
                   "currency_code": {
                     "type": "string",

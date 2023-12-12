@@ -5,13 +5,14 @@
 
 import pytest
 import requests
-from source_shopify.source import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules, ShopifyStream, SourceShopify
+from source_shopify.source import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules, SourceShopify
 
 
-def test_get_next_page_token(requests_mock):
+def test_get_next_page_token(requests_mock, auth_config):
     """
     Test shows that next_page parameters are parsed correctly from the response object and could be passed for next request API call,
     """
+    stream = PriceRules(auth_config)
     response_header_links = {
         "Date": "Thu, 32 Jun 2099 24:24:24 GMT",
         "Content-Type": "application/json; charset=utf-8",
@@ -25,7 +26,7 @@ def test_get_next_page_token(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=response_header_links)
     response = requests.get("https://test.myshopify.com/")
 
-    test = ShopifyStream.next_page_token(response)
+    test = stream.next_page_token(response=response)
     assert test == expected_output_token
 
 
