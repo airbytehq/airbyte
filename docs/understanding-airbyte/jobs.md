@@ -17,6 +17,8 @@ At a high level, a sync job is an individual invocation of the Airbyte pipeline 
 
 ### Sync Job State Machine
 
+Sync jobs have the following state machine.
+
 ```mermaid
 ---
 title: Job Status State Machine
@@ -50,9 +52,6 @@ state NonSuccess {
 NonTerminal --> NonSuccess
 ```
 
-Sync jobs have the following state machine.
-
-![Job state machine](../.gitbook/assets/job-state-machine.png)
 
 ```mermaid
 ---
@@ -64,7 +63,6 @@ stateDiagram-v2
     running --> failed
 ```
 
-[Image Source](https://docs.google.com/drawings/d/1cp8LRZs6UnhAt3jbQ4h40nstcNB0OBOnNRdMFwOJL8I/edit)
 
 ### Attempts and Retries
 
@@ -271,9 +269,6 @@ sequenceDiagram
     Worker->>Result: json output
 ```
 
-![Worker Lifecycle](../.gitbook/assets/worker-lifecycle.png)
-
-[Image Source](https://docs.google.com/drawings/d/1k4v_m2M5o2UUoNlYM7mwtZicRkQgoGLgb3eTOVH8QFo/edit)
 
 See the [architecture overview](high-level-view.md) for more information about workers.
 
@@ -342,9 +337,6 @@ sequenceDiagram
     PersistA->>Temporal: Return output
 ```
 
-![Orchestrator Lifecycle](../.gitbook/assets/orchestrator-lifecycle.png)
-
-[Image Source](https://whimsical.com/sync-lifecycle-Vays9o1YaxCKPhUEEKmqHM@2bsEvpTYSt1HjEZjriPY9jiAqCmgJ41MmyY)
 
 Users running Airbyte Docker should be aware of the above pitfalls.
 
