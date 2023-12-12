@@ -10,7 +10,6 @@ from typing import List, Set
 
 import git
 from dagger import Connection
-from pipelines import main_logger
 from pipelines.dagger.containers.git import checked_out_git_container
 from pipelines.helpers.utils import DAGGER_CONFIG, DIFF_FILTER
 
