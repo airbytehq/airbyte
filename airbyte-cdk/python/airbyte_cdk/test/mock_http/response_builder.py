@@ -20,7 +20,18 @@ def _replace_value(dictionary: Dict[str, Any], path: List[str], value: Any) -> N
     current[path[-1]] = value
 
 
+def _write(dictionary: Dict[str, Any], path: List[str], value: Any) -> None:
+    current = dictionary
+    for key in path[:-1]:
+        current = current.setdefault(key, {})
+    current[path[-1]] = value
+
+
 class Path(ABC):
+    @abstractmethod
+    def write(self, template: Dict[str, Any], value: Any) -> None:
+        pass
+
     @abstractmethod
     def update(self, template: Dict[str, Any], value: Any) -> None:
         pass
@@ -32,6 +43,9 @@ class Path(ABC):
 class FieldPath(Path):
     def __init__(self, field: str):
         self._path = [field]
+
+    def write(self, template: Dict[str, Any], value: Any) -> None:
+        _write(template, self._path, value)
 
     def update(self, template: Dict[str, Any], value: Any) -> None:
         _replace_value(template, self._path, value)
@@ -46,6 +60,9 @@ class FieldPath(Path):
 class NestedPath(Path):
     def __init__(self, path: List[str]):
         self._path = path
+
+    def write(self, template: Dict[str, Any], value: Any) -> None:
+        _write(template, self._path, value)
 
     def update(self, template: Dict[str, Any], value: Any) -> None:
         _replace_value(template, self._path, value)
@@ -101,6 +118,10 @@ class RecordBuilder:
 
     def with_cursor(self, cursor_value: Any) -> "RecordBuilder":
         self._set_field("cursor", self._cursor_path, cursor_value)
+        return self
+
+    def with_field(self, path: Path, value: Any) -> "RecordBuilder":
+        path.write(self._record, value)
         return self
 
     def _set_field(self, field_name: str, path: Optional[Path], value: Any) -> None:
