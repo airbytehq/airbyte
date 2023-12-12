@@ -82,12 +82,12 @@ class SourceSalesforce(AbstractSource):
         return "bulk"
 
     @classmethod
-    def get_stream_type(cls, stream_name, api_type, is_parent):
+    def get_stream_type(cls, stream_name, api_type, has_parent):
         if api_type == "rest":
-            full_refresh = RestSalesforceSubStream if is_parent else RestSalesforceStream
+            full_refresh = RestSalesforceSubStream if has_parent else RestSalesforceStream
             incremental = IncrementalRestSalesforceStream
         elif api_type == "bulk":
-            full_refresh = BulkSalesforceSubStream if is_parent else BulkSalesforceStream
+            full_refresh = BulkSalesforceSubStream if has_parent else BulkSalesforceStream
             incremental = BulkIncrementalSalesforceStream
         else:
             raise Exception(f"Stream {stream_name} cannot be processed by REST or BULK API.")
@@ -105,23 +105,11 @@ class SourceSalesforce(AbstractSource):
         stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
         for stream_name, sobject_options in stream_objects.items():
-
+            has_parent = PARENT_SALESFORCE_OBJECTS.get(stream_name)
             streams_kwargs = {"sobject_options": sobject_options}
             selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
-
-            parent_streams_kwargs = {}
-            if stream_name in PARENT_SALESFORCE_OBJECTS:
-                parent_stream_name = PARENT_SALESFORCE_OBJECTS[stream_name]['parent_stream_name']
-                parent_streams_kwargs = deepcopy(streams_kwargs)
-                parent_streams_kwargs.update(dict(
-                    sf_api=sf_object,
-                    pk=None,
-                    stream_name=parent_stream_name,
-                    schema={},
-                    authenticator=authenticator
-                ))
             api_type = cls._get_api_type(stream_name, selected_properties, config.get("force_use_bulk_api", False))
-            full_refresh, incremental = cls.get_stream_type(stream_name, api_type, is_parent=bool(parent_streams_kwargs))
+            full_refresh, incremental = cls.get_stream_type(stream_name, api_type, has_parent=has_parent)
 
             json_schema = stream_properties.get(stream_name, {})
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
@@ -137,7 +125,16 @@ class SourceSalesforce(AbstractSource):
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
                 stream = incremental(**streams_kwargs, replication_key=replication_key)
             else:
-                if parent_streams_kwargs:
+                if has_parent:
+                    parent_stream_name = PARENT_SALESFORCE_OBJECTS[stream_name]['parent_stream_name']
+                    parent_streams_kwargs = deepcopy(streams_kwargs)
+                    parent_streams_kwargs.update(dict(
+                        sf_api=sf_object,
+                        pk=None,
+                        stream_name=parent_stream_name,
+                        schema={},
+                        authenticator=authenticator
+                    ))
                     streams_kwargs['parent'] = RestSalesforceStream(**parent_streams_kwargs)
                 stream = full_refresh(**streams_kwargs)
 
@@ -150,8 +147,6 @@ class SourceSalesforce(AbstractSource):
                 continue
             streams.append(stream)
         return streams
-
-
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not config.get("start_date"):
