@@ -41,6 +41,10 @@ def context_for_connector_with_poetry(connector_with_poetry, dagger_client, curr
 async def test_run_connector_cdk_upgrade_pipeline(context_for_connector_with_poetry):
     semaphore = anyio.Semaphore(1)
     # og_repo_dir = await context.get_repo_dir()
-    report = await upgrade_cdk_pipeline.run_connector_cdk_upgrade_pipeline(context_for_connector_with_poetry, semaphore, "6.6.6")
+    # report = await upgrade_cdk_pipeline.run_connector_cdk_upgrade_pipeline(context_for_connector_with_poetry, semaphore, "6.6.6")
+    og_repo_dir = await context_for_connector_with_poetry.get_repo_dir()
+    step = upgrade_cdk_pipeline.SetCDKVersion(context_for_connector_with_poetry, og_repo_dir, "6.6.6")
+    step_result = await step.run()
 
-    print(report)
+    # print(report.steps_results[-1])
+    print(step_result)
