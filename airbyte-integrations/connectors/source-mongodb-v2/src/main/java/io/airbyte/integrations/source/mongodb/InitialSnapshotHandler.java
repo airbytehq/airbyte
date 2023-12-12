@@ -11,6 +11,7 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -97,9 +98,11 @@ public class InitialSnapshotHandler {
               .allowDiskUse(true)
               .cursor();
 
+          final var stateIteratorProcessor = new MongoDbStateIteratorProcessor(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
+              airbyteStream, emittedAt, checkpointInterval, MongoConstants.CHECKPOINT_DURATION);
+
           final var stateIterator =
-              new MongoDbStateIterator(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
-                  airbyteStream, emittedAt, checkpointInterval, MongoConstants.CHECKPOINT_DURATION);
+              new SourceStateIterator<>(cursor, stateIteratorProcessor);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
