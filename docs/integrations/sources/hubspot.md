@@ -95,6 +95,10 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 3. Enter a **Source name** of your choosing.
 4. From the **Authentication** dropdown, select your chosen authentication method:
     - **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+    :::tip HubSpot Authentication issues
+    You might encounter errors during the connection process in the popup window, such as `An invalid scope name was provided`.
+    To resolve this, close the window and attempt authentication again.
+    :::
     - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
@@ -113,6 +117,29 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
 6. Click **Set up source** and wait for the tests to complete.
+
+<FieldAnchor field="enable_experimental_streams">
+
+### Experimental streams
+
+[Web Analytics](https://developers.hubspot.com/docs/api/events/web-analytics) streams may be enabled as an experimental feature but please note that they are based on API which is currently in beta and may change at some point of time or be unstable.
+
+</FieldAnchor>
+
+### Custom CRM Objects
+
+Custom CRM Objects and Custom Web Analytics will appear as streams available for sync, alongside the standard objects listed above.
+
+If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
+
+First you need to give the connector some additional permissions:
+
+<!-- env:cloud -->
+- **If you are using OAuth on Airbyte Cloud** go to the Hubspot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
+<!-- /env:cloud -->
+- **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+
+Then, go to the replication settings of your connection and click **refresh source schema** to pull in those new streams for syncing.
 
 <HideInUI>
 
@@ -175,29 +202,6 @@ The HubSpot source connector supports the following streams:
 - [GoalsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-
-### Custom CRM Objects
-
-Custom CRM Objects and Custom Web Analytics will appear as streams available for sync, alongside the standard objects listed above.
-
-If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
-
-First you need to give the connector some additional permissions:
-
-<!-- env:cloud -->
-- **If you are using OAuth on Airbyte Cloud** go to the Hubspot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
-<!-- /env:cloud -->
-- **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
-
-Then, go to the replication settings of your connection and click **refresh source schema** to pull in those new streams for syncing.
-
-<FieldAnchor field="enable_experimental_streams" />
-
-### Experimental streams
-
-[Web Analytics](https://developers.hubspot.com/docs/api/events/web-analytics) streams may be enabled as an experimental feature but please note that they are based on API which is currently in beta and may change at some point of time or be unstable.
-
-</FieldAnchor>
 
 ### Notes on the `engagements` stream
 
