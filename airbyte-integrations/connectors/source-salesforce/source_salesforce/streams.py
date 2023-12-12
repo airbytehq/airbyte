@@ -163,9 +163,6 @@ class RestSalesforceStream(SalesforceStream):
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC"
 
-        print(f"++++++{self.name} query RestSalesforceStream+++++++++++++++++++++++++++++++++++++")
-        print(query)
-
         return {"q": query}
 
     def chunk_properties(self) -> Iterable[Mapping[str, Any]]:
@@ -585,9 +582,6 @@ class BulkSalesforceStream(SalesforceStream):
             parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice['parents']]
             query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
 
-        print(f"++++++{self.name} query BulkSalesforceStream+++++++++++++++++++++++++++++++++++++")
-        print(query)
-
         return {"q": query}
 
     def read_records(
@@ -765,9 +759,6 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
-
-        print(f"++++++{self.name} query BulkIncrementalSalesforceStream +++++++++++++++++++++++++++++++++++++")
-        print(query)
 
         return {"q": query}
 
