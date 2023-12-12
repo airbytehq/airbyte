@@ -86,10 +86,10 @@ class FullRefreshTest(TestCase):
                 query_params={"created[gte]": str(int(_A_START_DATE.timestamp())), "created[lte]": str(int(_NOW.timestamp())), "limit": 100},
                 headers=_AUTHENTICATION_HEADERS
             ),
-            _a_response().with_record(_a_record()).build()
+            _a_response().with_record(_a_record()).with_record(_a_record()).build()
         )
         output = self._read(_config().with_start_date(_A_START_DATE))
-        assert len(output.records) == 1
+        assert len(output.records) == 2
 
     @HttpMocker()
     def test_given_many_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
@@ -112,10 +112,10 @@ class FullRefreshTest(TestCase):
                 },
                 headers=_AUTHENTICATION_HEADERS,
             ),
-            _a_response().with_record(_a_record()).build()
+            _a_response().with_record(_a_record()).with_record(_a_record()).build()
         )
         output = self._read(_config().with_start_date(_A_START_DATE))
-        assert len(output.records) == 2
+        assert len(output.records) == 3
 
     @HttpMocker()
     def test_given_start_date_before_30_days_stripe_limit_when_read_then_request_more_than_30_days(self, http_mocker: HttpMocker) -> None:
@@ -149,7 +149,7 @@ class FullRefreshTest(TestCase):
         # request matched http_mocker
 
     @HttpMocker()
-    def test_given_slice_range_when_read_then_request_before_start_date(self, http_mocker: HttpMocker) -> None:
+    def test_given_slice_range_when_read_then_perform_multiple_requests(self, http_mocker: HttpMocker) -> None:
         start_date = _NOW - timedelta(days=30)
         slice_range = timedelta(days=20)
         slice_datetime = start_date + slice_range
