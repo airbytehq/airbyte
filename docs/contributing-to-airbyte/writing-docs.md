@@ -380,3 +380,39 @@ cd airbyte
 git checkout <OLDER_BRANCH>
 ./tools/bin/deploy_docusaurus
 ```
+
+### Adding a diagram
+We have the docusaurus [Mermaid](https://mermaid.js.org/) plugin which has a variety of diagram
+types and syntaxes available.
+
+:::danger
+    The connector specific docs do **not** currently support this, only use this for general docs.
+:::
+
+Here is an example from the [Mermaid docs](https://mermaid.js.org/syntax/entityRelationshipDiagram.html) 
+you would add the following to your markdown wrapped in a code block.
+
+```md
+    ---
+    title: Order example
+    ---
+    erDiagram
+        CUSTOMER ||--o{ ORDER : places
+        ORDER ||--|{ LINE-ITEM : contains
+        CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+```
+
+which produces the following diagram 
+
+```mermaid
+---
+title: Order example
+---
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+```
+
+check out the rest of the Mermaid documentation for its capabilities just be aware that not all 
+the features are available to the docusaurus plugin.
