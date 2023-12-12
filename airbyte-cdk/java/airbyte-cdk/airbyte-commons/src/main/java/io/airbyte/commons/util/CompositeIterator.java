@@ -78,11 +78,13 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
         throw new RuntimeException(e);
       }
 
-      if (i + 1 < iterators.size()) {
-        i++;
+      if (i < iterators.size()) {
         StreamStatusUtils.emitStartStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
+        i++;
         firstRead = true;
-      } else {
+      }
+
+      if (i >= iterators.size()) {
         return endOfData();
       }
     }
