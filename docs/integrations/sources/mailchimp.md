@@ -38,177 +38,23 @@ Airbyte doesn't support Incremental Deletes for the `Campaigns`, `Lists`, and `E
 
 The Mailchimp source connector supports the following streams:
 
-**[Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info) Stream**
+[Automations](https://mailchimp.com/developer/marketing/api/automation/list-automations/)
+[Campaigns](https://mailchimp.com/developer/marketing/api/campaigns/get-campaign-info/)
+[Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)
+[Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info)
+[ListMembers](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)
+[Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)
+[Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)
+[Unsubscribes](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/)
 
-```
-{
-  "id": "q1w2e3r4t5",
-  "web_id": 000001,
-  "name": "Newsletter Subscribers",
-  "contact": {
-    "company": "",
-    "address1": "",
-    "address2": "",
-    "city": "San Francisco",
-    "state": "CA",
-    "zip": "00000-1111",
-    "country": "US",
-    "phone": ""
-  },
-  "permission_reminder": "You are receiving this email because you opted in via our website.",
-  "use_archive_bar": true,
-  "campaign_defaults": {
-    "from_name": "Airbyte Community",
-    "from_email": "hey@email.com",
-    "subject": "",
-    "language": "en"
-  },
-  "notify_on_subscribe": "",
-  "notify_on_unsubscribe": "",
-  "date_created": "2020-09-17T04:48:49+00:00",
-  "list_rating": 3,
-  "email_type_option": false,
-  "subscribe_url_short": "http://eepurl.com/hfpWAr",
-  "subscribe_url_long": "https://daxtarity.us2.list-manage.com/subscribe?u=q1q1q1q1q1q1q1q1q1q&id=q1w2e3r4t5",
-  "beamer_address": "us2-00000000-qqqqqqqqq@inbound.mailchimp.com",
-  "visibility": "prv",
-  "double_optin": false,
-  "has_welcome": false,
-  "marketing_permissions": false,
-  "modules": [],
-  "stats": {
-    "member_count": 4204,
-    "unsubscribe_count": 194,
-    "cleaned_count": 154,
-    "member_count_since_send": 91,
-    "unsubscribe_count_since_send": 19,
-    "cleaned_count_since_send": 23,
-    "campaign_count": 27,
-    "campaign_last_sent": "2022-04-01T14:29:31+00:00",
-    "merge_field_count": 5,
-    "avg_sub_rate": 219,
-    "avg_unsub_rate": 10,
-    "target_sub_rate": 18,
-    "open_rate": 39.478173607626694,
-    "click_rate": 8.504017780817234,
-    "last_sub_date": "2022-04-12T07:39:29+00:00",
-    "last_unsub_date": "2022-04-11T08:08:07+00:00"
-  },
-  "_links": [
-    {
-      "rel": "self",
-      "href": "https://us2.api.mailchimp.com/3.0/lists/q1w2e3r4t5",
-      "method": "GET",
-      "targetSchema": "https://us2.api.mailchimp.com/schema/3.0/Definitions/Lists/Response.json"
-    }
-  ]
-}
-```
+### A note on primary keys
 
-**[Campaigns](https://mailchimp.com/developer/api/marketing/campaigns/get-campaign-info/) Stream**
+The `EmailActivity` and `Unsubscribes` streams do not have an `id` primary key, and therefore use the following composite keys as unique identifiers:
 
-```
-{
-    "id": "q1w2e3r4t5", 
-    "web_id": 0000000, 
-    "type": "regular", 
-    "create_time": "2020-11-03T22:46:43+00:00", 
-    "archive_url": "http://eepurl.com/hhSLxH", 
-    "long_archive_url": "https://mailchi.mp/xxxxxxxx/weekly-bytes-learnings-from-soft-launch-and-our-vision-0000000", 
-    "status": "sent", 
-    "emails_sent": 89, 
-    "send_time": "2020-11-05T16:15:00+00:00", 
-    "content_type": "template", 
-    "needs_block_refresh": false, 
-    "resendable": true, 
-    "recipients": {
-        "list_id": "1q2w3e4r", 
-        "list_is_active": true, 
-        "list_name": "Newsletter Subscribers", 
-        "segment_text": "",     
-        "recipient_count": 89
-    }, 
-    "settings": {
-        "subject_line": "Some subject", 
-        "preview_text": "Text", 
-        "title": "Newsletter", 
-        "from_name": "Weekly Bytes from Airbyte", 
-        "reply_to": "hey@email.com", 
-        "use_conversation": false, 
-        "to_name": "", 
-        "folder_id": "", 
-        "authenticate": true, 
-        "auto_footer": false, 
-        "inline_css": false, 
-        "auto_tweet": false, 
-        "fb_comments": true, 
-        "timewarp": false, 
-        "template_id": 0000000, 
-        "drag_and_drop": false
-    }, 
-    "tracking": {
-        "opens": true, 
-        "html_clicks": true, 
-        "text_clicks": false, 
-        "goal_tracking": false, 
-        "ecomm360": false, 
-        "google_analytics": "", 
-        "clicktale": ""
-    }, 
-    "report_summary": {
-        "opens": 46, 
-        "unique_opens": 33, 
-        "open_rate": 0.0128372, 
-        "clicks": 13, 
-        "subscriber_clicks": 7, 
-        "click_rate": 0.0383638, 
-        "ecommerce": {
-            "total_orders": 0, 
-            "total_spent": 0, 
-            "total_revenue": 0
-        }
-    }, 
-    "delivery_status": {
-        "enabled": false
-    }, 
-    "_links": [
-        {
-            "rel": "parent", 
-            "href": "https://us2.api.mailchimp.com/3.0/campaigns", 
-            "method": "GET", 
-            "targetSchema": "https://us2.api.mailchimp.com/schema/3.0/Definitions/Campaigns/CollectionResponse.json", 
-            "schema": "https://us2.api.mailchimp.com/schema/3.0/Paths/Campaigns/Collection.json"
-        }
-    ]
-}
-```
+- EmailActivity [`email_id`, `action`, `timestamp`]
+- Unsubscribes [`campaign_id`, `email_id`, `timestamp`]
 
-**[Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/) Stream**
-
-```
-{
-  "campaign_id": "q1w2q1w2q1w2",
-  "list_id": "123qwe",
-  "list_is_active": true,
-  "email_id": "qwerty123456",
-  "email_address": "email@email.com",
-  "_links": [
-    {
-      "rel": "parent",
-      "href": "https://us2.api.mailchimp.com/3.0/reports/q1w2q1w2q1w2/email-activity",
-      "method": "GET",
-      "targetSchema": "https://us2.api.mailchimp.com/schema/3.0/Definitions/Reports/EmailActivity/CollectionResponse.json"
-    }
-  ],
-  "action": "open",
-  "timestamp": "2020-10-08T22:15:43+00:00",
-  "ip": "00.000.00.5"
-}
-```
-
-### A note on the primary keys 
-
-The `Lists` and `Campaigns` streams have `id` as the primary key. The `Email Activity` stream doesn't have a primary key because Mailchimp does not provide one. 
+All other streams contain an `id` primary key.
 
 ## Data type mapping
 
@@ -230,6 +76,13 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 0.8.3   | 2023-11-15 | [32543](https://github.com/airbytehq/airbyte/pull/32543) | Handle empty datetime fields in Reports stream                             |
+| 0.8.2   | 2023-11-13 | [32466](https://github.com/airbytehq/airbyte/pull/32466) | Improve error handling during connection check                             |
+| 0.8.1   | 2023-11-06 | [32226](https://github.com/airbytehq/airbyte/pull/32226) | Unmute expected records test after data anonymisation                      |
+| 0.8.0   | 2023-11-01 | [32032](https://github.com/airbytehq/airbyte/pull/32032) | Add ListMembers stream                                                     |
+| 0.7.0   | 2023-10-27 | [31940](https://github.com/airbytehq/airbyte/pull/31940) | Implement availability strategy                                            |
+| 0.6.0   | 2023-10-27 | [31922](https://github.com/airbytehq/airbyte/pull/31922) | Add Segments stream                                                        |
+| 0.5.0   | 2023-10-20 | [31675](https://github.com/airbytehq/airbyte/pull/31675) | Add Unsubscribes stream                                                    |
 | 0.4.1   | 2023-05-02 | [25717](https://github.com/airbytehq/airbyte/pull/25717) | Handle unknown error in EmailActivity                                      |
 | 0.4.0   | 2023-04-11 | [23290](https://github.com/airbytehq/airbyte/pull/23290) | Add Automations stream                                                     |
 | 0.3.5   | 2023-02-28 | [23464](https://github.com/airbytehq/airbyte/pull/23464) | Add Reports stream                                                         |

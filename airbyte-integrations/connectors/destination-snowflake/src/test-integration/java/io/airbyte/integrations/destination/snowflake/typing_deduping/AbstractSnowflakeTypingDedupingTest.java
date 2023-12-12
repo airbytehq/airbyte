@@ -4,25 +4,44 @@
 
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.workers.exception.TestHarnessException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedupingTest {
 
+  public static final Map<String, String> FINAL_METADATA_COLUMN_NAMES = Map.of(
+      "_airbyte_raw_id", "_AIRBYTE_RAW_ID",
+      "_airbyte_extracted_at", "_AIRBYTE_EXTRACTED_AT",
+      "_airbyte_loaded_at", "_AIRBYTE_LOADED_AT",
+      "_airbyte_data", "_AIRBYTE_DATA",
+      "_airbyte_meta", "_AIRBYTE_META");
   private String databaseName;
   private JdbcDatabase database;
   private DataSource dataSource;
@@ -62,7 +81,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema();
     }
-    return SnowflakeTestUtils.dumpFinalTable(database, databaseName, streamNamespace, streamName);
+    return SnowflakeTestUtils.dumpFinalTable(database, databaseName, streamNamespace.toUpperCase(), streamName.toUpperCase());
   }
 
   @Override
@@ -77,8 +96,9 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
             DROP SCHEMA IF EXISTS "%s" CASCADE
             """,
             getRawSchema(),
+            // Raw table is still lowercase.
             StreamId.concatenateRawTableName(streamNamespace, streamName),
-            streamNamespace));
+            streamNamespace.toUpperCase()));
   }
 
   @Override
@@ -86,11 +106,116 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
     DataSourceFactory.close(dataSource);
   }
 
+  @Override
+  protected SqlGenerator<?> getSqlGenerator() {
+    return new SnowflakeSqlGenerator();
+  }
+
+  @Override
+  protected Map<String, String> getFinalMetadataColumnNames() {
+    return FINAL_METADATA_COLUMN_NAMES;
+  }
+
   /**
    * Subclasses using a config with a nonstandard raw table schema should override this method.
    */
   protected String getRawSchema() {
     return JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
+  }
+
+  /**
+   * Run a sync using 3.0.0 (which is the highest version that still creates v2 final tables with
+   * lowercased+quoted names). Then run a sync using our current version.
+   */
+  @Test
+  public void testFinalTableUppercasingMigration_append() throws Exception {
+    try {
+      final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.FULL_REFRESH)
+              .withDestinationSyncMode(DestinationSyncMode.APPEND)
+              .withStream(new AirbyteStream()
+                  .withNamespace(streamNamespace)
+                  .withName(streamName)
+                  .withJsonSchema(SCHEMA))));
+
+      // First sync
+      final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+      runSync(catalog, messages1, "airbyte/destination-snowflake:3.0.0");
+      // We no longer have the code to dump a lowercased table, so just move on directly to the new sync
+
+      // Second sync
+      final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+
+      runSync(catalog, messages2);
+
+      final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
+      final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
+      verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+    } finally {
+      // manually drop the lowercased schema, since we no longer have the code to do it automatically
+      // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code
+      // handles it fine)
+      database.execute("DROP SCHEMA IF EXISTS \"" + streamNamespace + "\" CASCADE");
+    }
+  }
+
+  @Test
+  public void testFinalTableUppercasingMigration_overwrite() throws Exception {
+    try {
+      final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.FULL_REFRESH)
+              .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+              .withStream(new AirbyteStream()
+                  .withNamespace(streamNamespace)
+                  .withName(streamName)
+                  .withJsonSchema(SCHEMA))));
+
+      // First sync
+      final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+      runSync(catalog, messages1, "airbyte/destination-snowflake:3.0.0");
+      // We no longer have the code to dump a lowercased table, so just move on directly to the new sync
+
+      // Second sync
+      final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+
+      runSync(catalog, messages2);
+
+      final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_raw.jsonl");
+      final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl");
+      verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+    } finally {
+      // manually drop the lowercased schema, since we no longer have the code to do it automatically
+      // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code
+      // handles it fine)
+      database.execute("DROP SCHEMA IF EXISTS \"" + streamNamespace + "\" CASCADE");
+    }
+  }
+
+  @Test
+  public void testRemovingPKNonNullIndexes() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    // First sync
+    final List<AirbyteMessage> messages = readMessages("dat/sync_null_pk.jsonl");
+    final TestHarnessException e = assertThrows(
+        TestHarnessException.class,
+        () -> runSync(catalog, messages, "airbyte/destination-snowflake:3.1.18")); // this version introduced non-null PKs to the final tables
+    // ideally we would assert on the logged content of the original exception within e, but that is
+    // proving to be tricky
+
+    // Second sync
+    runSync(catalog, messages); // does not throw with latest version
+    assertEquals(1, dumpFinalTableRecords(streamNamespace, streamName).toArray().length);
   }
 
   private String getDefaultSchema() {

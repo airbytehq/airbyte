@@ -15,7 +15,6 @@ import pendulum
 import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -23,6 +22,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 # TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "2016-09-01"
+MINIMUM_START_DATE = "2012-01-01"
 DEFAULT_END_DATE = str(datetime.now().date())
 NOT_AUDIENCE_METRICS = [
     "reach",
@@ -62,6 +62,21 @@ NOT_AUDIENCE_METRICS = [
     "complete_payment",
     "value_per_complete_payment",
     "total_complete_payment_rate",
+    "profile_visits_rate",
+    "purchase",
+    "purchase_rate",
+    "registration",
+    "registration_rate",
+    "sales_lead",
+    "sales_lead_rate",
+    "cost_per_app_install",
+    "cost_per_purchase",
+    "cost_per_registration",
+    "total_purchase_value",
+    "cost_per_sales_lead",
+    "cost_per_total_sales_lead",
+    "cost_per_total_app_event_add_to_cart",
+    "total_app_event_add_to_cart",
 ]
 
 T = TypeVar("T")
@@ -87,7 +102,8 @@ T = TypeVar("T")
 #         | └─AdGroupAudienceReportsByPlatform     (11 ad_group_audience_reports_by_platform)
 #         ├─AdsAudienceReports                     (12 ads_audience_reports)
 #         | ├─AdsAudienceReportsByCountry          (13 ads_audience_reports_by_country)
-#         | └─AdsAudienceReportsByPlatform         (14 ads_audience_reports_by_platform)
+#         | ├─AdsAudienceReportsByPlatform         (14 ads_audience_reports_by_platform)
+#         | ├─AdsAudienceReportsByProvince         (14 ads_audience_reports_by_platform)
 #         ├─AdvertisersAudienceReports             (15 advertisers_audience_reports)
 #         | ├─AdvertisersAudienceReportsByCountry  (16 advertisers_audience_reports_by_country)
 #         | └─AdvertisersAudienceReportsByPlatform (17 advertisers_audience_reports_by_platform)
@@ -170,10 +186,6 @@ class TiktokStream(HttpStream, ABC):
 
         self._advertiser_id = kwargs.get("advertiser_id")
         self.is_sandbox = kwargs.get("is_sandbox")
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """All responses have the similar structure:
@@ -277,7 +289,7 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
 
     @transformer.registerCustomTransform
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-        """Custom traun"""
+        """Custom transformation"""
         if original_value == "-":
             return None
         elif isinstance(original_value, float):
@@ -327,23 +339,6 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
     def is_finished(self):
         return len(self._advertiser_ids) == 0
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = {"page_size": self.page_size}
-        if self.fields:
-            params["fields"] = self.convert_array_param(self.fields)
-        if stream_slice:
-            params.update(stream_slice)
-        return params
-
-
-class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
-    cursor_field = "modify_time"
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """All responses have the following pagination data:
         {
@@ -359,16 +354,31 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         }
         """
 
-        page_info = response.json()["data"]["page_info"]
+        page_info = response.json().get("data", {}).get("page_info", {})
+        if not page_info:
+            return None
         if page_info["page"] < page_info["total_page"]:
             return {"page": page_info["page"] + 1}
         return None
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(next_page_token=next_page_token, **kwargs)
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"page_size": self.page_size}
+        if self.fields:
+            params["fields"] = self.convert_array_param(self.fields)
+        if stream_slice:
+            params.update(stream_slice)
         if next_page_token:
             params.update(next_page_token)
         return params
+
+
+class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
+    cursor_field = "modify_time"
 
     def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:
         if not data or not self.cursor_field:
@@ -406,17 +416,17 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         """Additional data filtering"""
-        state = self.select_cursor_field_value(stream_state) or self._start_time
+        state_cursor_value = self.select_cursor_field_value(stream_state) or self._start_time
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
             record = self.unnest_cursor_and_pk(record)
-            updated = self.select_cursor_field_value(record, stream_slice)
-            if updated is None:
+            updated_cursor_value = self.select_cursor_field_value(record, stream_slice)
+            if updated_cursor_value is None:
                 yield record
-            elif updated <= state:
+            elif updated_cursor_value < state_cursor_value:
                 continue
             else:
-                if not self.max_cursor_date or self.max_cursor_date < updated:
-                    self.max_cursor_date = updated
+                if not self.max_cursor_date or self.max_cursor_date < updated_cursor_value:
+                    self.max_cursor_date = updated_cursor_value
                 yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -461,6 +471,37 @@ class Advertisers(FullRefreshTiktokStream):
             yield {"advertiser_ids": ids[i : min(end, i + step)]}
 
 
+class Audiences(FullRefreshTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1739940506015746"""
+
+    page_size = 100
+    primary_key = "audience_id"
+
+    def path(self, *args, **kwargs) -> str:
+        return "dmp/custom_audience/list/"
+
+
+class CreativeAssetsMusic(FullRefreshTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1740053909509122"""
+
+    primary_key = "music_id"
+    response_list_field = "musics"
+
+    def path(self, *args, **kwargs) -> str:
+        return "file/music/get/"
+
+
+class CreativeAssetsPortfolios(FullRefreshTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1766324010279938"""
+
+    page_size = 100
+    primary_key = "creative_portfolio_id"
+    response_list_field = "creative_portfolios"
+
+    def path(self, *args, **kwargs) -> str:
+        return "creative/portfolio/list/"
+
+
 class Campaigns(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739315828649986"""
 
@@ -486,6 +527,26 @@ class Ads(IncrementalTiktokStream):
 
     def path(self, *args, **kwargs) -> str:
         return "ad/get/"
+
+
+class CreativeAssetsImages(IncrementalTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1740052016789506"""
+
+    page_size = 100
+    primary_key = "image_id"
+
+    def path(self, *args, **kwargs) -> str:
+        return "file/image/ad/search/"
+
+
+class CreativeAssetsVideos(IncrementalTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1740050472224769"""
+
+    page_size = 100
+    primary_key = "video_id"
+
+    def path(self, *args, **kwargs) -> str:
+        return "file/video/ad/search/"
 
 
 class BasicReports(IncrementalTiktokStream, ABC):
@@ -802,25 +863,21 @@ class AudienceReport(BasicReports, ABC):
 
 
 class CampaignsAudienceReports(AudienceReport):
-
     ref_pk = "campaign_id"
     report_level = ReportLevel.CAMPAIGN
 
 
 class AdGroupAudienceReports(AudienceReport):
-
     ref_pk = "adgroup_id"
     report_level = ReportLevel.ADGROUP
 
 
 class AdsAudienceReports(AudienceReport):
-
     ref_pk = "ad_id"
     report_level = ReportLevel.AD
 
 
 class AdvertisersAudienceReports(AudienceReport):
-
     ref_pk = "advertiser_id"
     report_level = ReportLevel.ADVERTISER
 
@@ -871,3 +928,9 @@ class AdvertisersAudienceReportsByPlatform(AdvertisersAudienceReports):
     """Custom reports for advertisers by platform"""
 
     audience_dimensions = ["platform"]
+
+
+class AdsAudienceReportsByProvince(AdsAudienceReports):
+    """Custom reports for ads by province"""
+
+    audience_dimensions = ["province_id"]

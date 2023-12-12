@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import base64
 import logging
 from unittest.mock import Mock
 
@@ -66,6 +66,48 @@ class TestOauth2Authenticator:
         }
         assert body == expected
 
+    def test_refresh_with_encode_config_params(self):
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] | base64encode }}",
+            client_secret="{{ config['client_secret'] | base64encode }}",
+            config=config,
+            parameters={},
+            grant_type="client_credentials",
+        )
+        body = oauth.build_refresh_request_body()
+        expected = {
+            "grant_type": "client_credentials",
+            "client_id": base64.b64encode(config["client_id"].encode("utf-8")).decode(),
+            "client_secret": base64.b64encode(config["client_secret"].encode("utf-8")).decode(),
+            "refresh_token": None,
+            "scopes": None,
+        }
+        assert body == expected
+
+    def test_refresh_with_decode_config_params(self):
+        updated_config_fields = {
+            "client_id": base64.b64encode(config["client_id"].encode("utf-8")).decode(),
+            "client_secret": base64.b64encode(config["client_secret"].encode("utf-8")).decode(),
+        }
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] | base64decode }}",
+            client_secret="{{ config['client_secret'] | base64decode }}",
+            config=config | updated_config_fields,
+            parameters={},
+            grant_type="client_credentials",
+        )
+        body = oauth.build_refresh_request_body()
+        expected = {
+            "grant_type": "client_credentials",
+            "client_id": "some_client_id",
+            "client_secret": "some_client_secret",
+            "refresh_token": None,
+            "scopes": None,
+        }
+        assert body == expected
+
     def test_refresh_without_refresh_token(self):
         """
         Should work fine for grant_type client_credentials.
@@ -127,6 +169,35 @@ class TestOauth2Authenticator:
         assert ("access_token", 1000) == token
 
     @pytest.mark.parametrize(
+        "timestamp, expected_date",
+        [
+            (1640995200, "2022-01-01T00:00:00Z"),
+            ("1650758400", "2022-04-24T00:00:00Z"),
+        ],
+        ids=["timestamp_as_integer", "timestamp_as_integer_inside_string"],
+    )
+    def test_initialize_declarative_oauth_with_token_expiry_date_as_timestamp(self, timestamp, expected_date):
+        # TODO: should be fixed inside DeclarativeOauth2Authenticator, remove next line after fixing
+        with pytest.raises(TypeError):
+            oauth = DeclarativeOauth2Authenticator(
+                token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+                client_id="{{ config['client_id'] }}",
+                client_secret="{{ config['client_secret'] }}",
+                refresh_token="{{ parameters['refresh_token'] }}",
+                config=config | {"token_expiry_date": timestamp},
+                scopes=["scope1", "scope2"],
+                token_expiry_date="{{ config['token_expiry_date'] }}",
+                refresh_request_body={
+                    "custom_field": "{{ config['custom_field'] }}",
+                    "another_field": "{{ config['another_field'] }}",
+                    "scopes": ["no_override"],
+                },
+                parameters={},
+            )
+
+            assert oauth.get_token_expiry_date() == pendulum.parse(expected_date)
+
+    @pytest.mark.parametrize(
         "expires_in_response, token_expiry_date_format",
         [
             ("2020-01-02T00:00:00Z", "YYYY-MM-DDTHH:mm:ss[Z]"),
@@ -149,6 +220,7 @@ class TestOauth2Authenticator:
             scopes=["scope1", "scope2"],
             token_expiry_date="{{ config['token_expiry_date'] }}",
             token_expiry_date_format=token_expiry_date_format,
+            token_expiry_is_time_of_expiration=True,
             refresh_request_body={
                 "custom_field": "{{ config['custom_field'] }}",
                 "another_field": "{{ config['another_field'] }}",

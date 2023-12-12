@@ -17,5 +17,3 @@ Let's start with the list of projects that falls under ELv2 and for which you ca
 * Creating an analytics or attribution platform for which you want to use Airbyte to bring data in on behalf of your customers.
 * Creating any kind of platform on which you offer Airbyte's connectors to your customers to bring their data in, unless you're selling some ELT / ETL solution.
 * Building your internal data stack and configuring pipelines through Airbyte's UI or API.
-
-**Contact us on the chat on the bottom right to add your project example!**

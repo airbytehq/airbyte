@@ -1,23 +1,27 @@
 # Google Search Console
 
+<HideInUI>
+
 This page contains the setup guide and reference information for the Google Search Console source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
-- A verified property in Google Search Console
+- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Properties))
 <!-- env:oss -->
 - Google Search Console API enabled for your project (**Airbyte Open Source** only)
 <!-- /env:oss -->
 
 ## Setup guide
 
-### Step 1: Set up Google Search Console authentication
+### Step 1: Set up Google Search Console
 
 To authenticate the Google Search Console connector, you will need to use one of the following methods:
 
-#### I: OAuth (Recommended for Airbyte Cloud)
-
 <!-- env:cloud -->
+#### OAuth (Recommended for Airbyte Cloud)
+
 You can authenticate using your Google Account with OAuth if you are the owner of the Google Search Console property or have view permissions. Follow [Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA) to ensure that your account has the necessary permissions (**Owner** or **Full User**) to view the Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it significantly simplifies the setup process and allows you to authenticate the connection [directly from the Airbyte UI](#step-2-set-up-the-google-search-console-connector-in-airbyte).
 <!-- /env:cloud -->
 
@@ -31,7 +35,7 @@ To authenticate with OAuth in **Airbyte Open Source**, you will need to create a
 
 More information on the steps to create an OAuth app to access Google APIs and obtain these credentials can be found [in Google's documentation](https://developers.google.com/identity/protocols/oauth2).
 
-#### II: Google service account with JSON key file (Recommended for Airbyte Open Source)
+#### Google service account with JSON key file (Recommended for Airbyte Open Source)
 
 You can authenticate the connection using a JSON key file associated with a Google service account. This option is recommended for **Airbyte Open Source** users. Follow the steps below to create a service account and generate the JSON key file:
 
@@ -70,27 +74,31 @@ For more information on this topic, please refer to [this Google article](https:
 
 ### Step 2: Set up the Google Search Console connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Search Console** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
 5. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
-6. For **Start Date**, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
+6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
-
-   <!-- env:cloud -->
-   - **For Airbyte Cloud**: Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to authorize your account.
-   <!-- /env:cloud -->
-   <!-- env:oss -->
-   - **For Airbyte Open Source**:
-      - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
-      - Select **Oauth** from the Authentication dropdown, then enter your **Client ID**, **Client Secret**, **Access Token** and **Refresh Token**.
-   <!-- /env:oss -->
-
+<!-- env:cloud -->
+- **For Airbyte Cloud:**
+  - Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to authorize your account.
+<!-- /env:cloud -->
+<!-- env:oss -->
+- **For Airbyte Open Source:**
+  - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
+  - Select **Oauth** from the Authentication dropdown, then enter your **Client ID**, **Client Secret**, **Access Token** and **Refresh Token**.
+<!-- /env:oss -->
 8. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
 9. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](#custom-reports) section below for more information on formulating these reports.
 10. (Optional) For **Data Freshness**, you may choose whether to include "fresh" data that has not been finalized by Google, and may be subject to change. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`. Refer to the [Data Freshness](#data-freshness) section below for more information on this parameter.
 11. Click **Set up source** and wait for the tests to complete.
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -117,6 +125,7 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 - [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics keyword report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics keyword report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [Analytics keyword report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics page report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics site report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
@@ -126,34 +135,28 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 
 ### Custom reports
 
-Custom reports allow you to query the API with a custom set of dimensions to group results by. Results are grouped in the order that you supply these dimensions. Each custom report should be constructed as a JSON object in the following format:
+Custom reports allow you to query the API with a custom set of dimensions to group results by. Results are grouped in the order that you supply these dimensions. Each custom report should be constructed like following:
 
-```json
-{
-   "name": "<report-name>",
-   "dimensions": ["<dimension-name>", "<dimension-name>", ...]
-   }
-```
+1. Click `Add` under the `Custom Reports` section
+2. Enter the `Name` of the report, this will be the name of the stream
+3. Select one or more `Dimensions` from the available dropdown list
 
-The available dimensions are:
+The available `Dimensions` are:
 
 - `country`
 - `date`
 - `device`
 - `page`
 - `query`
-- `searchAppearance`
 
 For example, to query the API for a report that groups results by country, then by date, you could enter the following custom report:
 
-```json
-[
-   {
-      "name": "country_date",
-      "dimensions": ["country", "date"]
-   }
-]
-```
+* Name: country_date
+* Dimensions: ["country", "date"]
+
+Please note, that for technical reasons `date` is the default dimension which will be included in your query whether you specify it or not. By specifying it you can change the order the results are grouped in. Primary key will consist of your custom dimensions and the default dimension along with `site_url` and `search_type`.
+
+The information you provide via UI Custom report builder will then be transformed into the custom stream by it's `Name`
 
 You can use the [Google APIS Explorer](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) to build and test the reports you want to use.
 
@@ -168,10 +171,6 @@ The **Data Freshness** parameter deals with the "freshness", or finality of the 
 When using Incremental Sync mode, we recommend leaving this parameter to its default state of `final`, as the `all` option may cause discrepancies between the data in your destination table and the finalized data in Google Search Console.
 :::
 
-## Performance considerations
-
-This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
-
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
@@ -181,13 +180,36 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 | `array`          | `array`      |       |
 | `object`         | `object`     |       |
 
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Google Search Console connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
+
+### Troubleshooting
+
+* Check out common troubleshooting issues for the Google Search Console source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
+
 ## Changelog
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                                                                        |
-| :------- | :--------- | :------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------- |
-| `1.3.1`  | 2023-08-24 | [29329](https://github.com/airbytehq/airbyte/pull/29329)                                                      | Update tooltip descriptions                     |
-| `1.3.0`  | 2023-08-24 | [29750](https://github.com/airbytehq/airbyte/pull/29750)                                                      | Add new `Keyword-Site-Report-By-Site` stream |
-| `1.2.2`  | 2023-08-23 | [29741](https://github.com/airbytehq/airbyte/pull/29741)                                                      | Handle `HTTP-401`, `HTTP-403` errors |
+|:---------|:-----------|:--------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| `1.3.6`  | 2023-10-26 | [31863](https://github.com/airbytehq/airbyte/pull/31863)                                                      | Base image migration: remove Dockerfile and use the python-connector-base image                                                |
+| `1.3.5`  | 2023-09-28 | [30822](https://github.com/airbytehq/airbyte/pull/30822)                                                      | Fix primary key for custom reports                                                                                             |
+| `1.3.4`  | 2023-09-27 | [30785](https://github.com/airbytehq/airbyte/pull/30785)                                                      | Do not migrate config for the newly created connections                                                                        |
+| `1.3.3`  | 2023-08-29 | [29941](https://github.com/airbytehq/airbyte/pull/29941)                                                      | Added `primary key` to each stream, added `custom_report` config migration                                                     |
+| `1.3.2`  | 2023-08-25 | [29829](https://github.com/airbytehq/airbyte/pull/29829)                                                      | Make `Start Date` a non-required, added the `suggested streams`, corrected public docs                                         |
+| `1.3.1`  | 2023-08-24 | [29329](https://github.com/airbytehq/airbyte/pull/29329)                                                      | Update tooltip descriptions                                                                                                    |
+| `1.3.0`  | 2023-08-24 | [29750](https://github.com/airbytehq/airbyte/pull/29750)                                                      | Add new `Keyword-Site-Report-By-Site` stream                                                                                   |
+| `1.2.2`  | 2023-08-23 | [29741](https://github.com/airbytehq/airbyte/pull/29741)                                                      | Handle `HTTP-401`, `HTTP-403` errors                                                                                           |
 | `1.2.1`  | 2023-07-04 | [27952](https://github.com/airbytehq/airbyte/pull/27952)                                                      | Removed deprecated `searchType`, added `discover`(Discover results) and `googleNews`(Results from news.google.com, etc.) types |
 | `1.2.0`  | 2023-06-29 | [27831](https://github.com/airbytehq/airbyte/pull/27831)                                                      | Add new streams                                                                                                                |
 | `1.1.0`  | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738)                                                      | License Update: Elv2                                                                                                           |
@@ -216,3 +238,5 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 | `0.1.2`  | 2021-09-17 | [6222](https://github.com/airbytehq/airbyte/pull/6222)                                                        | Correct Spec File                                                                                                              |
 | `0.1.1`  | 2021-09-22 | [6315](https://github.com/airbytehq/airbyte/pull/6315)                                                        | Verify access to all sites when performing connection check                                                                    |
 | `0.1.0`  | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350)                                                        | Initial Release                                                                                                                |
+
+</HideInUI>

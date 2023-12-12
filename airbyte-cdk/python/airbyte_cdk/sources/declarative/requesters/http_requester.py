@@ -24,6 +24,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
@@ -62,6 +63,7 @@ class HttpRequester(Requester):
 
     _DEFAULT_MAX_RETRY = 5
     _DEFAULT_RETRY_FACTOR = 5
+    _DEFAULT_MAX_TIME = 60 * 10
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
@@ -78,6 +80,9 @@ class HttpRequester(Requester):
         self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
         self._session = requests.Session()
+        self._session.mount(
+            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+        )
 
         if isinstance(self._authenticator, AuthBase):
             self._session.auth = self._authenticator
@@ -169,6 +174,15 @@ class HttpRequester(Requester):
         if self.error_handler is None:
             return self._DEFAULT_MAX_RETRY
         return self.error_handler.max_retries
+
+    @property
+    def max_time(self) -> Union[int, None]:
+        """
+        Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
+        """
+        if self.error_handler is None:
+            return self._DEFAULT_MAX_TIME
+        return self.error_handler.max_time
 
     @property
     def logger(self) -> logging.Logger:
@@ -427,11 +441,19 @@ class HttpRequester(Requester):
         Add this condition to avoid an endless loop if it hasn't been set
         explicitly (i.e. max_retries is not None).
         """
+        max_time = self.max_time
+        """
+        According to backoff max_time docstring:
+            max_time: The maximum total amount of time to try for before
+                giving up. Once expired, the exception will be allowed to
+                escape. If a callable is passed, it will be
+                evaluated at runtime and its return value used.
+        """
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
 
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)  # type: ignore # we don't pass in kwargs to the backoff handler
-        backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self._DEFAULT_RETRY_FACTOR)
+        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)  # type: ignore # we don't pass in kwargs to the backoff handler
+        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
         # backoff handlers wrap _send, so it will always return a response
         return backoff_handler(user_backoff_handler)(request, log_formatter=log_formatter)  # type: ignore
 
@@ -516,7 +538,8 @@ class HttpRequester(Requester):
             if isinstance(value, str):
                 return value
             elif isinstance(value, list):
-                return ", ".join(_try_get_error(v) for v in value)
+                error_list = [_try_get_error(v) for v in value]
+                return ", ".join(v for v in error_list if v is not None)
             elif isinstance(value, dict):
                 new_value = (
                     value.get("message")
@@ -525,6 +548,8 @@ class HttpRequester(Requester):
                     or value.get("errors")
                     or value.get("failures")
                     or value.get("failure")
+                    or value.get("details")
+                    or value.get("detail")
                 )
                 return _try_get_error(new_value)
             return None

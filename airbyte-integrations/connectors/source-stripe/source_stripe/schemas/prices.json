@@ -19,6 +19,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "currency": {
       "type": ["null", "string"]
     },
@@ -82,6 +85,9 @@
     },
     "unit_amount_decimal": {
       "type": ["null", "string"]
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

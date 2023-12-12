@@ -14,7 +14,7 @@ def start_date():
 @pytest.fixture
 def config(start_date):
     return {
-        "api_secret": "unexisting-secret",
+        "credentials": {"api_secret": "unexisting-secret"},
         "attribution_window": 5,
         "project_timezone": pendulum.timezone("UTC"),
         "select_properties_by_default": True,
@@ -41,8 +41,4 @@ def patch_time(mocker):
 
 @pytest.fixture(autouse=True)
 def disable_cache(mocker):
-    mocker.patch(
-        "source_mixpanel.streams.cohorts.Cohorts.use_cache",
-        new_callable=mocker.PropertyMock,
-        return_value=False
-    )
+    mocker.patch("source_mixpanel.streams.cohorts.Cohorts.use_cache", new_callable=mocker.PropertyMock, return_value=False)

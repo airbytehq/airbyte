@@ -10,7 +10,7 @@ from pendulum.tz.timezone import Timezone
 
 
 @dataclass
-class Customer:
+class CustomerModel:
     id: str
     time_zone: Union[timezone, str] = "local"
     is_manager_account: bool = False

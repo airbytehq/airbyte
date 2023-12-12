@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8a5d48f6-03bb-4038-a942-a8d3f175cca3
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-freshcaller
   githubIssueLabel: source-freshcaller
   icon: freshcaller.svg
@@ -14,11 +14,11 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshcaller
   tags:
-    - language:python
+    - language:lowcode
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
 metadataSpecVersion: "1.0"

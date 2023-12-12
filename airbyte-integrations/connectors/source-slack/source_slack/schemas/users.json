@@ -120,8 +120,20 @@
     "is_bot": {
       "type": "boolean"
     },
+    "is_forgotten": {
+      "type": "boolean"
+    },
+    "is_invited_user": {
+      "type": "boolean"
+    },
+    "is_email_confirmed": {
+      "type": "boolean"
+    },
     "updated": {
       "type": "integer"
+    },
+    "who_can_share_contact_card": {
+      "type": "string"
     },
     "is_app_user": {
       "type": "boolean"

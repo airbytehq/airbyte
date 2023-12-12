@@ -11,20 +11,36 @@ This project requires Python 3.10 and pipx.
 
 The recommended way to install `ci_credentials` is using pipx. This ensures the tool and its dependencies are isolated from your other Python projects.
 
+If you havent installed pyenv, you can do it with brew:
+
+```bash
+brew update
+brew install pyenv
+```
+
 If you haven't installed pipx, you can do it with pip:
 
 ```bash
+cd airbyte-ci/connectors/ci_credentials/
+pyenv install # ensure you have the correct python version
 python -m pip install --user pipx
 python -m pipx ensurepath
 ```
 
-Once pipx is installed, navigate to the root directory of the project, then run:
+Once pyenv and pipx is installed then run the following:
 
 ```bash
-pipx install airbyte-ci/connectors/ci_credentials/
+pipx install --editable --force --python=python3.10 airbyte-ci/connectors/ci_credentials/
 ```
 
-This command installs ci_credentials and makes it globally available in your terminal.
+This command installs `ci_credentials` and makes it globally available in your terminal.
+
+_Note: `--force` is required to ensure updates are applied on subsequent installs._
+_Note: `--python=python3.10` is required to ensure the correct python version is used._
+_Note: `--editable` is required to ensure the correct python version is used._
+
+If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
+
 
 ## Get GSM access
 Download a Service account json key that has access to Google Secrets Manager.
@@ -51,6 +67,11 @@ pipx install --editable airbyte-ci/connectors/ci_credentials/
 ```
 
 This is useful when you are making changes to the package and want to test them in real-time.
+
+Note:
+
+- The package name is `pipelines`, not `airbyte-ci`. You will need this when uninstalling or reinstalling.
+- Even with the above `--editable` method, live changes to the code in the sibling project `/airbyte-ci/connectors/connector_ops/` are not automatically captured. To ensure you are using the latest code, use the command `pipx reinstall pipelines`.
 
 ## Usage
 After installation, you can use the ci_credentials command in your terminal.

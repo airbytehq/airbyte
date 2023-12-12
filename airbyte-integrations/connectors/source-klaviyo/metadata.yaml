@@ -6,7 +6,9 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
-  dockerImageTag: 0.3.2
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  dockerImageTag: 2.0.1
   dockerRepository: airbyte/source-klaviyo
   githubIssueLabel: source-klaviyo
   icon: klaviyo.svg
@@ -18,6 +20,21 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - events
+      - campaigns
+      - lists
+      - metrics
+      - flows
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: In this release, for 'events' stream changed type of 'event_properties/items/quantity' field from integer to number. Users will need to refresh the source schema and reset events streams after upgrading.
+        upgradeDeadline: "2023-11-30"
+      2.0.0:
+        message: In this release, streams 'campaigns', 'email_templates', 'events', 'flows', 'global_exclusions', 'lists', and 'metrics' are now pulling data using latest API which has a different schema. Users will need to refresh the source schemas and reset these streams after upgrading.
+        upgradeDeadline: "2023-11-30"
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   tags:
     - language:python

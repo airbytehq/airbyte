@@ -43,6 +43,10 @@ Note: Incremental sync returns duplicated \(old records\) for the state date due
 - [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Incremental\)
 - [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
 
+### Primary key selection for Export stream
+
+Mixpanel recommends using `[insert_id, event_time, event_name, distinct_id]` as the primary key. However, note that some rows might lack an `insert_id` for certain users. Ensure you select a primary key that aligns with your data.
+
 ## Performance considerations
 
 Syncing huge date windows may take longer due to Mixpanel's low API rate-limits \(**60 reqs per hour**\).
@@ -50,11 +54,18 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
-| 0.1.37  | 2022-07-20 | [27932](https://github.com/airbytehq/airbyte/pull/27932) | Fix spec: change start/end date format to `date`                                                            |
-| 0.1.36  | 2022-06-27 | [27752](https://github.com/airbytehq/airbyte/pull/27752) | Partially revert version 0.1.32; Use exponential backoff;                                                   |
-| 0.1.35  | 2022-06-12 | [27252](https://github.com/airbytehq/airbyte/pull/27252) | Add should_retry False for 402 error                                                                        |
-| 0.1.34  | 2022-05-15 | [21837](https://github.com/airbytehq/airbyte/pull/21837) | Add "insert_id" field to "export" stream schema                                                             |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 2.0.0   | 2023-10-30 | [31955](https://github.com/airbytehq/airbyte/pull/31955) | Delete the default primary key for the Export stream                                                        |
+| 1.0.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                             |
+| 1.0.0   | 2023-09-27 | [30025](https://github.com/airbytehq/airbyte/pull/30025) | Fix type of datetime field in engage stream; fix primary key for export stream.                             |
+| 0.1.41  | 2023-09-26 | [30149](https://github.com/airbytehq/airbyte/pull/30149) | Change config schema; set checkpointing interval; add suggested streams; add casting datetime fields.       |
+| 0.1.40  | 2022-09-20 | [30090](https://github.com/airbytehq/airbyte/pull/30090) | Handle 400 error when the credentials become expired                                                        |
+| 0.1.39  | 2023-09-15 | [30469](https://github.com/airbytehq/airbyte/pull/30469) | Add default primary key `distinct_id` to `Export` stream                                                    |
+| 0.1.38  | 2023-08-31 | [30028](https://github.com/airbytehq/airbyte/pull/30028) | Handle gracefully project timezone mismatch                                                                 |
+| 0.1.37  | 2023-07-20 | [27932](https://github.com/airbytehq/airbyte/pull/27932) | Fix spec: change start/end date format to `date`                                                            |
+| 0.1.36  | 2023-06-27 | [27752](https://github.com/airbytehq/airbyte/pull/27752) | Partially revert version 0.1.32; Use exponential backoff;                                                   |
+| 0.1.35  | 2023-06-12 | [27252](https://github.com/airbytehq/airbyte/pull/27252) | Add should_retry False for 402 error                                                                        |
+| 0.1.34  | 2023-05-15 | [21837](https://github.com/airbytehq/airbyte/pull/21837) | Add "insert_id" field to "export" stream schema                                                             |
 | 0.1.33  | 2023-04-25 | [25543](https://github.com/airbytehq/airbyte/pull/25543) | Set should_retry for 104 error in stream export                                                             |
 | 0.1.32  | 2023-04-11 | [25056](https://github.com/airbytehq/airbyte/pull/25056) | Set HttpAvailabilityStrategy, add exponential backoff, streams export and annotations add undeclared fields |
 | 0.1.31  | 2023-02-13 | [22936](https://github.com/airbytehq/airbyte/pull/22936) | Specified date formatting in specification                                                                  |

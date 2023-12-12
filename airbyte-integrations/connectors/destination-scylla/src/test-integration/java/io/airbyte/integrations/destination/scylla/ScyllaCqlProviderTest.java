@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.datastax.driver.core.exceptions.InvalidQueryException;
-import io.airbyte.integrations.util.HostPortResolver;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

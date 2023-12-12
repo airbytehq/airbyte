@@ -56,7 +56,7 @@ You can secure access to Airbyte using the following methods:
     }
   }
   ```
-- Change the default username and password in your environment's `.env` file:
+- *Only for docker compose deployments:* Change the default username and password in your environment's `.env` file:
   ```
   	# Proxy Configuration
   	# Set to empty values, e.g. "" to disable basic auth
@@ -119,22 +119,6 @@ GCP region: us-west3
 * 34.106.225.141
 
 #### European Union
-
-:::note 
-
-Some workflows still run in the US, even when the data residency is in the EU. If you use the EU as a data residency, you must allowlist the following IP addresses from both GCP us-west3 and AWS eu-west-3.
-
-:::
-
-GCP region: us-west3
-* 34.106.109.131
-* 34.106.196.165
-* 34.106.60.246
-* 34.106.229.69
-* 34.106.127.139
-* 34.106.218.58
-* 34.106.115.240
-* 34.106.225.141
 
 AWS region: eu-west-3
 * 13.37.4.46

@@ -13,10 +13,10 @@ The Docs team maintains a list of [#good-first-issues](https://github.com/airbyt
 
 ## Contributing to Airbyte docs
 
-Before contributing to Airbyte docs, read the Airbyte Community
+Before contributing to Airbyte docs, read the Airbyte Community [Code of Conduct](../project-overview/code-of-conduct.md).
 
 :::tip
-If you're new to GitHub and Markdown, complete [the First Contributions tutorial](https://github.com/firstcontributions/first-contributions) and learn [Markdown basics](https://guides.github.com/features/mastering-markdown/) before contributing to Airbyte documentation. 
+If you're new to GitHub and Markdown, complete [the First Contributions tutorial](https://github.com/firstcontributions/first-contributions) and learn [Markdown basics](https://guides.github.com/features/mastering-markdown/) before contributing to Airbyte documentation. Even if you're familiar with the basics, you may be interested in Airbyte's [custom markdown extensions for connector docs](#custom-markdown-extensions-for-connector-docs).
 :::
 
 You can contribute to Airbyte docs in two ways:
@@ -64,7 +64,7 @@ To make complex changes or edit multiple files, edit the files on your local mac
    yarn start
    ```
 
-   Then navigate to [http://localhost:3000/](http://localhost:3000/). Whenever you make and save changes, you will see them reflected in the server. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
+   Then navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you will see them reflected in the server. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
 
    You can also build the docs locally and see the resulting changes. This is useful if you introduce changes that need to be run at build-time (e.g. adding a docs plug-in). To do so, run:
 
@@ -83,6 +83,183 @@ To make complex changes or edit multiple files, edit the files on your local mac
     :::
 
 5. Assign `airbytehq/docs` as a Reviewer for your pull request. 
+
+### Custom markdown extensions for connector docs
+Airbyte's markdown documentation—particularly connector-specific documentation—needs to gracefully support multiple different contexts: key details may differ between open-source builds and Airbyte Cloud, and the more exhaustive explanations appropriate for https://docs.airbyte.com may bury key details when rendered as inline documentation within the Airbyte application. In order to support all these different contexts without resorting to multiple overlapping files that must be maintained in parallel, Airbyte's documentation tooling supports multiple nonstandard features. 
+
+Please familiarize yourself with all the tools available to you when writing documentation for a connector, so that you can provide appropriately tailored information to your readers in whichever context they see it. 
+
+:::note
+As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com. If you want to test out these in-app features in [a local Airbyte build](https://docs.airbyte.com/contributing-to-airbyte/resources/developing-locally/#develop-on-airbyte-webapp), ensure that you have the `airbyte` git repository checked out to the same parent directory as the airbyte platform repository: if so, development builds will by default fetch connector documentation from your local filesystem, allowing you to freely edit their content and view the rendered output.
+:::
+
+#### Jump to the relevant documentation section when specific connector setup inputs are focused with `<FieldAnchor>`
+In the documentation, the relevant section needs to be wrapped in a `<FieldAnchor field="path.to.field" />` component. When a user focuses the field identified by the `field` attribute in the connector setup UI, the documentation pane will automatically scroll to the associated section of the documentation, highlighting all content contained inside the `<FieldAnchor></FieldAnchor>` tag. These are rendered as regular divs in the documentation site, so they have no effect in places other than the in-app documentation panel—however, note that there must be blank lines between a custom tag like `FieldAnchor` the content it wraps for the documentation site to render markdown syntax inside the custom tag to html.
+
+The `field` attribute must be a valid json path to one of the properties nested under `connectionSpecification.properties` in that connector's `spec.json` or `spec.yaml` file. For example, if the connector spec contains a `connectionSpecification.properties.replication_method.replication_slot`, you would mark the start of the related documentation section with `<FieldAnchor field="replication_method.replication_slot">` and its end with `</FieldAnchor>`.  It's also possible to highlight the same section for multiple fields by separating them with commas, like `<FieldAnchor path="replication_method.replication_slot,replication_method.queue_size">`. To mark a section as highlighted after the user picks an option from a `oneOf`: use a `field` prop like `path.to.field[value-of-selection-key]`, where the `value-of-selection-key` is the value of a `const` field nested inside that `oneOf`. For example, if the specification of the `oneOf` field is:
+
+```json
+"replication_method": {
+  "type": "object",
+  "title": "Update Method",
+  "oneOf": [
+    {
+      "title": "Read Changes using Binary Log (CDC)",
+      "required": ["method"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "const": "CDC",
+          "order": 0
+        },
+        "initial_waiting_seconds": {
+          "type": "integer",
+          "title": "Initial Waiting Time in Seconds (Advanced)",
+        },
+      }
+    },
+    {
+      "title": "Scan Changes with User Defined Cursor",
+      "required": ["method"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "const": "STANDARD",
+          "order": 0
+        }
+      }
+    }
+  ]
+}
+```
+
+The selection keys are `CDC` and `STANDARD`, so you can wrap a specific replication method's documentation section with a `<FieldAnchor field="replication_method[CDC]">...</FieldAnchor>` tag, and it will be highlighted if the user selects CDC replication in the UI.
+
+#### Prevent specific content from rendering in the UI with `<HideInUI>`
+Certain content is important to document, but unhelpful in the context of the Airbyte UI's inline documentation views: 
+- background information that helps users understand a connector but doesn't affect configuration
+- edge cases that are unusual but time-consuming to solve
+- context for readers on the documentation site about environment-specific content (see [below](#environment-specific-in-app-content-with-magic-html-comments))
+
+Wrapping such content in a pair of `<HideInUI>...</HideInUI>` tags will prevent it from being rendered within the Airbyte UI without affecting its presentation on https://docs.airbyte.com. This allows a single markdown file to be the source of truth for both a streamlined in-app reference and a more thorough treatment on the documentation website.
+
+#### Environment-specific in-app content with magic html comments
+Sometimes, there are connector setup instructions which differ between open-source Airbyte builds and Airbyte Cloud. Document both cases, but wrap each in a pair of special HTML comments:
+```md
+<!-- env:oss -->
+<HideInUI>
+
+## For open source:
+
+</HideInUI>
+
+Only open-source builds of the Airbyte UI will render this content.
+<!-- /env:oss -->
+
+<!-- env:cloud -->
+<HideInUI>
+
+## For Airbyte Cloud:
+
+</HideInUI>
+
+Only cloud builds of the Airbyte UI will render this content.
+<!-- /env:oss -->
+
+Content outside of the magic-comment-delimited blocks will be rendered everywhere.
+```
+Note that the documentation site will render _all_ environment-specific content, so please introduce environment-specific variants with some documentation-site-only context (like the hidden subheadings in the example above) to disambiguate.
+
+#### Contextually-styled callouts with admonition blocks
+We have added support for [Docusaurus' admonition syntax](https://docusaurus.io/docs/markdown-features/admonitions) to Airbyte's in-app markdown renderer.
+
+To make an admonition, wrap text with lines of three colons, with the first colons immediately followed (no space) by a tag specifying the callout's semantic styling, which will be one of `tip`, `warning`, `caution`, `danger`, `note`, or `info`. The syntax parallells a code block's, but with colons instead of backticks.
+
+Examples of the different admonition types:
+
+```md
+:::note
+
+A **note** with _Markdown_ `syntax`.
+
+:::
+```
+
+:::note
+
+A **note** with _Markdown_ `syntax`.
+
+:::
+
+```md
+:::tip
+
+A **tip** with _Markdown_ `syntax`.
+
+:::
+```
+
+:::tip
+
+A **tip** with _Markdown_ `syntax`.
+
+:::
+
+```md
+:::info
+
+Some **info** with _Markdown_ `syntax`.
+
+:::
+```
+
+:::info
+
+Some **info** with _Markdown_ `syntax`.
+
+:::
+
+```md
+:::caution
+
+A **caution** with _Markdown_ `syntax`.
+
+:::
+```
+
+:::caution
+
+A **caution** with _Markdown_ `syntax`.
+
+:::
+
+```md
+:::danger
+
+Some **dangerous** content with _Markdown_ `syntax`.
+
+:::
+```
+
+:::danger
+
+Some **dangerous** content with _Markdown_ `syntax`.
+
+:::
+
+#### Collapsible content with `<details>` and `<summary>`
+
+```md
+## Ordinary markdown content
+
+<details>
+  <summary>Here is an expandible section! Everything but this title is hidden by default.</summary>
+  Here is the dropdown content; if users expand this section, they will be able to read your valuable but perhaps nonessential content.
+</details>
+
+Back to ordinary markdown content.
+```
+Eagle-eyed readers may note that _all_ markdown should support this feature since it's part of the html spec. However, it's worth special mention since these dropdowns have been styled to be a graceful visual fit within our rendered documentation in all environments.
 
 ## Additional guidelines
 

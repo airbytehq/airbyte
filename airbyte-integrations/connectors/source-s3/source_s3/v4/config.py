@@ -5,6 +5,7 @@
 from typing import Optional
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
+from airbyte_cdk.utils import is_cloud_environment
 from pydantic import AnyUrl, Field, ValidationError, root_validator
 
 
@@ -26,7 +27,7 @@ class Config(AbstractFileBasedSpec):
         description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
         "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
-        order=1,
+        order=2,
     )
 
     aws_secret_access_key: Optional[str] = Field(
@@ -35,11 +36,15 @@ class Config(AbstractFileBasedSpec):
         description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
         "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
-        order=2,
+        order=3,
     )
 
     endpoint: Optional[str] = Field(
-        "", title="Endpoint", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4
+        default="",
+        title="Endpoint",
+        description="Endpoint to an S3 compatible service. Leave empty to use AWS.",
+        examples=["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
+        order=4,
     )
 
     @root_validator
@@ -50,4 +55,11 @@ class Config(AbstractFileBasedSpec):
             raise ValidationError(
                 "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.", model=Config
             )
+
+        if is_cloud_environment():
+            endpoint = values.get("endpoint")
+            if endpoint:
+                if endpoint.startswith("http://"):  # ignore-https-check
+                    raise ValidationError("The endpoint must be a secure HTTPS endpoint.", model=Config)
+
         return values

@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - "*.googleapis.com"
@@ -7,6 +10,7 @@ data:
   definitionId: afa734e4-3571-11ec-991a-1e0031268139
   dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-youtube-analytics
+  documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics
   githubIssueLabel: source-youtube-analytics
   icon: youtube-analytics.svg
   license: MIT
@@ -17,11 +21,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
 metadataSpecVersion: "1.0"

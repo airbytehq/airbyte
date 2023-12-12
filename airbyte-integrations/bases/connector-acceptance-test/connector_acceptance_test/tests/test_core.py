@@ -54,6 +54,11 @@ from connector_acceptance_test.utils.json_schema_helper import (
     get_object_structure,
     get_paths_in_connector_config,
 )
+from connector_acceptance_test.utils.timeouts import FIVE_MINUTES, ONE_MINUTE, TEN_MINUTES
+
+pytestmark = [
+    pytest.mark.anyio,
+]
 
 
 @pytest.fixture(name="connector_spec_dict")
@@ -88,11 +93,12 @@ DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
 DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
 
-# The connector fixture can be long to load, we have to increase the default timeout...
-@pytest.mark.default_timeout(5 * 60)
+# Running tests in parallel can sometime delay the execution of the tests if downstream services are not able to handle the load.
+# This is why we set a timeout on tests that call command that should return quickly, like spec
+@pytest.mark.default_timeout(ONE_MINUTE)
 class TestSpec(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    def skip_backward_compatibility_tests_fixture(
+    async def skip_backward_compatibility_tests_fixture(
         self,
         inputs: SpecTestConfig,
         previous_connector_docker_runner: ConnectorRunner,
@@ -106,7 +112,7 @@ class TestSpec(BaseTest):
             pytest.skip("The previous connector image could not be retrieved.")
 
         # Get the real connector version in case 'latest' is used in the config:
-        previous_connector_version = previous_connector_docker_runner._image.labels.get("io.airbyte.version")
+        previous_connector_version = await previous_connector_docker_runner.get_container_label("io.airbyte.version")
 
         if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
@@ -455,27 +461,26 @@ class TestSpec(BaseTest):
                 errors.append(f"Groups can only be defined on top level, is defined at {group_path}")
         self._fail_on_errors(errors)
 
-    def test_required_always_show(self, actual_connector_spec: ConnectorSpecification):
+    def test_display_type(self, actual_connector_spec: ConnectorSpecification):
         """
-        Fields with always_show are not allowed to be required fields because only optional fields can be hidden in the form in the first place.
+        The display_type property can only be set on fields which have a oneOf property, and must be either "dropdown" or "radio"
         """
         errors = []
         schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
-        for result in dpath.util.search(actual_connector_spec.connectionSpecification, "/properties/**/always_show", yielded=True):
-            always_show_path = result[0]
-            parent_path = schema_helper.get_parent_path(always_show_path)
-            is_property_named_always_show = parent_path.endswith("properties")
-            if is_property_named_always_show:
+        for result in dpath.util.search(actual_connector_spec.connectionSpecification, "/properties/**/display_type", yielded=True):
+            display_type_path = result[0]
+            parent_path = schema_helper.get_parent_path(display_type_path)
+            is_property_named_display_type = parent_path.endswith("properties")
+            if is_property_named_display_type:
                 continue
-            property_name = parent_path.rsplit(sep="/", maxsplit=1)[1]
-            properties_path = schema_helper.get_parent_path(parent_path)
-            parent_object = schema_helper.get_parent(properties_path)
-            if (
-                "required" in parent_object
-                and isinstance(parent_object.get("required"), List)
-                and property_name in parent_object.get("required")
-            ):
-                errors.append(f"always_show is only allowed on optional properties, but is set on {always_show_path}")
+            parent_object = schema_helper.get_parent(display_type_path)
+            if "oneOf" not in parent_object:
+                errors.append(f"display_type is only allowed on fields which have a oneOf property, but is set on {parent_path}")
+            display_type_value = parent_object.get("display_type")
+            if display_type_value != "dropdown" and display_type_value != "radio":
+                errors.append(
+                    f"display_type must be either 'dropdown' or 'radio', but is set to '{display_type_value}' at {display_type_path}"
+                )
         self._fail_on_errors(errors)
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
@@ -514,7 +519,7 @@ class TestSpec(BaseTest):
         diff = paths_to_validate - set(get_expected_schema_structure(spec_schema))
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
-    @pytest.mark.default_timeout(60)
+    @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility
     def test_backward_compatibility(
         self,
@@ -564,7 +569,7 @@ class TestSpec(BaseTest):
         assert await docker_runner.get_container_env_variable_value("AIRBYTE_ENTRYPOINT") == await docker_runner.get_container_entrypoint()
 
 
-@pytest.mark.default_timeout(30)
+@pytest.mark.default_timeout(ONE_MINUTE)
 class TestConnection(BaseTest):
     async def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
@@ -589,9 +594,10 @@ class TestConnection(BaseTest):
             assert trace.error.message is not None
 
 
-@pytest.mark.default_timeout(30)
+# Running tests in parallel can sometime delay the execution of the tests if downstream services are not able to handle the load.
+# This is why we set a timeout on tests that call command that should return quickly, like discover
+@pytest.mark.default_timeout(FIVE_MINUTES)
 class TestDiscovery(BaseTest):
-
     VALID_TYPES = {"null", "string", "number", "integer", "boolean", "object", "array"}
     VALID_AIRBYTE_TYPES = {"timestamp_with_timezone", "timestamp_without_timezone", "integer"}
     VALID_FORMATS = {"date-time", "date"}
@@ -611,10 +617,21 @@ class TestDiscovery(BaseTest):
         ({"number", "null"}, "integer"),
     ]
 
+    @pytest.fixture()
+    async def skip_backward_compatibility_tests_for_version(
+        self, inputs: DiscoveryTestConfig, previous_connector_docker_runner: ConnectorRunner
+    ):
+        # Get the real connector version in case 'latest' is used in the config:
+        previous_connector_version = await previous_connector_docker_runner.get_container_label("io.airbyte.version")
+        if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
+            pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
+        return False
+
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    def skip_backward_compatibility_tests_fixture(
+    async def skip_backward_compatibility_tests_fixture(
         self,
-        inputs: DiscoveryTestConfig,
+        # Even if unused, this fixture is required to make sure that the skip_backward_compatibility_tests_for_version fixture is called.
+        skip_backward_compatibility_tests_for_version: bool,
         previous_connector_docker_runner: ConnectorRunner,
         discovered_catalog: MutableMapping[str, AirbyteStream],
         previous_discovered_catalog: MutableMapping[str, AirbyteStream],
@@ -625,21 +642,26 @@ class TestDiscovery(BaseTest):
         if previous_connector_docker_runner is None:
             pytest.skip("The previous connector image could not be retrieved.")
 
-        # Get the real connector version in case 'latest' is used in the config:
-        previous_connector_version = previous_connector_docker_runner._image.labels.get("io.airbyte.version")
-
-        if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
-            pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
         return False
 
     async def test_discover(self, connector_config, docker_runner: ConnectorRunner):
         """Verify that discover produce correct schema."""
         output = await docker_runner.call_discover(config=connector_config)
         catalog_messages = filter_output(output, Type.CATALOG)
+        duplicated_stream_names = self.duplicated_stream_names(catalog_messages[0].catalog.streams)
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
         assert catalog_messages[0].catalog, "Message should have catalog"
         assert catalog_messages[0].catalog.streams, "Catalog should contain streams"
+        assert len(duplicated_stream_names) == 0, f"Catalog should have uniquely named streams, duplicates are: {duplicated_stream_names}"
+
+    def duplicated_stream_names(self, streams) -> List[str]:
+        """Counts number of times a stream appears in the catalog"""
+        name_counts = dict()
+        for stream in streams:
+            count = name_counts.get(stream.name, 0)
+            name_counts[stream.name] = count + 1
+        return [k for k, v in name_counts.items() if v > 1]
 
     def test_defined_cursors_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check if all of the source defined cursor fields are exists on stream's json schema."""
@@ -704,7 +726,7 @@ class TestDiscovery(BaseTest):
                     [additional_properties_value is True for additional_properties_value in additional_properties_values]
                 ), "When set, additionalProperties field value must be true for backward compatibility."
 
-    @pytest.mark.default_timeout(60)
+    @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility
     def test_backward_compatibility(
         self,
@@ -777,7 +799,7 @@ def primary_keys_for_records(streams, records):
             yield pk_values, stream_record
 
 
-@pytest.mark.default_timeout(10 * 60)
+@pytest.mark.default_timeout(TEN_MINUTES)
 class TestBasicRead(BaseTest):
     @staticmethod
     def _validate_records_structure(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
@@ -1085,9 +1107,17 @@ class TestBasicRead(BaseTest):
             missing_expected = set(expected) - set(actual)
 
             if missing_expected:
+                extra = set(actual) - set(expected)
                 msg = f"Stream {stream_name}: All expected records must be produced"
                 detailed_logger.info(msg)
-                detailed_logger.log_json_list(missing_expected)
+                detailed_logger.info("missing:")
+                detailed_logger.log_json_list(sorted(missing_expected, key=lambda record: str(record.get("ID", "0"))))
+                detailed_logger.info("expected:")
+                detailed_logger.log_json_list(sorted(expected, key=lambda record: str(record.get("ID", "0"))))
+                detailed_logger.info("actual:")
+                detailed_logger.log_json_list(sorted(actual, key=lambda record: str(record.get("ID", "0"))))
+                detailed_logger.info("extra:")
+                detailed_logger.log_json_list(sorted(extra, key=lambda record: str(record.get("ID", "0"))))
                 pytest.fail(msg)
 
             if not extra_records:

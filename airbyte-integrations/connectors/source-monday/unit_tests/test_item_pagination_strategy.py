@@ -28,8 +28,8 @@ from source_monday.item_pagination_strategy import ItemPaginationStrategy
             [],
             None,
             id="test_end_pagination",
-        )
-    ]
+        ),
+    ],
 )
 def test_item_pagination_strategy(response_json, last_records, expected):
     strategy = ItemPaginationStrategy(
