@@ -3,7 +3,6 @@
 #
 
 import logging
-import uuid
 from typing import Any, Dict, Iterable, Mapping, Optional
 
 import fastavro
@@ -49,7 +48,7 @@ class AvroParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
-        avro_format = config.format or AvroFormat()
+        avro_format = config.format
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
@@ -159,9 +158,7 @@ class AvroParser(FileTypeParser):
             if record_type == "double" and avro_format.double_as_string:
                 return str(record_value)
             return record_value
-        if record_type.get("logicalType") == "uuid":
-            return uuid.UUID(bytes=record_value)
-        elif record_type.get("logicalType") == "decimal":
+        if record_type.get("logicalType") in ("decimal", "uuid"):
             return str(record_value)
         elif record_type.get("logicalType") == "date":
             return record_value.isoformat()

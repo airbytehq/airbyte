@@ -10,10 +10,11 @@ import jsonschema
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.utils import AirbyteTracedException
 from source_google_search_console.exceptions import (
     InvalidSiteURLValidationError,
     UnauthorizedOauthError,
@@ -61,33 +62,50 @@ class SourceGoogleSearchConsole(AbstractSource):
         return parse_result.geturl()
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
+        # authorization checks
         authorization = config["authorization"]
         if authorization["auth_type"] == "Service":
             try:
                 authorization["service_account_info"] = json.loads(authorization["service_account_info"])
             except ValueError:
-                raise Exception("authorization.service_account_info is not valid JSON")
+                message = "authorization.service_account_info is not valid JSON"
+                raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
 
-        if "custom_reports" in config:
-            try:
-                config["custom_reports"] = json.loads(config["custom_reports"])
-            except ValueError:
-                raise Exception("custom_reports is not valid JSON")
-            jsonschema.validate(config["custom_reports"], custom_reports_schema)
-            for report in config["custom_reports"]:
-                for dimension in report["dimensions"]:
-                    if dimension not in SearchAnalyticsByCustomDimensions.dimension_to_property_schema_map:
-                        raise Exception(f"dimension: '{dimension}' not found")
+        # custom report validation
+        config = self._validate_custom_reports(config)
 
-        pendulum.parse(config["start_date"])
+        # start date checks
+        pendulum.parse(config.get("start_date", "2021-01-01"))  # `2021-01-01` is the default value
+
+        # the `end_date` checks
         end_date = config.get("end_date")
         if end_date:
             pendulum.parse(end_date)
         config["end_date"] = end_date or pendulum.now().to_date_string()
-
+        # site  urls checks
         config["site_urls"] = [self.normalize_url(url) for url in config["site_urls"]]
-
+        # data state checks
         config["data_state"] = config.get("data_state", "final")
+        return config
+
+    def _validate_custom_reports(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        if "custom_reports_array" in config:
+            try:
+                custom_reports = config["custom_reports_array"]
+                if isinstance(custom_reports, str):
+                    # load the json_str old report structure and transform it into valid JSON Object
+                    config["custom_reports_array"] = json.loads(config["custom_reports_array"])
+                elif isinstance(custom_reports, list):
+                    pass  # allow the list structure only
+            except ValueError:
+                message = "Custom Reports provided is not valid List of Object (reports)"
+                raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
+            jsonschema.validate(config["custom_reports_array"], custom_reports_schema)
+            for report in config["custom_reports_array"]:
+                for dimension in report["dimensions"]:
+                    if dimension not in SearchAnalyticsByCustomDimensions.DIMENSION_TO_PROPERTY_SCHEMA_MAP:
+                        message = f"dimension: '{dimension}' not found"
+                        raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -176,13 +194,13 @@ class SourceGoogleSearchConsole(AbstractSource):
     def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
         return [
             type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(dimensions=report["dimensions"], **stream_config)
-            for report in config.get("custom_reports", [])
+            for report in config.get("custom_reports_array", [])
         ]
 
     def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
             "site_urls": config["site_urls"],
-            "start_date": config["start_date"],
+            "start_date": config.get("start_date", "2021-01-01"),  # `2021-01-01` is the default value
             "end_date": config["end_date"],
             "authenticator": self.get_authenticator(config),
             "data_state": config["data_state"],

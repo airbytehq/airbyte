@@ -3,6 +3,8 @@
 #
 
 
+from unittest.mock import Mock, patch
+
 import pytest
 import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
@@ -41,26 +43,18 @@ TEST_CONFIG: dict = {
 }
 
 TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS: dict = {
-  "start_date": "2021-01-01",
-  "account_ids": [],
-  "credentials": {
-    "auth_method": "oAuth2.0",
-    "client_id": "client_id",
-    "client_secret": "client_secret",
-    "refresh_token": "refresh_token"
-  },
-  "ad_analytics_reports": [
-    {
-      "name": "ShareAdByMonth",
-      "pivot_by": "COMPANY",
-      "time_granularity": "MONTHLY"
+    "start_date": "2021-01-01",
+    "account_ids": [],
+    "credentials": {
+        "auth_method": "oAuth2.0",
+        "client_id": "client_id",
+        "client_secret": "client_secret",
+        "refresh_token": "refresh_token",
     },
-    {
-      "name": "ShareAdByMonth",
-      "pivot_by": "COMPANY",
-      "time_granularity": "MONTHLY"
-    }
-  ]
+    "ad_analytics_reports": [
+        {"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"},
+        {"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"},
+    ],
 }
 
 
@@ -109,6 +103,25 @@ class TestAllStreams:
             if stream_cls in streams:
                 assert isinstance(stream, stream_cls)
 
+    def test_custom_streams(self):
+        config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
+        for stream in self._instance.get_custom_ad_analytics_reports(config=config):
+            assert isinstance(stream, AdCampaignAnalytics)
+
+    @patch("source_linkedin_ads.source.Accounts.check_availability")
+    def test_check_connection(self, check_availability_mock):
+        check_availability_mock.return_value = (True, None)
+        is_available, error = self._instance.check_connection(logger=Mock(), config=TEST_CONFIG)
+        assert is_available
+        assert not error
+
+    @patch("source_linkedin_ads.source.Accounts.check_availability")
+    def test_check_connection_failure(self, check_availability_mock):
+        check_availability_mock.side_effect = Exception("Not available")
+        is_available, error = self._instance.check_connection(logger=Mock(), config=TEST_CONFIG)
+        assert not is_available
+        assert str(error) == "Not available"
+
     @pytest.mark.parametrize(
         "stream_cls, stream_slice, expected",
         [
@@ -144,11 +157,17 @@ class TestLinkedinAdsStream:
         result = self.stream.accounts
         assert result == ",".join(map(str, TEST_CONFIG["account_ids"]))
 
-    def test_next_page_token(self, requests_mock):
-        requests_mock.get(self.url, json={"elements": []})
+    @pytest.mark.parametrize(
+        "response_json, expected",
+        (
+            ({"elements": []}, None),
+            ({"elements": [{"data": []}] * 500, "paging": {"start": 0}}, {"start": 500}),
+        ),
+    )
+    def test_next_page_token(self, requests_mock, response_json, expected):
+        requests_mock.get(self.url, json=response_json)
         test_response = requests.get(self.url)
 
-        expected = None
         result = self.stream.next_page_token(test_response)
         assert expected == result
 
@@ -195,25 +214,25 @@ class TestLinkedInAdsStreamSlicing:
         "stream_cls, slice, expected",
         [
             (
-                    AccountUsers,
-                    {"account_id": 123},
-                    "count=500&q=accounts&accounts=urn:li:sponsoredAccount:123",
+                AccountUsers,
+                {"account_id": 123},
+                "count=500&q=accounts&accounts=urn:li:sponsoredAccount:123",
             ),
             (
-                    CampaignGroups,
-                    {"account_id": 123},
-                    "count=500&q=search&search=(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))",
+                CampaignGroups,
+                {"account_id": 123},
+                "count=500&q=search&search=(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))",
             ),
             (
-                    Campaigns,
-                    {"account_id": 123},
-                    "count=500&q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
+                Campaigns,
+                {"account_id": 123},
+                "count=500&q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
             ),
             (
-                    Creatives,
-                    {"campaign_id": 123},
-                    "count=100&q=criteria",
-            )
+                Creatives,
+                {"campaign_id": 123},
+                "count=100&q=criteria",
+            ),
         ],
         ids=["AccountUsers", "CampaignGroups", "Campaigns", "Creatives"],
     )
@@ -264,31 +283,31 @@ class TestLinkedInAdsAnalyticsStream:
         "stream_cls, slice, expected",
         [
             (
-                    AdCampaignAnalytics,
-                    {
-                        "dateRange": {"start.day": 1, "start.month": 1, "start.year": 1, "end.day": 2, "end.month": 2, "end.year": 2},
-                        "fields": ["field1", "field2"],
-                    },
-                    "q=analytics&pivot=(value:CAMPAIGN)&timeGranularity=(value:DAILY)&dateRange=(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))&fields=%5B%27field1%27,+%27field2%27%5D&campaigns=List(urn%3Ali%3AsponsoredCampaign%3ANone)",
+                AdCampaignAnalytics,
+                {
+                    "dateRange": {"start.day": 1, "start.month": 1, "start.year": 1, "end.day": 2, "end.month": 2, "end.year": 2},
+                    "fields": ["field1", "field2"],
+                },
+                "q=analytics&pivot=(value:CAMPAIGN)&timeGranularity=(value:DAILY)&dateRange=(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))&fields=%5B%27field1%27,+%27field2%27%5D&campaigns=List(urn%3Ali%3AsponsoredCampaign%3ANone)",
             ),
             (
-                    AdCreativeAnalytics,
-                    {
-                        "dateRange": {
-                            "start.day": 1,
-                            "start.month": 1,
-                            "start.year": 1,
-                            "end.day": 2,
-                            "end.month": 2,
-                            "end.year": 2,
-                        },
-                        "fields": [
-                            "field1",
-                            "field2",
-                        ],
-                        "creative_id": "urn:li:sponsoredCreative:1234"
+                AdCreativeAnalytics,
+                {
+                    "dateRange": {
+                        "start.day": 1,
+                        "start.month": 1,
+                        "start.year": 1,
+                        "end.day": 2,
+                        "end.month": 2,
+                        "end.year": 2,
                     },
-                    "q=analytics&pivot=(value:CREATIVE)&timeGranularity=(value:DAILY)&dateRange=(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))&fields=%5B%27field1%27,+%27field2%27%5D&creatives=List(urn%3Ali%3AsponsoredCreative%3A1234)",
+                    "fields": [
+                        "field1",
+                        "field2",
+                    ],
+                    "creative_id": "urn:li:sponsoredCreative:1234",
+                },
+                "q=analytics&pivot=(value:CREATIVE)&timeGranularity=(value:DAILY)&dateRange=(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))&fields=%5B%27field1%27,+%27field2%27%5D&creatives=List(urn%3Ali%3AsponsoredCreative%3A1234)",
             ),
         ],
         ids=[

@@ -13,7 +13,7 @@ data:
   name: IBM Db2
   registries:
     cloud:
-      enabled: false # Requires a strict-encrypt variant
+      enabled: false # Would require DEPLOYMENT_MODE=cloud handling to release to cloud again
     oss:
       enabled: true
   releaseStage: alpha

@@ -80,6 +80,4 @@ To switch between workspaces:
 
 1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
 
-2. Click **View all workspaces**.
-
-3. Click the name of the workspace you want to switch to.
+2. Search for the workspace or click the name of the workspace you want to switch to.

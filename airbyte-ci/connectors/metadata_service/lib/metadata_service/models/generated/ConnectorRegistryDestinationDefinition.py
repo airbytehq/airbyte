@@ -93,9 +93,7 @@ class VersionBreakingChange(BaseModel):
         ...,
         description="The deadline by which to upgrade before the breaking change takes effect.",
     )
-    message: str = Field(
-        ..., description="Descriptive message detailing the breaking change."
-    )
+    message: str = Field(..., description="Descriptive message detailing the breaking change.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
@@ -170,9 +168,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
         False,
         description="true if this connector definition is available to all workspaces",
     )
-    custom: Optional[bool] = Field(
-        False, description="whether this is a custom connector definition"
-    )
+    custom: Optional[bool] = Field(False, description="whether this is a custom connector definition")
     releaseStage: Optional[ReleaseStage] = None
     supportLevel: Optional[SupportLevel] = None
     releaseDate: Optional[date] = Field(
@@ -184,9 +180,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
         description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
     )
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
-    protocolVersion: Optional[str] = Field(
-        None, description="the Airbyte Protocol version supported by the connector"
-    )
+    protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     supportsDbt: Optional[bool] = Field(
         None,

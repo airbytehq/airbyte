@@ -2,19 +2,24 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, SchemaInferenceError
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
+from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
+from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario, TestScenarioBuilder
 
-single_csv_scenario = (
-    TestScenarioBuilder()
+single_csv_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("single_csv_scenario")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -22,19 +27,22 @@ single_csv_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_spec(
         {
             "documentationUrl": "https://docs.airbyte.com/integrations/sources/in_memory_files",
@@ -63,16 +71,13 @@ single_csv_scenario = (
                             "type": "object",
                             "properties": {
                                 "name": {"title": "Name", "description": "The name of the stream.", "type": "string"},
-                                "file_type": {
-                                    "title": "File Type",
-                                    "description": "The data file type that is being extracted for a stream.",
-                                    "type": "string",
-                                },
                                 "globs": {
                                     "title": "Globs",
                                     "description": 'The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
                                     "type": "array",
                                     "items": {"type": "string"},
+                                    "order": 1,
+                                    "default": ["**"],
                                 },
                                 "legacy_prefix": {
                                     "title": "Legacy Prefix",
@@ -111,7 +116,7 @@ single_csv_scenario = (
                                             "title": "Avro Format",
                                             "type": "object",
                                             "properties": {
-                                                "filetype": {"title": "Filetype", "default": "avro", "enum": ["avro"], "type": "string"},
+                                                "filetype": {"title": "Filetype", "default": "avro", "const": "avro", "type": "string"},
                                                 "double_as_string": {
                                                     "title": "Convert Double Fields to Strings",
                                                     "description": "Whether to convert double fields to strings. This is recommended if you have decimal numbers with a high degree of precision because there can be a loss precision when handling floating point numbers.",
@@ -119,12 +124,13 @@ single_csv_scenario = (
                                                     "type": "boolean",
                                                 },
                                             },
+                                            "required": ["filetype"],
                                         },
                                         {
                                             "title": "CSV Format",
                                             "type": "object",
                                             "properties": {
-                                                "filetype": {"title": "Filetype", "default": "csv", "enum": ["csv"], "type": "string"},
+                                                "filetype": {"title": "Filetype", "default": "csv", "const": "csv", "type": "string"},
                                                 "delimiter": {
                                                     "title": "Delimiter",
                                                     "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
@@ -180,11 +186,58 @@ single_csv_scenario = (
                                                     "default": 0,
                                                     "type": "integer",
                                                 },
-                                                "autogenerate_column_names": {
-                                                    "title": "Autogenerate Column Names",
-                                                    "description": "Whether to autogenerate column names if column_names is empty. If true, column names will be of the form \u201cf0\u201d, \u201cf1\u201d\u2026 If false, column names will be read from the first CSV row after skip_rows_before_header.",
-                                                    "default": False,
-                                                    "type": "boolean",
+                                                "header_definition": {
+                                                    "title": "CSV Header Definition",
+                                                    "type": "object",
+                                                    "description": "How headers will be defined. `User Provided` assumes the CSV does not have a header row and uses the headers provided and `Autogenerated` assumes the CSV does not have a header row and the CDK will generate headers using for `f{i}` where `i` is the index starting from 0. Else, the default behavior is to use the header from the CSV file. If a user wants to autogenerate or provide column names for a CSV having headers, they can skip rows.",
+                                                    "default": {"header_definition_type": "From CSV"},
+                                                    "oneOf": [
+                                                        {
+                                                            "title": "From CSV",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "header_definition_type": {
+                                                                    "title": "Header Definition Type",
+                                                                    "default": "From CSV",
+                                                                    "const": "From CSV",
+                                                                    "type": "string",
+                                                                },
+                                                            },
+                                                            "required": ["header_definition_type"],
+                                                        },
+                                                        {
+                                                            "title": "Autogenerated",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "header_definition_type": {
+                                                                    "title": "Header Definition Type",
+                                                                    "default": "Autogenerated",
+                                                                    "const": "Autogenerated",
+                                                                    "type": "string",
+                                                                },
+                                                            },
+                                                            "required": ["header_definition_type"],
+                                                        },
+                                                        {
+                                                            "title": "User Provided",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "header_definition_type": {
+                                                                    "title": "Header Definition Type",
+                                                                    "default": "User Provided",
+                                                                    "const": "User Provided",
+                                                                    "type": "string",
+                                                                },
+                                                                "column_names": {
+                                                                    "title": "Column Names",
+                                                                    "description": "The column names that will be used while emitting the CSV records",
+                                                                    "type": "array",
+                                                                    "items": {"type": "string"},
+                                                                },
+                                                            },
+                                                            "required": ["column_names", "header_definition_type"],
+                                                        },
+                                                    ],
                                                 },
                                                 "true_values": {
                                                     "title": "True Values",
@@ -210,13 +263,15 @@ single_csv_scenario = (
                                                     "enum": ["None", "Primitive Types Only"],
                                                 },
                                             },
+                                            "required": ["filetype"],
                                         },
                                         {
                                             "title": "Jsonl Format",
                                             "type": "object",
                                             "properties": {
-                                                "filetype": {"title": "Filetype", "default": "jsonl", "enum": ["jsonl"], "type": "string"}
+                                                "filetype": {"title": "Filetype", "default": "jsonl", "const": "jsonl", "type": "string"}
                                             },
+                                            "required": ["filetype"],
                                         },
                                         {
                                             "title": "Parquet Format",
@@ -225,7 +280,7 @@ single_csv_scenario = (
                                                 "filetype": {
                                                     "title": "Filetype",
                                                     "default": "parquet",
-                                                    "enum": ["parquet"],
+                                                    "const": "parquet",
                                                     "type": "string",
                                                 },
                                                 "decimal_as_float": {
@@ -235,6 +290,28 @@ single_csv_scenario = (
                                                     "type": "boolean",
                                                 },
                                             },
+                                            "required": ["filetype"],
+                                        },
+                                        {
+                                            "title": "Document File Type Format (Experimental)",
+                                            "type": "object",
+                                            "properties": {
+                                                "filetype": {
+                                                    "title": "Filetype",
+                                                    "default": "unstructured",
+                                                    "const": "unstructured",
+                                                    "type": "string",
+                                                },
+                                                "skip_unprocessable_file_types": {
+                                                    "type": "boolean",
+                                                    "default": True,
+                                                    "title": "Skip Unprocessable File Types",
+                                                    "description": "If true, skip files that cannot be parsed because of their file type and log a warning. If false, fail the sync. Corrupted files with valid file types will still result in a failed sync.",
+                                                    "always_show": True,
+                                                },
+                                            },
+                                            "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
+                                            "required": ["filetype"],
                                         },
                                     ],
                                 },
@@ -245,7 +322,7 @@ single_csv_scenario = (
                                     "type": "boolean",
                                 },
                             },
-                            "required": ["name", "file_type"],
+                            "required": ["name", "format"],
                         },
                     },
                 },
@@ -298,42 +375,137 @@ single_csv_scenario = (
     )
 ).build()
 
-multi_csv_scenario = (
-    TestScenarioBuilder()
+multi_format_analytics_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
+    .set_name("multi_format_analytics")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "format": {"filetype": "csv"},
+                    "globs": ["file1.csv"],
+                    "validation_policy": "Emit Record",
+                },
+                {
+                    "name": "stream2",
+                    "format": {"filetype": "csv"},
+                    "globs": ["file2.csv"],
+                    "validation_policy": "Emit Record",
+                },
+                {
+                    "name": "stream3",
+                    "format": {"filetype": "jsonl"},
+                    "globs": ["file3.jsonl"],
+                    "validation_policy": "Emit Record",
+                },
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "file1.csv": {
+                    "contents": [],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "file2.csv": {
+                    "contents": [],
+                    "last_modified": "2023-06-06T03:54:07.000Z",
+                },
+                "file3.jsonl": {
+                    "contents": [],
+                    "last_modified": "2023-06-07T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {},
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {},
+                    },
+                    "name": "stream2",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {},
+                    },
+                    "name": "stream3",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+            ]
+        }
+    )
+    .set_expected_records([])
+    .set_expected_analytics(
+        [
+            AirbyteAnalyticsTraceMessage(type="file-cdk-csv-stream-count", value="2"),
+            AirbyteAnalyticsTraceMessage(type="file-cdk-jsonl-stream-count", value="1"),
+        ]
+    )
+).build()
+
+multi_csv_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("multi_csv_stream")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -401,41 +573,45 @@ multi_csv_scenario = (
 ).build()
 
 multi_csv_stream_n_file_exceeds_limit_for_inference = (
-    TestScenarioBuilder()
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("multi_csv_stream_n_file_exceeds_limit_for_inference")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+        .set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -497,37 +673,39 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
             },
         ]
     )
-    .set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
 ).build()
 
-invalid_csv_scenario = (
-    TestScenarioBuilder()
-    .set_name("invalid_csv_scenario")
+invalid_csv_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
+    .set_name("invalid_csv_scenario")  # too many values for the number of headers
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1",),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1",),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -550,7 +728,7 @@ invalid_csv_scenario = (
         }
     )
     .set_expected_records([])
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_logs(
         {
             "read": [
@@ -563,41 +741,44 @@ invalid_csv_scenario = (
     )
 ).build()
 
-csv_single_stream_scenario = (
-    TestScenarioBuilder()
+csv_single_stream_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_single_stream_scenario")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
                 }
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.jsonl": {
-                "contents": [
-                    {"col1": "val11b", "col2": "val12b", "col3": "val13b"},
-                    {"col1": "val12b", "col2": "val22b", "col3": "val23b"},
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.jsonl": {
+                    "contents": [
+                        {"col1": "val11b", "col2": "val12b", "col3": "val13b"},
+                        {"col1": "val12b", "col2": "val22b", "col3": "val23b"},
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -643,48 +824,51 @@ csv_single_stream_scenario = (
     )
 ).build()
 
-csv_multi_stream_scenario = (
-    TestScenarioBuilder()
+csv_multi_stream_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_multi_stream")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["b.csv"],
                     "validation_policy": "Emit Record",
                 },
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col3",),
-                    ("val13b",),
-                    ("val23b",),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col3",),
+                        ("val13b",),
+                        ("val23b",),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -761,16 +945,14 @@ csv_multi_stream_scenario = (
     )
 ).build()
 
-
-csv_custom_format_scenario = (
-    TestScenarioBuilder()
+csv_custom_format_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_custom_format")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -784,20 +966,29 @@ csv_custom_format_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11", "val12", "val |13|"),
-                    ("val21", "val22", "val23"),
-                    ("val,31", "val |,32|", "val, !!!! 33"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11", "val12", "val |13|"),
+                        ("val21", "val22", "val23"),
+                        ("val,31", "val |,32|", "val, !!!! 33"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
+        .set_file_write_options(
+            {
+                "delimiter": "#",
+                "quotechar": "|",
+            }
+        )
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -860,31 +1051,22 @@ csv_custom_format_scenario = (
             },
         ]
     )
-    .set_file_write_options(
-        {
-            "delimiter": "#",
-            "quotechar": "|",
-        }
-    )
 ).build()
 
-
 multi_stream_custom_format = (
-    TestScenarioBuilder()
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("multi_stream_custom_format_scenario")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
                     "format": {"filetype": "csv", "delimiter": "#", "escape_char": "!", "double_quote": True, "newlines_in_values": False},
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
                     "globs": ["b.csv"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -898,27 +1080,35 @@ multi_stream_custom_format = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val !! 12a"),
-                    ("val !! 21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col3",),
-                    ("val @@@@ 13b",),
-                    ("val23b",),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val !! 12a"),
+                        ("val !! 21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col3",),
+                        ("val @@@@ 13b",),
+                        ("val23b",),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+        .set_file_write_options(
+            {
+                "delimiter": "#",
+            }
+        )
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1009,42 +1199,40 @@ multi_stream_custom_format = (
             },
         ]
     )
-    .set_file_write_options(
-        {
-            "delimiter": "#",
-        }
-    )
 ).build()
 
-
-empty_schema_inference_scenario = (
-    TestScenarioBuilder()
+empty_schema_inference_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("empty_schema_inference_scenario")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
+        .set_parsers({CsvFormat: EmptySchemaParser()})
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1066,8 +1254,7 @@ empty_schema_inference_scenario = (
             ]
         }
     )
-    .set_parsers({"csv": EmptySchemaParser()})
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_records(
         [
             {
@@ -1092,16 +1279,15 @@ empty_schema_inference_scenario = (
     )
 ).build()
 
-
-schemaless_csv_scenario = (
-    TestScenarioBuilder()
+schemaless_csv_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("schemaless_csv_scenario")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Skip Record",
                     "schemaless": True,
@@ -1109,27 +1295,30 @@ schemaless_csv_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1188,50 +1377,52 @@ schemaless_csv_scenario = (
     )
 ).build()
 
-
-schemaless_csv_multi_stream_scenario = (
-    TestScenarioBuilder()
+schemaless_csv_multi_stream_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("schemaless_csv_multi_stream_scenario")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["a.csv"],
                     "validation_policy": "Skip Record",
                     "schemaless": True,
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["b.csv"],
                     "validation_policy": "Skip Record",
                 },
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col3",),
-                    ("val13b",),
-                    ("val23b",),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col3",),
+                        ("val13b",),
+                        ("val23b",),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1296,16 +1487,15 @@ schemaless_csv_multi_stream_scenario = (
     )
 ).build()
 
-
-schemaless_with_user_input_schema_fails_connection_check_scenario = (
-    TestScenarioBuilder()
+schemaless_with_user_input_schema_fails_connection_check_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("schemaless_with_user_input_schema_fails_connection_check_scenario")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Skip Record",
                     "input_schema": '{"col1": "string", "col2": "string", "col3": "string"}',
@@ -1314,27 +1504,30 @@ schemaless_with_user_input_schema_fails_connection_check_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1361,16 +1554,15 @@ schemaless_with_user_input_schema_fails_connection_check_scenario = (
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
 
-
-schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario = (
-    TestScenarioBuilder()
+schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["a.csv"],
                     "validation_policy": "Skip Record",
                     "schemaless": True,
@@ -1378,34 +1570,37 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["b.csv"],
                     "validation_policy": "Skip Record",
                 },
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col3",),
-                    ("val13b",),
-                    ("val23b",),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col3",),
+                        ("val13b",),
+                        ("val23b",),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1446,16 +1641,14 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
 
-
-csv_string_can_be_null_with_input_schemas_scenario = (
-    TestScenarioBuilder()
+csv_string_can_be_null_with_input_schemas_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_string_can_be_null_with_input_schema")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "string"}',
@@ -1468,18 +1661,21 @@ csv_string_can_be_null_with_input_schemas_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("2", "null"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("2", "null"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1516,15 +1712,14 @@ csv_string_can_be_null_with_input_schemas_scenario = (
     )
 ).build()
 
-csv_string_are_not_null_if_strings_can_be_null_is_false_scenario = (
-    TestScenarioBuilder()
+csv_string_are_not_null_if_strings_can_be_null_is_false_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_string_are_not_null_if_strings_can_be_null_is_false")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "string"}',
@@ -1538,18 +1733,21 @@ csv_string_are_not_null_if_strings_can_be_null_is_false_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("2", "null"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("2", "null"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1586,15 +1784,14 @@ csv_string_are_not_null_if_strings_can_be_null_is_false_scenario = (
     )
 ).build()
 
-csv_string_not_null_if_no_null_values_scenario = (
-    TestScenarioBuilder()
+csv_string_not_null_if_no_null_values_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_string_not_null_if_no_null_values")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -1605,18 +1802,21 @@ csv_string_not_null_if_no_null_values_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("2", "null"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("2", "null"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1653,15 +1853,14 @@ csv_string_not_null_if_no_null_values_scenario = (
     )
 ).build()
 
-csv_strings_can_be_null_not_quoted_scenario = (
-    TestScenarioBuilder()
+csv_strings_can_be_null_not_quoted_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_strings_can_be_null_no_input_schema")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {"filetype": "csv", "null_values": ["null"]},
@@ -1670,18 +1869,21 @@ csv_strings_can_be_null_not_quoted_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("2", "null"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("2", "null"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1718,37 +1920,39 @@ csv_strings_can_be_null_not_quoted_scenario = (
     )
 ).build()
 
-csv_newline_in_values_quoted_value_scenario = (
-    TestScenarioBuilder()
+csv_newline_in_values_quoted_value_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_newline_in_values_quoted_value")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
                         "filetype": "csv",
-                    }
+                    },
                 }
             ],
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    '''"col1","col2"''',
-                    '''"2","val\n2"''',
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        '''"col1","col2"''',
+                        '''"2","val\n2"''',
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1785,15 +1989,14 @@ csv_newline_in_values_quoted_value_scenario = (
     )
 ).build()
 
-csv_newline_in_values_not_quoted_scenario = (
-    TestScenarioBuilder()
+csv_newline_in_values_not_quoted_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_newline_in_values_not_quoted")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -1804,18 +2007,21 @@ csv_newline_in_values_not_quoted_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    """col1,col2""",
-                    """2,val\n2""",
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        """col1,col2""",
+                        """2,val\n2""",
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1861,18 +2067,17 @@ csv_newline_in_values_not_quoted_scenario = (
             ]
         }
     )
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()
 
-csv_escape_char_is_set_scenario = (
-    TestScenarioBuilder()
+csv_escape_char_is_set_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_escape_char_is_set")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -1881,24 +2086,27 @@ csv_escape_char_is_set_scenario = (
                         "quote_char": '"',
                         "delimiter": ",",
                         "escape_char": "\\",
-                    }
+                    },
                 }
             ],
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    """col1,col2""",
-                    '''val11,"val\\"2"''',
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        """col1,col2""",
+                        '''val11,"val\\"2"''',
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1935,8 +2143,8 @@ csv_escape_char_is_set_scenario = (
     )
 ).build()
 
-csv_double_quote_is_set_scenario = (
-    TestScenarioBuilder()
+csv_double_quote_is_set_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_doublequote_is_set")
     # This scenario tests that quotes are properly escaped when double_quotes is True
     .set_config(
@@ -1944,7 +2152,6 @@ csv_double_quote_is_set_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -1952,24 +2159,27 @@ csv_double_quote_is_set_scenario = (
                         "double_quotes": True,
                         "quote_char": '"',
                         "delimiter": ",",
-                    }
+                    },
                 }
             ],
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    """col1,col2""",
-                    '''val11,"val""2"''',
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        """col1,col2""",
+                        '''val11,"val""2"''',
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -2006,8 +2216,8 @@ csv_double_quote_is_set_scenario = (
     )
 ).build()
 
-csv_custom_delimiter_with_escape_char_scenario = (
-    TestScenarioBuilder()
+csv_custom_delimiter_with_escape_char_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_custom_delimiter_with_escape_char")
     # This scenario tests that a value can contain the delimiter if it is wrapped in the quote_char
     .set_config(
@@ -2015,7 +2225,6 @@ csv_custom_delimiter_with_escape_char_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {"filetype": "csv", "double_quotes": True, "quote_char": "@", "delimiter": "|", "escape_char": "+"},
@@ -2024,18 +2233,21 @@ csv_custom_delimiter_with_escape_char_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    """col1|col2""",
-                    """val"1,1|val+|2""",
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        """col1|col2""",
+                        """val"1,1|val+|2""",
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -2072,8 +2284,8 @@ csv_custom_delimiter_with_escape_char_scenario = (
     )
 ).build()
 
-csv_custom_delimiter_in_double_quotes_scenario = (
-    TestScenarioBuilder()
+csv_custom_delimiter_in_double_quotes_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_custom_delimiter_in_double_quotes")
     # This scenario tests that a value can contain the delimiter if it is wrapped in the quote_char
     .set_config(
@@ -2081,7 +2293,6 @@ csv_custom_delimiter_in_double_quotes_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -2095,18 +2306,21 @@ csv_custom_delimiter_in_double_quotes_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    """col1|col2""",
-                    """val"1,1|@val|2@""",
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        """col1|col2""",
+                        """val"1,1|@val|2@""",
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -2143,16 +2357,14 @@ csv_custom_delimiter_in_double_quotes_scenario = (
     )
 ).build()
 
-
-csv_skip_before_header_scenario = (
-    TestScenarioBuilder()
+csv_skip_before_header_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_skip_before_header")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {"filetype": "csv", "skip_rows_before_header": 2},
@@ -2161,20 +2373,23 @@ csv_skip_before_header_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("skip_this", "skip_this"),
-                    ("skip_this_too", "skip_this_too"),
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("skip_this", "skip_this"),
+                        ("skip_this_too", "skip_this_too"),
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -2211,15 +2426,14 @@ csv_skip_before_header_scenario = (
     )
 ).build()
 
-csv_skip_after_header_scenario = (
-    TestScenarioBuilder()
+csv_skip_after_header_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_skip_after_header")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {"filetype": "csv", "skip_rows_after_header": 2},
@@ -2228,20 +2442,23 @@ csv_skip_after_header_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("skip_this", "skip_this"),
-                    ("skip_this_too", "skip_this_too"),
-                    ("val11", "val12"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("skip_this", "skip_this"),
+                        ("skip_this_too", "skip_this_too"),
+                        ("val11", "val12"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -2278,16 +2495,14 @@ csv_skip_after_header_scenario = (
     )
 ).build()
 
-
-csv_skip_before_and_after_header_scenario = (
-    TestScenarioBuilder()
+csv_skip_before_and_after_header_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_skip_before_after_header")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -2300,20 +2515,23 @@ csv_skip_before_and_after_header_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("skip_this", "skip_this"),
-                    ("col1", "col2"),
-                    ("skip_this_too", "skip_this_too"),
-                    ("val11", "val12"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("skip_this", "skip_this"),
+                        ("col1", "col2"),
+                        ("skip_this_too", "skip_this_too"),
+                        ("val11", "val12"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -2350,37 +2568,39 @@ csv_skip_before_and_after_header_scenario = (
     )
 ).build()
 
-csv_autogenerate_column_names_scenario = (
-    TestScenarioBuilder()
+csv_autogenerate_column_names_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_autogenerate_column_names")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
                         "filetype": "csv",
-                        "autogenerate_column_names": True,
+                        "header_definition": {"header_definition_type": "Autogenerated"},
                     },
                 }
             ],
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("val11", "val12"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("val11", "val12"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -2417,15 +2637,14 @@ csv_autogenerate_column_names_scenario = (
     )
 ).build()
 
-csv_custom_bool_values_scenario = (
-    TestScenarioBuilder()
+csv_custom_bool_values_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_custom_bool_values")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "boolean", "col2": "boolean"}',
@@ -2439,18 +2658,21 @@ csv_custom_bool_values_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("this_is_true", "this_is_false"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("this_is_true", "this_is_false"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -2487,15 +2709,14 @@ csv_custom_bool_values_scenario = (
     )
 ).build()
 
-csv_custom_null_values_scenario = (
-    TestScenarioBuilder()
+csv_custom_null_values_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_custom_null_values")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "boolean", "col2": "string"}',
@@ -2508,18 +2729,21 @@ csv_custom_null_values_scenario = (
             "start_date": "2023-06-04T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("null", "na"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("null", "na"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -2556,16 +2780,15 @@ csv_custom_null_values_scenario = (
     )
 ).build()
 
-
-earlier_csv_scenario = (
-    TestScenarioBuilder()
+earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("earlier_csv_stream")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -2573,19 +2796,22 @@ earlier_csv_scenario = (
             "start_date": "2023-06-10T03:54:07.000000Z",
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_check_status("FAILED")
     .set_expected_catalog(
         {
@@ -2609,5 +2835,5 @@ earlier_csv_scenario = (
         }
     )
     .set_expected_records([])
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()

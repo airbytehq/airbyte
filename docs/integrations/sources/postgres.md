@@ -50,25 +50,14 @@ To fill out the required information:
 5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
    1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](#cdc).
 
+<!-- env:cloud -->
 #### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
-If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. These are:
-
-```roomsql
-34.106.109.131
-34.106.196.165
-34.106.60.246
-34.106.229.69
-34.106.127.139
-34.106.218.58
-34.106.115.240
-34.106.225.141
-13.37.4.46
-13.37.142.60
-35.181.124.238
-```
+If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
+our [Airbyte Security docs](../../../operator-guides/security#network-security-1).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
+<!-- /env:cloud -->
 
 ## Advanced Configuration
 
@@ -302,8 +291,26 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.21  | 2023-11-07 | [31856](https://github.com/airbytehq/airbyte/pull/31856)  | handle date/timestamp infinity values properly                                                                                                                        |
+| 3.2.20  | 2023-11-06 | [32193](https://github.com/airbytehq/airbyte/pull/32193)  | Adopt java CDK version 0.4.1.                                                                                                                        |
+| 3.2.19  | 2023-11-03 | [32050](https://github.com/airbytehq/airbyte/pull/32050) | Adopt java CDK version 0.4.0.                                                                                                                                              |
+| 3.2.18  | 2023-11-01 | [29038](https://github.com/airbytehq/airbyte/pull/29038) | Fix typo (s/Airbtye/Airbyte/)                                                                                                                                              |
+| 3.2.17  | 2023-11-01 | [32068](https://github.com/airbytehq/airbyte/pull/32068) | Bump Debezium 2.2.0Final -> 2.4.0Final                                                                                                                                     |
+| 3.2.16  | 2023-10-31 | [31976](https://github.com/airbytehq/airbyte/pull/31976) | Speed up tests involving Debezium                                                                                                                                          |
+| 3.2.15  | 2023-10-30 | [31960](https://github.com/airbytehq/airbyte/pull/31960) | Adopt java CDK version 0.2.0.                                                                                                                                              |
+| 3.2.14  | 2023-10-24 | [31792](https://github.com/airbytehq/airbyte/pull/31792) | Fix error message link on issue with standby                                                                                                                               |
+| 3.2.14  | 2023-10-24 | [31792](https://github.com/airbytehq/airbyte/pull/31792) | fail sync when debezeum fails to shutdown cleanly                                                                                                                          |
+| 3.2.13  | 2023-10-16 | [31029](https://github.com/airbytehq/airbyte/pull/31029) | Enforces encrypted traffic settings when env var DEPLOYMENT_MODE = CLOUD.                                                                                                  |
+| 3.1.13  | 2023-10-13 | [31309](https://github.com/airbytehq/airbyte/pull/31309) | Addressed decimals being incorrectly deserialized into scientific notation.                                                                                                |
+| 3.1.12  | 2023-10-12 | [31328](https://github.com/airbytehq/airbyte/pull/31328) | Improvements to initial load of tables in older versions of postgres.                                                                                                      |
+| 3.1.11  | 2023-10-11 | [31322](https://github.com/airbytehq/airbyte/pull/31322) | Correct pevious release                                                                                                                                                    |
+| 3.1.10  | 2023-09-29 | [30806](https://github.com/airbytehq/airbyte/pull/30806) | Cap log line length to 32KB to prevent loss of records.                                                                                                                    |
+| 3.1.9   | 2023-09-25 | [30534](https://github.com/airbytehq/airbyte/pull/30534) | Fix JSONB[] column type handling bug.                                                                                                                                      |
+| 3.1.8   | 2023-09-20 | [30125](https://github.com/airbytehq/airbyte/pull/30125) | Improve initial load performance for older versions of PostgreSQL.                                                                                                         |
+| 3.1.7   | 2023-09-05 | [29672](https://github.com/airbytehq/airbyte/pull/29672) | Handle VACUUM happening during initial sync                                                                                                                                |
+| 3.1.6   | 2023-08-24 | [29821](https://github.com/airbytehq/airbyte/pull/29821) | Set replication_method display_type to radio, update titles and descriptions, and make CDC the default choice                                                              |
 | 3.1.5   | 2023-08-22 | [29534](https://github.com/airbytehq/airbyte/pull/29534) | Support "options" JDBC URL parameter                                                                                                                                       |
-| 3.1.4   | 2023-08-21 | [28687](https://github.com/airbytehq/airbyte/pull/28687) | Under the hood: Add dependency on Java CDK v0.0.2.                                                                                                                          |
+| 3.1.4   | 2023-08-21 | [28687](https://github.com/airbytehq/airbyte/pull/28687) | Under the hood: Add dependency on Java CDK v0.0.2.                                                                                                                         |
 | 3.1.3   | 2023-08-03 | [28708](https://github.com/airbytehq/airbyte/pull/28708) | Enable checkpointing snapshots in CDC connections                                                                                                                          |
 | 3.1.2   | 2023-08-01 | [28954](https://github.com/airbytehq/airbyte/pull/28954) | Fix an issue that prevented use of tables with names containing uppercase letters                                                                                          |
 | 3.1.1   | 2023-07-31 | [28892](https://github.com/airbytehq/airbyte/pull/28892) | Fix an issue that prevented use of cursor columns with names containing uppercase letters                                                                                  |

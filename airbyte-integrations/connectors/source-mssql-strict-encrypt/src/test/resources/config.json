@@ -1,0 +1,8 @@
+{
+  "host": "default",
+  "port": 5555,
+  "database": "default",
+  "username": "default",
+  "ssl_method": { "ssl_method": "encrypted_trust_server_certificate" },
+  "replication_method": { "method": "STANDARD" }
+}

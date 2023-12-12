@@ -1,0 +1,37 @@
+# A list of URLs that should be redirected to new pathes
+- from: /airbyte-pro
+  to: /enterprise-setup/self-managed/
+- from: /airbyte-enterprise
+  to: /enterprise-setup/self-managed/
+- from: /upgrading-airbyte
+  to: /operator-guides/upgrading-airbyte
+- from: /catalog
+  to: /understanding-airbyte/airbyte-protocol
+- from: /integrations/sources/appstore-singer
+  to: /integrations/sources/appstore
+- from:
+    - /project-overview/security
+    - /operator-guides/securing-airbyte
+  to: /operator-guides/security
+- from: /connector-development/config-based/
+  to: /connector-development/config-based/low-code-cdk-overview
+- from: /project-overview/changelog
+  to: /category/release-notes
+- from: /connector-development/config-based/understanding-the-yaml-file/stream-slicers/
+  to: /connector-development/config-based/understanding-the-yaml-file/partition-router
+- from: /cloud/managing-airbyte-cloud
+  to: /category/using-airbyte-cloud
+- from: /category/managing-airbyte-cloud
+  to: /category/using-airbyte-cloud
+- from: /category/airbyte-open-source-quick-start
+  to: /category/getting-started
+- from: /cloud/dbt-cloud-integration
+  to: /cloud/managing-airbyte-cloud/dbt-cloud-integration
+- from: /cloud/managing-airbyte-cloud/review-sync-summary
+  to: /cloud/managing-airbyte-cloud/review-sync-history
+- from: /cloud/managing-airbyte-cloud/review-connection-state
+  to: /cloud/managing-airbyte-cloud/manage-connection-state
+- from: /cloud/managing-airbyte-cloud/edit-stream-configuration
+  to: /cloud/managing-airbyte-cloud/configuring-connections
+- from: /project-overview/product-release-stages
+  to: /project-overview/product-support-levels

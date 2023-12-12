@@ -1,114 +1,127 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": true,
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "orderNumber": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "string"]
+    },
+    "modified": {
+      "type": ["null", "string"]
+    },
+    "orderBillingPeriod": {
+      "type": ["null", "string"]
+    },
+    "setOrderBillingPeriod": {
+      "type": ["null", "boolean"]
     },
     "version": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "isLastVersion": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "remarks": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "effectiveStartDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "effectiveEndDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "cancellationDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "effectiveChangeDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "orderDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "noticePeriodDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "lastRenewalDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "noticePeriod": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "term": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "renewalTerm": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "isAutoRenewed": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "orderType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "termType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "orderPaymentMethod": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "invoiceSeparatly": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "yourReference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ourReference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "yourOrderNumber": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "invoiceAddress": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "description": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "street": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "street2": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "city": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "county": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "state": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "zip": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "country": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -116,34 +129,34 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "description": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "street": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "street2": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "city": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "county": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "state": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "zip": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "country": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -151,39 +164,39 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "code": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "description": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "paymentTerm": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "useAccountInvoiceBatchGroup": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "account": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "accountNumber": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalERPId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalCRMId": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -191,19 +204,19 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "accountNumber": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalERPId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalCRMId": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -213,25 +226,25 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "productNumber": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "chargePlanId": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "chargePlanName": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "chargePlanNumber": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "productLineNumber": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "charges": {
             "type": "array",
@@ -239,112 +252,112 @@
               "type": "object",
               "properties": {
                 "id": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "chargeNumber": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "version": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "isLastVersion": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "name": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "chargeType": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "priceModel": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "effectiveStartDate": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "effectiveEndDate": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "quantity": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "unitCode": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "startOn": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "endOn": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "chargedThroughDate": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "lastRenewalDate": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "lastPriceAdjustmentDate": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "pricePeriod": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "usageRating": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "revenueRecognitionRule": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "billingDay": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "specificBillingDay": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "billingPeriod": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "billingTiming": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "periodAlignment": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "taxTemplate": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "taxIncluded": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "createInvoiceLinesPerTier": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "estimatedUsage": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "estimatedQuantity": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "remarks": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "accountsReceivableAccount": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "deferredRevenueAccount": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "recognizedRevenueAccount": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "changeState": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "displayPrice": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "customFields": {
-                  "type": "object"
+                  "type": ["null", "object"]
                 },
                 "priceDetails": {
                   "type": "array",
@@ -352,40 +365,40 @@
                     "type": "object",
                     "properties": {
                       "tier": {
-                        "type": "number"
+                        "type": ["null", "number"]
                       },
                       "price": {
-                        "type": "number"
+                        "type": ["null", "number"]
                       },
                       "listPrice": {
-                        "type": "number"
+                        "type": ["null", "number"]
                       },
                       "description": {
-                        "type": "string"
+                        "type": ["null", "string"]
                       },
                       "fromQuantity": {
-                        "type": "number"
+                        "type": ["null", "number"]
                       },
                       "toQuantity": {
-                        "type": "number"
+                        "type": ["null", "number"]
                       },
                       "priceBase": {
-                        "type": "string"
+                        "type": ["null", "string"]
                       },
                       "lineDiscountPercent": {
-                        "type": "number"
+                        "type": ["null", "number"]
                       },
                       "lineDiscountAmount": {
-                        "type": "number"
+                        "type": ["null", "number"]
                       }
                     }
                   }
                 },
                 "recurringMonthlyAmount": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "recurringMonthlyAmountBase": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "features": {
                   "type": "array",
@@ -393,10 +406,10 @@
                     "type": "object",
                     "properties": {
                       "code": {
-                        "type": "string"
+                        "type": ["null", "string"]
                       },
                       "description": {
-                        "type": "string"
+                        "type": ["null", "string"]
                       }
                     }
                   }
@@ -407,37 +420,37 @@
                     "type": "object",
                     "properties": {
                       "orderDiscountId": {
-                        "type": "string"
+                        "type": ["null", "string"]
                       },
                       "chargeId": {
-                        "type": "string"
+                        "type": ["null", "string"]
                       }
                     }
                   }
                 },
                 "externalERPId": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "externalCRMId": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "cmrr": {
                   "type": "object",
                   "properties": {
                     "amount": {
-                      "type": "number"
+                      "type": ["null", "number"]
                     },
                     "currencyCode": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     },
                     "currencyConversionDate": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     },
                     "baseCurrencyAmount": {
-                      "type": "number"
+                      "type": ["null", "number"]
                     },
                     "baseCurrencyCode": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     }
                   }
                 },
@@ -445,19 +458,19 @@
                   "type": "object",
                   "properties": {
                     "amount": {
-                      "type": "number"
+                      "type": ["null", "number"]
                     },
                     "currencyCode": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     },
                     "currencyConversionDate": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     },
                     "baseCurrencyAmount": {
-                      "type": "number"
+                      "type": ["null", "number"]
                     },
                     "baseCurrencyCode": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     }
                   }
                 },
@@ -465,19 +478,19 @@
                   "type": "object",
                   "properties": {
                     "amount": {
-                      "type": "number"
+                      "type": ["null", "number"]
                     },
                     "currencyCode": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     },
                     "currencyConversionDate": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     },
                     "baseCurrencyAmount": {
-                      "type": "number"
+                      "type": ["null", "number"]
                     },
                     "baseCurrencyCode": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     }
                   }
                 },
@@ -485,19 +498,19 @@
                   "type": "object",
                   "properties": {
                     "amount": {
-                      "type": "number"
+                      "type": ["null", "number"]
                     },
                     "currencyCode": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     },
                     "currencyConversionDate": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     },
                     "baseCurrencyAmount": {
-                      "type": "number"
+                      "type": ["null", "number"]
                     },
                     "baseCurrencyCode": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     }
                   }
                 },
@@ -505,57 +518,57 @@
                   "type": "object",
                   "properties": {
                     "amount": {
-                      "type": "number"
+                      "type": ["null", "number"]
                     },
                     "currencyCode": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     },
                     "currencyConversionDate": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     },
                     "baseCurrencyAmount": {
-                      "type": "number"
+                      "type": ["null", "number"]
                     },
                     "baseCurrencyCode": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     }
                   }
                 },
                 "orderProductId": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "orderId": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 }
               }
             }
           },
           "customFields": {
-            "type": "object"
+            "type": ["null", "object"]
           },
           "externalERPId": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "externalCRMId": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "cmrr": {
             "type": "object",
             "properties": {
               "amount": {
-                "type": "number"
+                "type": ["null", "number"]
               },
               "currencyCode": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "currencyConversionDate": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "baseCurrencyAmount": {
-                "type": "number"
+                "type": ["null", "number"]
               },
               "baseCurrencyCode": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           },
@@ -563,19 +576,19 @@
             "type": "object",
             "properties": {
               "amount": {
-                "type": "number"
+                "type": ["null", "number"]
               },
               "currencyCode": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "currencyConversionDate": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "baseCurrencyAmount": {
-                "type": "number"
+                "type": ["null", "number"]
               },
               "baseCurrencyCode": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           },
@@ -583,19 +596,19 @@
             "type": "object",
             "properties": {
               "amount": {
-                "type": "number"
+                "type": ["null", "number"]
               },
               "currencyCode": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "currencyConversionDate": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "baseCurrencyAmount": {
-                "type": "number"
+                "type": ["null", "number"]
               },
               "baseCurrencyCode": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           },
@@ -603,19 +616,19 @@
             "type": "object",
             "properties": {
               "amount": {
-                "type": "number"
+                "type": ["null", "number"]
               },
               "currencyCode": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "currencyConversionDate": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "baseCurrencyAmount": {
-                "type": "number"
+                "type": ["null", "number"]
               },
               "baseCurrencyCode": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           },
@@ -623,19 +636,19 @@
             "type": "object",
             "properties": {
               "amount": {
-                "type": "number"
+                "type": ["null", "number"]
               },
               "currencyCode": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "currencyConversionDate": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "baseCurrencyAmount": {
-                "type": "number"
+                "type": ["null", "number"]
               },
               "baseCurrencyCode": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }
@@ -648,22 +661,22 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "orderId": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "description": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "milestoneDate": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "plannedDate": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
@@ -674,28 +687,28 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "orderId": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "startOn": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "endOn": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "startDate": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "endDate": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "percent": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "discountType": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "orderProductCharges": {
             "type": "array",
@@ -703,52 +716,52 @@
               "type": "object",
               "properties": {
                 "orderDiscountId": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "chargeId": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 }
               }
             }
           },
           "onSpecificCharges": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
           }
         }
       }
     },
     "currency": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalERPId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalCRMId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "currencyCodeToUseWhenInvoice": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customFields": {
-      "type": "object"
+      "type": ["null", "object"]
     },
     "cmrr": {
       "type": "object",
       "properties": {
         "amount": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "currencyCode": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "currencyConversionDate": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "baseCurrencyAmount": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "baseCurrencyCode": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -756,19 +769,19 @@
       "type": "object",
       "properties": {
         "amount": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "currencyCode": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "currencyConversionDate": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "baseCurrencyAmount": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "baseCurrencyCode": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -776,19 +789,19 @@
       "type": "object",
       "properties": {
         "amount": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "currencyCode": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "currencyConversionDate": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "baseCurrencyAmount": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "baseCurrencyCode": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -796,19 +809,19 @@
       "type": "object",
       "properties": {
         "amount": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "currencyCode": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "currencyConversionDate": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "baseCurrencyAmount": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "baseCurrencyCode": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -816,19 +829,19 @@
       "type": "object",
       "properties": {
         "amount": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "currencyCode": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "currencyConversionDate": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "baseCurrencyAmount": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "baseCurrencyCode": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     }

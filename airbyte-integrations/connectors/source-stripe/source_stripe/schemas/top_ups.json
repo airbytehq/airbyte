@@ -31,6 +31,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "destination_balance": {
       "type": ["null", "string"]
     },

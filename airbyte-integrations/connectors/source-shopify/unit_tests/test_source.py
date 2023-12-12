@@ -147,17 +147,17 @@ def test_request_params(config, stream, expected):
     "last_record, current_state, expected",
     [
         # no init state
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {'created_at': '2022-10-10T06:21:53-07:00', 'orders': None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
         # state is empty str
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""},  {'created_at': '2022-10-10T06:21:53-07:00', 'orders': None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
         # state is None
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {'created_at': '2022-10-10T06:21:53-07:00', 'orders': None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
         # last rec cursor is None
-        ({"created_at": None}, {"created_at": None}, {'created_at': '', 'orders': None}),
+        ({"created_at": None}, {"created_at": None}, {"created_at": "", "orders": None}),
         # last rec cursor is empty str
-        ({"created_at": ""}, {"created_at": "null"}, {'created_at': 'null', 'orders': None}),
+        ({"created_at": ""}, {"created_at": "null"}, {"created_at": "null", "orders": None}),
         # no values at all
-        ({}, {}, {'created_at': '', 'orders': None})
+        ({}, {}, {"created_at": "", "orders": None}),
     ],
     ids=[
         "no init state",
@@ -166,7 +166,7 @@ def test_request_params(config, stream, expected):
         "last rec cursor is None",
         "last rec cursor is empty str",
         "no values at all",
-    ]
+    ],
 )
 def test_get_updated_state(config, last_record, current_state, expected):
     stream = OrderRefunds(config)
@@ -184,7 +184,7 @@ def test_parse_response_with_bad_json(config, response_with_bad_json):
         ("test-store", "test-store"),
         ("test-store.myshopify.com", "test-store"),
     ],
-    ids=["old style", "oauth style"]
+    ids=["old style", "oauth style"],
 )
 def test_get_shop_name(config, shop, expected):
     source = SourceShopify()

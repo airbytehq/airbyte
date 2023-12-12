@@ -59,6 +59,22 @@ def test_discovery(schema, cursors, should_fail):
         t.test_defined_cursors_exist_in_schema(discovered_catalog)
 
 
+def test_discovery_uniquely_named_streams():
+    t = test_core.TestDiscovery()
+    stream_a = AirbyteStream.parse_obj(
+        {
+            "name": "test_stream",
+            "json_schema": {"properties": {"created": {"type": "string"}}},
+            "default_cursor_field": ["created"],
+            "supported_sync_modes": ["full_refresh", "incremental"],
+        }
+    )
+    streams = [stream_a, stream_a]
+    assert t.duplicated_stream_names(streams) == ["test_stream"]
+    streams.pop()
+    assert len(t.duplicated_stream_names(streams)) == 0
+
+
 @pytest.mark.parametrize(
     "schema, should_fail",
     [

@@ -14,10 +14,24 @@
 
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
     id "de.undercouch.download" version "5.0.1"
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.2.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.databricks.DatabricksDestination'
@@ -25,13 +39,6 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:base-java-s3')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-s3')
     implementation project(':airbyte-integrations:connectors:destination-azure-blob-storage')
     implementation group: 'com.databricks', name: 'databricks-jdbc', version: '2.6.25'
@@ -50,8 +57,4 @@ dependencies {
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
     
     implementation 'com.azure:azure-storage-blob:12.18.0'
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-databricks')
-
 }

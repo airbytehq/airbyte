@@ -1,8 +1,22 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.2.0'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.dynamodb.DynamodbSource'
@@ -12,11 +26,6 @@ def testContainersVersion = '1.17.5'
 def assertVersion = '3.23.1'
 
 dependencies {
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:connectors:source-relational-db')
-    implementation project(':airbyte-config-oss:config-models-oss')
 
     implementation platform('software.amazon.awssdk:bom:2.18.1')
     // https://mvnrepository.com/artifact/software.amazon.awssdk/dynamodb
@@ -33,11 +42,4 @@ dependencies {
 
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     testImplementation "org.testcontainers:localstack:${testContainersVersion}"
-
-
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-dynamodb')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

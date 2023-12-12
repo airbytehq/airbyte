@@ -13,8 +13,9 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import jsonref
+import pytest
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification, FailureType
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, check_config_against_spec_or_exit
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader, check_config_against_spec_or_exit
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture
 from pytest import raises as pytest_raises
@@ -189,3 +190,17 @@ class TestResourceSchemaLoader:
         # Make sure generated schema is JSON serializable
         assert json.dumps(actual_schema)
         assert jsonref.JsonRef.replace_refs(actual_schema)
+
+
+@pytest.mark.parametrize(
+    "limit, record_count, expected",
+    [
+        pytest.param(None, sys.maxsize, False, id="test_no_limit"),
+        pytest.param(1, 1, True, id="test_record_count_is_exactly_the_limit"),
+        pytest.param(1, 2, True, id="test_record_count_is_more_than_the_limit"),
+        pytest.param(1, 0, False, id="test_record_count_is_less_than_the_limit"),
+    ],
+)
+def test_internal_config(limit, record_count, expected):
+    config = InternalConfig(_limit=limit)
+    assert config.is_limit_reached(record_count) == expected

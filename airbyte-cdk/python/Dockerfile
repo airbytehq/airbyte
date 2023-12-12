@@ -1,4 +1,4 @@
-FROM python:3.9.11-alpine3.15 as base
+FROM python:3.9.18-alpine3.18 as base
 
 # build and load all requirements
 FROM base as builder
@@ -10,7 +10,7 @@ RUN apk --no-cache upgrade \
     && apk --no-cache add tzdata build-base
 
 # install airbyte-cdk
-RUN pip install --prefix=/install airbyte-cdk==0.51.6
+RUN pip install --prefix=/install airbyte-cdk==0.53.9
 
 # build a clean environment
 FROM base
@@ -32,5 +32,5 @@ ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 # needs to be the same as CDK
-LABEL io.airbyte.version=0.51.6
+LABEL io.airbyte.version=0.53.9
 LABEL io.airbyte.name=airbyte/source-declarative-manifest

@@ -13,12 +13,12 @@ import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.LoadJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -118,8 +118,9 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   /**
-   * Similar to COPY INTO within {@link io.airbyte.integrations.destination.staging.StagingOperations}
-   * which loads the data stored in the stage area into a target table in the destination
+   * Similar to COPY INTO within
+   * {@link io.airbyte.cdk.integrations.destination.staging.StagingOperations} which loads the data
+   * stored in the stage area into a target table in the destination
    *
    * Reference
    * https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
@@ -129,38 +130,37 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
                                      final String stream,
                                      final TableId tableId,
                                      final Schema tableSchema,
-                                     final List<String> stagedFiles) {
+                                     final String stagedFileName) {
     LOGGER.info("Uploading records from staging files to target table {} (dataset {}): {}",
-        tableId, datasetId, stagedFiles);
+        tableId, datasetId, stagedFileName);
 
-    stagedFiles.parallelStream().forEach(stagedFile -> {
-      final String fullFilePath = String.format("gs://%s/%s%s", gcsConfig.getBucketName(), getStagingFullPath(datasetId, stream), stagedFile);
-      LOGGER.info("Uploading staged file: {}", fullFilePath);
-      final LoadJobConfiguration configuration = LoadJobConfiguration.builder(tableId, fullFilePath)
-          .setFormatOptions(FormatOptions.avro())
-          .setSchema(tableSchema)
-          .setWriteDisposition(WriteDisposition.WRITE_APPEND)
-          .setUseAvroLogicalTypes(true)
-          .build();
+    final String fullFilePath = String.format("gs://%s/%s%s", gcsConfig.getBucketName(), getStagingFullPath(datasetId, stream), stagedFileName);
+    LOGGER.info("Uploading staged file: {}", fullFilePath);
+    final LoadJobConfiguration configuration = LoadJobConfiguration.builder(tableId, fullFilePath)
+        .setFormatOptions(FormatOptions.csv())
+        .setSchema(tableSchema)
+        .setWriteDisposition(WriteDisposition.WRITE_APPEND)
+        .setJobTimeoutMs(300000L) // 5min
+        .build();
 
-      final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
-      LOGGER.info("[{}] Created a new job to upload record(s) to target table {} (dataset {}): {}", loadJob.getJobId(),
-          tableId, datasetId, loadJob);
+    final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
+    LOGGER.info("[{}] Created a new job to upload record(s) to target table {} (dataset {}): {}", loadJob.getJobId(),
+        tableId, datasetId, loadJob);
 
-      try {
-        BigQueryUtils.waitForJobFinish(loadJob);
-        LOGGER.info("[{}] Target table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(),
-            tableId, datasetId);
-      } catch (final BigQueryException | InterruptedException e) {
-        throw new RuntimeException(
-            String.format("[%s] Failed to upload staging files to destination table %s (%s)", loadJob.getJobId(),
-                tableId, datasetId),
-            e);
-      }
-    });
+    try {
+      BigQueryUtils.waitForJobFinish(loadJob);
+      LOGGER.info("[{}] Target table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(),
+          tableId, datasetId);
+    } catch (final BigQueryException | InterruptedException e) {
+      throw new RuntimeException(
+          String.format("[%s] Failed to upload staging files to destination table %s (%s)", loadJob.getJobId(),
+              tableId, datasetId),
+          e);
+    }
   }
 
   @Override
+  @Deprecated
   public void cleanUpStage(final String datasetId, final String stream, final List<String> stagedFiles) {
     if (keepStagingFiles) {
       return;

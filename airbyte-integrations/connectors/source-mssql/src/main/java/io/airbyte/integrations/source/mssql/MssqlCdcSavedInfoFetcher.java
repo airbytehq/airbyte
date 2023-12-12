@@ -8,8 +8,9 @@ import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.cdk.integrations.debezium.CdcSavedInfoFetcher;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
+import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import java.util.Optional;
 
 public class MssqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
@@ -29,8 +30,8 @@ public class MssqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   }
 
   @Override
-  public Optional<JsonNode> getSavedSchemaHistory() {
-    return Optional.ofNullable(savedSchemaHistory);
+  public SchemaHistory<Optional<JsonNode>> getSavedSchemaHistory() {
+    return new SchemaHistory<>(Optional.ofNullable(savedSchemaHistory), false);
   }
 
 }

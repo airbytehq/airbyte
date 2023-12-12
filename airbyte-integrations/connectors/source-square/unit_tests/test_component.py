@@ -57,6 +57,7 @@ def test_refresh_access_token(req_mock):
         client_id="client_id",
         refresh_token="refresh_token",
         token_expiry_date_format="YYYY-MM-DDTHH:mm:ss[Z]",
+        token_expiry_is_time_of_expiration=True,
         config=config,
         parameters=parameters,
     )

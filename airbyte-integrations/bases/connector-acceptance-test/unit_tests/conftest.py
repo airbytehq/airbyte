@@ -36,3 +36,8 @@ def anyio_backend():
 async def dagger_client():
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
         yield client
+
+
+@pytest.fixture(scope="module")
+async def source_faker_container(dagger_client):
+    return await dagger_client.container().from_("airbyte/source-faker:latest")

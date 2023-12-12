@@ -15,11 +15,20 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "default": {
+      "type": ["null", "boolean"]
+    },
     "deleted": {
       "type": ["null", "boolean"]
     },
+    "description": {
+      "type": ["null", "string"]
+    },
     "id": {
       "type": ["null", "integer"]
+    },
+    "is_public": {
+      "type": ["null", "boolean"]
     }
   }
 }

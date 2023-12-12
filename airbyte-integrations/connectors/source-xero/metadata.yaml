@@ -13,7 +13,7 @@ data:
   name: Xero
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
       enabled: true
   releaseStage: beta

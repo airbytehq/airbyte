@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
@@ -77,7 +77,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": ["null", "boolean", "integer"]
+            "type": ["null", "string", "boolean", "integer"]
           },
           "label": {
             "type": ["null", "string"]
