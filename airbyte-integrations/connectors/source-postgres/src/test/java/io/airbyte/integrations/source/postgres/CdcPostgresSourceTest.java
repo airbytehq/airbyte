@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,6 +36,7 @@ import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
@@ -100,6 +102,19 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   protected void setup() {
     super.setup();
     testdb.withPublicationForAllTables();
+  }
+
+  @Test
+  void testDebugMode() {
+    final JsonNode invalidDebugConfig = testdb.testConfigBuilder()
+        .withSchemas(modelsSchema(), modelsSchema() + "_random")
+        .withoutSsl()
+        .withCdcReplication("While reading Data")
+        .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
+        .with("debug_mode", true)
+        .build();
+    final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(getConfiguredCatalog());
+    assertThrows(ConfigErrorException.class, () -> source().read(invalidDebugConfig, configuredCatalog, null));
   }
 
   @Test
@@ -861,7 +876,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     });
   }
 
-  private void bulkInsertRecords(int recordsToCreate) {
+  private void bulkInsertRecords(final int recordsToCreate) {
     testdb.with("""
                 INSERT INTO %s.%s (%s, %s, %s)
                 SELECT
