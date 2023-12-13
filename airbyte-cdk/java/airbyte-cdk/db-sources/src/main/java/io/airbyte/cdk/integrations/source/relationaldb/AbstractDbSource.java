@@ -14,6 +14,7 @@ import io.airbyte.cdk.db.AbstractDatabase;
 import io.airbyte.cdk.db.IncrementalUtils;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
@@ -69,7 +70,7 @@ import org.slf4j.LoggerFactory;
  * source of both non-relational and relational type
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
-    BaseConnector implements Source, AutoCloseable {
+    JdbcConnector implements Source, AutoCloseable {
 
   public static final String CHECK_TRACE_OPERATION_NAME = "check-operation";
   public static final String DISCOVER_TRACE_OPERATION_NAME = "discover-operation";

@@ -60,6 +60,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -633,6 +634,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         }
       }
     }
+  }
+
+  @Override
+  protected Optional<Duration> maybeGetConnectionTimeout(String driverClassName,
+      Map<String, String> connectionProperties) {
+    // Microsoft decided that their properties couldn't be accessed from the outside world,
+    // so this is hardcoded instead of being read from SQLServerDriverIntProperty
+    return maybeParseDuration(connectionProperties.get("loginTimeout"), ChronoUnit.SECONDS);
   }
 
   private boolean cloudDeploymentMode() {

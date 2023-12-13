@@ -26,6 +26,7 @@ import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryU
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
+import static org.postgresql.PGProperty.CONNECT_TIMEOUT;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -36,6 +37,7 @@ import datadog.trace.api.Trace;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.SqlDatabase;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
@@ -61,6 +63,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -434,7 +439,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcDataSourceUtils.getConnectionProperties(sourceConfig));
+        JdbcDataSourceUtils.getConnectionProperties(sourceConfig),
+        getConnectionTimeout(driverClass, JdbcDataSourceUtils.getConnectionProperties(sourceConfig)));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
@@ -494,4 +500,29 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         .collect(Collectors.toList());
   }
 
+  /**
+   * gets the connection timeout. Default is 60 seconds since Hikari default of 30 seconds is not enough for acceptance tests.
+   */
+  private Duration getConnectionTimeout(String driverClassName, Map<String, String> connectionProperties) {
+    final Optional<Duration> parsedConnectionTimeout = maybeGetConnectionTimeout(driverClassName, connectionProperties);
+    return parsedConnectionTimeout.orElse(CONNECT_TIMEOUT_DEFAULT);
+  }
+
+  /**
+   * Retrieves connectionTimeout value from connection properties.
+   * Should be overriden if the JDBC driver has a special timeout field.
+   */
+
+  protected Optional<Duration> maybeGetConnectionTimeout(String driverClassName, Map<String, String> connectionProperties) {
+      return switch (DatabaseDriver.findByDriverClassName(driverClassName)) {
+        // Postgres is in seconds: https://jdbc.postgresql.org/documentation/head/connect.html
+        case POSTGRESQL -> maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
+            .or(() -> maybeParseDuration(CONNECT_TIMEOUT.getDefaultValue(), ChronoUnit.SECONDS));
+        case MYSQL -> maybeParseDuration(connectionProperties.get("connectTimeout"), ChronoUnit.MILLIS);
+        default -> maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
+            // Enforce minimum timeout duration for unspecified data sources.
+            .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0);
+      };
+
+  }
 }
