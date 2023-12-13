@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.57.4
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.3
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.2
+Update airbyte-protocol
+
+## 0.57.1
+Improve integration tests tooling
+
 ## 0.57.0
 low-code: cache requests sent for parent streams
 
