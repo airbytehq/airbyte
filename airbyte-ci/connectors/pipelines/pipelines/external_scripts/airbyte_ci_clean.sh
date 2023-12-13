@@ -40,8 +40,4 @@ while pyenv whence --path airbyte-ci >/dev/null 2>&1; do
 done
     echo "All airbyte-ci references removed from pyenv versions."
 
-
-echo "Cleanup completed."
-echo ""
-echo "Please run 'make tools.airbyte-ci.install' to install airbyte-ci again"
-
+echo "Cleanup of airbyte-ci install completed."
