@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
@@ -20,7 +24,6 @@ import org.jooq.SQLDialect;
 import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
-import org.jooq.meta.TableDefinition;
 
 public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGeneratorIntegrationTest<T> {
 
@@ -34,7 +37,11 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
     return DSL.using(getSqlDialect());
   }
 
-  protected abstract void insertRecords(final Name tableName, final List<String> columnNames, final List<JsonNode> records, final String... jsonColumns) throws Exception;
+  protected abstract void insertRecords(final Name tableName,
+                                        final List<String> columnNames,
+                                        final List<JsonNode> records,
+                                        final String... jsonColumns)
+      throws Exception;
 
   @Override
   protected void createNamespace(String namespace) throws Exception {
@@ -44,20 +51,20 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
   @Override
   protected void createRawTable(StreamId streamId) throws Exception {
     getDatabase().execute(getDslContext().createTable(DSL.name(streamId.rawNamespace(), streamId.rawName()))
-                         .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
-                         .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
-                         .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE)
-                         .column(COLUMN_NAME_DATA, getStructType().nullable(false))
-                         .getSQL(ParamType.INLINED));
+        .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
+        .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
+        .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE)
+        .column(COLUMN_NAME_DATA, getStructType().nullable(false))
+        .getSQL(ParamType.INLINED));
   }
 
   @Override
   protected void createV1RawTable(StreamId v1RawTable) throws Exception {
     getDatabase().execute(getDslContext().createTable(DSL.name(v1RawTable.rawNamespace(), v1RawTable.rawName()))
-                         .column(COLUMN_NAME_AB_ID, SQLDataType.VARCHAR(36).nullable(false))
-                         .column(COLUMN_NAME_EMITTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
-                         .column(COLUMN_NAME_DATA, getStructType().nullable(false))
-                         .getSQL(ParamType.INLINED));
+        .column(COLUMN_NAME_AB_ID, SQLDataType.VARCHAR(36).nullable(false))
+        .column(COLUMN_NAME_EMITTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
+        .column(COLUMN_NAME_DATA, getStructType().nullable(false))
+        .getSQL(ParamType.INLINED));
   }
 
   @Override
@@ -95,11 +102,13 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
 
   @Override
   protected List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception {
-    return getDatabase().queryJsons(getDslContext().selectFrom(DSL.name(streamId.finalNamespace(), streamId.finalName() + suffix)).getSQL(ParamType.INLINED));
+    return getDatabase()
+        .queryJsons(getDslContext().selectFrom(DSL.name(streamId.finalNamespace(), streamId.finalName() + suffix)).getSQL(ParamType.INLINED));
   }
 
   @Override
   protected void teardownNamespace(String namespace) throws Exception {
     getDatabase().execute(getDslContext().dropSchema(namespace).cascade().getSQL(ParamType.INLINED));
   }
+
 }

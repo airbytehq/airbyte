@@ -138,15 +138,16 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   protected abstract SQLDialect getDialect();
 
   /**
-   * @param columns from the schema to be extracted from _airbyte_data column.
-   *                Use the destination specific syntax to extract data
+   * @param columns from the schema to be extracted from _airbyte_data column. Use the destination
+   *        specific syntax to extract data
    * @return a list of jooq fields for the final table insert statement.
    */
   protected abstract List<Field<?>> extractRawDataFields(final LinkedHashMap<ColumnId, AirbyteType> columns);
 
   /**
    *
-   * @param columns from the schema to be used for type casting errors and construct _airbyte_meta column
+   * @param columns from the schema to be used for type casting errors and construct _airbyte_meta
+   *        column
    * @return
    */
   protected abstract Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns);
@@ -334,10 +335,10 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     // generate fields.
     final CommonTableExpression<Record> rawTableRowsWithCast = name(TYPING_CTE_ALIAS).as(
         selectFromRawTable(rawSchema, rawTable, streamConfig.columns(),
-                           getFinalTableMetaColumns(false),
-                           rawTableCondition(streamConfig.destinationSyncMode(),
-                                             streamConfig.columns().containsKey(cdcDeletedAtColumn),
-                                             minRawTimestamp)));
+            getFinalTableMetaColumns(false),
+            rawTableCondition(streamConfig.destinationSyncMode(),
+                streamConfig.columns().containsKey(cdcDeletedAtColumn),
+                minRawTimestamp)));
     final List<Field<?>> finalTableFields = buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true));
     final Field<Integer> rowNumber = getRowNumber(streamConfig.primaryKey(), streamConfig.cursor());
     final CommonTableExpression<Record> filteredRows = name(NUMBERED_ROWS_CTE_ALIAS).as(
@@ -347,10 +348,10 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     final String insertStmtWithDedupe =
         insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
             .select(with(rawTableRowsWithCast)
-                        .with(filteredRows)
-                        .select(finalTableFields)
-                        .from(filteredRows)
-                        .where(field(ROW_NUMBER_COLUMN_NAME, Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
+                .with(filteredRows)
+                .select(finalTableFields)
+                .from(filteredRows)
+                .where(field(ROW_NUMBER_COLUMN_NAME, Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
             )
             .getSQL(ParamType.INLINED);
 
@@ -358,8 +359,8 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     final String insertStmt =
         insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
             .select(with(rawTableRowsWithCast)
-                        .select(finalTableFields)
-                        .from(rawTableRowsWithCast))
+                .select(finalTableFields)
+                .from(rawTableRowsWithCast))
             .getSQL(ParamType.INLINED);
     final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
     final String deleteCdcDeletesStmt =
@@ -432,7 +433,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         .where(airbyteRawId.in(
             select(airbyteRawId)
                 .from(select(airbyteRawId, rowNumber)
-                          .from(table(quotedName(schemaName, tableName))).asTable("airbyte_ids"))
+                    .from(table(quotedName(schemaName, tableName))).asTable("airbyte_ids"))
                 .where(field("row_number").ne(1))))
         .getSQL(ParamType.INLINED);
   }

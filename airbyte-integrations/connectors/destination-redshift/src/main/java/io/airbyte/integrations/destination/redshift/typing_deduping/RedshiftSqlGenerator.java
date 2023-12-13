@@ -104,8 +104,6 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * KEYS, DISTKEY in redshift for optimizing the query performance.
    */
 
-
-
   @Override
   protected Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
@@ -248,7 +246,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   protected Condition cdcDeletedAtNotNullCondition() {
     return field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
         .and(function("JSON_TYPEOF", SQLDataType.VARCHAR, field(quotedName(COLUMN_NAME_DATA, cdcDeletedAtColumn.name())))
-                 .ne("null"));
+            .ne("null"));
   }
 
   @Override
