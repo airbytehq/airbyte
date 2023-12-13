@@ -49,28 +49,29 @@ Microsoft Graph has two types of permissions:
 This source requires **Application permissions**. Follow these [instructions](https://docs.microsoft.com/en-us/graph/auth-v2-service?context=graph%2Fapi%2F1.0&view=graph-rest-1.0) for creating an app in the Azure portal. This process will produce the `client_id`, `client_secret`, and `tenant_id` needed for the tap configuration file.
 
 1. Login to [Azure Portal](https://portal.azure.com/#home)
-2. Click upper-left menu icon and select Azure Active Directory
-3. Select App Registrations
-4. Click New registration
+2. Click upper-left menu icon and select **Azure Active Directory**
+3. Select **App Registrations**
+4. Click **New registration**
 5. Register an application
    1. Name: 
    2. Supported account types: Accounts in this organizational directory only
    3. Register \(button\)
 6. Record the client\_id and tenant\_id which will be used by the tap for authentication and API integration.
-7. Select Certificates & secrets
-8. Provide Description and Expires
+7. Select **Certificates & secrets**
+8. Provide **Description and Expires**
    1. Description: tap-microsoft-teams client secret
    2. Expires: 1-year
    3. Add
 9. Copy the client secret value, this will be the client\_secret
-10. Select API permissions
-    1. Click Add a permission
-11. Select Microsoft Graph
-12. Select Application permissions
+10. Select **API permissions**
+    1. Click **Add a permission**
+11. Select **Microsoft Graph**
+12. Select **Application permissions**
 13. Select the following permissions:
     1. Files 
        * Files.Read.All
-14. Click Add permissions
+14. Click **Add permissions**
+15. Click **Grant admin consent**
 
 ### Step 2: Set up the Microsoft OneDrive connector in Airbyte
 
@@ -80,24 +81,21 @@ This source requires **Application permissions**. Follow these [instructions](ht
 4. Enter the name for the Microsoft OneDrive connector.
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
 6. Enter **Folder Path**. 
-7. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user. 
-8. Enter **Tenant ID**, **Client ID** and **Client secret**. 
-9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
-10. Add a stream:
+7. Switch to **Service Key Authentication** 
+8. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user. 
+9. Enter **Tenant ID**, **Client ID** and **Client secret**. 
+10. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
+11. Add a stream:
     1. Write the **File Type**
     2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
     3. Give a **Name** to the stream
     4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
     5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below. 
-11. Click **Set up source**
+12. Click **Set up source**
 
 <!-- /env:oss -->
 
 ## Sync overview
-
-This source can sync data for the Microsoft Graph API to work with [Microsoft OneDrive](https://docs.microsoft.com/en-us/graph).
-
-This Source Connector is based on a [API v1.0](https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview?view=graph-rest-1.0).
 
 ### Data type mapping
 
@@ -121,6 +119,6 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject            |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------|
-| 0.1.0   | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | Migrate to the CDK |
+| Version | Date       | Pull Request                                             | Subject    |
+|:--------|:-----------|:---------------------------------------------------------|:-----------|
+| 0.1.0   | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | New source |

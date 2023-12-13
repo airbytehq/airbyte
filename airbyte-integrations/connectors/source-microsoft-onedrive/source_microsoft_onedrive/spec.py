@@ -3,7 +3,7 @@
 #
 
 
-from typing import Any, Dict, Literal, Union
+from typing import Any, Dict, Literal, Union, Optional
 
 import dpath.util
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
@@ -68,7 +68,6 @@ class ServiceCredentials(BaseModel):
     )
 
 
-# TODO: Add filtration by folder name in stream config
 class SourceMicrosoftOneDriveSpec(AbstractFileBasedSpec, BaseModel):
     """
     SourceMicrosoftOneDriveSpec class for Microsoft OneDrive Source Specification.
@@ -87,7 +86,7 @@ class SourceMicrosoftOneDriveSpec(AbstractFileBasedSpec, BaseModel):
         order=0,
     )
 
-    drive_name: str = Field(title="Drive Name", description="Name of the Microsoft OneDrive drive where the file(s) exist.", order=2)
+    drive_name: Optional[str] = Field(title="Drive Name", description="Name of the Microsoft OneDrive drive where the file(s) exist.", default="OneDrive", order=2)
     folder_path: str = Field(
         title="Folder Path", description="Path to folder of the Microsoft OneDrive drive where the file(s) exist.", order=3
     )

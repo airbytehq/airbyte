@@ -442,6 +442,7 @@
       "drive_name" : {
         "title" : "Drive Name",
         "description" : "Name of the Microsoft OneDrive drive where the file(s) exist.",
+        "default" : "OneDrive",
         "order" : 2,
         "type" : "string"
       },
@@ -455,7 +456,6 @@
     "required" : [
       "streams",
       "credentials",
-      "drive_name",
       "folder_path"
     ]
   },
