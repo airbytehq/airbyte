@@ -1,6 +1,7 @@
 {
   "$schema" : "http://json-schema.org/draft-07/schema#",
   "type" : "object",
+  "additionalProperties": true,
   "properties" : {
     "id" : {
       "type" : [
@@ -12,7 +13,40 @@
       "type" : [
         "null",
         "object"
-      ]
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "tweet_count": {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        },
+        "like_count": {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        },
+        "following_count": {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        },
+        "listed_count": {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        },
+        "followers_count": {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        }
+      }
     },
     "created_at" : {
       "type" : [
@@ -30,7 +64,7 @@
     "location" : {
       "type" : [
         "null",
-        "object"
+        "string"
       ]
     },
     "pinned_tweet_id" : {
@@ -48,32 +82,34 @@
     "username" : {
       "type" : [
         "null",
-        "object"
+        "string"
       ]
     },
     "verified_type" : {
       "type" : [
         "null",
-        "object"
+        "string"
       ]
     },
     "verified" : {
       "type" : [
         "null",
-        "object"
+        "boolean"
       ]
     },
     "url" : {
       "type" : [
         "null",
-        "object"
+        "string"
       ]
     },
     "entities" : {
       "type" : [
         "null",
         "object"
-      ]
+      ],
+      "additionalProperties": true,
+      "properties": {}
     },
     "description" : {
       "type" : [
