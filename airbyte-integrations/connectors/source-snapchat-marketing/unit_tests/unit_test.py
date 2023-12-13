@@ -4,8 +4,10 @@
 
 # from unittest.mock import MagicMock, PropertyMock, patch
 
+import logging
 import pytest
 import source_snapchat_marketing
+from requests.exceptions import ConnectionError
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_snapchat_marketing.source import (
@@ -26,6 +28,7 @@ config_mock = {
 }
 stats_stream = AdaccountsStatsDaily(**config_mock)
 
+logger = logging.Logger("airbyte")
 
 @pytest.mark.parametrize(
     "slice_period,expected_date_slices",
@@ -357,18 +360,39 @@ def test_get_parent_ids(requests_mock):
     assert len(requests_mock.request_history) == 3
 
 
-def test_source_streams():
-    source_config = {"client_id": "XXX", "client_secret": "XXX", "refresh_token": "XXX", "start_date": "2022-05-25"}
+@pytest.fixture
+def source_config():
+    return {"client_id": "XXX", "client_secret": "XXX", "refresh_token": "XXX", "start_date": "2022-05-25"}
+
+
+def test_source_streams(source_config):
     streams = SourceSnapchatMarketing().streams(config=source_config)
     assert len(streams) == 20
 
 
-def test_source_check_connection(requests_mock):
-    source_config = {"client_id": "XXX", "client_secret": "XXX", "refresh_token": "XXX", "start_date": "2022-05-25"}
+def test_source_check_connection(requests_mock, source_config):
     requests_mock.post("https://accounts.snapchat.com/login/oauth2/access_token", json={"access_token": "XXX", "expires_in": 3600})
     requests_mock.get("https://adsapi.snapchat.com/v1/me", json={})
 
     results = SourceSnapchatMarketing().check_connection(logger=None, config=source_config)
+    assert results == (True, None)
+
+
+def test_source_check_connection_retry_logic(requests_mock, source_config):
+    requests_mock.post("https://accounts.snapchat.com/login/oauth2/access_token", json={"access_token": "XXX", "expires_in": 3600})
+    call_count = 0
+
+    def connection_error_request(request, context):
+        nonlocal call_count
+        call_count += 1
+        if call_count < 3:  # simulate failure for the first two calls
+            raise ConnectionError
+        return {"status": "success"}  # successful response on the third call
+
+    requests_mock.get("https://adsapi.snapchat.com/v1/me", json=connection_error_request)
+    results = SourceSnapchatMarketing().check_connection(logger=logger, config=source_config)
+
+    assert call_count == 3
     assert results == (True, None)
 
 
