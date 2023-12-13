@@ -10,8 +10,8 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -83,7 +83,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
+                                    final List<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tableName)
       throws SQLException {
@@ -104,6 +104,13 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
         JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
     final String recordQuery = "(?, ?, ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
+  }
+
+  @Override
+  protected void insertRecordsInternalV2(final JdbcDatabase jdbcDatabase, final List<PartialAirbyteMessage> list, final String s, final String s1)
+      throws Exception {
+    // Snowflake doesn't have standard inserts... so we probably never want to do this
+    throw new UnsupportedOperationException("Snowflake does not use the native JDBC DV2 interface");
   }
 
   protected String generateFilesList(final List<String> files) {

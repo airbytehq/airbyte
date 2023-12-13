@@ -11,7 +11,7 @@ import source_bing_ads
 from freezegun import freeze_time
 from pendulum import UTC, DateTime
 from source_bing_ads.base_streams import Accounts
-from source_bing_ads.bulk_streams import AppInstallAds
+from source_bing_ads.bulk_streams import AppInstallAdLabels, AppInstallAds
 
 
 @patch.object(source_bing_ads.source, "Client")
@@ -74,6 +74,32 @@ def test_bulk_stream_read_with_chunks(mocked_client, config):
         "Title": "Contoso Quick Setup",
         "Tracking Template": None,
         "Type": "App Install Ad",
+    }
+
+
+@patch.object(source_bing_ads.source, "Client")
+def test_bulk_stream_read_with_chunks_app_install_ad_labels(mocked_client, config):
+    path_to_file = Path(__file__).parent / "app_install_ad_labels.csv"
+    path_to_file_base = Path(__file__).parent / "app_install_ad_labels_base.csv"
+    with open(path_to_file_base, "r") as f1, open(path_to_file, "a") as f2:
+        for line in f1:
+            f2.write(line)
+
+    app_install_ads = AppInstallAdLabels(mocked_client, config)
+    result = app_install_ads.read_with_chunks(path=path_to_file)
+    assert next(result) == {
+        'Ad Group': None,
+        'Campaign': None,
+        'Client Id': 'ClientIdGoesHere',
+        'Color': None,
+        'Description': None,
+        'Id': '-22',
+        'Label': None,
+        'Modified Time': None,
+        'Name': None,
+        'Parent Id': '-11112',
+        'Status': None,
+        'Type': 'App Install Ad Label'
     }
 
 
