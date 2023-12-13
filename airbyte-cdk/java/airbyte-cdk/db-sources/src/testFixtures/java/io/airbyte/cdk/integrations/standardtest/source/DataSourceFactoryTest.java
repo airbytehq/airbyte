@@ -13,9 +13,12 @@ import java.util.Map;
 import javax.sql.DataSource;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
-abstract public class DataSourceFactoryTest<T extends JdbcDatabaseContainer<T>> {
+abstract public class DataSourceFactoryTest {
 
-  protected void testCreatingDataSourceWithConnectionTimeoutSetBelowDefault(T container, int defaultTimeout, String timeoutKey, int explicitTimeout) {
+  public static <T extends JdbcDatabaseContainer> void testCreatingDataSourceWithConnectionTimeoutSetBelowDefault(T container,
+                                                                                                                  int defaultTimeout,
+                                                                                                                  String timeoutKey,
+                                                                                                                  int explicitTimeout) {
     final DataSource dataSource = DataSourceFactory.create(
         container.getUsername(),
         container.getPassword(),

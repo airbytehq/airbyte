@@ -6,12 +6,14 @@ package io.airbyte.integrations.source.mssql;
 
 import io.airbyte.cdk.integrations.standardtest.source.DataSourceFactoryTest;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.MSSQLServerContainer;
 
-public class MssqlDataSourceFactoryTest extends DataSourceFactoryTest {
+public class MssqlDataSourceFactoryTest {
 
   @Test
   protected void testCreatingDataSourceWithConnectionTimeoutSetBelowDefault() {
-    this.testCreatingDataSourceWithConnectionTimeoutSetBelowDefault(new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2019-latest"),
+    DataSourceFactoryTest.<MSSQLServerContainer<?>>testCreatingDataSourceWithConnectionTimeoutSetBelowDefault(
+        new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2019-latest"),
         5000, "loginTimeout", 5);
   }
 
