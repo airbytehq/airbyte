@@ -377,6 +377,14 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: AverageCpm
               bypass_reason: "dynamic field"
+            - name: HistoricalQualityScore
+              bypass_reason: "dynamic field"
+            - name: HistoricalExpectedCtr
+              bypass_reason: "dynamic field"
+            - name: HistoricalAdRelevance
+              bypass_reason: "dynamic field"
+            - name: HistoricalLandingPageExperience
+              bypass_reason: "dynamic field"
           keyword_performance_report_daily:
             - name: Language
               bypass_reason: "dynamic field"
