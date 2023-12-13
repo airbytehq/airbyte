@@ -152,11 +152,7 @@ class AbstractOauth2Authenticator(AuthBase):
             return pendulum.now().add(seconds=int(float(value)))
 
     def get_refresh_request_data(self) -> Mapping[str, Any]:
-        request_type_mapping = dict(
-            request_parameter="params",
-            body_data="data",
-            body_json="json"
-        )
+        request_type_mapping = dict(request_parameter="params", body_data="data", body_json="json")
 
         request_type = self.get_refresh_request_type()
         if request_type not in request_type_mapping:
