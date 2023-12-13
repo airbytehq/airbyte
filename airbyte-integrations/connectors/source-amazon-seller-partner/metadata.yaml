@@ -41,7 +41,7 @@ data:
         upgradeDeadline: "2023-12-11"
       3.0.0:
         message: "Streams 'GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL' and 'GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL' now have updated schemas. Users will need to refresh the source schemas and reset these streams after upgrading."
-        upgradeDeadline: "2023-12-25"
+        upgradeDeadline: "2023-12-30"
   supportLevel: community
   tags:
     - language:python

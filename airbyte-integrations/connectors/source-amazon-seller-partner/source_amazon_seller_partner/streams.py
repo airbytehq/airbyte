@@ -4,6 +4,7 @@
 
 
 import csv
+import dateparser
 import gzip
 import json as json_lib
 import time
@@ -369,7 +370,26 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
         return {self.cursor_field: latest_benchmark}
 
 
-class MerchantListingsReports(IncrementalReportsAmazonSPStream):
+class MerchantReports(IncrementalReportsAmazonSPStream, ABC):
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.transformer.registerCustomTransform(self.get_transform_function())
+
+    @staticmethod
+    def get_transform_function():
+        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+            if original_value and field_schema.get("format") == "date-time":
+                # open-date field is returned in format "2022-07-11 01:34:18 PDT"
+                transformed_value = dateparser.parse(original_value).isoformat()
+                return transformed_value
+            return original_value
+
+        return transform_function
+
+
+class MerchantListingsReports(MerchantReports):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
     primary_key = "listing-id"
 
@@ -505,12 +525,12 @@ class FbaMyiUnsuppressedInventoryReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA"
 
 
-class MerchantListingsReport(IncrementalReportsAmazonSPStream):
+class MerchantListingsReport(MerchantReports):
     name = "GET_MERCHANT_LISTINGS_DATA"
     primary_key = "listing-id"
 
 
-class MerchantListingsInactiveData(IncrementalReportsAmazonSPStream):
+class MerchantListingsInactiveData(MerchantReports):
     name = "GET_MERCHANT_LISTINGS_INACTIVE_DATA"
     primary_key = "listing-id"
 
@@ -540,7 +560,7 @@ class XmlAllOrdersDataByOrderDataGeneral(IncrementalReportsAmazonSPStream):
     cursor_field = "LastUpdatedDate"
 
 
-class MerchantListingsReportBackCompat(IncrementalReportsAmazonSPStream):
+class MerchantListingsReportBackCompat(MerchantReports):
     name = "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT"
     primary_key = "listing-id"
 
@@ -551,6 +571,24 @@ class MerchantCancelledListingsReport(IncrementalReportsAmazonSPStream):
 
 class MerchantListingsFypReport(IncrementalReportsAmazonSPStream):
     name = "GET_MERCHANTS_LISTINGS_FYP_REPORT"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.transformer.registerCustomTransform(self.get_transform_function())
+
+    @staticmethod
+    def get_transform_function():
+        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+            if original_value and field_schema.get("format") == "date":
+                try:
+                    transformed_value = pendulum.from_format(original_value, "MMM D[,] YYYY").to_date_string()
+                    return transformed_value
+                except ValueError:
+                    pass
+            return original_value
+
+        return transform_function
 
 
 class FbaSnsForecastReport(IncrementalReportsAmazonSPStream):
@@ -950,7 +988,6 @@ class OrderItems(IncrementalAmazonSPStream):
         orders = Orders(**self.stream_kwargs)
         for order_record in orders.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state):
             self.cached_state[self.parent_cursor_field] = order_record[self.parent_cursor_field]
-            self.logger.info(f"OrderItems stream slice for order {order_record[self.stream_slice_cursor_field]}")
             time.sleep(self.default_stream_slice_delay_time)
             yield {
                 self.stream_slice_cursor_field: order_record[self.stream_slice_cursor_field],
@@ -999,8 +1036,11 @@ class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
     def get_transform_function():
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
             if original_value and field_schema.get("format") == "date":
-                transformed_value = pendulum.from_format(original_value, "MM/DD/YYYY").to_date_string()
-                return transformed_value
+                try:
+                    transformed_value = pendulum.from_format(original_value, "MM/DD/YYYY").to_date_string()
+                    return transformed_value
+                except ValueError:
+                    pass
             return original_value
 
         return transform_function
