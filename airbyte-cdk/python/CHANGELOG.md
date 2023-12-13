@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.57.4
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.3
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.2
+Update airbyte-protocol
+
+## 0.57.1
+Improve integration tests tooling
+
+## 0.57.0
+low-code: cache requests sent for parent streams
+
+## 0.56.1
+no-op to verify pypi publish flow
+
+## 0.56.0
+Allow for connectors to continue syncing when a stream fails
+
 ## 0.55.5
 File-based CDK: hide source-defined primary key; users can define primary keys in the connection's configuration
 
