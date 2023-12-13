@@ -1,3 +1,4 @@
+---
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/ConnectorReleases.yaml
 title: ConnectorReleases
