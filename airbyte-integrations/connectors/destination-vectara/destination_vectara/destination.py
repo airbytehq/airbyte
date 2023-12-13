@@ -43,7 +43,7 @@ class DestinationVectara(Destination):
         """
 
         config_model = VectaraConfig.parse_obj(config)
-        writer = VectaraWriter(VectaraClient(config_model))
+        writer = VectaraWriter(client=VectaraClient(config_model), text_fields=config_model.text_fields, metadata_fields=config_model.metadata_fields)
                 
         writer.delete_streams_to_overwrite(catalog=configured_catalog)
 
@@ -55,9 +55,7 @@ class DestinationVectara(Destination):
                 yield message
             elif message.type == Type.RECORD:
                 record = message.record
-                writer.queue_write_operation(
-                    record.stream, record.data
-                )
+                writer.queue_write_operation(record)
             else:
                 # ignore other message types for now
                 continue
@@ -65,7 +63,7 @@ class DestinationVectara(Destination):
         # Make sure to flush any records still in the queue
         writer.flush()
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config: VectaraConfig) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.

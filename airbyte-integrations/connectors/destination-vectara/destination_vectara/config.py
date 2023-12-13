@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import List, Optional
+
 from pydantic import BaseModel, Field
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 
@@ -23,6 +25,21 @@ class VectaraConfig(BaseModel):
     oauth2: OAuth2
     customer_id: str = Field(..., title="Customer ID", description="Your customer id as it is in the authenticaion url", order=2, group="account")
     corpus_name: str = Field(..., title="Corpus Name", description="The Name of Corpus to load data into", order=3, group="account")
+
+    text_fields: Optional[List[str]] = Field(
+        default=[],
+        title="Text fields to embed",
+        description="List of fields in the record that should be in the section of the document. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
+        always_show=True,
+        examples=["text", "user.name", "users.*.name"],
+    )
+    metadata_fields: Optional[List[str]] = Field(
+        default=[],
+        title="Fields to store as metadata",
+        description="List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
+        always_show=True,
+        examples=["age", "user", "user.name"],
+    )
 
     class Config:
         title = "Vectara Config"

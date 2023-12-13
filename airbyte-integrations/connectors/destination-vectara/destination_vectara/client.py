@@ -6,7 +6,6 @@ import datetime
 import json
 import requests
 import traceback
-import uuid
 
 from typing import Any, Mapping
 
@@ -115,7 +114,7 @@ class VectaraClient:
         response.raise_for_status()
         return response.json()
 
-    def _delete_doc_by_metadata(self, metadata_field_name, metadata_field_values):
+    def delete_doc_by_metadata(self, metadata_field_name, metadata_field_values):
         document_ids = []
         for value in metadata_field_values:
             query_documents_response = self._request(
@@ -137,6 +136,9 @@ class VectaraClient:
                     }
                 )
             document_ids.extend([document.get("id") for document in query_documents_response.get("responseSet").get("document")])
+        return self.delete_docs_by_id(document_ids=document_ids)
+    
+    def delete_docs_by_id(self, document_ids):
         documents_not_deleted = []
         for document_id in document_ids:
             delete_document_response = self._request(
@@ -152,23 +154,24 @@ class VectaraClient:
                 documents_not_deleted.append(document_id)
         return documents_not_deleted
 
-    def _index_documents(self, documents):
-        for stream_name, document_content in documents:            
-            document_metadata = self._normalize({METADATA_STREAM_FIELD: stream_name})
+    def index_documents(self, documents):
+        for document_section, document_metadata, document_id in documents:
+            document_metadata = self._normalize(document_metadata)
             index_document_response = self._request(
                 endpoint="index",
                 data={
                         "customerId": self.customer_id, 
                         "corpusId": self.corpus_id,
                         "document": {
-                            "documentId": uuid.uuid4().int,
+                            "documentId": document_id,
                             "metadataJson": json.dumps(document_metadata),
                             "section": [
                                 {
-                                    "title": "Content",
-                                    "text": document_content,
-                                }
-                            ]
+                                    "title": section_title, 
+                                    "text": section_text
+                                } 
+                                for section_title, section_text in document_section.items()
+                                ]
                         }
                     }
                 )
