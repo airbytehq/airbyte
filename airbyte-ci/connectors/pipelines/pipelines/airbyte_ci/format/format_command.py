@@ -99,15 +99,8 @@ class FormatCommand(click.Command):
             .with_mounted_directory(REPO_MOUNT_PATH, dir_to_format)
             # All with_exec commands below will re-run if the to_format directory changes
             .with_exec(["init"])
-            # This is needed to avoid git complaining about the user not being set
-            .with_exec(["config", "user.email", "ci@airbyte.io"])
-            .with_exec(["config", "user.name", "Airbyte CI"])
-            # Add all files to the git index
-            .with_exec(["add", "."])
-            # Commit all files
-            .with_exec(["commit", "--message", "Commit for formatting"])
             # Remove all gitignored files
-            .with_exec(["clean", "-dfX"])
+            .with_exec(["clean", "-dfqX"])
             # Delete all .gitignore files
             .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']), skip_entrypoint=True)
             # Delete .git
@@ -139,6 +132,7 @@ class FormatCommand(click.Command):
             pipeline_name=f"Format {self.formatter.value}", log_output=dagger_logs
         )
         dir_to_format = self.get_dir_to_format(dagger_client)
+
         container = self.get_format_container_fn(dagger_client, dir_to_format)
         command_result = await self.get_format_command_result(dagger_client, container, dir_to_format)
 
