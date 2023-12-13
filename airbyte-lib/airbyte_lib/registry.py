@@ -1,11 +1,15 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import json
-import requests
 import os
 from dataclasses import dataclass
+
+import requests
 
 _cache = None
 
 REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
+
 
 @dataclass
 class ConnectorMetadata:
@@ -26,6 +30,7 @@ def _update_cache():
     for connector in data["sources"]:
         name = connector["dockerRepository"].replace("airbyte/", "")
         _cache[name] = ConnectorMetadata(name, connector["dockerImageTag"])
+
 
 def get_connector_metadata(name: str):
     """

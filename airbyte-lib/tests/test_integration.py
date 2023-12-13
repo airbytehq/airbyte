@@ -1,7 +1,10 @@
-import pytest
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import os
 import shutil
+
 import airbyte_lib as ab
+import pytest
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -13,9 +16,7 @@ def prepare_test_env():
         shutil.rmtree(".venv-source-test")
 
     os.system("python -m venv .venv-source-test")
-    os.system(
-        "source .venv-source-test/bin/activate && pip install -e ./tests/fixtures/source-test"
-    )
+    os.system("source .venv-source-test/bin/activate && pip install -e ./tests/fixtures/source-test")
     os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/fixtures/registry.json"
 
     yield
@@ -28,17 +29,21 @@ def test_list_streams():
 
     assert source.get_available_streams() == ["stream1", "stream2"]
 
+
 def test_invalid_config():
     with pytest.raises(Exception):
         ab.get_connector("source-test", config={"apiKey": 1234})
+
 
 def test_non_existing_connector():
     with pytest.raises(Exception):
         ab.get_connector("source-not-existing", config={"apiKey": "abc"})
 
+
 def test_wrong_version():
     with pytest.raises(Exception):
         ab.get_connector("source-test", version="1.2.3", config={"apiKey": "abc"})
+
 
 def test_check():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
@@ -65,6 +70,7 @@ def test_sync():
         "stream2": [{"column1": "value1", "column2": 1}],
     }
 
+
 def test_sync_limited_streams():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = ab.get_in_memory_cache()
@@ -78,10 +84,12 @@ def test_sync_limited_streams():
         "stream2": [{"column1": "value1", "column2": 1}],
     }
 
+
 def test_peek():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
 
     assert source.peek("stream1", 1) == [{"column1": "value1", "column2": 1}]
+
 
 def test_peek_nonexisting_stream():
     source = ab.get_connector("source-test", config={"apiKey": "test"})

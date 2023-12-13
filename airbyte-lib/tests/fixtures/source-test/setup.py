@@ -13,8 +13,8 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     entry_points={
-        'console_scripts': [
-            'source-test=source_test.run:run',
+        "console_scripts": [
+            "source-test=source_test.run:run",
         ],
     },
 )
