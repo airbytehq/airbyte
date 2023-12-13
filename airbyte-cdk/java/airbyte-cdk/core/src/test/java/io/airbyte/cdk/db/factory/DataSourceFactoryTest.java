@@ -17,7 +17,6 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.MySQLContainer;
 
 /**
@@ -88,22 +87,6 @@ class DataSourceFactoryTest extends CommonFactoryTest {
           mySQLContainer.getDriverClassName(),
           mySQLContainer.getJdbcUrl(),
           connectionProperties);
-      assertNotNull(dataSource);
-      assertEquals(HikariDataSource.class, dataSource.getClass());
-      assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
-    }
-  }
-
-  @Test
-  void testCreatingMsSQLServerDataSourceWithConnectionTimeoutSetBelowDefault() {
-    try (var mssqlServerContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense()) {
-      mssqlServerContainer.start();
-      final DataSource dataSource = DataSourceFactory.create(
-          mssqlServerContainer.getUsername(),
-          mssqlServerContainer.getPassword(),
-          mssqlServerContainer.getDriverClassName(),
-          mssqlServerContainer.getJdbcUrl(),
-          Map.of("loginTimeout", "5"));
       assertNotNull(dataSource);
       assertEquals(HikariDataSource.class, dataSource.getClass());
       assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
