@@ -50,11 +50,11 @@ acceptance_tests:
         fail_on_extra_columns: false
   incremental:
     tests:
-    - config_path: "secrets/config.json"
-      timeout_seconds: 2400
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state:
-        future_state_path: "integration_tests/future_state.json"
+      - config_path: "secrets/config.json"
+        timeout_seconds: 2400
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/future_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
