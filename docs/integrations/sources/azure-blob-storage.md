@@ -193,6 +193,7 @@ To perform the text extraction from PDF and Docx files, the connector uses the [
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 0.3.0   | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411)  | Bump CDK version to add remote document file type processing          |
 | 0.2.5   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key                             |
 | 0.2.4   | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser                                               |
 | 0.2.3   | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                             |
