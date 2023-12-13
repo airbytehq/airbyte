@@ -105,6 +105,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
   }
 
+  @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
     if (!featureFlags.useStreamCapableState()) {
       return AirbyteStateType.LEGACY;
