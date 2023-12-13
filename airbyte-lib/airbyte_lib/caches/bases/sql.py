@@ -2,7 +2,8 @@
 
 import abc
 from pathlib import Path
-from typing import final
+from textwrap import dedent
+from typing import final, Iterable
 import enum
 
 import pyarrow as pa
@@ -22,9 +23,12 @@ class RecordDedupeMode(enum.Enum):
 
 
 class SQLCacheConfigBase(CacheConfigBase):
-    """Same as a regular config except it exposes an additional 'sql_alchemy_url' property."""
+    """Same as a regular config except it exposes the 'get_sql_alchemy_url()' method."""
 
     dedupe_mode = RecordDedupeMode.APPEND
+    schema: str
+    table_prefix: str
+    table_suffix: str
 
     @abc.abstractmethod
     def get_sql_alchemy_url(self):
@@ -49,6 +53,8 @@ class SQLCache(BaseCache, abc.ABCMeta):
     """
 
     type_converter_class = SQLTypeConverterBase
+    config_class: type[SQLCacheConfigBase] = SQLCacheConfigBase
+
     supports_merge_insert = False
 
     def __init__(
@@ -62,7 +68,7 @@ class SQLCache(BaseCache, abc.ABCMeta):
         self.type_converter = self.type_converter_class()
 
     def get_sql_alchemy_url(self) -> str:
-        """Return the SQL alchemy URL to use."""
+        """Return the SQLAlchemy URL to use."""
         return self.config.sql_alchemy_url
 
     @final
@@ -78,7 +84,7 @@ class SQLCache(BaseCache, abc.ABCMeta):
     ) -> str:
         """Return a new (unique) temporary table name."""
         batch_id = batch_id or ulid.new().str
-        return f"{stream_name}_{batch_id}"
+        return self.normalize_table_name(f"{stream_name}_{batch_id}")
 
     @final
     def get_table_ref(
@@ -98,22 +104,64 @@ class SQLCache(BaseCache, abc.ABCMeta):
     @final
     def create_table_for_loading(
         self,
-        table_name: str,
-        schema_name: str | None = None,
+        stream_name: str,
+        batch_id: str,
     ) -> str:
         """Create a new table for loading data."""
-        column_definition_str = ",\n".join(
-            f"{column_name} {sql_type}," for column_name, sql_type in self.get_sql_column_definitions(table_name).items()
+        temp_table_name = self.get_temp_table_name(stream_name, batch_id)
+        column_definition_str = ",\n  ".join(
+            f"{column_name} {sql_type}" for column_name, sql_type in self.get_sql_column_definitions(stream_name).items()
         )
+        self._create_table(temp_table_name, column_definition_str)
+
+    def ensure_final_table_exists(
+        self,
+        stream_name: str,
+        create_if_missing: True,
+    ) -> str:
+        """
+        Create the final table if it doesn't already exist.
+
+        Return the table name.
+        """
+        table_name = self.get_final_table_name(stream_name)
+        did_exist = self.table_exists(table_name)
+        if not did_exist and create_if_missing:
+            column_definition_str = ",\n  ".join(
+                f"{column_name} {sql_type}" for column_name, sql_type in self.get_sql_column_definitions(stream_name).items()
+            )
+            self._create_table(table_name, column_definition_str)
+
+        return table_name
+
+    @final
+    def _create_table(
+        self,
+        table_name: str,
+        column_definition_str: str,
+    ) -> None:
         with self.get_sql_engine().begin() as conn:
             conn.execute(
-                f"""
-                CREATE TABLE {schema_name}.{table_name} (
-                    {column_definition_str}
+                dedent(
+                    f"""
+                    CREATE TABLE {table_name} (
+                      {column_definition_str}
+                    )
+                    """
                 )
-                """
             )
-        return table_name
+
+    def normalize_column_name(
+        self,
+        raw_name,
+    ):
+        return raw_name.lower().replace(" ", "_").replace("-", "_")
+
+    def normalize_table_name(
+        self,
+        raw_name,
+    ):
+        return raw_name.lower().replace(" ", "_").replace("-", "_")
 
     @final
     def get_sql_column_definitions(
@@ -122,8 +170,8 @@ class SQLCache(BaseCache, abc.ABCMeta):
     ) -> dict[str, sqlalchemy.sql.sqltypes.TypeEngine]:
         """Return the column definitions for the given stream."""
         columns = {
-            column_name: self.type_converter.to_sql_type(json_schema)
-            for column_name, json_schema in self.get_stream_json_schema(stream_name)["properties"].items()
+            self.normalize_column_name(property_name): self.type_converter.to_sql_type(json_schema)
+            for property_name, json_schema in self.get_stream_json_schema(stream_name)["properties"].items()
         }
         # Add the metadata columns
         columns["_airbyte_extracted_at"] = sqlalchemy.TIMESTAMP
@@ -151,8 +199,8 @@ class SQLCache(BaseCache, abc.ABCMeta):
             stream_name,
             batch_id=max_batch_id,
         )
-        final_table_name = self.get_final_table_name(stream_name)
         self.write_files_to_new_table(files, temp_table_name)
+        final_table_name = self.ensure_final_table_exists(stream_name, create_if_missing=True)
         self.write_temp_table_to_final_table(temp_table_name, final_table_name)
         self._drop_temp_table(temp_table_name)
 
@@ -189,6 +237,7 @@ class SQLCache(BaseCache, abc.ABCMeta):
                     index=False,
                 )
 
+    @final
     def write_temp_table_to_final_table(
         self,
         temp_table_name: str,
@@ -199,21 +248,100 @@ class SQLCache(BaseCache, abc.ABCMeta):
             if not self.supports_merge_insert:
                 raise NotImplementedError("Deduping was requested but merge-insert is not yet supported.")
 
-            assert False  # Not reachable
-            # TODO: Add a generic merge upsert here
+            self.merge_temp_table_to_final_table(temp_table_name, final_table_name)
 
-        else:  # RecordDedupeMode.APPEND
-            with self.get_sql_engine().begin() as conn:
-                conn.execute(
-                    f"""
-                    INSERT INTO {final_table_name}
-                    SELECT * FROM {temp_table_name}
-                    """
+        else:
+            self.append_temp_table_to_final_table(temp_table_name, final_table_name)
+
+    def append_temp_table_to_final_table(
+        self,
+        temp_table_name,
+        final_table_name,
+        stream_name,
+    ):
+        nl = "\n"
+        columns = self.get_sql_column_definitions(stream_name).keys()
+        with self.get_sql_engine().begin() as conn:
+            conn.execute(
+                f"""
+                INSERT INTO {final_table_name} (
+                  {f',{nl}  '.join(columns)}
                 )
+                SELECT
+                  {f',{nl}  '.join(columns)}
+                FROM {temp_table_name}
+                """
+            )
+
+    def get_primary_keys(
+        self,
+        stream_name: str,
+    ) -> list[str]:
+        # TODO: get primary key declarations from the catalog
+        return []
+
+    def merge_temp_table_to_final_table(
+        self,
+        temp_table_name: str,
+        final_table_name: str,
+        stream_name: str,
+    ):
+        """Merge the temp table into the main one.
+
+        This implementation requires MERGE support in the SQL DB.
+        Databases that do not support this syntax can override this method.
+        """
+        nl = "\n"
+        columns = self.get_sql_column_definitions(stream_name).keys()
+        pk_columns = self.get_primary_keys(stream_name)
+        non_pk_columns = columns - pk_columns
+        join_clause = "{nl} AND ".join(f"tmp.{pk_col} = final.{pk_col}" for pk_col in pk_columns)
+        set_clause = "{nl}    ".join(f"{col} = tmp.{col}" for col in non_pk_columns)
+        with self.get_sql_engine().begin() as conn:
+            conn.execute(
+                f"""
+                MERGE INTO {final_table_name} final
+                USING (
+                  SELECT *
+                  FROM {temp_table_name}
+                ) AS tmp
+                 ON {join_clause}
+                WHEN MATCHED THEN UPDATE
+                  SET
+                    {set_clause}
+                WHEN NOT MATCHED THEN INSERT
+                  (
+                    {f',{nl}    '.join(columns)}
+                  )
+                  VALUES (
+                    tmp.{f',{nl}    tmp.'.join(columns)}
+                  );
+                """
+            )
+
+    @final
+    def table_exists(
+        self,
+        table_name: str,
+    ) -> bool:
+        return sqlalchemy.inspect(self.create_engine()).has_table(table_name)
 
     def get_final_table_name(
         self,
         stream_name: str,
     ) -> str:
         """Return the name of the SQL table for the given stream."""
-        return f"{stream_name}"
+        return self.normalize_table_name(
+            f"{self.config.table_prefix}{stream_name}{self.config.table_suffix}",
+        )
+
+    def read_all(
+        self,
+        stream_name: str,
+    ) -> Iterable[sqlalchemy.Row]:
+        """Uses SQLAlchemy to select all rows from the table."""
+        table_name = self.get_final_table_name(stream_name)
+        engine = self.create_engine()
+        stmt = sqlalchemy.select(table_name)
+        with engine.connect() as conn:
+            yield from conn.execute(stmt)

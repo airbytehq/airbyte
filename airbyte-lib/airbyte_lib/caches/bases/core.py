@@ -26,6 +26,7 @@ class AirbyteMessageParsingError(Exception):
 class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
     """Abstract base class for Caches, which write and read from durable storage."""
 
+    config_class: type[CacheConfigBase]
     skip_finalize_step: bool = False
 
     def __init__(
@@ -34,8 +35,13 @@ class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
         **kwargs,  # Added for future proofing purposes.
     ):
         if isinstance(config, dict):
-            config = CacheConfigBase(**config)
-        self.config = config
+            config = self.config_class(**config)
+
+        if not isinstance(config, self.config_class):
+            err_msg = f"Expected config class of type '{self.config_class.__name__}'.  Instead found '{type(config).__name__}'."
+            raise RuntimeError(err_msg)
+
+        self.config = self.config_class
         self._uncommitted_batches: dict[dict[str, Any]] = {}
         self._completed_batches: dict[dict[str, Any]] = {}
 

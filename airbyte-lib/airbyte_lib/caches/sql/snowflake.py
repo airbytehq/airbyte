@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 
-from .base import SQLCache
-
-from airbyte_lib.parquet import ParquetCache, ParquetCacheConfig
 from overrides import overrides
+import pyarrow as pa
+
+from airbyte_lib.bases import SQLCache, SQLCacheConfigBase
+from airbyte_lib.parquet import ParquetCache, ParquetCacheConfig
 
 
-class SnowflakeCacheConfig(ParquetCacheConfig):
+class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetCacheConfig):
     """Configuration for the Snowflake cache.
 
     Also inherits config from the ParquetCache, which is responsible for writing files to disk.
@@ -21,11 +23,13 @@ class SnowflakeCacheConfig(ParquetCacheConfig):
     password: str
     warehouse: str
     database: str
-    schema: str
+
+    # Already defined in base class:
+    # schema: str
 
     @overrides
     def get_sql_alchemy_url(self) -> str:
-        """Return the SQL alchemy URL to use."""
+        """Return the SQLAlchemy URL to use."""
         return (
             f"snowflake://{self.username}:{self.password}@{self.account}/"
             f"?warehouse={self.warehouse}&database={self.database}&schema={self.schema}"
@@ -38,12 +42,25 @@ class SnowflakeSQLCache(SQLCache, ParquetCache):
     Parquet is used for local file storage before bulk loading.
     """
 
-    def __init__(
+    config_class = SnowflakeCacheConfig
+
+    @overrides
+    def write_files_to_new_table(
         self,
-        config: SnowflakeCacheConfig,
-        **kwargs,  # Additional arguments to pass to the base class (future proofing)
-    ):
-        super().__init__(
-            config=config,
-            **kwargs,
-        )
+        files: list[Path],
+        table_name: str,
+    ) -> None:
+        """Write a file(s) to a new table.
+
+        TODO: Override the base implementation to use the COPY command.
+        """
+        self.create_table_for_loading(table_name)
+        for file_path in files:
+            with pa.parquet.ParquetFile(file_path) as pf:
+                record_batch = pf.read()
+                record_batch.to_pandas().to_sql(
+                    table_name,
+                    self.get_sql_alchemy_url(),
+                    if_exists="replace",
+                    index=False,
+                )
