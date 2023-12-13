@@ -22,6 +22,7 @@ from airbyte_protocol.models import AirbyteStreamStatus, ConfiguredAirbyteCatalo
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
+from integration.response_builder import a_response_with_status
 from source_stripe import SourceStripe
 
 _STREAM_NAME = "events"
@@ -36,7 +37,7 @@ _THIRD_REQUEST = timedelta(seconds=2)
 
 
 def _a_request() -> StripeRequestBuilder:
-    return StripeRequestBuilder("events", _ACCOUNT_ID, _CLIENT_SECRET)
+    return StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
 
 
 def _config() -> ConfigBuilder:
@@ -58,10 +59,6 @@ def _a_record() -> RecordBuilder:
         record_id_path=FieldPath("id"),
         record_cursor_path=FieldPath("created"),
     )
-
-
-def _response_with_status(status_code: int) -> HttpResponse:
-    return HttpResponse(json.dumps(find_template(str(status_code), __file__)), status_code)
 
 
 def _a_response() -> HttpResponseBuilder:
@@ -164,7 +161,7 @@ class FullRefreshTest(TestCase):
     def test_given_http_status_400_when_read_then_stream_is_ignored(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _a_request().with_any_query_params().build(),
-            _response_with_status(400),
+            a_response_with_status(400),
         )
         output = self._read(_config())
         assert len(output.get_stream_statuses(_STREAM_NAME)) == 0
@@ -173,7 +170,7 @@ class FullRefreshTest(TestCase):
     def test_given_http_status_401_when_read_then_stream_is_incomplete(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _a_request().with_any_query_params().build(),
-            _response_with_status(401),
+            a_response_with_status(401),
         )
         output = self._read(_config().with_start_date(_A_START_DATE), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.system_error
@@ -183,7 +180,7 @@ class FullRefreshTest(TestCase):
         http_mocker.get(
             _a_request().with_any_query_params().build(),
             [
-                _response_with_status(429),
+                a_response_with_status(429),
                 _a_response().with_record(_a_record()).build(),
             ],
         )
@@ -194,7 +191,7 @@ class FullRefreshTest(TestCase):
     def test_given_http_status_500_once_before_200_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _a_request().with_any_query_params().build(),
-            [_response_with_status(500), _a_response().with_record(_a_record()).build()],
+            [a_response_with_status(500), _a_response().with_record(_a_record()).build()],
         )
         output = self._read(_config())
         assert len(output.records) == 1
@@ -203,7 +200,7 @@ class FullRefreshTest(TestCase):
     def test_given_http_status_500_on_availability_when_read_then_stream_is_incomplete(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _a_request().with_any_query_params().build(),
-            _response_with_status(500),
+            a_response_with_status(500),
         )
         output = self._read(_config(), expecting_exception=True)
         assert output.get_stream_statuses(_STREAM_NAME) == [AirbyteStreamStatus.INCOMPLETE]
