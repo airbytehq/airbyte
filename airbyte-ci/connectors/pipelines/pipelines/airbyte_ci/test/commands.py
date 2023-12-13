@@ -72,7 +72,6 @@ async def test(pipeline_context: ClickPipelineContext):
                 include=directories_to_mount,
             ),
         )
-        .with_exec(["poetry", "config", "virtualenvs.create", "false"])
         .with_workdir(f"/airbyte/{poetry_package_path}")
         .with_exec(["poetry", "install"])
         .with_unix_socket("/var/run/docker.sock", dagger_client.host().unix_socket("/var/run/docker.sock"))
