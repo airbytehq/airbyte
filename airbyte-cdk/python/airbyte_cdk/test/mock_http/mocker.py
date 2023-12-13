@@ -6,7 +6,7 @@ from types import TracebackType
 from typing import Callable, List, Optional, Union
 
 import requests_mock
-from airbyte_cdk.test.http import HttpRequest, HttpRequestMatcher, HttpResponse
+from airbyte_cdk.test.mock_http import HttpRequest, HttpRequestMatcher, HttpResponse
 
 
 class HttpMocker(contextlib.ContextDecorator):
@@ -75,7 +75,7 @@ class HttpMocker(contextlib.ContextDecorator):
                 except requests_mock.NoMockAddress as no_mock_exception:
                     matchers_as_string = "\n\t".join(map(lambda matcher: str(matcher.request), self._matchers))
                     raise ValueError(
-                        f"No matcher matches {no_mock_exception.args[0]}. Matchers currently configured are:\n\t{matchers_as_string}"
+                        f"No matcher matches {no_mock_exception.args[0]} with headers `{no_mock_exception.request.headers}`. Matchers currently configured are:\n\t{matchers_as_string}"
                     ) from no_mock_exception
                 except AssertionError as test_assertion:
                     assertion_error = test_assertion

@@ -310,10 +310,9 @@ const contributeToAirbyte = {
       items: [
         "contributing-to-airbyte/resources/pull-requests-handbook",
         "contributing-to-airbyte/resources/code-style",
+        "contributing-to-airbyte/resources/code-formatting",
         "contributing-to-airbyte/resources/developing-locally",
         "contributing-to-airbyte/resources/developing-on-docker",
-        "contributing-to-airbyte/resources/gradle",
-        "contributing-to-airbyte/resources/python-gradle-setup",
       ],
     },
   ],
