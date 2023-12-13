@@ -9,12 +9,12 @@ from typing import final, Any
 
 import orjson
 import pyarrow as pa
-
-DEFAULT_BATCH_SIZE = 10000
-
+import ulid
 from overrides import EnforceOverrides
 
-from .config import CacheConfigBase
+from airbyte_lib.bases.config import CacheConfigBase
+
+DEFAULT_BATCH_SIZE = 10000
 
 BatchHandle = Any
 
@@ -77,7 +77,9 @@ class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
             try:
                 stream_name = record["stream_name"]
             except KeyError:
-                raise AirbyteMessageParsingError(f"Record missing stream_name: {record}")
+                raise AirbyteMessageParsingError(
+                    f"Record missing stream_name: {record}"
+                )
 
             if stream_name not in stream_batches:
                 stream_batches[stream_name] = []
@@ -110,7 +112,9 @@ class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
         Returns a tuple of the batch ID, batch handle, and an exception if one occurred.
         """
         batch_id = self.new_batch_id()
-        batch_handle = self.process_batch(stream_name, batch_id, record_batch) or self.get_batch_handle(stream_name, batch_id)
+        batch_handle = self.process_batch(
+            stream_name, batch_id, record_batch
+        ) or self.get_batch_handle(stream_name, batch_id)
         if stream_name not in self.processed_batches:
             self.processed_batches[stream_name] = {}
 
@@ -136,7 +140,7 @@ class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
 
     def new_batch_id(self) -> str:
         """Return a new batch handle."""
-        return ulid.new().str
+        return str(ulid.ULID())
 
     def get_batch_handle(
         self,
@@ -161,7 +165,9 @@ class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
         return batches_to_finalize
 
     @abc.abstractmethod
-    def finalize_batches(self, stream_name: str, batches: dict[str, BatchHandle]) -> bool:
+    def finalize_batches(
+        self, stream_name: str, batches: dict[str, BatchHandle]
+    ) -> bool:
         """Finalize all uncommitted batches.
 
         If a stream name is provided, only process uncommitted batches for that stream.

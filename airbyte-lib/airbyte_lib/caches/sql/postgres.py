@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
+from overrides import overrides
 
 from airbyte_lib.bases import SQLCache, SQLCacheConfigBase
-
 from airbyte_lib.parquet import ParquetCache, ParquetCacheConfig
-from overrides import overrides
 
 
 class PostgresCacheConfig(SQLCacheConfigBase, ParquetCacheConfig):

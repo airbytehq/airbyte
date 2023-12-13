@@ -11,8 +11,8 @@ import ulid
 import sqlalchemy
 from overrides import overrides
 
-from .base import BaseCache, BatchHandle
-from .config import CacheConfigBase
+from airbyte_lib.bases.core import BaseCache, BatchHandle
+from airbyte_lib.bases.config import CacheConfigBase
 
 from airbyte_lib.type_converters import SQLTypeConverterBase
 
@@ -83,7 +83,7 @@ class SQLCache(BaseCache, abc.ABCMeta):
         batch_id: str | None = None,  # ULID of the batch
     ) -> str:
         """Return a new (unique) temporary table name."""
-        batch_id = batch_id or ulid.new().str
+        batch_id = batch_id or str(ulid.ULID())
         return self.normalize_table_name(f"{stream_name}_{batch_id}")
 
     @final
@@ -110,7 +110,10 @@ class SQLCache(BaseCache, abc.ABCMeta):
         """Create a new table for loading data."""
         temp_table_name = self.get_temp_table_name(stream_name, batch_id)
         column_definition_str = ",\n  ".join(
-            f"{column_name} {sql_type}" for column_name, sql_type in self.get_sql_column_definitions(stream_name).items()
+            f"{column_name} {sql_type}"
+            for column_name, sql_type in self.get_sql_column_definitions(
+                stream_name
+            ).items()
         )
         self._create_table(temp_table_name, column_definition_str)
 
@@ -128,7 +131,10 @@ class SQLCache(BaseCache, abc.ABCMeta):
         did_exist = self.table_exists(table_name)
         if not did_exist and create_if_missing:
             column_definition_str = ",\n  ".join(
-                f"{column_name} {sql_type}" for column_name, sql_type in self.get_sql_column_definitions(stream_name).items()
+                f"{column_name} {sql_type}"
+                for column_name, sql_type in self.get_sql_column_definitions(
+                    stream_name
+                ).items()
             )
             self._create_table(table_name, column_definition_str)
 
@@ -170,8 +176,12 @@ class SQLCache(BaseCache, abc.ABCMeta):
     ) -> dict[str, sqlalchemy.sql.sqltypes.TypeEngine]:
         """Return the column definitions for the given stream."""
         columns = {
-            self.normalize_column_name(property_name): self.type_converter.to_sql_type(json_schema)
-            for property_name, json_schema in self.get_stream_json_schema(stream_name)["properties"].items()
+            self.normalize_column_name(property_name): self.type_converter.to_sql_type(
+                json_schema
+            )
+            for property_name, json_schema in self.get_stream_json_schema(stream_name)[
+                "properties"
+            ].items()
         }
         # Add the metadata columns
         columns["_airbyte_extracted_at"] = sqlalchemy.TIMESTAMP
@@ -188,7 +198,9 @@ class SQLCache(BaseCache, abc.ABCMeta):
 
     @final
     @overrides
-    def finalize_batches(self, stream_name: str, batches: dict[str, BatchHandle]) -> bool:
+    def finalize_batches(
+        self, stream_name: str, batches: dict[str, BatchHandle]
+    ) -> bool:
         """Finalize all uncommitted batches.
 
         If a stream name is provided, only process uncommitted batches for that stream.
@@ -200,7 +212,9 @@ class SQLCache(BaseCache, abc.ABCMeta):
             batch_id=max_batch_id,
         )
         self.write_files_to_new_table(files, temp_table_name)
-        final_table_name = self.ensure_final_table_exists(stream_name, create_if_missing=True)
+        final_table_name = self.ensure_final_table_exists(
+            stream_name, create_if_missing=True
+        )
         self.write_temp_table_to_final_table(temp_table_name, final_table_name)
         self._drop_temp_table(temp_table_name)
 
@@ -246,7 +260,9 @@ class SQLCache(BaseCache, abc.ABCMeta):
         """Merge the temp table into the final table."""
         if self.config.dedupe_mode == RecordDedupeMode.REPLACE:
             if not self.supports_merge_insert:
-                raise NotImplementedError("Deduping was requested but merge-insert is not yet supported.")
+                raise NotImplementedError(
+                    "Deduping was requested but merge-insert is not yet supported."
+                )
 
             self.merge_temp_table_to_final_table(temp_table_name, final_table_name)
 
@@ -295,7 +311,9 @@ class SQLCache(BaseCache, abc.ABCMeta):
         columns = self.get_sql_column_definitions(stream_name).keys()
         pk_columns = self.get_primary_keys(stream_name)
         non_pk_columns = columns - pk_columns
-        join_clause = "{nl} AND ".join(f"tmp.{pk_col} = final.{pk_col}" for pk_col in pk_columns)
+        join_clause = "{nl} AND ".join(
+            f"tmp.{pk_col} = final.{pk_col}" for pk_col in pk_columns
+        )
         set_clause = "{nl}    ".join(f"{col} = tmp.{col}" for col in non_pk_columns)
         with self.get_sql_engine().begin() as conn:
             conn.execute(

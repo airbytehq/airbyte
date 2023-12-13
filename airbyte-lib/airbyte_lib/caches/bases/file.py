@@ -8,7 +8,7 @@ from pathlib import Path
 import pyarrow as pa
 from overrides import overrides
 
-from .core import CacheBase
+from airbyte_lib.bases.core import CacheBase
 
 DEFAULT_BATCH_SIZE = 10000
 
@@ -47,7 +47,9 @@ class FileCacheBase(CacheBase, abc.ABCMeta):
         self.write_batch_to_file(stream_name, record_batch)
 
     @overrides
-    def finalize_batches(self, stream_name: str, batches: dict[str, BatchHandle]) -> bool:
+    def finalize_batches(
+        self, stream_name: str, batches: dict[str, BatchHandle]
+    ) -> bool:
         """Finalize all uncommitted batches.
 
         If a stream name is provided, only process uncommitted batches for that stream.

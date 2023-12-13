@@ -31,7 +31,7 @@ class ParquetCache(FileCacheBase):
         batch_id: str | None = None,  # ULID of the batch
     ) -> Path:
         """Return a new cache file path for the given stream."""
-        batch_id = batch_id or ulid.new().str
+        batch_id = batch_id or str(ulid.ULID())
         return self.cache_path / f"{stream_name}_{batch_id}.parquet"
 
     def write_batch_to_file(
