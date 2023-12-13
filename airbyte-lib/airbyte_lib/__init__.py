@@ -1,6 +1,9 @@
 
-from .source import get_connector
-from .cache import get_in_memory_cache
-from .sync import sync
+from .factories import (create_connection, get_connector, get_in_memory_cache, sync)
 
-__all__ = ["get_connector", "get_in_memory_cache", "sync"]
+__all__ = [
+    "create_connection",
+    "get_connector",
+    "get_in_memory_cache",
+    "sync",
+]

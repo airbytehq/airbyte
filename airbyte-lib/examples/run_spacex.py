@@ -14,9 +14,9 @@ source.check()
 
 source.set_streams(["launches", "rockets", "capsules"])
 
-ab.sync(source, cache)
-
-for name, records in cache.streams.items():
-    print(f"Stream {name}: {len(records)} records")
+result = ab.sync(source, cache)
 
 print(source.peek("capsules"))
+
+for name, records in result.cache.streams.items():
+    print(f"Stream {name}: {len(records)} records")
