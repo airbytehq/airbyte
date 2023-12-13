@@ -1,5 +1,5 @@
 {
-  "documentationUrl" : "https://docs.airbyte.com/integrations/sources/one-drive",
+  "documentationUrl" : "https://docs.airbyte.com/integrations/sources/microsoft-onedrive",
   "connectionSpecification" : {
     "title" : "Microsoft OneDrive Source Spec",
     "description" : "SourceMicrosoftOneDriveSpec class for Microsoft OneDrive Source Specification.\nThis class combines the authentication details with additional configuration for the OneDrive API.",
