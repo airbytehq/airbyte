@@ -839,6 +839,12 @@ definitions:
             default: ["credentials", "token_expiry_date"]
             examples:
               - ["credentials", "token_expiry_date"]
+      refresh_request_type:
+        type: string
+        title: "Refresh Request Type"
+        description: "Set how to specify the parameters for receiving the access token"
+        enum: ["body_data", "body_json", "request_parameter"]
+        default: "body_data"
       $parameters:
         type: object
         additionalProperties: true

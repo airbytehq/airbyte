@@ -111,7 +111,7 @@ class AbstractOauth2Authenticator(AuthBase):
     )
     def _get_refresh_access_token_response(self):
         try:
-            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
+            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), **self.get_refresh_request_data())
             self._log_response(response)
             response.raise_for_status()
             return response.json()
@@ -150,6 +150,19 @@ class AbstractOauth2Authenticator(AuthBase):
             return pendulum.from_format(value, self.token_expiry_date_format)
         else:
             return pendulum.now().add(seconds=int(float(value)))
+
+    def get_refresh_request_data(self) -> Mapping[str, Any]:
+        request_type_mapping = dict(
+            request_parameter="params",
+            body_data="data",
+            body_json="json"
+        )
+
+        request_type = self.get_refresh_request_type()
+        if request_type not in request_type_mapping:
+            raise ValueError(f"Invalid request type {request_type}")
+
+        return {request_type_mapping[request_type]: self.build_refresh_request_body()}
 
     @property
     def token_expiry_is_time_of_expiration(self) -> bool:
@@ -206,6 +219,10 @@ class AbstractOauth2Authenticator(AuthBase):
     @abstractmethod
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         """Returns the request body to set on the refresh request"""
+
+    @abstractmethod
+    def get_refresh_request_type(self) -> str:
+        """Returns the request_type on the refresh request"""
 
     @abstractmethod
     def get_grant_type(self) -> str:

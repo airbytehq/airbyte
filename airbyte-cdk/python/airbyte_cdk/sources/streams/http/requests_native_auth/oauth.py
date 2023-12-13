@@ -35,6 +35,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         refresh_token_error_status_codes: Tuple[int, ...] = (),
         refresh_token_error_key: str = "",
         refresh_token_error_values: Tuple[str, ...] = (),
+        refresh_request_type: str = "body_data",
     ):
         self._token_refresh_endpoint = token_refresh_endpoint
         self._client_secret = client_secret
@@ -45,6 +46,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         self._expires_in_name = expires_in_name
         self._refresh_request_body = refresh_request_body
         self._grant_type = grant_type
+        self._refresh_request_type = refresh_request_type
 
         self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
         self._token_expiry_date_format = token_expiry_date_format
@@ -81,6 +83,9 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
 
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
+
+    def get_refresh_request_type(self) -> str:
+        return self._refresh_request_type
 
     def set_token_expiry_date(self, value: Union[str, int]):
         self._token_expiry_date = self._parse_token_expiration_date(value)
@@ -133,6 +138,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         refresh_token_error_status_codes: Tuple[int, ...] = (),
         refresh_token_error_key: str = "",
         refresh_token_error_values: Tuple[str, ...] = (),
+        refresh_request_type: str = "body_data",
     ):
         """
         Args:
@@ -180,6 +186,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             refresh_token_error_status_codes=refresh_token_error_status_codes,
             refresh_token_error_key=refresh_token_error_key,
             refresh_token_error_values=refresh_token_error_values,
+            refresh_request_type=refresh_request_type,
         )
 
     def get_refresh_token_name(self) -> str:

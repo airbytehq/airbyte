@@ -278,6 +278,50 @@ class TestOauth2Authenticator:
             assert "access_token" == token
             assert oauth.get_token_expiry_date() == pendulum.parse(next_day)
 
+    @pytest.mark.parametrize(
+        "refresh_request_type, expected_request_type",
+        [
+            ("request_parameter", "params"),
+            ("body_data", "data"),
+            ("body_json", "json"),
+        ],
+        ids=["request_type_as_parameters", "request_type_as_body_data", "request_type_as_body_json"],
+    )
+    def test_get_refresh_request_data(self, refresh_request_type: str, expected_request_type: str):
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] | base64encode }}",
+            client_secret="{{ config['client_secret'] | base64encode }}",
+            config=config,
+            parameters={},
+            grant_type="client_credentials",
+            refresh_request_type=refresh_request_type,
+        )
+        request_data = oauth.get_refresh_request_data()
+        expected_value = {
+            "grant_type": "client_credentials",
+            "client_id": base64.b64encode(config["client_id"].encode("utf-8")).decode(),
+            "client_secret": base64.b64encode(config["client_secret"].encode("utf-8")).decode(),
+            "refresh_token": None,
+            "scopes": None,
+        }
+
+        assert list(request_data.keys())[0] == expected_request_type
+        assert list(request_data.values())[0] == expected_value
+
+    def test_get_refresh_request_data_with_wrong_request_type(self):
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] | base64encode }}",
+            client_secret="{{ config['client_secret'] | base64encode }}",
+            config=config,
+            parameters={},
+            grant_type="client_credentials",
+            refresh_request_type="some_type",
+        )
+        with pytest.raises(ValueError):
+            oauth.get_refresh_request_data()
+
 
 def mock_request(method, url, data):
     if url == "refresh_end":

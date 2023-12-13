@@ -36,6 +36,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         refresh_request_body (Optional[Mapping[str, Any]]): The request body to send in the refresh request
         grant_type: The grant_type to request for access_token. If set to refresh_token, the refresh_token parameter has to be provided
         message_repository (MessageRepository): the message repository used to emit logs on HTTP requests
+        refresh_request_type: The request type to request for access_token
     """
 
     token_refresh_endpoint: Union[InterpolatedString, str]
@@ -54,6 +55,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     refresh_request_body: Optional[Mapping[str, Any]] = None
     grant_type: Union[InterpolatedString, str] = "refresh_token"
     message_repository: MessageRepository = NoopMessageRepository()
+    refresh_request_type: Optional[str] = "body_data"
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.token_refresh_endpoint = InterpolatedString.create(self.token_refresh_endpoint, parameters=parameters)
@@ -104,6 +106,9 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
 
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
+
+    def get_refresh_request_type(self) -> str:
+        return self.refresh_request_type
 
     def set_token_expiry_date(self, value: Union[str, int]):
         self._token_expiry_date = self._parse_token_expiration_date(value)

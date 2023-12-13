@@ -416,6 +416,27 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         )
         assert authenticator.refresh_access_token() == ("new_access_token", "42", "new_refresh_token")
 
+    @pytest.mark.parametrize(
+        "refresh_request_type, expected_request_type",
+        [
+            ("request_parameter", "params"),
+            ("body_data", "data"),
+            ("body_json", "json"),
+        ],
+        ids=["request_type_as_parameters", "request_type_as_body_data", "request_type_as_body_json"],
+    )
+    def test_get_refresh_request_data(self, refresh_request_type: str, expected_request_type: str):
+        oauth = Oauth2Authenticator(
+            token_refresh_endpoint=TestOauth2Authenticator.refresh_endpoint,
+            client_id=TestOauth2Authenticator.client_id,
+            client_secret=TestOauth2Authenticator.client_secret,
+            refresh_token=TestOauth2Authenticator.refresh_token,
+            refresh_request_type=refresh_request_type,
+        )
+        request_data = oauth.get_refresh_request_data()
+
+        assert list(request_data.keys())[0] == expected_request_type
+
 
 def mock_request(method, url, data):
     if url == "refresh_end":
