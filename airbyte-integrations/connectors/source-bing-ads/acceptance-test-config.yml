@@ -140,6 +140,24 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: HistoricalLandingPageExperience
               bypass_reason: "dynamic field"
+            - name: Clicks
+              bypass_reason: "dynamic field"
+            - name: Ctr
+              bypass_reason: "dynamic field"
+            - name: AverageCpc
+              bypass_reason: "dynamic field"
+            - name: Spend
+              bypass_reason: "dynamic field"
+            - name: ConversionRate
+              bypass_reason: "dynamic field"
+            - name: ReturnOnAdSpend
+              bypass_reason: "dynamic field"
+            - name: AllConversionRate
+              bypass_reason: "dynamic field"
+            - name: AllReturnOnAdSpend
+              bypass_reason: "dynamic field"
+            - name: AverageCpm
+              bypass_reason: "dynamic field"
           ad_group_performance_report_weekly:
             - name: Impressions
               bypass_reason: "dynamic field"
