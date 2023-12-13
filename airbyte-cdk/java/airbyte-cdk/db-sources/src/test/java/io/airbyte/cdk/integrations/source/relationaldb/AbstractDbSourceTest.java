@@ -10,7 +10,6 @@ import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -40,7 +39,7 @@ public class AbstractDbSourceTest {
     final String legacyStateJson = MoreResources.readResource("states/legacy.json");
     final JsonNode legacyState = Jsons.deserialize(legacyStateJson);
 
-    final List<AirbyteStateMessage> result = StateGeneratorUtils.deserializeInitialState(legacyState, false,
+    final List<AirbyteStateMessage> result = StateGeneratorUtils.deserializeInitialState(legacyState,
         dbSource.getSupportedStateType(config));
     assertEquals(1, result.size());
     assertEquals(AirbyteStateType.LEGACY, result.get(0).getType());
@@ -48,7 +47,6 @@ public class AbstractDbSourceTest {
 
   @Test
   void testDeserializationOfGlobalState() throws IOException {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     final AbstractDbSource dbSource = spy(AbstractDbSource.class);
     final JsonNode config = mock(JsonNode.class);
 
@@ -56,14 +54,13 @@ public class AbstractDbSourceTest {
     final JsonNode globalState = Jsons.deserialize(globalStateJson);
 
     final List<AirbyteStateMessage> result =
-        StateGeneratorUtils.deserializeInitialState(globalState, true, dbSource.getSupportedStateType(config));
+        StateGeneratorUtils.deserializeInitialState(globalState, dbSource.getSupportedStateType(config));
     assertEquals(1, result.size());
     assertEquals(AirbyteStateType.GLOBAL, result.get(0).getType());
   }
 
   @Test
   void testDeserializationOfStreamState() throws IOException {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     final AbstractDbSource dbSource = spy(AbstractDbSource.class);
     final JsonNode config = mock(JsonNode.class);
 
@@ -71,7 +68,7 @@ public class AbstractDbSourceTest {
     final JsonNode streamState = Jsons.deserialize(streamStateJson);
 
     final List<AirbyteStateMessage> result =
-        StateGeneratorUtils.deserializeInitialState(streamState, true, dbSource.getSupportedStateType(config));
+        StateGeneratorUtils.deserializeInitialState(streamState, dbSource.getSupportedStateType(config));
     assertEquals(2, result.size());
     assertEquals(AirbyteStateType.STREAM, result.get(0).getType());
   }
@@ -81,7 +78,7 @@ public class AbstractDbSourceTest {
     final AbstractDbSource dbSource = spy(AbstractDbSource.class);
     final JsonNode config = mock(JsonNode.class);
 
-    final List<AirbyteStateMessage> result = StateGeneratorUtils.deserializeInitialState(null, false, dbSource.getSupportedStateType(config));
+    final List<AirbyteStateMessage> result = StateGeneratorUtils.deserializeInitialState(null, dbSource.getSupportedStateType(config));
     assertEquals(1, result.size());
     assertEquals(dbSource.getSupportedStateType(config), result.get(0).getType());
   }
