@@ -180,7 +180,6 @@ public class DataSourceFactory {
     private String jdbcUrl;
     private int maximumPoolSize = 10;
     private int minimumPoolSize = 0;
-    // This feels really weird, but it's strictly equivalent to the original long connectionTimeoutMs
     private Duration connectionTimeout = Duration.ZERO;
     private String password;
     private int port = 5432;
