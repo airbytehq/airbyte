@@ -434,6 +434,16 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: MainlineBid
               bypass_reason: "dynamic field"
+            - name: HistoricalExpectedCtr
+              bypass_reason: "dynamic field"
+            - name: HistoricalAdRelevance
+              bypass_reason: "dynamic field"
+            - name: HistoricalLandingPageExperience
+              bypass_reason: "dynamic field"
+            - name: HistoricalQualityScore
+              bypass_reason: "dynamic field"
+            - name: FirstPageBid
+              bypass_reason: "dynamic field"
         timeout_seconds: 9000
       - config_path: secrets/config_no_date.json
         expect_records:
