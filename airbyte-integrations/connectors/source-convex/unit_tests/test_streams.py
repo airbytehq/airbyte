@@ -137,7 +137,7 @@ def test_parse_response(patch_base_class):
 def test_request_headers(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    assert stream.request_headers(**inputs) == {"Convex-Client": "airbyte-export-0.3.0"}
+    assert stream.request_headers(**inputs) == {"Convex-Client": "airbyte-export-0.4.0"}
 
 
 def test_http_method(patch_base_class):
