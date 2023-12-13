@@ -34,6 +34,7 @@ import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categor
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.reclassifyCategorisedCtidStreams;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.postgresql.PGProperty.CONNECT_TIMEOUT;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -104,7 +105,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -316,6 +319,13 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   protected void createDatabase_postHook(JdbcDatabase database) throws SQLException {
     this.publicizedTablesInCdc = PostgresCatalogHelper.getPublicizedTables(database);
+  }
+
+  @Override
+  public Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
+    return JdbcConnector.maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
+          .or(() -> JdbcConnector.maybeParseDuration(CONNECT_TIMEOUT.getDefaultValue(), ChronoUnit.SECONDS))
+        .orElse(JdbcConnector.CONNECT_TIMEOUT_DEFAULT);
   }
 
   @Override
