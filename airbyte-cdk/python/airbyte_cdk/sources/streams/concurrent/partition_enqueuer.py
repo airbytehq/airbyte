@@ -1,8 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from datetime import time
 from queue import Queue
+import time
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
@@ -43,5 +43,5 @@ class PartitionEnqueuer:
             self._queue.put(e)
 
     def _wait_while_too_many_items_on_the_queue(self) -> None:
-        while self._queue._qsize() > self._max_queue_size:
+        while self._queue._qsize() >= self._max_queue_size:
             time.sleep(self._sleep_time)
