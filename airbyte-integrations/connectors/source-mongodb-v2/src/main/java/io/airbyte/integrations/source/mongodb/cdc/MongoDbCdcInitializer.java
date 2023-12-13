@@ -110,11 +110,11 @@ public class MongoDbCdcInitializer {
         optSavedOffset.filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient)).isPresent();
 
     if (!savedOffsetIsValid) {
-      LOGGER.debug("Saved offset is not valid. Airbyte will trigger a full refresh.");
+      LOGGER.info("Saved offset is not valid. Airbyte will trigger a full refresh.");
       // If the offset in the state is invalid, reset the state to the initial STATE
       stateManager.resetState(new MongoDbCdcState(initialDebeziumState));
     } else {
-      LOGGER.debug("Valid offset state discovered.  Updating state manager with retrieved CDC state {}...", cdcState);
+      LOGGER.info("Valid offset state discovered.  Updating state manager with retrieved CDC state {}...", cdcState);
       stateManager.updateCdcState(new MongoDbCdcState(cdcState));
     }
 
