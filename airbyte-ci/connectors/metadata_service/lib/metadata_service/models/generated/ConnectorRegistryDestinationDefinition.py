@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, constr
@@ -93,16 +93,6 @@ class StreamBreakingChangeScope(BaseModel):
     )
 
 
-class StreamField(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    stream: str = Field(..., description="The stream that the field belongs to.")
-    field: str = Field(
-        ..., description="The field that is impacted by the breaking change."
-    )
-
-
 class AirbyteInternal(BaseModel):
     class Config:
         extra = Extra.allow
@@ -119,15 +109,10 @@ class JobTypeResourceLimit(BaseModel):
     resourceRequirements: ResourceRequirements
 
 
-class StreamFieldBreakingChangeScope(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    scopeType: Any = Field("streamField", const=True)
-    impactedScopes: List[StreamField] = Field(
+class BreakingChangeScope(BaseModel):
+    __root__: StreamBreakingChangeScope = Field(
         ...,
-        description="List of specific stream fields that are impacted by the breaking change.",
-        min_items=1,
+        description="A scope that can be used to limit the impact of a breaking change.",
     )
 
 
@@ -140,13 +125,6 @@ class ActorDefinitionResourceRequirements(BaseModel):
         description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
-
-
-class BreakingChangeScope(BaseModel):
-    __root__: Union[StreamBreakingChangeScope, StreamFieldBreakingChangeScope] = Field(
-        ...,
-        description="A scope that can be used to limit the impact of a breaking change.",
-    )
 
 
 class VersionBreakingChange(BaseModel):
