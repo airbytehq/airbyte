@@ -36,11 +36,12 @@ class ThreadPoolManager:
 
     def submit(self, function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
-        self._wait_while_too_many_pending_futures(self._futures)
+        #self._wait_while_too_many_pending_futures(self._futures)
         self._futures.append(self._threadpool.submit(function, *args))
 
     def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
         # Wait until the number of pending tasks is < self._max_concurrent_tasks
+        self._logger.info(f"There ware {len(futures)} pending tasks.")
         while True:
             self._prune_futures(futures)
             if len(futures) < self._max_concurrent_tasks:
