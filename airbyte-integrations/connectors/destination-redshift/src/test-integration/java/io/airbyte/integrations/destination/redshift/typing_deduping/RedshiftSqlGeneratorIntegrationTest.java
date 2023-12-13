@@ -296,7 +296,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         () -> assertEquals("super", existingTable.get().columns().get("struct").type()),
         () -> assertEquals("super", existingTable.get().columns().get("array").type()),
         () -> assertEquals("varchar", existingTable.get().columns().get("string").type()),
-        () -> assertEquals("float8", existingTable.get().columns().get("number").type()),
+        () -> assertEquals("numeric", existingTable.get().columns().get("number").type()),
         () -> assertEquals("int8", existingTable.get().columns().get("integer").type()),
         () -> assertEquals("bool", existingTable.get().columns().get("boolean").type()),
         () -> assertEquals("timestamptz", existingTable.get().columns().get("timestamp_with_timezone").type()),
