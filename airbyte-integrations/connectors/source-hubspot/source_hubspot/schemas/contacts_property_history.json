@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "value": {
       "type": ["null", "string"]
@@ -23,10 +24,19 @@
     "selected": {
       "type": ["null", "boolean"]
     },
+    "is-contact": {
+      "type": ["null", "boolean"]
+    },
     "property": {
       "type": ["null", "string"]
     },
     "vid": {
+      "type": ["null", "integer"]
+    },
+    "canonical-vid": {
+      "type": ["null", "integer"]
+    },
+    "portal-id": {
       "type": ["null", "integer"]
     },
     "source-vids": {

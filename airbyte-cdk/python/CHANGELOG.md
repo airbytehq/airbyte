@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.57.2
+Update airbyte-protocol
+
 ## 0.57.1
 Improve integration tests tooling
 
