@@ -153,15 +153,17 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   protected abstract Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns);
 
   /**
-   * Get the cdc_deleted_at column condition for append_dedup mode by extracting
-   * it from _airbyte_data column in raw table.
+   * Get the cdc_deleted_at column condition for append_dedup mode by extracting it from _airbyte_data
+   * column in raw table.
+   *
    * @return
    */
   protected abstract Condition cdcDeletedAtNotNullCondition();
 
   /**
-   * Get the window step function
-   * row_number() over (partition by primary_key order by cursor_field) as row_number.
+   * Get the window step function row_number() over (partition by primary_key order by cursor_field)
+   * as row_number.
+   *
    * @param primaryKey list of primary keys
    * @param cursorField cursor field used for ordering
    * @return
