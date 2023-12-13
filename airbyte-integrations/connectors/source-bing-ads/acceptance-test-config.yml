@@ -304,6 +304,12 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: LowQualityClicksPercent
               bypass_reason: "dynamic field"
+            - name: AverageCpm
+              bypass_reason: "dynamic field"
+            - name: Impressions
+              bypass_reason: "dynamic field"
+            - name: Impressions
+              bypass_reason: "dynamic field"
           account_impression_performance_report_daily:
             - name: Ctr
               bypass_reason: "dynamic field"
