@@ -538,9 +538,9 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
                 .as(select(
                     field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
                     field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
-                    inline(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
+                    cast(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
                     field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(table(name(namespace, tableName))))
-                .getSQL()),
+                .getSQL(ParamType.INLINED)),
         ";" + System.lineSeparator());
   }
 
