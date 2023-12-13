@@ -12,9 +12,11 @@ cache = ab.get_in_memory_cache()
 
 source.check()
 
-source.set_streams(["launches", "rockets"])
+source.set_streams(["launches", "rockets", "capsules"])
 
 ab.sync(source, cache)
 
 for name, records in cache.streams.items():
     print(f"Stream {name}: {len(records)} records")
+
+print(source.peek("capsules"))
