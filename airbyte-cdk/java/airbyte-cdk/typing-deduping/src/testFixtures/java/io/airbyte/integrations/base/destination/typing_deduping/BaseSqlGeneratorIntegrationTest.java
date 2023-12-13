@@ -226,7 +226,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         Pair.of(id2, AirbyteProtocolType.INTEGER),
         Pair.of(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
 
-    namespace = Strings.addRandomSuffix("sql_generator_test", "_", 5);
+    namespace = Strings.addRandomSuffix("sql_generator_test", "_", 10);
     // This is not a typical stream ID would look like, but SqlGenerator isn't allowed to make any
     // assumptions about StreamId structure.
     // In practice, the final table would be testDataset.users, and the raw table would be
