@@ -4,9 +4,50 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, constr
+
+
+class StreamBreakingChangeScope(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    scopeType: Any = Field("stream", const=True)
+    impactedScopes: List[str] = Field(
+        ...,
+        description="List of streams that are impacted by the breaking change.",
+        min_items=1,
+    )
+
+
+class StreamField(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    stream: str = Field(..., description="The stream that the field belongs to.")
+    field: str = Field(
+        ..., description="The field that is impacted by the breaking change."
+    )
+
+
+class StreamFieldBreakingChangeScope(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    scopeType: Any = Field("streamField", const=True)
+    impactedScopes: List[StreamField] = Field(
+        ...,
+        description="List of specific stream fields that are impacted by the breaking change.",
+        min_items=1,
+    )
+
+
+class BreakingChangeScope(BaseModel):
+    __root__: Union[StreamBreakingChangeScope, StreamFieldBreakingChangeScope] = Field(
+        ...,
+        description="A scope that can be used to limit the impact of a breaking change.",
+    )
 
 
 class VersionBreakingChange(BaseModel):
@@ -23,6 +64,11 @@ class VersionBreakingChange(BaseModel):
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
+    )
+    scopedImpact: Optional[List[BreakingChangeScope]] = Field(
+        None,
+        description="List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.",
+        min_items=1,
     )
 
 

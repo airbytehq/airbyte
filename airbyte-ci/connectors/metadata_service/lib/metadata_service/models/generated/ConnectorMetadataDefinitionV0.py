@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, constr
@@ -98,20 +98,25 @@ class JobType(BaseModel):
     )
 
 
-class VersionBreakingChange(BaseModel):
+class StreamBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    upgradeDeadline: date = Field(
+    scopeType: Any = Field("stream", const=True)
+    impactedScopes: List[str] = Field(
         ...,
-        description="The deadline by which to upgrade before the breaking change takes effect.",
+        description="List of streams that are impacted by the breaking change.",
+        min_items=1,
     )
-    message: str = Field(
-        ..., description="Descriptive message detailing the breaking change."
-    )
-    migrationDocumentationUrl: Optional[AnyUrl] = Field(
-        None,
-        description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
+
+
+class StreamField(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    stream: str = Field(..., description="The stream that the field belongs to.")
+    field: str = Field(
+        ..., description="The field that is impacted by the breaking change."
     )
 
 
@@ -131,13 +136,15 @@ class JobTypeResourceLimit(BaseModel):
     resourceRequirements: ResourceRequirements
 
 
-class ConnectorBreakingChanges(BaseModel):
+class StreamFieldBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
+    scopeType: Any = Field("streamField", const=True)
+    impactedScopes: List[StreamField] = Field(
         ...,
-        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
+        description="List of specific stream fields that are impacted by the breaking change.",
+        min_items=1,
     )
 
 
@@ -152,14 +159,10 @@ class ActorDefinitionResourceRequirements(BaseModel):
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
 
 
-class ConnectorReleases(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    breakingChanges: ConnectorBreakingChanges
-    migrationDocumentationUrl: Optional[AnyUrl] = Field(
-        None,
-        description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations",
+class BreakingChangeScope(BaseModel):
+    __root__: Union[StreamBreakingChangeScope, StreamFieldBreakingChangeScope] = Field(
+        ...,
+        description="A scope that can be used to limit the impact of a breaking change.",
     )
 
 
@@ -182,12 +185,55 @@ class RegistryOverrides(BaseModel):
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
 
 
+class VersionBreakingChange(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    upgradeDeadline: date = Field(
+        ...,
+        description="The deadline by which to upgrade before the breaking change takes effect.",
+    )
+    message: str = Field(
+        ..., description="Descriptive message detailing the breaking change."
+    )
+    migrationDocumentationUrl: Optional[AnyUrl] = Field(
+        None,
+        description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
+    )
+    scopedImpact: Optional[List[BreakingChangeScope]] = Field(
+        None,
+        description="List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.",
+        min_items=1,
+    )
+
+
 class Registry(BaseModel):
     class Config:
         extra = Extra.forbid
 
     oss: Optional[RegistryOverrides] = None
     cloud: Optional[RegistryOverrides] = None
+
+
+class ConnectorBreakingChanges(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
+        ...,
+        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
+    )
+
+
+class ConnectorReleases(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    breakingChanges: ConnectorBreakingChanges
+    migrationDocumentationUrl: Optional[AnyUrl] = Field(
+        None,
+        description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations",
+    )
 
 
 class Data(BaseModel):
