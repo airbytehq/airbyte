@@ -67,19 +67,12 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
     def documentation_url(cls) -> str:
         return "https://docs.airbyte.com/integrations/sources/google-drive"
 
-    @staticmethod
-    def remove_discriminator(schema: dict) -> None:
-        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/*/discriminator")
-
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """
         Generates the mapping comprised of the config fields
         """
         schema = super().schema(*args, **kwargs)
-
-        cls.remove_discriminator(schema)
 
         # Remove legacy settings
         dpath.util.delete(schema, "properties/streams/items/properties/legacy_prefix")
