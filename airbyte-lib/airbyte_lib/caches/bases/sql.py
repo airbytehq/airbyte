@@ -6,6 +6,7 @@ from textwrap import dedent
 from typing import final, Iterable
 import enum
 
+import pandas as pd
 import pyarrow as pa
 import ulid
 import sqlalchemy
@@ -353,6 +354,8 @@ class SQLCache(BaseCache, abc.ABCMeta):
             f"{self.config.table_prefix}{stream_name}{self.config.table_suffix}",
         )
 
+    # Read methods:
+
     def read_all(
         self,
         stream_name: str,
@@ -363,3 +366,12 @@ class SQLCache(BaseCache, abc.ABCMeta):
         stmt = sqlalchemy.select(table_name)
         with engine.connect() as conn:
             yield from conn.execute(stmt)
+
+    def read_all_as_pandas(
+        self,
+        stream_name: str,
+    ) -> pd.DataFrame:
+        """Return a Pandas data frame with the stream's data."""
+        table_name = self.get_final_table_name(stream_name)
+        engine = self.create_engine()
+        return pd.read_sql_table(table_name, engine)

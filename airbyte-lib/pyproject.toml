@@ -13,6 +13,7 @@ pyarrow = "^14.0.1"
 python-ulid = "^2.2.0"
 overrides = "^7.4.0"
 airbyte-cdk = "^0.57.2"
+pandas = "^2.1.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
