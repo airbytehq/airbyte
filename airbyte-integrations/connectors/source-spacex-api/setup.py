@@ -26,4 +26,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        'console_scripts': [
+            'source-spacex-api=source_spacex_api.run:run',
+        ],
+    },
 )

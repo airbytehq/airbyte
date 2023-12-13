@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "airbyte-lib"
+version = "0.1.0"
+description = ""
+authors = ["Joe Reuter <joe@airbyte.io>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+airbyte-cdk = ">=0.57.1"
+jsonschema = "3.2.0"
+requests = "^2.31.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
