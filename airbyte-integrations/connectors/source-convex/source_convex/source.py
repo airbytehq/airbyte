@@ -31,7 +31,7 @@ ConvexState = TypedDict(
     },
 )
 
-CONVEX_CLIENT_VERSION = "0.3.0"
+CONVEX_CLIENT_VERSION = "0.4.0"
 
 
 # Source
