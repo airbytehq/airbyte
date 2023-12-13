@@ -13,7 +13,6 @@ class ConnectorMetadata:
 
 def _update_cache():
     global _cache
-    print("Updating cache")
     response = requests.get(REGISTRY_URL)
     response.raise_for_status()
     data = response.json()
