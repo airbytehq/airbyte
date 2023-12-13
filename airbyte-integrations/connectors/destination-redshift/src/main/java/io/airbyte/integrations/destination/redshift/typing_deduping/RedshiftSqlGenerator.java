@@ -75,7 +75,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   public static final String CASE_STATEMENT_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} ELSE {2} END ";
   public static final String CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} END ";
   private static final Map<String, String> REDSHIFT_TYPE_NAME_TO_JDBC_TYPE = ImmutableMap.of(
-      "float8", "float",
+      "numeric", "decimal",
       "int8", "bigint",
       "bool", "boolean",
       "timestamptz", "timestamp with time zone",
@@ -224,7 +224,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * @param arrays
    * @return
    */
-  Field<?> arrayConcatStmt(List<Field<?>> arrays) {
+  Field<?> arrayConcatStmt(final List<Field<?>> arrays) {
     if (arrays.isEmpty()) {
       return field("ARRAY()"); // Return an empty string if the list is empty
     }
@@ -235,8 +235,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     }
 
     // Recursive case: construct ARRAY_CONCAT function call
-    Field<?> lastValue = arrays.get(arrays.size() - 1);
-    Field<?> recursiveCall = arrayConcatStmt(arrays.subList(0, arrays.size() - 1));
+    final Field<?> lastValue = arrays.get(arrays.size() - 1);
+    final Field<?> recursiveCall = arrayConcatStmt(arrays.subList(0, arrays.size() - 1));
 
     return function("ARRAY_CONCAT", getSuperType(), recursiveCall, lastValue);
   }
@@ -268,7 +268,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * @param includeMetaColumn
    * @return
    */
-  LinkedHashMap<String, DataType<?>> getFinalTableMetaColumns(boolean includeMetaColumn) {
+  LinkedHashMap<String, DataType<?>> getFinalTableMetaColumns(final boolean includeMetaColumn) {
     final LinkedHashMap<String, DataType<?>> metaColumns = new LinkedHashMap<>();
     metaColumns.put(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false));
     metaColumns.put(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
@@ -279,12 +279,12 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
-    DSLContext dsl = getDslContext();
-    CreateSchemaFinalStep createSchemaSql = createSchemaIfNotExists(quotedName(stream.id().finalNamespace()));
+    final DSLContext dsl = getDslContext();
+    final CreateSchemaFinalStep createSchemaSql = createSchemaIfNotExists(quotedName(stream.id().finalNamespace()));
 
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
-    String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
-    CreateTableColumnStep createTableSql = dsl
+    final String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
+    final CreateTableColumnStep createTableSql = dsl
         .createTable(quotedName(stream.id().finalNamespace(), finalTableIdentifier))
         .columns(buildFinalTableFields(stream.columns(), getFinalTableMetaColumns(true)));
     if (!force) {
@@ -423,7 +423,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * @param cursor
    * @return
    */
-  Field<Integer> getRowNumber(List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
+  Field<Integer> getRowNumber(final List<ColumnId> primaryKeys, final Optional<ColumnId> cursor) {
     final List<Field<?>> primaryKeyFields =
         primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList())
             : new ArrayList<>();
@@ -452,7 +452,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
         .where(condition);
   }
 
-  Condition rawTableCondition(DestinationSyncMode syncMode, boolean isCdcDeletedAtPresent, Optional<Instant> minRawTimestamp) {
+  Condition rawTableCondition(final DestinationSyncMode syncMode, final boolean isCdcDeletedAtPresent, final Optional<Instant> minRawTimestamp) {
     Condition condition = field(name(COLUMN_NAME_AB_LOADED_AT)).isNull();
     if (syncMode == DestinationSyncMode.APPEND_DEDUP) {
       if (isCdcDeletedAtPresent) {
@@ -478,7 +478,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
         .columns(buildFinalTableFields(columns, metaFields));
   }
 
-  String deleteFromFinalTable(final String schemaName, final String tableName, List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
+  String deleteFromFinalTable(final String schemaName, final String tableName, final List<ColumnId> primaryKeys, final Optional<ColumnId> cursor) {
     final DSLContext dsl = getDslContext();
     // Unknown type doesn't play well with where .. in (select..)
     final Field<Object> airbyteRawId = field(quotedName(COLUMN_NAME_AB_RAW_ID));
@@ -538,9 +538,9 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
                 .as(select(
                     field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
                     field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
-                    inline(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
+                    cast(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
                     field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(table(name(namespace, tableName))))
-                .getSQL()),
+                .getSQL(ParamType.INLINED)),
         ";" + System.lineSeparator());
   }
 
@@ -552,7 +552,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  public boolean shouldRetry(Exception e) {
+  public boolean shouldRetry(final Exception e) {
     return false;
   }
 

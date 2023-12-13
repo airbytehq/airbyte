@@ -47,24 +47,26 @@ def verify_read(scenario: TestScenario[AbstractSource]) -> None:
 
 def run_test_read_full_refresh(scenario: TestScenario[AbstractSource]) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
+    output = read(scenario)
     if expected_exc:
-        with pytest.raises(expected_exc) as exc:  # noqa
-            read(scenario)
+        assert_exception(expected_exc, output)
         if expected_msg:
-            assert expected_msg in get_error_message_from_exc(exc)
+            assert expected_msg in output.errors[-1].trace.error.internal_message
     else:
-        output = read(scenario)
         _verify_read_output(output, scenario)
 
 
 def run_test_read_incremental(scenario: TestScenario[AbstractSource]) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
+    output = read_with_state(scenario)
     if expected_exc:
-        with pytest.raises(expected_exc):
-            read_with_state(scenario)
+        assert_exception(expected_exc, output)
     else:
-        output = read_with_state(scenario)
         _verify_read_output(output, scenario)
+
+
+def assert_exception(expected_exception: type[BaseException], output: EntrypointOutput) -> None:
+    assert expected_exception.__name__ in output.errors[-1].trace.error.stack_trace
 
 
 def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[AbstractSource]) -> None:
