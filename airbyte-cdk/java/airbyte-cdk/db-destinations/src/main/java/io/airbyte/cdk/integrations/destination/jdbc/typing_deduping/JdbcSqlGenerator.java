@@ -71,9 +71,11 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   private static final String NUMBERED_ROWS_CTE_ALIAS = "numbered_rows";
 
   private final NamingConventionTransformer namingTransformer;
+  protected final ColumnId cdcDeletedAtColumn;
 
   public JdbcSqlGenerator(final NamingConventionTransformer namingTransformer) {
     this.namingTransformer = namingTransformer;
+    this.cdcDeletedAtColumn = buildColumnId("_ab_cdc_deleted_at");
   }
 
   @Override
@@ -153,8 +155,6 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   protected abstract Condition cdcDeletedAtNotNullCondition();
 
   protected abstract Field<Integer> getRowNumber(final List<ColumnId> primaryKey, final Optional<ColumnId> cursorField);
-
-  protected abstract ColumnId getCdcDeletedAtColumn();
 
   protected DSLContext getDslContext() {
     return DSL.using(getDialect());
@@ -336,7 +336,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         selectFromRawTable(rawSchema, rawTable, streamConfig.columns(),
                            getFinalTableMetaColumns(false),
                            rawTableCondition(streamConfig.destinationSyncMode(),
-                                             streamConfig.columns().containsKey(getCdcDeletedAtColumn()),
+                                             streamConfig.columns().containsKey(cdcDeletedAtColumn),
                                              minRawTimestamp)));
     final List<Field<?>> finalTableFields = buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true));
     final Field<Integer> rowNumber = getRowNumber(streamConfig.primaryKey(), streamConfig.cursor());
@@ -363,7 +363,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
             .getSQL(ParamType.INLINED);
     final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
     final String deleteCdcDeletesStmt =
-        streamConfig.columns().containsKey(getCdcDeletedAtColumn()) ? deleteFromFinalTableCdcDeletes(finalSchema, finalTable) : "";
+        streamConfig.columns().containsKey(cdcDeletedAtColumn) ? deleteFromFinalTableCdcDeletes(finalSchema, finalTable) : "";
     final String checkpointStmt = checkpointRawTable(rawSchema, rawTable, minRawTimestamp);
 
     if (streamConfig.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
@@ -400,6 +400,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   protected String createSchemaSql(final String namespace) {
     DSLContext dsl = getDslContext();
     CreateSchemaFinalStep createSchemaSql = dsl.createSchemaIfNotExists(quotedName(namespace));
+    dsl.transaction(createSchemaSql::execute);
     return createSchemaSql.getSQL();
   }
 
@@ -440,7 +441,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   private String deleteFromFinalTableCdcDeletes(final String schema, final String tableName) {
     final DSLContext dsl = getDslContext();
     return dsl.deleteFrom(table(quotedName(schema, tableName)))
-        .where(field(quotedName(getCdcDeletedAtColumn().name())).isNotNull())
+        .where(field(quotedName(cdcDeletedAtColumn.name())).isNotNull())
         .getSQL(ParamType.INLINED);
   }
 

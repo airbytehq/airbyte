@@ -76,8 +76,6 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   public static final String CASE_STATEMENT_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} ELSE {2} END ";
   public static final String CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} END ";
-
-  private final ColumnId cdcDeletedAtColumn;
   private static final Map<String, String> REDSHIFT_TYPE_NAME_TO_JDBC_TYPE = ImmutableMap.of(
       "float8", "float",
       "int8", "bigint",
@@ -89,7 +87,6 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
-    this.cdcDeletedAtColumn = buildColumnId("_ab_cdc_deleted_at");
   }
 
   /**
@@ -286,11 +283,6 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   @Override
   protected Field<Timestamp> currentTimestamp() {
     return function("GETDATE", SQLDataType.TIMESTAMP);
-  }
-
-  @Override
-  protected ColumnId getCdcDeletedAtColumn() {
-    return cdcDeletedAtColumn;
   }
 
   @Override
