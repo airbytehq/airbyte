@@ -72,7 +72,7 @@ And test via one of the two following Options
 
 ### Option 1 (Preferred): Run against the Airbyte CI test suite
 
-Learn how to use and install [`airbyte-ci` here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md). The `connectors test` command will run unit, integration, and acceptance tests against your connector.
+Learn how to use and install [`airbyte-ci` here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md). Once installed, `airbyte-ci connectors test` command will run unit, integration, and acceptance tests against your connector. Pass `--name <your_connector_name>` to test just one connector.
 
 ```bash
 airbyte-ci connectors --name=<name-of-your-connector></name-of-your-connector> --use-remote-secrets=false test
