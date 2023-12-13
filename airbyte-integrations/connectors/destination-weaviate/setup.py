@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]==0.55.1", "weaviate-client==3.25.2"]
+MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]==0.57.0", "weaviate-client==3.25.2"]
 
 TEST_REQUIREMENTS = ["pytest~=6.2", "docker", "pytest-docker"]
 
