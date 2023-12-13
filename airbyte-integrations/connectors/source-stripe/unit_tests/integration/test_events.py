@@ -231,13 +231,13 @@ class FullRefreshTest(TestCase):
         assert len(output.records) == 1
 
     @HttpMocker()
-    def test_given_http_status_500_on_availability_when_read_then_stream_is_incomplete(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _a_request().with_any_query_params().build(),
             [_HTTP_RESPONSE_STATUS_500],
         )
         output = self._read(_config().with_start_date(_A_START_DATE), expecting_exception=True)
-        assert output.get_stream_statuses(_STREAM_NAME) == [AirbyteStreamStatus.INCOMPLETE]
+        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
 
     @HttpMocker()
     def test_when_read_then_validate_availability_for_full_refresh_and_incremental(self, http_mocker: HttpMocker) -> None:
