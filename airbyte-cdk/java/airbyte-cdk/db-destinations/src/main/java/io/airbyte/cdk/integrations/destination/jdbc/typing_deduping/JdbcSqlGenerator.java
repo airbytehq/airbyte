@@ -14,7 +14,6 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMI
 import static org.jooq.impl.DSL.alterTable;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.cast;
-import static org.jooq.impl.DSL.createSchemaIfNotExists;
 import static org.jooq.impl.DSL.dropTableIfExists;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.inline;
@@ -271,10 +270,11 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     final Name rawTableName = name(streamId.rawNamespace(), streamId.rawName());
+    DSLContext dsl = getDslContext();
     return Strings.join(
         List.of(
-            createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
-            dropTableIfExists(rawTableName).getSQL(),
+            dsl.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
+            dsl.dropTableIfExists(rawTableName).getSQL(),
             DSL.createTable(rawTableName)
                 .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
                 .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
@@ -283,9 +283,9 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
                 .as(select(
                     field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
                     field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
-                    inline(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
+                    cast(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
                     field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(table(name(namespace, tableName))))
-                .getSQL()),
+                .getSQL(ParamType.INLINED)),
         ";" + System.lineSeparator());
   }
 
@@ -400,7 +400,6 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   protected String createSchemaSql(final String namespace) {
     DSLContext dsl = getDslContext();
     CreateSchemaFinalStep createSchemaSql = dsl.createSchemaIfNotExists(quotedName(namespace));
-    dsl.transaction(createSchemaSql::execute);
     return createSchemaSql.getSQL();
   }
 
