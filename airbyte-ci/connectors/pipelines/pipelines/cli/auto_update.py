@@ -98,36 +98,40 @@ def check_for_upgrade(
     upgrade_error_message = f"""
     🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
 
-    This version of `airbyte-ci` does not match that of your local airbyte repository.
+    The installed version of `airbyte-ci` does not match the version in your local airbyte repository.
+    This likely means that your installed version of `airbyte-ci` is out of date.
 
     Installed Version: {__installed_version__}.
     Local Repository Version: {latest_version}
-
-    Please upgrade your local airbyte repository to the latest version using the following command:
-    $ {upgrade_command}
-
-    Alternatively you can skip this with the `--disable-update-check` flag.
 
     🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
     """
     logging.warning(upgrade_error_message)
 
     # Ask the user if they want to upgrade
-    if enable_auto_update and confirm(
-        "Do you want to automatically upgrade?", default=True, additional_pre_confirm_key=AUTO_UPDATE_AGREE_KEY
-    ):
-        # if the current command contains `airbyte-ci-dev` is the dev version of the command
-        logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")
+    if enable_auto_update:
+        if confirm("Do you want to automatically upgrade?", default=True, additional_pre_confirm_key=AUTO_UPDATE_AGREE_KEY):
 
-        upgrade_exit_code = os.system(upgrade_command)
-        if upgrade_exit_code != 0:
-            raise Exception(f"Failed to upgrade pipelines. Exit code: {upgrade_exit_code}")
+            # if the current command contains `airbyte-ci-dev` is the dev version of the command
+            logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")
 
-        logging.info(f"Re-running command: {current_command}")
+            upgrade_exit_code = os.system(upgrade_command)
+            if upgrade_exit_code != 0:
+                raise Exception(f"Failed to upgrade pipelines. Exit code: {upgrade_exit_code}")
 
-        # Re-run the command
-        command_exit_code = os.system(current_command)
-        sys.exit(command_exit_code)
+            logging.info(f"Re-running command: {current_command}")
+
+            # Re-run the command
+            command_exit_code = os.system(current_command)
+            sys.exit(command_exit_code)
+
+        else:
+            command_with_flag = sys.argv[0] + " --disable-update-check " + " ".join(sys.argv[1:])
+
+            logging.info("Skipping auto-upgrade.")
+            logging.info(f"Re-running command with the `--disable-update-check` flag: {command_with_flag}")
+            command_exit_code = os.system(command_with_flag)
+            sys.exit(command_exit_code)
 
     if require_update:
         raise Exception(upgrade_error_message)
