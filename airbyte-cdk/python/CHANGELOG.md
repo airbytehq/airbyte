@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.57.5
+Raise error on passing unsupported value formats as query parameters
+
 ## 0.57.4
 Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
 
