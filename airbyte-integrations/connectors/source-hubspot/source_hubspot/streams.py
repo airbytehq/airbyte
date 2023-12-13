@@ -31,7 +31,15 @@ from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError, codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
-from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
+from source_hubspot.helpers import (
+    APIv1Property,
+    APIv2Property,
+    APIv3Property,
+    GroupByKey,
+    IRecordPostProcessor,
+    IURLPropertyRepresentation,
+    StoreAsIs,
+)
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -356,6 +364,7 @@ class Stream(HttpStream, ABC):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
     ) -> str:
         return self.url
 
@@ -364,6 +373,8 @@ class Stream(HttpStream, ABC):
         properties = list(self.properties.keys())
         if "v1" in self.url:
             return APIv1Property(properties)
+        if "v2" in self.url:
+            return APIv2Property(properties)
         return APIv3Property(properties)
 
     def __init__(self, api: API, start_date: Union[str, pendulum.datetime], credentials: Mapping[str, Any] = None, **kwargs):
@@ -410,6 +421,10 @@ class Stream(HttpStream, ABC):
             json_schema["properties"] = {**default_props, **properties, **unnested_properties}
         return json_schema
 
+    def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
+        if properties:
+            params.update(properties.as_url_param())
+
     @retry_token_expired_handler(max_tries=5)
     def handle_request(
         self,
@@ -420,11 +435,10 @@ class Stream(HttpStream, ABC):
     ) -> requests.Response:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if properties:
-            request_params.update(properties.as_url_param())
+        self.update_request_properties(request_params, properties)
 
         request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, properties=properties),
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
             params=request_params,
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -904,6 +918,7 @@ class AssociationsStream(Stream):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
     ) -> str:
         return f"/crm/v4/associations/{self.parent_stream.entity}/{stream_slice}/batch/read"
 
@@ -1669,6 +1684,7 @@ class FormSubmissions(ClientSideIncrementalStream):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
     ) -> str:
         return f"{self.url}/{stream_slice['form_id']}"
 
@@ -1769,23 +1785,76 @@ class PropertyHistory(ClientSideIncrementalStream):
     Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
     """
 
-    more_key = "has-more"
-    url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
     created_at_field = "timestamp"
-    entity = "contacts"
-    data_field = "contacts"
-    page_field = "vid-offset"
-    page_filter = "vidOffset"
-    primary_key = "vid"
     denormalize_records = True
-    limit_field = "count"
     limit = 100
-    scopes = {"crm.objects.contacts.read"}
-    properties_scopes = {"crm.schemas.contacts.read"}
 
     @property
-    def cursor_field_datetime_format(self):
+    @abstractmethod
+    def page_field(self) -> str:
+        """Page offset field"""
+
+    @property
+    @abstractmethod
+    def limit_field(self) -> str:
+        """Limit query field"""
+
+    @property
+    @abstractmethod
+    def page_filter(self) -> str:
+        """Query param name that indicates page offset"""
+
+    @property
+    @abstractmethod
+    def more_key(self) -> str:
+        """Field that indicates that are more records"""
+
+    @property
+    @abstractmethod
+    def scopes(self) -> set:
+        """Scopes needed to get access to CRM object"""
+
+    @property
+    @abstractmethod
+    def properties_scopes(self) -> set:
+        """Scopes needed to get access to CRM object properies"""
+
+    @property
+    @abstractmethod
+    def entity(self) -> str:
+        """
+        CRM object entity name.
+        This is usually a part of some URL or key that contains data in response
+        """
+
+    @property
+    @abstractmethod
+    def primary_key(self) -> str:
+        """Indicates a field name which is considered to be a primary key of the stream"""
+
+    @property
+    @abstractmethod
+    def additional_keys(self) -> list:
+        """The root keys to be placed into each record while iterating through versions"""
+
+    @property
+    @abstractmethod
+    def last_modified_date_field_name(self) -> str:
+        """Last modified date field name"""
+
+    @property
+    @abstractmethod
+    def data_field(self) -> str:
+        """A key that contains data in response"""
+
+    @property
+    @abstractmethod
+    def url(self) -> str:
+        """An API url"""
+
+    @property
+    def cursor_field_datetime_format(self) -> str:
         """Cursor value expected to be a timestamp in milliseconds"""
         return "x"
 
@@ -1804,10 +1873,11 @@ class PropertyHistory(ClientSideIncrementalStream):
         for record in records:
             properties = record.get("properties")
             primary_key = record.get(self.primary_key)
+            additional_keys = {additional_key: record.get(additional_key) for additional_key in self.additional_keys}
             value_dict: Dict
             for property_name, value_dict in properties.items():
                 versions = value_dict.get("versions")
-                if property_name == "lastmodifieddate":
+                if property_name == self.last_modified_date_field_name:
                     # Skipping the lastmodifieddate since it only returns the value
                     # when one field of a contact was changed no matter which
                     # field was changed. It therefore creates overhead, since for
@@ -1818,7 +1888,183 @@ class PropertyHistory(ClientSideIncrementalStream):
                     for version in versions:
                         version["property"] = property_name
                         version[self.primary_key] = primary_key
-                        yield version
+                        yield version | additional_keys
+
+
+class ContactsPropertyHistory(PropertyHistory):
+    @property
+    def scopes(self):
+        return {"crm.objects.contacts.read"}
+
+    @property
+    def properties_scopes(self):
+        return {"crm.schemas.contacts.read"}
+
+    @property
+    def page_field(self) -> str:
+        return "vid-offset"
+
+    @property
+    def limit_field(self) -> str:
+        return "count"
+
+    @property
+    def page_filter(self) -> str:
+        return "vidOffset"
+
+    @property
+    def more_key(self) -> str:
+        return "has-more"
+
+    @property
+    def entity(self):
+        return "contacts"
+
+    @property
+    def primary_key(self) -> list:
+        return "vid"
+
+    @property
+    def additional_keys(self) -> list:
+        return ["portal-id", "is-contact", "canonical-vid"]
+
+    @property
+    def last_modified_date_field_name(self):
+        return "lastmodifieddate"
+
+    @property
+    def data_field(self):
+        return "contacts"
+
+    @property
+    def url(self):
+        return "/contacts/v1/lists/all/contacts/all"
+
+
+class CompaniesPropertyHistory(PropertyHistory):
+    @property
+    def scopes(self) -> set:
+        return {"crm.objects.companies.read"}
+
+    @property
+    def properties_scopes(self) -> set:
+        return {"crm.schemas.companies.read"}
+
+    @property
+    def page_field(self) -> str:
+        return "offset"
+
+    @property
+    def limit_field(self) -> str:
+        return "limit"
+
+    @property
+    def page_filter(self) -> str:
+        return "offset"
+
+    @property
+    def more_key(self) -> str:
+        return "hasMore"
+
+    @property
+    def entity(self) -> str:
+        return "companies"
+
+    @property
+    def primary_key(self) -> list:
+        return "companyId"
+
+    @property
+    def additional_keys(self) -> list:
+        return ["portalId", "isDeleted"]
+
+    @property
+    def last_modified_date_field_name(self) -> str:
+        return "hs_lastmodifieddate"
+
+    @property
+    def data_field(self) -> str:
+        return "companies"
+
+    @property
+    def url(self) -> str:
+        return "/companies/v2/companies/paged"
+
+    def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
+        pass
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
+    ) -> str:
+        return f"{self.url}?{properties.as_url_param_with_history()}"
+
+
+class DealsPropertyHistory(PropertyHistory):
+    @property
+    def scopes(self) -> set:
+        return {"crm.objects.deals.read"}
+
+    @property
+    def properties_scopes(self):
+        return {"crm.schemas.deals.read"}
+
+    @property
+    def page_field(self) -> str:
+        return "offset"
+
+    @property
+    def limit_field(self) -> str:
+        return "limit"
+
+    @property
+    def page_filter(self) -> str:
+        return "offset"
+
+    @property
+    def more_key(self) -> str:
+        return "hasMore"
+
+    @property
+    def entity(self) -> set:
+        return "deals"
+
+    @property
+    def primary_key(self) -> list:
+        return "dealId"
+
+    @property
+    def additional_keys(self) -> list:
+        return ["portalId", "isDeleted"]
+
+    @property
+    def last_modified_date_field_name(self) -> str:
+        return "hs_lastmodifieddate"
+
+    @property
+    def data_field(self) -> str:
+        return "deals"
+
+    @property
+    def url(self) -> str:
+        return "/deals/v1/deal/paged"
+
+    def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
+        pass
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
+    ) -> str:
+        return f"{self.url}?{properties.as_url_param_with_history()}"
 
 
 class SubscriptionChanges(IncrementalStream):
