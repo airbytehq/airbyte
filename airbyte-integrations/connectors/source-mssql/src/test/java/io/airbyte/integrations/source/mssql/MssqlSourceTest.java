@@ -11,6 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
@@ -38,6 +40,12 @@ class MssqlSourceTest {
       .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
 
   private MsSQLTestDatabase testdb;
+
+  private MssqlSource source() {
+    final MssqlSource source = new MssqlSource();
+    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
+    return source;
+  }
 
   // how to interact with the mssql test container manaully.
   // 1. exec into mssql container (not the test container container)
@@ -69,7 +77,7 @@ class MssqlSourceTest {
     testdb
         .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY CLUSTERED (id);")
         .with("CREATE INDEX i1 ON id_and_name (id);");
-    final AirbyteCatalog actual = new MssqlSource().discover(getConfig());
+    final AirbyteCatalog actual = source().discover(getConfig());
     assertEquals(CATALOG, actual);
   }
 
@@ -99,7 +107,7 @@ class MssqlSourceTest {
         Collections.singletonList(configuredAirbyteStream));
 
     final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(
-        new MssqlSource().read(getConfig(), catalog, null)));
+        source().read(getConfig(), catalog, null)));
     assertThat(throwable).isInstanceOf(ConfigErrorException.class)
         .hasMessageContaining(
             "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='dbo.id_and_name', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
