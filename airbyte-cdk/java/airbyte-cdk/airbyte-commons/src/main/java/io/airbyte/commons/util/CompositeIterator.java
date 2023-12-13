@@ -10,6 +10,7 @@ import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.stream.StreamStatusUtils;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +46,7 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
   private final List<AutoCloseableIterator<T>> iterators;
 
   private int i;
-  private boolean firstRead;
+  private final HashSet<Optional<AirbyteStreamNameNamespacePair>> seenIterators;
   private boolean hasClosed;
 
   CompositeIterator(final List<AutoCloseableIterator<T>> iterators, final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
@@ -54,7 +55,7 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
     this.airbyteStreamStatusConsumer = Optional.ofNullable(airbyteStreamStatusConsumer);
     this.iterators = iterators;
     this.i = 0;
-    this.firstRead = true;
+    this.seenIterators = new HashSet<Optional<AirbyteStreamNameNamespacePair>>();
     this.hasClosed = false;
   }
 
@@ -72,36 +73,30 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
     while (!currentIterator().hasNext()) {
       try {
         currentIterator().close();
+        emitStartStreamStatus(currentIterator().getAirbyteStream());
         StreamStatusUtils.emitCompleteStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
       } catch (final Exception e) {
         StreamStatusUtils.emitIncompleteStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
         throw new RuntimeException(e);
       }
 
-      if (i < iterators.size()) {
-        StreamStatusUtils.emitStartStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
+      if (i + 1 < iterators.size()) {
         i++;
-        firstRead = true;
-      }
-
-      if (i >= iterators.size()) {
+      } else {
         return endOfData();
       }
     }
 
     try {
-      if (isFirstStream()) {
-        StreamStatusUtils.emitStartStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
+      final boolean isFirstRun = emitStartStreamStatus(currentIterator().getAirbyteStream());
+      final T next = currentIterator().next();
+      if (isFirstRun) {
+        StreamStatusUtils.emitRunningStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
       }
-      return currentIterator().next();
+      return next;
     } catch (final RuntimeException e) {
       StreamStatusUtils.emitIncompleteStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
       throw e;
-    } finally {
-      if (firstRead) {
-        StreamStatusUtils.emitRunningStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
-        firstRead = false;
-      }
     }
   }
 
@@ -109,8 +104,13 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
     return iterators.get(i);
   }
 
-  private boolean isFirstStream() {
-    return i == 0 && firstRead;
+  private boolean emitStartStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
+    if (airbyteStream.isPresent() && !seenIterators.contains(airbyteStream)) {
+      seenIterators.add(airbyteStream);
+      StreamStatusUtils.emitStartStreamStatus(airbyteStream, airbyteStreamStatusConsumer);
+      return true;
+    }
+    return false;
   }
 
   @Override
