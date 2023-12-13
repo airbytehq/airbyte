@@ -10,7 +10,7 @@ from typing import List
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
-from source_stripe import SourceStripe
+from .source import SourceStripe
 
 
 def _get_source(args: List[str]):
@@ -38,8 +38,7 @@ def _get_source(args: List[str]):
         return None
 
 
-if __name__ == "__main__":
-    print(sys.argv)
+def run():
     _args = sys.argv[1:]
     source = _get_source(_args)
     if source:
