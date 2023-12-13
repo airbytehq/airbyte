@@ -13,8 +13,6 @@ import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.TRU
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.debezium.internals.mysql.CustomMySQLTinyIntOneToBooleanConverter;
-import io.airbyte.cdk.integrations.debezium.internals.mysql.MySQLDateTimeConverter;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
