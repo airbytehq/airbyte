@@ -72,6 +72,8 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
     A stream reader for Microsoft OneDrive. Handles file enumeration and reading from OneDrive.
     """
 
+    ROOT_PATH = [".", "/"]
+
     def __init__(self):
         super().__init__()
 
@@ -99,7 +101,7 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
         drive_items = root_folder.children.get().execute_query()
         found_items = []
         for item in drive_items:
-            item_path = path + "/" + item.name
+            item_path = item.name if path in self.ROOT_PATH else path + "/" + item.name
             if item.is_file:
                 found_items.append((item, item_path))
             else:
@@ -114,7 +116,7 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
         for drive in drives:
             is_onedrive = drive.drive_type in ["personal", "business"]
             if drive.name == drive_name and is_onedrive:
-                folder = drive.root.get_by_path(folder_path).get().execute_query()
+                folder = drive.root if folder_path in self.ROOT_PATH else drive.root.get_by_path(folder_path).get().execute_query()
                 yield from self.list_directories_and_files(folder, folder_path)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
