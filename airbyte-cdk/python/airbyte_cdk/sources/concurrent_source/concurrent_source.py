@@ -125,6 +125,7 @@ class ConcurrentSource:
             if concurrent_stream_processor.is_done() and queue.empty():
                 # all partitions were generated and processed. we're done here
                 break
+            self._logger.info(f"Queue size: {queue.qsize()}")
 
     def _handle_item(
         self,

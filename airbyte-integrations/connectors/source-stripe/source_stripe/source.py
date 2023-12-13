@@ -40,7 +40,7 @@ from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPool
 
 logger = logging.getLogger("airbyte")
 
-_MAX_CONCURRENCY = 20
+_MAX_CONCURRENCY = 200
 _DEFAULT_CONCURRENCY = 10
 _CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
 USE_CACHE = not _CACHE_DISABLED
