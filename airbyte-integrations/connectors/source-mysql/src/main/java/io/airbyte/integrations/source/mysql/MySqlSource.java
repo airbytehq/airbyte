@@ -29,7 +29,6 @@ import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
@@ -72,7 +71,9 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -535,6 +536,12 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final Map<String, String> defaultProperties = JdbcDataSourceUtils.getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
     return MoreMaps.merge(customProperties, defaultProperties);
+  }
+
+  @Override
+  public Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
+    return JdbcConnector.maybeParseDuration(connectionProperties.get("connectTimeout"), ChronoUnit.MILLIS)
+          .orElse(CONNECT_TIMEOUT_DEFAULT);
   }
 
   public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString, final String delimiter) {
