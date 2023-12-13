@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.cdk.db.factory.DatabaseDriver.REDSHIFT;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -16,13 +18,12 @@ public class RedshiftTestDatabase extends TestDatabase<NonContainer, RedshiftTes
 
   private final String username;
   private final String password;
-
   private final String jdbcUrl;
 
   protected RedshiftTestDatabase(final JsonNode redshiftConfig) {
     super(new NonContainer(redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         redshiftConfig.has(JdbcUtils.PASSWORD_KEY) ? redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        redshiftConfig.get(JdbcUtils.JDBC_URL_KEY).asText(), ""));
+        redshiftConfig.get(JdbcUtils.JDBC_URL_KEY).asText(), REDSHIFT.getDriverClassName(), ""));
     this.username = redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText();
     this.password = redshiftConfig.has(JdbcUtils.PASSWORD_KEY) ? redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null;
     this.jdbcUrl = redshiftConfig.get(JdbcUtils.JDBC_URL_KEY).asText();
@@ -55,7 +56,7 @@ public class RedshiftTestDatabase extends TestDatabase<NonContainer, RedshiftTes
 
   @Override
   public DatabaseDriver getDatabaseDriver() {
-    return DatabaseDriver.REDSHIFT;
+    return REDSHIFT;
   }
 
   @Override

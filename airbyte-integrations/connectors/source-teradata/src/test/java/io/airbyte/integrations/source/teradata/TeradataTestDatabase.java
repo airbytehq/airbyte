@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.teradata;
 
+import static io.airbyte.cdk.db.factory.DatabaseDriver.TERADATA;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -22,7 +24,7 @@ public class TeradataTestDatabase extends TestDatabase<NonContainer, TeradataTes
   protected TeradataTestDatabase(final JsonNode teradataConfig) {
     super(new NonContainer(teradataConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         teradataConfig.has(JdbcUtils.PASSWORD_KEY) ? teradataConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        teradataConfig.get(JdbcUtils.JDBC_URL_KEY).asText(), ""));
+        teradataConfig.get(JdbcUtils.JDBC_URL_KEY).asText(), TERADATA.getDriverClassName(), ""));
     this.username = teradataConfig.get(JdbcUtils.USERNAME_KEY).asText();
     this.password = teradataConfig.has(JdbcUtils.PASSWORD_KEY) ? teradataConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null;
     this.jdbcUrl = teradataConfig.get(JdbcUtils.JDBC_URL_KEY).asText();
@@ -61,7 +63,7 @@ public class TeradataTestDatabase extends TestDatabase<NonContainer, TeradataTes
 
   @Override
   public DatabaseDriver getDatabaseDriver() {
-    return DatabaseDriver.TERADATA;
+    return TERADATA;
   }
 
   @Override

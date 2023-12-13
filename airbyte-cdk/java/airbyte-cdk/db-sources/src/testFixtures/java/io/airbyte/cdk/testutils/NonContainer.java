@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.testutils;
 
-import static io.airbyte.cdk.db.factory.DatabaseDriver.SNOWFLAKE;
-
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
 public class NonContainer extends JdbcDatabaseContainer<NonContainer> {
@@ -14,19 +12,23 @@ public class NonContainer extends JdbcDatabaseContainer<NonContainer> {
   private final String password;
   private final String jdbcUrl;
 
+  private final String driverClassName;
+
   public NonContainer(final String userName,
                       final String password,
                       final String jdbcUrl,
+                      final String driverClassName,
                       final String dockerImageName) {
     super(dockerImageName);
     this.username = userName;
     this.password = password;
     this.jdbcUrl = jdbcUrl;
+    this.driverClassName = driverClassName;
   }
 
   @Override
   public String getDriverClassName() {
-    return SNOWFLAKE.getDriverClassName();
+    return driverClassName;
   }
 
   @Override

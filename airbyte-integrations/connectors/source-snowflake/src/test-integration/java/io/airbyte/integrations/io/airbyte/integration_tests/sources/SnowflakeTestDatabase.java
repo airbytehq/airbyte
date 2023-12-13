@@ -23,7 +23,7 @@ public class SnowflakeTestDatabase extends TestDatabase<NonContainer, SnowflakeT
   protected SnowflakeTestDatabase(final JsonNode snowflakeConfig) {
     super(new NonContainer(snowflakeConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         snowflakeConfig.has(JdbcUtils.PASSWORD_KEY) ? snowflakeConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        snowflakeConfig.get(JdbcUtils.JDBC_URL_KEY).asText(), ""));
+        snowflakeConfig.get(JdbcUtils.JDBC_URL_KEY).asText(), SNOWFLAKE.getDriverClassName(), ""));
     this.username = snowflakeConfig.get(JdbcUtils.USERNAME_KEY).asText();
     this.password = snowflakeConfig.has(JdbcUtils.PASSWORD_KEY) ? snowflakeConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null;
     this.jdbcUrl = snowflakeConfig.get(JdbcUtils.JDBC_URL_KEY).asText();
