@@ -108,6 +108,11 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_start_date_before_30_days_stripe_limit_and_slice_range_when_read_then_perform_request_before_30_days(self, http_mocker: HttpMocker) -> None:
+        """
+        This case is special because the source queries for a time range that is before 30 days. That being said as of 2023-12-13, the API
+        mentions that "We only guarantee access to events through the Retrieve Event API for 30 days." (see
+        https://stripe.com/docs/api/events)
+        """
         start_date = _NOW - timedelta(days=61)
         slice_range = timedelta(days=30)
         slice_datetime = start_date + slice_range
