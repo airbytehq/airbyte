@@ -292,11 +292,17 @@ acceptance_tests:
             - name: AverageCpm
               bypass_reason: "dynamic field"
           account_performance_report_weekly:
-            - name: Ctr
+            - name: Clicks
               bypass_reason: "dynamic field"
-            - name: Impressions
+            - name: Spend
               bypass_reason: "dynamic field"
-            - name: AverageCpm
+            - name: ReturnOnAdSpend
+              bypass_reason: "dynamic field"
+            - name: AverageCpc
+              bypass_reason: "dynamic field"
+            - name: ConversionRate
+              bypass_reason: "dynamic field"
+            - name: LowQualityClicksPercent
               bypass_reason: "dynamic field"
           account_impression_performance_report_daily:
             - name: Ctr
