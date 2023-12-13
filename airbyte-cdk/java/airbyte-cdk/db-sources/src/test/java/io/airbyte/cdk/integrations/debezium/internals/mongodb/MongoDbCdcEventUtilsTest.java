@@ -65,7 +65,7 @@ class MongoDbCdcEventUtilsTest {
     debeziumEventKey = Jsons.jsonNode(Map.of(ID_FIELD, "\"" + OBJECT_ID + "\""));
     updated = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
     assertTrue(updated.contains(DOCUMENT_OBJECT_ID_FIELD));
-    assertEquals(Jsons.serialize(debeziumEventKey).replaceAll(ID_FIELD, DOCUMENT_OBJECT_ID_FIELD), updated);
+    assertEquals(Jsons.serialize(Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, OBJECT_ID))), updated);
   }
 
   @Test
@@ -80,6 +80,9 @@ class MongoDbCdcEventUtilsTest {
 
     final JsonNode dataWithoutId = MongoDbCdcEventUtils.normalizeObjectId((ObjectNode) Jsons.jsonNode(Map.of()));
     assertNull(dataWithoutId.get(DOCUMENT_OBJECT_ID_FIELD));
+
+    final JsonNode stringId = MongoDbCdcEventUtils.normalizeObjectId((ObjectNode) Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, "abcd")));
+    assertEquals("abcd", stringId.get(DOCUMENT_OBJECT_ID_FIELD).asText());
   }
 
   @Test
