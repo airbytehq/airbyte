@@ -1,24 +1,27 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
+import json
+import tempfile
+from contextlib import contextmanager
+from functools import lru_cache
+from itertools import islice
+from typing import Any, Dict, Iterable, List, Optional
+
+import jsonschema
 from airbyte_lib.executor import Executor, VenvExecutor
 from airbyte_lib.registry import get_connector_metadata
-import jsonschema
-from functools import lru_cache
-import json
-from typing import Any, Dict, Iterable, List, Optional
 from airbyte_protocol.models import (
-    AirbyteMessage,
     AirbyteCatalog,
-    Type,
+    AirbyteMessage,
     AirbyteRecordMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
-    SyncMode,
+    ConnectorSpecification,
     DestinationSyncMode,
     Status,
-    ConnectorSpecification,
+    SyncMode,
+    Type,
 )
-import tempfile
-from contextlib import contextmanager
-from itertools import islice
 
 
 @contextmanager
@@ -27,9 +30,7 @@ def as_temp_files(files: List[Any]):
     try:
         for content in files:
             temp_file = tempfile.NamedTemporaryFile(mode="w+t", delete=True)
-            temp_file.write(
-                json.dumps(content) if isinstance(content, dict) else content
-            )
+            temp_file.write(json.dumps(content) if isinstance(content, dict) else content)
             temp_file.flush()
             temp_files.append(temp_file)
         yield [file.name for file in temp_files]
@@ -39,7 +40,6 @@ def as_temp_files(files: List[Any]):
                 temp_file.close()
             except:
                 pass
-
 
 
 class Source:
@@ -65,9 +65,7 @@ class Source:
         available_streams = self.get_available_streams()
         for stream in streams:
             if stream not in available_streams:
-                raise Exception(
-                    f"Stream {stream} is not available for connector {self.name}, choose from {available_streams}"
-                )
+                raise Exception(f"Stream {stream} is not available for connector {self.name}, choose from {available_streams}")
         self.streams = streams
 
     def set_config(self, config: Dict[str, Any]):
@@ -143,9 +141,7 @@ class Source:
             ]
         )
         if len(configured_catalog.streams) == 0:
-            raise Exception(
-                f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}"
-            )
+            raise Exception(f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}")
         messages = islice(self._read(configured_catalog), max_n)
         return [m.data for m in messages]
 
@@ -163,9 +159,7 @@ class Source:
             for msg in self._execute(["check", "--config", config_file]):
                 if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
                     if msg.connectionStatus.status == Status.FAILED:
-                        raise Exception(
-                            f"Connector returned failed status: {msg.connectionStatus.message}"
-                        )
+                        raise Exception(f"Connector returned failed status: {msg.connectionStatus.message}")
                     else:
                         return
             raise Exception("Connector did not return check status")
@@ -198,9 +192,7 @@ class Source:
         )
         yield from self._read(configured_catalog)
 
-    def _read(
-        self, catalog: ConfiguredAirbyteCatalog
-    ) -> Iterable[AirbyteRecordMessage]:
+    def _read(self, catalog: ConfiguredAirbyteCatalog) -> Iterable[AirbyteRecordMessage]:
         """
         Call read on the connector.
 
@@ -213,9 +205,7 @@ class Source:
             config_file,
             catalog_file,
         ]:
-            for msg in self._execute(
-                ["read", "--config", config_file, "--catalog", catalog_file]
-            ):
+            for msg in self._execute(["read", "--config", config_file, "--catalog", catalog_file]):
                 if msg.type == Type.RECORD:
                     yield msg.record
 
@@ -249,4 +239,3 @@ class Source:
                             last_log_messages.pop(0)
         except Exception as e:
             raise Exception(f"{str(e)}. Last logs: {last_log_messages}")
-

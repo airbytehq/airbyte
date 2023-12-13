@@ -1,4 +1,7 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import os
+
 import airbyte_lib as ab
 
 # preparation (from airbyte-lib main folder):

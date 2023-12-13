@@ -1,8 +1,11 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 
-from typing import Any, Dict, Iterable, List
 from abc import ABC, abstractmethod
+from typing import Any, Dict, Iterable, List
+
 from airbyte_protocol.models import AirbyteRecordMessage
+
 
 class Cache(ABC):
     @abstractmethod
@@ -15,7 +18,7 @@ class InMemoryCache(Cache):
 
     def __init__(self):
         self.streams: Dict[str, List[Dict[str, Any]]] = {}
-    
+
     def write(self, messages: Iterable[AirbyteRecordMessage]):
         for message in messages:
             if message.stream not in self.streams:
