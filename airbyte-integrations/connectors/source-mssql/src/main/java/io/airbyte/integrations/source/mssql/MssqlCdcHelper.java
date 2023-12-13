@@ -145,7 +145,7 @@ public class MssqlCdcHelper {
     return DataToSync.EXISTING_AND_NEW;
   }
 
-  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) {
+  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final boolean isSnapshot) {
     final JsonNode config = database.getSourceConfig();
     final JsonNode dbConfig = database.getDatabaseConfig();
 
@@ -160,7 +160,15 @@ public class MssqlCdcHelper {
     props.setProperty("converters", "mssql_converter");
     props.setProperty("mssql_converter.type", MSSQLConverter.class.getName());
 
-    props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
+    // If new stream(s) are added after a previously successful sync,
+    // the snapshot.mode needs to be initial_only since we don't want to continue streaming changes
+    // https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-mode
+    if (isSnapshot) {
+      props.setProperty("snapshot.mode", "initial_only");
+    } else {
+      props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
+    }
+
     props.setProperty("snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
 
     props.setProperty("schema.include.list", getSchema(catalog));

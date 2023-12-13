@@ -202,26 +202,30 @@ To access the Airbyte UI, you will need to manually attach an ingress configurat
 
 ```yaml
 apiVersion: networking.k8s.io/v1
- kind: Ingress
- spec:
-   rules:
-   - host: ## example: enterprise-demo.airbyte.com
-     http:
-       paths:
-       - backend:
-           service:
-             name: airbyte-pro-airbyte-webapp-svc
-             port:
-               number: ## example: 30080
-         path: /
-         pathType: Prefix
-       - backend:
-           service:
-             name: airbyte-pro-airbyte-keycloak-svc
-             port:
-               number: ## example: 30081
-         path: /auth
-         pathType: Prefix
+kind: Ingress
+metadata:
+  name: enterprise-demo
+spec:
+  rules:
+  - host: # host, example: enterprise-demo.airbyte.com
+    http:
+      paths:
+      - backend:
+          service:
+            # format is ${RELEASE_NAME}-airbyte-webapp-svc
+            name: airbyte-pro-airbyte-webapp-svc 
+            port:
+              number: # service port, example: 8080
+        path: /
+        pathType: Prefix
+      - backend:
+          service:
+            # format is ${RELEASE_NAME}-airbyte-keycloak-svc
+            name: airbyte-pro-airbyte-keycloak-svc
+            port:
+              number: # service port, example: 8180
+        path: /auth
+        pathType: Prefix
 ```
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
