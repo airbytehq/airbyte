@@ -17,13 +17,7 @@ class ParquetCacheConfig(CacheConfigBase):
 class ParquetCache(FileCacheBase):
     """A Parquet cache implementation."""
 
-    def __init__(
-        self,
-        cache_path: Path,  # Path to directory where parquet files will be stored
-        **kwargs,  # Additional arguments to pass to the base class (future proofing)
-    ):
-        self.cache_path = cache_path
-        super().__init__(**kwargs)
+    config_class = ParquetCacheConfig
 
     def get_new_cache_file_path(
         self,
