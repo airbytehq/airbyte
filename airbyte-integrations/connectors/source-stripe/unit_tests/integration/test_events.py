@@ -1,23 +1,28 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import json
-
-import freezegun
-
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional, Tuple
 from unittest import TestCase
 
+import freezegun
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read, EntrypointOutput
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
-from airbyte_cdk.test.mock_http.response_builder import create_record_builder, create_response_builder, find_template, FieldPath, HttpResponseBuilder, RecordBuilder
-from airbyte_protocol.models import SyncMode, ConfiguredAirbyteCatalog, AirbyteStreamStatus, FailureType
-from source_stripe import SourceStripe
+from airbyte_cdk.test.mock_http.response_builder import (
+    FieldPath,
+    HttpResponseBuilder,
+    RecordBuilder,
+    create_record_builder,
+    create_response_builder,
+    find_template,
+)
+from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_protocol.models import AirbyteStreamStatus, ConfiguredAirbyteCatalog, FailureType, SyncMode
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
-
+from source_stripe import SourceStripe
 
 _STREAM_NAME = "events"
 _NOW = datetime.now(timezone.utc)
