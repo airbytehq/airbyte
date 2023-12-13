@@ -1,23 +1,28 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import json
-
-import freezegun
-
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional, Tuple
 from unittest import TestCase
 
+import freezegun
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read, EntrypointOutput
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
-from airbyte_cdk.test.mock_http.response_builder import create_builders_from_resource, find_template, FieldPath, HttpResponseBuilder, RecordBuilder
-from airbyte_protocol.models import SyncMode, ConfiguredAirbyteCatalog, AirbyteStreamStatus
-from source_stripe import SourceStripe
+from airbyte_cdk.test.mock_http.response_builder import (
+    FieldPath,
+    HttpResponseBuilder,
+    RecordBuilder,
+    create_record_builder,
+    create_response_builder,
+    find_template,
+)
+from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_protocol.models import AirbyteStreamStatus, ConfiguredAirbyteCatalog, FailureType, SyncMode
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
-
+from source_stripe import SourceStripe
 
 _STREAM_NAME = "events"
 _NOW = datetime.now(timezone.utc)
@@ -30,6 +35,7 @@ _AVOIDING_INCLUSIVE_BOUNDARIES = 1
 _SECOND_REQUEST = 1
 _THIRD_REQUEST = 2
 
+
 def _config() -> ConfigBuilder:
     return ConfigBuilder().with_start_date(_NOW - timedelta(days=73)).with_account_id(_ACCOUNT_ID).with_client_secret(_CLIENT_SECRET)
 
@@ -38,17 +44,16 @@ def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
 
 
-def _source(catalog: ConfiguredAirbyteCatalog) -> SourceStripe:
-    return SourceStripe(catalog)
+def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any]) -> SourceStripe:
+    return SourceStripe(catalog, config)
 
 
-def _create_builders() -> Tuple[RecordBuilder, HttpResponseBuilder]:
-    return create_builders_from_resource(
+def _a_record() -> RecordBuilder:
+    return create_record_builder(
         find_template("events", __file__),
         FieldPath("data"),
         record_id_path=FieldPath("id"),
         record_cursor_path=FieldPath("created"),
-        pagination_strategy=StripePaginationStrategy(),
     )
 
 
@@ -56,22 +61,19 @@ def _response_with_status(status_code: int) -> HttpResponse:
     return HttpResponse(json.dumps(find_template(str(status_code), __file__)), status_code)
 
 
-def _a_record() -> RecordBuilder:
-    return _create_builders()[0]
-
-
 def _a_response() -> HttpResponseBuilder:
-    return _create_builders()[1]
+    return create_response_builder(find_template("events", __file__), FieldPath("data"), pagination_strategy=StripePaginationStrategy())
 
 
 def _read(
-    config: ConfigBuilder,
+    config_builder: ConfigBuilder,
     sync_mode: SyncMode,
     state: Optional[Dict[str, Any]] = None,
     expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
-    return read(_source(catalog), config.build(), catalog, state, expecting_exception)
+    config = config_builder.build()
+    return read(_source(catalog, config), config, catalog, state, expecting_exception)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -234,8 +236,8 @@ class FullRefreshTest(TestCase):
             ),
             _response_with_status(401),
         )
-        output = self._read(_config(), expecting_exception=True)
-        assert output.get_stream_statuses(_STREAM_NAME) == [AirbyteStreamStatus.INCOMPLETE]
+        output = self._read(_config().with_start_date(_A_START_DATE), expecting_exception=True)
+        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
 
     @HttpMocker()
     def test_given_rate_limited_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:

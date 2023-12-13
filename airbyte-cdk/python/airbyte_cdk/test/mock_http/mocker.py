@@ -93,8 +93,7 @@ class HttpMocker(contextlib.ContextDecorator):
                     self._validate_all_matchers_called()
                 except ValueError as http_mocker_exception:
                     # This seems useless as it catches ValueError and raises ValueError but without this, the prevaling error message in
-                    # the output is the assertion. The error message for the matchers validation is only
-                    # `../../../../../airbyte-cdk/python/airbyte_cdk/test/mock_http/mocker.py:92: in wrapper\n\tself._validate_all_matchers_called()`
+                    # the output is the function call that failed the assertion, whereas raising `ValueError(http_mocker_exception)` like we do here provides additional context for the exception.
                     raise ValueError(http_mocker_exception) from None
                 if assertion_error:
                     raise assertion_error

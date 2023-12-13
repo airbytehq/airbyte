@@ -21,7 +21,7 @@ from source_stripe.availability_strategy import StripeAvailabilityStrategy, Stri
 
 STRIPE_API_VERSION = "2022-11-15"
 CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
-IS_TESTING = os.environ.get("IS_TESTING")
+IS_TESTING = os.environ.get("DEPLOYMENT_MODE") == "testing"
 USE_CACHE = not CACHE_DISABLED
 
 
