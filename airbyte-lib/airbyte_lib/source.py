@@ -49,13 +49,11 @@ class Source:
         self,
         executor: Executor,
         name: str,
-        version: str = "latest",
         config: Optional[Dict[str, Any]] = None,
         streams: Optional[List[str]] = None,
     ):
         self.executor = executor
         self.name = name
-        self.version = version
         self.streams = None
         self.config = None
         if not config is None:
@@ -172,6 +170,9 @@ class Source:
                         return
             raise Exception("Connector did not return check status")
 
+    def install(self):
+        self.executor.ensure_installation()
+
     def read(self) -> Iterable[AirbyteRecordMessage]:
         """
         Call read on the connector.
@@ -228,6 +229,8 @@ class Source:
         * Read the output line by line of the subprocess and serialize them AirbyteMessage objects. Drop if not valid.
         """
 
+        self.executor.ensure_installation()
+
         last_log_messages = []
         try:
             with self.executor.execute(args) as output:
@@ -239,7 +242,7 @@ class Source:
                             last_log_messages.append(message.log.message)
                             if len(last_log_messages) > 10:
                                 last_log_messages.pop(0)
-                    except Exception:
+                    except Exception as e:
                         # line is probably a log message, add it to the last log messages
                         last_log_messages.append(line)
                         if len(last_log_messages) > 10:

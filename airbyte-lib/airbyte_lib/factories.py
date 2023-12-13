@@ -16,7 +16,7 @@ def get_connector(
     name: str, version: str = "latest", config: Optional[Dict[str, Any]] = None
 ):
     metadata = get_connector_metadata(name)
-    return Source(VenvExecutor(metadata), name, version, config)
+    return Source(VenvExecutor(metadata, version), name, config)
 
 def sync(connector: Source, store: TCache) -> SyncResult[TCache]:
     return create_connection(connector, store).sync()
