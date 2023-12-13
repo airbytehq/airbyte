@@ -538,7 +538,8 @@ class HttpRequester(Requester):
             if isinstance(value, str):
                 return value
             elif isinstance(value, list):
-                return ", ".join(_try_get_error(v) for v in value)
+                error_list = [_try_get_error(v) for v in value]
+                return ", ".join(v for v in error_list if v is not None)
             elif isinstance(value, dict):
                 new_value = (
                     value.get("message")
@@ -547,6 +548,8 @@ class HttpRequester(Requester):
                     or value.get("errors")
                     or value.get("failures")
                     or value.get("failure")
+                    or value.get("details")
+                    or value.get("detail")
                 )
                 return _try_get_error(new_value)
             return None

@@ -9,7 +9,7 @@ const REGISTRY_URL =
 
 const fetchCatalog = async () => {
   console.log("Fetching connector registry...");
-  const json = await fetch(REGISTRY_URL).then(resp => resp.json());
+  const json = await fetch(REGISTRY_URL).then((resp) => resp.json());
   console.log(`fetched ${json.length} connectors form registry`);
   return json;
 };
@@ -61,36 +61,38 @@ const buildConnectorHTMLContent = (
 ) => {
   // note - you can't have any leading whitespace here
   const htmlContent = `<div>
-    <div class="header">
-      <img src="${registryEntry.iconUrl_oss}" alt="" class="connectorIcon"  />
-      <h1 id="${originalId}">${originalTitle}</h1>
-    </div>
-
     <dl class="connectorMetadata">
       <div>
         <dt>Availability</dt>
         <dd class="availability">
-          <span class="${registryEntry.is_cloud ? "available" : "unavailable"}">${registryEntry.is_cloud ? CHECK_ICON : CROSS_ICON} Airbyte Cloud</span>
-          <span class="${registryEntry.is_oss ? "available" : "unavailable"}">${registryEntry.is_oss ? CHECK_ICON : CROSS_ICON} Airbyte OSS</span>
+          <span class="${
+            registryEntry.is_cloud ? "available" : "unavailable"
+          }">${
+    registryEntry.is_cloud ? CHECK_ICON : CROSS_ICON
+  } Airbyte Cloud</span>
+          <span class="${registryEntry.is_oss ? "available" : "unavailable"}">${
+    registryEntry.is_oss ? CHECK_ICON : CROSS_ICON
+  } Airbyte OSS</span>
         </dd>
       </div>
       <div>
         <dt>Support Level</dt>
         <dd>
-          <a href="/project-overview/product-support-levels/">${escape(capitalizeFirstLetter(
-            registryEntry.supportLevel_oss
-          ))}</a>
+          <a href="/project-overview/product-support-levels/">${escape(
+            capitalizeFirstLetter(registryEntry.supportLevel_oss)
+          )}</a>
         </dd>
       </div>
       <div>
         <dt>Latest Version</dt>
         <dd>${escape(registryEntry.dockerImageTag_oss)}</dd>
       </div>
-      <div>
-        <dt>Definition Id</dt>
-        <dd>${escape(registryEntry.definitionId)}</dd>
-      </div>
     </dl>
+
+    <div class="header">
+      <img src="${registryEntry.iconUrl_oss}" alt="" class="connectorIcon"  />
+      <h1 id="${originalId}">${originalTitle}</h1>
+    </div>
   </div>`;
 
   return htmlContent;
@@ -112,7 +114,11 @@ const isDocsPage = (vfile) => {
 };
 
 const escape = (string) => {
-  return string.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return string
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 };
 
 const capitalizeFirstLetter = (string) => {

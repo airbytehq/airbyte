@@ -6,7 +6,9 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "link": {
       "type": ["null", "string"]
@@ -33,6 +35,9 @@
           "type": ["null", "string"]
         }
       }
+    },
+    "pin_metrics": {
+      "type": ["null", "object"]
     },
     "media": {
       "type": ["null", "object"],

@@ -15,14 +15,16 @@ import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
 import java.util.List;
@@ -31,6 +33,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +114,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
    * @param sqlOps - SqlOperations object
    * @param attemptInsert - set true if need to make attempt to insert dummy records to newly created
    *        table. Set false to skip insert step.
-   * @throws Exception
    */
   public static void attemptTableOperations(final String outputSchema,
                                             final JdbcDatabase database,
@@ -155,12 +157,13 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
    *
    * @return AirbyteRecordMessage object with dummy values that may be used to test insert permission.
    */
-  private static AirbyteRecordMessage getDummyRecord() {
+  private static PartialAirbyteMessage getDummyRecord() {
     final JsonNode dummyDataToInsert = Jsons.deserialize("{ \"field1\": true }");
-    return new AirbyteRecordMessage()
-        .withStream("stream1")
-        .withData(dummyDataToInsert)
-        .withEmittedAt(1602637589000L);
+    return new PartialAirbyteMessage()
+        .withRecord(new PartialAirbyteRecordMessage()
+            .withStream("stream1")
+            .withEmittedAt(1602637589000L))
+        .withSerialized(dummyDataToInsert.toString());
   }
 
   protected DataSource getDataSource(final JsonNode config) {
@@ -201,8 +204,27 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config,
-        catalog);
+    throw new NotImplementedException("Should use the getSerializedMessageConsumer instead");
+  }
+
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
+    return JdbcBufferedConsumerFactory.createAsync(
+        outputRecordCollector,
+        getDatabase(getDataSource(config)),
+        sqlOperations,
+        namingResolver,
+        config,
+        catalog,
+        null,
+        // TODO populate the DV2 stuff
+        false,
+        null,
+        null,
+        null);
   }
 
 }

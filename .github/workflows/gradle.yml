@@ -78,6 +78,7 @@ jobs:
             gradlecheck:
               - '**/*'
               - '!**/*.md'
+              - '!.github/*'
 
       - uses: actions/setup-java@v3
         with:

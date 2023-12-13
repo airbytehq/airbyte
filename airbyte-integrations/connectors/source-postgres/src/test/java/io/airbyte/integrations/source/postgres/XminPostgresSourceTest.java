@@ -16,11 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Source;
-import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
@@ -38,7 +35,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,48 +95,31 @@ class XminPostgresSourceTest {
   }
 
   @BeforeEach
-  protected void setup() throws SQLException {
-    testdb = PostgresTestDatabase.make(getDatabaseImageName());
-    testdb.database.query(ctx -> {
-      ctx.fetch(
-          "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
-      ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
-      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-
-      ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
-      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-
-      ctx.fetch(
-          "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));");
-      ctx.fetch(
-          "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
-      return null;
-    });
+  protected void setup() {
+    testdb = PostgresTestDatabase.in(getDatabaseImageName())
+        .with("CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));")
+        .with("CREATE INDEX i1 ON id_and_name (id);")
+        .with("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")
+        .with("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);")
+        .with("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")
+        .with(
+            "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));")
+        .with(
+            "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
   }
 
   @AfterEach
-  protected void tearDown() throws SQLException {
+  protected void tearDown() {
     testdb.close();
   }
 
   protected JsonNode getXminConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, testdb.container.getHost())
-        .put(JdbcUtils.PORT_KEY, testdb.container.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, testdb.dbName)
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
-        .put(JdbcUtils.USERNAME_KEY, testdb.userName)
-        .put(JdbcUtils.PASSWORD_KEY, testdb.password)
-        .put(JdbcUtils.SSL_KEY, false)
-        .put("replication_method", getReplicationMethod())
-        .put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
-        .build());
-  }
-
-  private JsonNode getReplicationMethod() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Xmin")
-        .build());
+    return testdb.testConfigBuilder()
+        .withSchemas(SCHEMA_NAME)
+        .withoutSsl()
+        .withXminReplication()
+        .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
+        .build();
   }
 
   protected Source source() {
@@ -254,7 +233,7 @@ class XminPostgresSourceTest {
     // We add some data and perform a third read. We should verify that (i) a delete is not captured and
     // (ii) the new record that is inserted into the
     // table is read.
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
       ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
       return null;

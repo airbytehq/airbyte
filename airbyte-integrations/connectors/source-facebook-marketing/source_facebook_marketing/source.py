@@ -61,7 +61,6 @@ UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
 class SourceFacebookMarketing(AbstractSource):
-
     # Skip exceptions on missing streams
     raise_exception_on_missing_stream = False
 
@@ -96,15 +95,9 @@ class SourceFacebookMarketing(AbstractSource):
 
             api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
 
-            record_iterator = AdAccount(api=api).read_records(sync_mode=SyncMode.full_refresh, stream_state={})
-            account_info = list(record_iterator)[0]
-
-            if account_info.get("is_personal"):
-                message = (
-                    "The personal ad account you're currently using is not eligible "
-                    "for this operation. Please switch to a business ad account."
-                )
-                return False, message
+            # Get Ad Account to check creds
+            ad_account = api.account
+            logger.info(f"Select account {ad_account}")
 
         except AirbyteTracedException as e:
             return False, f"{e.message}. Full error: {e.internal_message}"

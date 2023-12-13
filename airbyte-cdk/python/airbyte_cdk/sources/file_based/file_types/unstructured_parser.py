@@ -115,9 +115,9 @@ class UnstructuredParser(FileTypeParser):
         if filetype == FileType.PDF:
             # for PDF, read the file into a BytesIO object because some code paths in pdf parsing are doing an instance check on the file object and don't work with file-like objects
             file_handle.seek(0)
-            file = BytesIO(file_handle.read())
-            file_handle.seek(0)
-            elements = unstructured_partition_pdf(file=file)
+            with BytesIO(file_handle.read()) as file:
+                file_handle.seek(0)
+                elements = unstructured_partition_pdf(file=file)
         elif filetype == FileType.DOCX:
             elements = unstructured_partition_docx(file=file)
         elif filetype == FileType.PPTX:

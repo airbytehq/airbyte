@@ -76,7 +76,7 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest 
     // We add some data and perform a third read. We should verify that (i) a delete is not captured and
     // (ii) the new record that is inserted into the
     // table is read.
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
       ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
       return null;

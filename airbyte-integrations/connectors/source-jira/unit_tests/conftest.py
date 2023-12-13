@@ -8,7 +8,112 @@ import os
 import responses
 from pytest import fixture
 from responses import matchers
-from source_jira.streams import Projects
+from source_jira.streams import (
+    ApplicationRoles,
+    Avatars,
+    BoardIssues,
+    Boards,
+    Dashboards,
+    Filters,
+    FilterSharing,
+    Groups,
+    IssueComments,
+    IssueCustomFieldContexts,
+    IssueFieldConfigurations,
+    IssueFields,
+    IssueLinkTypes,
+    IssueNavigatorSettings,
+    IssueNotificationSchemes,
+    IssuePriorities,
+    IssuePropertyKeys,
+    IssueRemoteLinks,
+    IssueResolutions,
+    Issues,
+    IssueSecuritySchemes,
+    IssueTypeSchemes,
+    IssueVotes,
+    IssueWatchers,
+    IssueWorklogs,
+    JiraSettings,
+    Labels,
+    Permissions,
+    ProjectAvatars,
+    ProjectCategories,
+    ProjectComponents,
+    ProjectEmail,
+    ProjectPermissionSchemes,
+    Projects,
+    ProjectVersions,
+    Screens,
+    ScreenTabs,
+    SprintIssues,
+    Sprints,
+    TimeTracking,
+    Users,
+    UsersGroupsDetailed,
+    Workflows,
+    WorkflowSchemes,
+    WorkflowStatusCategories,
+    WorkflowStatuses,
+)
+
+
+@fixture(scope="session", autouse=True)
+def disable_cache():
+    classes = [
+        ApplicationRoles,
+        Avatars,
+        BoardIssues,
+        Boards,
+        Dashboards,
+        Filters,
+        FilterSharing,
+        Groups,
+        IssueComments,
+        IssueCustomFieldContexts,
+        IssueFieldConfigurations,
+        IssueFields,
+        IssueLinkTypes,
+        IssueNavigatorSettings,
+        IssueNotificationSchemes,
+        IssuePriorities,
+        IssuePropertyKeys,
+        IssueRemoteLinks,
+        IssueResolutions,
+        Issues,
+        IssueSecuritySchemes,
+        IssueTypeSchemes,
+        IssueVotes,
+        IssueWatchers,
+        IssueWorklogs,
+        JiraSettings,
+        Labels,
+        Permissions,
+        ProjectAvatars,
+        ProjectCategories,
+        ProjectComponents,
+        ProjectEmail,
+        ProjectPermissionSchemes,
+        Projects,
+        ProjectVersions,
+        Screens,
+        ScreenTabs,
+        SprintIssues,
+        Sprints,
+        TimeTracking,
+        Users,
+        UsersGroupsDetailed,
+        Workflows,
+        WorkflowSchemes,
+        WorkflowStatusCategories,
+        WorkflowStatuses,
+    ]
+    for cls in classes:
+        # Disabling cache for all streams to assess the number of calls made for each stream.
+        # Additionally, this is necessary as the responses library has been returning unexpected call counts
+        # following the recent update to HttpStream
+        cls.use_cache = False
+
 
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
@@ -280,7 +385,12 @@ def mock_issues_responses(config, issues_response):
         f"https://{config['domain']}/rest/api/3/search",
         match=[
             matchers.query_param_matcher(
-                {"maxResults": 50, "fields": "*all", "jql": "project in (1)", "expand": "renderedFields,transitions,changelog"}
+                {
+                    "maxResults": 50,
+                    "fields": "*all",
+                    "jql": "project in (1) ORDER BY updated asc",
+                    "expand": "renderedFields,transitions,changelog",
+                }
             )
         ],
         json=issues_response,
@@ -290,8 +400,77 @@ def mock_issues_responses(config, issues_response):
         f"https://{config['domain']}/rest/api/3/search",
         match=[
             matchers.query_param_matcher(
-                {"maxResults": 50, "fields": "*all", "jql": "project in (2)", "expand": "renderedFields,transitions,changelog"}
+                {
+                    "maxResults": 50,
+                    "fields": "*all",
+                    "jql": "project in (2) ORDER BY updated asc",
+                    "expand": "renderedFields,transitions,changelog",
+                }
             )
         ],
         json={},
+    )
+
+
+@fixture
+def mock_fields_response(config, issue_fields_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/field?maxResults=50",
+        json=issue_fields_response,
+    )
+
+
+@fixture
+def mock_users_response(config, users_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/users/search?maxResults=50",
+        json=users_response,
+    )
+
+
+@fixture
+def mock_board_response(config, boards_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
+        json=boards_response,
+    )
+
+
+@fixture
+def mock_screen_response(config, screens_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/screens?maxResults=50",
+        json=screens_response,
+    )
+
+
+@fixture
+def mock_filter_response(config, filters_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/filter/search?maxResults=50&expand=description%2Cowner%2Cjql%2CviewUrl%2CsearchUrl%2Cfavourite%2CfavouritedCount%2CsharePermissions%2CisWritable%2Csubscriptions",
+        json=filters_response,
+    )
+
+
+@fixture
+def mock_sprints_response(config, sprints_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/agile/1.0/board/1/sprint?maxResults=50",
+        json=sprints_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/agile/1.0/board/2/sprint?maxResults=50",
+        json=sprints_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/agile/1.0/board/3/sprint?maxResults=50",
+        json=sprints_response,
     )

@@ -131,7 +131,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
       return;
     }
     final UUID queryId = UUID.randomUUID();
-    LOGGER.info("Executing sql {}: {}", queryId, sql);
+    LOGGER.debug("Executing sql {}: {}", queryId, sql);
     final long startTime = System.currentTimeMillis();
 
     try {
@@ -150,7 +150,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
       throw new RuntimeException(trimmedMessage, e);
     }
 
-    LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
+    LOGGER.debug("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
   }
 
   /**
