@@ -53,5 +53,16 @@
         "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2"
+      }
+    }
   }
 ]

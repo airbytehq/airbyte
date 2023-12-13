@@ -46,6 +46,9 @@ acceptance_tests:
           GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE:
             - name: "dataEndTime"
               bypass_reason: changes frequently
+          GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
           GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT:
             - name: "dataEndTime"
               bypass_reason: changes frequently

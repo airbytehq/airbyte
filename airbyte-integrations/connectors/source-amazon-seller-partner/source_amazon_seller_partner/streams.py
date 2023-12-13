@@ -1221,3 +1221,73 @@ class FbaReimbursementsReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FBA_REIMBURSEMENTS_DATA"
+
+class FlatFileV2SettlementV2Reports(IncrementalReportsAmazonSPStream):
+    name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2"
+    cursor_field = "dataEndTime"
+
+    def _create_report(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+
+        # For backwards
+        return {"reportId": stream_slice.get("report_id")}
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        From https://developer-docs.amazon.com/sp-api/docs/report-type-values
+        documentation:
+        ```Settlement reports cannot be requested or scheduled.
+            They are automatically scheduled by Amazon.
+            You can search for these reports using the getReports operation.
+        ```
+        """
+
+        strict_start_date = pendulum.now("utc").subtract(days=90)
+        utc_now = pendulum.now("utc").date().to_date_string()
+
+        create_date = max(pendulum.parse(self._replication_start_date), strict_start_date)
+        end_date = pendulum.parse(self._replication_end_date or utc_now)
+
+        stream_state = stream_state or {}
+        if cursor_value := stream_state.get(self.cursor_field):
+            create_date = pendulum.parse(min(cursor_value, utc_now))
+
+        if end_date < strict_start_date:
+            end_date = pendulum.now("utc")
+
+        params = {
+            "reportTypes": self.name,
+            "pageSize": 100,
+            "createdSince": create_date.strftime(DATE_TIME_FORMAT),
+            "createdUntil": end_date.strftime(DATE_TIME_FORMAT),
+        }
+        unique_records = list()
+        complete = False
+
+        while not complete:
+            request_headers = self.request_headers()
+            get_reports = self._create_prepared_request(
+                path=f"{self.path_prefix}/reports",
+                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                params=params,
+            )
+            report_response = self._send_request(get_reports, {})
+            response = report_response.json()
+            data = response.get("reports", list())
+            records = [e.get("reportId") for e in data if e and e.get("reportId") not in unique_records]
+            unique_records += records
+            reports = [{"report_id": report_id} for report_id in records]
+
+            yield from reports
+
+            next_value = response.get("nextToken", None)
+            params = {"nextToken": next_value}
+            if not next_value:
+                complete = True
