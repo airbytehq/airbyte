@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.57.3
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
 ## 0.57.2
 Update airbyte-protocol
 
