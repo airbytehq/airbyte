@@ -13,7 +13,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.mock_http.response_builder import create_record_builder, create_response_builder, find_template, FieldPath, HttpResponseBuilder, RecordBuilder
-from airbyte_protocol.models import SyncMode, ConfiguredAirbyteCatalog, AirbyteStreamStatus
+from airbyte_protocol.models import SyncMode, ConfiguredAirbyteCatalog, AirbyteStreamStatus, FailureType
 from source_stripe import SourceStripe
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
@@ -252,7 +252,7 @@ class FullRefreshTest(TestCase):
             )
         )
         output = self._read(_config().with_start_date(_A_START_DATE), expecting_exception=True)
-        assert output.get_stream_statuses(_STREAM_NAME) == [AirbyteStreamStatus.INCOMPLETE]
+        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
 
     @HttpMocker()
     def test_given_rate_limited_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
