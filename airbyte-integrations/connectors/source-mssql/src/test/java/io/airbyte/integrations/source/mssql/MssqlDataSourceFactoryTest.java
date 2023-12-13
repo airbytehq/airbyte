@@ -4,7 +4,13 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import io.airbyte.cdk.integrations.standardtest.source.DataSourceFactoryTest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import com.zaxxer.hikari.HikariDataSource;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import java.util.Map;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 
@@ -12,9 +18,17 @@ public class MssqlDataSourceFactoryTest {
 
   @Test
   protected void testCreatingDataSourceWithConnectionTimeoutSetBelowDefault() {
-    DataSourceFactoryTest.<MSSQLServerContainer<?>>testCreatingDataSourceWithConnectionTimeoutSetBelowDefault(
-        new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2019-latest"),
-        5000, "loginTimeout", 5);
+    MSSQLServerContainer container = new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2019-latest");
+    Map<String, String> connectionProperties = Map.of("loginTimeout", String.valueOf(5));
+    final DataSource dataSource = DataSourceFactory.create(
+        container.getUsername(),
+        container.getPassword(),
+        container.getDriverClassName(),
+        container.getJdbcUrl(),
+        connectionProperties);
+    assertNotNull(dataSource);
+    assertEquals(HikariDataSource.class, dataSource.getClass());
+    assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
   }
 
 }

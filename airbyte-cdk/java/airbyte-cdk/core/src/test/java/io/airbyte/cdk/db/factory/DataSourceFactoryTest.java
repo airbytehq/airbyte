@@ -22,7 +22,7 @@ import org.testcontainers.containers.MySQLContainer;
 /**
  * Test suite for the {@link DataSourceFactory} class.
  */
-class DataSourceFactoryTestCollection extends CommonFactoryTest {
+class DataSourceFactoryTest extends CommonFactoryTest {
 
   private static final String CONNECT_TIMEOUT = "connectTimeout";
 
