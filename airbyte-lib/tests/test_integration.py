@@ -1,0 +1,90 @@
+import pytest
+import os
+import shutil
+import airbyte_lib as ab
+
+
+@pytest.fixture(scope="module", autouse=True)
+def prepare_test_env():
+    """
+    Prepare test environment. This will pre-install the test source from the fixtures array and set the environment variable to use the local json file as registry.
+    """
+    if os.path.exists(".venv-source-test"):
+        shutil.rmtree(".venv-source-test")
+
+    os.system("python -m venv .venv-source-test")
+    os.system(
+        "source .venv-source-test/bin/activate && pip install -e ./tests/fixtures/source-test"
+    )
+    os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/fixtures/registry.json"
+
+    yield
+
+    shutil.rmtree(".venv-source-test")
+
+
+def test_list_streams():
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+
+    assert source.get_available_streams() == ["stream1", "stream2"]
+
+def test_invalid_config():
+    with pytest.raises(Exception):
+        ab.get_connector("source-test", config={"apiKey": 1234})
+
+def test_non_existing_connector():
+    with pytest.raises(Exception):
+        ab.get_connector("source-not-existing", config={"apiKey": "abc"})
+
+def test_wrong_version():
+    with pytest.raises(Exception):
+        ab.get_connector("source-test", version="1.2.3", config={"apiKey": "abc"})
+
+def test_check():
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+
+    source.check()
+
+
+def test_check_fail():
+    source = ab.get_connector("source-test", config={"apiKey": "wrong"})
+
+    with pytest.raises(Exception):
+        source.check()
+
+
+def test_sync():
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.get_in_memory_cache()
+
+    result = ab.sync(source, cache)
+
+    assert result.processed_records == 3
+    assert result.cache.streams == {
+        "stream1": [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}],
+        "stream2": [{"column1": "value1", "column2": 1}],
+    }
+
+def test_sync_limited_streams():
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.get_in_memory_cache()
+
+    source.set_streams(["stream2"])
+
+    result = ab.sync(source, cache)
+
+    assert result.processed_records == 1
+    assert result.cache.streams == {
+        "stream2": [{"column1": "value1", "column2": 1}],
+    }
+
+def test_peek():
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+
+    assert source.peek("stream1", 1) == [{"column1": "value1", "column2": 1}]
+
+def test_peek_nonexisting_stream():
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+
+    with pytest.raises(Exception):
+        source.peek("non-existing")

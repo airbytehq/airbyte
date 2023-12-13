@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+import os
 from pathlib import Path
 import subprocess
 from typing import List, IO
@@ -9,35 +10,84 @@ import subprocess
 from typing import List, IO
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-
+import sys
 
 
 class Executor(ABC):
-    def __init__(self, metadata: ConnectorMetadata):
+    def __init__(self, metadata: ConnectorMetadata, target_version: str = "latest"):
         self.metadata = metadata
+        self.target_version = target_version if target_version != "latest" else metadata.latest_available_version
 
     @abstractmethod
     @contextmanager
     def execute(self, args: List[str]) -> IO[str]:
         pass
 
+    @abstractmethod
+    def ensure_installation(self):
+        pass
+
 
 class VenvExecutor(Executor):
-    def __init__(self, metadata: ConnectorMetadata):
-        super().__init__(metadata)
+    def _get_venv_name(self):
+        return f".venv-{self.metadata.name}"
+    
+    def _get_connector_path(self):
+        return Path(self._get_venv_name(), "bin", self.metadata.name)
+    
+    def _run_subprocess_and_raise_on_failure(self, args: List[str]):
+        result = subprocess.run(args)
+        if result.returncode != 0:
+            raise Exception(f"Install process exited with code {result.returncode}")
+    
+    def _install(self):
+        venv_name = self._get_venv_name()
+        self._run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", venv_name])
 
-    @contextmanager
-    def execute(self, args: List[str]) -> IO[str]:
+        pip_path = os.path.join(venv_name, "bin", "pip")
+
+        # TODO this is a temporary install path that will be replaced with a proper package name once they are published. At this point we are also using the version
+        package_to_install = f"../airbyte-integrations/connectors/{self.metadata.name}"
+        self._run_subprocess_and_raise_on_failure([pip_path, "install", "-e", package_to_install])
+    
+    def _get_installed_version(self):
+        """
+        In the venv, run the following: python -c "from importlib.metadata import version; print(version('<connector-name>'))"
+        """
+        venv_name = self._get_venv_name()
+        connector_name = self.metadata.name
+        return subprocess.check_output(
+            [os.path.join(venv_name, "bin", "python"), "-c", f"from importlib.metadata import version; print(version('{connector_name}'))"],
+            universal_newlines=True
+        ).strip()
+
+    def ensure_installation(self):
         venv_name = f".venv-{self.metadata.name}"
         venv_path = Path(venv_name)
         if not venv_path.exists():
-            raise Exception(f"Could not find venv {venv_name}")
+            self._install()
 
-        connector_path = Path(venv_path, "bin", self.metadata.name)
+        connector_path = self._get_connector_path()
         if not connector_path.exists():
             raise Exception(
                 f"Could not find connector {self.metadata.name} in venv {venv_name}"
             )
+
+        installed_version = self._get_installed_version()
+        if installed_version != self.target_version:
+            # If the version doesn't match, reinstall
+            self._install()
+            
+            # Check the version again
+            version_after_install = self._get_installed_version()
+            if version_after_install != self.target_version:
+                raise Exception(
+                    f"Failed to install connector {self.metadata.name} version {self.target_version}. Installed version is {version_after_install}"
+                )
+
+    @contextmanager
+    def execute(self, args: List[str]) -> IO[str]:
+        connector_path = self._get_connector_path()
 
         process = subprocess.Popen(
             [str(connector_path)] + args,
