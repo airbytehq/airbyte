@@ -3,7 +3,9 @@
 #
 
 from unittest.mock import MagicMock
+
 from source_monday.extractor import MondayActivityExtractor
+
 
 def test_extract_records():
     # Mock the response
