@@ -314,34 +314,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
-    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
-    // Create the data source
-    final DataSource dataSource = DataSourceFactory.create(
-        jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClassName,
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        getConnectionProperties(sourceConfig),
-        JdbcConnector.getConnectionTimeout(getConnectionProperties(sourceConfig), driverClassName));
-    // Record the data source so that it can be closed.
-    dataSources.add(dataSource);
-
-    final JdbcDatabase database = new StreamingJdbcDatabase(
-        dataSource,
-        sourceOperations,
-        streamingQueryConfigProvider);
-
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-    database.setSourceConfig(sourceConfig);
-    database.setDatabaseConfig(jdbcConfig);
-
+  protected void createDatabase_postHook(JdbcDatabase database) throws SQLException {
     this.publicizedTablesInCdc = PostgresCatalogHelper.getPublicizedTables(database);
-
-    return database;
   }
 
-  public static Map<String, String> getConnectionProperties(final JsonNode config) {
+  @Override
+  public Map<String, String> getConnectionProperties(final JsonNode config) {
     final Map<String, String> customProperties =
         config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)
             ? parseJdbcParameters(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText(), DEFAULT_JDBC_PARAMETERS_DELIMITER)

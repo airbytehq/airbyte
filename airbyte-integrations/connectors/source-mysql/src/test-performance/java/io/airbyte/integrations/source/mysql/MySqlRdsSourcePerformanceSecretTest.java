@@ -10,7 +10,7 @@ import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.source.jdbc.JdbcSource;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -53,7 +53,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MYSQL,
         Map.of("zeroDateTimeBehavior", "convertToNull"),
-        JdbcSource.CONNECT_TIMEOUT_DEFAULT)) {
+        JdbcConnector.CONNECT_TIMEOUT_DEFAULT)) {
 
       final Database database = new Database(dslContext);
 

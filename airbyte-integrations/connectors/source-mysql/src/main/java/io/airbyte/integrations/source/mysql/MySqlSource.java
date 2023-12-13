@@ -527,31 +527,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
-    // return super.createDatabase(sourceConfig, this::getConnectionProperties);
-    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
-    // Create the data source
-    final DataSource dataSource = DataSourceFactory.create(
-        jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClassName,
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        this.getConnectionProperties(sourceConfig),
-        JdbcConnector.getConnectionTimeout(getConnectionProperties(sourceConfig), driverClassName));
-    // Record the data source so that it can be closed.
-    dataSources.add(dataSource);
-
-    final JdbcDatabase database = new StreamingJdbcDatabase(
-        dataSource,
-        sourceOperations,
-        streamingQueryConfigProvider);
-
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-    database.setSourceConfig(sourceConfig);
-    database.setDatabaseConfig(jdbcConfig);
-    return database;
-  }
-
   public Map<String, String> getConnectionProperties(final JsonNode config) {
     final Map<String, String> customProperties =
         config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)
