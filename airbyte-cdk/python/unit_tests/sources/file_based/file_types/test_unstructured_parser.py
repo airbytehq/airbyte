@@ -315,7 +315,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
 
 
 @pytest.mark.parametrize(
-    "filetype, format_config, raises_for_status, file_content, json_response, expected_requests, raises, expected_records",
+    "filetype, format_config, raises_for_status, file_content, json_response, expected_requests, raises, expected_records, http_status_code",
     [
         pytest.param(
             FileType.PDF,
@@ -332,6 +332,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                     "_ab_source_file_parse_error": None
                 }
             ],
+            200,
             id="basic_request",
         ),
         pytest.param(
@@ -349,6 +350,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                     "_ab_source_file_parse_error": None
                 }
             ],
+            200,
             id="request_with_params",
         ),
         pytest.param(
@@ -366,6 +368,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                     "_ab_source_file_parse_error": None
                 }
             ],
+            200,
             id="handle_markdown_locally",
         ),
         pytest.param(
@@ -394,6 +397,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             ],
             True,
             None,
+            200,
             id="retry_and_raise_on_api_error",
         ),
         pytest.param(
@@ -422,6 +426,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                     "_ab_source_file_parse_error": None
                 }
             ],
+            200,
             id="retry_and_recover",
         ),
         pytest.param(
@@ -438,6 +443,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             ],
             True,
             None,
+            200,
             id="no_retry_on_unexpected_error",
         ),
         pytest.param(
@@ -454,7 +460,28 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             ],
             True,
             None,
+            400,
             id="no_retry_on_400_error",
+        ),
+        pytest.param(
+            FileType.PDF,
+            UnstructuredFormat(skip_unprocessable_file_types=False, processing=APIProcessingConfigModel(mode="api", api_key="test")),
+            None,
+            "test",
+            [{"detail": "Something went wrong"}],
+            [
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
+            ],
+            False,
+            [
+                {
+                    "content": None,
+                    "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=path/to/file.xyz message=[{'detail': 'Something went wrong'}]",
+                }
+            ],
+            422,
+            id="error_record_on_422_error",
         ),
     ],
 )
@@ -473,6 +500,7 @@ def test_parse_records_remotely(
     expected_requests,
     raises,
     expected_records,
+    http_status_code
 ):
     stream_reader = MagicMock()
     mock_open(stream_reader.open_file, read_data=bytes(str(file_content), "utf-8"))
@@ -484,6 +512,7 @@ def test_parse_records_remotely(
     mock_detect_filetype.return_value = filetype
     mock_response = MagicMock()
     mock_response.json.return_value = json_response
+    mock_response.status_code = http_status_code
     if raises_for_status:
         mock_response.raise_for_status.side_effect = raises_for_status
     requests_mock.post.return_value = mock_response

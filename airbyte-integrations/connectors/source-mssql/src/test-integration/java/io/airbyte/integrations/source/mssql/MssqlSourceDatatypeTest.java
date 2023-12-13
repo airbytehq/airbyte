@@ -6,6 +6,8 @@ package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
+import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 
 public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
@@ -14,6 +16,11 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
   protected Database setupDatabase() {
     testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
     return testdb.getDatabase();
+  }
+
+  @Override
+  protected FeatureFlags featureFlags() {
+    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
   }
 
   @Override
