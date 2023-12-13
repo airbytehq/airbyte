@@ -3,6 +3,7 @@
 #
 import logging
 import traceback
+from datetime import datetime
 from io import BytesIO, IOBase
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
@@ -56,6 +57,8 @@ def user_error(e: Exception) -> bool:
     """
     Return True if this exception is caused by user error, False otherwise.
     """
+    if not isinstance(e, RecordParseError):
+        return False
     if not isinstance(e, requests.exceptions.RequestException):
         return False
     return bool(e.response and 400 <= e.response.status_code < 500)
@@ -164,10 +167,14 @@ class UnstructuredParser(FileTypeParser):
             return self._read_file_locally(file_handle, filetype, format.strategy, remote_file)
         elif format.processing.mode == "api":
             try:
-                result: str = self._read_file_remotely_with_retries(file_handle, format.processing, filetype, format.strategy)
+                result: str = self._read_file_remotely_with_retries(file_handle, format.processing, filetype, format.strategy, remote_file)
             except Exception as e:
-                # Re-throw as config error so the sync is stopped as problems with the external API need to be resolved by the user and are not considered part of the SLA.
+                # If a parser error happens during remotely processing the file, this means the file is corrupted. This case is handled by the parse_records method, so just rethrow.
+                #
+                # For other exceptions, re-throw as config error so the sync is stopped as problems with the external API need to be resolved by the user and are not considered part of the SLA.
                 # Once this parser leaves experimental stage, we should consider making this a system error instead for issues that might be transient.
+                if isinstance(e, RecordParseError):
+                    raise e
                 raise AirbyteTracedException.from_exception(e, failure_type=FailureType.config_error)
 
             return result
@@ -210,7 +217,13 @@ class UnstructuredParser(FileTypeParser):
             return False, "Base URL must start with https://"
 
         try:
-            self._read_file_remotely(BytesIO(b"# Airbyte source connection test"), format_config.processing, FileType.MD, "auto")
+            self._read_file_remotely(
+                BytesIO(b"# Airbyte source connection test"),
+                format_config.processing,
+                FileType.MD,
+                "auto",
+                RemoteFile(uri="test", last_modified=datetime.now()),
+            )
         except Exception:
             return False, "".join(traceback.format_exc())
 
@@ -218,14 +231,16 @@ class UnstructuredParser(FileTypeParser):
 
     @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=5, giveup=user_error)
     def _read_file_remotely_with_retries(
-        self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str
+        self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str, remote_file: RemoteFile
     ) -> str:
         """
         Read a file remotely, retrying up to 5 times if the error is not caused by user error. This is useful for transient network errors or the API server being overloaded temporarily.
         """
-        return self._read_file_remotely(file_handle, format, filetype, strategy)
+        return self._read_file_remotely(file_handle, format, filetype, strategy, remote_file)
 
-    def _read_file_remotely(self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str) -> str:
+    def _read_file_remotely(
+        self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str, remote_file: RemoteFile
+    ) -> str:
         headers = {"accept": "application/json", "unstructured-api-key": format.api_key}
 
         data = self._params_to_dict(format.parameters, strategy)
@@ -233,7 +248,13 @@ class UnstructuredParser(FileTypeParser):
         file_data = {"files": ("filename", file_handle, FILETYPE_TO_MIMETYPE[filetype])}
 
         response = requests.post(f"{format.api_url}/general/v0/general", headers=headers, data=data, files=file_data)
-        response.raise_for_status()
+
+        if response.status_code == 422:
+            # 422 means the file couldn't be processed, but the API is working. Treat this as a parsing error (passing an error record to the destination).
+            raise self._create_parse_error(remote_file, response.json())
+        else:
+            # Other error statuses are raised as requests exceptions (retry everything except user errors)
+            response.raise_for_status()
 
         json_response = response.json()
 
