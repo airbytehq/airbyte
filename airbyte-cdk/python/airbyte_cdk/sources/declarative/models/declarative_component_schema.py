@@ -235,6 +235,12 @@ class RefreshTokenUpdater(BaseModel):
     )
 
 
+class RefreshRequestType(Enum):
+    body_data = 'body_data'
+    body_json = 'body_json'
+    request_parameter = 'request_parameter'
+
+
 class OAuthAuthenticator(BaseModel):
     type: Literal['OAuthAuthenticator']
     client_id: str = Field(
@@ -321,6 +327,11 @@ class OAuthAuthenticator(BaseModel):
         None,
         description='When the token updater is defined, new refresh tokens, access tokens and the access token expiry date are written back from the authentication response to the config object. This is important if the refresh token can only used once.',
         title='Token Updater',
+    )
+    refresh_request_type: Optional[RefreshRequestType] = Field(
+        'body_data',
+        description='Specifies how to inject the parameters for receiving the access token',
+        title='Refresh Request Type',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
