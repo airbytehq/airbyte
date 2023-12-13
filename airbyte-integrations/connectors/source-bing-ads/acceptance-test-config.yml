@@ -308,7 +308,7 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: Impressions
               bypass_reason: "dynamic field"
-            - name: Impressions
+            - name: Ctr
               bypass_reason: "dynamic field"
           account_impression_performance_report_daily:
             - name: Ctr
