@@ -12,6 +12,7 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
@@ -197,7 +198,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         connectionProperties,
-        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClass));
+        JdbcConnector.getConnectionTimeout(connectionProperties, driverClass));
   }
 
   protected JdbcDatabase getDatabase(final DataSource dataSource) {
