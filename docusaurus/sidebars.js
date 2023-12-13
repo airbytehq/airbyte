@@ -579,6 +579,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/november_2023",
         "release_notes/october_2023",
         "release_notes/upgrading_to_destinations_v2",
         "release_notes/september_2023",
