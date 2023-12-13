@@ -111,6 +111,8 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: MainlineBid
               bypass_reason: "dynamic field"
+            - name: FirstPageBid
+              bypass_reason: "dynamic field"
           campaign_impression_performance_report_weekly:
             - name: Impressions
               bypass_reason: "dynamic field"
