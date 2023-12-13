@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from datetime import time
 from queue import Queue
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
@@ -20,6 +20,8 @@ class PartitionEnqueuer:
         :param sentinel: The sentinel to put in the queue when all the partitions have been generated.
         """
         self._queue = queue
+        self._max_queue_size = 50_000
+        self._sleep_time = 0.1
 
     def generate_partitions(self, stream: AbstractStream) -> None:
         """
@@ -34,7 +36,12 @@ class PartitionEnqueuer:
         """
         try:
             for partition in stream.generate_partitions():
+                self._wait_while_too_many_items_on_the_queue()
                 self._queue.put(partition)
             self._queue.put(PartitionGenerationCompletedSentinel(stream))
         except Exception as e:
             self._queue.put(e)
+
+    def _wait_while_too_many_items_on_the_queue(self) -> None:
+        while self._queue._qsize() > self._max_queue_size:
+            time.sleep(self._sleep_time)
