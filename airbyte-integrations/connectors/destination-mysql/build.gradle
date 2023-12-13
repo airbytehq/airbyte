@@ -28,3 +28,9 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.22'
     integrationTestJavaImplementation libs.testcontainers.mysql
 }
+
+configurations.all {
+    resolutionStrategy {
+        force libs.jooq
+    }
+}
