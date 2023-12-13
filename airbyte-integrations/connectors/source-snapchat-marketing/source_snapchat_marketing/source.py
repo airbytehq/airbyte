@@ -779,7 +779,7 @@ class SourceSnapchatMarketing(AbstractSource):
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),
         max_tries=5,
-        giveup=lambda e: not isinstance(e, requests.exceptions.ConnectionError)
+        giveup=lambda e: not isinstance(e, requests.exceptions.ConnectionError),
     )
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
@@ -795,13 +795,13 @@ class SourceSnapchatMarketing(AbstractSource):
             session = requests.get(url, headers={"Authorization": "Bearer {}".format(token)})
             session.raise_for_status()
             return True, None
-        
+
         # The TestConnection check in our test pipeline consistently fails on first attempt due to a DNS resolution error.
         # This may be caused by a network setting in the test environment, as the error does not seem to be locally reproducable.
         # Adding retry logic here seems to resolve the problem.
         except requests.exceptions.ConnectionError as e:
             logger.error(f"Caught ConnectionError: {e}")
-            raise # Raise the exception to let the backoff logic retry the request
+            raise  # Raise the exception to let the backoff logic retry the request
 
         # Catch and handle any other exceptions
         except Exception as e:

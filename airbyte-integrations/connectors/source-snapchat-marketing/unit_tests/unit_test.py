@@ -5,11 +5,12 @@
 # from unittest.mock import MagicMock, PropertyMock, patch
 
 import logging
+
 import pytest
 import source_snapchat_marketing
-from requests.exceptions import ConnectionError
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
+from requests.exceptions import ConnectionError
 from source_snapchat_marketing.source import (
     Adaccounts,
     AdaccountsStatsDaily,
