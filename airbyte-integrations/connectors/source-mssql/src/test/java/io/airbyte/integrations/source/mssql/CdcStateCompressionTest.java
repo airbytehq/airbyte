@@ -87,6 +87,7 @@ public class CdcStateCompressionTest {
       testdb
           .with("CREATE TABLE %s.test_table_%d (id INT IDENTITY(1,1) PRIMARY KEY);", TEST_SCHEMA, i)
           .with(enableCdcSqlFmt, TEST_SCHEMA, i, CDC_ROLE_NAME, i, 1)
+          .withShortenedCapturePollingInterval()
           .with("INSERT INTO %s.test_table_%d DEFAULT VALUES", TEST_SCHEMA, i);
     }
 
@@ -124,7 +125,8 @@ public class CdcStateCompressionTest {
       testdb
           .with(sb.toString())
           .with(enableCdcSqlFmt, TEST_SCHEMA, i, CDC_ROLE_NAME, i, 2)
-          .with(disableCdcSqlFmt, TEST_SCHEMA, i, i, 1);
+          .with(disableCdcSqlFmt, TEST_SCHEMA, i, i, 1)
+          .withShortenedCapturePollingInterval();
     }
   }
 
