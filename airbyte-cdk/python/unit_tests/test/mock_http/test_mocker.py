@@ -135,3 +135,40 @@ class HttpMockerTest(TestCase):
         with pytest.raises(ValueError) as exc_info:
             decorated_function()
         assert "more_granular" in str(exc_info.value)  # the matcher corresponding to the first `http_mocker.get` is not matched
+
+    def test_given_exact_number_of_call_provided_when_assert_number_of_calls_then_do_not_raise(self):
+        @HttpMocker()
+        def decorated_function(http_mocker):
+            request = HttpRequest(_A_URL)
+            http_mocker.get(request, _A_RESPONSE)
+
+            requests.get(_A_URL)
+            requests.get(_A_URL)
+
+            http_mocker.assert_number_of_calls(request, 2)
+
+        decorated_function()
+        # then do not raise
+
+    def test_given_invalid_number_of_call_provided_when_assert_number_of_calls_then_raise(self):
+        @HttpMocker()
+        def decorated_function(http_mocker):
+            request = HttpRequest(_A_URL)
+            http_mocker.get(request, _A_RESPONSE)
+
+            requests.get(_A_URL)
+            requests.get(_A_URL)
+
+            http_mocker.assert_number_of_calls(request, 1)
+
+        with pytest.raises(AssertionError):
+            decorated_function()
+
+    def test_given_unknown_request_when_assert_number_of_calls_then_raise(self):
+        @HttpMocker()
+        def decorated_function(http_mocker):
+            http_mocker.get(HttpRequest(_A_URL), _A_RESPONSE)
+            http_mocker.assert_number_of_calls(HttpRequest(_ANOTHER_URL), 1)
+
+        with pytest.raises(ValueError):
+            decorated_function()
