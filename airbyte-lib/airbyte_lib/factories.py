@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 
-from typing import Any, Dict, Generic, Optional, TypeVar
+from typing import Any, Dict, Optional, TypeVar
 
 from airbyte_lib.cache import Cache, InMemoryCache
 from airbyte_lib.connection import Connection, SyncResult
