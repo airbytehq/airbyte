@@ -755,7 +755,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
         .filter(r -> r.getType() == Type.RECORD)
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
-    // teradata doesn't make insertion order guarantee when equal ordering value
+    // some databases don't make insertion order guarantee when equal ordering value
     if (testdb.getDatabaseDriver().equals(DatabaseDriver.TERADATA) || testdb.getDatabaseDriver().equals(DatabaseDriver.ORACLE)) {
       assertThat(List.of("a", "b"), Matchers.containsInAnyOrder(firstSyncNames.toArray()));
     } else {
