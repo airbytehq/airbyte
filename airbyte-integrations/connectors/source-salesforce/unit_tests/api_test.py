@@ -19,7 +19,6 @@ from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, Configur
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.utils import AirbyteTracedException
-from build.lib.source_salesforce.streams import BulkSalesforceSubStream
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
@@ -32,6 +31,7 @@ from source_salesforce.streams import (
     Describe,
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
+    BulkSalesforceSubStream,
     SalesforceStream,
 )
 
