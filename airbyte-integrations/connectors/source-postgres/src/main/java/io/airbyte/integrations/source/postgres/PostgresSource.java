@@ -48,6 +48,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
@@ -319,9 +320,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClass,
+        driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        getConnectionProperties(sourceConfig));
+        getConnectionProperties(sourceConfig),
+        JdbcConnector.getConnectionTimeout(getConnectionProperties(sourceConfig), driverClassName));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
