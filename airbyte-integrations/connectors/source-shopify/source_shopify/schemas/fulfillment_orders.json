@@ -54,6 +54,14 @@
         },
         "method_type": {
           "type": ["null", "string"]
+        },
+        "min_delivery_date_time": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "max_delivery_date_time": {
+          "type": ["null", "string"],
+          "format": "date-time"
         }
       }
     },
@@ -143,6 +151,9 @@
       "items": {
         "type": ["null", "object"],
         "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
           "message": {
             "type": ["null", "string"]
           },
@@ -150,7 +161,13 @@
             "type": ["null", "string"]
           },
           "request_options": {
-            "type": ["null", "object"]
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "notify_customer": {
+                "type": ["null", "boolean"]
+              }
+            }
           }
         }
       }
@@ -197,6 +214,9 @@
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
     }
   }
 }

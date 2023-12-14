@@ -4,11 +4,21 @@
 
 
 import re
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from io import TextIOWrapper
+from json import loads
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from requests.exceptions import RequestException
-from source_shopify.shopify_graphql.bulk.query import PARENT_KEY, Metafields
+from source_shopify.shopify_graphql.bulk.query import (
+    BULK_PARENT_KEY,
+    Collection,
+    DiscountCode,
+    FulfillmentOrder,
+    InventoryItem,
+    InventoryLevel,
+    Metafield,
+)
 from source_shopify.shopify_graphql.graphql import get_query_products
 from source_shopify.utils import ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
@@ -35,14 +45,12 @@ class MetafieldShopifySubstream(IncrementalShopifySubstream):
 
 
 class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
-    @property
-    def bulk_query(self) -> Metafields:
-        return Metafields
+    bulk_query: Metafield = Metafield
 
     @property
     def substream(self) -> bool:
         """
-        Emit only Metafields-related records.
+        Emit only Metafield-related records.
         """
         return True
 
@@ -61,11 +69,11 @@ class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
         More info: https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
         """
         # resolve parent id from `str` to `int`
-        record["owner_id"] = int(re.search(r"\d+", record[PARENT_KEY]).group())
+        record["owner_id"] = self.bulk_job.tools.resolve_str_id(record[BULK_PARENT_KEY])
         # add `owner_resource` field
-        record["owner_resource"] = self.bulk_job.tools.camel_to_snake(record[PARENT_KEY].split("/")[3])
+        record["owner_resource"] = self.bulk_job.tools.camel_to_snake(record[BULK_PARENT_KEY].split("/")[3])
         # remove `__parentId` from record
-        record.pop(PARENT_KEY, None)
+        record.pop(BULK_PARENT_KEY, None)
         # convert dates from ISO-8601 to RFC-3339
         record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
         record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
@@ -264,15 +272,52 @@ class Collects(IncrementalShopifyStream):
     filter_field = "since_id"
 
 
-class Collections(IncrementalShopifySubstream):
-    parent_stream_class: object = Collects
-    nested_record = "collection_id"
-    slice_key = "collection_id"
-    data_field = "collection"
+class Collections(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: Collection = Collection
+    query_path = "collections"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        collection_id = stream_slice[self.slice_key]
-        return f"collections/{collection_id}.json"
+    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        """
+        Custom transformation for produced records.
+        """
+        # convert dates from ISO-8601 to RFC-3339
+        record["published_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "published_at")
+        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
+        # remove leftovers
+        record.pop(BULK_PARENT_KEY, None)
+
+        yield record
+
+    def custom_record_reader(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
+        """
+        Overide to provide custom record reading functionality, here we need to:
+        - read the first record as `main`
+        - read all the subsequent record to the fist occcurrence and join to the `main`
+        - clean-up and emit, before `custom_transform` is applied.
+        """
+
+        # the placeholder for joined record
+        collection_record = None
+        # default flag for complete record
+        should_skip_next = False
+        # process the json lines
+        for line in jsonl_file:
+            record = loads(line)
+            # register the parent record first
+            if not BULK_PARENT_KEY in record.keys():
+                collection_record = record
+                # marking the parent record as incomplete
+                should_skip_next = False
+            elif BULK_PARENT_KEY in record.keys() and not should_skip_next:
+                # we know that the sub-records follow the parent one, so if there are more related to the main record,
+                # we should merge the very first occurrence with the parent part to have a single record, as we tarck the `published_at` here.
+                record.update(**collection_record)
+                # emit complete record
+                yield record
+                # flagging to skip subsequent, since we merged the neccessary parts already
+                should_skip_next = True
+            else:
+                continue
 
 
 class MetafieldCollections(MetafieldShopifyGraphQlBulkStream):
@@ -344,14 +389,54 @@ class PriceRules(IncrementalShopifyStreamWithDeletedEvents):
     deleted_events_api_name = "PriceRule"
 
 
-class DiscountCodes(IncrementalShopifySubstream):
-    parent_stream_class: object = PriceRules
-    slice_key = "price_rule_id"
-    data_field = "discount_codes"
+class DiscountCodes(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: DiscountCode = DiscountCode
+    query_path = "codeDiscountNodes"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        price_rule_id = stream_slice["price_rule_id"]
-        return f"price_rules/{price_rule_id}/{self.data_field}.json"
+    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        """
+        Custom transformation for produced records.
+        """
+        # resolve parent id from `str` to `int`
+        record["price_rule_id"] = self.bulk_job.tools.resolve_str_id(record["price_rule_id"])
+        # convert dates from ISO-8601 to RFC-3339
+        record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
+        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
+        # remove leftovers
+        record.pop("code_discount", None)
+        record.pop(BULK_PARENT_KEY, None)
+
+        yield record
+
+    def custom_record_reader(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
+        """
+        Overide to provide custom record reading functionality, here we need to:
+        - read the first record as `main`
+        - read all the subsequent record and join each the `main`
+        - clean-up and emit, before `custom_transform` is applied.
+        """
+        # the placeholder for joined record
+        discount_record = None
+        # process the json lines
+        for line in jsonl_file:
+            record = loads(line)
+            # register the parent record first
+            if not BULK_PARENT_KEY in record.keys():
+                discount_record = record
+                # move the id under `price_rule_id`
+                discount_record["price_rule_id"] = discount_record["id"]
+                # by now, we have duplicated info, remove the original id,
+                # so set the `id` from child record
+                discount_record.pop("id", None)
+            elif BULK_PARENT_KEY in record.keys():
+                # we know that the sub-records follow the parent one, so if there are more related to the main record,
+                # we should merge each of them together with the parent one to have a single record.
+                record.update(**discount_record)
+                record.update(**record.get("codeDiscount"))
+                # emit record
+                yield record
+            else:
+                continue
 
 
 class Locations(ShopifyStream):
@@ -371,47 +456,125 @@ class MetafieldLocations(MetafieldShopifyGraphQlBulkStream):
     sort_key = None
 
 
-class InventoryLevels(IncrementalShopifySubstream):
-    parent_stream_class: object = Locations
-    slice_key = "location_id"
-    data_field = "inventory_levels"
+class InventoryLevels(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: InventoryLevel = InventoryLevel
+    query_path = ["locations", "inventoryLevels"]
+    # doesn't support sort_key
+    sort_key = None
+    # process records with `InventoryLevel` identifier
+    substream = True
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        location_id = stream_slice["location_id"]
-        return f"locations/{location_id}/{self.data_field}.json"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records_stream = super().parse_response(response, **kwargs)
-
-        def generate_key(record):
-            record.update({"id": "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))})
-            return record
-
-        # associate the surrogate key
-        yield from map(generate_key, records_stream)
-
-
-class InventoryItems(IncrementalShopifySubstream):
-    parent_stream_class: object = Products
-    slice_key = "id"
-    nested_record = "variants"
-    nested_record_field_name = "inventory_item_id"
-    data_field = "inventory_items"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        ids = ",".join(str(x[self.nested_record_field_name]) for x in stream_slice[self.slice_key])
-        return f"inventory_items.json?ids={ids}"
+    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        """
+        Custom transformation for produced records.
+        """
+        # resolve `inventory_item_id` to root lvl +  resolve to int
+        record["inventory_item_id"] = self.bulk_job.tools.resolve_str_id(record.get("item", {}).get("inventory_item_id"))
+        # add `location_id` from `__parentId`
+        record["location_id"] = self.bulk_job.tools.resolve_str_id(record[BULK_PARENT_KEY])
+        # make composite `id` from `location_id|inventory_item_id`
+        record["id"] = "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))
+        # convert dates from ISO-8601 to RFC-3339
+        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
+        # remove leftovers
+        record.pop("item", None)
+        record.pop(BULK_PARENT_KEY, None)
+        yield record
 
 
-class FulfillmentOrders(IncrementalShopifySubstream):
-    parent_stream_class: object = Orders
-    slice_key = "order_id"
-    data_field = "fulfillment_orders"
-    cursor_field = "id"
+class InventoryItems(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: InventoryItem = InventoryItem
+    query_path = "inventoryItems"
+    # doesn't support sort_key
+    sort_key = None
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        order_id = stream_slice[self.slice_key]
-        return f"orders/{order_id}/{self.data_field}.json"
+    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        """
+        Custom transformation for produced records.
+        """
+        # resolve `cost` to root lvl as `number`
+        record["cost"] = float(record.get("unit_cost", {}).get("cost"))
+        # add empty `country_harmonized_system_codes` array, if missing for record
+        if "country_harmonized_system_codes" not in record.keys():
+            record["country_harmonized_system_codes"] = []
+        # convert dates from ISO-8601 to RFC-3339
+        record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
+        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
+        # remove leftovers
+        record.pop("unit_cost", None)
+
+        yield record
+
+
+class FulfillmentOrders(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: FulfillmentOrder = FulfillmentOrder
+    query_path = "orders"
+
+    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        """
+        Custom transformation for produced records.
+        """
+        # convert dates from ISO-8601 to RFC-3339
+        record["fulfill_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "fulfill_at")
+        record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
+        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
+        # delivery method
+        delivery_method = record.get("delivery_method", {})
+        if delivery_method:
+            record["delivery_method"]["min_delivery_date_time"] = self.bulk_job.tools.from_iso8601_to_rfc3339(
+                delivery_method, "min_delivery_date_time"
+            )
+            record["delivery_method"]["max_delivery_date_time"] = self.bulk_job.tools.from_iso8601_to_rfc3339(
+                delivery_method, "max_delivery_date_time"
+            )
+
+        yield record
+
+    def custom_record_reader(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
+        """
+        Overide to provide custom record reading functionality, here we need to:
+        - read the first record as `main`
+        - read all the subsequent record to the fist occcurrence and join to the `main`
+        - clean-up and emit, before `custom_transform` is applied.
+        """
+
+        # get the filesize for comparison
+        file_size: int = self.bulk_job.last_job_file_size
+        # get the `shop_id` from config
+        shop_id: int = self.config.get("shop_id")
+        # add placeholder for multiple `fulfillment orders`
+        buffer: List[Mapping[str, Any]] = []
+        # process the json lines
+        while jsonl_file.tell() <= file_size:
+            # read each line inside the loop
+            line: str = jsonl_file.readline()
+            # if no empty line
+            if line:
+                # read line as json
+                record: Mapping[str, Any] = loads(line)
+                # process main entity record
+                if self.bulk_job.record_producer.check_type(record, "Order"):
+                    # yield previous record first, if present
+                    yield from self.bulk_job.record_producer.emit_collected(buffer)
+                    # clean up for the new parent record
+                    buffer.clear()
+                elif self.bulk_job.record_producer.check_type(record, "FulfillmentOrder"):
+                    # append the prepared record to the buffer
+                    buffer.append(self.bulk_query.prep_fulfillment_order(record, shop_id))
+                elif self.bulk_job.record_producer.check_type(record, "FulfillmentOrderLineItem"):
+                    # append the prepared line item to the last element of the `buffer`
+                    buffer[-1]["line_items"].append(self.bulk_query.prep_line_item(record, shop_id))
+                elif self.bulk_job.record_producer.check_type(record, "FulfillmentOrderMerchantRequest"):
+                    # append the prepared mechant request to the last element of the `buffer`
+                    buffer[-1]["merchant_requests"].append(self.bulk_query.prep_merchant_request(record))
+
+                # check for the end of the file
+                if jsonl_file.tell() == file_size:
+                    # if we hit the end of the file, we yield what's collected
+                    yield from self.bulk_job.record_producer.emit_collected(buffer)
+            else:
+                # we exit from the loop when receive empty line (file ends)
+                break
 
 
 class Fulfillments(IncrementalShopifyNestedSubstream):

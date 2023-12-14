@@ -13,66 +13,61 @@ from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 
 SCOPES_MAPPING = {
-    "read_customers": [
-        "Customers",
-        "MetafieldCustomers",
-        "CustomerSavedSearch",
-        "CustomerAddress",
-    ],
-    "read_orders": [
-        "Orders",
-        "AbandonedCheckouts",
-        "TenderTransactions",
-        "Transactions",
-        "Fulfillments",
-        "OrderRefunds",
-        "OrderRisks",
-        "MetafieldOrders",
-    ],
-    "read_draft_orders": [
-        "DraftOrders",
-        "MetafieldDraftOrders",
-    ],
-    "read_products": [
-        "Products",
-        "ProductsGraphQl",
-        "MetafieldProducts",
-        "ProductImages",
-        "MetafieldProductImages",
-        "MetafieldProductVariants",
-        "CustomCollections",
-        "Collects",
-        "Collections",
-        "ProductVariants",
-        "MetafieldCollections",
-        "SmartCollections",
-        "MetafieldSmartCollections",
-    ],
-    "read_content": [
-        "Pages",
-        "MetafieldPages",
-    ],
-    "read_price_rules": ["PriceRules"],
-    "read_discounts": ["DiscountCodes"],
-    "read_locations": [
-        "Locations",
-        "MetafieldLocations",
-    ],
-    "read_inventory": [
-        "InventoryItems",
-        "InventoryLevels",
-    ],
-    "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
-    "read_shopify_payments_payouts": [
-        "BalanceTransactions",
-        "Disputes",
-    ],
-    "read_online_store_pages": [
-        "Articles",
-        "MetafieldArticles",
-        "Blogs",
-        "MetafieldBlogs",
-    ],
+    # SCOPE: read_customers
+    "Customers": ["read_customers"],
+    "MetafieldCustomers": ["read_customers"],
+    "CustomerSavedSearch": ["read_customers"],
+    "CustomerAddress": ["read_customers"],
+    # SCOPE: read_orders
+    "Orders": ["read_orders"],
+    "AbandonedCheckouts": ["read_orders"],
+    "TenderTransactions": ["read_orders"],
+    "Transactions": ["read_orders"],
+    "Fulfillments": ["read_orders"],
+    "OrderRefunds": ["read_orders"],
+    "OrderRisks": ["read_orders"],
+    "MetafieldOrders": ["read_orders"],
+    # SCOPE: read_draft_orders
+    "DraftOrders": ["read_draft_orders"],
+    "MetafieldDraftOrders": ["read_draft_orders"],
+    # SCOPE: read_products
+    "Products": ["read_products"],
+    "ProductsGraphQl": ["read_products"],
+    "MetafieldProducts": ["read_products"],
+    "ProductImages": ["read_products"],
+    "MetafieldProductImages": ["read_products"],
+    "MetafieldProductVariants": ["read_products"],
+    "CustomCollections": ["read_products"],
+    "Collects": ["read_products"],
+    "ProductVariants": ["read_products"],
+    "MetafieldCollections": ["read_products"],
+    "SmartCollections": ["read_products"],
+    "MetafieldSmartCollections": ["read_products"],
+    # SCOPE: read_products, read_publications
+    "Collections": ["read_products", "read_publications"],
+    # SCOPE: read_content
+    "Pages": ["read_content"],
+    "MetafieldPages": ["read_content"],
+    # SCOPE: read_price_rules
+    "PriceRules": ["read_price_rules"],
+    # SCOPE: read_discounts
+    "DiscountCodes": ["read_discounts"],
+    # SCOPE: read_locations
+    "Locations": ["read_locations"],
+    "MetafieldLocations": ["read_locations"],
+    # SCOPE: read_inventory
+    "InventoryItems": ["read_inventory"],
+    "InventoryLevels": ["read_inventory"],
+    # SCOPE: read_merchant_managed_fulfillment_orders
+    "FulfillmentOrders": ["read_merchant_managed_fulfillment_orders"],
+    # SCOPE: read_shopify_payments_payouts
+    "BalanceTransactions": ["read_shopify_payments_payouts"],
+    "Disputes": ["read_shopify_payments_payouts"],
+    # SCOPE: read_online_store_pages
+    "Articles": ["read_online_store_pages"],
+    "MetafieldArticles": ["read_online_store_pages"],
+    "Blogs": ["read_online_store_pages"],
+    "MetafieldBlogs": ["read_online_store_pages"],
 }
 
 

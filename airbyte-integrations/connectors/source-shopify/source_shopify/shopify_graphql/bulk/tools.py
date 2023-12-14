@@ -3,14 +3,16 @@
 #
 
 
+import os
 import re
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum as pdm
 
 from .exceptions import ShopifyBulkExceptions
-from .query import PARENT_KEY
+
+BULK_PARENT_KEY: str = "__parentId"
 
 
 class BulkTools:
@@ -48,7 +50,17 @@ class BulkTools:
         target_value = record.get(field)
         return pdm.parse(target_value).to_rfc3339_string() if target_value else record.get(field)
 
-    def fields_names_to_snake_case(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def fields_names_to_snake_case(self, record: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
         # transforming record field names from camel to snake case,
         # leaving the `__parent_id` relation in place.
-        return {self.camel_to_snake(k) if k != PARENT_KEY else k: v for k, v in record.items()}
+        if record:
+            return {self.camel_to_snake(k) if record and k != BULK_PARENT_KEY else k: v for k, v in record.items()}
+
+    @staticmethod
+    def file_size(filename: str) -> int:
+        return os.path.getsize(filename)
+
+    @staticmethod
+    def resolve_str_id(input: Optional[str] = None, output_type: Optional[Union[int, str, float]] = int) -> Union[int, str, float]:
+        if input:
+            return output_type(re.search(r"\d+", input).group())

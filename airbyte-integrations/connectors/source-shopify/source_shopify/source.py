@@ -104,6 +104,15 @@ class ConnectionCheckTest:
         except MissingAccessTokenError:
             return False, self.describe_error("missing_token_error")
 
+    def get_shop_id(self) -> tuple[bool, str]:
+        """
+        We need to have the `shop_id` value available to have it passed elsewhere and fill-in the missing data.
+        By the time this method is tiggered, we are sure we've passed the `Connection Checks` and have the `shop_id` value.
+        """
+        response = list(self.test_stream.read_records(sync_mode=None))
+        shop_id = response[0].get("id")
+        return shop_id if shop_id else None
+
 
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
@@ -121,13 +130,12 @@ class SourceShopify(AbstractSource):
         """
         config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
+        # add `shop_id` int value
+        config["shop_id"] = ConnectionCheckTest(config).get_shop_id()
         user_scopes = self.get_user_scopes(config)
         always_permitted_streams = ["MetafieldShops", "Shop", "Countries"]
         permitted_streams = [
-            stream
-            for user_scope in user_scopes
-            if user_scope["handle"] in SCOPES_MAPPING
-            for stream in SCOPES_MAPPING.get(user_scope["handle"])
+            stream for stream, stream_scopes in SCOPES_MAPPING.items() if all(scope in user_scopes for scope in stream_scopes)
         ] + always_permitted_streams
 
         # before adding stream to stream_instances list, please add it to SCOPES_MAPPING
@@ -186,10 +194,9 @@ class SourceShopify(AbstractSource):
         session = requests.Session()
         url = f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json"
         headers = config["authenticator"].get_auth_header()
-
         try:
             response = session.get(url, headers=headers).json()
-            access_scopes = response.get("access_scopes")
+            access_scopes = [scope.get("handle") for scope in response.get("access_scopes")]
         except InvalidURL:
             raise ShopifyWrongShopNameError(url)
         except JSONDecodeError as json_error:

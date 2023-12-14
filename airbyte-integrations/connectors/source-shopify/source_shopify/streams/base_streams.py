@@ -6,7 +6,7 @@
 import logging
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum as pdm
@@ -556,10 +556,18 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     data_field = "graphql"
     http_method = "POST"
 
+    # default custom record reader, overide if needed.
+    custom_record_reader: Optional[Callable] = None
+
     def __init__(self, config: Dict):
         super().__init__(config)
         # define default BULK instance
-        self.bulk_job = ShopifyBulkJob(self._session, self.logger)
+        self.bulk_job: ShopifyBulkJob = ShopifyBulkJob(
+            session=self._session,
+            logger=self.logger,
+            # register `custom_record_reader` if overiden.
+            custom_reader=self.custom_record_reader if self.custom_record_reader else None,
+        )
 
     @property
     def substream(self) -> bool:
@@ -682,13 +690,13 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                     # check end period is less than now() or now() is applied otherwise.
                     slice_end = slice_end if slice_end < end else end
                     # making pre-defined sliced query to pass it directly
-                    prepared_query = self.bulk_query(self.query_path, self.filter_field, start, slice_end, self.sort_key).query
+                    prepared_query = self.bulk_query(self.query_path, self.filter_field, start, slice_end, self.sort_key).operation
                     self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}.")
                     yield {"query": prepared_query}
                     start = slice_end
         else:
             # for the streams that don't support filtering
-            yield {"query": self.bulk_query(self.query_path, self.sort_key).query}
+            yield {"query": self.bulk_query(self.query_path, self.sort_key).operation}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs

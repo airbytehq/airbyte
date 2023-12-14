@@ -5,19 +5,39 @@
 
 import re
 from inspect import isgeneratorfunction
+from io import TextIOWrapper
 from json import loads
-from typing import Any, Callable, Iterable, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, Optional
 
-from .query import PARENT_KEY
+from .query import BULK_PARENT_KEY
 from .tools import BulkTools
 
 
 class ShopifyBulkRecord:
-    def __init__(self) -> None:
+    def __init__(self, custom_reader: Callable = None) -> None:
         self.tools: BulkTools = BulkTools()
+        # set custom reader, if initialized
+        self.record_reader: Callable = custom_reader if custom_reader else self.default_reader
+
+    def default_reader(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
+        # default record reader generator
+        yield from [loads(line) for line in jsonl_file]
 
     @staticmethod
-    def record_resolve_id(record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def check_type(record: Optional[Mapping[str, Any]] = None, type: Optional[str] = None) -> bool:
+        if record:
+            return True if record["__typename"] == type else False
+        else:
+            return False
+
+    @staticmethod
+    def emit_collected(buffer: Optional[List[Mapping[str, Any]]] = []) -> Iterable[Mapping[str, Any]]:
+        if len(buffer) > 0:
+            for record in buffer:
+                yield record
+
+    # @staticmethod
+    def record_resolve_id(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         The ids are fetched in the format of: " gid://shopify/Order/<Id> "
         Input:
@@ -32,7 +52,7 @@ class ShopifyBulkRecord:
         # into `admin_graphql_api_id` have the ability to identify the record oigin correctly in subsequent actions.
         record["admin_graphql_api_id"] = record["id"]
         # extracting the int(id) and reassign
-        record["id"] = int(re.search(r"\d+", record.get("id")).group())
+        record["id"] = self.tools.resolve_str_id(record.get("id"))
         return record
 
     @staticmethod
@@ -44,7 +64,7 @@ class ShopifyBulkRecord:
         else:
             # return records related to substream, by checking for the `__parentId` field
             # more info: https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
-            return record if PARENT_KEY in record.keys() else None
+            return record if BULK_PARENT_KEY in record.keys() else None
 
     @staticmethod
     def resolve_with_custom_transformer(record: Mapping[str, Any], custom_transform: Callable) -> Iterable[Mapping[str, Any]]:
@@ -60,8 +80,9 @@ class ShopifyBulkRecord:
         record_identifier: Optional[str] = None,
         custom_transform: Optional[Callable] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        # transforming record field names from camel to snake case
         # resolve the id to int
-        record = self.record_resolve_id(record)
+        record = self.record_resolve_id(self.tools.fields_names_to_snake_case(record))
         # the substream_record is `None`, when parent record takes place
         substream_record = self.resolve_substream(record, record_identifier)
 
@@ -96,8 +117,5 @@ class ShopifyBulkRecord:
         """
 
         with open(filename, "r") as jsonl_file:
-            for line in jsonl_file:
-                # transforming record field names from camel to snake case
-                record = self.tools.fields_names_to_snake_case(loads(line))
-                # resolve record
+            for record in self.record_reader(jsonl_file):
                 yield from self.record_resolver(record, substream, record_identifier, custom_transform)

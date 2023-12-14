@@ -26,14 +26,24 @@ class ShopifyBulkJob:
     Class to create, check, retrieve the result for Shopify GraphQL Bulk Jobs.
     """
 
-    def __init__(self, session: requests.Session, logger: AirbyteLogger) -> None:
+    def __init__(
+        self,
+        session: requests.Session,
+        logger: AirbyteLogger,
+        custom_reader: Optional[Callable] = None,
+    ) -> None:
         self.session = session
         self.logger = logger
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord()
         self.tools: BulkTools = BulkTools()
+        # setting custom record reader, if passed
+        if custom_reader:
+            self.record_producer.record_reader: Callable = custom_reader
 
     # 5Mb chunk size to save the file
     retrieve_chunk_size = 1024 * 1024 * 5
+    # latest successful BULK job filesize
+    last_job_file_size: int = 0
 
     # time between job status checks
     job_check_interval_sec: int = 5
@@ -202,15 +212,17 @@ class ShopifyBulkJob:
             with open(filename, "wb") as file:
                 for chunk in response.iter_content(chunk_size=self.retrieve_chunk_size):
                     file.write(chunk)
+        # register latest job result filesize
+        self.last_job_file_size = self.tools.file_size(filename)
         return filename
 
     def job_record_producer(
         self,
         job_result_url: str,
-        substream: bool = False,
-        custom_transform: Callable = None,
-        record_identifier: str = None,
-        remove_file: bool = True,
+        substream: Optional[bool] = False,
+        custom_transform: Optional[Callable] = None,
+        record_identifier: Optional[str] = None,
+        remove_file: Optional[bool] = True,
         **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         """
