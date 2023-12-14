@@ -24,8 +24,8 @@ import javax.sql.DataSource;
  */
 public class DataSourceFactory {
 
-  private static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
-  private static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
+  public static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
+  public static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
 
   /**
    * Constructs a new {@link DataSource} using the provided configuration.
@@ -62,14 +62,15 @@ public class DataSourceFactory {
                                   final String password,
                                   final String driverClassName,
                                   final String jdbcConnectionString,
-                                  final Map<String, String> connectionProperties) {
+                                  final Map<String, String> connectionProperties,
+                                  final Duration connectionTimeout) {
     return new DataSourceBuilder()
         .withConnectionProperties(connectionProperties)
         .withDriverClassName(driverClassName)
         .withJdbcUrl(jdbcConnectionString)
         .withPassword(password)
         .withUsername(username)
-        .withConnectionTimeout(getConnectionTimeout(connectionProperties, driverClassName))
+        .withConnectionTimeout(connectionTimeout)
         .build();
   }
 

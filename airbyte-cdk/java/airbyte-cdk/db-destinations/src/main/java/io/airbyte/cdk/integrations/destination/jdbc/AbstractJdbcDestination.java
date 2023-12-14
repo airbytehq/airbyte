@@ -190,12 +190,14 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
+    Map<String, String> connectionProperties = getConnectionProperties(config);
     return DataSourceFactory.create(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        getConnectionProperties(config));
+        connectionProperties,
+        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClass));
   }
 
   protected JdbcDatabase getDatabase(final DataSource dataSource) {
