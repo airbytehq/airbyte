@@ -5,24 +5,26 @@
 import json
 import random
 from typing import List
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import anyio
 import pytest
-from dagger import Directory
 from connector_ops.utils import Connector, ConnectorLanguage
+from dagger import Directory
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 from pipelines.airbyte_ci.connectors.upgrade_cdk import pipeline as upgrade_cdk_pipeline
 from pipelines.models.steps import StepStatus
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 pytestmark = [
     pytest.mark.anyio,
 ]
 
+
 @pytest.fixture
 def sample_connector():
     return Connector("source-pokeapi")
+
 
 def get_sample_setup_py(airbyte_cdk_dependency: str):
     return f"""from setuptools import find_packages, setup
@@ -41,6 +43,7 @@ setup(
 )
 """
 
+
 @pytest.fixture
 def connector_context(sample_connector, dagger_client, current_platform):
     context = ConnectorContext(
@@ -56,6 +59,7 @@ def connector_context(sample_connector, dagger_client, current_platform):
     context.dagger_client = dagger_client
     return context
 
+
 @pytest.mark.parametrize(
     "setup_py_content, expected_setup_py_content",
     [
@@ -66,7 +70,9 @@ def connector_context(sample_connector, dagger_client, current_platform):
         (get_sample_setup_py("airbyte-cdk[file-based]>=1.2.3"), get_sample_setup_py("airbyte-cdk[file-based]>=6.6.6")),
     ],
 )
-async def test_run_connector_cdk_upgrade_pipeline(connector_context: ConnectorContext, setup_py_content: str, expected_setup_py_content: str):
+async def test_run_connector_cdk_upgrade_pipeline(
+    connector_context: ConnectorContext, setup_py_content: str, expected_setup_py_content: str
+):
     full_og_connector_dir = await connector_context.get_connector_dir()
     updated_connector_dir = full_og_connector_dir.with_new_file("setup.py", setup_py_content)
 
@@ -90,6 +96,7 @@ async def test_run_connector_cdk_upgrade_pipeline(connector_context: ConnectorCo
     # Assert that the diff was exported to the repo
     assert updated_connector_dir.diff.return_value.export.call_count == 1
 
+
 async def test_fail_connector_cdk_upgrade_pipeline_on_missing_setup_py(connector_context: ConnectorContext):
     full_og_connector_dir = await connector_context.get_connector_dir()
     updated_connector_dir = full_og_connector_dir.without_file("setup.py")
@@ -99,6 +106,7 @@ async def test_fail_connector_cdk_upgrade_pipeline_on_missing_setup_py(connector
     step = upgrade_cdk_pipeline.SetCDKVersion(connector_context, "6.6.6")
     step_result = await step.run()
     assert step_result.status == StepStatus.FAILURE
+
 
 async def test_fail_connector_cdk_upgrade_pipeline_on_missing_airbyte_cdk(connector_context: ConnectorContext):
     full_og_connector_dir = await connector_context.get_connector_dir()

@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import re
 import os
+import re
 
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
@@ -39,12 +39,7 @@ class SetCDKVersion(Step):
             updated_connector_dir = full_og_connector_dir.with_new_file("setup.py", updated_setup_py)
             diff = full_og_connector_dir.diff(updated_connector_dir)
             await diff.export(os.path.join(git.get_git_repo_path(), context.connector.code_directory))
-            return StepResult(
-                self,
-                StepStatus.SUCCESS,
-                stdout=f"Updated CDK version to {self.new_version}",
-                output_artifact=diff
-            )
+            return StepResult(self, StepStatus.SUCCESS, stdout=f"Updated CDK version to {self.new_version}", output_artifact=diff)
         except Exception as e:
             return StepResult(
                 self,
@@ -63,6 +58,7 @@ class SetCDKVersion(Step):
             return og_setup_py_content.replace(airbyte_cdk_dependency.group(), new_version)
         else:
             raise ValueError("Could not find airbyte-cdk dependency in setup.py")
+
 
 async def run_connector_cdk_upgrade_pipeline(
     context: ConnectorContext,
