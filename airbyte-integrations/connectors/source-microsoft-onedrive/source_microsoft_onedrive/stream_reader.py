@@ -95,12 +95,12 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceMicrosoftOneDriveSpec)
         self._config = value
 
-    def list_directories_and_files(self, root_folder, path):
+    def list_directories_and_files(self, root_folder, path=None):
         """Enumerates folders and files starting from a root folder."""
         drive_items = root_folder.children.get().execute_query()
         found_items = []
         for item in drive_items:
-            item_path = item.name if path in self.ROOT_PATH else path + "/" + item.name
+            item_path = path + "/" + item.name if path else item.name
             if item.is_file:
                 found_items.append((item, item_path))
             else:
@@ -116,7 +116,7 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
             is_onedrive = drive.drive_type in ["personal", "business"]
             if drive.name == drive_name and is_onedrive:
                 folder = drive.root if folder_path in self.ROOT_PATH else drive.root.get_by_path(folder_path).get().execute_query()
-                yield from self.list_directories_and_files(folder, folder_path)
+                yield from self.list_directories_and_files(folder)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
