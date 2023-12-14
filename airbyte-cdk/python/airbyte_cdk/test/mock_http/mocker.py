@@ -63,6 +63,13 @@ class HttpMocker(contextlib.ContextDecorator):
 
         return matches
 
+    def assert_number_of_calls(self, request: HttpRequest, number_of_calls: int) -> None:
+        corresponding_matchers = list(filter(lambda matcher: matcher.request == request, self._matchers))
+        if len(corresponding_matchers) != 1:
+            raise ValueError(f"Was expecting only one matcher to match the request but got `{corresponding_matchers}`")
+
+        assert corresponding_matchers[0].actual_number_of_matches == number_of_calls
+
     def __call__(self, f):  # type: ignore  # trying to type that using callables provides the error `incompatible with return type "_F" in supertype "ContextDecorator"`
         @functools.wraps(f)
         def wrapper(*args, **kwargs):  # type: ignore  # this is a very generic wrapper that does not need to be typed
@@ -82,7 +89,12 @@ class HttpMocker(contextlib.ContextDecorator):
 
                 # We validate the matchers before raising the assertion error because we want to show the tester if a HTTP request wasn't
                 # mocked correctly
-                self._validate_all_matchers_called()
+                try:
+                    self._validate_all_matchers_called()
+                except ValueError as http_mocker_exception:
+                    # This seems useless as it catches ValueError and raises ValueError but without this, the prevaling error message in
+                    # the output is the function call that failed the assertion, whereas raising `ValueError(http_mocker_exception)` like we do here provides additional context for the exception.
+                    raise ValueError(http_mocker_exception) from None
                 if assertion_error:
                     raise assertion_error
                 return result

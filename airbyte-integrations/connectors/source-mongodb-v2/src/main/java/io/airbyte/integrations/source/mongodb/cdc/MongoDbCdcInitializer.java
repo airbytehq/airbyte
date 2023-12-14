@@ -9,7 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
@@ -83,7 +83,8 @@ public class MongoDbCdcInitializer {
                                                                         final Instant emittedAt,
                                                                         final MongoDbSourceConfig config) {
 
-    final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(config.rawConfig());
+    final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(config.rawConfig());
+    final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(config.rawConfig());
     final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.getDatabaseName();
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
@@ -109,11 +110,11 @@ public class MongoDbCdcInitializer {
         optSavedOffset.filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient)).isPresent();
 
     if (!savedOffsetIsValid) {
-      LOGGER.debug("Saved offset is not valid. Airbyte will trigger a full refresh.");
+      LOGGER.info("Saved offset is not valid. Airbyte will trigger a full refresh.");
       // If the offset in the state is invalid, reset the state to the initial STATE
       stateManager.resetState(new MongoDbCdcState(initialDebeziumState));
     } else {
-      LOGGER.debug("Valid offset state discovered.  Updating state manager with retrieved CDC state {}...", cdcState);
+      LOGGER.info("Valid offset state discovered.  Updating state manager with retrieved CDC state {}...", cdcState);
       stateManager.updateCdcState(new MongoDbCdcState(cdcState));
     }
 
@@ -130,7 +131,7 @@ public class MongoDbCdcInitializer {
             emittedAt, config.getCheckpointInterval());
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
-        new MongoDbCdcTargetPosition(resumeToken), false, firstRecordWaitTime, queueSize);
+        new MongoDbCdcTargetPosition(resumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
 
