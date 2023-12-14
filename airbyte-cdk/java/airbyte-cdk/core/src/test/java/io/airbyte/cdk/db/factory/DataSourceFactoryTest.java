@@ -54,7 +54,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         password,
         driverClassName,
         jdbcUrl,
-        connectionProperties);
+        connectionProperties,
+        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(61000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -69,7 +70,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         password,
         driverClassName,
         jdbcUrl,
-        connectionProperties);
+        connectionProperties,
+        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(30000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -86,7 +88,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
           mySQLContainer.getPassword(),
           mySQLContainer.getDriverClassName(),
           mySQLContainer.getJdbcUrl(),
-          connectionProperties);
+          connectionProperties,
+          DataSourceFactory.getConnectionTimeout(connectionProperties, mySQLContainer.getDriverClassName()));
       assertNotNull(dataSource);
       assertEquals(HikariDataSource.class, dataSource.getClass());
       assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -102,7 +105,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         password,
         driverClassName,
         jdbcUrl,
-        connectionProperties);
+        connectionProperties,
+        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(Integer.MAX_VALUE, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -116,7 +120,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         password,
         driverClassName,
         jdbcUrl,
-        connectionProperties);
+        connectionProperties,
+        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(10000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -132,7 +137,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
           mySQLContainer.getPassword(),
           mySQLContainer.getDriverClassName(),
           mySQLContainer.getJdbcUrl(),
-          connectionProperties);
+          connectionProperties,
+          DataSourceFactory.getConnectionTimeout(connectionProperties, mySQLContainer.getDriverClassName()));
       assertNotNull(dataSource);
       assertEquals(HikariDataSource.class, dataSource.getClass());
       assertEquals(60000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -152,7 +158,13 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   void testCreatingADataSourceWithJdbcUrlAndConnectionProperties() {
     final Map<String, String> connectionProperties = Map.of("foo", "bar");
 
-    final DataSource dataSource = DataSourceFactory.create(username, password, driverClassName, jdbcUrl, connectionProperties);
+    final DataSource dataSource = DataSourceFactory.create(
+        username,
+        password,
+        driverClassName,
+        jdbcUrl,
+        connectionProperties,
+        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(10, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
