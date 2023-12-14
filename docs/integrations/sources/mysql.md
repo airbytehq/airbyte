@@ -220,8 +220,12 @@ Any database or table encoding combination of charset and collation is supported
 
 ## Changelog
 
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
-|:--------| :--------- | :--------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
+|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.4   | 2023-12-12 | [33356](https://github.com/airbytehq/airbyte/pull/33210)   | Support for better debugging tools..                                                                                                            |
+| 3.2.3   | 2023-12-08 | [33210](https://github.com/airbytehq/airbyte/pull/33210)   | Update MySql driver property value for zero date handling.                                                                                      |
+| 3.2.2   | 2023-12-06 | [33082](https://github.com/airbytehq/airbyte/pull/33082)   | Improvements to MySQL schema snapshot error handling.                                                                                           |
 | 3.2.1   | 2023-11-28 | [32610](https://github.com/airbytehq/airbyte/pull/32610)   | Support initial syncs using binary as primary key.                                                                                              |
 | 3.2.0   | 2023-11-29 | [31062](https://github.com/airbytehq/airbyte/pull/31062)   | enforce SSL on Airbyte Cloud                                                                                                                    |
 | 3.1.9   | 2023-11-27 | [32662](https://github.com/airbytehq/airbyte/pull/32662)   | Apply initial setup time to debezium engine warmup time.                                                                                        |
