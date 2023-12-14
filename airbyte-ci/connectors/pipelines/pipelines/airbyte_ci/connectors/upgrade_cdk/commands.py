@@ -10,11 +10,11 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
 @click.command(cls=DaggerPipelineCommand, short_help="Upgrade CDK version")
-@click.argument("target-version", type=str)
+@click.argument("target-cdk-version", type=str)
 @click.pass_context
 async def bump_version(
     ctx: click.Context,
-    target_version: str,
+    target_cdk_version: str,
 ) -> bool:
     """Upgrade CDK version"""
 
@@ -49,7 +49,7 @@ async def bump_version(
         ctx.obj["concurrency"],
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
-        target_version,
+        target_cdk_version,
     )
 
     return True
