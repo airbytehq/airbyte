@@ -30,7 +30,7 @@
     "merchant-order-item-id": { "type": ["null", "string"] },
     "merchant-adjustment-item-id": { "type": ["null", "string"] },
     "sku": { "type": ["null", "string"] },
-    "quantity-purchased": { "type": ["null", "number"] },
+    "quantity-purchased": { "type": ["null", "string"] },
     "promotion-id": { "type": ["null", "string"] },
     "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
