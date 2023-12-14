@@ -128,7 +128,7 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You can authent
 ### Login and Password
 
 | Field                                                                                                 | Description                                                                                                                                                                                                                          |
-| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com`                                    |
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                                                              |
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                                                      |
@@ -142,7 +142,7 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You can authent
 ### OAuth 2.0
 
 | Field                                                                                                 | Description                                                                                                                                                                                       |
-| :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|:------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                           |
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
@@ -183,7 +183,7 @@ Airbyte outputs each stream into its own raw table in `airbyte_internal` schema 
 ### Raw Table schema
 
 | Airbyte field          | Description                                                        | Column type              |
-| ---------------------- | ------------------------------------------------------------------ | ------------------------ |
+|------------------------|--------------------------------------------------------------------|--------------------------|
 | \_airbyte_raw_id       | A UUID assigned to each processed event                            | VARCHAR                  |
 | \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP WITH TIME ZONE |
 | \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP WITH TIME ZONE |
@@ -192,6 +192,25 @@ Airbyte outputs each stream into its own raw table in `airbyte_internal` schema 
 **Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table could be subject to change in future versions.
 
 **Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a dedicated transient database for Airbyte. For more information, refer to[ Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+
+## Data type map
+
+| Airbyte type                        | Snowflake type |
+|:------------------------------------|:---------------|
+| STRING                              | TEXT           |
+| STRING (BASE64)                     | TEXT           |
+| STRING (BIG_NUMBER)                 | TEXT           |
+| STRING (BIG_INTEGER)                | TEXT           |
+| NUMBER                              | FLOAT          |
+| INTEGER                             | NUMBER         |
+| BOOLEAN                             | BOOLEAN        |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP_TZ   |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP_NTZ  |
+| STRING (TIME_WITH_TIMEZONE)         | TEXT           |
+| STRING (TIME_WITHOUT_TIMEZONE)      | TIME           |
+| DATE                                | DATE           |
+| OBJECT                              | OBJECT         |
+| ARRAY                               | ARRAY          |
 
 ## Supported sync modes
 
@@ -227,10 +246,10 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.4.15          | 2023-12-13 | [33263](https://github.com/airbytehq/airbyte/pull/33263)   | Only run typing+deduping for a stream if the stream had any records                                                                                             |
-| 3.4.14          | 2023-12-08 | [33263](https://github.com/airbytehq/airbyte/pull/33263)   | Adopt java CDK version 0.7.0                                                                                                                                    |
-| 3.4.13          | 2023-12-05 | [32326](https://github.com/airbytehq/airbyte/pull/32326)   | Use jdbc metadata for table existence check                                                                                                                     |
-| 3.4.12          | 2023-12-04 | [33084](https://github.com/airbytehq/airbyte/pull/33084)   | T&D SQL statements moved to debug log level                                                                                                                     |
+| 3.4.15          | 2023-12-13 | [\#33232](https://github.com/airbytehq/airbyte/pull/33232) | Only run typing+deduping for a stream if the stream had any records                                                                                             |
+| 3.4.14          | 2023-12-08 | [\#33263](https://github.com/airbytehq/airbyte/pull/33263) | Adopt java CDK version 0.7.0                                                                                                                                    |
+| 3.4.13          | 2023-12-05 | [\#32326](https://github.com/airbytehq/airbyte/pull/32326) | Use jdbc metadata for table existence check                                                                                                                     |
+| 3.4.12          | 2023-12-04 | [\#33084](https://github.com/airbytehq/airbyte/pull/33084) | T&D SQL statements moved to debug log level                                                                                                                     |
 | 3.4.11          | 2023-11-14 | [\#32526](https://github.com/airbytehq/airbyte/pull/32526) | Clean up memory manager logs.                                                                                                                                   |
 | 3.4.10          | 2023-11-08 | [\#32125](https://github.com/airbytehq/airbyte/pull/32125) | Fix compilation warnings.                                                                                                                                       |
 | 3.4.9           | 2023-11-06 | [\#32026](https://github.com/airbytehq/airbyte/pull/32026) | Add separate TRY_CAST transaction to reduce compute usage                                                                                                       |
