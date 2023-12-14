@@ -23,7 +23,6 @@ config = {
         ("test_interpolated_true_comparison", "{{ config['string_key'] == \"compare_me\" }}", True),
         ("test_interpolated_false_condition", "{{ config['string_key'] == \"witness_me\" }}", False),
         ("test_path_has_value_returns_true", "{{ config['string_key'] }}", True),
-        ("test_missing_key_defaults_to_false", "{{ path_to_nowhere }}", False),
         ("test_zero_is_false", "{{ config['zero_value'] }}", False),
         ("test_empty_array_is_false", "{{ config['empty_array'] }}", False),
         ("test_empty_dict_is_false", "{{ config['empty_dict'] }}", False),

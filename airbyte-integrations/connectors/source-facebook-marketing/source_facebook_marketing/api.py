@@ -9,6 +9,7 @@ from time import sleep
 from typing import List
 
 import backoff
+import facebook_business.adobjects.business
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
@@ -34,8 +35,14 @@ backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, 
 class MyFacebookAdsApi(FacebookAdsApi):
     """Custom Facebook API class to intercept all API calls and handle call rate limits"""
 
-    MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=20))
-    MIN_RATE, MIN_PAUSE_INTERVAL = (90, pendulum.duration(minutes=5))
+    MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=10))
+    MIN_RATE, MIN_PAUSE_INTERVAL = (85, pendulum.duration(minutes=2))
+
+    # see `_should_restore_page_size` method docstring for more info.
+    # attribute to handle the reduced request limit
+    request_record_limit_is_reduced: bool = False
+    # attribute to save the status of last successfull call
+    last_api_call_is_successful: bool = False
 
     @dataclass
     class Throttle:
@@ -74,7 +81,6 @@ class MyFacebookAdsApi(FacebookAdsApi):
             )
 
         if usage_header_business:
-
             usage_header_business_loaded = json.loads(usage_header_business)
             for business_object_id in usage_header_business_loaded:
                 usage_limits = usage_header_business_loaded.get(business_object_id)[0]
@@ -142,6 +148,14 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 per_account=ads_insights_throttle.get("acc_id_util_pct", 0),
             )
 
+    def _should_restore_default_page_size(self, params):
+        """
+        Track the state of the `request_record_limit_is_reduced` and `last_api_call_is_successfull`,
+        based on the logic from `@backoff_policy` (common.py > `reduce_request_record_limit` and `revert_request_record_limit`)
+        """
+        params = True if params else False
+        return params and not self.request_record_limit_is_reduced and self.last_api_call_is_successful
+
     @backoff_policy
     def call(
             self,
@@ -154,8 +168,9 @@ class MyFacebookAdsApi(FacebookAdsApi):
             api_version=None,
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
+        if self._should_restore_default_page_size(params):
+            params.update(**{"limit": self.default_page_size})
         response = super().call(method, path, params, headers, files, url_override, api_version)
-
         self._update_insights_throttle_limit(response)
         self._handle_call_rate_limit(response, params)
         return response
@@ -164,11 +179,15 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str, google_service_account: str):
+    def __init__(self, account_id: str, access_token: str, google_service_account: str, page_size: int = 100):
         self._account_id = account_id
         self._google_service_account = google_service_account
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        # adding the default page size from config to the api base class
+        # reference issue: https://github.com/airbytehq/airbyte/issues/25383
+        setattr(self.api, "default_page_size", page_size)
+        # set the default API client to Facebook lib.
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
@@ -183,36 +202,22 @@ class API:
             return [self._find_account(acc.strip()) for acc in self._account_id.split(",")]
         else:
             ad_accounts = []
-            missing_permissions = []
-            google_service_account = json.loads(self._google_service_account)
-            bq_credentials = service_account.Credentials.from_service_account_info(google_service_account)
-            bq_client = bigquery.Client(credentials=bq_credentials)
 
-            query = bq_client.query(query="SELECT DISTINCT publisher_account_id "
-                                          "FROM `dolead-gsp-2020.dbt_mart.new_core_ppc_accounts` "
-                                          "WHERE publisher = 'FB_ADS' "
-                                          "AND is_active = TRUE ")
-            results = query.result()
-            for res in results:
-                id = str(res.publisher_account_id)
-                try:
-                    account = self._find_account(id)
-                    ad_accounts.append(account)
-                except FacebookAPIException as e:
-                    missing_permissions.append(id)
+            business = facebook_business.adobjects.business.Business(fbid="1605818716400473")
+            accounts = business.get_owned_ad_accounts(fields=["name", "account_id"])
+            for account in accounts:
+                account_name = account["name"]
+                if "geoloc" in str.lower(account_name):
+                    account["dolead_type"] = "GEOLOC"
+                else:
+                    account["dolead_type"] = "NOT GEOLOC"
+                ad_accounts.append(account)
 
-            logger.info("Missing permissions on following accounts : " + str(missing_permissions))
+        return ad_accounts
 
-            return ad_accounts
 
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:
         """Actual implementation of find account"""
-        try:
-            return AdAccount(f"act_{account_id}").api_get()
-        except FacebookRequestError as exc:
-            raise FacebookAPIException(
-                f"Error: {exc.api_error_code()}, {exc.api_error_message()}. "
-                f"Please also verify your Account ID: "
-                f"See the https://www.facebook.com/business/help/1492627900875762 for more information."
-            ) from exc
+
+        return AdAccount(f"act_{account_id}").api_get()

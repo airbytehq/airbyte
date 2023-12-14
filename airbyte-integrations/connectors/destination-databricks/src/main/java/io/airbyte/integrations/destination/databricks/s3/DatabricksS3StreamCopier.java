@@ -8,16 +8,16 @@ import static org.apache.logging.log4j.util.Strings.EMPTY;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetFormatConfig;
+import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetWriter;
+import io.airbyte.cdk.integrations.destination.s3.writer.S3WriterFactory;
 import io.airbyte.integrations.destination.databricks.DatabricksDestinationConfig;
 import io.airbyte.integrations.destination.databricks.DatabricksStreamCopier;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
-import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
-import io.airbyte.integrations.destination.s3.writer.S3WriterFactory;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
@@ -52,6 +52,7 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
   private final S3ParquetWriter parquetWriter;
 
   public DatabricksS3StreamCopier(final String stagingFolder,
+                                  final String catalog,
                                   final String schema,
                                   final ConfiguredAirbyteStream configuredStream,
                                   final AmazonS3 s3Client,
@@ -62,7 +63,7 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
                                   final S3WriterFactory writerFactory,
                                   final Timestamp uploadTime)
       throws Exception {
-    super(stagingFolder, schema, configuredStream, database, databricksConfig, nameTransformer, sqlOperations);
+    super(stagingFolder, catalog, schema, configuredStream, database, databricksConfig, nameTransformer, sqlOperations);
     this.s3Client = s3Client;
     this.s3Config = databricksConfig.storageConfig().getS3DestinationConfigOrThrow();
     final S3DestinationConfig stagingS3Config = getStagingS3DestinationConfig(s3Config, stagingFolder);
@@ -105,19 +106,23 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
 
   @Override
   protected String getCreateTempTableStatement() {
-    return String.format("CREATE TABLE %s.%s USING parquet LOCATION '%s';", schemaName, tmpTableName, getTmpTableLocation());
+    return String.format("CREATE TABLE %s.%s.%s USING parquet LOCATION '%s';", catalogName, schemaName, tmpTableName, getTmpTableLocation());
   }
 
   @Override
   public String generateMergeStatement(final String destTableName) {
     final String copyData = String.format(
-        "COPY INTO %s.%s " +
+        "COPY INTO %s.%s.%s " +
             "FROM '%s' " +
             "FILEFORMAT = PARQUET " +
-            "PATTERN = '%s'",
-        schemaName, destTableName,
+            "PATTERN = '%s' " +
+            "COPY_OPTIONS ('mergeSchema' = '%s')",
+        catalogName,
+        schemaName,
+        destTableName,
         getTmpTableLocation(),
-        parquetWriter.getOutputFilename());
+        parquetWriter.getOutputFilename(),
+        databricksConfig.enableSchemaEvolution());
     LOGGER.info(copyData);
     return copyData;
   }

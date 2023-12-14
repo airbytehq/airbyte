@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination.scylla;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.integrations.destination.scylla.ScyllaContainerInitializr.ScyllaContainer;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

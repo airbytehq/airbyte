@@ -14,7 +14,7 @@
     "height": {
       "type": ["null", "integer"]
     },
-    "is_default ": {
+    "is_default": {
       "type": ["null", "boolean"]
     },
     "order": {
@@ -27,6 +27,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "is_hidden": {
             "type": ["null", "boolean"]
@@ -36,6 +37,7 @@
           },
           "ability": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "name": {
                 "type": ["null", "string"]
@@ -52,6 +54,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "name": {
             "type": ["null", "string"]
@@ -66,12 +69,14 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "game_index": {
             "type": ["null", "integer"]
           },
           "version": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "name": {
                 "type": ["null", "string"]
@@ -88,9 +93,11 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "item": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "name": {
                 "type": ["null", "string"]
@@ -104,9 +111,11 @@
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
+              "additionalProperties": true,
               "properties": {
                 "version": {
                   "type": ["null", "object"],
+                  "additionalProperties": true,
                   "properties": {
                     "name": {
                       "type": ["null", "string"]
@@ -132,9 +141,11 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "move": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "name": {
                 "type": ["null", "string"]
@@ -148,9 +159,11 @@
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
+              "additionalProperties": true,
               "properties": {
                 "move_learn_method": {
                   "type": ["null", "object"],
+                  "additionalProperties": true,
                   "properties": {
                     "name": {
                       "type": ["null", "string"]
@@ -162,6 +175,7 @@
                 },
                 "version_group": {
                   "type": ["null", "object"],
+                  "additionalProperties": true,
                   "properties": {
                     "name": {
                       "type": ["null", "string"]
@@ -182,6 +196,7 @@
     },
     "sprites": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "front_default": {
           "type": ["null", "string"]
@@ -211,6 +226,7 @@
     },
     "species": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "name": {
           "type": ["null", "string"]
@@ -224,9 +240,11 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "stat": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "name": {
                 "type": ["null", "string"]
@@ -249,6 +267,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "slot": {
             "type": ["null", "integer"]
@@ -261,6 +280,51 @@
               },
               "url": {
                 "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "past_types": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "generation": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "name": {
+                "type": ["null", "string"]
+              },
+              "url": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "types": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "slot": {
+                  "type": ["null", "integer"]
+                },
+                "type": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "url": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
               }
             }
           }

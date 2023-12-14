@@ -8,15 +8,15 @@ import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.field;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopierFactory;
+import io.airbyte.cdk.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
-import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
-import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,12 +48,13 @@ public abstract class DatabricksDestinationAcceptanceTest extends DestinationAcc
       throws SQLException {
     final String tableName = nameTransformer.getIdentifier(streamName);
     final String schemaName = StreamCopierFactory.getSchema(namespace, databricksConfig.schema(), nameTransformer);
+    final String catalog = databricksConfig.catalog();
     final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
     try (final DSLContext dslContext = DatabricksUtilTest.getDslContext(databricksConfig)) {
       final Database database = new Database(dslContext);
       return database.query(ctx -> ctx.select(asterisk())
-          .from(String.format("%s.%s", schemaName, tableName))
+          .from(String.format("%s.%s.%s", catalog, schemaName, tableName))
           .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
           .fetch().stream()
           .map(record -> {

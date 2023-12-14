@@ -5,16 +5,17 @@
 package io.airbyte.integrations.destination.doris;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -44,13 +45,13 @@ public class DorisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @BeforeAll
   public static void getConnect() {
-    JsonNode config = Jsons.deserialize(IOs.readFile(Paths.get("../../../secrets/config.json")));
-    String dbUrl = String.format(DB_URL_PATTERN, config.get("host").asText(), PORT);
+    final JsonNode config = Jsons.deserialize(IOs.readFile(Paths.get("../../../secrets/config.json")));
+    final String dbUrl = String.format(DB_URL_PATTERN, config.get("host").asText(), PORT);
     try {
       Class.forName(JDBC_DRIVER);
       conn =
           DriverManager.getConnection(dbUrl, config.get("username").asText(), config.get("password") == null ? "" : config.get("password").asText());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
     }
 
@@ -80,10 +81,10 @@ public class DorisDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws IOException, SQLException {
     // TODO Implement this method to retrieve records which written to the destination by the connector.
     // Records returned from this method will be compared against records provided to the connector
@@ -91,15 +92,15 @@ public class DorisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     final String tableName = namingResolver.getIdentifier(streamName);
 
-    String query = String.format(
+    final String query = String.format(
         "SELECT * FROM %s.%s ORDER BY %s ASC;", configJson.get("database").asText(), tableName,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    PreparedStatement stmt = conn.prepareStatement(query);
-    ResultSet resultSet = stmt.executeQuery();
+    final PreparedStatement stmt = conn.prepareStatement(query);
+    final ResultSet resultSet = stmt.executeQuery();
 
-    List<JsonNode> res = new ArrayList<>();
+    final List<JsonNode> res = new ArrayList<>();
     while (resultSet.next()) {
-      String sss = resultSet.getString(JavaBaseConstants.COLUMN_NAME_DATA);
+      final String sss = resultSet.getString(JavaBaseConstants.COLUMN_NAME_DATA);
       res.add(Jsons.deserialize(StringEscapeUtils.unescapeJava(sss)));
     }
     stmt.close();
@@ -107,12 +108,12 @@ public class DorisDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     // TODO Implement this method to run any setup actions needed before every test case
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     // TODO Implement this method to run any cleanup actions needed after every test case
   }
 

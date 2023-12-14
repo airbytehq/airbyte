@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ad_group.id": {
+      "type": ["null", "integer"]
+    },
+    "label.id": {
+      "type": ["null", "integer"]
+    },
+    "ad_group.resource_name": {
+      "type": ["null", "string"]
+    },
+    "ad_group_label.resource_name": {
+      "type": ["null", "string"]
+    },
+    "label.name": {
+      "type": ["null", "string"]
+    },
+    "label.resource_name": {
+      "type": ["null", "string"]
+    }
+  }
+}

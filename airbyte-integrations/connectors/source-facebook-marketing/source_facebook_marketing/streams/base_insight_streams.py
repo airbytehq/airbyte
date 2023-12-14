@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import datetime
 import logging
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
@@ -12,9 +12,10 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
-from facebook_business.exceptions import FacebookBadObjectError
+from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob, ParentAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
+from source_facebook_marketing.streams.common import traced_exception, deep_merge
 
 from .base_streams import FBMarketingIncrementalStream
 
@@ -25,7 +26,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
     cursor_field = "date_start"
-    use_batch = False
     enable_deleted = False
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
@@ -37,7 +37,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         "28d_view",
     ]
 
-    ALL_ACTION_BREAKDOWNS = [
+    breakdowns = []
+    action_breakdowns = [
         "action_type",
         "action_target_id",
         "action_destination",
@@ -49,32 +50,39 @@ class AdsInsights(FBMarketingIncrementalStream):
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
-    action_breakdowns = ALL_ACTION_BREAKDOWNS
-    level = "ad"
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
 
-    breakdowns = []
-
     def __init__(
-            self,
-            name: str = None,
-            fields: List[str] = None,
-            breakdowns: List[str] = None,
-            action_breakdowns: List[str] = None,
-            time_increment: Optional[int] = None,
-            insights_lookback_window: int = None,
-            **kwargs,
+        self,
+        name: str = None,
+        fields: List[str] = None,
+        breakdowns: List[str] = None,
+        action_breakdowns: List[str] = None,
+        action_breakdowns_allow_empty: bool = False,
+        action_report_time: str = "mixed",
+        time_increment: Optional[int] = None,
+        insights_lookback_window: int = None,
+        level: str = "ad",
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self._start_date = self._start_date.date()
         self._end_date = self._end_date.date()
         self._fields = fields
-        self.action_breakdowns = action_breakdowns or self.action_breakdowns
-        self.breakdowns = breakdowns or self.breakdowns
+        if action_breakdowns_allow_empty:
+            if action_breakdowns is not None:
+                self.action_breakdowns = action_breakdowns
+        else:
+            if action_breakdowns:
+                self.action_breakdowns = action_breakdowns
+        if breakdowns is not None:
+            self.breakdowns = breakdowns
         self.time_increment = time_increment or self.time_increment
+        self.action_report_time = action_report_time
         self._new_class_name = name
         self._insights_lookback_window = insights_lookback_window
+        self.level = level
 
         # state
         self._cursor_value = {}  # latest period that was read
@@ -106,53 +114,33 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Because insights has very different read_records we don't need this method anymore"""
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
-
+        account_id = job._edge_object.get("account_id")
         try:
             for obj in job.get_result():
-                yield obj.export_all_data()
+                data = obj.export_all_data()
+                if self._response_data_is_valid(data):
+                    yield data
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
-                        f"Please try again later",
+                f"Please try again later",
                 failure_type=FailureType.system_error,
             ) from e
+        except FacebookRequestError as exc:
+            raise traced_exception(exc)
 
-        # job = InsightAsyncJob(api=job._api, interval=job.interval, edge_object=job.edge_object, params=job._params)
-        # job = ParentAsyncJob(jobs=[], api=job._api, interval=job.interval)
-        if type(job) != ParentAsyncJob:
-            account_id = job.edge_object.get("account_id")
-
-            self._completed_slices[account_id] = self._completed_slices.get(account_id, set())
-            self._completed_slices[account_id].add(job.interval.start)
-            if job.interval.start == self._next_cursor_value.get(account_id, self._next_cursor_value.get(None)):
-                self._advance_cursor(account_id)
-
-        elif len(job._jobs) > 0:
-            # TODO: At this point we would sometimes get ParentAsyncJob. Should not happen. To debug.
-            # In the meantime we get the account ID of the 1st job
-            self.logger.error("This job {} has no edge_object. It is of type {}".format(str(job), str(type(job))))
-            if type(job) == ParentAsyncJob:
-                self.logger.error("This group of jobs has the following jobs : ")
-                for j in job._jobs:
-                    self.logger.error(str(j))
-            self.logger.error("We will select the account ID of the first job of the list of jobs")
-            account_id = job._jobs[0].edge_object.get("account_id")
-
-            self._completed_slices[account_id] = self._completed_slices.get(account_id, set())
-            self._completed_slices[account_id].add(job.interval.start)
-            if job.interval.start == self._next_cursor_value.get(account_id, self._next_cursor_value.get(None)):
-                self._advance_cursor(account_id)
-
-        elif len(job._jobs) == 0:
-            self.logger.error("This group of jobs {} is over. Continue...".format(str(job), str(type(job))))
+        self._completed_slices[account_id] = self._completed_slices.get(account_id, set())
+        self._completed_slices[account_id].add(job.interval.start)
+        if job.interval.start == self._next_cursor_value.get(account_id, self._next_cursor_value.get(None)):
+            self._advance_cursor(account_id)
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -185,6 +173,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         # then the previous state object is invalid and we should start replicating data from scratch
         # to achieve this, we skip setting the state
 
+        logger.info("Stream state : {}".format(value))
+
         for k, v in value.items():
             if v.get("time_increment", 1) != self.time_increment:
                 logger.info(f"Ignoring bookmark for {self.name} account[{k}] because of different `time_increment` option.")
@@ -194,19 +184,6 @@ class AdsInsights(FBMarketingIncrementalStream):
                                   k: pendulum.parse(v[self.cursor_field]).date() if v.get(self.cursor_field) else None}
             self._completed_slices = {**self._completed_slices, k: set(pendulum.parse(_v).date() for _v in v.get("slices", []))}
             self._next_cursor_value = {**self._next_cursor_value, **self._get_start_date(k)}
-
-    def get_updated_state(self,
-                          current_stream_state: MutableMapping[str, Any],
-                          latest_record: Mapping[str, Any],
-                          account_id: str):
-        """Update stream state from latest record
-
-        :param current_stream_state: latest state returned
-        :param latest_record: latest record that we read
-        :param account_id
-
-        """
-        return self.state
 
     def _date_intervals(self, account_id: str = None) -> Iterator[pendulum.Date]:
         """Get date period to sync"""
@@ -239,10 +216,27 @@ class AdsInsights(FBMarketingIncrementalStream):
                 interval = pendulum.Period(ts_start, ts_end)
                 yield InsightAsyncJob(api=self._api.api, edge_object=account, interval=interval, params=params)
 
-    def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    def check_breakdowns(self):
+        """
+        Making call to check "action_breakdowns" and "breakdowns" combinations
+        https://developers.facebook.com/docs/marketing-api/insights/breakdowns#combiningbreakdowns
+        """
+        params = {
+            "action_breakdowns": self.action_breakdowns,
+            "breakdowns": self.breakdowns,
+            "fields": ["account_id"],
+        }
+        self._api.account.get_insights(params=params, is_async=False)
 
+    def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
+        """
+        Ensure data contains all the fields specified in self.breakdowns
+        """
+        return all([breakdown in data for breakdown in self.breakdowns])
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
         This solution for Async was chosen because:
         1. we should commit state after each successful job
@@ -258,9 +252,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         if stream_state:
             self.state = stream_state
 
-        manager = InsightAsyncJobManager(api=self._api, jobs=self._generate_async_jobs(params=self.request_params()))
-        for job in manager.completed_jobs():
-            yield {"insight_job": job}
+        try:
+            manager = InsightAsyncJobManager(api=self._api, jobs=self._generate_async_jobs(params=self.request_params()))
+            for job in manager.completed_jobs():
+                yield {"insight_job": job}
+        except FacebookRequestError as exc:
+            raise traced_exception(exc)
 
     def _get_start_date(self, account_id: str = None) -> pendulum.Date:
         """Get start date to begin sync with. It is not that trivial as it might seem.
@@ -299,6 +296,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         return {
             "level": self.level,
             "action_breakdowns": self.action_breakdowns,
+            "action_report_time": self.action_report_time,
             "breakdowns": self.breakdowns,
             "fields": self.fields,
             "time_increment": self.time_increment,
@@ -316,7 +314,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
         schema = loader.get_schema("ads_insights")
         if self._fields:
-            schema["properties"] = {k: v for k, v in schema["properties"].items() if k in self._fields + [self.cursor_field]}
+            # 'date_stop' and 'account_id' are also returned by default, even if they are not requested
+            custom_fields = set(self._fields + [self.cursor_field, "date_stop", "account_id", "ad_id"])
+            schema["properties"] = {k: v for k, v in schema["properties"].items() if k in custom_fields}
         if self.breakdowns:
             breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
             schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})

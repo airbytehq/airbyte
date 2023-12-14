@@ -9,18 +9,18 @@ import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageFormatConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvFormatConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvWriter;
 import io.airbyte.integrations.destination.databricks.DatabricksDestinationConfig;
 import io.airbyte.integrations.destination.databricks.DatabricksStreamCopier;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -57,6 +57,7 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
   protected String currentFile;
 
   public DatabricksAzureBlobStorageStreamCopier(final String stagingFolder,
+                                                final String catalog,
                                                 final String schema,
                                                 final ConfiguredAirbyteStream configuredStream,
                                                 final JdbcDatabase database,
@@ -65,7 +66,7 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
                                                 final SqlOperations sqlOperations,
                                                 final SpecializedBlobClientBuilder specializedBlobClientBuilder,
                                                 final AzureBlobStorageConfig azureConfig) {
-    super(stagingFolder, schema, configuredStream, database, databricksConfig, nameTransformer, sqlOperations);
+    super(stagingFolder, catalog, schema, configuredStream, database, databricksConfig, nameTransformer, sqlOperations);
 
     this.specializedBlobClientBuilder = specializedBlobClientBuilder;
     this.azureConfig = azureConfig;

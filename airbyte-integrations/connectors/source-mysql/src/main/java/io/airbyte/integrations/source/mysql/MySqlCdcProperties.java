@@ -4,18 +4,18 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_PASS;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_URL;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_PASS;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_URL;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.debezium.internals.mysql.CustomMySQLTinyIntOneToBooleanConverter;
-import io.airbyte.integrations.debezium.internals.mysql.MySQLDateTimeConverter;
-import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.debezium.internals.mysql.CustomMySQLTinyIntOneToBooleanConverter;
+import io.airbyte.cdk.integrations.debezium.internals.mysql.MySQLDateTimeConverter;
+import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -26,9 +26,12 @@ import org.slf4j.LoggerFactory;
 public class MySqlCdcProperties {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlCdcProperties.class);
-  private static final Duration HEARTBEAT_FREQUENCY = Duration.ofSeconds(10);
+  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
 
-  static Properties getDebeziumProperties(final JdbcDatabase database) {
+  // Test execution latency is lower when heartbeats are more frequent.
+  private static final Duration HEARTBEAT_INTERVAL_IN_TESTS = Duration.ofSeconds(1L);
+
+  public static Properties getDebeziumProperties(final JdbcDatabase database) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Properties props = commonProperties(database);
     // snapshot config
@@ -37,7 +40,7 @@ public class MySqlCdcProperties {
       // initial snapshot
       props.setProperty("snapshot.mode", sourceConfig.get("snapshot_mode").asText());
     } else {
-      // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-property-snapshot-mode
+      // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
       props.setProperty("snapshot.mode", "when_needed");
     }
 
@@ -52,8 +55,8 @@ public class MySqlCdcProperties {
     props.setProperty("connector.class", "io.debezium.connector.mysql.MySqlConnector");
 
     props.setProperty("database.server.id", String.valueOf(generateServerID()));
-    // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-boolean-values
-    // https://debezium.io/documentation/reference/2.1/development/converters.html
+    // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-boolean-values
+    // https://debezium.io/documentation/reference/2.2/development/converters.html
     /**
      * {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter}
      * {@link MySQLConverter}
@@ -61,7 +64,12 @@ public class MySqlCdcProperties {
     props.setProperty("converters", "boolean, datetime");
     props.setProperty("boolean.type", CustomMySQLTinyIntOneToBooleanConverter.class.getName());
     props.setProperty("datetime.type", MySQLDateTimeConverter.class.getName());
-    props.setProperty("heartbeat.interval.ms", Long.toString(HEARTBEAT_FREQUENCY.toMillis()));
+
+    final Duration heartbeatInterval =
+        (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
+            ? HEARTBEAT_INTERVAL_IN_TESTS
+            : HEARTBEAT_INTERVAL;
+    props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
 
     // For CDC mode, the user cannot provide timezone arguments as JDBC parameters - they are
     // specifically defined in the replication_method
@@ -69,12 +77,17 @@ public class MySqlCdcProperties {
     if (sourceConfig.get("replication_method").has("server_time_zone")) {
       final String serverTimeZone = sourceConfig.get("replication_method").get("server_time_zone").asText();
       if (!serverTimeZone.isEmpty()) {
-        props.setProperty("database.serverTimezone", serverTimeZone);
+        /**
+         * Per Debezium docs,
+         * https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-temporal-types
+         * this property is now connectionTimeZone {@link com.mysql.cj.conf.PropertyKey#connectionTimeZone}
+         **/
+        props.setProperty("database.connectionTimeZone", serverTimeZone);
       }
     }
 
     // Check params for SSL connection in config and add properties for CDC SSL connection
-    // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-property-database-ssl-mode
+    // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-database-ssl-mode
     if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
         props.setProperty("database.ssl.mode", MySqlSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
@@ -100,32 +113,26 @@ public class MySqlCdcProperties {
       }
     }
 
-    // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-property-snapshot-locking-mode
+    // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-locking-mode
     // This is to make sure other database clients are allowed to write to a table while Airbyte is
     // taking a snapshot. There is a risk involved that
     // if any database client makes a schema change then the sync might break
     props.setProperty("snapshot.locking.mode", "none");
-    // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-property-include-schema-changes
+    // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-include-schema-changes
     props.setProperty("include.schema.changes", "false");
     // This to make sure that binary data represented as a base64-encoded String.
-    // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-property-binary-handling-mode
+    // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-binary-handling-mode
     props.setProperty("binary.handling.mode", "base64");
     props.setProperty("database.include.list", sourceConfig.get("database").asText());
 
     return props;
   }
 
-  static Properties getSnapshotProperties(final JdbcDatabase database) {
-    final Properties props = commonProperties(database);
-    props.setProperty("snapshot.mode", "initial_only");
-    return props;
-  }
-
   private static int generateServerID() {
-    int min = 5400;
-    int max = 6400;
+    final int min = 5400;
+    final int max = 6400;
 
-    int serverId = (int) Math.floor(Math.random() * (max - min + 1) + min);
+    final int serverId = (int) Math.floor(Math.random() * (max - min + 1) + min);
     LOGGER.info("Randomly generated Server ID : " + serverId);
     return serverId;
   }

@@ -4,67 +4,98 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
-import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
+import static io.airbyte.cdk.db.jdbc.JdbcUtils.EQUALS;
+import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters;
+import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getCursorBasedSyncStatusForStreams;
+import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
+import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.logStreamSyncStatus;
+import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.convertNameNamespacePairFromV0;
+import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.initPairToPrimaryKeyInfoMap;
+import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.streamsForInitialPrimaryKeyLoad;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mysql.cj.MysqlType;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
+import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
+import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
+import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
+import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
-import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcPosition;
-import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
-import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
+import io.airbyte.integrations.source.mysql.cursor_based.MySqlCursorBasedStateManager;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.integrations.util.HostPortResolver;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadHandler;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStreamStateManager;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.CursorBasedStreams;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.InitialLoadStreams;
+import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
+
+  public static final String TUNNEL_METHOD = "tunnel_method";
+  public static final String NO_TUNNEL = "NO_TUNNEL";
+  public static final String SSL_MODE = "ssl_mode";
+  private static final String MODE = "mode";
+  public static final String SSL_MODE_PREFERRED = "preferred";
+  public static final String SSL_MODE_REQUIRED = "required";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
@@ -86,23 +117,59 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       """;
 
   public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
-  public static final String MYSQL_CDC_OFFSET = "mysql_cdc_offset";
-  public static final String MYSQL_DB_HISTORY = "mysql_db_history";
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
+  public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
   public static final List<String> SSL_PARAMETERS = List.of(
       "useSSL=true",
       "requireSSL=true");
 
-  private final FeatureFlags featureFlags;
+  public static Source sshWrappedSource(MySqlSource source) {
+    return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
 
-  public static Source sshWrappedSource() {
-    return new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  private ConnectorSpecification getCloudDeploymentSpec(final ConnectorSpecification originalSpec) {
+    final ConnectorSpecification spec = Jsons.clone(originalSpec);
+    // Remove the SSL options
+    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    // Set SSL_MODE to required by default
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE)).put("default", SSL_MODE_REQUIRED);
+    return spec;
+  }
+
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    if (cloudDeploymentMode()) {
+      return getCloudDeploymentSpec(super.spec());
+    }
+    return super.spec();
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
+    // and not over SSH tunnel
+    if (cloudDeploymentMode()) {
+      if (config.has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
+        // If no SSH tunnel
+        if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
+          if (Set.of(SSL_MODE_PREFERRED).contains(config.get(SSL_MODE).get(MODE).asText())) {
+            // Fail in case SSL mode is preferred
+            return new AirbyteConnectionStatus()
+                .withStatus(Status.FAILED)
+                .withMessage(
+                    "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: required, verify-ca, verify-identity");
+          }
+        }
+      }
+    }
+    return super.check(config);
   }
 
   public MySqlSource() {
     super(DRIVER_CLASS, MySqlStreamingQueryConfig::new, new MySqlSourceOperations());
-    this.featureFlags = new EnvVariableFeatureFlags();
   }
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
@@ -125,18 +192,30 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return stream;
   }
 
+  /*
+   * To prepare for Destination v2, cdc streams must have a default cursor field Cursor format: the
+   * airbyte [emittedAt(converted to nano seconds)] + [sync wide record counter]
+   */
+  private static AirbyteStream setDefaultCursorFieldForCdc(final AirbyteStream stream) {
+    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
+      stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
+    }
+    return stream;
+  }
+
   // Note: in place mutation.
   private static AirbyteStream addCdcMetadataColumns(final AirbyteStream stream) {
-
     final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
+    final JsonNode airbyteIntegerType = Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LOG_FILE, stringType);
     properties.set(CDC_LOG_POS, numberType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
+    properties.set(CDC_DEFAULT_CURSOR, airbyteIntegerType);
 
     return stream;
   }
@@ -148,7 +227,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       checkOperations.addAll(CdcConfigurationHelper.getCheckOperations());
 
       checkOperations.add(database -> {
-        FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(config);
+        RecordWaitTimeUtil.checkFirstRecordWaitTime(config);
         CdcConfigurationHelper.checkServerTimeZoneConfig(config);
       });
     }
@@ -164,6 +243,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           .map(MySqlSource::overrideSyncModes)
           .map(MySqlSource::removeIncrementalWithoutPk)
           .map(MySqlSource::setIncrementalToSourceDefined)
+          .map(MySqlSource::setDefaultCursorFieldForCdc)
           .map(MySqlSource::addCdcMetadataColumns)
           .collect(toList());
 
@@ -171,6 +251,58 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     }
 
     return catalog;
+  }
+
+  @Override
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final JsonNode state)
+      throws Exception {
+    final AirbyteStateType supportedStateType = getSupportedStateType(config);
+    final StateManager stateManager =
+        StateManagerFactory.createStateManager(supportedStateType,
+            StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType), catalog);
+    final Instant emittedAt = Instant.now();
+
+    final JdbcDatabase database = createDatabase(config);
+
+    logPreSyncDebugData(database, catalog);
+
+    final Map<String, TableInfo<CommonField<MysqlType>>> fullyQualifiedTableNameToInfo =
+        discoverWithoutSystemTables(database)
+            .stream()
+            .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()),
+                Function
+                    .identity()));
+
+    validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database);
+
+    DbSourceDiscoverUtil.logSourceSchemaChange(fullyQualifiedTableNameToInfo, catalog, this::getAirbyteType);
+
+    final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
+        getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
+            emittedAt);
+    final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
+        getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
+            emittedAt);
+    final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream
+        .of(incrementalIterators, fullRefreshIterators)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
+
+    return iteratorList;
+  }
+
+  @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
+    super.logPreSyncDebugData(database, catalog);
+    final Set<String> streamNames = new HashSet<>();
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      streamNames.add(stream.getStream().getName());
+    }
+    final Set<String> storageEngines = MySqlQueryUtils.getStorageEngines(database, streamNames);
+    LOGGER.info(String.format("Detected the following storage engines for MySQL: %s", storageEngines.toString()));
   }
 
   @Override
@@ -191,7 +323,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     jdbcUrl.append("&tinyInt1isBit=true");
     // ensure the return year value is a Date; see the rationale
     // in the setJsonField method in MySqlSourceOperations.java
-    jdbcUrl.append("&yearIsDateType=true");
+    jdbcUrl.append("&yearIsDateType=false");
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(JdbcUtils.AMPERSAND).append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
@@ -259,45 +391,52 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
+
     final JsonNode sourceConfig = database.getSourceConfig();
-    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
-      final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
-      LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
-      final AirbyteDebeziumHandler<MySqlCdcPosition> handler =
-          new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime);
-
-      final MySqlCdcStateHandler mySqlCdcStateHandler = new MySqlCdcStateHandler(stateManager);
-      final MySqlCdcConnectorMetadataInjector mySqlCdcConnectorMetadataInjector = new MySqlCdcConnectorMetadataInjector();
-
-      final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
-      final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
-
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
-          new MySqlCdcSavedInfoFetcher(cdcState.orElse(null)),
-          new MySqlCdcStateHandler(stateManager),
-          new MySqlCdcConnectorMetadataInjector(),
-          MySqlCdcProperties.getDebeziumProperties(database),
-          emittedAt,
-          false);
-
-      if (streamsToSnapshot.isEmpty()) {
-        return Collections.singletonList(incrementalIteratorSupplier.get());
-      }
-
-      final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
-          new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot),
-          mySqlCdcConnectorMetadataInjector,
-          MySqlCdcProperties.getSnapshotProperties(database),
-          mySqlCdcStateHandler,
-          emittedAt);
-
-      return Collections.singletonList(
-          AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
+    if (isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
+      LOGGER.info("Using PK + CDC");
+      return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
     } else {
-      LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
-          emittedAt);
+      if (isAnyStreamIncrementalSyncMode(catalog)) {
+        LOGGER.info("Syncing via Primary Key");
+        final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
+        final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
+        final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
+            getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, quoteString);
+        final CursorBasedStreams cursorBasedStreams =
+            new CursorBasedStreams(MySqlInitialReadUtil.identifyStreamsForCursorBased(catalog, initialLoadStreams.streamsForInitialLoad()),
+                pairToCursorBasedStatus);
+
+        logStreamSyncStatus(initialLoadStreams.streamsForInitialLoad(), "Primary Key");
+        logStreamSyncStatus(cursorBasedStreams.streamsForCursorBased(), "Cursor");
+
+        final MySqlInitialLoadStreamStateManager mySqlInitialLoadStreamStateManager =
+            new MySqlInitialLoadStreamStateManager(catalog, initialLoadStreams,
+                initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString));
+        final MySqlInitialLoadHandler initialLoadHandler =
+            new MySqlInitialLoadHandler(sourceConfig, database, new MySqlSourceOperations(), getQuoteString(), mySqlInitialLoadStreamStateManager,
+                namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))),
+                getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
+        final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
+            new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
+            tableNameToTable,
+            emittedAt));
+
+        // Build Cursor based iterator
+        final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterator =
+            new ArrayList<>(super.getIncrementalIterators(database,
+                new ConfiguredAirbyteCatalog().withStreams(
+                    cursorBasedStreams.streamsForCursorBased()),
+                tableNameToTable,
+                cursorBasedStateManager, emittedAt));
+
+        return Stream.of(initialLoadIterator, cursorBasedIterator).flatMap(Collection::stream).collect(Collectors.toList());
+      }
     }
+
+    LOGGER.info("using CDC: {}", false);
+    return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
+        emittedAt);
   }
 
   @Override
@@ -367,6 +506,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return toSslJdbcParamInternal(sslMode);
   }
 
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
+  }
+
   @Override
   protected int getStateEmissionFrequency() {
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
@@ -380,8 +523,63 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return result;
   }
 
+  @Override
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    // return super.createDatabase(sourceConfig, this::getConnectionProperties);
+    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+    // Create the data source
+    final DataSource dataSource = DataSourceFactory.create(
+        jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        driverClass,
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        this.getConnectionProperties(sourceConfig));
+    // Record the data source so that it can be closed.
+    dataSources.add(dataSource);
+
+    final JdbcDatabase database = new StreamingJdbcDatabase(
+        dataSource,
+        sourceOperations,
+        streamingQueryConfigProvider);
+
+    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(jdbcConfig);
+    return database;
+  }
+
+  public Map<String, String> getConnectionProperties(final JsonNode config) {
+    final Map<String, String> customProperties =
+        config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)
+            ? parseJdbcParameters(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText(), DEFAULT_JDBC_PARAMETERS_DELIMITER)
+            : new HashMap<>();
+    final Map<String, String> defaultProperties = JdbcDataSourceUtils.getDefaultConnectionProperties(config);
+    assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
+    return MoreMaps.merge(customProperties, defaultProperties);
+  }
+
+  public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString, final String delimiter) {
+    final Map<String, String> parameters = new HashMap<>();
+    if (!jdbcPropertiesString.isBlank()) {
+      final String[] keyValuePairs = jdbcPropertiesString.split(delimiter);
+      for (final String kv : keyValuePairs) {
+        final String[] split = kv.split("=");
+        if (split.length == 2) {
+          parameters.put(split[0], split[1]);
+        } else if (split.length == 3 && kv.contains("sessionVariables")) {
+          parameters.put(split[0], split[1] + "=" + split[2]);
+        } else {
+          throw new ConfigErrorException(
+              "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
+                  + jdbcPropertiesString);
+        }
+      }
+    }
+    return parameters;
+  }
+
   public static void main(final String[] args) throws Exception {
-    final Source source = MySqlSource.sshWrappedSource();
+    final Source source = MySqlSource.sshWrappedSource(new MySqlSource());
     LOGGER.info("starting source: {}", MySqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MySqlSource.class);

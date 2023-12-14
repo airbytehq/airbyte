@@ -4,8 +4,7 @@
 
 import base64
 import logging
-from datetime import datetime
-from typing import Any, Iterable, List, Mapping, Optional, Set, MutableMapping
+from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import pendulum
 import requests
@@ -13,6 +12,7 @@ from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
+from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 
 from .base_insight_streams import AdsInsights
@@ -31,8 +31,8 @@ def fetch_thumbnail_data_url(url: str) -> Optional[str]:
             return f"data:{_type};base64,{data.decode('ascii')}"
         else:
             logger.warning(f"Got {repr(response)} while requesting thumbnail image.")
-    except requests.exceptions.RequestException as exc:
-        logger.warning(f"Got {str(exc)} while requesting thumbnail image.")
+    except Exception as exc:
+        logger.warning(f"Got {str(exc)} while requesting thumbnail image: {url}.")
     return None
 
 
@@ -61,6 +61,7 @@ class AdCreatives(FBMarketingStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Read with super method and append thumbnail_data_url if enabled"""
+        logger.info("Stream state : {}".format(stream_state))
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             if self._fetch_thumbnail_images:
                 thumbnail_url = record.get("thumbnail_url")
@@ -69,7 +70,11 @@ class AdCreatives(FBMarketingStream):
             yield record
 
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
-        yield from stream_slice.get("account").get_ad_creatives(params=params)
+        if stream_slice.get("account").get("dolead_type") != "GEOLOC":
+            yield from stream_slice.get("account").get_ad_creatives(fields=self.fields, params=params)
+        else:
+            logger.info("Account number {} is a geoloc account. Not parsing its Creatives".
+                        format(stream_slice.get("account").get("account_id")))
 
 
 class CustomConversions(FBMarketingStream):
@@ -79,7 +84,20 @@ class CustomConversions(FBMarketingStream):
     enable_deleted = False
 
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
-        yield from stream_slice.get("account").get_custom_conversions(params=params)
+        yield from stream_slice.get("account").get_custom_conversions(params=params, fields=self.fields)
+
+
+class CustomAudiences(FBMarketingStream):
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-audience"""
+
+    entity_prefix = "customaudience"
+    enable_deleted = False
+    # The `rule` field is excluded from the list because it caused the error message "Please reduce the amount of data" for certain connections.
+    # https://github.com/airbytehq/oncall/issues/2765
+    fields_exceptions = ["rule"]
+
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        return self._api.account.get_custom_audiences(params=params, fields=self.fields)
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -88,7 +106,7 @@ class Ads(FBMarketingIncrementalStream):
     entity_prefix = "ad"
 
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
-        yield from stream_slice.get("account").get_ads(params=params)
+        yield from stream_slice.get("account").get_ads(params=params, fields=self.fields)
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -97,7 +115,7 @@ class AdSets(FBMarketingIncrementalStream):
     entity_prefix = "adset"
 
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
-        yield from stream_slice.get("account").get_ad_sets(params=params)
+        yield from stream_slice.get("account").get_ad_sets(params=params, fields=self.fields)
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -106,7 +124,7 @@ class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
 
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
-        yield from stream_slice.get("account").get_campaigns(params=params)
+        yield from stream_slice.get("account").get_campaigns(params=params, fields=self.fields)
 
 
 class Activities(FBMarketingIncrementalStream):
@@ -117,7 +135,11 @@ class Activities(FBMarketingIncrementalStream):
     primary_key = None
 
     def list_objects(self, fields, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
-        yield from stream_slice.get("account").get_activities(fields=fields, params=params)
+        if stream_slice.get("account").get("dolead_type") != "GEOLOC":
+            yield from stream_slice.get("account").get_activities(fields=fields, params=params)
+        else:
+            logger.info("Account number {} is a geoloc account. Not parsing its Activities".
+                        format(stream_slice.get("account").get("account_id")))
 
     def read_records(
         self,
@@ -139,6 +161,9 @@ class Activities(FBMarketingIncrementalStream):
 
     def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
+
+        logger.info("stream_state : {}".format(stream_state))
+
         state_value = stream_state.get(self.cursor_field)
         since = self._start_date if not state_value else pendulum.parse(state_value)
 
@@ -150,27 +175,14 @@ class Activities(FBMarketingIncrementalStream):
         return {"since": since.int_timestamp}
 
 
-class Videos(FBMarketingIncrementalStream):
+class Videos(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/video"""
 
     entity_prefix = "video"
 
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
-        yield from stream_slice.get("account").get_ad_videos(params=params)
-
-    def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Additional filters associated with state if any set"""
-        account_id = stream_slice.get("account", {}).get("account_id")
-        account_stream_state = stream_state.get(account_id, {})
-        state_value = account_stream_state.get(self.cursor_field)
-        filter_value = self._start_date if not state_value else pendulum.parse(state_value)
-
-        potentially_new_records_in_the_past = self._include_deleted and not account_stream_state.get("include_deleted", False)
-        if potentially_new_records_in_the_past:
-            self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
-            filter_value = self._start_date
-
-        return {"since": filter_value.int_timestamp}
+        # Remove filtering as it is not working for this stream since 2023-01-13
+        yield from stream_slice.get("account").get_ad_videos(params=params, fields=self.fields)
 
 
 class AdAccount(FBMarketingStream):
@@ -198,10 +210,13 @@ class AdAccount(FBMarketingStream):
         # that specific ad account.
         if "funding_source_details" in properties and "MANAGE" not in self.get_task_permissions():
             properties.remove("funding_source_details")
+        if "is_prepay_account" in properties and "MANAGE" not in self.get_task_permissions():
+            properties.remove("is_prepay_account")
         return properties
 
-    def list_objects(self, stream_slice, params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
         """noop in case of AdAccount"""
+        # return [FBAdAccount(self._api.account.get_id()).api_get(fields=self.fields)]
         account = stream_slice.get("account")
         yield account
 
@@ -211,6 +226,9 @@ class Images(FBMarketingReversedIncrementalStream):
 
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
         yield from stream_slice.get("account").get_ad_images(params=params, fields=self.fields)
+
+    def get_record_deleted_status(self, record) -> bool:
+        return record[AdImage.Field.status] == AdImage.Status.deleted
 
 
 class AdsInsightsAgeAndGender(AdsInsights):
@@ -238,4 +256,65 @@ class AdsInsightsPlatformAndDevice(AdsInsights):
 
 class AdsInsightsActionType(AdsInsights):
     breakdowns = []
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsActionCarouselCard(AdsInsights):
+    action_breakdowns = ["action_carousel_card_id", "action_carousel_card_name"]
+
+
+class AdsInsightsActionConversionDevice(AdsInsights):
+    breakdowns = ["device_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsActionProductID(AdsInsights):
+    breakdowns = ["product_id"]
+    action_breakdowns = []
+
+
+class AdsInsightsActionReaction(AdsInsights):
+    action_breakdowns = ["action_reaction"]
+
+
+class AdsInsightsActionVideoSound(AdsInsights):
+    action_breakdowns = ["action_video_sound"]
+
+
+class AdsInsightsActionVideoType(AdsInsights):
+    action_breakdowns = ["action_video_type"]
+
+
+class AdsInsightsDeliveryDevice(AdsInsights):
+    breakdowns = ["device_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDeliveryPlatform(AdsInsights):
+    breakdowns = ["publisher_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDeliveryPlatformAndDevicePlatform(AdsInsights):
+    breakdowns = ["publisher_platform", "device_platform"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsAge(AdsInsights):
+    breakdowns = ["age"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsCountry(AdsInsights):
+    breakdowns = ["country"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsDMARegion(AdsInsights):
+    breakdowns = ["dma"]
+    action_breakdowns = ["action_type"]
+
+
+class AdsInsightsDemographicsGender(AdsInsights):
+    breakdowns = ["gender"]
     action_breakdowns = ["action_type"]

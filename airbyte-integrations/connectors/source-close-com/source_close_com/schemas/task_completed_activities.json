@@ -1,11 +1,28 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "_type": {
       "type": ["null", "string"]
     },
     "id": {
       "type": ["null", "string"]
+    },
+    "activity_at": {
+      "type": ["null", "string"]
+    },
+    "task_assigned_to": {
+      "type": ["null", "string"]
+    },
+    "task_assigned_to_name": {
+      "type": ["null", "string"]
+    },
+    "user_name": {
+      "type": ["null", "string"]
+    },
+    "users": {
+      "type": ["null", "array"]
     },
     "task_id": {
       "type": ["null", "string"]

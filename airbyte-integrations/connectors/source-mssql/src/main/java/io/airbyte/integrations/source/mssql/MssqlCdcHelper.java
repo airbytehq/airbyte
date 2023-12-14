@@ -6,13 +6,14 @@ package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.debezium.internals.mssql.MSSQLConverter;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.debezium.internals.mssql.MSSQLConverter;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.time.Duration;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import org.codehaus.plexus.util.StringUtils;
@@ -30,6 +31,11 @@ public class MssqlCdcHelper {
   private static final String CDC_SNAPSHOT_ISOLATION_FIELD = "snapshot_isolation";
   private static final String CDC_DATA_TO_SYNC_FIELD = "data_to_sync";
 
+  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
+
+  // Test execution latency is lower when heartbeats are more frequent.
+  private static final Duration HEARTBEAT_INTERVAL_IN_TESTS = Duration.ofSeconds(1L);
+
   public enum ReplicationMethod {
     STANDARD,
     CDC
@@ -39,7 +45,7 @@ public class MssqlCdcHelper {
    * The default "SNAPSHOT" mode can prevent other (non-Airbyte) transactions from updating table rows
    * while we snapshot. References:
    * https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
-   * https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
+   * https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
    */
   public enum SnapshotIsolation {
 
@@ -69,7 +75,7 @@ public class MssqlCdcHelper {
 
   }
 
-  // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-snapshot-mode
+  // https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-snapshot-mode
   public enum DataToSync {
 
     EXISTING_AND_NEW("Existing and New", "initial"),
@@ -120,8 +126,8 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static SnapshotIsolation getSnapshotIsolationConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(REPLICATION_FIELD)) {
-      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
       final JsonNode snapshotIsolation = replicationConfig.get(CDC_SNAPSHOT_ISOLATION_FIELD);
       return SnapshotIsolation.from(snapshotIsolation.asText());
     }
@@ -131,8 +137,8 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static DataToSync getDataToSyncConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(REPLICATION_FIELD)) {
-      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
       final JsonNode dataToSync = replicationConfig.get(CDC_DATA_TO_SYNC_FIELD);
       return DataToSync.from(dataToSync.asText());
     }
@@ -146,9 +152,9 @@ public class MssqlCdcHelper {
     final Properties props = new Properties();
     props.setProperty("connector.class", "io.debezium.connector.sqlserver.SqlServerConnector");
 
-    // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-include-schema-changes
+    // https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-include-schema-changes
     props.setProperty("include.schema.changes", "false");
-    // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-provide-transaction-metadata
+    // https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-provide-transaction-metadata
     props.setProperty("provide.transaction.metadata", "false");
 
     props.setProperty("converters", "mssql_converter");
@@ -159,6 +165,14 @@ public class MssqlCdcHelper {
 
     props.setProperty("schema.include.list", getSchema(catalog));
     props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
+
+    final Duration heartbeatInterval =
+        (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
+            ? HEARTBEAT_INTERVAL_IN_TESTS
+            : HEARTBEAT_INTERVAL;
+    props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
+    // TODO: enable heartbeats in MS SQL Server.
+    props.setProperty("heartbeat.interval.ms", "0");
 
     if (config.has("ssl_method")) {
       final JsonNode sslConfig = config.get("ssl_method");

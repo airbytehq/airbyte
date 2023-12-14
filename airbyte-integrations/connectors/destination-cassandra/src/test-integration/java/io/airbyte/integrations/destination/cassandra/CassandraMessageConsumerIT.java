@@ -57,8 +57,7 @@ class CassandraMessageConsumerIT {
     final var catalog = TestDataFactory.createConfiguredAirbyteCatalog(cStream1, cStream2);
 
     final CassandraCqlProvider cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
-    cassandraMessageConsumer = new CassandraMessageConsumer(cassandraConfig, catalog, cassandraCqlProvider, message -> {
-    });
+    cassandraMessageConsumer = new CassandraMessageConsumer(cassandraConfig, catalog, cassandraCqlProvider, message -> {});
     nameTransformer = new CassandraNameTransformer(cassandraConfig);
   }
 
@@ -66,7 +65,6 @@ class CassandraMessageConsumerIT {
   void close() {
     cassandraContainer.close();
   }
-
 
   @Test
   @Order(1)
@@ -84,19 +82,19 @@ class CassandraMessageConsumerIT {
     assertDoesNotThrow(() -> {
       cassandraMessageConsumer.acceptTracked(
           TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_1, AIRBYTE_NAMESPACE_1,
-                                               function.apply("data1")));
+              function.apply("data1")));
       cassandraMessageConsumer.acceptTracked(
           TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_1, AIRBYTE_NAMESPACE_1,
-                                               function.apply("data2")));
+              function.apply("data2")));
       cassandraMessageConsumer.acceptTracked(
           TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2,
-                                               function.apply("data3")));
+              function.apply("data3")));
       cassandraMessageConsumer.acceptTracked(
           TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2,
-                                               function.apply("data4")));
+              function.apply("data4")));
       cassandraMessageConsumer.acceptTracked(
           TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.STATE, AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2,
-                                               function.apply("data5")));
+              function.apply("data5")));
     });
 
   }

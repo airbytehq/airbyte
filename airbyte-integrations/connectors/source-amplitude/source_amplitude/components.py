@@ -68,6 +68,7 @@ class EventsExtractor(RecordExtractor):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.name = parameters.get("name")
+        self.date_time_fields = self._get_date_time_items_from_schema()
 
     def _get_schema_root_properties(self):
         schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
@@ -89,9 +90,8 @@ class EventsExtractor(RecordExtractor):
         """
         Transform 'date-time' items to RFC3339 format
         """
-        date_time_fields = self._get_date_time_items_from_schema()
         for item in record:
-            if item in date_time_fields and record[item]:
+            if item in self.date_time_fields and record[item]:
                 record[item] = pendulum.parse(record[item]).to_rfc3339_string()
         return record
 
@@ -100,6 +100,7 @@ class EventsExtractor(RecordExtractor):
         response: requests.Response,
     ) -> List[Record]:
         try:
+            logger.info(f"The size of the response body is: {len(response.content)}")
             zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         except zipfile.BadZipFile:
             logger.exception(

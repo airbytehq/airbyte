@@ -122,6 +122,15 @@
     },
     {
       "stream": {
+        "name": "goals",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "line_items",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -194,6 +203,15 @@
     {
       "stream": {
         "name": "workflows",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contacts_merged_audit",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

@@ -9,7 +9,8 @@
       "type": ["null", "integer"]
     },
     "TimePeriod": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "CurrencyCode": {
       "type": ["null", "string"]
@@ -45,6 +46,9 @@
       "type": ["null", "string"]
     },
     "CampaignStatus": {
+      "type": ["null", "string"]
+    },
+    "CampaignLabels": {
       "type": ["null", "string"]
     },
     "Impressions": {
@@ -103,6 +107,9 @@
     },
     "AllConversions": {
       "type": ["null", "integer"]
+    },
+    "ConversionsQualified": {
+      "type": ["null", "number"]
     },
     "AllConversionRate": {
       "type": ["null", "number"]

@@ -62,7 +62,7 @@
     },
     "details": {
       "type": ["null", "object"],
-      "properties": { },
+      "properties": {},
       "additionalProperties": true
     },
     "notifyStakeholders": {

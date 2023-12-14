@@ -81,10 +81,14 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "archived_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -118,7 +122,25 @@
     "two_factor_requirement_enabled": {
       "type": ["null", "boolean"]
     },
+    "members_allowed_repository_creation_type": {
+      "type": ["null", "string"]
+    },
+    "members_can_create_public_repositories": {
+      "type": ["null", "boolean"]
+    },
+    "members_can_create_private_repositories": {
+      "type": ["null", "boolean"]
+    },
+    "members_can_create_internal_repositories": {
+      "type": ["null", "boolean"]
+    },
     "members_can_create_pages": {
+      "type": ["null", "boolean"]
+    },
+    "members_can_fork_private_repositories": {
+      "type": ["null", "boolean"]
+    },
+    "web_commit_signoff_required": {
       "type": ["null", "boolean"]
     },
     "members_can_create_public_pages": {
@@ -146,6 +168,30 @@
           "type": ["null", "integer"]
         }
       }
+    },
+    "advanced_security_enabled_for_new_repositories": {
+      "type": ["null", "boolean"]
+    },
+    "dependabot_alerts_enabled_for_new_repositories": {
+      "type": ["null", "boolean"]
+    },
+    "dependabot_security_updates_enabled_for_new_repositories": {
+      "type": ["null", "boolean"]
+    },
+    "dependency_graph_enabled_for_new_repositories": {
+      "type": ["null", "boolean"]
+    },
+    "secret_scanning_enabled_for_new_repositories": {
+      "type": ["null", "boolean"]
+    },
+    "secret_scanning_push_protection_enabled_for_new_repositories": {
+      "type": ["null", "boolean"]
+    },
+    "secret_scanning_push_protection_custom_link_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "secret_scanning_push_protection_custom_link": {
+      "type": ["null", "string"]
     }
   }
 }

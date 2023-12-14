@@ -1,0 +1,483 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "application": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "customer": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "livemode": {
+      "type": ["null", "boolean"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "on_behalf_of": {
+      "type": ["null", "string"]
+    },
+    "payment_method": {
+      "type": ["null", "string"]
+    },
+    "payment_method_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "au_becs_debit": {
+          "type": ["null", "object"],
+          "additional_properties": true,
+          "properties": {}
+        },
+        "bacs_debit": {
+          "type": ["null", "object"],
+          "additional_properties": true,
+          "properties": {}
+        },
+        "bancontact": {
+          "type": ["null", "object"],
+          "properties": {
+            "bank_code": {
+              "type": ["null", "string"]
+            },
+            "bank_name": {
+              "type": ["null", "string"]
+            },
+            "bic": {
+              "type": ["null", "string"]
+            },
+            "generated_sepa_debit": {
+              "type": ["null", "string"]
+            },
+            "generated_sepa_debit_mandate": {
+              "type": ["null", "string"]
+            },
+            "iban_last4": {
+              "type": ["null", "string"]
+            },
+            "preferred_language": {
+              "type": ["null", "string"]
+            },
+            "verified_name": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "card": {
+          "type": ["null", "object"],
+          "properties": {
+            "three_d_secure": {
+              "type": ["null", "object"],
+              "properties": {
+                "authentication_flow": {
+                  "type": ["null", "string"]
+                },
+                "result": {
+                  "type": ["null", "string"]
+                },
+                "result_reason": {
+                  "type": ["null", "string"]
+                },
+                "version": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "card_present": {
+          "type": ["null", "object"],
+          "properties": {
+            "generated_card": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "ideal": {
+          "type": ["null", "object"],
+          "properties": {
+            "bank": {
+              "type": ["null", "string"]
+            },
+            "bic": {
+              "type": ["null", "string"]
+            },
+            "generated_sepa_debit": {
+              "type": ["null", "string"]
+            },
+            "generated_sepa_debit_mandate": {
+              "type": ["null", "string"]
+            },
+            "iban_last4": {
+              "type": ["null", "string"]
+            },
+            "verified_name": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "sepa_debit": {
+          "type": ["null", "object"],
+          "additional_properties": true,
+          "properties": {}
+        },
+        "sofort": {
+          "type": ["null", "object"],
+          "properties": {
+            "bank_code": {
+              "type": ["null", "string"]
+            },
+            "bank_name": {
+              "type": ["null", "string"]
+            },
+            "bic": {
+              "type": ["null", "string"]
+            },
+            "generated_sepa_debit": {
+              "type": ["null", "string"]
+            },
+            "generated_sepa_debit_mandate": {
+              "type": ["null", "string"]
+            },
+            "iban_last4": {
+              "type": ["null", "string"]
+            },
+            "preferred_language": {
+              "type": ["null", "string"]
+            },
+            "verified_name": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "setup_error": {
+      "type": ["null", "object"],
+      "properties": {
+        "charge": {
+          "type": ["null", "string"]
+        },
+        "code": {
+          "type": ["null", "string"]
+        },
+        "decline_code": {
+          "type": ["null", "string"]
+        },
+        "doc_url": {
+          "type": ["null", "string"]
+        },
+        "message": {
+          "type": ["null", "string"]
+        },
+        "param": {
+          "type": ["null", "string"]
+        },
+        "payment_intent": {
+          "$ref": "payment_intent.json"
+        },
+        "payment_method": {
+          "type": ["null", "object"],
+          "properties": {
+            "afterpay_clearpay": {
+              "additionalProperties": true,
+              "type": ["null", "object"]
+            },
+            "alipay": {
+              "additionalProperties": true,
+              "type": ["null", "object"]
+            },
+            "au_becs_debit": {
+              "additionalProperties": true,
+              "type": ["null", "object"],
+              "properties": {
+                "bsb_number": {
+                  "type": ["null", "string"]
+                },
+                "fingerprint": {
+                  "type": ["null", "string"]
+                },
+                "last4": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "bacs_debit": {
+              "additionalProperties": true,
+              "type": ["null", "object"],
+              "properties": {
+                "fingerprint": {
+                  "type": ["null", "string"]
+                },
+                "last4": {
+                  "type": ["null", "string"]
+                },
+                "sort_code": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "bancontact": {
+              "additionalProperties": true,
+              "type": ["null", "object"]
+            },
+            "billing_details": {
+              "additionalProperties": true,
+              "type": ["null", "object"],
+              "properties": {
+                "address": {
+                  "$ref": "address.json"
+                },
+                "email": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "phone": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "card": {
+              "additionalProperties": true,
+              "type": ["null", "object"],
+              "properties": {
+                "brand": {
+                  "type": ["null", "string"]
+                },
+                "checks": {
+                  "additionalProperties": true,
+                  "type": ["null", "object"],
+                  "properties": {
+                    "address_line1_check": {
+                      "type": ["null", "string"]
+                    },
+                    "address_postal_code_check": {
+                      "type": ["null", "string"]
+                    },
+                    "cvc_check": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "country": {
+                  "type": ["null", "string"]
+                },
+                "exp_month": {
+                  "type": ["null", "integer"]
+                },
+                "exp_year": {
+                  "type": ["null", "integer"]
+                },
+                "fingerprint": {
+                  "type": ["null", "string"]
+                },
+                "funding": {
+                  "type": ["null", "string"]
+                },
+                "generated_from": {
+                  "additionalProperties": true,
+                  "type": ["null", "object"]
+                },
+                "last4": {
+                  "type": ["null", "string"]
+                },
+                "networks": {
+                  "additionalProperties": true,
+                  "type": ["null", "object"],
+                  "properties": {
+                    "available": {
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "preferred": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "three_d_secure_usage": {
+                  "additionalProperties": true,
+                  "type": ["null", "object"],
+                  "properties": {
+                    "supported": {
+                      "type": ["null", "boolean"]
+                    }
+                  }
+                },
+                "wallet": {
+                  "additionalProperties": true,
+                  "type": ["null", "object"]
+                }
+              }
+            },
+            "card_present": {
+              "additionalProperties": true,
+              "type": ["null", "object"]
+            },
+            "created": {
+              "type": ["null", "integer"]
+            },
+            "updated": {
+              "type": ["null", "integer"]
+            },
+            "customer": {
+              "type": ["null", "string"]
+            },
+            "eps": {
+              "additionalProperties": true,
+              "type": ["null", "object"],
+              "properties": {
+                "bank": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "fpx": {
+              "additionalProperties": true,
+              "type": ["null", "object"],
+              "properties": {
+                "bank": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "giropay": {
+              "additionalProperties": true,
+              "type": ["null", "object"]
+            },
+            "grabpay": {
+              "additionalProperties": true,
+              "type": ["null", "object"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "ideal": {
+              "additionalProperties": true,
+              "type": ["null", "object"],
+              "properties": {
+                "bank": {
+                  "type": ["null", "string"]
+                },
+                "bic": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "interac_present": {
+              "additionalProperties": true,
+              "type": ["null", "object"]
+            },
+            "livemode": {
+              "type": ["null", "boolean"]
+            },
+            "metadata": {
+              "additionalProperties": true,
+              "type": ["null", "object"]
+            },
+            "object": {
+              "type": ["null", "string"]
+            },
+            "oxxo": {
+              "additionalProperties": true,
+              "type": ["null", "object"]
+            },
+            "p24": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "bank": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "sepa_debit": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "bank_code": {
+                  "type": ["null", "string"]
+                },
+                "branch_code": {
+                  "type": ["null", "string"]
+                },
+                "country": {
+                  "type": ["null", "string"]
+                },
+                "fingerprint": {
+                  "type": ["null", "string"]
+                },
+                "generated_from": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "charge": {
+                      "type": ["null", "string"]
+                    },
+                    "setup_attempt": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "last4": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "sofort": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "country": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "type": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "payment_method_type": {
+          "type": ["null", "string"]
+        },
+        "setup_intent": {
+          "$ref": "setup_intent.json"
+        },
+        "source": {
+          "type": ["null", "object"],
+          "properties": {}
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "setup_intent": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "usage": {
+      "type": ["null", "string"]
+    },
+    "flow_directions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}

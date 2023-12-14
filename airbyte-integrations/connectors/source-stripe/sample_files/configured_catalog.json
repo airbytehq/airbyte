@@ -2834,6 +2834,21 @@
               "type": ["null", "object"],
               "properties": {}
             },
+            "customer_tax_ids": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "value": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
             "charge": {
               "type": ["null", "string"]
             },
@@ -3047,6 +3062,15 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["created"]
+    },
+    {
+      "stream": {
+        "name": "early_fraud_warnings",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -3906,6 +3930,73 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["created"]
+    },
+    {
+      "stream": {
+        "name": "shipping_rates",
+        "json_schema": {
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "object": {
+              "type": ["null", "string"]
+            },
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "created": {
+              "type": ["null", "integer"]
+            },
+            "delivery_estimate": {},
+            "display_name": {
+              "type": ["null", "string"]
+            },
+            "fixed_amount": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "integer"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "livemode": {
+              "type": ["null", "boolean"]
+            },
+            "metadata": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "integer"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "tax_behavior": {
+              "type": ["null", "string"]
+            },
+            "tax_code": {
+              "type": ["null", "string"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {

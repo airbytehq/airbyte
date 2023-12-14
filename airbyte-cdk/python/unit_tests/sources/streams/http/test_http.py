@@ -22,9 +22,10 @@ class StubBasicReadHttpStream(HttpStream):
     url_base = "https://test_base_url.com"
     primary_key = ""
 
-    def __init__(self, **kwargs):
+    def __init__(self, deduplicate_query_params: bool = False, **kwargs):
         super().__init__(**kwargs)
         self.resp_counter = 1
+        self._deduplicate_query_params = deduplicate_query_params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -36,6 +37,9 @@ class StubBasicReadHttpStream(HttpStream):
         stubResp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stubResp
+
+    def must_deduplicate_query_params(self) -> bool:
+        return self._deduplicate_query_params
 
 
 def test_default_authenticator():
@@ -384,6 +388,17 @@ def test_caching_sessions_are_different():
     assert stream_1.cache_filename == stream_2.cache_filename
 
 
+# def test_cached_streams_wortk_when_request_path_is_not_set(mocker, requests_mock):
+# This test verifies that HttpStreams with a cached session work even if the path is not set
+# For instance, when running in a unit test
+# stream = CacheHttpStream()
+# with mocker.patch.object(stream._session, "send", wraps=stream._session.send):
+#     requests_mock.register_uri("GET", stream.url_base)
+#     records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+#     assert records == [{"data": 1}]
+# ""
+
+
 def test_parent_attribute_exist():
     parent_stream = CacheHttpStream()
     child_stream = CacheHttpSubStream(parent=parent_stream)
@@ -391,13 +406,20 @@ def test_parent_attribute_exist():
     assert child_stream.parent == parent_stream
 
 
-def test_cache_response(mocker):
+def test_that_response_was_cached(mocker, requests_mock):
+    requests_mock.register_uri("GET", "https://google.com/", text="text")
     stream = CacheHttpStream()
+    stream.clear_cache()
     mocker.patch.object(stream, "url_base", "https://google.com/")
-    list(stream.read_records(sync_mode=SyncMode.full_refresh))
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
-    with open(stream.cache_filename, "rb") as f:
-        assert f.read()
+    assert requests_mock.called
+
+    requests_mock.reset_mock()
+    new_records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert len(records) == len(new_records)
+    assert not requests_mock.called
 
 
 class CacheHttpStreamWithSlices(CacheHttpStream):
@@ -421,15 +443,16 @@ def test_using_cache(mocker, requests_mock):
 
     parent_stream = CacheHttpStreamWithSlices()
     mocker.patch.object(parent_stream, "url_base", "https://google.com/")
+    parent_stream.clear_cache()
 
     assert requests_mock.call_count == 0
-    assert parent_stream._session.cache.response_count() == 0
+    assert len(parent_stream._session.cache.responses) == 0
 
     for _slice in parent_stream.stream_slices():
         list(parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice))
 
     assert requests_mock.call_count == 2
-    assert parent_stream._session.cache.response_count() == 2
+    assert len(parent_stream._session.cache.responses) == 2
 
     child_stream = CacheHttpSubStream(parent=parent_stream)
 
@@ -437,9 +460,9 @@ def test_using_cache(mocker, requests_mock):
         pass
 
     assert requests_mock.call_count == 2
-    assert parent_stream._session.cache.response_count() == 2
-    assert parent_stream._session.cache.has_url("https://google.com/")
-    assert parent_stream._session.cache.has_url("https://google.com/search")
+    assert len(parent_stream._session.cache.responses) == 2
+    assert parent_stream._session.cache.contains(url="https://google.com/")
+    assert parent_stream._session.cache.contains(url="https://google.com/search")
 
 
 class AutoFailTrueHttpStream(StubBasicReadHttpStream):
@@ -507,21 +530,106 @@ def test_default_get_error_display_message_handles_http_error(mocker):
     non_http_err_msg = stream.get_error_display_message(RuntimeError("not me"))
     assert non_http_err_msg is None
 
-    http_err_msg = stream.get_error_display_message(requests.HTTPError())
+    response = requests.Response()
+    http_exception = requests.HTTPError(response=response)
+    http_err_msg = stream.get_error_display_message(http_exception)
     assert http_err_msg == "my custom message"
 
 
 @pytest.mark.parametrize(
-    "test_name, base_url, path, expected_full_url",[
+    "test_name, base_url, path, expected_full_url",
+    [
         ("test_no_slashes", "https://airbyte.io", "my_endpoint", "https://airbyte.io/my_endpoint"),
         ("test_trailing_slash_on_base_url", "https://airbyte.io/", "my_endpoint", "https://airbyte.io/my_endpoint"),
-        ("test_trailing_slash_on_base_url_and_leading_slash_on_path", "https://airbyte.io/", "/my_endpoint", "https://airbyte.io/my_endpoint"),
+        (
+            "test_trailing_slash_on_base_url_and_leading_slash_on_path",
+            "https://airbyte.io/",
+            "/my_endpoint",
+            "https://airbyte.io/my_endpoint",
+        ),
         ("test_leading_slash_on_path", "https://airbyte.io", "/my_endpoint", "https://airbyte.io/my_endpoint"),
         ("test_trailing_slash_on_path", "https://airbyte.io", "/my_endpoint/", "https://airbyte.io/my_endpoint/"),
         ("test_nested_path_no_leading_slash", "https://airbyte.io", "v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
         ("test_nested_path_with_leading_slash", "https://airbyte.io", "/v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
-    ]
+    ],
 )
 def test_join_url(test_name, base_url, path, expected_full_url):
     actual_url = HttpStream._join_url(base_url, path)
     assert actual_url == expected_full_url
+
+
+@pytest.mark.parametrize(
+    "deduplicate_query_params, path, params, expected_url",
+    [
+        pytest.param(
+            True, "v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"
+        ),
+        pytest.param(
+            True, "v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"
+        ),
+        pytest.param(True, "v1/endpoint", None, "https://test_base_url.com/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
+        pytest.param(
+            True,
+            "v1/endpoint?param1=value1",
+            None,
+            "https://test_base_url.com/v1/endpoint?param1=value1",
+            id="test_params_is_none_and_no_params_in_path",
+        ),
+        pytest.param(
+            True,
+            "v1/endpoint?param1=value1",
+            {"param2": "value2"},
+            "https://test_base_url.com/v1/endpoint?param1=value1&param2=value2",
+            id="test_no_duplicate_params",
+        ),
+        pytest.param(
+            True,
+            "v1/endpoint?param1=value1",
+            {"param1": "value1"},
+            "https://test_base_url.com/v1/endpoint?param1=value1",
+            id="test_duplicate_params_same_value",
+        ),
+        pytest.param(
+            True,
+            "v1/endpoint?param1=1",
+            {"param1": 1},
+            "https://test_base_url.com/v1/endpoint?param1=1",
+            id="test_duplicate_params_same_value_not_string",
+        ),
+        pytest.param(
+            True,
+            "v1/endpoint?param1=value1",
+            {"param1": "value2"},
+            "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2",
+            id="test_duplicate_params_different_value",
+        ),
+        pytest.param(
+            False,
+            "v1/endpoint?param1=value1",
+            {"param1": "value2"},
+            "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2",
+            id="test_same_params_different_value_no_deduplication",
+        ),
+        pytest.param(
+            False,
+            "v1/endpoint?param1=value1",
+            {"param1": "value1"},
+            "https://test_base_url.com/v1/endpoint?param1=value1&param1=value1",
+            id="test_same_params_same_value_no_deduplication",
+        ),
+    ],
+)
+def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, params, expected_url):
+    stream = StubBasicReadHttpStream(deduplicate_query_params)
+
+    if expected_url is None:
+        with pytest.raises(ValueError):
+            stream._create_prepared_request(path=path, params=params)
+    else:
+        prepared_request = stream._create_prepared_request(path=path, params=params)
+        assert prepared_request.url == expected_url
+
+
+def test_connection_pool():
+    stream = StubBasicReadHttpStream(authenticator=HttpTokenAuthenticator("test-token"))
+    assert stream._session.adapters["https://"]._pool_connections == 20

@@ -84,6 +84,19 @@ definitions:
       name: "message"
       primary_key: "ID"
       path: "/message"
+  listrecipient_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+      requester:
+        $ref: "#/definitions/requester"
+    $parameters:
+      name: "listrecipient"
+      primary_key: "ID"
+      path: "/listrecipient"
 
 streams:
   - "#/definitions/contactslist_stream"
@@ -91,6 +104,7 @@ streams:
   - "#/definitions/stats_api_lifetime_message_stream"
   - "#/definitions/campaign_stream"
   - "#/definitions/message_stream"
+  - "#/definitions/listrecipient_stream"
 
 check:
   stream_names:

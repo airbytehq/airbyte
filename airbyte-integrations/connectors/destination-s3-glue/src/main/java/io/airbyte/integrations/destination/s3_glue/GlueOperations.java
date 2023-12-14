@@ -129,7 +129,9 @@ public class GlueOperations implements MetastoreOperations {
         if (jsonNode.has("airbyte_type") && jsonNode.get("airbyte_type").asText().equals("integer")) {
           yield "int";
         }
-        yield "decimal";  // Default to use decimal as it is a more precise type and allows for large values
+        // Default to use decimal as it is a more precise type and allows for large values
+        // Set the default scale 38 to allow for the widest range of values
+        yield "decimal(38)";
       }
       case "boolean" -> "boolean";
       case "integer" -> "int";
@@ -138,14 +140,15 @@ public class GlueOperations implements MetastoreOperations {
         Set<String> itemTypes;
         if (jsonNode.has("items")) {
           itemTypes = filterTypes(jsonNode.get("items").get("type"));
-        if (itemTypes.size() > 1) {
-          // TODO(itaseski) use union instead of array when having multiple types (rare occurrence)?
+          if (itemTypes.size() > 1) {
+            // TODO(itaseski) use union instead of array when having multiple types (rare occurrence)?
+            arrayType += "string>";
+          } else {
+            String subtype = transformSchemaRecursive(jsonNode.get("items"));
+            arrayType += (subtype + ">");
+          }
+        } else
           arrayType += "string>";
-        } else {
-          String subtype = transformSchemaRecursive(jsonNode.get("items"));
-          arrayType += (subtype + ">");
-        }
-        } else arrayType += "string>";
         yield arrayType;
       }
       case "object" -> {

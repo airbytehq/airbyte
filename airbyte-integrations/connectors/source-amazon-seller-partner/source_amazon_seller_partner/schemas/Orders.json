@@ -3,6 +3,7 @@
   "description": "All orders that were updated after a specified date",
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
   "properties": {
     "seller_id": {
       "type": "string",
@@ -11,11 +12,17 @@
     "AmazonOrderId": {
       "type": ["null", "string"]
     },
+    "BuyerInfo": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
     "PurchaseDate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "LastUpdateDate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "OrderStatus": {
       "type": ["null", "string"]
@@ -28,6 +35,18 @@
     },
     "SalesChannel": {
       "type": ["null", "string"]
+    },
+    "AutomatedShippingSettings": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "HasAutomatedShippingSettings": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "HasRegulatedItems": {
+      "type": ["null", "boolean"]
     },
     "ShipServiceLevel": {
       "type": ["null", "string"]
@@ -58,6 +77,9 @@
         "type": ["null", "string"]
       }
     },
+    "IsAccessPointOrder": {
+      "type": ["null", "boolean"]
+    },
     "IsReplacementOrder": {
       "type": ["null", "string"]
     },
@@ -71,10 +93,12 @@
       "type": ["null", "string"]
     },
     "EarliestShipDate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "LatestShipDate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "IsBusinessOrder": {
       "type": ["null", "boolean"]
@@ -93,6 +117,56 @@
     },
     "IsISPU": {
       "type": ["null", "boolean"]
+    },
+    "DefaultShipFromLocationAddress": {
+      "type": ["null", "object"],
+      "properties": {
+        "AddressLine1": {
+          "type": ["null", "string"]
+        },
+        "City": {
+          "type": ["null", "string"]
+        },
+        "CountryCode": {
+          "type": ["null", "string"]
+        },
+        "Name": {
+          "type": ["null", "string"]
+        },
+        "PostalCode": {
+          "type": ["null", "string"]
+        },
+        "StateOrRegion": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "EarliestDeliveryDate": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "LatestDeliveryDate": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "ShippingAddress": {
+      "type": ["null", "object"],
+      "properties": {
+        "City": {
+          "type": ["null", "string"]
+        },
+        "CountryCode": {
+          "type": ["null", "string"]
+        },
+        "PostalCode": {
+          "type": ["null", "string"]
+        },
+        "StateOrRegion": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

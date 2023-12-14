@@ -10,7 +10,6 @@
     "id": {
       "type": "integer",
       "description": "The ID of the issue security scheme.",
-      "format": "int64",
       "readOnly": true
     },
     "name": {
@@ -26,7 +25,6 @@
     "defaultSecurityLevelId": {
       "type": "integer",
       "description": "The ID of the default security level.",
-      "format": "int64",
       "readOnly": true
     },
     "levels": {

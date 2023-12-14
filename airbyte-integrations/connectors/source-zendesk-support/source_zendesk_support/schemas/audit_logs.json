@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Audit Logs",
+  "type": ["null", "object"],
+  "properties": {
+    "action": {
+      "type": ["null", "string"]
+    },
+    "action_label": {
+      "type": ["null", "string"]
+    },
+    "actor_id": {
+      "type": ["null", "number"]
+    },
+    "actor_name": {
+      "type": ["null", "string"]
+    },
+    "change_description": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "id": {
+      "type": ["null", "number"]
+    },
+    "ip_address": {
+      "type": ["null", "string"]
+    },
+    "source_id": {
+      "type": ["null", "number"]
+    },
+    "source_label": {
+      "type": ["null", "string"]
+    },
+    "source_type": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    }
+  }
+}

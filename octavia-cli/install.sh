@@ -3,7 +3,7 @@
 # This install scripts currently only works for ZSH and Bash profiles.
 # It creates an octavia alias in your profile bound to a docker run command and your current user.
 
-VERSION=0.44.0
+VERSION=0.44.4
 OCTAVIA_ENV_FILE=${HOME}/.octavia
 
 detect_profile() {
@@ -41,7 +41,7 @@ delete_previous_alias() {
 
 pull_image() {
     echo "🐙 - Pulling image for octavia ${VERSION}"
-    docker pull airbyte/octavia-cli:${VERSION} > /dev/null 2>&1
+    docker pull airbyte/octavia-cli:${VERSION} > /dev/null
     echo "🐙 - 🎉 octavia ${VERSION} image was pulled"
 }
 

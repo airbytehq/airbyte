@@ -7,9 +7,9 @@ package io.airbyte.integrations.destination.elasticsearch;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.integrations.base.ssh.SshTunnel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.Network;
@@ -39,7 +39,8 @@ public abstract class SshElasticsearchDestinationAcceptanceTest extends Elastics
         .put("upsert", false)
         .put("authenticationMethod", Jsons.jsonNode(ImmutableMap.builder().put("method", "basic")
             .put("username", "elastic")
-            .put("password", ELASTIC_PASSWORD).build())), false);
+            .put("password", ELASTIC_PASSWORD).build())),
+        false);
   }
 
   @Override
@@ -49,7 +50,8 @@ public abstract class SshElasticsearchDestinationAcceptanceTest extends Elastics
         .put("upsert", true)
         .put("authenticationMethod", Jsons.jsonNode(ImmutableMap.builder().put("method", "basic")
             .put("username", "elastic")
-            .put("password", "wrongpassword").build())), false);
+            .put("password", "wrongpassword").build())),
+        false);
   }
 
   @BeforeAll

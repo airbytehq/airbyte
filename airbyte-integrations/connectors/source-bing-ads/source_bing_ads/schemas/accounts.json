@@ -17,6 +17,35 @@
     "AccountMode": {
       "type": ["null", "string"]
     },
+    "ForwardCompatibilityMap": {
+      "type": ["null", "string"]
+    },
+    "PaymentMethodType": {
+      "type": ["null", "string"]
+    },
+    "Language": {
+      "type": ["null", "string"]
+    },
+    "LinkedAgencies": {
+      "type": ["null", "object"],
+      "properties": {
+        "Id": {
+          "type": ["null", "integer"]
+        },
+        "Name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "TaxInformation": {
+      "type": ["null", "string"]
+    },
+    "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "TimeZone": {
+      "type": ["null", "string"]
+    },
     "BusinessAddress": {
       "type": ["null", "object"],
       "properties": {
@@ -68,7 +97,9 @@
       "type": ["null", "number"]
     },
     "LastModifiedTime": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "Name": {
       "type": ["null", "string"]

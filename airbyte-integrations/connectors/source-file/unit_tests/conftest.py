@@ -35,6 +35,17 @@ def invalid_config(read_file):
 
 
 @pytest.fixture
+def invalid_reader_options_config(read_file):
+    return {
+        "dataset_name": "test",
+        "format": "jsonl",
+        "url": "https://airbyte.com",
+        "reader_options": '["encoding"]',
+        "provider": {"storage": "HTTPS"},
+    }
+
+
+@pytest.fixture
 def config_dropbox_link():
     return {
         "dataset_name": "test",

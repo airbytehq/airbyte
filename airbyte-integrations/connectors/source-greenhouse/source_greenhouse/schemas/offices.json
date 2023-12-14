@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "primary_contact_user_id": {
+      "type": ["null", "integer"]
+    },
+    "parent_id": {
+      "type": ["null", "integer"]
+    },
+    "parent_office_external_id": {
+      "type": ["null", "string"]
+    },
+    "child_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "child_office_external_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "external_id": {
+      "type": ["null", "string"]
+    }
+  }
+}

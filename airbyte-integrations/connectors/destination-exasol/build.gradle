@@ -1,19 +1,28 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.2.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.exasol.ExasolDestination'
 }
 
 dependencies {
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation libs.airbyte.protocol
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
 
     implementation 'com.exasol:exasol-jdbc:7.1.17'
 
@@ -23,8 +32,6 @@ dependencies {
     // 'org.testcontainers.containers.GenericContainer com.exasol.containers.ExasolContainer.withCopyToContainer(org.testcontainers.images.builder.Transferable, java.lang.String)'
     testImplementation 'org.testcontainers:testcontainers:1.17.6'
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-exasol')
     integrationTestJavaImplementation 'com.exasol:exasol-testcontainers:6.5.0'
     integrationTestJavaImplementation 'org.testcontainers:testcontainers:1.17.6'
 }

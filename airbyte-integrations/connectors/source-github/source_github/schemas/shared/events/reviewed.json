@@ -1,0 +1,139 @@
+{
+  "title": "Timeline Reviewed Event",
+  "description": "Timeline Reviewed Event",
+  "type": "object",
+  "properties": {
+    "event": {
+      "type": "string"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "node_id": {
+      "type": "string"
+    },
+    "user": {
+      "title": "Simple User",
+      "description": "A GitHub user.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": ["string", "null"]
+        },
+        "login": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "avatar_url": {
+          "type": "string"
+        },
+        "gravatar_id": {
+          "type": ["string", "null"]
+        },
+        "url": {
+          "type": "string"
+        },
+        "html_url": {
+          "type": "string"
+        },
+        "followers_url": {
+          "type": "string"
+        },
+        "following_url": {
+          "type": "string"
+        },
+        "gists_url": {
+          "type": "string"
+        },
+        "starred_url": {
+          "type": "string"
+        },
+        "subscriptions_url": {
+          "type": "string"
+        },
+        "organizations_url": {
+          "type": "string"
+        },
+        "repos_url": {
+          "type": "string"
+        },
+        "events_url": {
+          "type": "string"
+        },
+        "received_events_url": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "site_admin": {
+          "type": "boolean"
+        },
+        "starred_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "body": {
+      "type": ["string", "null"]
+    },
+    "state": {
+      "type": "string"
+    },
+    "html_url": {
+      "type": "string"
+    },
+    "pull_request_url": {
+      "type": "string"
+    },
+    "_links": {
+      "type": "object",
+      "properties": {
+        "html": {
+          "type": "object",
+          "properties": {
+            "href": {
+              "type": "string"
+            }
+          },
+          "required": ["href"]
+        },
+        "pull_request": {
+          "type": "object",
+          "properties": {
+            "href": {
+              "type": "string"
+            }
+          },
+          "required": ["href"]
+        }
+      },
+      "required": ["html", "pull_request"]
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "commit_id": {
+      "type": "string"
+    },
+    "body_html": {
+      "type": "string"
+    },
+    "body_text": {
+      "type": "string"
+    },
+    "author_association": {
+      "type": "string"
+    }
+  }
+}

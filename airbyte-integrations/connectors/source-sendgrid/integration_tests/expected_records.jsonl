@@ -128,31 +128,15 @@
 {"stream": "templates", "data": {"id": "146adde5-53ca-4ff7-af4e-24b21c6108e3", "name": "Template number 2", "generation": "legacy", "updated_at": "2021-02-03 13:31:18", "versions": []}, "emitted_at": 1631093374000}
 {"stream": "templates", "data": {"id": "bdc5cb3e-081f-4eeb-9068-c57a99ecd022", "name": "Template number 1", "generation": "legacy", "updated_at": "2021-02-03 13:31:15", "versions": []}, "emitted_at": 1631093374000}
 {"stream": "templates", "data": {"id": "d94c4158-8729-4dd4-aeca-7e5e903791c4", "name": "Template number 0", "generation": "legacy", "updated_at": "2021-02-03 13:31:09", "versions": []}, "emitted_at": 1631093374000}
-{"stream": "global_suppressions", "data": {"created": 1621425285, "email": "vadym.hevlich@zazmic.com"}, "emitted_at": 1678792331625}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test9@example.com"}, "emitted_at": 1678792331625}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test8@example.com"}, "emitted_at": 1678792331625}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test7@example.com"}, "emitted_at": 1678792331625}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test6@example.com"}, "emitted_at": 1678792331625}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test5@example.com"}, "emitted_at": 1678792331625}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test4@example.com"}, "emitted_at": 1678792331626}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test3@example.com"}, "emitted_at": 1678792331626}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test2@example.com"}, "emitted_at": 1678792331626}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test21@example.com"}, "emitted_at": 1678792331626}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test20@example.com"}, "emitted_at": 1678792331626}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test1@example.com"}, "emitted_at": 1678792331626}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test19@example.com"}, "emitted_at": 1678792331626}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test18@example.com"}, "emitted_at": 1678792331627}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test17@example.com"}, "emitted_at": 1678792331627}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test16@example.com"}, "emitted_at": 1678792331627}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test15@example.com"}, "emitted_at": 1678792331627}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test14@example.com"}, "emitted_at": 1678792331628}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test13@example.com"}, "emitted_at": 1678792331628}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test12@example.com"}, "emitted_at": 1678792331628}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test11@example.com"}, "emitted_at": 1678792331628}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test10@example.com"}, "emitted_at": 1678792331628}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test0@example.com"}, "emitted_at": 1678792331628}
-{"stream": "global_suppressions", "data": {"created": 1612357235, "email": "test-fake-email-2@testmail.co"}, "emitted_at": 1678792331628}
-{"stream": "global_suppressions", "data": {"created": 1612357168, "email": "test-fake-email@testmail.co"}, "emitted_at": 1678792331628}
+{"stream": "global_suppressions", "data": { "created": 1612361062, "email": "test2@example.com" }, "emitted_at": 1678792331625}
+{"stream": "global_suppressions", "data": { "created": 1612361062, "email": "test5@example.com" }, "emitted_at": 1678792331625}
+{"stream": "global_suppressions", "data": { "created": 1612361062, "email": "test3@example.com" }, "emitted_at": 1678792331625}
+{"stream": "global_suppressions", "data":  { "created": 1612361062, "email": "test19@example.com" }, "emitted_at": 1678792331625}
+{"stream": "global_suppressions", "data":  { "created": 1612361062, "email": "test11@example.com" }, "emitted_at": 1678792331625}
+{"stream": "global_suppressions", "data": { "created": 1612361062, "email": "test13@example.com" }, "emitted_at": 1678792331625}
+{"stream": "global_suppressions", "data": { "created": 1612360768, "email": "test-fake-email@testmail.co" }, "emitted_at": 1678792331626}
+{"stream": "global_suppressions", "data": { "created": 1612361062, "email": "test8@example.com" }, "emitted_at": 1678792331626}
+{"stream": "global_suppressions", "data": { "created": 1612361062, "email": "test1@example.com" }, "emitted_at": 1678792331626}
 {"stream": "suppression_groups", "data": {"name": "Test Suggestions Group 0", "id": 14760, "description": "Suggestions for testing new stream.", "is_default": false, "unsubscribes": 0}, "emitted_at": 1631093377000}
 {"stream": "suppression_groups", "data": {"name": "Test Suggestions Group 1", "id": 14761, "description": "Suggestions for testing new stream.", "is_default": false, "unsubscribes": 0}, "emitted_at": 1631093377000}
 {"stream": "suppression_groups", "data": {"name": "Test Suggestions Group 2", "id": 14762, "description": "Suggestions for testing new stream.", "is_default": false, "unsubscribes": 0}, "emitted_at": 1631093377000}
@@ -200,12 +184,12 @@
 {"stream": "suppression_group_members", "data": {"email": "test-forsuppressiongroup number8@example.com", "group_id": 14772, "group_name": "Test Suggestions Group 12", "created_at": 1612363238}, "emitted_at": 1631093393000}
 {"stream": "suppression_group_members", "data": {"email": "test-forsuppressiongroup number9@example.com", "group_id": 14772, "group_name": "Test Suggestions Group 12", "created_at": 1612363238}, "emitted_at": 1631093393000}
 {"stream": "suppression_group_members", "data": {"email": "avida.d3@gmail.com", "group_id": 14780, "group_name": "Test Suggestions Group 20", "created_at": 1631093329}, "emitted_at": 1631093393000}
-{"stream": "bounces", "data": {"created": 1621439283, "email": "vadym.hevlich@zazmic_com", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1678792680684}
-{"stream": "bounces", "data": {"created": 1621439221, "email": "vadym.hevlich@zazmicinvalid", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1678792680684}
-{"stream": "bounces", "data": {"created": 1621439211, "email": "vadym.hevlich@zazmicio", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1678792680684}
-{"stream": "bounces", "data": {"created": 1621437507, "email": "vadym.hevlich@zazmiccom2", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1678792680684}
-{"stream": "bounces", "data": {"created": 1621437504, "email": "vadym.hevlich@zazmiccom1", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1678792680685}
-{"stream": "bounces", "data": {"created": 1621426437, "email": "vadym.hevlich@zazmiccom", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1678792680685}
+{"stream": "bounces", "data": { "created": 1621442821, "email": "vadym.hevlich@zazmicinvalid", "reason": "Invalid Domain", "status": "" }, "emitted_at": 1678792680684}
+{"stream": "bounces", "data": { "created": 1621441107, "email": "vadym.hevlich@zazmiccom2", "reason": "Invalid Domain", "status": "" }, "emitted_at": 1678792680684}
+{"stream": "bounces", "data": { "created": 1621442883, "email": "vadym.hevlich@zazmic_com", "reason": "Invalid Domain", "status": "" }, "emitted_at": 1678792680684}
+{"stream": "bounces", "data": { "created": 1621441104, "email": "vadym.hevlich@zazmiccom1", "reason": "Invalid Domain", "status": "" }, "emitted_at": 1678792680684}
+{"stream": "bounces", "data": { "created": 1621442811, "email": "vadym.hevlich@zazmicio", "reason": "Invalid Domain", "status": "" }, "emitted_at": 1678792680685}
+{"stream": "bounces", "data":  { "created": 1621430037, "email": "vadym.hevlich@zazmiccom", "reason": "Invalid Domain", "status": "" }, "emitted_at": 1678792680685}
 {"stream": "campaigns", "data": {"created_at": "2021-09-08T09:07:48Z", "id": "3c5a9fa6-1084-11ec-ac32-4228d699bad5", "name": "Untitled Single Send", "status": "triggered", "updated_at": "2021-09-08T09:11:08Z", "is_abtest": false, "channels": ["email"]}, "emitted_at": 1678791750589}
 {"stream": "campaigns", "data": {"created_at": "2021-09-08T09:04:36Z", "id": "c9f286fb-1083-11ec-ae03-ca0fc7f28419", "name": "Copy of Untitled Single Send", "status": "triggered", "updated_at": "2021-09-08T09:09:08Z", "is_abtest": false, "channels": ["email"]}, "emitted_at": 1678791750589}
 {"stream": "campaigns", "data": {"created_at": "2021-09-08T08:53:59Z", "id": "4e5be6a3-1082-11ec-8512-9afd40c324e6", "name": "Untitled Single Send", "status": "triggered", "updated_at": "2021-09-08T08:57:08Z", "is_abtest": false, "channels": ["email"]}, "emitted_at": 1678791750590}
@@ -232,3 +216,8 @@
 {"stream": "segments", "data": {"id": "bb3309ca-c002-4085-8d3e-de142dfa317e", "name": "Everyone named Jim, JIM or jim", "contacts_count": 0, "sample_updated_at": "2023-03-14T08:31:18Z", "next_sample_update": "2023-03-15T08:31:18Z", "created_at": "2021-02-03T13:19:50Z", "updated_at": "2021-02-03T13:19:50Z", "parent_list_id": "0236d6d2-75d2-42c5-962d-603e0deaf8d1", "status": {"query_validation": "VALID"}}, "emitted_at": 1678791752069}
 {"stream": "segments", "data": {"id": "414d2eed-b2ba-4260-b3b4-e66369fafa43", "name": "Everyone named Bob, BOB or bob", "contacts_count": 0, "sample_updated_at": "2023-03-14T03:31:01Z", "next_sample_update": "2023-03-15T03:31:01Z", "created_at": "2021-02-03T13:18:50Z", "updated_at": "2021-02-03T13:18:50Z", "parent_list_id": "0236d6d2-75d2-42c5-962d-603e0deaf8d1", "status": {"query_validation": "VALID"}}, "emitted_at": 1678791752070}
 {"stream": "stats_automations", "data": {"id": "85e3874b-6654-11eb-8a29-0e707ab27408", "step_id": "all", "aggregation": "total", "stats": {"bounce_drops": 0, "bounces": 6, "clicks": 0, "unique_clicks": 0, "delivered": 6, "invalid_emails": 0, "opens": 7, "unique_opens": 3, "requests": 12, "spam_report_drops": 0, "spam_reports": 0, "unsubscribes": 0}}, "emitted_at": 1678791758456}
+{"stream": "unsubscribe_groups", "data": {"name": "Test Suggestions Group 0", "id": 14760, "description": "Suggestions for testing new stream.", "is_default": false, "unsubscribes": 0}, "emitted_at": 1684520573043}
+{"stream": "unsubscribe_groups", "data": {"name": "Test Suggestions Group 1", "id": 14761, "description": "Suggestions for testing new stream.", "is_default": false, "unsubscribes": 0}, "emitted_at": 1684520573043}
+{"stream": "unsubscribe_groups", "data": {"name": "Test Suggestions Group 2", "id": 14762, "description": "Suggestions for testing new stream.", "is_default": false, "unsubscribes": 0}, "emitted_at": 1684520573044}
+{"stream": "unsubscribe_groups", "data": {"name": "Test Suggestions Group 3", "id": 14763, "description": "Suggestions for testing new stream.", "is_default": false, "unsubscribes": 0}, "emitted_at": 1684520573044}
+{"stream": "unsubscribe_groups", "data": {"name": "Test Suggestions Group 4", "id": 14764, "description": "Suggestions for testing new stream.", "is_default": false, "unsubscribes": 0}, "emitted_at": 1684520573044}

@@ -16,6 +16,12 @@
     },
     "type": {
       "type": ["null", "string"]
+    },
+    "etag": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
     }
   }
 }

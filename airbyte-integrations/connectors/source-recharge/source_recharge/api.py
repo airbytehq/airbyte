@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
@@ -19,10 +18,10 @@ class RechargeStream(HttpStream, ABC):
 
     limit = 250
     page_num = 1
-    period_in_months = 1  # Slice data request for 1 month
+    period_in_days = 30  # Slice data request for 1 month
     raise_on_http_errors = True
 
-    # regestring the default schema transformation
+    # registering the default schema transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config, **kwargs):
@@ -33,30 +32,30 @@ class RechargeStream(HttpStream, ABC):
     def data_path(self):
         return self.name
 
+    @property
+    @abstractmethod
+    def api_version(self) -> str:
+        pass
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"x-recharge-version": self.api_version}
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.name
 
+    @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        stream_data = self.get_stream_data(response.json())
-        if len(stream_data) == self.limit:
-            self.page_num += 1
-            return {"page": self.page_num}
+        pass
 
+    @abstractmethod
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {
-            "limit": self.limit,
-            "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
-            "updated_at_max": (stream_slice or {}).get("end_date", self._start_date),
-        }
-
-        if next_page_token:
-            params.update(next_page_token)
-
-        return params
+        pass
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_data = response.json()
@@ -86,20 +85,68 @@ class RechargeStream(HttpStream, ABC):
 
         now = pendulum.now()
 
-        start_date = pendulum.parse(start_date)
+        # dates are inclusive, so we add 1 second so that time periods do not overlap
+        start_date = pendulum.parse(start_date).add(seconds=1)
 
         while start_date <= now:
-            end_date = start_date.add(months=self.period_in_months)
+            end_date = start_date.add(days=self.period_in_days)
             yield {"start_date": start_date.strftime("%Y-%m-%d %H:%M:%S"), "end_date": end_date.strftime("%Y-%m-%d %H:%M:%S")}
-            start_date = end_date
+            start_date = end_date.add(seconds=1)
+
+
+class RechargeStreamModernAPI(RechargeStream):
+    api_version = "2021-11"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        cursor = response.json().get("next_cursor")
+        if cursor:
+            return {"cursor": cursor}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": self.limit}
+
+        # if a cursor value is passed, only limit can be passed with it!
+        if next_page_token:
+            params.update(next_page_token)
+        else:
+            params.update(
+                {
+                    "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
+                    "updated_at_max": (stream_slice or {}).get("end_date", self._start_date),
+                }
+            )
+        return params
+
+
+class RechargeStreamDeprecatedAPI(RechargeStream):
+    api_version = "2021-01"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        stream_data = self.get_stream_data(response.json())
+        if len(stream_data) == self.limit:
+            self.page_num += 1
+            return {"page": self.page_num}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "limit": self.limit,
+            "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
+            "updated_at_max": (stream_slice or {}).get("end_date", self._start_date),
+        }
+
+        if next_page_token:
+            params.update(next_page_token)
+
+        return params
 
 
 class IncrementalRechargeStream(RechargeStream, ABC):
     cursor_field = "updated_at"
-
-    @property
-    def state_checkpoint_interval(self):
-        return self.limit
+    state_checkpoint_interval = 250
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_benchmark = latest_record[self.cursor_field]
@@ -108,37 +155,37 @@ class IncrementalRechargeStream(RechargeStream, ABC):
         return {self.cursor_field: latest_benchmark}
 
 
-class Addresses(IncrementalRechargeStream):
+class Addresses(RechargeStreamModernAPI, IncrementalRechargeStream):
     """
     Addresses Stream: https://developer.rechargepayments.com/v1-shopify?python#list-addresses
     """
 
 
-class Charges(IncrementalRechargeStream):
+class Charges(RechargeStreamModernAPI, IncrementalRechargeStream):
     """
     Charges Stream: https://developer.rechargepayments.com/v1-shopify?python#list-charges
     """
 
 
-class Collections(RechargeStream):
+class Collections(RechargeStreamModernAPI):
     """
     Collections Stream
     """
 
 
-class Customers(IncrementalRechargeStream):
+class Customers(RechargeStreamModernAPI, IncrementalRechargeStream):
     """
     Customers Stream: https://developer.rechargepayments.com/v1-shopify?python#list-customers
     """
 
 
-class Discounts(IncrementalRechargeStream):
+class Discounts(RechargeStreamModernAPI, IncrementalRechargeStream):
     """
     Discounts Stream: https://developer.rechargepayments.com/v1-shopify?python#list-discounts
     """
 
 
-class Metafields(RechargeStream):
+class Metafields(RechargeStreamModernAPI):
     """
     Metafields Stream: https://developer.rechargepayments.com/v1-shopify?python#list-metafields
     """
@@ -159,34 +206,52 @@ class Metafields(RechargeStream):
         yield from [{"owner_resource": owner} for owner in owner_resources]
 
 
-class Onetimes(IncrementalRechargeStream):
+class Onetimes(RechargeStreamModernAPI, IncrementalRechargeStream):
     """
     Onetimes Stream: https://developer.rechargepayments.com/v1-shopify?python#list-onetimes
     """
 
 
-class Orders(IncrementalRechargeStream):
+class Orders(RechargeStreamDeprecatedAPI, IncrementalRechargeStream):
     """
     Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
+    Using old API version to avoid schema changes and loosing email, first_name, last_name columns, because in new version it not present
     """
 
 
-class Products(RechargeStream):
+class Products(RechargeStreamDeprecatedAPI):
     """
     Products Stream: https://developer.rechargepayments.com/v1-shopify?python#list-products
+    Products endpoint has 422 error with 2021-11 API version
     """
 
 
-class Shop(RechargeStream):
+class Shop(RechargeStreamDeprecatedAPI):
     """
     Shop Stream: https://developer.rechargepayments.com/v1-shopify?python#shop
+    Shop endpoint is not available in 2021-11 API version
     """
 
     primary_key = ["shop", "store"]
     data_path = None
 
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [{}]
 
-class Subscriptions(IncrementalRechargeStream):
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+
+class Subscriptions(RechargeStreamModernAPI, IncrementalRechargeStream):
     """
     Subscriptions Stream: https://developer.rechargepayments.com/v1-shopify?python#list-subscriptions
     """
+
+    # reduce the slice date range to avoid 504 - Gateway Timeout on the Server side,
+    # since this stream could contain lots of data, causing the server to timeout.
+    # related issue: https://github.com/airbytehq/oncall/issues/3424
+    period_in_days = 14

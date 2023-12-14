@@ -5,9 +5,6 @@
     "organization": {
       "type": ["null", "string"]
     },
-    "repository": {
-      "type": ["null", "string"]
-    },
     "id": {
       "type": ["null", "integer"]
     },
@@ -30,6 +27,9 @@
       "type": ["null", "string"]
     },
     "privacy": {
+      "type": ["null", "string"]
+    },
+    "notification_setting": {
       "type": ["null", "string"]
     },
     "permission": {

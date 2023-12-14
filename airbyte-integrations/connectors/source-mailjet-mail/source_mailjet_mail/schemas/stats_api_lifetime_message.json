@@ -64,6 +64,9 @@
     },
     "Total": {
       "type": "integer"
+    },
+    "EventSpamCount": {
+      "type": "integer"
     }
   }
 }

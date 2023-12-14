@@ -8,10 +8,14 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
+from airbyte_cdk.logger import AirbyteLogFormatter
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Level, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -21,6 +25,8 @@ from requests import codes, exceptions  # type: ignore[import]
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalRestSalesforceStream, RestSalesforceStream
 
+logger = logging.getLogger("airbyte")
+
 
 class AirbyteStopSync(AirbyteTracedException):
     pass
@@ -29,6 +35,9 @@ class AirbyteStopSync(AirbyteTracedException):
 class SourceSalesforce(AbstractSource):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     START_DATE_OFFSET_IN_YEARS = 2
+    MAX_WORKERS = 5
+
+    message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[logger.level]))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,13 +68,21 @@ class SourceSalesforce(AbstractSource):
         return True, None
 
     @classmethod
-    def _get_api_type(cls, stream_name, properties):
+    def _get_api_type(cls, stream_name: str, properties: Mapping[str, Any], force_use_bulk_api: bool) -> str:
         # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
         properties_not_supported_by_bulk = {
             key: value for key, value in properties.items() if value.get("format") == "base64" or "object" in value["type"]
         }
-        rest_required = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk
-        if rest_required:
+        rest_only = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
+        if rest_only:
+            logger.warning(f"BULK API is not supported for stream: {stream_name}")
+            return "rest"
+        if force_use_bulk_api and properties_not_supported_by_bulk:
+            logger.warning(
+                f"Following properties will be excluded from stream: {stream_name} due to BULK API limitations: {list(properties_not_supported_by_bulk)}"
+            )
+            return "bulk"
+        if properties_not_supported_by_bulk:
             return "rest"
         return "bulk"
 
@@ -77,7 +94,6 @@ class SourceSalesforce(AbstractSource):
         sf_object: Salesforce,
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
-        logger = logging.getLogger()
         authenticator = TokenAuthenticator(sf_object.access_token)
         stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
@@ -85,7 +101,7 @@ class SourceSalesforce(AbstractSource):
             streams_kwargs = {"sobject_options": sobject_options}
             selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
 
-            api_type = cls._get_api_type(stream_name, selected_properties)
+            api_type = cls._get_api_type(stream_name, selected_properties, config.get("force_use_bulk_api", False))
             if api_type == "rest":
                 full_refresh, incremental = RestSalesforceStream, IncrementalRestSalesforceStream
             elif api_type == "bulk":
@@ -118,7 +134,22 @@ class SourceSalesforce(AbstractSource):
         stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
         streams = self.generate_streams(config, stream_objects, sf)
         streams.append(Describe(sf_api=sf, catalog=self.catalog))
-        return streams
+        # TODO: incorporate state & ConcurrentCursor when we support incremental
+        configured_streams = []
+        for stream in streams:
+            sync_mode = self._get_sync_mode_from_catalog(stream)
+            if sync_mode == SyncMode.full_refresh:
+                configured_streams.append(StreamFacade.create_from_stream(stream, self, logger, self.MAX_WORKERS, None, NoopCursor()))
+            else:
+                configured_streams.append(stream)
+        return configured_streams
+
+    def _get_sync_mode_from_catalog(self, stream: Stream) -> Optional[SyncMode]:
+        if self.catalog:
+            for catalog_stream in self.catalog.streams:
+                if stream.name == catalog_stream.stream.name:
+                    return catalog_stream.sync_mode
+        return None
 
     def read(
         self,
@@ -147,7 +178,8 @@ class SourceSalesforce(AbstractSource):
         except exceptions.HTTPError as error:
             error_data = error.response.json()[0]
             error_code = error_data.get("errorCode")
+            url = error.response.url
             if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
+                logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
                 raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
             raise error

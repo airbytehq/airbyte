@@ -8,6 +8,9 @@
     "name": {
       "type": ["null", "string"]
     },
+    "formType": {
+      "type": ["null", "string"]
+    },
     "createdAt": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -105,6 +108,12 @@
         },
         "allowLinkToResetKnownValues": {
           "type": ["null", "boolean"]
+        },
+        "lifecycleStages": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
         }
       }
     },

@@ -4,28 +4,30 @@
 
 package io.airbyte.integrations.source.bigquery;
 
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.SqlDatabase;
+import io.airbyte.cdk.db.bigquery.BigQueryDatabase;
+import io.airbyte.cdk.db.bigquery.BigQuerySourceOperations;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.source.relationaldb.AbstractDbSource;
+import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
+import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.SqlDatabase;
-import io.airbyte.db.bigquery.BigQueryDatabase;
-import io.airbyte.db.bigquery.BigQuerySourceOperations;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
@@ -153,6 +155,8 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
         RelationalDbQueryUtils.enquoteIdentifierList(columnNames, getQuoteString()),
         getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()),
         cursorInfo.getCursorField()),
+        schemaName,
+        tableName,
         sourceOperations.getQueryParameter(cursorFieldType, cursorInfo.getCursor()));
   }
 
@@ -166,7 +170,8 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
     LOGGER.info("Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())),
+        tableName, schemaName);
   }
 
   @Override
@@ -176,15 +181,18 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private AutoCloseableIterator<JsonNode> queryTableWithParams(final BigQueryDatabase database,
                                                                final String sqlQuery,
+                                                               final String schemaName,
+                                                               final String tableName,
                                                                final QueryParameterValue... params) {
+    final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.query(sqlQuery, params);
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStream);
   }
 
   private boolean isDatasetConfigured(final SqlDatabase database) {

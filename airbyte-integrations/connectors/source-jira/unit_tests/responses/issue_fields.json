@@ -7,9 +7,7 @@
     "orderable": false,
     "navigable": true,
     "searchable": true,
-    "clauseNames": [
-      "statusCategoryChangedDate"
-    ],
+    "clauseNames": ["statusCategoryChangedDate"],
     "schema": {
       "type": "datetime",
       "system": "statuscategorychangedate"
@@ -23,10 +21,7 @@
     "orderable": true,
     "navigable": true,
     "searchable": true,
-    "clauseNames": [
-      "issuetype",
-      "type"
-    ],
+    "clauseNames": ["issuetype", "type"],
     "schema": {
       "type": "issuetype",
       "system": "issuetype"
@@ -40,8 +35,6 @@
     "orderable": false,
     "navigable": true,
     "searchable": false,
-    "clauseNames": [
-      "parent"
-    ]
+    "clauseNames": ["parent"]
   }
 ]

@@ -7,7 +7,6 @@ from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
@@ -25,6 +24,7 @@ airbyte_cdk.sources.streams.core.Stream
     ├── airbyte_cdk.sources.streams.http.HttpStream
     │   └── AmazonAdsStream
     │       ├── Profiles
+    │       ├── Portfolios
     │       └── SubProfilesStream
     │           ├── SponsoredDisplayAdGroups
     │           ├── SponsoredDisplayCampaigns
@@ -41,6 +41,7 @@ airbyte_cdk.sources.streams.core.Stream
     │           └── SponsoredBrandsKeywords
     └── ReportStream
         ├── SponsoredBrandsReportStream
+        ├── SponsoredBrandsV3ReportStream
         ├── SponsoredDisplayReportStream
         └── SponsoredProductsReportStream
 
@@ -49,11 +50,11 @@ for storing list of profiles that later be used by all the streams to get
 profile id. Also it stores pydantic model and API url for requests.
 
 AmazonAdsStream is Http based class, it used for making request that could be
-accomlished by single http call (any but report streams).
+accomplished by single http call (any but report streams).
 
 SubProfilesStream is subclass for http streams to perform read_records from
 basic class for EACH profile from self._profiles list. Also provides support
-for Amazon Ads API pagintaion. This is base class for all the sync http streams
+for Amazon Ads API pagination. This is base class for all the sync http streams
 that used by source.
 
 ReportStream (It implemented on report_stream.py file) is subclass for async
@@ -90,10 +91,6 @@ class BasicAmazonAdsStream(Stream, ABC):
         schema = self.model.schema()
         expand_refs(schema)
         return schema
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
 
 # Basic full refresh stream

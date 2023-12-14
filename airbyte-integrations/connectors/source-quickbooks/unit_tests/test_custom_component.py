@@ -9,13 +9,7 @@ from source_quickbooks.components import CustomDatetimeBasedCursor, LastRecordDi
 
 
 def test_dict_proxy():
-    record = {
-        "Id": "1",
-        "MetaData": {
-            "CreateTime": "2023-02-10T14:42:07-08:00",
-            "LastUpdatedTime": "2023-02-18T13:13:33-08:00"
-        }
-    }
+    record = {"Id": "1", "MetaData": {"CreateTime": "2023-02-10T14:42:07-08:00", "LastUpdatedTime": "2023-02-18T13:13:33-08:00"}}
     proxy = LastRecordDictProxy(record, {"airbyte_cursor": "MetaData/LastUpdatedTime"})
 
     assert proxy["MetaData/LastUpdatedTime"] == "2023-02-18T13:13:33-08:00"
@@ -37,13 +31,10 @@ def test_dict_proxy():
 
     assert "CreateTime" not in record["MetaData"]
 
-    assert record == {
-        "Id": "2",
-        "MetaData": {"LastUpdatedTime": "0000-00-00T00:00:00+00:00"}
-    }
+    assert record == {"Id": "2", "MetaData": {"LastUpdatedTime": "0000-00-00T00:00:00+00:00"}}
 
 
-def test_custom_datetime_based_cursor__update_cursor():
+def test_custom_datetime_based_cursor__close_slice():
     cursor_field_name = "airbyte_cursor"
     record_cursor_value = "2023-02-10T14:42:05-08:00"
 
@@ -55,23 +46,15 @@ def test_custom_datetime_based_cursor__update_cursor():
         datetime_format="%Y-%m-%dT%H:%M:%S%z",
         cursor_granularity="PT0S",
         config={},
-        parameters={}
+        parameters={},
     )
 
-    date_time_based_cursor_component.update_cursor(
-        {
-            "start_time": "2023-02-01T00:00:00+00:00",
-            "end_time": "2023-03-03T00:00:00+00:00"
-        },
-        {
-            "Id": "1",
-            "MetaData": {
-                "CreateTime": "2023-02-10T14:42:07-08:00",
-                "LastUpdatedTime": record_cursor_value
-            }
-        }
+    slice_end_time = "2023-03-03T00:00:00+00:00"
+    date_time_based_cursor_component.close_slice(
+        {"start_time": "2023-02-01T00:00:00+00:00", "end_time": slice_end_time},
+        {"Id": "1", "MetaData": {"CreateTime": "2023-02-10T14:42:07-08:00", "LastUpdatedTime": record_cursor_value}},
     )
-    assert date_time_based_cursor_component.get_stream_state() == {cursor_field_name: record_cursor_value}
+    assert date_time_based_cursor_component.get_stream_state() == {cursor_field_name: slice_end_time}
 
 
 def test_custom_datetime_based_cursor__format_datetime():
@@ -83,7 +66,7 @@ def test_custom_datetime_based_cursor__format_datetime():
         datetime_format="%Y-%m-%dT%H:%M:%S%z",
         cursor_granularity="PT0S",
         config={},
-        parameters={}
+        parameters={},
     )
 
     _format_datetime = getattr(date_time_based_cursor_component, "_format_datetime")
@@ -100,7 +83,7 @@ def test_custom_datetime_based_cursor__parse_datetime():
         datetime_format="%Y-%m-%dT%H:%M:%S%z",
         cursor_granularity="PT0S",
         config={},
-        parameters={}
+        parameters={},
     )
 
     datetime_string_original_offset = "2023-02-10T14:42:05-08:00"

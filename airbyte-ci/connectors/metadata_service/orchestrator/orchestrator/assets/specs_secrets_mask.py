@@ -1,17 +1,22 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from typing import List, Set
 
 import dpath.util
+import sentry_sdk
 import yaml
-from dagster import MetadataValue, Output, asset
+from dagster import MetadataValue, OpExecutionContext, Output, asset
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from orchestrator.logging import sentry
 
 GROUP_NAME = "specs_secrets_mask"
 
 # HELPERS
 
 
+@sentry_sdk.trace
 def get_secrets_properties_from_registry_entry(registry_entry: dict) -> List[str]:
     """Traverse a registry entry to spot properties in a spec that have the "airbyte_secret" field set to true.
 
@@ -45,24 +50,31 @@ def get_secrets_properties_from_registry_entry(registry_entry: dict) -> List[str
 
 
 @asset(group_name=GROUP_NAME)
-def all_specs_secrets(oss_catalog_from_metadata: dict, cloud_catalog_from_metadata: dict) -> Set[str]:
+@sentry.instrument_asset_op
+def all_specs_secrets(
+    context: OpExecutionContext, persisted_oss_registry: ConnectorRegistryV0, persisted_cloud_registry: ConnectorRegistryV0
+) -> Set[str]:
+    oss_registry_from_metadata_dict = persisted_oss_registry.dict()
+    cloud_registry_from_metadata_dict = persisted_cloud_registry.dict()
+
     all_secret_properties = []
     all_entries = (
-        oss_catalog_from_metadata["sources"]
-        + cloud_catalog_from_metadata["sources"]
-        + oss_catalog_from_metadata["destinations"]
-        + cloud_catalog_from_metadata["destinations"]
+        oss_registry_from_metadata_dict["sources"]
+        + cloud_registry_from_metadata_dict["sources"]
+        + oss_registry_from_metadata_dict["destinations"]
+        + cloud_registry_from_metadata_dict["destinations"]
     )
     for registry_entry in all_entries:
         all_secret_properties += get_secrets_properties_from_registry_entry(registry_entry)
     return set(all_secret_properties)
 
 
-@asset(required_resource_keys={"catalog_directory_manager"}, group_name=GROUP_NAME)
-def specs_secrets_mask_yaml(context, all_specs_secrets: Set[str]) -> Output:
+@asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
+def specs_secrets_mask_yaml(context: OpExecutionContext, all_specs_secrets: Set[str]) -> Output:
     yaml_string = yaml.dump({"properties": list(all_specs_secrets)})
-    catalog_directory_manager = context.resources.catalog_directory_manager
-    file_handle = catalog_directory_manager.write_data(yaml_string.encode(), ext="yaml", key="specs_secrets_mask")
+    registry_directory_manager = context.resources.registry_directory_manager
+    file_handle = registry_directory_manager.write_data(yaml_string.encode(), ext="yaml", key="specs_secrets_mask")
     metadata = {
         "preview": yaml_string,
         "gcs_path": MetadataValue.url(file_handle.gcs_path),

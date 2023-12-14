@@ -11,10 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
@@ -140,7 +140,7 @@ public class PostgresSpecTest {
         .put("replication_slot", "replication_slot")
         .put("publication", "PUBLICATION")
         .put("plugin", "pgoutput")
-        .put("initial_waiting_seconds", 5)
+        .put("initial_waiting_seconds", 30)
         .put("lsn_commit_behaviour", commitBehaviour)
         .build());
 
@@ -155,6 +155,43 @@ public class PostgresSpecTest {
         .put("replication_method", replicationMethod)
         .build());
     assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testLsnCommitBehaviourPropertyWithWrongValue() {
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "CDC")
+        .put("replication_slot", "replication_slot")
+        .put("publication", "PUBLICATION")
+        .put("plugin", "pgoutput")
+        .put("initial_waiting_seconds", 30)
+        .put("lsn_commit_behaviour", "wrong_value")
+        .build());
+
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, "host")
+        .put(JdbcUtils.PORT_KEY, 5432)
+        .put(JdbcUtils.DATABASE_KEY, "dbName")
+        .put(JdbcUtils.SCHEMAS_KEY, List.of("MODELS_SCHEMA", "MODELS_SCHEMA" + "_random"))
+        .put(JdbcUtils.USERNAME_KEY, "user")
+        .put(JdbcUtils.PASSWORD_KEY, "password")
+        .put(JdbcUtils.SSL_KEY, false)
+        .put("replication_method", replicationMethod)
+        .build());
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testPortProperty() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testPortMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove(JdbcUtils.PORT_KEY);
+    assertFalse(validator.test(schema, config));
   }
 
 }

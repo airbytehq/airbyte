@@ -70,6 +70,9 @@ def test_bad_field_type_converting(field_type, expected, caplog, capsys):
         (["null", "integer"], "some_field", "", None, None),
         (["null", "object"], "some_field", "", None, None),
         (["null", "boolean"], "some_field", "", None, None),
+        # when string needs to be cast as booleans
+        (["null", "boolean"], "some_field", "false", None, False),
+        (["null", "boolean"], "some_field", "true", None, True),
         # Test casting fields with format specified
         (["null", "string"], "some_field", "", "date-time", None),
         (["string"], "some_field", "", "date-time", ""),

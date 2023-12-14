@@ -23,8 +23,6 @@
                 "title": "Credentials Title",
                 "description": "Authentication Scenario",
                 "const": "Web server app",
-                "enum": ["Web server app"],
-                "default": "Web server app",
                 "order": 0
               },
               "client_id": {
@@ -58,8 +56,6 @@
                 "title": "Credentials Title",
                 "description": "Authentication Scenario",
                 "const": "Service accounts",
-                "enum": ["Service accounts"],
-                "default": "Service accounts",
                 "order": 0
               },
               "credentials_json": {
@@ -77,14 +73,6 @@
           }
         ]
       }
-    }
-  },
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": ["credentials", 0],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["refresh_token"]]
     }
   }
 }

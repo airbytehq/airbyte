@@ -20,7 +20,7 @@ def response_mock():
 
 @pytest.fixture
 def config():
-    return {"spreadsheet_id": "id", "credentials": {"access_token": "token"}}
+    return {"spreadsheet_id": "id", "credentials": {"access_token": "token"}, "metadata_fields": ["row_id"]}
 
 
 @pytest.fixture

@@ -3,9 +3,12 @@
 #
 
 import pytest
+import requests
 import responses
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
+from responses import matchers
 from source_jira.source import SourceJira
 from source_jira.streams import (
     ApplicationRoles,
@@ -55,6 +58,21 @@ from source_jira.streams import (
     WorkflowStatusCategories,
     WorkflowStatuses,
 )
+from source_jira.utils import read_full_refresh
+
+
+@responses.activate
+def test_application_roles_stream_401_error(config, caplog):
+    config["domain"] = "test_application_domain"
+    responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/applicationrole?maxResults=50", status=401)
+
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = ApplicationRoles(**args)
+    with pytest.raises(AirbyteTracedException) as e:
+        [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    assert e.value.message == "Config validation error: Invalid creds were provided, please check your api token, domain and/or email."
+    assert "Invalid creds were provided, please check your api token, domain and/or email." in caplog.text
 
 
 @responses.activate
@@ -77,9 +95,7 @@ def test_application_roles_stream(config, application_roles_response):
 @responses.activate
 def test_application_roles_stream_http_error(config, application_roles_response):
     responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/applicationrole?maxResults=50",
-        json={'error': 'not found'}, status=404
+        responses.GET, f"https://{config['domain']}/rest/api/3/applicationrole?maxResults=50", json={"error": "not found"}, status=404
     )
 
     authenticator = SourceJira().get_authenticator(config=config)
@@ -90,13 +106,7 @@ def test_application_roles_stream_http_error(config, application_roles_response)
 
 
 @responses.activate
-def test_boards_stream(config, boards_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
-        json=boards_response,
-    )
-
+def test_boards_stream(config, mock_board_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Boards(**args)
@@ -104,6 +114,23 @@ def test_boards_stream(config, boards_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 3
     assert len(responses.calls) == 1
+
+
+@responses.activate
+def test_board_stream_forbidden(config, boards_response, caplog):
+    config["domain"] = "test_boards_domain"
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
+        json={"error": f"403 Client Error: Forbidden for url: https://{config['domain']}/rest/agile/1.0/board?maxResults=50"},
+        status=403,
+    )
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = Boards(**args)
+    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    assert records == []
+    assert "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access." in caplog.text
 
 
 @responses.activate
@@ -124,13 +151,7 @@ def test_dashboards_stream(config, dashboards_response):
 
 
 @responses.activate
-def test_filters_stream(config, filters_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/filter/search?maxResults=50&expand=description%2Cowner%2Cjql%2CviewUrl%2CsearchUrl%2Cfavourite%2CfavouritedCount%2CsharePermissions%2CisWritable%2Csubscriptions",
-        json=filters_response,
-    )
-
+def test_filters_stream(config, mock_filter_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Filters(**args)
@@ -158,13 +179,7 @@ def test_groups_stream(config, groups_response):
 
 
 @responses.activate
-def test_issues_fields_stream(config, issue_fields_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/field?maxResults=50",
-        json=issue_fields_response,
-    )
-
+def test_issues_fields_stream(config, mock_fields_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueFields(**args)
@@ -328,7 +343,7 @@ def test_jira_settings_stream(config, jira_settings_response):
 
 
 @responses.activate
-def test_board_issues_stream(config, board_issues_response):
+def test_board_issues_stream(config, mock_board_response, board_issues_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/agile/1.0/board/1/issue?maxResults=50&fields=key&fields=created&fields=updated",
@@ -337,7 +352,8 @@ def test_board_issues_stream(config, board_issues_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/agile/1.0/board/2/issue?maxResults=50&fields=key&fields=created&fields=updated",
-        json={},
+        json={'errorMessages': ['This board has no columns with a mapped status.'], 'errors': {}},
+        status=500,
     )
     responses.add(
         responses.GET,
@@ -350,11 +366,22 @@ def test_board_issues_stream(config, board_issues_response):
     stream = BoardIssues(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
     assert len(records) == 1
-    assert len(responses.calls) == 3
+    assert len(responses.calls) == 4
+
+
+def test_stream_updated_state(config):
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = BoardIssues(**args)
+
+    current_stream_state = {"updated": "09.11.2023"}
+    latest_record = {"updated": "10.11.2023"}
+
+    assert {"updated": "10.11.2023"} == stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
 
 
 @responses.activate
-def test_filter_sharing_stream(config, filter_sharing_response):
+def test_filter_sharing_stream(config, mock_filter_response, filter_sharing_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/filter/1/permission?maxResults=50",
@@ -366,14 +393,14 @@ def test_filter_sharing_stream(config, filter_sharing_response):
     stream = FilterSharing(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
     assert len(records) == 1
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
 
 
 @responses.activate
 def test_projects_stream(config, projects_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
         json=projects_response,
     )
 
@@ -381,11 +408,16 @@ def test_projects_stream(config, projects_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Projects(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
-    assert len(records) == 2
+    assert len(records) == 1
 
 
 @responses.activate
-def test_projects_avatars_stream(config, projects_avatars_response):
+def test_projects_avatars_stream(config, projects_response, projects_avatars_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
+        json=projects_response,
+    )
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/Project1/avatars?maxResults=50",
@@ -396,7 +428,7 @@ def test_projects_avatars_stream(config, projects_avatars_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectAvatars(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
-    assert len(records) == 4
+    assert len(records) == 2
     assert len(responses.calls) == 2
 
 
@@ -417,13 +449,7 @@ def test_projects_categories_stream(config, projects_categories_response):
 
 
 @responses.activate
-def test_screens_stream(config, screens_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/screens?maxResults=50",
-        json=screens_response,
-    )
-
+def test_screens_stream(config, mock_screen_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Screens(**args)
@@ -433,7 +459,7 @@ def test_screens_stream(config, screens_response):
 
 
 @responses.activate
-def test_screen_tabs_stream(config, screen_tabs_response):
+def test_screen_tabs_stream(config, mock_screen_response, screen_tabs_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/screens/1/tabs?maxResults=50",
@@ -450,37 +476,39 @@ def test_screen_tabs_stream(config, screen_tabs_response):
     stream = ScreenTabs(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 3
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
 
 
 @responses.activate
-def test_sprints_stream(config, sprints_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/1/sprint?maxResults=50",
-        json=sprints_response,
-    )
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/2/sprint?maxResults=50",
-        json=sprints_response,
-    )
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/3/sprint?maxResults=50",
-        json=sprints_response,
-    )
-
+def test_sprints_stream(config, mock_board_response, mock_sprints_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Sprints(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 3
-    assert len(responses.calls) == 3
+    assert len(responses.calls) == 4
 
 
 @responses.activate
-def test_sprint_issues_stream(config, sprints_issues_response):
+def test_board_does_not_support_sprints(config, caplog):
+    url = f"https://{config['domain']}/rest/agile/1.0/board/4/sprint?maxResults=50"
+    error = {"errorMessages": ["The board does not support sprints"], "errors": {}}
+    responses.add(responses.GET, url, json=error, status=400)
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = Sprints(**args)
+    response = requests.get(url)
+    actual = stream.should_retry(response)
+    assert actual is False
+    assert (
+        "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+        "does it have sprints enabled under project settings? If it's a company-managed one,"
+        " check that it has at least one Scrum board associated with it."
+    ) in caplog.text
+
+
+@responses.activate
+def test_sprint_issues_stream(config, mock_board_response, mock_fields_response, mock_sprints_response, sprints_issues_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/agile/1.0/sprint/2/issue?maxResults=50&fields=key&fields=status&fields=created&fields=updated",
@@ -492,7 +520,7 @@ def test_sprint_issues_stream(config, sprints_issues_response):
     stream = SprintIssues(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
     assert len(records) == 3
-    assert len(responses.calls) == 3
+    assert len(responses.calls) == 8
 
 
 @responses.activate
@@ -512,13 +540,7 @@ def test_time_tracking_stream(config, time_tracking_response):
 
 
 @responses.activate
-def test_users_stream(config, users_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/users/search?maxResults=50",
-        json=users_response,
-    )
-
+def test_users_stream(config, mock_users_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Users(**args)
@@ -528,7 +550,7 @@ def test_users_stream(config, users_response):
 
 
 @responses.activate
-def test_users_groups_detailed_stream(config, users_groups_detailed_response):
+def test_users_groups_detailed_stream(config, mock_users_response, users_groups_detailed_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/user?maxResults=50&accountId=1&expand=groups%2CapplicationRoles",
@@ -545,7 +567,7 @@ def test_users_groups_detailed_stream(config, users_groups_detailed_response):
     stream = UsersGroupsDetailed(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
     assert len(records) == 4
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
 
 
 @responses.activate
@@ -623,36 +645,67 @@ def test_avatars_stream(config, avatars_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Avatars(**args)
-    records = [r for r in
-               stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"avatar_type": "issuetype"})]
+    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"avatar_type": "issuetype"})]
     assert len(records) == 2
     assert len(responses.calls) == 1
 
 
 @responses.activate
-def test_issues_stream(config, issues_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
-    )
+def test_avatars_stream_should_retry(config, caplog):
+    url = f"https://{config['domain']}/rest/api/3/avatar/issuetype/system?maxResults=50"
+    responses.add(method=responses.GET, url=url, json={"errorMessages": ["The error message"], "errors": {}}, status=400)
 
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
-    stream = Issues(**args)
-    records = [r for r in
-               stream.read_records(sync_mode=SyncMode.full_refresh)]
-    assert len(records) == 1
-    assert len(responses.calls) == 1
+    stream = Avatars(**args)
+
+    response = requests.get(url)
+    actual = stream.should_retry(response)
+    assert actual is False
+    assert "The error message" in caplog.text
 
 
 @responses.activate
-def test_issue_comments_stream(config, issues_response, issue_comments_response):
+def test_issues_stream(config, projects_response, mock_issues_responses, issues_response, caplog):
+    projects_response["values"].append({"id": "3", "key": "Project1"})
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
+        json=projects_response,
     )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search",
+        match=[
+            matchers.query_param_matcher(
+                {
+                    "maxResults": 50,
+                    "fields": "*all",
+                    "jql": "project in (3) ORDER BY updated asc",
+                    "expand": "renderedFields,transitions,changelog",
+                }
+            )
+        ],
+        json={"errorMessages": ["The value '3' does not exist for the field 'project'."]},
+        status=400,
+    )
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = Issues(**args)
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+
+    # check if only None values was filtered out from 'fields' field
+    assert "empty_field" not in records[0]["fields"]
+    assert "non_empty_field" in records[0]["fields"]
+
+    assert len(responses.calls) == 3
+    error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"].Check permissions for this project. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
+    assert error_message in caplog.messages
+
+
+@responses.activate
+def test_issue_comments_stream(config, mock_projects_responses, mock_issues_responses, issue_comments_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/comment?maxResults=50",
@@ -662,14 +715,13 @@ def test_issue_comments_stream(config, issues_response, issue_comments_response)
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueComments(**args)
-    records = [r for r in
-               stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 2
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
 
 
 @responses.activate
-def test_issue_custom_field_contexts_stream(config, issue_custom_field_contexts_response):
+def test_issue_custom_field_contexts_stream(config, mock_fields_response, issue_custom_field_contexts_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/field/issuetype/context?maxResults=50",
@@ -681,7 +733,7 @@ def test_issue_custom_field_contexts_stream(config, issue_custom_field_contexts_
     stream = IssueCustomFieldContexts(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"field_id": "10130"})]
     assert len(records) == 2
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -695,14 +747,35 @@ def test_issue_property_keys_stream(config, issue_property_keys_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssuePropertyKeys(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
-                                              stream_slice={"issue_key": "TESTKEY13-1", "key": "TESTKEY13-1"})]
+    records = [
+        r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"issue_key": "TESTKEY13-1", "key": "TESTKEY13-1"})
+    ]
     assert len(records) == 2
     assert len(responses.calls) == 1
 
 
 @responses.activate
-def test_project_permissions_stream(config, project_permissions_response):
+def test_issue_property_keys_stream_not_found_skip(config, issue_property_keys_response):
+    config["domain"] = "test_skip_properties"
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/properties?maxResults=50",
+        json={"errorMessages": ["Issue does not exist or you do not have permission to see it."], "errors": {}},
+        status=404,
+    )
+
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = IssuePropertyKeys(**args)
+    records = [
+        r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"issue_key": "TESTKEY13-1", "key": "TESTKEY13-1"})
+    ]
+    assert len(records) == 0
+    assert len(responses.calls) == 1
+
+
+@responses.activate
+def test_project_permissions_stream(config, mock_projects_responses, project_permissions_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/Project1/securitylevel?maxResults=50",
@@ -712,13 +785,29 @@ def test_project_permissions_stream(config, project_permissions_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectPermissionSchemes(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
-                                              stream_slice={"key": "TESTKEY13-1"})]
-    assert len(records) == 4
+    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
+    expected_records = [
+        {
+            "description": "Only the reporter and internal staff can see this issue.",
+            "id": "100000",
+            "name": "Reporter Only",
+            "projectId": "Project1",
+            "self": "https://your-domain.atlassian.net/rest/api/3/securitylevel/100000",
+        },
+        {
+            "description": "Only internal staff can see this issue.",
+            "id": "100001",
+            "name": "Staff Only",
+            "projectId": "Project1",
+            "self": "https://your-domain.atlassian.net/rest/api/3/securitylevel/100001",
+        },
+    ]
+    assert len(records) == 2
+    assert records == expected_records
 
 
 @responses.activate
-def test_project_email_stream(config, project_email_response):
+def test_project_email_stream(config, mock_projects_responses, project_email_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/1/email?maxResults=50",
@@ -733,14 +822,13 @@ def test_project_email_stream(config, project_email_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectEmail(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
-                                              stream_slice={"key": "TESTKEY13-1"})]
-    assert len(records) == 4
+    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "TESTKEY13-1"})]
+    assert len(records) == 2
     assert len(responses.calls) == 2
 
 
 @responses.activate
-def test_project_components_stream(config, project_components_response):
+def test_project_components_stream(config, mock_projects_responses, project_components_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/Project1/component?maxResults=50",
@@ -750,9 +838,8 @@ def test_project_components_stream(config, project_components_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectComponents(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
-                                              stream_slice={"key": "Project1"})]
-    assert len(records) == 4
+    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
+    assert len(records) == 2
     assert len(responses.calls) == 2
 
 
@@ -794,12 +881,7 @@ def test_labels_stream(config, labels_response):
 
 
 @responses.activate
-def test_issue_worklogs_stream(config, issues_response, issue_worklogs_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
-    )
+def test_issue_worklogs_stream(config, mock_projects_responses, mock_issues_responses, issue_worklogs_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/worklog?maxResults=50",
@@ -811,16 +893,11 @@ def test_issue_worklogs_stream(config, issues_response, issue_worklogs_response)
     stream = IssueWorklogs(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
 
 
 @responses.activate
-def test_issue_watchers_stream(config, issues_response, issue_watchers_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
-    )
+def test_issue_watchers_stream(config, mock_projects_responses, mock_issues_responses, issue_watchers_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/watchers?maxResults=50",
@@ -832,16 +909,11 @@ def test_issue_watchers_stream(config, issues_response, issue_watchers_response)
     stream = IssueWatchers(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
 
 
 @responses.activate
-def test_issue_votes_stream(config, issues_response, issue_votes_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
-    )
+def test_issue_votes_stream(config, mock_projects_responses, mock_issues_responses, issue_votes_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/votes?maxResults=50",
@@ -854,16 +926,11 @@ def test_issue_votes_stream(config, issues_response, issue_votes_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 1
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
 
 
 @responses.activate
-def test_issue_remote_links_stream(config, issues_response, issue_remote_links_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
-    )
+def test_issue_remote_links_stream(config, mock_projects_responses, mock_issues_responses, issue_remote_links_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/remotelink?maxResults=50",
@@ -876,11 +943,11 @@ def test_issue_remote_links_stream(config, issues_response, issue_remote_links_r
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 2
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
 
 
 @responses.activate
-def test_project_versions_stream(config, projects_versions_response):
+def test_project_versions_stream(config, mock_projects_responses, projects_versions_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/Project1/version?maxResults=50",
@@ -892,5 +959,5 @@ def test_project_versions_stream(config, projects_versions_response):
     stream = ProjectVersions(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
-    assert len(records) == 4
+    assert len(records) == 2
     assert len(responses.calls) == 2

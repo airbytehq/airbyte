@@ -154,7 +154,7 @@ For instance, if the API supports filtering using the request parameters `create
 
 ```yaml
 incremental_sync:
-  type: DatetimeCursorBased
+  type: DatetimeBasedCursor
   <...>
   start_time_option:
     type: RequestOption

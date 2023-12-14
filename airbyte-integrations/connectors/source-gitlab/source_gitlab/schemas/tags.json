@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "name": {
@@ -24,6 +24,10 @@
     },
     "protected": {
       "type": ["null", "boolean"]
+    },
+    "commit": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "commit_id": {
       "type": ["null", "string"]

@@ -4,8 +4,7 @@
   "properties": {
     "id": {
       "type": "integer",
-      "description": "The ID of the field configuration.",
-      "format": "int64"
+      "description": "The ID of the field configuration."
     },
     "name": {
       "type": "string",

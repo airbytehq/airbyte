@@ -1,4 +1,4 @@
-# Zendesk Talk
+# TrustPilot
 
 ## Prerequisites
 

@@ -14,12 +14,14 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class CloseComStream(HttpStream, ABC):
     url_base: str = "https://api.close.com/api/v1/"
     primary_key: str = "id"
     number_of_items_per_page = None
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, **kwargs: Mapping[str, Any]):
         super().__init__(authenticator=kwargs["authenticator"])

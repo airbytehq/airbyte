@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.oracle_strict_encrypt;
 
+import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

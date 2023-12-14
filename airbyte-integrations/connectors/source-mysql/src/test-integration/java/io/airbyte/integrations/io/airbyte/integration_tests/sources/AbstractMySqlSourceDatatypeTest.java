@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mysql.cj.MysqlType;
-import io.airbyte.db.Database;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.File;
 import java.io.IOException;
@@ -21,31 +21,26 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MySQLContainer;
 
 public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractMySqlSourceDatatypeTest.class);
 
-  protected MySQLContainer<?> container;
-  protected JsonNode config;
+  protected MySQLTestDatabase testdb;
 
   @Override
-  protected JsonNode getConfig() {
-    return config;
+  protected String getNameSpace() {
+    return testdb.getDatabaseName();
+  }
+
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    testdb.close();
   }
 
   @Override
   protected String getImageName() {
     return "airbyte/source-mysql:dev";
-  }
-
-  @Override
-  protected abstract Database setupDatabase() throws Exception;
-
-  @Override
-  protected String getNameSpace() {
-    return container.getDatabaseName();
   }
 
   @Override
@@ -235,10 +230,10 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
-            .airbyteType(JsonSchemaType.NUMBER)
-            .fullSourceDataType("decimal(19,2)")
-            .addInsertValues("1700000.01")
-            .addExpectedValues("1700000.01")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("decimal(32,0)")
+            .addInsertValues("1700000.01", "123")
+            .addExpectedValues("1700000", "123")
             .build());
 
     for (final String type : Set.of("date", "date not null default '0000-00-00'")) {
@@ -306,11 +301,11 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("year")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.INTEGER)
             // MySQL converts values in the ranges '0' - '69' to YEAR value in the range 2000 - 2069
             // and '70' - '99' to 1970 - 1999.
-            .addInsertValues("null", "'1997'", "'0'", "'50'", "'70'", "'80'", "'99'")
-            .addExpectedValues(null, "1997", "2000", "2050", "1970", "1980", "1999")
+            .addInsertValues("null", "'1997'", "'0'", "'50'", "'70'", "'80'", "'99'", "'00'", "'000'")
+            .addExpectedValues(null, "1997", "2000", "2050", "1970", "1980", "1999", "2000", "2000")
             .build());
 
     // char types can be string or binary, so they are tested separately
@@ -442,6 +437,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues(null, "xs,s", "m,xl")
             .build());
 
+    addDecimalValuesTest();
   }
 
   protected void addJsonDataTypeTest() {
@@ -481,6 +477,17 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
       LOGGER.error(String.format("Fail to read the file: %s. Error: %s", file.getAbsoluteFile(), e.getMessage()));
     }
     return null;
+  }
+
+  protected void addDecimalValuesTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("decimal")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .fullSourceDataType("decimal(19,2)")
+            .addInsertValues("1700000.01", "'123'")
+            .addExpectedValues("1700000.01", "123.0")
+            .build());
   }
 
 }

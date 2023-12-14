@@ -89,6 +89,9 @@
       "properties": {
         "delivery_receipts": {
           "type": ["null", "string"]
+        },
+        "channel_metadata": {
+          "type": ["null", "string"]
         }
       }
     }

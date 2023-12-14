@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": ["null", "string"] },
+    "event": { "type": ["null", "string"] },
+    "data": { "type": ["null", "string"] },
+    "entity": { "type": ["null", "string"] },
+    "created_at": { "type": ["null", "string"] },
+    "created_at_int": { "type": ["null", "integer"] },
+    "pulse_id": { "type": ["null", "integer"] },
+    "board_id": { "type": ["null", "integer"] }
+  }
+}

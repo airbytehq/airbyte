@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Posts",
+  "type": ["null", "object"],
+  "properties": {
+    "author_id": {
+      "type": ["null", "number"]
+    },
+    "closed": {
+      "type": ["null", "boolean"]
+    },
+    "comment_count": {
+      "type": ["null", "integer"]
+    },
+    "content_tag_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "number"]
+      }
+    },
+    "details": {
+      "type": ["null", "string"]
+    },
+    "featured": {
+      "type": ["null", "boolean"]
+    },
+    "follower_count": {
+      "type": ["null", "integer"]
+    },
+    "frozen": {
+      "type": ["null", "boolean"]
+    },
+    "html_url": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "number"]
+    },
+    "non_author_editor_id": {
+      "type": ["null", "integer"]
+    },
+    "non_author_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "pinned": {
+      "type": ["null", "boolean"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "topic_id": {
+      "type": ["null", "integer"]
+    },
+    "vote_count": {
+      "type": ["null", "integer"]
+    },
+    "vote_sum": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

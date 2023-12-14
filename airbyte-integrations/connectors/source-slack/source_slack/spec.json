@@ -18,8 +18,11 @@
       "lookback_window": {
         "type": "integer",
         "title": "Threads Lookback window (Days)",
-        "description": "How far into the past to look for messages in threads.",
-        "examples": [7, 14]
+        "description": "How far into the past to look for messages in threads, default is 0 days",
+        "examples": [7, 14],
+        "minimum": 0,
+        "default": 0,
+        "maximum": 365
       },
       "join_channels": {
         "type": "boolean",

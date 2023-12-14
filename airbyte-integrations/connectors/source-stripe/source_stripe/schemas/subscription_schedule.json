@@ -21,8 +21,20 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "current_phase": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "end_date": {
+          "type": ["null", "integer"]
+        },
+        "start_date": {
+          "type": ["null", "integer"]
+        }
+      }
     },
     "customer": {
       "type": ["null", "string"]
@@ -95,54 +107,7 @@
                   "type": ["null", "string"]
                 },
                 "tax_rates": {
-                  "type": ["null", "array"],
-                  "items": {
-                    "type": ["null", "object"],
-                    "additionalProperties": true,
-                    "properties": {
-                      "id": {
-                        "type": ["null", "string"]
-                      },
-                      "object": {
-                        "type": ["null", "string"]
-                      },
-                      "active": {
-                        "type": ["null", "boolean"]
-                      },
-                      "country": {
-                        "type": ["null", "string"]
-                      },
-                      "created": {
-                        "type": ["null", "string"],
-                        "format": "datetime"
-                      },
-                      "display_name": {
-                        "type": ["null", "string"]
-                      },
-                      "inclusive": {
-                        "type": ["null", "boolean"]
-                      },
-                      "jurisdiction": {
-                        "type": ["null", "string"]
-                      },
-                      "livemode": {
-                        "type": ["null", "boolean"]
-                      },
-                      "metadata": {
-                        "type": ["null", "object"],
-                        "additionalProperties": true
-                      },
-                      "percentage": {
-                        "type": ["null", "number"]
-                      },
-                      "state": {
-                        "type": ["null", "string"]
-                      },
-                      "tax_type": {
-                        "type": ["null", "string"]
-                      }
-                    }
-                  }
+                  "$ref": "tax_rates.json"
                 }
               }
             }
@@ -169,11 +134,7 @@
             "type": ["null", "string"]
           },
           "default_tax_rates": {
-            "type": ["null", "array"],
-            "items": {
-              "type": ["null", "object"],
-              "additionalProperties": true
-            }
+            "$ref": "tax_rates.json"
           },
           "description": {
             "type": ["null", "string"]
@@ -248,6 +209,9 @@
       "type": ["null", "string"]
     },
     "test_clock": {
+      "type": ["null", "string"]
+    },
+    "renewal_interval": {
       "type": ["null", "string"]
     }
   }

@@ -1,12 +1,37 @@
 {
-    "score": { "type": "integer" },
-    "scoreSum": { "type": "integer" },
-    "metricsType": { "type": "string" },
-    "promoters": { "type": "integer" },
-    "passives": { "type": "integer" },
-    "detractors": { "type": "integer" },
-    "promotersCount": { "type": "integer" },
-    "passivesCount": { "type": "integer" },
-    "detractorsCount": { "type": "integer" },
-    "totalResponses": { "type": "integer" }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "score": {
+      "type": ["null", "integer"]
+    },
+    "scoreSum": {
+      "type": ["null", "integer"]
+    },
+    "metricsType": {
+      "type": ["null", "string"]
+    },
+    "promoters": {
+      "type": ["null", "integer"]
+    },
+    "passives": {
+      "type": ["null", "integer"]
+    },
+    "detractors": {
+      "type": ["null", "integer"]
+    },
+    "promotersCount": {
+      "type": ["null", "integer"]
+    },
+    "passivesCount": {
+      "type": ["null", "integer"]
+    },
+    "detractorsCount": {
+      "type": ["null", "integer"]
+    },
+    "totalResponses": {
+      "type": ["null", "integer"]
+    }
+  }
 }

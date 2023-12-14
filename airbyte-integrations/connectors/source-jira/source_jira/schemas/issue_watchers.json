@@ -7,6 +7,10 @@
       "description": "The URL of these issue watcher details.",
       "readOnly": true
     },
+    "issueId": {
+      "type": ["null", "string"],
+      "description": "Id of the related issue."
+    },
     "isWatching": {
       "type": "boolean",
       "description": "Whether the calling user is watching this issue.",
@@ -15,7 +19,6 @@
     "watchCount": {
       "type": "integer",
       "description": "The number of users watching this issue.",
-      "format": "int32",
       "readOnly": true
     },
     "watchers": {
@@ -57,23 +60,19 @@
             "properties": {
               "16x16": {
                 "type": "string",
-                "description": "The URL of the item's 16x16 pixel avatar.",
-                "format": "uri"
+                "description": "The URL of the item's 16x16 pixel avatar."
               },
               "24x24": {
                 "type": "string",
-                "description": "The URL of the item's 24x24 pixel avatar.",
-                "format": "uri"
+                "description": "The URL of the item's 24x24 pixel avatar."
               },
               "32x32": {
                 "type": "string",
-                "description": "The URL of the item's 32x32 pixel avatar.",
-                "format": "uri"
+                "description": "The URL of the item's 32x32 pixel avatar."
               },
               "48x48": {
                 "type": "string",
-                "description": "The URL of the item's 48x48 pixel avatar.",
-                "format": "uri"
+                "description": "The URL of the item's 48x48 pixel avatar."
               }
             }
           },
