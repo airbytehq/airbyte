@@ -24,9 +24,12 @@ application {
 }
 
 dependencies {
-
     implementation 'mysql:mysql-connector-java:8.0.22'
     integrationTestJavaImplementation libs.testcontainers.mysql
+
+    // TODO: declare typing-deduping as a CDK feature instead of importing from source.
+    implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
+    integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
 }
 
 configurations.all {
