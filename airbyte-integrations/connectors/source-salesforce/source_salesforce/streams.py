@@ -27,7 +27,7 @@ from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 from requests.models import PreparedRequest
 
-from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce, PARENT_SALESFORCE_OBJECTS
+from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
@@ -45,7 +45,14 @@ class SalesforceStream(HttpStream, ABC):
     encoding = DEFAULT_ENCODING
 
     def __init__(
-        self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, start_date = None, **kwargs
+        self,
+        sf_api: Salesforce,
+        pk: str,
+        stream_name: str,
+        sobject_options: Mapping[str, Any] = None,
+        schema: dict = None,
+        start_date=None,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.sf_api = sf_api
@@ -157,8 +164,8 @@ class RestSalesforceStream(SalesforceStream):
 
         if self.name in PARENT_SALESFORCE_OBJECTS:
             # add where clause: " WHERE ContentDocumentId IN ('06905000000NMXXXXX', ...)"
-            parent_field = PARENT_SALESFORCE_OBJECTS[self.name]['field']
-            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice['parents']]
+            parent_field = PARENT_SALESFORCE_OBJECTS[self.name]["field"]
+            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice["parents"]]
             query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
@@ -296,21 +303,22 @@ class RestSalesforceStream(SalesforceStream):
 
 class BatchedSubStream(HttpSubStream):
     SLICE_BATCH_SIZE = 200
+
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Instead of yielding one parent record at a time, make stream slice contain a batch of parent records.
 
-            It allows to get <SLICE_BATCH_SIZE> records by one requests (instead of only one).
+        It allows to get <SLICE_BATCH_SIZE> records by one requests (instead of only one).
         """
         batched_slice = []
         for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
             if len(batched_slice) == self.SLICE_BATCH_SIZE:
-                yield {'parents': batched_slice}
+                yield {"parents": batched_slice}
                 batched_slice = []
-            batched_slice.append(stream_slice['parent'])
+            batched_slice.append(stream_slice["parent"])
         if batched_slice:
-            yield {'parents': batched_slice}
+            yield {"parents": batched_slice}
 
 
 class RestSalesforceSubStream(BatchedSubStream, RestSalesforceStream):
@@ -579,8 +587,8 @@ class BulkSalesforceStream(SalesforceStream):
 
         if self.name in PARENT_SALESFORCE_OBJECTS:
             # add where clause: " WHERE ContentDocumentId IN ('06905000000NMXXXXX', '06905000000Mxp7XXX', ...)"
-            parent_field = PARENT_SALESFORCE_OBJECTS[self.name]['field']
-            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice['parents']]
+            parent_field = PARENT_SALESFORCE_OBJECTS[self.name]["field"]
+            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice["parents"]]
             query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
 
         return {"q": query}

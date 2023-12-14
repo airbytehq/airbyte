@@ -136,16 +136,8 @@ PARENT_SALESFORCE_OBJECTS = {
         "parent_name": "ContentDocument",
         "field": "Id",
         "schema_minimal": {
-            "properties": {
-                'Id': {
-                    'type': ['string', 'null']
-                },
-                'SystemModstamp': {
-                    'type': ['string', 'null'],
-                    'format': 'date-time'
-                }
-            }
-        }
+            "properties": {"Id": {"type": ["string", "null"]}, "SystemModstamp": {"type": ["string", "null"], "format": "date-time"}}
+        },
     }
 }
 

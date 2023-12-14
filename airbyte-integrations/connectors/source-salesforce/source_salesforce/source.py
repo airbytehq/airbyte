@@ -23,9 +23,16 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from dateutil.relativedelta import relativedelta
 from requests import codes, exceptions  # type: ignore[import]
 
-from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce, PARENT_SALESFORCE_OBJECTS
-from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalRestSalesforceStream, RestSalesforceStream, \
-    RestSalesforceSubStream, BulkSalesforceSubStream
+from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .streams import (
+    BulkIncrementalSalesforceStream,
+    BulkSalesforceStream,
+    BulkSalesforceSubStream,
+    Describe,
+    IncrementalRestSalesforceStream,
+    RestSalesforceStream,
+    RestSalesforceSubStream,
+)
 
 _DEFAULT_CONCURRENCY = 10
 _MAX_CONCURRENCY = 10
@@ -107,7 +114,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         SubStreams (like ContentDocumentLink) do not support incremental sync because of query restrictions, look here:
         https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_contentdocumentlink.htm
         """
-        parent_name = PARENT_SALESFORCE_OBJECTS.get(stream_name, {}).get('parent_name')
+        parent_name = PARENT_SALESFORCE_OBJECTS.get(stream_name, {}).get("parent_name")
         if api_type == "rest":
             full_refresh = RestSalesforceSubStream if parent_name else RestSalesforceStream
             incremental = IncrementalRestSalesforceStream
@@ -123,20 +130,20 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         """Choose proper stream class: syncMode(full_refresh/incremental), API type(Rest/Bulk), SubStream"""
         pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
         stream_kwargs = {
-            'stream_name': stream_name,
-            'schema': json_schema,
-            'pk': pk,
-            'sobject_options': sobject_options,
-            'sf_api': sf_object,
-            'authenticator': authenticator,
-            'start_date': config.get("start_date")
+            "stream_name": stream_name,
+            "schema": json_schema,
+            "pk": pk,
+            "sobject_options": sobject_options,
+            "sf_api": sf_object,
+            "authenticator": authenticator,
+            "start_date": config.get("start_date"),
         }
 
         api_type = cls._get_api_type(stream_name, json_schema, config.get("force_use_bulk_api", False))
         full_refresh, incremental = cls._get_stream_type(stream_name, api_type)
         if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
             stream_class = incremental
-            stream_kwargs['replication_key'] = replication_key
+            stream_kwargs["replication_key"] = replication_key
         else:
             stream_class = full_refresh
 
@@ -159,19 +166,21 @@ class SourceSalesforce(ConcurrentSourceAdapter):
 
             stream_class, kwargs = cls.prepare_stream(stream_name, json_schema, sobject_options, *default_args)
 
-            parent_name = PARENT_SALESFORCE_OBJECTS.get(stream_name, {}).get('parent_name')
+            parent_name = PARENT_SALESFORCE_OBJECTS.get(stream_name, {}).get("parent_name")
             if parent_name:
                 # get minimal schema required for getting proper class name full_refresh/incremental, rest/bulk
-                parent_schema = PARENT_SALESFORCE_OBJECTS.get(stream_name, {}).get('schema_minimal')
+                parent_schema = PARENT_SALESFORCE_OBJECTS.get(stream_name, {}).get("schema_minimal")
                 parent_class, parent_kwargs = cls.prepare_stream(parent_name, parent_schema, sobject_options, *default_args)
-                kwargs['parent'] = parent_class(**parent_kwargs)
+                kwargs["parent"] = parent_class(**parent_kwargs)
 
             stream = stream_class(**kwargs)
 
             api_type = cls._get_api_type(stream_name, json_schema, config.get("force_use_bulk_api", False))
             if api_type == "rest" and not stream.primary_key and stream.too_many_properties:
-                logger.warning(f"Can not instantiate stream {stream_name}. It is not supported by the BULK API and can not be "
-                               "implemented via REST because the number of its properties exceeds the limit and it lacks a primary key.")
+                logger.warning(
+                    f"Can not instantiate stream {stream_name}. It is not supported by the BULK API and can not be "
+                    "implemented via REST because the number of its properties exceeds the limit and it lacks a primary key."
+                )
                 continue
             streams.append(stream)
         return streams
