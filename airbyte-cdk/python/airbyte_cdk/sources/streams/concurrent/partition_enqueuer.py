@@ -20,7 +20,7 @@ class PartitionEnqueuer:
         :param sentinel: The sentinel to put in the queue when all the partitions have been generated.
         """
         self._queue = queue
-        self._max_queue_size = 10_000
+        self._max_queue_size = 1_000
         self._sleep_time = 0.1
 
     def generate_partitions(self, stream: AbstractStream) -> None:
