@@ -118,7 +118,7 @@ public abstract class BaseTypingDedupingTest {
    * @return
    * @throws Exception
    */
-  protected boolean checkTableExists(String streamNamespace, String streamName) {
+  protected boolean checkTableExists(final String streamNamespace, final String streamName) {
     // Implementation is specific to destination's tests.
     return true;
   }
@@ -185,7 +185,7 @@ public abstract class BaseTypingDedupingTest {
    */
   protected synchronized String getUniqueSuffix() {
     if (randomSuffix == null) {
-      randomSuffix = "_" + RandomStringUtils.randomAlphabetic(5).toLowerCase();
+      randomSuffix = "_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
     }
     return randomSuffix;
   }
@@ -705,7 +705,7 @@ public abstract class BaseTypingDedupingTest {
 
   protected void verifySyncResult(final List<JsonNode> expectedRawRecords,
                                   final List<JsonNode> expectedFinalRecords,
-                                  boolean disableFinalTableComparison)
+                                  final boolean disableFinalTableComparison)
       throws Exception {
     verifySyncResult(expectedRawRecords, expectedFinalRecords, streamNamespace, streamName, disableFinalTableComparison);
   }
@@ -714,7 +714,7 @@ public abstract class BaseTypingDedupingTest {
                                 final List<JsonNode> expectedFinalRecords,
                                 final String streamNamespace,
                                 final String streamName,
-                                boolean disableFinalTableComparison)
+                                final boolean disableFinalTableComparison)
       throws Exception {
     final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamNamespace, streamName);
     if (disableFinalTableComparison) {
@@ -764,7 +764,7 @@ public abstract class BaseTypingDedupingTest {
   protected void runSync(final ConfiguredAirbyteCatalog catalog,
                          final List<AirbyteMessage> messages,
                          final String imageName,
-                         Function<JsonNode, JsonNode> configTransformer)
+                         final Function<JsonNode, JsonNode> configTransformer)
       throws Exception {
     final AirbyteDestination destination = startSync(catalog, imageName, configTransformer);
     pushMessages(messages, destination);
@@ -790,7 +790,7 @@ public abstract class BaseTypingDedupingTest {
    */
   protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog,
                                          final String imageName,
-                                         Function<JsonNode, JsonNode> configTransformer)
+                                         final Function<JsonNode, JsonNode> configTransformer)
       throws Exception {
     synchronized (this) {
       catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
