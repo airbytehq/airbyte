@@ -12,6 +12,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.zaxxer.hikari.HikariDataSource;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Assertions;
@@ -55,7 +56,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         driverClassName,
         jdbcUrl,
         connectionProperties,
-        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClassName));
+        JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(61000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -71,7 +72,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         driverClassName,
         jdbcUrl,
         connectionProperties,
-        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClassName));
+        JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(30000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -89,7 +90,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
           mySQLContainer.getDriverClassName(),
           mySQLContainer.getJdbcUrl(),
           connectionProperties,
-          DataSourceFactory.getConnectionTimeout(connectionProperties, mySQLContainer.getDriverClassName()));
+          JdbcConnector.getConnectionTimeout(connectionProperties, mySQLContainer.getDriverClassName()));
       assertNotNull(dataSource);
       assertEquals(HikariDataSource.class, dataSource.getClass());
       assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -106,7 +107,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         driverClassName,
         jdbcUrl,
         connectionProperties,
-        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClassName));
+        JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(Integer.MAX_VALUE, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -121,7 +122,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         driverClassName,
         jdbcUrl,
         connectionProperties,
-        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClassName));
+        JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(10000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -138,7 +139,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
           mySQLContainer.getDriverClassName(),
           mySQLContainer.getJdbcUrl(),
           connectionProperties,
-          DataSourceFactory.getConnectionTimeout(connectionProperties, mySQLContainer.getDriverClassName()));
+          JdbcConnector.getConnectionTimeout(connectionProperties, mySQLContainer.getDriverClassName()));
       assertNotNull(dataSource);
       assertEquals(HikariDataSource.class, dataSource.getClass());
       assertEquals(60000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -164,7 +165,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         driverClassName,
         jdbcUrl,
         connectionProperties,
-        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClassName));
+        JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(10, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());

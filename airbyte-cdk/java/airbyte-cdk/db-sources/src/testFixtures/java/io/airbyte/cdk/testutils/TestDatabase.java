@@ -12,6 +12,7 @@ import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -103,7 +104,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         getDatabaseDriver().getDriverClassName(),
         getJdbcUrl(),
         connectionProperties,
-        DataSourceFactory.getConnectionTimeout(connectionProperties, getDatabaseDriver().getDriverClassName()));
+        JdbcConnector.getConnectionTimeout(connectionProperties, getDatabaseDriver().getDriverClassName()));
     this.dslContext = DSLContextFactory.create(dataSource, getSqlDialect());
     return self();
   }
