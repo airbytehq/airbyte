@@ -73,4 +73,5 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   public boolean isCdcCheckpointEnabled() {
     return true;
   }
+
 }

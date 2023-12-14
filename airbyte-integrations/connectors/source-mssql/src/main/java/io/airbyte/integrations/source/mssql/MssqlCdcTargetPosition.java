@@ -146,4 +146,5 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
     final JsonNode commitLsnJson = offsetJson.get("commit_lsn");
     return (commitLsnJson == null || commitLsnJson.isNull()) ? Lsn.NULL : Lsn.valueOf(commitLsnJson.asText());
   }
+
 }
