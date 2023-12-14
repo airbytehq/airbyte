@@ -260,7 +260,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 28000; Error code: 1045;"));
+    assertStringContains(status.getMessage(), "State code: 28000; Error code: 1045;");
   }
 
   @Test
@@ -269,7 +269,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 28000; Error code: 1045;"));
+    assertStringContains(status.getMessage(), "State code: 28000; Error code: 1045;");
   }
 
   @Test
@@ -278,7 +278,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08S01;"));
+    assertStringContains(status.getMessage(), "State code: 08S01;");
   }
 
   @Test
@@ -287,7 +287,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08S01;"));
+    assertStringContains(status.getMessage(), "State code: 08S01;");
   }
 
   @Test
@@ -296,7 +296,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 42000; Error code: 1049;"));
+    assertStringContains(status.getMessage(), "State code: 42000; Error code: 1049;");
   }
 
   @Test
@@ -307,7 +307,11 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 42000; Error code: 1044;"));
+    assertStringContains(status.getMessage(), "State code: 42000; Error code: 1044;");
+  }
+
+  private static void assertStringContains(final String str, final String target) {
+    assertTrue(str.contains(target), "Expected message to contain \"" + target + "\" but got " + str);
   }
 
 }
