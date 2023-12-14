@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import pytest
 import requests
-from airbyte_cdk.test.http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 # Ensure that the scheme is HTTP as requests only partially supports other schemes
 # see https://github.com/psf/requests/blob/0b4d494192de489701d3a2e32acef8fb5d3f042e/src/requests/models.py#L424-L429
@@ -135,3 +135,40 @@ class HttpMockerTest(TestCase):
         with pytest.raises(ValueError) as exc_info:
             decorated_function()
         assert "more_granular" in str(exc_info.value)  # the matcher corresponding to the first `http_mocker.get` is not matched
+
+    def test_given_exact_number_of_call_provided_when_assert_number_of_calls_then_do_not_raise(self):
+        @HttpMocker()
+        def decorated_function(http_mocker):
+            request = HttpRequest(_A_URL)
+            http_mocker.get(request, _A_RESPONSE)
+
+            requests.get(_A_URL)
+            requests.get(_A_URL)
+
+            http_mocker.assert_number_of_calls(request, 2)
+
+        decorated_function()
+        # then do not raise
+
+    def test_given_invalid_number_of_call_provided_when_assert_number_of_calls_then_raise(self):
+        @HttpMocker()
+        def decorated_function(http_mocker):
+            request = HttpRequest(_A_URL)
+            http_mocker.get(request, _A_RESPONSE)
+
+            requests.get(_A_URL)
+            requests.get(_A_URL)
+
+            http_mocker.assert_number_of_calls(request, 1)
+
+        with pytest.raises(AssertionError):
+            decorated_function()
+
+    def test_given_unknown_request_when_assert_number_of_calls_then_raise(self):
+        @HttpMocker()
+        def decorated_function(http_mocker):
+            http_mocker.get(HttpRequest(_A_URL), _A_RESPONSE)
+            http_mocker.assert_number_of_calls(HttpRequest(_ANOTHER_URL), 1)
+
+        with pytest.raises(ValueError):
+            decorated_function()

@@ -87,7 +87,21 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "timestamp": 1700681340514 },
-      "stream_descriptor": { "name": "property_history" }
+      "stream_descriptor": { "name": "contacts_property_history" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": 1700681340514 },
+      "stream_descriptor": { "name": "companies_property_history" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": 1700681340514 },
+      "stream_descriptor": { "name": "deals_property_history" }
     }
   },
   {

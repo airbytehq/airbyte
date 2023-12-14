@@ -6,7 +6,7 @@ from types import TracebackType
 from typing import Callable, List, Optional, Union
 
 import requests_mock
-from airbyte_cdk.test.http import HttpRequest, HttpRequestMatcher, HttpResponse
+from airbyte_cdk.test.mock_http import HttpRequest, HttpRequestMatcher, HttpResponse
 
 
 class HttpMocker(contextlib.ContextDecorator):
@@ -63,6 +63,13 @@ class HttpMocker(contextlib.ContextDecorator):
 
         return matches
 
+    def assert_number_of_calls(self, request: HttpRequest, number_of_calls: int) -> None:
+        corresponding_matchers = list(filter(lambda matcher: matcher.request == request, self._matchers))
+        if len(corresponding_matchers) != 1:
+            raise ValueError(f"Was expecting only one matcher to match the request but got `{corresponding_matchers}`")
+
+        assert corresponding_matchers[0].actual_number_of_matches == number_of_calls
+
     def __call__(self, f):  # type: ignore  # trying to type that using callables provides the error `incompatible with return type "_F" in supertype "ContextDecorator"`
         @functools.wraps(f)
         def wrapper(*args, **kwargs):  # type: ignore  # this is a very generic wrapper that does not need to be typed
@@ -75,14 +82,19 @@ class HttpMocker(contextlib.ContextDecorator):
                 except requests_mock.NoMockAddress as no_mock_exception:
                     matchers_as_string = "\n\t".join(map(lambda matcher: str(matcher.request), self._matchers))
                     raise ValueError(
-                        f"No matcher matches {no_mock_exception.args[0]}. Matchers currently configured are:\n\t{matchers_as_string}"
+                        f"No matcher matches {no_mock_exception.args[0]} with headers `{no_mock_exception.request.headers}`. Matchers currently configured are:\n\t{matchers_as_string}"
                     ) from no_mock_exception
                 except AssertionError as test_assertion:
                     assertion_error = test_assertion
 
                 # We validate the matchers before raising the assertion error because we want to show the tester if a HTTP request wasn't
                 # mocked correctly
-                self._validate_all_matchers_called()
+                try:
+                    self._validate_all_matchers_called()
+                except ValueError as http_mocker_exception:
+                    # This seems useless as it catches ValueError and raises ValueError but without this, the prevaling error message in
+                    # the output is the function call that failed the assertion, whereas raising `ValueError(http_mocker_exception)` like we do here provides additional context for the exception.
+                    raise ValueError(http_mocker_exception) from None
                 if assertion_error:
                     raise assertion_error
                 return result

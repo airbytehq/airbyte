@@ -26,6 +26,7 @@ definitions:
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    refresh_token_updater: {}
   requester:
     type: HttpRequester
     url_base: https://api.typeform.com/
