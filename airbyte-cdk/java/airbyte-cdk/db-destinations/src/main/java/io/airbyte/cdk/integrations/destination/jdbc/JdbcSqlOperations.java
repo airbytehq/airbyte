@@ -110,13 +110,14 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   // TODO: This method seems to be used by Postgres and others while staging to local temp files.
   // Should there be a Local staging operations equivalent
-  protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
+  protected void writeBatchToFile(final File tmpFile, final List<PartialAirbyteMessage> records) throws Exception {
     try (final PrintWriter writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
         final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
-      for (final AirbyteRecordMessage record : records) {
+      for (final PartialAirbyteMessage record : records) {
         final var uuid = UUID.randomUUID().toString();
-        final var jsonData = Jsons.serialize(formatData(record.getData()));
-        final var extractedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
+        // TODO we only need to do this is formatData is overridden. If not, we can just do jsonData = record.getSerialized()
+        final var jsonData = Jsons.serialize(formatData(Jsons.deserializeExact(record.getSerialized())));
+        final var extractedAt = Timestamp.from(Instant.ofEpochMilli(record.getRecord().getEmittedAt()));
         if (TypingAndDedupingFlag.isDestinationV2()) {
           csvPrinter.printRecord(uuid, jsonData, extractedAt, null);
         } else {
