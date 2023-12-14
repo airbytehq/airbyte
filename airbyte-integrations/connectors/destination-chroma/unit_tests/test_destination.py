@@ -85,7 +85,7 @@ class TestDestinationChroma(unittest.TestCase):
         destination = DestinationChroma()
         list(destination.write(self.config, configured_catalog, input_messages))
 
-        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=128)
+        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=128, omit_raw_text=False)
         mock_writer.write.assert_called_once_with(configured_catalog, input_messages)
 
     def test_spec(self):

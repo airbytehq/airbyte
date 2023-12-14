@@ -37,12 +37,12 @@ def setup_responses():
     }
     responses.add(
         responses.GET,
-        "https://murky-swan-635.convex.cloud/api/json_schemas?deltaSchema=true&format=convex_json",
+        "https://murky-swan-635.convex.cloud/api/json_schemas?deltaSchema=true&format=json",
         json=sample_shapes_resp,
     )
     responses.add(
         responses.GET,
-        "https://curious-giraffe-964.convex.cloud/api/json_schemas?deltaSchema=true&format=convex_json",
+        "https://curious-giraffe-964.convex.cloud/api/json_schemas?deltaSchema=true&format=json",
         json={"code": "Error code", "message": "Error message"},
         status=400,
     )

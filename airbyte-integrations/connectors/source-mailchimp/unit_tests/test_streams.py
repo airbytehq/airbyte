@@ -19,6 +19,7 @@ from source_mailchimp.streams import (
     ListMembers,
     Lists,
     Reports,
+    SegmentMembers,
     Segments,
     Tags,
     Unsubscribes,
@@ -216,11 +217,25 @@ def test_list_child_request_params(auth, stream_class, stream_slice, stream_stat
             {"list_id": "list_2", "last_changed": "2023-10-14T00:00:00Z"},
             {"list_1": {"last_changed": "2023-10-15T00:00:00Z"}, "list_2": {"last_changed": "2023-10-15T00:00:00Z"}},
         ),
+        (
+            SegmentMembers,
+            {"segment_1": {"last_changed": "2023-10-15T00:00:00Z"}, "segment_2": {"last_changed": "2023-10-15T00:00:00Z"}},
+            {"segment_id": "segment_1", "last_changed": "2023-10-16T00:00:00Z"},
+            {"segment_1": {"last_changed": "2023-10-16T00:00:00Z"}, "segment_2": {"last_changed": "2023-10-15T00:00:00Z"}},
+        ),
+        (
+            SegmentMembers,
+            {"segment_1": {"last_changed": "2023-10-15T00:00:00Z"}},
+            {"segment_id": "segment_2", "last_changed": "2023-10-16T00:00:00Z"},
+            {"segment_1": {"last_changed": "2023-10-15T00:00:00Z"}, "segment_2": {"last_changed": "2023-10-16T00:00:00Z"}},
+        )
     ],
     ids=[
         "Segments: no current_stream_state",
         "Segments: latest_record's cursor > than current_stream_state for list_1",
         "ListMembers: latest_record's cursor < current_stream_state for list_2",
+        "SegmentMembers: latest_record's cursor > current_stream_state for segment_1",
+        "SegmentMembers: no stream_state for current slice, new slice added to state"
     ],
 )
 def test_list_child_get_updated_state(auth, stream_class, current_stream_state, latest_record, expected_state):
@@ -231,6 +246,87 @@ def test_list_child_get_updated_state(auth, stream_class, current_stream_state, 
     segments_stream = stream_class(authenticator=auth)
     updated_state = segments_stream.get_updated_state(current_stream_state, latest_record)
     assert updated_state == expected_state
+
+
+@pytest.mark.parametrize(
+    "stream_state, records, expected",
+    [
+        # Test case 1: No stream state, all records should be yielded
+        (
+          {},
+          {"members": [
+            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-01-02T00:00:00Z"}
+          ]},
+          [
+            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-01-02T00:00:00Z"}
+          ]
+        ),
+        
+        # Test case 2: Records older than stream state should be filtered out
+        (
+          {"segment_1": {"last_changed": "2021-02-01T00:00:00Z"}},
+          {"members": [
+            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}
+          ]},
+          [{"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}]
+        ),
+        
+        # Test case 3: Two lists in stream state, only state for segment_id_1 determines filtering
+        (
+          {"segment_1": {"last_changed": "2021-01-02T00:00:00Z"}, "segment_2": {"last_changed": "2022-01-01T00:00:00Z"}},
+          {"members": [            
+            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}
+          ]}, 
+          [{"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}]
+        ),
+    ],
+    ids=[
+        "No stream state, all records should be yielded",
+        "Record < stream state, should be filtered out",
+        "Record >= stream state, should be yielded",
+    ]
+)
+def test_segment_members_parse_response(auth, stream_state, records, expected):
+    segment_members_stream = SegmentMembers(authenticator=auth)
+    response = MagicMock()
+    response.json.return_value = records
+    parsed_records = list(segment_members_stream.parse_response(response, stream_state, stream_slice={"segment_id": "segment_1"}))
+    assert parsed_records == expected, f"Expected: {expected}, Actual: {parsed_records}"
+
+
+@pytest.mark.parametrize(
+    "record, expected_record",
+    [
+        (
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": ""},
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": None}
+        ),
+        (
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": "", "ADDRESS": "", "PHONE": ""}},
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": None, "ADDRESS": None, "PHONE": None}}
+        ),
+        (
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": "Bobson", "ADDRESS": "101 Bob Ln", "PHONE": "111-111-1111"}},
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": "Bobson", "ADDRESS": "101 Bob Ln", "PHONE": "111-111-1111"}}
+        )
+    ],
+    ids=[
+        "Replace empty string with None",
+        "Replace empty strings with None in nested fields",
+        "Leave non-empty string fields unchanged"
+    ]
+)
+def test_segment_members_nullify_empty_string_fields(auth, record, expected_record):
+    """
+    Tests that empty string values in SegmentMembers stream are converted to None
+    """
+    stream = SegmentMembers(authenticator=auth)
+    
+    assert stream.nullify_empty_string_fields(record) == expected_record
 
 
 def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaigns_stream, mock_campaigns_response):
@@ -460,6 +556,7 @@ def test_403_error_handling(
         (Interests, {"parent": {"list_id": "123", "id": "456"}}, "lists/123/interest-categories/456/interests"),
         (ListMembers, {"list_id": "123"}, "lists/123/members"),
         (Reports, {}, "reports"),
+        (SegmentMembers, {"list_id": "123", "segment_id": "456"}, "lists/123/segments/456/members"),
         (Segments, {"list_id": "123"}, "lists/123/segments"),
         (Tags, {"parent": {"id": "123"}}, "lists/123/tag-search"),
         (Unsubscribes, {"campaign_id": "123"}, "reports/123/unsubscribed"),
@@ -473,6 +570,7 @@ def test_403_error_handling(
         "Interests",
         "ListMembers",
         "Reports",
+        "SegmentMembers",
         "Segments",
         "Tags",
         "Unsubscribes",

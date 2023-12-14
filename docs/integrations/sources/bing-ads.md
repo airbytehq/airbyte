@@ -55,16 +55,17 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 4. Enter a name for your source.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Add the developer token from [Step 1](#step-1-set-up-bing-ads).
-7. For **Reports Replication Start Date**,  enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
-9. For *Custom Reports* - see [custom reports](#custom-reports) section, list of custom reports object:
+7. For **Account Names Predicates** - see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in bing ads docs. Will be used to filter your accounts by specified operator and account name. You can use multiple predicates pairs. The **Operator** is a one of Contains or Equals. The **Account Name** is a value to compare Accounts Name field in rows by specified operator. For example, for operator=Contains and name=Dev, all accounts where name contains dev will be replicated. And for operator=Equals and name=Airbyte, all accounts where name is equal to Airbyte will be replicated. Account Name value is not case-sensitive.
+8. For **Reports Replication Start Date**,  enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
+9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
+10. For *Custom Reports* - see [custom reports](#custom-reports) section, list of custom reports object:
    1. For *Report Name* enter the name that you want for your custom report.
    2. For *Reporting Data Object* add the Bing Ads Reporting Object that you want to sync in the custom report.
    3. For *Columns* add list columns of Reporting Data Object that you want to see in the custom report.
    4. For *Aggregation* add time aggregation. See [report aggregation](#report-aggregation) section.
-10. Click **Authenticate your Bing Ads account**.
-11. Log in and authorize the Bing Ads account.
-12. Click **Set up source**.
+11. Click **Authenticate your Bing Ads account**.
+12. Log in and authorize the Bing Ads account.
+13. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -77,15 +78,16 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 4. Enter a name for your source.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
-7. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
-9. For *Custom Reports* - see [custom reports](#custom-reports) section:
+7. For **Account Names Predicates** - see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in bing ads docs. Will be used to filter your accounts by specified operator and account name. You can use multiple predicates pairs. The **Operator** is a one of Contains or Equals. The **Account Name** is a value to compare Accounts Name field in rows by specified operator. For example, for operator=Contains and name=Dev, all accounts where name contains dev will be replicated. And for operator=Equals and name=Airbyte, all accounts where name is equal to Airbyte will be replicated. Account Name value is not case-sensitive.
+8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
+9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
+10. For *Custom Reports* - see [custom reports](#custom-reports) section:
    1. For *Report Name* enter the name that you want for your custom report.
    2. For *Reporting Data Object* add the Bing Ads Reporting Object that you want to sync in the custom report.
    3. For *Columns* add columns of Reporting Data Object that you want to see in the custom report.
    4. For *Aggregation* select time aggregation. See [report aggregation](#report-aggregation) section.
 
-10. Click **Set up source**.
+11. Click **Set up source**.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -169,6 +171,22 @@ The Bing Ads source connector supports the following streams. For more informati
 - [Search Query Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
 - [Search Query Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
 
+:::info
+
+Ad Group Impression Performance Report, Geographic Performance Report, Account Impression Performance Report have user-defined primary key. 
+This means that you can define your own primary key in Replication tab in your connection for these streams. 
+
+Example pk:
+Ad Group Impression Performance Report: composite pk - [AdGroupId, Status, TimePeriod, AccountId] 
+Geographic Performance Report: composite pk - [AdGroupId, Country, State, MetroArea, City] 
+Account Impression Performance Report: composite pk - [AccountName, AccountNumber, AccountId, TimePeriod]
+
+Note: These are just examples, and you should consider your own data and needs in order to correctly define the primary key.
+
+See more info about user-defined pk [here](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped#user-defined-primary-key).
+
+:::
+
 ### Custom Reports
 You can build your own report by providing:
 - *Report Name* - name of the stream
@@ -208,6 +226,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.0   | 2023-12-05 | [33095](https://github.com/airbytehq/airbyte/pull/33095)                                                                         | Add account filtering                                                                                                                           |
 | 2.0.1   | 2023-11-16 | [32597](https://github.com/airbytehq/airbyte/pull/32597)                                                                         | Fix start date parsing from stream state                                                                                                        |
 | 2.0.0   | 2023-11-07 | [31995](https://github.com/airbytehq/airbyte/pull/31995)                                                                         | Schema update for Accounts, Campaigns and Search Query Performance Report streams.  Convert `date` and `date-time` fields to standard `RFC3339` |
 | 1.13.0  | 2023-11-13 | [32306](https://github.com/airbytehq/airbyte/pull/32306)                                                                         | Add Custom reports and decrease backoff max tries number                                                                                        |

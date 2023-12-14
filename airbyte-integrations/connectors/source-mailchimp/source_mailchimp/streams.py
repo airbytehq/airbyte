@@ -345,6 +345,80 @@ class Reports(IncrementalMailChimpStream):
             yield self.remove_empty_datetime_fields(record)
 
 
+class SegmentMembers(MailChimpListSubStream):
+    """
+    Get information about members in a specific segment.
+    Docs link: https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/
+    """
+
+    cursor_field = "last_changed"
+    data_field = "members"
+
+    def nullify_empty_string_fields(self, element: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        SegmentMember records may contain multiple fields that are returned as empty strings, which causes validation issues for fields with declared "datetime" formats.
+        Since all fields are nullable, replacing any string value of "" with None is a safe way to handle these edge cases.
+
+        :param element: A SegmentMember record, dictionary or list
+        """
+
+        if isinstance(element, dict):
+            # If the element is a dictionary, apply the method recursively to each value,
+            # replacing the empty string value with None.
+            element = {k: self.nullify_empty_string_fields(v) if v != "" else None for k, v in element.items()}
+        elif isinstance(element, list):
+            # If the element is a list, apply the method recursively to each item in the list.
+            element = [self.nullify_empty_string_fields(v) for v in element]
+
+        return element
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Each slice consists of a list_id and segment_id pair
+        """
+        segments_slices = Segments(authenticator=self.authenticator).stream_slices(sync_mode=SyncMode.full_refresh)
+
+        for slice in segments_slices:
+            segment_records = Segments(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
+
+            for segment in segment_records:
+                yield {"list_id": segment["list_id"], "segment_id": segment["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        list_id = stream_slice.get("list_id")
+        segment_id = stream_slice.get("segment_id")
+        return f"lists/{list_id}/segments/{segment_id}/members"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
+        """
+        SegmentMembers endpoint does not support sorting, so we need to filter out records that are older than the current state
+        """
+        response = super().parse_response(response, **kwargs)
+
+        for record in response:
+            # Add the segment_id foreign_key to each record
+            record["segment_id"] = stream_slice.get("segment_id")
+
+            current_cursor_value = stream_state.get(str(record.get("segment_id")), {}).get(self.cursor_field)
+            record_cursor_value = record.get(self.cursor_field)
+            if current_cursor_value is None or record_cursor_value >= current_cursor_value:
+                yield self.nullify_empty_string_fields(record)
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = current_stream_state or {}
+        segment_id = str(latest_record.get("segment_id"))
+        latest_cursor_value = latest_record.get(self.cursor_field)
+
+        # Get the current state value for this list, if it exists
+        segment_state = current_stream_state.get(segment_id, {})
+        current_cursor_value = segment_state.get(self.cursor_field, latest_cursor_value)
+
+        # Update the cursor value and set it in state
+        updated_cursor_value = max(current_cursor_value, latest_cursor_value)
+        current_stream_state[segment_id] = {self.cursor_field: updated_cursor_value}
+        return current_stream_state
+
+
 class Segments(MailChimpListSubStream):
     """
     Get information about all available segments for a specific list.

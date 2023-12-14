@@ -80,7 +80,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
     try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.0")) {
       mySQLContainer.start();
       final Map<String, String> connectionProperties = Map.of(
-          CONNECT_TIMEOUT, "30");
+          CONNECT_TIMEOUT, "5000");
       final DataSource dataSource = DataSourceFactory.create(
           mySQLContainer.getUsername(),
           mySQLContainer.getPassword(),
@@ -89,7 +89,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
           connectionProperties);
       assertNotNull(dataSource);
       assertEquals(HikariDataSource.class, dataSource.getClass());
-      assertEquals(60000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
+      assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
     }
   }
 
