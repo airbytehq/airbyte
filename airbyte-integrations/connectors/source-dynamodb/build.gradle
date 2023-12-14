@@ -42,4 +42,6 @@ dependencies {
 
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     testImplementation "org.testcontainers:localstack:${testContainersVersion}"
+    integrationTestJavaImplementation 'com.amazonaws:aws-java-sdk:1.12.610'
+
 }
