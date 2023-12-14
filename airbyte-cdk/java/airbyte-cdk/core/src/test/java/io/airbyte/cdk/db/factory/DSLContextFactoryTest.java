@@ -51,7 +51,8 @@ class DSLContextFactoryTest extends CommonFactoryTest {
         container.getDriverClassName(),
         container.getJdbcUrl(),
         dialect,
-        connectionProperties);
+        connectionProperties,
+        DataSourceFactory.CONNECT_TIMEOUT_DEFAULT);
     assertNotNull(dslContext);
     assertEquals(dialect, dslContext.configuration().dialect());
   }
