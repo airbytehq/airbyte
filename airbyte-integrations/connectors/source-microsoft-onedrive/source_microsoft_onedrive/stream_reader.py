@@ -162,7 +162,7 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
                 MicrosoftOneDriveRemoteFile(
                     uri=path,
                     download_url=file.properties["@microsoft.graph.downloadUrl"],
-                    last_modified=file.properties["lastModifiedDateTime"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    last_modified=file.properties["lastModifiedDateTime"],
                 )
                 for file, path in files
             ],
