@@ -153,8 +153,6 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
     def __init__(self, start_date: Optional[datetime], end_date: Optional[datetime], **kwargs):
         super().__init__(**kwargs)
-        logger.info("Start date : {}".format(start_date))
-        logger.info("End date : {}".format(end_date))
         self._start_date = pendulum.instance(start_date) if start_date else None
         self._end_date = pendulum.instance(end_date) if end_date else None
 
