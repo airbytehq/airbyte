@@ -102,7 +102,8 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         getPassword(),
         getDatabaseDriver().getDriverClassName(),
         getJdbcUrl(),
-        connectionProperties);
+        connectionProperties,
+        DataSourceFactory.getConnectionTimeout(connectionProperties, getDatabaseDriver().getDriverClassName()));
     this.dslContext = DSLContextFactory.create(dataSource, getSqlDialect());
     return self();
   }

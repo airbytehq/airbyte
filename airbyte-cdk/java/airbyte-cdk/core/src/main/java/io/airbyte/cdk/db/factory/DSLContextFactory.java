@@ -63,7 +63,8 @@ public class DSLContextFactory {
                                   final String jdbcConnectionString,
                                   final SQLDialect dialect,
                                   final Map<String, String> connectionProperties) {
-    return DSL.using(DataSourceFactory.create(username, password, driverClassName, jdbcConnectionString, connectionProperties), dialect);
+    return DSL.using(DataSourceFactory.create(username, password, driverClassName, jdbcConnectionString, connectionProperties,
+        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClassName)), dialect);
   }
 
 }

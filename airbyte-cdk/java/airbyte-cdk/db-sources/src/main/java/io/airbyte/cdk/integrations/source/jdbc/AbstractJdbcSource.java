@@ -428,13 +428,15 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   @Override
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+    Map<String, String> connectionProperties = JdbcDataSourceUtils.getConnectionProperties(sourceConfig);
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcDataSourceUtils.getConnectionProperties(sourceConfig));
+        connectionProperties,
+        DataSourceFactory.getConnectionTimeout(connectionProperties, driverClass));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
