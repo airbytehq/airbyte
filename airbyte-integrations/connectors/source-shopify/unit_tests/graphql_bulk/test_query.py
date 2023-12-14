@@ -5,7 +5,7 @@
 
 import pytest
 from graphql_query import Argument, Field, Operation, Query
-from source_shopify.shopify_graphql.bulk.query import GraphQlQueryBuilder, Metafields, ShopifyBulkTemplates
+from source_shopify.shopify_graphql.bulk.query import GraphQlQueryBuilder, Metafield, ShopifyBulkTemplates
 
 
 def test_query_status():
@@ -118,7 +118,7 @@ def test_base_build_query(query_path, sub_edge_name, sub_edge_fields, filter_que
     """
     builder = GraphQlQueryBuilder()
     sub_edge_fields = builder.get_edge_node(name=sub_edge_name, fields=sub_edge_fields)
-    built_query = builder.build_query(query_path, sub_edge_fields, filter_query, sort_key)
+    built_query = builder.build_query(query_path, [sub_edge_fields], filter_query, sort_key)
     assert expected.render() == built_query.render()
 
 
@@ -214,4 +214,4 @@ def test_base_build_query(query_path, sub_edge_name, sub_edge_fields, filter_que
     ]
 )
 def test_metafield_bulk_query(query_path, filter_field, start, end, sot_key, expected):
-    assert Metafields(query_path, filter_field, start, end, sot_key).query == expected.render()
+    assert Metafield(query_path, filter_field, start, end, sot_key).operation == expected.render()

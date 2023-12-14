@@ -3,9 +3,11 @@
 #
 
 
+from unittest.mock import patch
+
 import pytest
 import requests
-from source_shopify.source import SourceShopify
+from source_shopify.source import ConnectionCheckTest, SourceShopify
 from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules
 
 
@@ -32,12 +34,12 @@ def test_get_next_page_token(requests_mock, auth_config):
 
 
 def test_privileges_validation(requests_mock, basic_config):
+
     requests_mock.get(
         "https://test_shop.myshopify.com/admin/oauth/access_scopes.json",
         json={"access_scopes": [{"handle": "read_orders"}]},
     )
-    source = SourceShopify()
-
+    
     expected = [
         "abandoned_checkouts",
         "fulfillments",
@@ -51,8 +53,11 @@ def test_privileges_validation(requests_mock, basic_config):
         "transactions",
         "countries",
     ]
-
-    assert [stream.name for stream in source.streams(basic_config)] == expected
+    # mock the get_shop_id method
+    with patch.object(ConnectionCheckTest, "get_shop_id", return_value=123) as mock:
+        source = SourceShopify()
+        streams = source.streams(basic_config)
+    assert [stream.name for stream in streams] == expected
 
 
 @pytest.mark.parametrize(

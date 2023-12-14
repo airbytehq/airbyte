@@ -16,7 +16,7 @@ from source_shopify.shopify_graphql.bulk.record import ShopifyBulkRecord
     ],
 )
 def test_record_resolve_id(record, expected):
-    assert ShopifyBulkRecord.record_resolve_id(record) == expected
+    assert ShopifyBulkRecord().record_resolve_id(record) == expected
 
  
 @pytest.mark.parametrize(

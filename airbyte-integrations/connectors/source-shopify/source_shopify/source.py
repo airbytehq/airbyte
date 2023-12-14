@@ -104,7 +104,7 @@ class ConnectionCheckTest:
         except MissingAccessTokenError:
             return False, self.describe_error("missing_token_error")
 
-    def get_shop_id(self) -> tuple[bool, str]:
+    def get_shop_id(self) -> str:
         """
         We need to have the `shop_id` value available to have it passed elsewhere and fill-in the missing data.
         By the time this method is tiggered, we are sure we've passed the `Connection Checks` and have the `shop_id` value.
