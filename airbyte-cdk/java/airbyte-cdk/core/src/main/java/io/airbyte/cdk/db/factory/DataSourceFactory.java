@@ -66,7 +66,7 @@ public class DataSourceFactory {
         .withJdbcUrl(jdbcConnectionString)
         .withPassword(password)
         .withUsername(username)
-        .withConnectionTimeoutMs(DataSourceBuilder.getConnectionTimeoutMs(connectionProperties, driverClassName))
+        .withConnectionTimeout(DataSourceBuilder.getConnectionTimeout(connectionProperties, driverClassName))
         .build();
   }
 
@@ -180,7 +180,7 @@ public class DataSourceFactory {
     private String jdbcUrl;
     private int maximumPoolSize = 10;
     private int minimumPoolSize = 0;
-    private long connectionTimeoutMs;
+    private Duration connectionTimeout = Duration.ZERO;
     private String password;
     private int port = 5432;
     private String username;
@@ -195,16 +195,15 @@ public class DataSourceFactory {
      * the value is 0, pass the value along as Hikari and Postgres use default max value for 0 timeout
      * value.
      *
-     * NOTE: HikariCP uses milliseconds for all time values:
-     * https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby whereas Postgres is
-     * measured in seconds: https://jdbc.postgresql.org/documentation/head/connect.html
+     * NOTE: Postgres timeout is measured in seconds:
+     * https://jdbc.postgresql.org/documentation/head/connect.html
      *
      * @param connectionProperties custom jdbc_url_parameters containing information on connection
      *        properties
      * @param driverClassName name of the JDBC driver
      * @return DataSourceBuilder class used to create dynamic fields for DataSource
      */
-    private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties, String driverClassName) {
+    private static Duration getConnectionTimeout(final Map<String, String> connectionProperties, String driverClassName) {
       final Optional<Duration> parsedConnectionTimeout = switch (DatabaseDriver.findByDriverClassName(driverClassName)) {
         case POSTGRESQL -> maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
             .or(() -> maybeParseDuration(CONNECT_TIMEOUT.getDefaultValue(), ChronoUnit.SECONDS));
@@ -214,7 +213,7 @@ public class DataSourceFactory {
             // Enforce minimum timeout duration for unspecified data sources.
             .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0);
       };
-      return parsedConnectionTimeout.orElse(CONNECT_TIMEOUT_DEFAULT).toMillis();
+      return parsedConnectionTimeout.orElse(CONNECT_TIMEOUT_DEFAULT);
     }
 
     private static Optional<Duration> maybeParseDuration(final String stringValue, TemporalUnit unit) {
@@ -274,9 +273,9 @@ public class DataSourceFactory {
       return this;
     }
 
-    public DataSourceBuilder withConnectionTimeoutMs(final Long connectionTimeoutMs) {
-      if (connectionTimeoutMs != null) {
-        this.connectionTimeoutMs = connectionTimeoutMs;
+    public DataSourceBuilder withConnectionTimeout(final Duration connectionTimeout) {
+      if (connectionTimeout != null) {
+        this.connectionTimeout = connectionTimeout;
       }
       return this;
     }
@@ -309,7 +308,9 @@ public class DataSourceFactory {
       config.setJdbcUrl(jdbcUrl != null ? jdbcUrl : String.format(databaseDriver.getUrlFormatString(), host, port, database));
       config.setMaximumPoolSize(maximumPoolSize);
       config.setMinimumIdle(minimumPoolSize);
-      config.setConnectionTimeout(connectionTimeoutMs);
+      // HikariCP uses milliseconds for all time values:
+      // https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby
+      config.setConnectionTimeout(connectionTimeout.toMillis());
       config.setPassword(password);
       config.setUsername(username);
 
