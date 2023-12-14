@@ -44,6 +44,13 @@ public class JdbcDataSourceUtils {
     return MoreMaps.merge(customProperties, defaultProperties);
   }
 
+  public static Map<String, String> getConnectionProperties(final JsonNode config, String parameterDelimiter) {
+    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY, parameterDelimiter);
+    final Map<String, String> defaultProperties = JdbcDataSourceUtils.getDefaultConnectionProperties(config);
+    assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
+    return MoreMaps.merge(customProperties, defaultProperties);
+  }
+
   /**
    * Retrieves default connection_properties from config
    *

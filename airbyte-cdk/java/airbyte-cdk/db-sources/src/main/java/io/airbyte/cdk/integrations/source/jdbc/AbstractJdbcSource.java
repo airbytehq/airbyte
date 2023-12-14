@@ -427,7 +427,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   @Override
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
-    Map<String, String> connectionProperties = JdbcDataSourceUtils.getConnectionProperties(sourceConfig);
+    Map<String, String> connectionProperties = JdbcDataSourceUtils.getConnectionProperties(sourceConfig, ";");
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
