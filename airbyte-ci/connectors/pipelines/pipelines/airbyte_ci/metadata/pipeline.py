@@ -6,10 +6,11 @@ import uuid
 from typing import Optional
 
 import dagger
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
-from pipelines.consts import CONNECTOR_TEST_STEP_ID, DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
+from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.common import with_pip_packages
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.helpers.run_steps import StepToRun, run_steps

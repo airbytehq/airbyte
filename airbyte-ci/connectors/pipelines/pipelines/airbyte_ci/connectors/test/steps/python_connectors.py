@@ -13,9 +13,10 @@ import pipelines.dagger.actions.python.common
 import pipelines.dagger.actions.system.docker
 from dagger import Container, File
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
-from pipelines.consts import CONNECTOR_TEST_STEP_ID, LOCAL_BUILD_PLATFORM
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.run_steps import StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus

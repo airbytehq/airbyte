@@ -14,10 +14,11 @@ from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     dist_tar_directory_path,
 )
 from pipelines.airbyte_ci.connectors.build_image.steps.normalization import BuildOrPullNormalization
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.airbyte_ci.steps.gradle import GradleTask
-from pipelines.consts import CONNECTOR_TEST_STEP_ID, LOCAL_BUILD_PLATFORM
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.run_steps import RESULTS_DICT, StepToRun

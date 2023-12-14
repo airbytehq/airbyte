@@ -4,7 +4,6 @@
 
 """Module declaring context related classes."""
 
-import functools
 from datetime import datetime
 from types import TracebackType
 from typing import Iterable, List, Optional
@@ -209,7 +208,7 @@ class ConnectorContext(PipelineContext):
             return None
         return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
 
-    async def connector_secrets(self):
+    async def get_connector_secrets(self):
         if self._connector_secrets is None:
             self._connector_secrets = await secrets.get_connector_secrets(self)
         return self._connector_secrets

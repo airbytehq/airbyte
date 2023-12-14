@@ -7,12 +7,12 @@ from typing import List
 
 import anyio
 from connector_ops.utils import ConnectorLanguage
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.steps import java_connectors, python_connectors
 from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
 from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
-from pipelines.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.helpers.run_steps import StepToRun, run_steps
 
 LANGUAGE_MAPPING = {

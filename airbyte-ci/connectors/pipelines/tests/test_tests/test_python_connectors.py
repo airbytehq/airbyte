@@ -40,7 +40,7 @@ class TestUnitTests:
             targeted_platforms=[current_platform],
         )
         context.dagger_client = dagger_client
-        context.connector_secrets = mocker.AsyncMock(return_value={})
+        context.get_connector_secrets = mocker.AsyncMock(return_value={})
         return context
 
     @pytest.fixture
@@ -61,7 +61,7 @@ class TestUnitTests:
             targeted_platforms=[current_platform],
         )
         context.dagger_client = dagger_client
-        context.connector_secrets = mocker.AsyncMock(return_value={})
+        context.get_connector_secrets = mocker.AsyncMock(return_value={})
         return context
 
     @pytest.fixture

@@ -156,7 +156,7 @@ async def mounted_connector_secrets(context: ConnectorContext, secret_directory_
     # [3] https://github.com/dagger/dagger/blob/v0.6.4/cmd/shim/main.go#L294
     # [4] https://github.com/airbytehq/airbyte/issues/30394
     #
-    connector_secrets = await context.connector_secrets()
+    connector_secrets = await context.get_connector_secrets()
     if context.is_local:
         # Special case for local development.
         # Query dagger for the contents of the secrets and mount these strings as files in the container.

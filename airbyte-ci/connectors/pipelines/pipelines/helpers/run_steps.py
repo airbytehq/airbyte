@@ -9,8 +9,8 @@ from __future__ import annotations
 import inspect
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Tuple, Union
-import anyio
 
+import anyio
 import asyncer
 from pipelines import main_logger
 from pipelines.models.steps import StepResult, StepStatus
