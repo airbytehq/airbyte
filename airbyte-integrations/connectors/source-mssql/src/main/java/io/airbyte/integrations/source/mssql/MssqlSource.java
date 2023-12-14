@@ -106,10 +106,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return AirbyteStateType.LEGACY;
-    }
-
     return MssqlCdcHelper.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
