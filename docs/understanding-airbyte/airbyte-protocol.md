@@ -171,7 +171,7 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 #### Input:
 
 1. `config` - A configuration JSON object that has been validated using the `ConnectorSpecification`.
-2. `catalog` - A [`ConfiguredAirbyteCatalog`](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog#configuredairbytecatalog). This is a modified version of the `catalog` returned by the `discover` command. Any `AirbyteRecordMessages`s that the destination receives that do _not_ match the structure described in the `catalog` will fail.
+2. `configured catalog` - A [`ConfiguredAirbyteCatalog`](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog#configuredairbytecatalog). This is a modified version of the `catalog` returned by the `discover` command. Any `AirbyteRecordMessages`s that the destination receives that do _not_ match the structure described in the `catalog` will fail.
 3. `message stream` - \(this stream is consumed on stdin--it is not passed as an arg\). It will receive a stream of JSON-serialized `AirbyteMesssage`.
 
 #### Output:
