@@ -9,10 +9,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Tuple, Union
 
 import asyncer
-from pipelines.bases import Step, StepStatus
+from pipelines.models.steps import Step, StepStatus
 
 if TYPE_CHECKING:
-    from pipelines.bases import StepResult
+    from pipelines.models.steps import StepResult
 
 
 async def run_steps(

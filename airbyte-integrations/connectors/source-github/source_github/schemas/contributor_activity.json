@@ -75,7 +75,8 @@
       "type": ["null", "boolean"]
     },
     "starred_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "total": {
       "type": ["null", "integer"]

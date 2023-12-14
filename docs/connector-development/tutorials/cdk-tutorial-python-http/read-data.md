@@ -132,7 +132,7 @@ To add incremental sync, we'll do a few things:
 6. Update the `path` method to specify the date to pull exchange rates for. 
 7. Update the configured catalog to use `incremental` sync when we're testing the stream.
 
-We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](../../../understanding-airbyte/connections/incremental-append.md).
+We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](/using-airbyte/core-concepts/sync-modes/incremental-append.md).
 
 To keep things concise, we'll only show functions as we edit them one by one.
 

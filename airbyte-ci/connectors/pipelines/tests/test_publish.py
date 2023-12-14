@@ -8,8 +8,8 @@ from typing import List
 
 import anyio
 import pytest
-from pipelines import publish
-from pipelines.bases import StepStatus
+from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
+from pipelines.models.steps import StepStatus
 
 pytestmark = [
     pytest.mark.anyio,
@@ -38,13 +38,13 @@ class TestCheckConnectorImageDoesNotExists:
         """We pick three random connectors from the OSS registry. They should be published. We check that the step is skipped."""
         for image_name in three_random_connectors_image_names:
             publish_context.docker_image = image_name
-            step = publish.CheckConnectorImageDoesNotExist(publish_context)
+            step = publish_pipeline.CheckConnectorImageDoesNotExist(publish_context)
             step_result = await step.run()
             assert step_result.status == StepStatus.SKIPPED
 
     async def test_run_success_when_already_published(self, publish_context):
         publish_context.docker_image = "airbyte/source-pokeapi:0.0.0"
-        step = publish.CheckConnectorImageDoesNotExist(publish_context)
+        step = publish_pipeline.CheckConnectorImageDoesNotExist(publish_context)
         step_result = await step.run()
         assert step_result.status == StepStatus.SUCCESS
 
@@ -79,17 +79,21 @@ class TestUploadSpecToCache:
 
         upload_exit_code = 0 if successful_upload else 1
         mocker.patch.object(
-            publish, "upload_to_gcs", mocker.AsyncMock(return_value=(upload_exit_code, "upload_to_gcs_stdout", "upload_to_gcs_stderr"))
+            publish_pipeline,
+            "upload_to_gcs",
+            mocker.AsyncMock(return_value=(upload_exit_code, "upload_to_gcs_stdout", "upload_to_gcs_stderr")),
         )
         if not valid_spec:
             mocker.patch.object(
-                publish.UploadSpecToCache, "_get_connector_spec", mocker.Mock(side_effect=publish.InvalidSpecOutputError("Invalid spec."))
+                publish_pipeline.UploadSpecToCache,
+                "_get_connector_spec",
+                mocker.Mock(side_effect=publish_pipeline.InvalidSpecOutputError("Invalid spec.")),
             )
 
-        step = publish.UploadSpecToCache(publish_context)
+        step = publish_pipeline.UploadSpecToCache(publish_context)
         step_result = await step.run(connector_container)
         if valid_spec:
-            publish.upload_to_gcs.assert_called_once_with(
+            publish_pipeline.upload_to_gcs.assert_called_once_with(
                 publish_context.dagger_client,
                 mocker.ANY,
                 f"specs/{image_name.replace(':', '/')}/spec.json",
@@ -98,7 +102,7 @@ class TestUploadSpecToCache:
                 flags=['--cache-control="no-cache"'],
             )
 
-            spec_file = publish.upload_to_gcs.call_args.args[1]
+            spec_file = publish_pipeline.upload_to_gcs.call_args.args[1]
             uploaded_content = await spec_file.contents()
             assert json.loads(uploaded_content) == expected_spec
 
@@ -114,42 +118,42 @@ class TestUploadSpecToCache:
             assert step_result.status == StepStatus.FAILURE
             assert step_result.stderr == "Invalid spec."
             assert step_result.stdout is None
-            publish.upload_to_gcs.assert_not_called()
+            publish_pipeline.upload_to_gcs.assert_not_called()
 
     def test_parse_spec_output_valid(self, publish_context, random_connector):
-        step = publish.UploadSpecToCache(publish_context)
+        step = publish_pipeline.UploadSpecToCache(publish_context)
         correct_spec_message = json.dumps({"type": "SPEC", "spec": random_connector["spec"]})
         spec_output = f'random_stuff\n{{"type": "RANDOM_MESSAGE"}}\n{correct_spec_message}'
         result = step._parse_spec_output(spec_output)
         assert json.loads(result) == random_connector["spec"]
 
     def test_parse_spec_output_invalid_json(self, publish_context):
-        step = publish.UploadSpecToCache(publish_context)
+        step = publish_pipeline.UploadSpecToCache(publish_context)
         spec_output = "Invalid JSON"
-        with pytest.raises(publish.InvalidSpecOutputError):
+        with pytest.raises(publish_pipeline.InvalidSpecOutputError):
             step._parse_spec_output(spec_output)
 
     def test_parse_spec_output_invalid_key(self, publish_context):
-        step = publish.UploadSpecToCache(publish_context)
+        step = publish_pipeline.UploadSpecToCache(publish_context)
         spec_output = '{"type": "SPEC", "spec": {"invalid_key": "value"}}'
-        with pytest.raises(publish.InvalidSpecOutputError):
+        with pytest.raises(publish_pipeline.InvalidSpecOutputError):
             step._parse_spec_output(spec_output)
 
     def test_parse_spec_output_no_spec(self, publish_context):
-        step = publish.UploadSpecToCache(publish_context)
+        step = publish_pipeline.UploadSpecToCache(publish_context)
         spec_output = '{"type": "OTHER"}'
-        with pytest.raises(publish.InvalidSpecOutputError):
+        with pytest.raises(publish_pipeline.InvalidSpecOutputError):
             step._parse_spec_output(spec_output)
 
 
 STEPS_TO_PATCH = [
-    (publish.metadata, "MetadataValidation"),
-    (publish.metadata, "MetadataUpload"),
-    (publish, "CheckConnectorImageDoesNotExist"),
-    (publish, "UploadSpecToCache"),
-    (publish, "PushConnectorImageToRegistry"),
-    (publish, "PullConnectorImageFromRegistry"),
-    (publish.builds, "run_connector_build"),
+    (publish_pipeline, "MetadataValidation"),
+    (publish_pipeline, "MetadataUpload"),
+    (publish_pipeline, "CheckConnectorImageDoesNotExist"),
+    (publish_pipeline, "UploadSpecToCache"),
+    (publish_pipeline, "PushConnectorImageToRegistry"),
+    (publish_pipeline, "PullConnectorImageFromRegistry"),
+    (publish_pipeline.steps, "run_connector_build"),
 ]
 
 
@@ -159,12 +163,12 @@ async def test_run_connector_publish_pipeline_when_failed_validation(mocker, pre
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 
-    run_metadata_validation = publish.metadata.MetadataValidation.return_value.run
+    run_metadata_validation = publish_pipeline.MetadataValidation.return_value.run
     run_metadata_validation.return_value = mocker.Mock(status=StepStatus.FAILURE)
 
     context = mocker.MagicMock(pre_release=pre_release)
     semaphore = anyio.Semaphore(1)
-    report = await publish.run_connector_publish_pipeline(context, semaphore)
+    report = await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
     run_metadata_validation.assert_called_once()
 
     # Check that nothing else is called
@@ -195,20 +199,20 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 
-    run_metadata_validation = publish.metadata.MetadataValidation.return_value.run
+    run_metadata_validation = publish_pipeline.MetadataValidation.return_value.run
     run_metadata_validation.return_value = mocker.Mock(status=StepStatus.SUCCESS)
 
     # ensure spec always succeeds
-    run_upload_spec_to_cache = publish.UploadSpecToCache.return_value.run
+    run_upload_spec_to_cache = publish_pipeline.UploadSpecToCache.return_value.run
     run_upload_spec_to_cache.return_value = mocker.Mock(status=StepStatus.SUCCESS)
 
-    run_check_connector_image_does_not_exist = publish.CheckConnectorImageDoesNotExist.return_value.run
+    run_check_connector_image_does_not_exist = publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run
     run_check_connector_image_does_not_exist.return_value = mocker.Mock(status=check_image_exists_status)
 
-    run_metadata_upload = publish.metadata.MetadataUpload.return_value.run
+    run_metadata_upload = publish_pipeline.MetadataUpload.return_value.run
 
     semaphore = anyio.Semaphore(1)
-    report = await publish.run_connector_publish_pipeline(publish_context, semaphore)
+    report = await publish_pipeline.run_connector_publish_pipeline(publish_context, semaphore)
     run_metadata_validation.assert_called_once()
     run_check_connector_image_does_not_exist.assert_called_once()
 
@@ -266,10 +270,10 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     """We check that the full pipeline is executed as expected when the connector image does not exist and the metadata validation passed."""
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
-    publish.metadata.MetadataValidation.return_value.run.return_value = mocker.Mock(
+    publish_pipeline.MetadataValidation.return_value.run.return_value = mocker.Mock(
         name="metadata_validation_result", status=StepStatus.SUCCESS
     )
-    publish.CheckConnectorImageDoesNotExist.return_value.run.return_value = mocker.Mock(
+    publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run.return_value = mocker.Mock(
         name="check_connector_image_does_not_exist_result", status=StepStatus.SUCCESS
     )
 
@@ -277,22 +281,22 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     built_connector_platform = mocker.Mock()
     built_connector_platform.values.return_value = ["linux/amd64"]
 
-    publish.builds.run_connector_build.return_value = mocker.Mock(
+    publish_pipeline.steps.run_connector_build.return_value = mocker.Mock(
         name="build_connector_for_publish_result", status=build_step_status, output_artifact=built_connector_platform
     )
 
-    publish.PushConnectorImageToRegistry.return_value.run.return_value = mocker.Mock(
+    publish_pipeline.PushConnectorImageToRegistry.return_value.run.return_value = mocker.Mock(
         name="push_connector_image_to_registry_result", status=push_step_status
     )
 
-    publish.PullConnectorImageFromRegistry.return_value.run.return_value = mocker.Mock(
+    publish_pipeline.PullConnectorImageFromRegistry.return_value.run.return_value = mocker.Mock(
         name="pull_connector_image_from_registry_result", status=pull_step_status
     )
 
-    publish.UploadSpecToCache.return_value.run.return_value = mocker.Mock(
+    publish_pipeline.UploadSpecToCache.return_value.run.return_value = mocker.Mock(
         name="upload_spec_to_cache_result", status=upload_to_spec_cache_step_status
     )
-    publish.metadata.MetadataUpload.return_value.run.return_value = mocker.Mock(
+    publish_pipeline.MetadataUpload.return_value.run.return_value = mocker.Mock(
         name="metadata_upload_result", status=metadata_upload_step_status
     )
 
@@ -300,14 +304,14 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         pre_release=pre_release,
     )
     semaphore = anyio.Semaphore(1)
-    report = await publish.run_connector_publish_pipeline(context, semaphore)
+    report = await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
 
     steps_to_run = [
-        publish.metadata.MetadataValidation.return_value.run,
-        publish.CheckConnectorImageDoesNotExist.return_value.run,
-        publish.builds.run_connector_build,
-        publish.PushConnectorImageToRegistry.return_value.run,
-        publish.PullConnectorImageFromRegistry.return_value.run,
+        publish_pipeline.MetadataValidation.return_value.run,
+        publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run,
+        publish_pipeline.steps.run_connector_build,
+        publish_pipeline.PushConnectorImageToRegistry.return_value.run,
+        publish_pipeline.PullConnectorImageFromRegistry.return_value.run,
     ]
 
     for i, step_to_run in enumerate(steps_to_run):
@@ -324,9 +328,9 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
                 step_to_run.assert_not_called()
             break
     if build_step_status is StepStatus.SUCCESS:
-        publish.PushConnectorImageToRegistry.return_value.run.assert_called_once_with(["linux/amd64"])
+        publish_pipeline.PushConnectorImageToRegistry.return_value.run.assert_called_once_with(["linux/amd64"])
     else:
-        publish.PushConnectorImageToRegistry.return_value.run.assert_not_called()
-        publish.PullConnectorImageFromRegistry.return_value.run.assert_not_called()
-        publish.UploadSpecToCache.return_value.run.assert_not_called()
-        publish.metadata.MetadataUpload.return_value.run.assert_not_called()
+        publish_pipeline.PushConnectorImageToRegistry.return_value.run.assert_not_called()
+        publish_pipeline.PullConnectorImageFromRegistry.return_value.run.assert_not_called()
+        publish_pipeline.UploadSpecToCache.return_value.run.assert_not_called()
+        publish_pipeline.MetadataUpload.return_value.run.assert_not_called()

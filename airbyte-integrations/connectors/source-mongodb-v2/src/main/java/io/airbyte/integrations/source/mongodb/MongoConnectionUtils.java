@@ -14,6 +14,8 @@ import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Helper utility for building a {@link MongoClient}.
@@ -39,7 +41,7 @@ public class MongoConnectionUtils {
 
     if (config.hasAuthCredentials()) {
       final String authSource = config.getAuthSource();
-      final String user = config.getUsername();
+      final String user = URLEncoder.encode(config.getUsername(), StandardCharsets.UTF_8);
       final String password = config.getPassword();
       mongoClientSettingsBuilder.credential(MongoCredential.createCredential(user, authSource, password.toCharArray()));
     }

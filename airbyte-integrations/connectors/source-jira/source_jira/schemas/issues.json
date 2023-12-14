@@ -83,7 +83,7 @@
           "type": ["null", "string"]
         },
         "aggregatetimeoriginalestimate": {
-          "type": ["null", "array"]
+          "type": ["null", "string"]
         },
         "versions": {
           "type": ["null", "string"]
@@ -110,7 +110,7 @@
           }
         },
         "timeoriginalestimate": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "description": {
           "type": ["null", "string"]

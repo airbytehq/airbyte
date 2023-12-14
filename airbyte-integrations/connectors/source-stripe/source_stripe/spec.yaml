@@ -42,8 +42,8 @@ connectionSpecification:
       description: >-
         When set, the connector will always re-export data from the past N days,
         where N is the value set here. This is useful if your data is frequently updated
-        after creation. Applies only to streams that do not support event-based incremental syncs: CheckoutSessionLineItems, 
-        Events, SetupAttempts, ShippingRates, BalanceTransactions, Files, FileLinks. More info <a
+        after creation. The Lookback Window only applies to streams that do not support event-based incremental syncs: Events,
+        SetupAttempts, ShippingRates, BalanceTransactions, Files, FileLinks, Refunds. More info <a
         href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>
       order: 3
     slice_range:
@@ -57,3 +57,22 @@ connectionSpecification:
         the less requests will be made and faster the sync will be. On the other hand, the more seldom
         the state is persisted.
       order: 4
+    num_workers:
+      type: integer
+      title: Number of concurrent workers
+      minimum: 1
+      maximum: 20
+      default: 10
+      examples: [1, 2, 3]
+      description: >-
+        The number of worker thread to use for the sync.
+        The performance upper boundary depends on call_rate_limit setting and type of account.
+      order: 5
+    call_rate_limit:
+      type: integer
+      title: Max number of API calls per second
+      examples: [25, 100]
+      description: >-
+        The number of API calls per second that you allow connector to make. This value can not be bigger than real
+        API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25 and 100
+        calls per second for test and production tokens respectively.

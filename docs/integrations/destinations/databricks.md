@@ -174,7 +174,7 @@ Provide your Amazon S3 data:
 - `S3 Secret Access Key` -
   - See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) on how to generate an access key.
   - We recommend creating an Airbyte-specific user. This user will require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html) to objects in the bucket.
-- `S3 Filename pattern` - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't be recognized
+- `S3 Filename pattern` - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. Please, don't use empty space and not supportable placeholders, as they won't be recognized
 
 #### Azure Blob Storage data source type (External storage)
 
@@ -206,7 +206,7 @@ Provide your Amazon S3 data:
 |                     | Region                | string  | See [documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.                                                                                                                                                                                             |
 |                     | Access Key ID         | string  | AWS/Minio credential.                                                                                                                                                                                                                                                                                                                                       |
 |                     | Secret Access Key     | string  | AWS/Minio credential.                                                                                                                                                                                                                                                                                                                                       |
-|                     | S3 Filename pattern   | string  | The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized. |
+|                     | S3 Filename pattern   | string  | The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. Please, don't use empty space and not supportable placeholders, as they won't recognized. |
 | Data Source - Azure | Account Name          | string  | Name of the account to sync data into.                                                                                                                                                                                                                                                                                                                      |
 |                     | Container Name        | string  | Container under the above account to sync the data into.                                                                                                                                                                                                                                                                                                    |
 |                     | SAS token             | string  | Shared-access signature token for the above account.                                                                                                                                                                                                                                                                                                        |
@@ -271,11 +271,11 @@ Please keep these data directories on S3/Azure. Otherwise, the corresponding tab
 
 Each table will have the following columns:
 
-| Column                             |   Type    | Notes                                                          |
-| :--------------------------------- | :-------: | :------------------------------------------------------------- |
-| `_airbyte_ab_id`                   |  string   | UUID.                                                          |
-| `_airbyte_emitted_at`              | timestamp | Data emission timestamp.                                       |
-| Data fields from the source stream |  various  | All fields in the staging files will be expanded in the table. |
+| Column                |   Type    | Notes                                            |
+| :-------------------- | :-------: | :----------------------------------------------- |
+| `_airbyte_ab_id`      |  string   | UUID.                                            |
+| `_airbyte_emitted_at` | timestamp | Data emission timestamp.                         |
+| `_airbyte_data`       |   JSON    | The data from your source will be in this column |
 
 Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 

@@ -75,7 +75,8 @@
       "type": ["null", "integer"]
     },
     "due_date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "confidential": {
       "type": ["null", "boolean"]
@@ -144,11 +145,11 @@
         },
         "start_date": {
           "type": ["null", "string"],
-          "format": "date-time"
+          "format": "date"
         },
         "due_date": {
           "type": ["null", "string"],
-          "format": "date-time"
+          "format": "date"
         },
         "web_url": {
           "type": ["null", "string"]

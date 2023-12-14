@@ -10,7 +10,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
-from source_google_ads.streams import AdGroupLabels, Labels, ServiceAccounts
+from source_google_ads.streams import AdGroupLabel, Label, ServiceAccounts
 
 from .common import MockGoogleAdsClient, mock_google_ads_request_failure
 
@@ -59,8 +59,8 @@ def test_expected_errors(mocker, config, exception, error_message):
 @pytest.mark.parametrize(
     ("cls", "raise_expected"),
     (
-        (AdGroupLabels, False),
-        (Labels, False),
+        (AdGroupLabel, False),
+        (Label, False),
         (ServiceAccounts, True),
     ),
 )

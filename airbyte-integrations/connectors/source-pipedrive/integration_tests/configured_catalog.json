@@ -23,6 +23,15 @@
     },
     {
       "stream": {
+        "name": "goals",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "files",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -116,6 +125,15 @@
     {
       "stream": {
         "name": "currencies",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "mail",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

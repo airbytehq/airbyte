@@ -44,7 +44,7 @@ public class BigQueryUploaderFactory {
                                                    "Destination Default" option.
 
                                                  More details:
-                                                   """;
+                                                 """;
 
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {

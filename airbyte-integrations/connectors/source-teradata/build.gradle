@@ -4,9 +4,19 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = ['db-sources']
     useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileTestJava {
+        options.compilerArgs.remove("-Werror")
+    }
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -16,7 +26,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'com.teradata.jdbc:terajdbc:20.00.00.06'
 
