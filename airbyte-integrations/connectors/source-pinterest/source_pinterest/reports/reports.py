@@ -26,7 +26,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     Details - https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report"""
 
     http_method = "POST"
-    report_wait_timeout = 180
+    report_wait_timeout = 60 * 10
     report_generation_maximum_retries = 5
 
     @property
@@ -69,7 +69,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
 
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
-            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout * 60, interval=10)(func)(
+            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout, interval=10)(func)(
                 self, *args, **kwargs
             )
 
@@ -77,9 +77,9 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
 
     def backoff_max_tries(func):
         def wrapped(self, *args, **kwargs):
-            return backoff.on_exception(backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries)(func)(
-                self, *args, **kwargs
-            )
+            return backoff.on_exception(
+                backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries, max_time=self.report_wait_timeout
+            )(func)(self, *args, **kwargs)
 
         return wrapped
 
@@ -203,13 +203,13 @@ class CampaignTargetingReport(PinterestAnalyticsTargetingReportStream):
         return "CAMPAIGN_TARGETING"
 
 
-class AdvertizerReport(PinterestAnalyticsReportStream):
+class AdvertiserReport(PinterestAnalyticsReportStream):
     @property
     def level(self):
         return "ADVERTISER"
 
 
-class AdvertizerTargetingReport(PinterestAnalyticsTargetingReportStream):
+class AdvertiserTargetingReport(PinterestAnalyticsTargetingReportStream):
     @property
     def level(self):
         return "ADVERTISER_TARGETING"

@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
@@ -74,6 +75,8 @@ from .streams import (
 )
 from .utils import read_full_refresh
 
+logger = logging.getLogger("airbyte")
+
 
 class SourceJira(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any]):
@@ -90,18 +93,29 @@ class SourceJira(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         try:
+            original_config = config.copy()
             config = self._validate_and_transform(config)
             authenticator = self.get_authenticator(config)
             kwargs = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-            labels_stream = Labels(**kwargs)
-            next(read_full_refresh(labels_stream), None)
+
             # check projects
             projects_stream = Projects(**kwargs)
             projects = {project["key"] for project in read_full_refresh(projects_stream)}
             unknown_projects = set(config["projects"]) - projects
             if unknown_projects:
                 return False, "unknown project(s): " + ", ".join(unknown_projects)
-            return True, None
+
+            # Get streams to check access to any of them
+            streams = self.streams(original_config)
+            for stream in streams:
+                try:
+                    next(read_full_refresh(stream), None)
+                except:
+                    logger.warning("No access to stream: " + stream.name)
+                else:
+                    logger.info(f"API Token have access to stream: {stream.name}, so check is successful.")
+                    return True, None
+            return False, "This API Token does not have permission to read any of the resources."
         except ValidationError as validation_error:
             return False, validation_error
         except requests.exceptions.RequestException as request_error:

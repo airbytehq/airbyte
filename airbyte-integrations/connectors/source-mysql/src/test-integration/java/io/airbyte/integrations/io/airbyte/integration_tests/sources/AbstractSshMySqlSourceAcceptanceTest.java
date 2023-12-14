@@ -10,6 +10,8 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field;
@@ -28,19 +30,22 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
 
-  protected static JsonNode config;
+  @Override
+  protected FeatureFlags featureFlags() {
+    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
+  }
+
+  private JsonNode config;
 
   public abstract Path getConfigFilePath();
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) {
     config = Jsons.deserialize(IOs.readFile(getConfigFilePath()));
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-
-  }
+  protected void tearDown(final TestDestinationEnv testEnv) {}
 
   @Override
   protected String getImageName() {
