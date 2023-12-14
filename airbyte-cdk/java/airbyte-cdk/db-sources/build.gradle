@@ -94,7 +94,6 @@ dependencies {
     implementation libs.hikaricp
     implementation libs.debezium.api
     implementation libs.debezium.embedded
-    implementation libs.debezium.sqlserver
     implementation libs.debezium.mysql
     implementation libs.debezium.postgres
     implementation libs.debezium.mongodb
