@@ -56,6 +56,9 @@
     "budget_remaining": {
       "type": ["null", "number"]
     },
+    "optimization_goal": {
+      "type": ["null", "string"]
+    },
     "effective_status": {
       "type": ["null", "string"]
     },

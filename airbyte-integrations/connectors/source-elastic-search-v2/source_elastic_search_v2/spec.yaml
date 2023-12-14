@@ -1,12 +1,12 @@
 documentationUrl: https://docsurl.com
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Xero API
+  title: Elastic Search V2 Spec
   type: object
   required:
-    - streams
+    - date_start
   additionalProperties: false
   properties:
-    streams:
+    date_start:
       type: string
-      description: Xero tables requested for the API.
+      description: Start date of the synchronization
