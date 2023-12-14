@@ -15,7 +15,7 @@ from airbyte_protocol.models import FailureType
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v13.services.services.google_ads_service.pagers import SearchPager
 from google.ads.googleads.v13.services.types.google_ads_service import SearchGoogleAdsResponse
-from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests
+from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests, Unauthenticated
 
 from .google_ads import GoogleAds, logger
 from .models import CustomerModel
@@ -37,7 +37,15 @@ class GoogleAdsStream(Stream, ABC):
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
         for result in response:
-            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+            try:
+                yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+            except Unauthenticated:
+                raise AirbyteTracedException(
+                    internal_message="authentication error",
+                    failure_type=FailureType.config_error,
+                    message="Authentication failed. Please try to Re-authenticate your credentials on set up Google Ads page."
+                )
+
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
