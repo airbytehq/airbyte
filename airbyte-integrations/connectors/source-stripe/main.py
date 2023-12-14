@@ -39,7 +39,6 @@ def _get_source(args: List[str]):
 
 
 if __name__ == "__main__":
-    print(sys.argv)
     _args = sys.argv[1:]
     source = _get_source(_args)
     if source:
