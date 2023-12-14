@@ -34,6 +34,9 @@ from source_salesforce.streams import (
     SalesforceStream,
 )
 
+_ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
+_ANY_CONFIG = {}
+
 
 @pytest.mark.parametrize(
     "login_status_code, login_json_resp, expected_error_msg, is_config_error",
@@ -61,7 +64,7 @@ from source_salesforce.streams import (
 def test_login_authentication_error_handler(
     stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error
 ):
-    source = SourceSalesforce()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
     logger = logging.getLogger("airbyte")
     requests_mock.register_uri(
         "POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code
@@ -340,7 +343,7 @@ def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_he
 def test_check_connection_rate_limit(
     stream_config, login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg
 ):
-    source = SourceSalesforce()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
     logger = logging.getLogger("airbyte")
 
     with requests_mock.Mocker() as m:
@@ -377,7 +380,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
     stream_1.page_size = 6
     stream_1.state_checkpoint_interval = 5
 
-    source = SourceSalesforce()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
     source.streams = Mock()
     source.streams.return_value = streams
     logger = logging.getLogger("airbyte")
@@ -433,7 +436,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
     stream_1.state_checkpoint_interval = 3
     configure_request_params_mock(stream_1, stream_2)
 
-    source = SourceSalesforce()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
     source.streams = Mock()
     source.streams.return_value = [stream_1, stream_2]
 
@@ -618,7 +621,7 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                 ],
             },
         )
-        source = SourceSalesforce()
+        source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
         source.catalog = catalog
         streams = source.streams(config=stream_config)
     expected_names = catalog_stream_names if catalog else stream_names
@@ -718,7 +721,7 @@ def _get_streams(stream_config, stream_names, catalog_stream_names, sync_type) -
                 ],
             },
         )
-        source = SourceSalesforce()
+        source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
         source.catalog = catalog
         return source.streams(config=stream_config)
 
@@ -904,7 +907,7 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     stream_config_date_format.update({"start_date": "2023-01-01"})
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api)
 
-    source = SourceSalesforce()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
     source.streams = Mock()
     source.streams.return_value = [stream]
 
