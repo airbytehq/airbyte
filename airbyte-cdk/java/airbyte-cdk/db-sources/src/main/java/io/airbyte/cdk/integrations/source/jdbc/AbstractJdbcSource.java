@@ -40,7 +40,6 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.JdbcStreamingQueryConfig;
-import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.relationaldb.AbstractDbSource;
@@ -90,7 +89,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
-  protected final String driverClass;
   protected final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider;
   protected final JdbcCompatibleSourceOperations<Datatype> sourceOperations;
 
@@ -100,7 +98,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   public AbstractJdbcSource(final String driverClass,
                             final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
                             final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
-    this.driverClass = driverClass;
+    super(driverClass);
     this.streamingQueryConfigProvider = streamingQueryConfigProvider;
     this.sourceOperations = sourceOperations;
   }
@@ -437,7 +435,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         connectionProperties,
-        JdbcConnector.getConnectionTimeout(connectionProperties, driverClass));
+        getConnectionTimeout(connectionProperties));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 

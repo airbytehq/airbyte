@@ -11,7 +11,6 @@ import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
@@ -51,7 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcDestination extends BaseConnector implements Destination {
+public abstract class AbstractJdbcDestination extends JdbcConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
@@ -59,7 +58,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   public static final String DISABLE_TYPE_DEDUPE = "disable_type_dedupe";
 
-  private final String driverClass;
   private final NamingConventionTransformer namingResolver;
   private final SqlOperations sqlOperations;
 
@@ -74,7 +72,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public AbstractJdbcDestination(final String driverClass,
                                  final NamingConventionTransformer namingResolver,
                                  final SqlOperations sqlOperations) {
-    this.driverClass = driverClass;
+    super(driverClass);
     this.namingResolver = namingResolver;
     this.sqlOperations = sqlOperations;
   }
@@ -198,7 +196,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         connectionProperties,
-        JdbcConnector.getConnectionTimeout(connectionProperties, driverClass));
+        getConnectionTimeout(connectionProperties));
   }
 
   protected JdbcDatabase getDatabase(final DataSource dataSource) {
