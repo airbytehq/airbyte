@@ -5,7 +5,7 @@ from typing import Generic, Iterable, TypeVar
 
 from airbyte_lib.cache import Cache
 from airbyte_lib.source import Source
-from airbyte_protocol.models import AirbyteRecordMessage, Type
+from airbyte_protocol.models import AirbyteRecordMessage
 
 TCache = TypeVar("TCache", bound=Cache)
 

@@ -131,6 +131,15 @@ class AirbytePythonPlugin implements Plugin<Project> {
                 inputs.file('setup.py')
                 outputs.file('build/installedlocalreqs.txt')
             }
+        } else if (project.file('pyproject.toml').exists()) {
+            // If requirements.txt does not exists, install from setup.py instead, assume a dev or "tests" profile exists.
+            // In this case, there is no need to depend on the base python modules since everything should be contained in the setup.py.
+            project.tasks.register('installLocalReqs', PythonTask) {
+                module = "pip"
+                command = "install .[dev,tests]"
+                inputs.file('pyproject.toml')
+                outputs.file('build/installedlocalreqs.txt')
+            }
         } else {
             return
         }
@@ -145,7 +154,11 @@ class AirbytePythonPlugin implements Plugin<Project> {
         def installReqs = project.tasks.register('installReqs', PythonTask) {
             module = "pip"
             command = "install .[main]"
-            inputs.file('setup.py')
+            if (project.file('setup.py').exists()) {
+                inputs.file('setup.py')
+            } else {
+                inputs.file('pyproject.toml')
+            }
             outputs.file('build/installedreqs.txt')
         }
         installReqs.configure {
@@ -160,7 +173,11 @@ class AirbytePythonPlugin implements Plugin<Project> {
         def installTestReqs = project.tasks.register('installTestReqs', PythonTask) {
             module = "pip"
             command = "install .[tests]"
-            inputs.file('setup.py')
+            if (project.file('setup.py').exists()) {
+                inputs.file('setup.py')
+            } else {
+                inputs.file('pyproject.toml')
+            }
             outputs.file('build/installedtestreqs.txt')
         }
         installTestReqs.configure {

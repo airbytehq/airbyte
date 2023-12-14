@@ -8,8 +8,7 @@ from itertools import islice
 from typing import Any, Dict, Iterable, List, Optional
 
 import jsonschema
-from airbyte_lib.executor import Executor, VenvExecutor
-from airbyte_lib.registry import get_connector_metadata
+from airbyte_lib.executor import Executor
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -38,7 +37,7 @@ def as_temp_files(files: List[Any]):
         for temp_file in temp_files:
             try:
                 temp_file.close()
-            except:
+            except Exception:
                 pass
 
 
@@ -56,9 +55,9 @@ class Source:
         self.name = name
         self.streams = None
         self.config = None
-        if not config is None:
+        if config is not None:
             self.set_config(config)
-        if not streams is None:
+        if streams is not None:
             self.set_streams(streams)
 
     def set_streams(self, streams: List[str]):
@@ -224,18 +223,16 @@ class Source:
         last_log_messages = []
         try:
             with self.executor.execute(args) as output:
+                last_log_messages = []
                 for line in output:
                     try:
                         message = AirbyteMessage.parse_raw(line)
                         yield message
                         if message.type == Type.LOG:
                             last_log_messages.append(message.log.message)
-                            if len(last_log_messages) > 10:
-                                last_log_messages.pop(0)
-                    except Exception as e:
-                        # line is probably a log message, add it to the last log messages
+                            last_log_messages = last_log_messages[-10:]
+                    except Exception:
                         last_log_messages.append(line)
-                        if len(last_log_messages) > 10:
-                            last_log_messages.pop(0)
+                        last_log_messages = last_log_messages[-10:]
         except Exception as e:
             raise Exception(f"{str(e)}. Last logs: {last_log_messages}")
