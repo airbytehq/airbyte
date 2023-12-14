@@ -113,6 +113,7 @@ public class DebeziumEventUtils {
       return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields);
     } else {
       final String eventJson = (after.isNull() ? before : after).asText();
+      // TODO : Check if after & before is the same. If so, we need to skip
       return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields), source, cdcMetadataInjector, false);
     }
   }
