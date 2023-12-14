@@ -10,7 +10,8 @@ import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Level, SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
@@ -25,6 +26,8 @@ from requests import codes, exceptions  # type: ignore[import]
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalRestSalesforceStream, RestSalesforceStream
 
+_DEFAULT_CONCURRENCY = 10
+_MAX_CONCURRENCY = 10
 logger = logging.getLogger("airbyte")
 
 
@@ -32,16 +35,24 @@ class AirbyteStopSync(AirbyteTracedException):
     pass
 
 
-class SourceSalesforce(AbstractSource):
+class SourceSalesforce(ConcurrentSourceAdapter):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     START_DATE_OFFSET_IN_YEARS = 2
     MAX_WORKERS = 5
 
     message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[logger.level]))
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.catalog = None
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], **kwargs):
+        if config:
+            concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
+        else:
+            concurrency_level = _DEFAULT_CONCURRENCY
+        logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+        concurrent_source = ConcurrentSource.create(
+            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository
+        )
+        super().__init__(concurrent_source)
+        self.catalog = catalog
 
     @staticmethod
     def _get_sf_object(config: Mapping[str, Any]) -> Salesforce:
@@ -139,7 +150,7 @@ class SourceSalesforce(AbstractSource):
         for stream in streams:
             sync_mode = self._get_sync_mode_from_catalog(stream)
             if sync_mode == SyncMode.full_refresh:
-                configured_streams.append(StreamFacade.create_from_stream(stream, self, logger, self.MAX_WORKERS, None, NoopCursor()))
+                configured_streams.append(StreamFacade.create_from_stream(stream, self, logger, None, NoopCursor()))
             else:
                 configured_streams.append(stream)
         return configured_streams
