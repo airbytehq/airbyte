@@ -295,7 +295,7 @@ class RestSalesforceStream(SalesforceStream):
 
 
 class BatchedSubStream(HttpSubStream):
-    SLICE_BATCH_SIZE = 1000
+    SLICE_BATCH_SIZE = 200
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
