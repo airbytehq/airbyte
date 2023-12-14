@@ -10,6 +10,11 @@ python = "^3.10"
 jsonschema = "3.2.0"
 requests = "^2.31.0"
 airbyte-protocol-models = "^1.0.1"
+pyarrow = "^14.0.1"
+ulid = "^1.1"
+overrides = "^7.4.0"
+pandas = "^2.1.4"
+sqlalchemy = "^2.0.23"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
