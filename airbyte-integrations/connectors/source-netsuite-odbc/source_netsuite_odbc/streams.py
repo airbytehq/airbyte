@@ -17,29 +17,26 @@ from airbyte_cdk.models import (
 # AirbyteMessage: An AirbyteMessage. Could be of any type
 StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
-NETSUITE_PAGINATION_INTERVAL: Final[int] = 10000
+NETSUITE_PAGINATION_INTERVAL: Final[int] = 100
 EARLIEST_DATE: Final[str] = date(2020, 1, 1)
 YEARS_FORWARD_LOOKING: Final[int] = 1
-STARTING_CURSOR_VALUE: Final[int] = -1
+STARTING_PRIMARY_KEY_VALUE: Final[int] = -1
 
 
 
-# class NetsuiteODBCStream(Stream, IncrementalMixin):
 class NetsuiteODBCStream(Stream):
 
     def get_primary_key_from_stream(self, stream):
       key = stream.primary_key
       if not key:
-        return None
-      elif len(key) > 1:
-        raise Exception('Assumption Broken: Primary Key should always be a top level field.  Instead, we\'re receiving a sub-field as a primary key.')
+        return []
       else:
-        return key[0]
+        return sorted(key, reverse=True)
   
     def get_incremental_column_from_stream(self, stream):
       cursor_field = stream.default_cursor_field
       if not cursor_field:
-        return []
+        return None
       elif len(cursor_field) > 1:
         raise Exception('Assumption Broken: Incremental Column should always be a top level field.  Instead, we\'re receiving a sub-field as an incremental column.')
       else:
@@ -47,6 +44,12 @@ class NetsuiteODBCStream(Stream):
 
     def get_properties_from_stream(self, stream):
       return stream.json_schema['properties'].keys()
+    
+    def set_up_primary_key_last_value_seen(self, primary_key):
+      primary_key_last_value_seen = {}
+      for key in primary_key:
+        primary_key_last_value_seen[key] = STARTING_PRIMARY_KEY_VALUE
+      return primary_key_last_value_seen
 
     def __init__(self, cursor, table_name, stream):
       self.cursor = cursor
@@ -54,7 +57,7 @@ class NetsuiteODBCStream(Stream):
       self.properties = self.get_properties_from_stream(stream)
       self.primary_key_column = self.get_primary_key_from_stream(stream)
       self.incremental_column = self.get_incremental_column_from_stream(stream)
-      self.cursor_value_last_id_seen = STARTING_CURSOR_VALUE
+      self.primary_key_last_value_seen = self.set_up_primary_key_last_value_seen(self.primary_key_column)
       self.incremental_most_recent_value_seen = None
       self.json_schema = stream.json_schema
 
@@ -71,10 +74,12 @@ class NetsuiteODBCStream(Stream):
       return self.primary_key_column
 
     def process_stream_state(self, stream_state):
+      if stream_state is None:
+        return
       if 'last_date_updated' in stream_state:
         self.incremental_most_recent_value_seen = stream_state['last_date_updated']
-      if 'last_id_seen' in stream_state:
-        self.cursor_value_last_id_seen = stream_state['last_id_seen']
+      if 'last_values_seen' in stream_state:
+        self.primary_key_last_value_seen = stream_state['last_values_seen']
 
     def read_records(
       self,
@@ -92,14 +97,14 @@ class NetsuiteODBCStream(Stream):
           break
         # if number of rows >= page limit, we need to fetch another page
         elif not row:
-          self.logger.info(f"Fetching another page for the stream {self.table_name}.  Last seen ID is {self.cursor_value_last_id_seen}")
+          self.logger.info(f"Fetching another page for the stream {self.table_name}.  Current primary key is {str(self.primary_key_last_value_seen)}")
           number_records = 0
           self.cursor.execute(self.generate_ordered_query(stream_slice))
           continue
         # data from netsuite does not include columns, so we need to assign each value to the correct column name
         serialized_data = self.serialize_row_to_response(row)
         # before we yield record, update state
-        self.find_highest_id(serialized_data)
+        self.update_last_values_seen(serialized_data)
         self.find_most_recent_date(serialized_data)
         number_records = number_records + 1
         #yield response
@@ -107,6 +112,8 @@ class NetsuiteODBCStream(Stream):
       self.logger.info(f"Finished Stream Slice for Netsuite ODBC Table {self.table_name} with stream slice: {stream_slice}")
 
     def find_most_recent_date(self, result):
+      if self.incremental_column is None:
+        return
       date_value_received = None
       if self.incremental_column in result:
         date_value_received = result[self.incremental_column]
@@ -116,25 +123,64 @@ class NetsuiteODBCStream(Stream):
         else:
           self.incremental_most_recent_value_seen = max(self.incremental_most_recent_value_seen, date_value_received)
 
-    def find_highest_id(self, result):
+    def update_last_values_seen(self, result):
       if self.primary_key_column is None:
         return
-      if self.primary_key_column in result:
-          self.cursor_value_last_id_seen = max(self.cursor_value_last_id_seen, result[self.primary_key_column])
+      for key in self.primary_key_column:
+        # we don't check for max() because netsuite primary key columns are incrementing.
+        # if we checked for max, we'd need to deal with key sequence
+        if key in result:
+          self.primary_key_last_value_seen[key] = result[key]
+        else:
+          raise Exception('A primary key column was not found in the result. Please make sure your properties include all primary key columns.')
 
-  
+    def has_composite_primary_key(self):
+      return len(self.primary_key_column) > 1
+
+    def generate_primary_key_filter(self):
+      primary_key_filter = ""
+      # primary keys can be composite!  To deal with this, we add filters for each column
+      # This is an edge case.  In the standard case where there's only a single primary key column, 
+      # this could should only add a single filter
+      for key in self.primary_key_column:
+        last_value_seen = self.primary_key_last_value_seen[key] if key in self.primary_key_last_value_seen else STARTING_PRIMARY_KEY_VALUE
+        if primary_key_filter != "":
+          primary_key_filter = primary_key_filter + " AND "
+        if primary_key_filter == "" and self.has_composite_primary_key():
+          primary_key_filter = primary_key_filter + f"{key} = {last_value_seen}"
+        else:
+          primary_key_filter = primary_key_filter + f"{key} > {last_value_seen}"
+      # if it's a composite key, we add a second column to try to "upgrade" to the next column value
+      # if we don't do this, we don't properly make our way up the table
+      # NOTE:  This only works when there are two columns in the primary key
+      if self.has_composite_primary_key():
+        first_column = self.primary_key_column[0]
+        first_column_value = self.primary_key_last_value_seen[first_column] if first_column in self.primary_key_last_value_seen else STARTING_PRIMARY_KEY_VALUE
+        primary_key_filter = primary_key_filter + f" OR {first_column} > {first_column_value}"
+      return primary_key_filter
+    
+    def generate_primary_key_sorter(self):
+      primary_key_sorter = ""
+      for key in self.primary_key_column:
+        if primary_key_sorter != "":
+          primary_key_sorter = primary_key_sorter + ", "
+        primary_key_sorter = primary_key_sorter + f"{key} ASC"
+      return primary_key_sorter
+
     def generate_ordered_query(self, stream_slice):
       values = ', '.join(self.properties) # we use values instead of '*' because we want to preserve the order of the columns
       incremental_column_sorter = f", {self.incremental_column} ASC" if self.incremental_column else ""
       # per https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_156257805177.html#subsect_156330163819
-      # date literals need to be warpped in a to_date function
-      incremental_column_filter = f"{self.incremental_column} >= to_timestamp('{stream_slice['first_day']}', 'YYYY-MM-DD') AND {self.incremental_column} <= to_timestamp('{stream_slice['last_day']}', 'YYYY-MM-DD')"
-      primary_key_filter = f"{self.primary_key_column} > {self.cursor_value_last_id_seen}" if self.primary_key_column is not None else ""
-      and_connector = " AND " if primary_key_filter != "" else ""
+      # date literals need to be wrapped in a to_date function
+      incremental_column_filter = f"{self.incremental_column} >= to_timestamp('{stream_slice['first_day']}', 'YYYY-MM-DD') AND {self.incremental_column} <= to_timestamp('{stream_slice['last_day']}', 'YYYY-MM-DD')" if self.incremental_column else ""
+      primary_key_filter = self.generate_primary_key_filter()
+      primary_key_sorter = self.generate_primary_key_sorter()
+      and_connector = " AND " if primary_key_filter != "" and incremental_column_filter != "" else ""
+      where_clause = "WHERE " if primary_key_filter != "" or incremental_column_filter != "" else ""
       query = f"""
         SELECT TOP {NETSUITE_PAGINATION_INTERVAL} {values} FROM {self.table_name} 
-        WHERE {primary_key_filter}{and_connector}{incremental_column_filter}
-        ORDER BY {self.primary_key_column} ASC""" + incremental_column_sorter
+        {where_clause}{primary_key_filter}{and_connector}{incremental_column_filter}
+        ORDER BY {primary_key_sorter}""" + incremental_column_sorter
       return query
   
     def serialize_row_to_response(self, row):
@@ -194,19 +240,37 @@ class NetsuiteODBCStream(Stream):
       return 10000
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-      if 'last_date_updated' in current_stream_state:
+      if 'last_date_updated' in current_stream_state and self.incremental_most_recent_value_seen is not None:
         last_date_updated = max(current_stream_state['last_date_updated'], self.incremental_most_recent_value_seen)
       else:
         last_date_updated = self.incremental_most_recent_value_seen
-      if 'last_id_seen' in current_stream_state:
-        last_id_seen = max(current_stream_state['last_id_seen'], self.cursor_value_last_id_seen)
+      if 'last_values_seen' in current_stream_state:
+        last_values_seen = self.update_last_values_seen_from_current_stream_state(current_stream_state)
       else:
-        last_id_seen = self.cursor_value_last_id_seen
+        last_values_seen = self.primary_key_last_value_seen
 
       return {
-        'last_id_seen': last_id_seen,
+        'last_values_seen': last_values_seen,
         'last_date_updated': last_date_updated
       }
+    
+    def update_last_values_seen_from_current_stream_state(self, current_stream_state: MutableMapping[str, Any]):
+      stream_last_values = current_stream_state['last_values_seen']
+      new_values = {}
+      for key in self.primary_key_column:
+        stream_value = stream_last_values[key] if key in stream_last_values else STARTING_PRIMARY_KEY_VALUE
+        non_stream_value = self.primary_key_last_value_seen[key] if key in self.primary_key_last_value_seen else STARTING_PRIMARY_KEY_VALUE
+        new_values[key] = max(stream_value, non_stream_value)
+      return new_values
+
+    
+    def supports_incremental(self) -> bool:
+      """
+      :return: True if this stream supports incrementally reading data
+      """
+      if self._wrapped_cursor_field() is None:
+        return False
+      return len(self._wrapped_cursor_field()) > 0
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """

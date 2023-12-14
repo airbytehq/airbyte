@@ -28,6 +28,7 @@ class NetsuiteODBCTableDiscoverer():
     def get_streams(self) -> Iterable[AirbyteStream]:
       tables = self.get_tables_with_join()
       primary_keys = self.find_primary_keys_bulk()
+      # return
       for key in tables:
         table_values = tables[key]
         primary_key_for_table = primary_keys[key] if key in primary_keys else None
@@ -39,11 +40,20 @@ class NetsuiteODBCTableDiscoverer():
 
     
     def find_primary_keys_bulk(self):
-      self.cursor.execute(f"SELECT pktable_name, pkcolumn_name FROM OA_FKEYS WHERE pktable_name is not NULL and pkcolumn_name IS NOT NULL")
+      def default_value():
+        return set()
+      self.cursor.execute(f"SELECT pktable_name, pkcolumn_name FROM OA_FKEYS WHERE pktable_name is not NULL and pkcolumn_name IS NOT NULL and fkcolumn_name IS NULL")
+      # self.cursor.execute(f"SELECT * FROM OA_FKEYS WHERE pktable_name = 'transactionLine' and pkcolumn_name IS NOT NULL and fkcolumn_name IS NULL")
       rows = self.cursor.fetchall()
-      d = dict()
+      # print(rows)
+      d = defaultdict(default_value)
       for row in rows:
-        d[row[0]] = row[1]
+        d[row[0]].add(row[1])
+      multiple_primary_keys = {}
+      for key in d:
+        if len(d[key]) > 1:
+          multiple_primary_keys[key] = d[key]
+      print(multiple_primary_keys)
       return d
       
     def get_table_stream_with_join(self, table_name, table_columns, primary_key_column):
@@ -51,7 +61,7 @@ class NetsuiteODBCTableDiscoverer():
       if primary_key_column is None:
         primary_key_column = []
       else:
-        primary_key_column = [primary_key_column]
+        primary_key_column = list(primary_key_column)
 
       properties = {}
       table_incremental_column = None
@@ -72,6 +82,10 @@ class NetsuiteODBCTableDiscoverer():
         return AirbyteStream(name=table_name, json_schema=json_schema, supported_sync_modes=["full_refresh"], primary_key=primary_key_column)
 
     def get_tables_with_join(self):
+      # self.cursor.execute("SELECT pktable_name, pkcolumn_name, fktable_name, fkcolumn_name, pk_name FROM OA_FKEYS WHERE pktable_name is not NULL and pkcolumn_name IS NOT NULL")
+      # rows = self.cursor.fetchall()
+      # print(rows)
+      # return
       self.cursor.execute("""
                           SELECT tab.table_name, tab.oa_userdata, col.column_name, col.type_name, col.oa_userdata
                           FROM OA_TABLES tab INNER JOIN OA_COLUMNS col ON col.table_name = tab.table_name
