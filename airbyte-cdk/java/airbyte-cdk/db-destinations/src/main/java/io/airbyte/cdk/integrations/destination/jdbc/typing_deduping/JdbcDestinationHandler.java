@@ -15,7 +15,6 @@ import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLType;
-import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,8 +58,8 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
   }
 
   @Override
-  public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
-    return Optional.empty();
+  public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
+    return new InitialRawTableState(true, Optional.empty());
   }
 
   @Override
