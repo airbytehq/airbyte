@@ -5,6 +5,7 @@
 
 import pytest
 from source_amazon_seller_partner.streams import (
+    FlatFileSettlementV2Reports,
     LedgerDetailedViewReports,
     MerchantListingsFypReport,
     MerchantListingsReports,
@@ -112,6 +113,24 @@ def test_transform_merchant_fyp_reports(report_init_kwargs, input_data, expected
 )
 def test_transform_ledger_reports(report_init_kwargs, input_data, expected_data):
     stream = LedgerDetailedViewReports(**report_init_kwargs)
+    transformer = stream.transformer
+    schema = stream.get_json_schema()
+    transformer.transform(input_data, schema)
+    assert input_data == expected_data
+
+
+@pytest.mark.parametrize(
+    ("input_data", "expected_data"),
+    (
+        (
+            {"posted-date": "2023-11-09T18:44:35+00:00", "dataEndTime": "2022-07-31"},
+            {"posted-date": "2023-11-09T18:44:35+00:00", "dataEndTime": "2022-07-31"},
+        ),
+        ({"posted-date": "", "dataEndTime": "2022-07-31"}, {"posted-date": None, "dataEndTime": "2022-07-31"}),
+    ),
+)
+def test_transform_settlement_reports(report_init_kwargs, input_data, expected_data):
+    stream = FlatFileSettlementV2Reports(**report_init_kwargs)
     transformer = stream.transformer
     schema = stream.get_json_schema()
     transformer.transform(input_data, schema)

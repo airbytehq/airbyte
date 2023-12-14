@@ -1212,6 +1212,20 @@ class FbaCustomerReturnsReports(IncrementalReportsAmazonSPStream):
 class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
 
     name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.transformer.registerCustomTransform(self.get_transform_function())
+
+    @staticmethod
+    def get_transform_function():
+        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+            if original_value == "" and field_schema.get("format") == "date-time":
+                return None
+            return original_value
+
+        return transform_function
 
     def _create_report(
         self,
