@@ -112,6 +112,81 @@ simple_markdown_scenario = (
     )
 ).build()
 
+simple_txt_scenario = (
+    TestScenarioBuilder()
+    .set_name("simple_txt_scenario")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "format": {"filetype": "unstructured"},
+                    "globs": ["*"],
+                    "validation_policy": "Emit Record",
+                }
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.txt": {
+                    "contents": bytes(
+                        "Just some raw text", "UTF-8"
+                    ),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b": {
+                    "contents": bytes("Detected via mime type", "UTF-8"),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                    "mime_type": "text/plain",
+                },
+            }
+        )
+        .set_file_type("unstructured")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": json_schema,
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    'source_defined_primary_key': [["document_key"]],
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {
+                "data": {
+                    "document_key": "a.txt",
+                    "content": "Just some raw text",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.txt",
+                    "_ab_source_file_parse_error": None,
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "document_key": "b",
+                    "content": "Detected via mime type",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b",
+                    "_ab_source_file_parse_error": None,
+
+                },
+                "stream": "stream1",
+            },
+        ]
+    )
+).build()
+
 # If skip unprocessable file types is set to false, then discover will fail if it encounters a non-matching file type
 unstructured_invalid_file_type_discover_scenario_no_skip = (
     TestScenarioBuilder()
