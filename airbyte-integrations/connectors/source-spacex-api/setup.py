@@ -17,7 +17,6 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_spacex_api",
-    version="0.1.1",
     description="Source implementation for Spacex Api.",
     author="Airbyte",
     author_email="contact@airbyte.io",
@@ -26,10 +25,5 @@ setup(
     package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
-    },
-    entry_points={
-        "console_scripts": [
-            "source-spacex-api=source_spacex_api.run:run",
-        ],
     },
 )
