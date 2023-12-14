@@ -380,47 +380,11 @@ def test_send_request_params(provider_params, param_params, authenticator_params
             id="test-request-parameter-comma-separated-strings",
         ),
         pytest.param(
-            {"k": "[1,2]"},
-            {},
-            "k=1&k=2",
-            id="test-request-parameter-list-of-numbers",
-        ),
-        pytest.param(
-            {"k": '["a", "b"]'},
-            {},
-            "k=a&k=b",
-            id="test-request-parameter-list-of-strings",
-        ),
-        pytest.param(
             {"k": '{{ config["k"] }}'},
             {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
             # {'updatedDateFrom': '2023-08-20T00:00:00Z', 'updatedDateTo': '2023-08-20T23:59:59Z'}
             "k=%7B%27updatedDateFrom%27%3A+%272023-08-20T00%3A00%3A00Z%27%2C+%27updatedDateTo%27%3A+%272023-08-20T23%3A59%3A59Z%27%7D",
             id="test-request-parameter-from-config-object",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": [1, 2]},
-            "k=1&k=2",
-            id="test-request-parameter-from-config-list-of-numbers",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": ["a", "b"]},
-            "k=a&k=b",
-            id="test-request-parameter-from-config-list-of-strings",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": ["a,b"]},
-            "k=a%2Cb",  # k=a,b
-            id="test-request-parameter-from-config-comma-separated-strings",
-        ),
-        pytest.param(
-            {'["a", "b"]': '{{ config["k"] }}'},
-            {"k": [1, 2]},
-            "%5B%22a%22%2C+%22b%22%5D=1&%5B%22a%22%2C+%22b%22%5D=2",
-            id="test-key-with-list-is-not-interpolated",
         ),
     ],
 )
@@ -437,6 +401,78 @@ def test_request_param_interpolation(request_parameters, config, expected_query_
     requester.send_request()
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
     assert sent_request.url.split("?", 1)[-1] == expected_query_params
+
+
+@pytest.mark.parametrize(
+    "request_parameters, config, invalid_value_for_key",
+    [
+        pytest.param(
+            {"k": "[1,2]"},
+            {},
+            "k",
+            id="test-request-parameter-list-of-numbers",
+        ),
+        pytest.param(
+            {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
+            {},
+            "k",
+            id="test-request-parameter-object-of-the-updated-info",
+        ),
+        pytest.param(
+            {"k": '["a", "b"]'},
+            {},
+            "k",
+            id="test-request-parameter-list-of-strings",
+        ),
+        pytest.param(
+            {"k": '{{ config["k"] }}'},
+            {"k": [1, 2]},
+            "k",
+            id="test-request-parameter-from-config-list-of-numbers",
+        ),
+        pytest.param(
+            {"k": '{{ config["k"] }}'},
+            {"k": ["a", "b"]},
+            "k",
+            id="test-request-parameter-from-config-list-of-strings",
+        ),
+        pytest.param(
+            {"k": '{{ config["k"] }}'},
+            {"k": ["a,b"]},
+            "k",
+            id="test-request-parameter-from-config-comma-separated-strings",
+        ),
+        pytest.param(
+            {'["a", "b"]': '{{ config["k"] }}'},
+            {"k": [1, 2]},
+            '["a", "b"]',
+            id="test-key-with-list-is-not-interpolated",
+        ),
+        pytest.param(
+            {"a": '{{ config["k"] }}', "b": {"end_timestamp": 1699109113}},
+            {"k": 1699108113},
+            "b",
+            id="test-key-with-multiple-keys",
+        ),
+    ],
+)
+def test_request_param_interpolation_with_incorrect_values(request_parameters, config, invalid_value_for_key):
+    options_provider = InterpolatedRequestOptionsProvider(
+        config=config,
+        request_parameters=request_parameters,
+        request_body_data={},
+        request_headers={},
+        parameters={},
+    )
+    requester = create_requester()
+    requester._request_options_provider = options_provider
+    with pytest.raises(ValueError) as error:
+        requester.send_request()
+
+    assert (
+        error.value.args[0]
+        == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an array or object."
+    )
 
 
 @pytest.mark.parametrize(
