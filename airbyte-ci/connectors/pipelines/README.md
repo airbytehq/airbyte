@@ -502,7 +502,8 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 2.10.9  | [#33370](https://github.com/airbytehq/airbyte/pull/33370)  | Fix bug that broke airbyte-ci test
+| 2.10.10 | [#33449](https://github.com/airbytehq/airbyte/pull/33449)  | Add generated metadata models to the default format ignore list.                                          |
+| 2.10.9  | [#33370](https://github.com/airbytehq/airbyte/pull/33370)  | Fix bug that broke airbyte-ci test                                                                        |
 | 2.10.8  | [#33249](https://github.com/airbytehq/airbyte/pull/33249)  | Exclude git ignored files from formatting.                                                                |
 | 2.10.7  | [#33248](https://github.com/airbytehq/airbyte/pull/33248)  | Fix bug which broke airbyte-ci connectors tests when optional DockerHub credentials env vars are not set. |
 | 2.10.6  | [#33170](https://github.com/airbytehq/airbyte/pull/33170)  | Remove Dagger logs from console output of `format`.                                                       |

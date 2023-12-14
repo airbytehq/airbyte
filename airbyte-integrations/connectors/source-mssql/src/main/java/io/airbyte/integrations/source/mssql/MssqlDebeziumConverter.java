@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.integrations.debezium.internals.mssql;
+package io.airbyte.integrations.source.mssql;
 
 import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
@@ -26,9 +26,9 @@ import org.apache.kafka.connect.data.SchemaBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MSSQLConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
+public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
 
-  private final Logger LOGGER = LoggerFactory.getLogger(MSSQLConverter.class);
+  private final Logger LOGGER = LoggerFactory.getLogger(MssqlDebeziumConverter.class);
 
   private final Set<String> BINARY = Set.of("VARBINARY", "BINARY");
   private final Set<String> DATETIME_TYPES = Set.of("DATETIME", "DATETIME2", "SMALLDATETIME");
