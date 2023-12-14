@@ -4,7 +4,6 @@
 
 
 import csv
-import dateparser
 import gzip
 import json as json_lib
 import time
@@ -12,6 +11,7 @@ from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
+import dateparser
 import pendulum
 import requests
 import xmltodict
