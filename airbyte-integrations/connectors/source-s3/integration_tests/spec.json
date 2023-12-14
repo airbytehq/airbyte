@@ -634,8 +634,8 @@
           }
         },
         "required": [],
-        "description": "Deprecated and will be removed soon. Please do not use this field anymore and use bucket, aws_access_key_id, aws_secret_access_key and endpoint instead. Use this to load files from S3 or S3-compatible services",
         "order": 111,
+        "description": "Deprecated and will be removed soon. Please do not use this field anymore and use bucket, aws_access_key_id, aws_secret_access_key and endpoint instead. Use this to load files from S3 or S3-compatible services",
         "airbyte_hidden": true
       }
     },
