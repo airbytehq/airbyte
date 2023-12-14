@@ -6,6 +6,9 @@
       "type": ["null", "string"],
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"]
+    },
     "code": {
       "type": ["null", "string"],
       "maxLength": 256
@@ -140,6 +143,30 @@
     "deleted_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "billing_info": {
+      "$ref": "billing_infos.json"
+    },
+    "external_accounts": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "external_accounts.json"
+      }
+    },
+    "invoice_template_id": {
+      "type": ["null", "string"]
+    },
+    "override_business_entity_id": {
+      "type": ["null", "string"]
+    },
+    "preferred_time_zone": {
+      "type": ["null", "string"]
+    },
+    "shipping_addresses": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "shipping_addresses.json"
+      }
     }
   }
 }
