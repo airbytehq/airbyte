@@ -6,7 +6,7 @@ import json
 import uuid
 from typing import Callable, Dict, List, Optional, Union
 
-from dagger import Client, Container, File, Secret
+from dagger import Client, Container, File, Secret, Service
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import (
@@ -117,7 +117,7 @@ def with_global_dockerd_service(
     dagger_client: Client,
     docker_hub_username_secret: Optional[Secret] = None,
     docker_hub_password_secret: Optional[Secret] = None,
-) -> Container:
+) -> Service:
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
     It is optionally bound to a tailscale VPN if the TAILSCALE_AUTH_KEY env var is set.
@@ -146,7 +146,7 @@ def with_global_dockerd_service(
         dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
     return dockerd_container.with_exec(
         ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
-    )
+    ).as_service()
 
 
 def with_bound_docker_host(

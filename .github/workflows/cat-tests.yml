@@ -16,7 +16,7 @@ on:
 jobs:
   run-cat-unit-tests:
     name: Run CAT unit tests
-    runs-on: "ci-runner-connector-test-large-dagger-0-6-4"
+    runs-on: "ci-runner-connector-test-large-dagger-0-9-5"
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -25,6 +25,7 @@ jobs:
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
