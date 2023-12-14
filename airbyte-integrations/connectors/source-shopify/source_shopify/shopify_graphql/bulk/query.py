@@ -559,7 +559,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
                                                     fulfillableQuantity
                                                     quantity: currentQuantity
                                                     variant {
-                                                        varianId: id
+                                                        variantId: id
                                                     }
                                                 }
                                             }
@@ -686,7 +686,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
                                                                 Field(name="id", alias="lineItemId"),
                                                                 "fulfillableQuantity",
                                                                 Field(name="currentQuantity", alias="quantity"),
-                                                                Field(name="variant", fields=[Field(name="id", alias="varianId")]),
+                                                                Field(name="variant", fields=[Field(name="id", alias="variantId")]),
                                                             ],
                                                         ),
                                                     ],
@@ -738,8 +738,8 @@ class FulfillmentOrder(ShopifyBulkQuery):
     def prep_fulfillment_order(cls, record: Mapping[str, Any], shop_id: Optional[int] = 0) -> Mapping[str, Any]:
         # addings
         record["shop_id"] = shop_id
-        record["order_id"] = record[BULK_PARENT_KEY]
-        # location
+        record["order_id"] = record.get(BULK_PARENT_KEY)
+        # unnest nested locationId to the `assignedLocation`
         location_id = record.get("assignedLocation", {}).get("location", {}).get("locationId")
         record["assignedLocation"]["locationId"] = location_id
         record["assignedLocationId"] = location_id
@@ -758,7 +758,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
             if location_id:
                 record["assignedLocation"]["locationId"] = cls.tools.resolve_str_id(location_id)
         # assigned_location_id
-        record["assignedLocationId"] = cls.tools.resolve_str_id(record["assignedLocationId"])
+        record["assignedLocationId"] = cls.tools.resolve_str_id(record.get("assignedLocationId"))
         # destination id
         destination = record.get("destination", {})
         if destination:
@@ -772,43 +772,48 @@ class FulfillmentOrder(ShopifyBulkQuery):
             if delivery_method_id:
                 record["deliveryMethod"]["id"] = cls.tools.resolve_str_id(delivery_method_id)
         # order id
-        record["order_id"] = cls.tools.resolve_str_id(record["order_id"])
+        record["order_id"] = cls.tools.resolve_str_id(record.get("order_id"))
         # field names to snake for nested objects
         # `assignedLocation`(object) field names to snake case
-        record["assignedLocation"] = cls.tools.fields_names_to_snake_case(record["assignedLocation"])
+        record["assignedLocation"] = cls.tools.fields_names_to_snake_case(record.get("assignedLocation"))
         # `deliveryMethod`(object) field names to snake case
-        record["deliveryMethod"] = cls.tools.fields_names_to_snake_case(record["deliveryMethod"])
+        record["deliveryMethod"] = cls.tools.fields_names_to_snake_case(record.get("deliveryMethod"))
         # `destination`(object) field names to snake case
-        record["destination"] = cls.tools.fields_names_to_snake_case(record["destination"])
+        record["destination"] = cls.tools.fields_names_to_snake_case(record.get("destination"))
         # `fulfillmentHolds`(list[object]) field names to snake case
-        record["fulfillmentHolds"] = [cls.tools.fields_names_to_snake_case(el) for el in record["fulfillmentHolds"]]
+        record["fulfillmentHolds"] = [cls.tools.fields_names_to_snake_case(el) for el in record.get("fulfillmentHolds", [])]
+        # `supportedActions`(list[object]) field names to snake case
+        record["supportedActions"] = [cls.tools.fields_names_to_snake_case(el) for el in record.get("supportedActions", [])]
         return record
 
     @classmethod
     def prep_line_item(cls, record: Mapping[str, Any], shop_id: Optional[int] = 0) -> Mapping[str, Any]:
         # addings
         record["shop_id"] = shop_id
-        record["fulfillmentOrderId"] = record[BULK_PARENT_KEY]
+        record["fulfillmentOrderId"] = record.get(BULK_PARENT_KEY)
         # unnesting nested `lineItem`
         line_item = record.get("lineItem", {})
-        record["quantity"] = line_item.get("quantity")
-        record["lineItemId"] = line_item.get("lineItemId")
-        record["fulfillableQuantity"] = line_item.get("fulfillableQuantity")
-        record["varianId"] = line_item.get("variant", {}).get("varianId")
+        if line_item:
+            record["quantity"] = line_item.get("quantity")
+            record["lineItemId"] = line_item.get("lineItemId")
+            record["fulfillableQuantity"] = line_item.get("fulfillableQuantity")
+            variant = line_item.get("variant", {})
+            if variant:
+                record["variantId"] = variant.get("variantId")
         # cleaning
         record.pop("__typename")
         record.pop(BULK_PARENT_KEY)
         record.pop("lineItem")
         # resolve ids from `str` to `int`
-        record["id"] = cls.tools.resolve_str_id(record["id"])
+        record["id"] = cls.tools.resolve_str_id(record.get("id"))
         # inventoryItemId
-        record["inventoryItemId"] = cls.tools.resolve_str_id(record["inventoryItemId"])
+        record["inventoryItemId"] = cls.tools.resolve_str_id(record.get("inventoryItemId"))
         # fulfillmentOrderId
-        record["fulfillmentOrderId"] = cls.tools.resolve_str_id(record["fulfillmentOrderId"])
+        record["fulfillmentOrderId"] = cls.tools.resolve_str_id(record.get("fulfillmentOrderId"))
         # lineItemId
-        record["lineItemId"] = cls.tools.resolve_str_id(record["lineItemId"])
-        # varianId
-        record["varianId"] = cls.tools.resolve_str_id(record["varianId"])
+        record["lineItemId"] = cls.tools.resolve_str_id(record.get("lineItemId"))
+        # variantId
+        record["variantId"] = cls.tools.resolve_str_id(record.get("variantId"))
         # field names to snake case
         record = cls.tools.fields_names_to_snake_case(record)
         return record
@@ -819,7 +824,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
         record.pop("__typename")
         record.pop(BULK_PARENT_KEY)
         # resolve ids from `str` to `int`
-        record["id"] = cls.tools.resolve_str_id(record["id"])
+        record["id"] = cls.tools.resolve_str_id(record.get("id"))
         # field names to snake case
         record = cls.tools.fields_names_to_snake_case(record)
         return record

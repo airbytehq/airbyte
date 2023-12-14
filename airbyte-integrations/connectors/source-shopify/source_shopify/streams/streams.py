@@ -69,9 +69,9 @@ class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
         More info: https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
         """
         # resolve parent id from `str` to `int`
-        record["owner_id"] = self.bulk_job.tools.resolve_str_id(record[BULK_PARENT_KEY])
+        record["owner_id"] = self.bulk_job.tools.resolve_str_id(record.get(BULK_PARENT_KEY))
         # add `owner_resource` field
-        record["owner_resource"] = self.bulk_job.tools.camel_to_snake(record[BULK_PARENT_KEY].split("/")[3])
+        record["owner_resource"] = self.bulk_job.tools.camel_to_snake(record.get(BULK_PARENT_KEY, "").split("/")[3])
         # remove `__parentId` from record
         record.pop(BULK_PARENT_KEY, None)
         # convert dates from ISO-8601 to RFC-3339
@@ -398,7 +398,7 @@ class DiscountCodes(IncrementalShopifyGraphQlBulkStream):
         Custom transformation for produced records.
         """
         # resolve parent id from `str` to `int`
-        record["price_rule_id"] = self.bulk_job.tools.resolve_str_id(record["price_rule_id"])
+        record["price_rule_id"] = self.bulk_job.tools.resolve_str_id(record.get("price_rule_id"))
         # convert dates from ISO-8601 to RFC-3339
         record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
         record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
@@ -424,7 +424,7 @@ class DiscountCodes(IncrementalShopifyGraphQlBulkStream):
             if not BULK_PARENT_KEY in record.keys():
                 discount_record = record
                 # move the id under `price_rule_id`
-                discount_record["price_rule_id"] = discount_record["id"]
+                discount_record["price_rule_id"] = discount_record.get("id")
                 # by now, we have duplicated info, remove the original id,
                 # so set the `id` from child record
                 discount_record.pop("id", None)

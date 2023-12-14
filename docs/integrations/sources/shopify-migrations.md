@@ -9,6 +9,11 @@ This version implements `Shopify GraphQL BULK Operations` to speed up the follow
  - `Metafield Orders`
  - `Metafield Product Images`
  - `Metafield Product Variants`
+ - `Collections`
+ - `Discount Codes`
+ - `Fulfillment Orders`
+ - `Inventory Items`
+ - `Inventory Levels`
 
 Increased the performance for the following streams:
  - `Product Images`
@@ -22,6 +27,7 @@ Other bug fixes and improvements, more info: `https://github.com/airbytehq/airby
 ### Action items required for 1.2.0
 * The `Fulfillments` stream now has the cursor field `updated_at`, instead of the `id`.
 * The `Order Refunds` stream, now has the schema `refund_line_items.line_item.properties` to array of `strings`, instead of `object` with properties.
+* The `Fulfillment Orders` stream now has the `supported_actions` schema as `array of objects` instead of `array of strings`.
 
    - `Refresh Schema` + `Reset` is required for these streams after the upgrade from previous version.
 
