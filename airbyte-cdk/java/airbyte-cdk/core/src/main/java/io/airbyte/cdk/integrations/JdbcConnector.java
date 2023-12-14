@@ -18,6 +18,16 @@ public abstract class JdbcConnector extends BaseConnector {
   public static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
   public static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
 
+  protected final String driverClass;
+
+  protected JdbcConnector(String driverClass) {
+    this.driverClass = driverClass;
+  }
+
+  protected Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
+    return getConnectionTimeout(connectionProperties, driverClass);
+  }
+
   /**
    * Retrieves connectionTimeout value from connection properties in millis, default minimum timeout
    * is 60 seconds since Hikari default of 30 seconds is not enough for acceptance tests. In the case
