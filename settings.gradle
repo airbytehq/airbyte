@@ -161,8 +161,6 @@ rootProject.name = 'airbyte'
 
 include ':tools:code-generator'
 
-include ':airbyte-lib'
-
 include ':airbyte-cdk:python'
 include ':airbyte-cdk:java:airbyte-cdk'
 include ':airbyte-cdk:java:airbyte-cdk:airbyte-commons'

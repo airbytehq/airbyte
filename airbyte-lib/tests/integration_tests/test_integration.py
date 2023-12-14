@@ -16,8 +16,8 @@ def prepare_test_env():
         shutil.rmtree(".venv-source-test")
 
     os.system("python -m venv .venv-source-test")
-    os.system("source .venv-source-test/bin/activate && pip install -e ./integration_tests/fixtures/source-test")
-    os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./integration_tests/fixtures/registry.json"
+    os.system("source .venv-source-test/bin/activate && pip install -e ./tests/integration_tests/fixtures/source-test")
+    os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/integration_tests/fixtures/registry.json"
 
     yield
 

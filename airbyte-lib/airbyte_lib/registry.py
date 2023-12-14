@@ -38,4 +38,6 @@ def get_connector_metadata(name: str):
     """
     if not _cache:
         _update_cache()
+    if name not in _cache:
+        raise Exception(f"Connector {name} not found")
     return _cache[name]
