@@ -116,11 +116,11 @@ public class GeneralStagingFunctions {
                                                 final List<WriteConfig> writeConfigs,
                                                 final boolean purgeStagingData,
                                                 final TyperDeduper typerDeduper) {
-    return (hasFailed) -> {
+    return (hasFailed, streamSyncSummaries) -> {
       // After moving data from staging area to the target table (airybte_raw) clean up the staging
       // area (if user configured)
       log.info("Cleaning up destination started for {} streams", writeConfigs.size());
-      typerDeduper.typeAndDedupe();
+      typerDeduper.typeAndDedupe(streamSyncSummaries);
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {

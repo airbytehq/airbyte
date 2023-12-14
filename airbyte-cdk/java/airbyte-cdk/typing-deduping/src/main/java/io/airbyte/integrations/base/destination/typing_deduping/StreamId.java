@@ -5,6 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 
 /**
  * In general, callers should not directly instantiate this class. Use
@@ -54,6 +55,10 @@ public record StreamId(String finalNamespace,
 
   public AirbyteStreamNameNamespacePair asPair() {
     return new AirbyteStreamNameNamespacePair(originalName, originalNamespace);
+  }
+
+  public StreamDescriptor asStreamDescriptor() {
+    return new StreamDescriptor().withNamespace(originalNamespace).withName(originalName);
   }
 
   /**

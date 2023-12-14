@@ -6,8 +6,8 @@ from source_typeform.components import TypeformAuthenticator
 
 
 def test_typeform_authenticator():
-    config = {"credentials": {"access_token": "access_token", "client_id": None, "client_secret": None}}
-    oauth_config = {"credentials": {"access_token": None, "client_id": "client_id", "client_secret": "client_secret"}}
+    config = {"credentials": {"auth_type": "access_token", "access_token": "access_token"}}
+    oauth_config = {"credentials": {"auth_type": "oauth2.0", "access_token": None, "client_id": "client_id", "client_secret": "client_secret"}}
 
     class TokenProvider:
         def get_token(self) -> str:
@@ -16,12 +16,12 @@ def test_typeform_authenticator():
     auth = TypeformAuthenticator(
         token_auth=BearerAuthenticator(config=config, token_provider=TokenProvider(), parameters={}),
         config=config,
-        oauth2=DeclarativeSingleUseRefreshTokenOauth2Authenticator(connector_config=config, token_refresh_endpoint="/new_token")
+        oauth2=DeclarativeSingleUseRefreshTokenOauth2Authenticator(connector_config=oauth_config, token_refresh_endpoint="/new_token")
     )
     assert isinstance(auth, BearerAuthenticator)
 
     oauth = TypeformAuthenticator(
-        token_auth=BearerAuthenticator(config=oauth_config, token_provider=TokenProvider(), parameters={}),
+        token_auth=BearerAuthenticator(config=config, token_provider=TokenProvider(), parameters={}),
         config=oauth_config,
         oauth2=DeclarativeSingleUseRefreshTokenOauth2Authenticator(connector_config=oauth_config, token_refresh_endpoint="/new_token")
     )
