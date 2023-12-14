@@ -8,6 +8,9 @@
       "title": "Line item ID",
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"]
+    },
     "uuid": {
       "type": "string",
       "title": "UUID",
@@ -53,6 +56,9 @@
       "type": ["null", "string"],
       "title": "Legacy category",
       "description": "Category to describe the role of a line item on a legacy invoice:\n- \"charges\" refers to charges being billed for on this invoice.\n- \"credits\" refers to refund or proration credits. This portion of the invoice can be considered a credit memo.\n- \"applied_credits\" refers to previous credits applied to this invoice. See their original_line_item_id to determine where the credit first originated.\n- \"carryforwards\" can be ignored. They exist to consume any remaining credit balance. A new credit with the same amount will be created and placed back on the account.\n"
+    },
+    "account": {
+      "$ref": "account_details.json"
     },
     "bill_for_account_id": {
       "type": "string",
@@ -208,6 +214,9 @@
       "description": "Used by Avalara, Vertex, and Recurly\u2019s EU VAT tax feature. The tax code values are specific to each tax system. If you are using Recurly\u2019s EU VAT feature you can use `unknown`, `physical`, or `digital`.",
       "maxLength": 50
     },
+    "tax_info": {
+      "$ref": "tax_info.json"
+    },
     "proration_rate": {
       "type": ["null", "number"],
       "format": "float",
@@ -253,6 +262,20 @@
       "format": "date-time",
       "title": "End date",
       "description": "If this date is provided, it indicates the end of a time range."
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },  
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     },
     "created_at": {
       "type": "string",
