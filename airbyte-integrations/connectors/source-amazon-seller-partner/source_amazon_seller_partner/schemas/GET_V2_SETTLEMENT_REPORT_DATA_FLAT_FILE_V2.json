@@ -18,7 +18,7 @@
     "marketplace-name": { "type": ["null", "string"] },
     "amount-type": { "type": ["null", "string"]},
     "amount-description": { "type": ["null", "string"] },
-    "amount": {  "type": ["null", "number"]},
+    "amount": {  "type": ["null", "string"]},
     "shipment-fee-type": { "type": ["null", "string"] },
     "shipment-fee-amount": { "type": ["null", "string"] },
     "order-fee-type": { "type": ["null", "string"] },
