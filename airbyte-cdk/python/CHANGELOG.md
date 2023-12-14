@@ -1,5 +1,56 @@
 # Changelog
 
+## 0.57.6
+Adding more tooling to cover source-stripe events stream
+
+## 0.57.5
+Raise error on passing unsupported value formats as query parameters
+
+## 0.57.4
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.3
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.2
+Update airbyte-protocol
+
+## 0.57.1
+Improve integration tests tooling
+
+## 0.57.0
+low-code: cache requests sent for parent streams
+
+## 0.56.1
+no-op to verify pypi publish flow
+
+## 0.56.0
+Allow for connectors to continue syncing when a stream fails
+
+## 0.55.5
+File-based CDK: hide source-defined primary key; users can define primary keys in the connection's configuration
+
+## 0.55.4
+Source Integration tests: decoupling entrypoint wrapper from pytest
+
+## 0.55.3
+First iteration of integration tests tooling (http mocker and response builder)
+
+## 0.55.2
+concurrent-cdk: factory method initializes concurrent source with default number of max tasks
+
+## 0.55.1
+Vector DB CDK: Add omit_raw_text flag
+
+## 0.55.0
+concurrent cdk: read multiple streams concurrently
+
+## 0.54.0
+low-code: fix injection of page token if first request
+
+## 0.53.9
+Fix of generate the error message using _try_get_error based on list of errors
+
 ## 0.53.8
 Vector DB CDK: Remove CDC records, File CDK: Update unstructured parser
 

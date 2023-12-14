@@ -154,7 +154,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
         if stream_state and account_id:
             if stream_state.get(account_id, {}).get(self.cursor_field):
-                return pendulum.parse(self.get_report_record_timestamp(stream_state[account_id][self.cursor_field]))
+                return pendulum.parse(stream_state[account_id][self.cursor_field])
 
         return self.client.reports_start_date
 
@@ -230,9 +230,11 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         self,
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            for period in self.default_time_periods:
-                yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
+        accounts = Accounts(self.client, self.config)
+        for _slice in accounts.stream_slices():
+            for account in accounts.read_records(SyncMode.full_refresh, _slice):
+                for period in self.default_time_periods:
+                    yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
 
 
 class BingAdsReportingServicePerformanceStream(BingAdsReportingServiceStream, ABC):
