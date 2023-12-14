@@ -30,7 +30,19 @@ async def test(pipeline_context: ClickPipelineContext):
     logger.info(f"Running tests for {poetry_package_path}")
 
     # The following directories are always mounted because a lot of tests rely on them
-    directories_to_always_mount = [".git", ".github", "docs", "airbyte-integrations", "airbyte-ci", "airbyte-cdk", "pyproject.toml"]
+    directories_to_always_mount = [
+        ".git",  # This is needed as some package tests rely on being in a git repo
+        ".github",
+        "docs",
+        "airbyte-integrations",
+        "airbyte-ci",
+        "airbyte-cdk",
+        "pyproject.toml",
+        "LICENSE_SHORT",
+        "poetry.lock",
+        "spotless-maven-pom.xml",
+        "tools/gradle/codestyle/java-google-style.xml",
+    ]
     directories_to_mount = list(set([poetry_package_path, *directories_to_always_mount]))
 
     pipeline_name = f"Unit tests for {poetry_package_path}"

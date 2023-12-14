@@ -148,7 +148,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
           }
           return Optional.empty();
         })) {
-      List<Optional<GtidSet>> gtidSet = stream.toList();
+      final List<Optional<GtidSet>> gtidSet = stream.toList();
       if (gtidSet.isEmpty()) {
         return Optional.empty();
       } else if (gtidSet.size() == 1) {
@@ -265,7 +265,8 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
           if (Duration.between(engineStartTime, Instant.now()).compareTo(initialWaitingDuration) > 0) {
             LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", initialWaitingDuration.getSeconds());
             publisher.close();
-
+            throw new RuntimeException(
+                "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
           }
           continue;
         }
@@ -287,6 +288,9 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     final JsonNode asJson = serialize(offset, schemaHistory);
     LOGGER.info("Initial Debezium state constructed: {}", asJson);
 
+    if (asJson.get(MysqlCdcStateConstants.MYSQL_DB_HISTORY).asText().isBlank()) {
+      throw new RuntimeException("Schema history snapshot returned empty history.");
+    }
     return asJson;
   }
 

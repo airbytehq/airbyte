@@ -70,6 +70,10 @@ public class PostgresUtils {
     return shouldFlushAfterSync;
   }
 
+  public static boolean isDebugMode(final JsonNode config) {
+    return config.hasNonNull("debug_mode");
+  }
+
   public static Optional<Integer> getFirstRecordWaitSeconds(final JsonNode config) {
     final JsonNode replicationMethod = config.get("replication_method");
     if (replicationMethod != null && replicationMethod.has("initial_waiting_seconds")) {
