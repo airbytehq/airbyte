@@ -138,31 +138,36 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Redshift is `SUPER`.
 
-## Data type mapping
+## Data type map
 
-| Redshift Type         | Airbyte Type              | Notes |
-|:----------------------|:--------------------------|:------|
-| `boolean`             | `boolean`                 |       |
-| `int`                 | `integer`                 |       |
-| `float`               | `number`                  |       |
-| `varchar`             | `string`                  |       |
-| `date/varchar`        | `date`                    |       |
-| `time/varchar`        | `time`                    |       |
-| `timestamptz/varchar` | `timestamp_with_timezone` |       |
-| `varchar`             | `array`                   |       |
-| `varchar`             | `object`                  |       |
+| Airbyte type                        | Redshift type                          |
+|:------------------------------------|:---------------------------------------|
+| STRING                              | VARCHAR                                |
+| STRING (BASE64)                     | VARCHAR                                |
+| STRING (BIG_NUMBER)                 | VARCHAR                                |
+| STRING (BIG_INTEGER)                | VARCHAR                                |
+| NUMBER                              | DECIMAL / NUMERIC                      |
+| INTEGER                             | BIGINT / INT8                          |
+| BOOLEAN                             | BOOLEAN / BOOL                         |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMPTZ / TIMESTAMP WITH TIME ZONE |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP                              |
+| STRING (TIME_WITH_TIMEZONE)         | TIMETZ / TIME WITH TIME ZONE           |
+| STRING (TIME_WITHOUT_TIMEZONE)      | TIME                                   |
+| DATE                                | DATE                                   |
+| OBJECT                              | SUPER                                  |
+| ARRAY                               | SUPER                                  |
 
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.7.4   | 2023-12-13 | [33369](https://github.com/airbytehq/airbyte/pull/33369)   | Use jdbc common sql implementation                                                                                                                                                                               |
-| 0.7.3   | 2023-12-12 | [33367](https://github.com/airbytehq/airbyte/pull/33367)   | DV2: fix migration logic                                                                                                                                                                                         |
-| 0.7.2   | 2023-12-11 | [33335](https://github.com/airbytehq/airbyte/pull/33335)   | DV2: improve data type mapping                                                                                                                                                                                   |
-| 0.7.1   | 2023-12-11 | [33307](https://github.com/airbytehq/airbyte/pull/33307)   | ~DV2: improve data type mapping~ No changes                                                                                                                                                                      |
-| 0.7.0   | 2023-12-05 | [32326](https://github.com/airbytehq/airbyte/pull/32326)   | Opt in beta for v2 destination                                                                                                                                                                                   |
-| 0.6.11  | 2023-11-29 | [#32888](https://github.com/airbytehq/airbyte/pull/32888)  | Use the new async framework.                                                                                                                                                                                     |
-| 0.6.10  | 2023-11-06 | [#32193](https://github.com/airbytehq/airbyte/pull/32193)  | Adopt java CDK version 0.4.1.                                                                                                                                                                                    |
+| 0.7.4   | 2023-12-13 | [\#33369](https://github.com/airbytehq/airbyte/pull/33369) | Use jdbc common sql implementation                                                                                                                                                                               |
+| 0.7.3   | 2023-12-12 | [\#33367](https://github.com/airbytehq/airbyte/pull/33367) | DV2: fix migration logic                                                                                                                                                                                         |
+| 0.7.2   | 2023-12-11 | [\#33335](https://github.com/airbytehq/airbyte/pull/33335) | DV2: improve data type mapping                                                                                                                                                                                   |
+| 0.7.1   | 2023-12-11 | [\#33307](https://github.com/airbytehq/airbyte/pull/33307) | ~DV2: improve data type mapping~ No changes                                                                                                                                                                      |
+| 0.7.0   | 2023-12-05 | [\#32326](https://github.com/airbytehq/airbyte/pull/32326) | Opt in beta for v2 destination                                                                                                                                                                                   |
+| 0.6.11  | 2023-11-29 | [\#32888](https://github.com/airbytehq/airbyte/pull/32888) | Use the new async framework.                                                                                                                                                                                     |
+| 0.6.10  | 2023-11-06 | [\#32193](https://github.com/airbytehq/airbyte/pull/32193) | Adopt java CDK version 0.4.1.                                                                                                                                                                                    |
 | 0.6.9   | 2023-10-10 | [\#31083](https://github.com/airbytehq/airbyte/pull/31083) | Fix precision of numeric values in async destinations                                                                                                                                                            |
 | 0.6.8   | 2023-10-10 | [\#31218](https://github.com/airbytehq/airbyte/pull/31218) | Clarify configuration groups                                                                                                                                                                                     |
 | 0.6.7   | 2023-10-06 | [\#31153](https://github.com/airbytehq/airbyte/pull/31153) | Increase jvm GC retries                                                                                                                                                                                          |
