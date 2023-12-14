@@ -76,7 +76,7 @@ class FormatCommand(click.Command):
             message = f"{message}."
         return message
 
-    def get_dir_to_format(self, dagger_client) -> Directory:
+    def get_dir_to_format(self, dagger_client) -> dagger.Directory:
         """Get a directory with all the source code to format according to the file_filter.
         We mount the the files to format in a git container and remove all gitignored files.
         It ensures we're not formatting files that are gitignored.
@@ -89,7 +89,7 @@ class FormatCommand(click.Command):
         """
         # Load a directory from the host with all the files to format according to the file_filter and the .gitignore files
         dir_to_format = dagger_client.host().directory(
-            self.LOCAL_REPO_PATH, include=self.file_filter + [".gitignore"], exclude=DEFAULT_FORMAT_IGNORE_LIST
+            self.LOCAL_REPO_PATH, include=self.file_filter + ["**/.gitignore"], exclude=DEFAULT_FORMAT_IGNORE_LIST
         )
 
         return (
