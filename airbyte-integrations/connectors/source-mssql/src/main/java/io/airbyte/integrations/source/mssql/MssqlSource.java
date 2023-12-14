@@ -21,11 +21,13 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.db.util.SSLCertificateUtils;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
@@ -34,6 +36,7 @@ import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -55,6 +58,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -105,6 +109,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String NO_TUNNEL = "NO_TUNNEL";
   public static final String SSL_METHOD = "ssl_method";
   public static final String SSL_METHOD_UNENCRYPTED = "unencrypted";
+
+  public static final String JDBC_DELIMITER = ";";
   private List<String> schemas;
 
   public static Source sshWrappedSource(MssqlSource source) {
@@ -622,27 +628,17 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         additionalParameters.add("encrypt=true");
         additionalParameters.add("trustServerCertificate=false");
 
-        // trust store location code found at https://stackoverflow.com/a/56570588
         if (config.has("certificate")) {
-          byte[] certificate = config.get("certificate").asText().getBytes(StandardCharsets.US_ASCII);
+          String certificate = config.get("certificate").asText();
           String password = RandomStringUtils.randomAlphanumeric(100);
-          char[] pwdArray = password.toCharArray();
-          final File trustStoreFile;
+          final URI keyStoreUri;
           try {
-            trustStoreFile = File.createTempFile("mssqlTrustStoreFile", "jks");
-            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(null, pwdArray);
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            Certificate cert = cf.generateCertificate(new ByteArrayInputStream(certificate));
-            ks.setCertificateEntry("cert", cert);
-            try (FileOutputStream fos = new FileOutputStream(trustStoreFile)) {
-              ks.store(fos, pwdArray);
-            }
+            keyStoreUri = SSLCertificateUtils.keyStoreFromCertificate(certificate, password, null, null);
           } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             throw new RuntimeException(e);
           }
           additionalParameters
-              .add("trustStore=" + trustStoreFile.getAbsolutePath());
+              .add("trustStore=" + keyStoreUri.getPath());
           additionalParameters
               .add("trustStorePassword=" + password);
         }
@@ -661,6 +657,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   public Duration getConnectionTimeoutMssql(final Map<String, String> connectionProperties) {
     return getConnectionTimeout(connectionProperties);
+  }
+
+  @Override
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    return createDatabase(sourceConfig, JDBC_DELIMITER);
   }
 
   public static void main(final String[] args) throws Exception {

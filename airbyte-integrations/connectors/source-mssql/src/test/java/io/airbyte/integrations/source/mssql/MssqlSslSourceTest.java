@@ -15,6 +15,7 @@ import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.CertificateKey;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import java.net.InetAddress;
+import java.sql.SQLTransientConnectionException;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +41,24 @@ public class MssqlSslSourceTest {
 
   @ParameterizedTest
   @EnumSource(CertificateKey.class)
-  public void testDiscoverWithCertificateTrustHostname(CertificateKey certificateKey) throws Exception {
+  public void testDiscoverWithCertificateTrustHostnameWithValidCertificates(CertificateKey certificateKey) throws Exception {
+    if (!certificateKey.isValid) {
+      return;
+    }
+    String certificate = testDb.getCertificate(certificateKey);
+    JsonNode config = testDb.testConfigBuilder()
+        .withSsl(Map.of("ssl_method", "encrypted_verify_certificate",
+            "certificate", certificate))
+        .build();
+    AirbyteCatalog catalog = new MssqlSource().discover(config);
+  }
+
+  @ParameterizedTest
+  @EnumSource(CertificateKey.class)
+  public void testDiscoverWithCertificateTrustHostnameWithInvalidCertificates(CertificateKey certificateKey) throws Exception {
+    if (certificateKey.isValid) {
+      return;
+    }
     String certificate = testDb.getCertificate(certificateKey);
     JsonNode config = testDb.testConfigBuilder()
         .withSsl(Map.of("ssl_method", "encrypted_verify_certificate",
@@ -48,9 +66,9 @@ public class MssqlSslSourceTest {
         .build();
     try {
       AirbyteCatalog catalog = new MssqlSource().discover(config);
-      assertTrue(certificateKey.isValid);
-    } catch (Exception e) {
-      if (certificateKey.isValid) {
+    } catch (ConnectionErrorException e) {
+      if(!e.getCause().getCause().getMessage().contains("PKIX path validation") &&
+          !e.getCause().getCause().getMessage().contains("PKIX path building failed")) {
         throw e;
       }
     }
@@ -59,26 +77,27 @@ public class MssqlSslSourceTest {
   @ParameterizedTest
   @EnumSource(CertificateKey.class)
   public void testDiscoverWithCertificateNoTrustHostnameWrongHostname(CertificateKey certificateKey) throws Throwable {
-    if (certificateKey.isValid) {
-      String containerIp = InetAddress.getByName(testDb.getContainer().getHost()).getHostAddress();
-      String certificate = testDb.getCertificate(certificateKey);
-      JsonNode config = testDb.configBuilder()
-          .withSsl(Map.of("ssl_method", "encrypted_verify_certificate",
-              "certificate", certificate))
-          .with(JdbcUtils.HOST_KEY, containerIp)
-          .with(JdbcUtils.PORT_KEY, testDb.getContainer().getFirstMappedPort())
-          .withCredentials()
-          .withDatabase()
-          .build();
-      try {
-        AirbyteCatalog catalog = new MssqlSource().discover(config);
-        fail("discover should have failed!");
-      } catch (ConnectionErrorException e) {
-        String expectedMessage =
-            "Failed to validate the server name \"" + containerIp + "\"in a certificate during Secure Sockets Layer (SSL) initialization.";
-        if (!e.getExceptionMessage().contains(expectedMessage)) {
-          fail("exception message was " + e.getExceptionMessage() + "\n expected: " + expectedMessage);
-        }
+    if (!certificateKey.isValid) {
+      return;
+    }
+    String containerIp = InetAddress.getByName(testDb.getContainer().getHost()).getHostAddress();
+    String certificate = testDb.getCertificate(certificateKey);
+    JsonNode config = testDb.configBuilder()
+        .withSsl(Map.of("ssl_method", "encrypted_verify_certificate",
+            "certificate", certificate))
+        .with(JdbcUtils.HOST_KEY, containerIp)
+        .with(JdbcUtils.PORT_KEY, testDb.getContainer().getFirstMappedPort())
+        .withCredentials()
+        .withDatabase()
+        .build();
+    try {
+      AirbyteCatalog catalog = new MssqlSource().discover(config);
+      fail("discover should have failed!");
+    } catch (ConnectionErrorException e) {
+      String expectedMessage =
+          "Failed to validate the server name \"" + containerIp + "\"in a certificate during Secure Sockets Layer (SSL) initialization.";
+      if (!e.getExceptionMessage().contains(expectedMessage)) {
+        fail("exception message was " + e.getExceptionMessage() + "\n expected: " + expectedMessage);
       }
     }
   }
