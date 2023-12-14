@@ -220,10 +220,10 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     public MsSQLConfigBuilder withCdcReplication() {
       return with("is_test", true)
           .with("replication_method", Map.of(
-          "method", "CDC",
-          "data_to_sync", "Existing and New",
-          "initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds(),
-          "snapshot_isolation", "Snapshot"));
+              "method", "CDC",
+              "data_to_sync", "Existing and New",
+              "initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds(),
+              "snapshot_isolation", "Snapshot"));
     }
 
     public MsSQLConfigBuilder withSchemas(String... schemas) {

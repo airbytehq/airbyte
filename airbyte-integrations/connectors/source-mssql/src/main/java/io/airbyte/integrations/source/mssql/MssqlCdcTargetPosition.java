@@ -89,10 +89,10 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
           ? MAX_LSN_QUERY_DELAY_TEST
           : MAX_LSN_QUERY_DELAY;
       final String maxLsnQuery = """
-                  USE [%s];
-                  WAITFOR DELAY '%02d:%02d:%02d';
-                  SELECT sys.fn_cdc_get_max_lsn() AS max_lsn;
-                  """.formatted(dbName, delay.toHours(), delay.toMinutesPart(), delay.toSecondsPart());
+                                 USE [%s];
+                                 WAITFOR DELAY '%02d:%02d:%02d';
+                                 SELECT sys.fn_cdc_get_max_lsn() AS max_lsn;
+                                 """.formatted(dbName, delay.toHours(), delay.toMinutesPart(), delay.toSecondsPart());
       // Query the high-water mark.
       final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
           connection -> connection.createStatement().executeQuery(maxLsnQuery),
