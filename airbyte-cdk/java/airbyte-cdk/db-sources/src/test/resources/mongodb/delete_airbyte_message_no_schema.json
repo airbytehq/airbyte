@@ -1,6 +1,6 @@
 {
   "_id": "64f24244f95155351c4185b1",
-  "_ab_data": {
+  "data": {
     "_id": "64f24244f95155351c4185b1",
     "name": "Document 0",
     "description": "This is document #0",
@@ -9,7 +9,8 @@
     "objectField": {
       "key": "value"
     },
-    "timestamp": "2023-09-01T19:57:56.752Z"
+    "timestamp": "2023-09-01T19:57:56.752Z",
+    "data": "some data"
   },
   "_ab_cdc_updated_at": "2023-09-01T19:57:57Z",
   "_ab_cdc_deleted_at": "2023-09-01T19:57:57Z"

@@ -115,7 +115,7 @@ public class MongoDbCdcEventUtils {
 
   public static ObjectNode normalizeObjectIdNoSchema(final ObjectNode data) {
     normalizeObjectId(data);
-    // normalize _id in _ab_data if key exists
+    // normalize _id in "data" if key exists
     final Optional<JsonNode> maybeDataField = Optional.ofNullable(data.get(SCHEMALESS_MODE_DATA_FIELD));
     maybeDataField.ifPresent(d -> normalizeObjectId((ObjectNode) d));
     return data;
