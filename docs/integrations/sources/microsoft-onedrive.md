@@ -119,6 +119,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------|
-| 0.1.0   | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | New source |
+| Version | Date       | Pull Request                                             | Subject            |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------|
+| 0.1.1   | 2021-12-15 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | Fix for docs name  |
+| 0.1.0   | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | New source         |
