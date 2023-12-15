@@ -194,6 +194,8 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: AverageCpm
               bypass_reason: "dynamic field"
+            - name: LandingPageExperience
+              bypass_reason: "dynamic field"
           ad_group_performance_report_weekly:
             - name: Impressions
               bypass_reason: "dynamic field"
