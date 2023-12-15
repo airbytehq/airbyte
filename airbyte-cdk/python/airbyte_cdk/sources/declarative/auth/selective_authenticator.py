@@ -14,7 +14,7 @@ class SelectiveAuthenticator(DeclarativeAuthenticator):
     """Authenticator that selects concrete implementation based on specific config value."""
 
     config: Mapping[str, Any]
-    authenticators: List[str, DeclarativeAuthenticator]
+    authenticators: Mapping[str, DeclarativeAuthenticator]
     authenticator_selection_path: List[str]
 
     def __new__(
