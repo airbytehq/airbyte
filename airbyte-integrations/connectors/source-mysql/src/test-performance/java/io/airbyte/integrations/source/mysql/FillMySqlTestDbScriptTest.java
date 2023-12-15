@@ -10,7 +10,7 @@ import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.JdbcConnector;
+import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.cdk.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import io.airbyte.commons.json.Jsons;
@@ -62,7 +62,7 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
                 config.get(JdbcUtils.DATABASE_KEY).asText()),
             SQLDialect.MYSQL,
             Map.of("zeroDateTimeBehavior", "convertToNull"),
-            JdbcConnector.CONNECT_TIMEOUT_DEFAULT));
+            BaseConnector.CONNECT_TIMEOUT_DEFAULT));
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"

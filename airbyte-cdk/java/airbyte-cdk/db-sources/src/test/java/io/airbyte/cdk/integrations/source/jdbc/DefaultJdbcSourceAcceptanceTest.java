@@ -6,6 +6,9 @@ package io.airbyte.cdk.integrations.source.jdbc;
 
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.withSettings;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -15,6 +18,7 @@ import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.cdk.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.json.Jsons;
@@ -173,6 +177,10 @@ class DefaultJdbcSourceAcceptanceTest
     @Override
     public BareBonesConfigBuilder configBuilder() {
       return new BareBonesConfigBuilder(this);
+    }
+
+    public AbstractDbSource getDbSource() {
+      return mock(AbstractDbSource.class, withSettings().useConstructor("").defaultAnswer(CALLS_REAL_METHODS));
     }
 
     static protected class BareBonesConfigBuilder extends TestDatabase.ConfigBuilder<BareBonesTestDatabase, BareBonesConfigBuilder> {

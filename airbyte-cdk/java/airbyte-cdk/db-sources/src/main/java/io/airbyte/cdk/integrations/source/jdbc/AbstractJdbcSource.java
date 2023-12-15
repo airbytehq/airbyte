@@ -40,7 +40,6 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.JdbcStreamingQueryConfig;
-import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.relationaldb.AbstractDbSource;
@@ -87,7 +86,7 @@ import org.slf4j.LoggerFactory;
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
 public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Datatype, JdbcDatabase> implements
-    JdbcConnector, Source {
+    Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
@@ -105,10 +104,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     this.driverClassName = driverClassName;
     this.streamingQueryConfigProvider = streamingQueryConfigProvider;
     this.sourceOperations = sourceOperations;
-  }
-
-  public String getDriverClassName() {
-    return driverClassName;
   }
 
   @Override
