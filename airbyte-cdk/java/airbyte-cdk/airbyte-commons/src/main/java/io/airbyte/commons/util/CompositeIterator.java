@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
   private final List<AutoCloseableIterator<T>> iterators;
 
   private int i;
-  private final HashSet<Optional<AirbyteStreamNameNamespacePair>> seenIterators;
+  private final Set<Optional<AirbyteStreamNameNamespacePair>> seenIterators;
   private boolean hasClosed;
 
   CompositeIterator(final List<AutoCloseableIterator<T>> iterators, final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
