@@ -137,12 +137,12 @@ public class WebBackendConnectionsHandler {
     return new WebBackendConnectionStatusReadList().connectionStatusList(connectionStatusList);
   }
 
-  public WebBackendConnectionFilterParam webBackendConnectionsFilterParam()
+  public WebBackendConnectionFilterParam webBackendConnectionsFilterParam(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws IOException {
     return new WebBackendConnectionFilterParam()
         .status(connectionsHandler.listStatus())
-        .sources(sourceHandler.listFilterParam())
-        .destinations(destinationHandler.listFilterParam());
+        .sources(sourceHandler.listFilterParam(workspaceIdRequestBody.getWorkspaceId()))
+        .destinations(destinationHandler.listFilterParam(workspaceIdRequestBody.getWorkspaceId()));
   }
 
   public WebBackendConnectionReadList webBackendListAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
