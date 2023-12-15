@@ -24,6 +24,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import javax.sql.DataSource;
@@ -34,6 +35,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
 
   private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";
   private static final String STREAM_NAME2 = "JDBC_SPACE.STARSHIPS";
+  private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(60);
 
   protected AirbyteOracleTestContainer container;
   protected JsonNode config;
@@ -68,7 +70,8 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get("sid").asText()),
         JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( 3DES168 )", ";"));
+            "oracle.net.encryption_types_client=( 3DES168 )", ";"),
+        CONNECTION_TIMEOUT);
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
