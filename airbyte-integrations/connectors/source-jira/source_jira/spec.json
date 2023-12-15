@@ -90,7 +90,7 @@
         "minimum": 0,
         "maximum": 576000,
         "type": "integer",
-        "order": 4
+        "order": 5
       },
       "enable_experimental_streams": {
         "type": "boolean",
