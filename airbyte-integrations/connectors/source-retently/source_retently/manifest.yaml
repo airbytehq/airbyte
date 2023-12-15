@@ -28,9 +28,13 @@ definitions:
     url_base: "https://app.retently.com/api/v2/"
     http_method: "GET"
     authenticator:
-      class_name: source_retently.components.AuthenticatorRetently
-      api_auth: "#/definitions/api_authenticator"
-      oauth: "#/definitions/oauth_authenticator"
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - auth
+        - type
+      authenticators:
+        token: "#/definitions/api_authenticator"
+        oauth: "#/definitions/oauth_authenticator"
 
   retriever:
     type: SimpleRetriever
