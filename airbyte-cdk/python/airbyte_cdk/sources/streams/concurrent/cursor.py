@@ -100,7 +100,7 @@ class ConcurrentCursor(Cursor):
         return self._cursor_field.extract_value(record)
 
     def close_partition(self, partition: Partition) -> None:
-        slice_count_before = len(self._state["slices"])
+        slice_count_before = len(self._state.get("slices", []))
         self._add_slice_to_state(partition)
         if slice_count_before < len(self._state["slices"]):
             self._merge_partitions()
@@ -126,13 +126,15 @@ class ConcurrentCursor(Cursor):
 
             self._state["slices"].append(
                 {
-                    "start": 0,  # FIXME this only works with int datetime
+                    "start": self._connector_state_converter.zero_value,
                     "end": self._extract_cursor_value(self._most_recent_record),
                 }
             )
 
     def _emit_state_message(self) -> None:
-        self._connector_state_manager.update_state_for_stream(self._stream_name, self._stream_namespace, self._state)
+        self._connector_state_manager.update_state_for_stream(
+            self._stream_name, self._stream_namespace, self._connector_state_converter.convert_to_sequential_state(self._state)
+        )
         state_message = self._connector_state_manager.create_state_message(
             self._stream_name, self._stream_namespace, send_per_stream_state=True
         )

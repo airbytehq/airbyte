@@ -19,6 +19,7 @@ from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import NeverLogSliceLogger
 
+_CURSOR_FIELD = "cursor_field"
 _NO_STATE = None
 
 
@@ -50,7 +51,7 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in self._streams}, state=self._state)
-        state_converter = StreamFacadeConcurrentConnectorStateConverter("created")
+        state_converter = StreamFacadeConcurrentConnectorStateConverter(_CURSOR_FIELD)
         return [
             StreamFacade.create_from_stream(
                 stream,

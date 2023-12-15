@@ -72,10 +72,10 @@ test_incremental_stream_with_slice_boundaries_no_input_state = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 1}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 1}], "state_type": ConcurrencyCompatibleStateType.date_range.value, "legacy": {}}},
+            {"stream1": {"cursor_field": 1}},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 2}], "state_type": ConcurrencyCompatibleStateType.date_range.value, "legacy": {}}},
+            {"stream1": {"cursor_field": 2}},
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -84,7 +84,7 @@ test_incremental_stream_with_slice_boundaries_no_input_state = (
 )
 
 
-LEGACY_STATE = [{"type": "STREAM", "stream": {"stream_state": {"created": 0}, "stream_descriptor": {"name": "stream1"}}}]
+LEGACY_STATE = [{"type": "STREAM", "stream": {"stream_state": {"cursor_field": 0}, "stream_descriptor": {"name": "stream1"}}}]
 test_incremental_stream_without_slice_boundaries_with_legacy_state = (
     TestScenarioBuilder()
     .set_name("test_incremental_stream_without_slice_boundaries_with_legacy_state")
@@ -148,22 +148,10 @@ test_incremental_stream_with_slice_boundaries_with_legacy_state = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 1}, "stream": "stream1"},
-            {
-                "stream1": {
-                    "slices": [{"start": 0, "end": 1}],
-                    "state_type": ConcurrencyCompatibleStateType.date_range.value,
-                    "legacy": {"created": 0},
-                }
-            },
+            {"stream1": {"cursor_field": 1}},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {
-                "stream1": {
-                    "slices": [{"start": 0, "end": 2}],
-                    "state_type": ConcurrencyCompatibleStateType.date_range.value,
-                    "legacy": {"created": 0},
-                }
-            },
+            {"stream1": {"cursor_field": 2}},
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -247,10 +235,10 @@ test_incremental_stream_with_slice_boundaries_with_concurrent_state = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 1}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 1}], "state_type": ConcurrencyCompatibleStateType.date_range.value}},
+            {"stream1": {"cursor_field": 1}},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 2}], "state_type": ConcurrencyCompatibleStateType.date_range.value}},
+            {"stream1": {"cursor_field": 2}},
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
