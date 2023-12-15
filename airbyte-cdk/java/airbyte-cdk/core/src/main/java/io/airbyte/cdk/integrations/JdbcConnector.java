@@ -13,19 +13,15 @@ import java.time.temporal.TemporalUnit;
 import java.util.Map;
 import java.util.Optional;
 
-public abstract class JdbcConnector extends BaseConnector {
+public interface JdbcConnector {
 
   public static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
   public static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
 
-  protected final String driverClassName;
+  public String getDriverClassName();
 
-  protected JdbcConnector(String driverClassName) {
-    this.driverClassName = driverClassName;
-  }
-
-  protected Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
-    return getConnectionTimeout(connectionProperties, driverClassName);
+  public default Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
+    return getConnectionTimeout(connectionProperties, getDriverClassName());
   }
 
   /**
