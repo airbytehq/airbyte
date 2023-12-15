@@ -7,8 +7,8 @@ package io.airbyte.cdk.testutils;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
 /**
- * The class is used to make sources that don't use test containers (such as Snowflake) compatible
- * with {@link io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest}
+ * This is used when a source (such as Snowflake) relies on an always-on resource and therefore
+ * doesn't need an actual container. compatible
  */
 public class NonContainer extends JdbcDatabaseContainer<NonContainer> {
 

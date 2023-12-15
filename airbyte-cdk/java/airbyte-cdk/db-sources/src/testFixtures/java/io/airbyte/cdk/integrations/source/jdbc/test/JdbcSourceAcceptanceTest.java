@@ -168,11 +168,8 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     return clause.toString();
   }
 
-  protected void customSetup() {}
-
   @BeforeEach
   public void setup() throws Exception {
-    customSetup();
     testdb = createTestDatabase();
     if (supportsSchemas()) {
       createSchemas();
@@ -205,12 +202,8 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
 
   @AfterEach
   public void tearDown() {
-    customCleanUp();
-    dropSchemas();
     testdb.close();
   }
-
-  protected void customCleanUp() {}
 
   @Test
   void testSpec() throws Exception {
@@ -755,7 +748,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
         .filter(r -> r.getType() == Type.RECORD)
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
-    // teradata doesn't make insertion order guarantee when equal ordering value
+    // some databases don't make insertion order guarantee when equal ordering value
     if (testdb.getDatabaseDriver().equals(DatabaseDriver.TERADATA) || testdb.getDatabaseDriver().equals(DatabaseDriver.ORACLE)) {
       assertThat(List.of("a", "b"), Matchers.containsInAnyOrder(firstSyncNames.toArray()));
     } else {
@@ -1009,14 +1002,6 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     if (supportsSchemas()) {
       for (final String schemaName : TEST_SCHEMAS) {
         testdb.with("CREATE SCHEMA %s;", schemaName);
-      }
-    }
-  }
-
-  protected void dropSchemas() {
-    if (supportsSchemas()) {
-      for (final String schemaName : TEST_SCHEMAS) {
-        testdb.with(DROP_SCHEMA_QUERY, schemaName);
       }
     }
   }
