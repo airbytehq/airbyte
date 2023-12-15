@@ -123,9 +123,9 @@ runs:
       shell: bash
       run: |
         if [ "${{ github.event.pull_request.head.ref }}" == "master" ]; then
-          echo "::set-output name=airbyte_ci_download_url::https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
+          echo "AIRBYTE_CI_DOWNLOAD_URL=https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci >> $GITHUB_ENV"
         else
-          echo "::set-output name=airbyte_ci_download_url::https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/${{ github.event.pull_request.head.sha }}/airbyte-ci"
+          echo "AIRBYTE_CI_DOWNLOAD_URL=https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/${{ github.event.pull_request.head.sha }}/airbyte-ci >> $GITHUB_ENV"
         fi
 
     - name: set binary download URL if inputs.airbyte_ci_binary_url is set
@@ -133,13 +133,13 @@ runs:
       id: set-binary-download-url-override
       shell: bash
       run: |
-        echo "::set-output name=airbyte_ci_download_url::${{ inputs.airbyte_ci_binary_url }}"
+        echo "AIRBYTE_CI_DOWNLOAD_URL=${{ inputs.airbyte_ci_binary_url }} >> $GITHUB_ENV"
 
     - name: Install airbyte-ci binary
       id: install-airbyte-ci
       shell: bash
       run: |
-        curl -sSL ${{ env.airbyte_ci_download_url }} --output airbyte-ci-bin
+        curl -sSL $AIRBYTE_CI_DOWNLOAD_URL --output airbyte-ci-bin
         sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci
         sudo chmod +x /usr/local/bin/airbyte-ci
     - name: Run airbyte-ci
