@@ -58,6 +58,8 @@ class SQLCache(BaseCache, abc.ABCMeta):
 
     supports_merge_insert = False
 
+    # Constructor:
+
     def __init__(
         self,
         config: CacheConfigBase,  # Configuration for the SQL cache
@@ -68,6 +70,8 @@ class SQLCache(BaseCache, abc.ABCMeta):
         self.file_cache = file_cache
         self.type_converter = self.type_converter_class()
 
+    # Public interface:
+
     def get_sql_alchemy_url(self) -> str:
         """Return the SQLAlchemy URL to use."""
         return self.config.sql_alchemy_url
@@ -76,6 +80,53 @@ class SQLCache(BaseCache, abc.ABCMeta):
     def get_sql_engine(self) -> sqlalchemy.engine.Engine:
         """Return a new SQL engine to use."""
         return sqlalchemy.create_engine(self.get_sql_alchemy_url(self.config))
+
+    def get_sql_table_name(
+        self,
+        stream_name: str,
+    ) -> str:
+        """Return the name of the SQL table for the given stream."""
+        return self._normalize_table_name(
+            f"{self.config.table_prefix}{stream_name}{self.config.table_suffix}",
+        )
+
+    @final
+    def get_sql_table(
+        self,
+        stream_name: str,
+    ) -> sqlalchemy.Table:
+        """Return a temporary table name."""
+        table_name = self.get_sql_table_name(stream_name)
+        return sqlalchemy.Table(
+            table_name,
+            sqlalchemy.MetaData(schema=self.config.schema),
+            autoload=True,  # Retrieve the table definition from the database
+            autoload_with=self.get_sql_engine(),
+        )
+
+    # Read methods:
+
+    def read_all(
+        self,
+        stream_name: str,
+    ) -> Iterable[sqlalchemy.Row]:
+        """Uses SQLAlchemy to select all rows from the table."""
+        table_name = self.get_sql_table_name(stream_name)
+        engine = self.get_sql_engine()
+        stmt = sqlalchemy.select(table_name)
+        with engine.connect() as conn:
+            yield from conn.execute(stmt)
+
+    def read_all_as_pandas(
+        self,
+        stream_name: str,
+    ) -> pd.DataFrame:
+        """Return a Pandas data frame with the stream's data."""
+        table_name = self.get_sql_table_name(stream_name)
+        engine = self.get_sql_engine()
+        return pd.read_sql_table(table_name, engine)
+
+    # Protected members (non-public interface):
 
     @final
     def _get_temp_table_name(
@@ -86,20 +137,6 @@ class SQLCache(BaseCache, abc.ABCMeta):
         """Return a new (unique) temporary table name."""
         batch_id = batch_id or str(ulid.ULID())
         return self._normalize_table_name(f"{stream_name}_{batch_id}")
-
-    @final
-    def get_table(
-        self,
-        stream_name: str,
-    ) -> sqlalchemy.Table:
-        """Return a temporary table name."""
-        table_name = self.get_sql_table_name(stream_name)
-        return sqlalchemy.Table(
-            table_name,
-            sqlalchemy.MetaData(schema=schema_name),
-            autoload=True,  # Retrieve the table definition from the database
-            autoload_with=self.get_sql_engine(),
-        )
 
     @final
     def _create_table_for_loading(
@@ -343,34 +380,3 @@ class SQLCache(BaseCache, abc.ABCMeta):
         table_name: str,
     ) -> bool:
         return sqlalchemy.inspect(self.get_sql_engine()).has_table(table_name)
-
-    def get_sql_table_name(
-        self,
-        stream_name: str,
-    ) -> str:
-        """Return the name of the SQL table for the given stream."""
-        return self._normalize_table_name(
-            f"{self.config.table_prefix}{stream_name}{self.config.table_suffix}",
-        )
-
-    # Read methods:
-
-    def read_all(
-        self,
-        stream_name: str,
-    ) -> Iterable[sqlalchemy.Row]:
-        """Uses SQLAlchemy to select all rows from the table."""
-        table_name = self.get_sql_table_name(stream_name)
-        engine = self.get_sql_engine()
-        stmt = sqlalchemy.select(table_name)
-        with engine.connect() as conn:
-            yield from conn.execute(stmt)
-
-    def read_all_as_pandas(
-        self,
-        stream_name: str,
-    ) -> pd.DataFrame:
-        """Return a Pandas data frame with the stream's data."""
-        table_name = self.get_sql_table_name(stream_name)
-        engine = self.get_sql_engine()
-        return pd.read_sql_table(table_name, engine)
