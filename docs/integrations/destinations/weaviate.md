@@ -83,6 +83,7 @@ As properties have to start will a lowercase letter in Weaviate and can't contai
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.13 | 2023-12-11 | [33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens |
 | 0.2.12 | 2023-12-07 | [33218](https://github.com/airbytehq/airbyte/pull/33218) | Normalize metadata field names |
 | 0.2.11 | 2023-12-01 | [32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text |
 | 0.2.10 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources |

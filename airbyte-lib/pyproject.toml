@@ -1,24 +1,28 @@
 [tool.poetry]
 name = "airbyte-lib"
-version = "0.1.0"
 description = "AirbyteLib"
-authors = ["Aaron Steers <aj@airbyte.io>"]
+version = "0.1.0"
+authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
 packages = [{include = "airbyte_lib"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-SQLAlchemy = "^2.0.23"
+
+airbyte-cdk = "^0.57.2"
+airbyte-protocol-models = "^1.0.1"
+jsonschema = "3.2.0"
+requests = "^2.31.0"
+pandas = "^2.1.4"
 pyarrow = "^14.0.1"
 python-ulid = "^2.2.0"
+SQLAlchemy = "^2.0.23"
 overrides = "^7.4.0"
-airbyte-cdk = "^0.57.2"
-pandas = "^2.1.4"
 
 [tool.poetry.group.dev.dependencies]
+mypy = "^1.7.1"
 pytest = "^7.4.3"
 ruff = "^0.1.7"
-mypy = "^1.7.1"
 
 [build-system]
 requires = ["poetry-core"]
