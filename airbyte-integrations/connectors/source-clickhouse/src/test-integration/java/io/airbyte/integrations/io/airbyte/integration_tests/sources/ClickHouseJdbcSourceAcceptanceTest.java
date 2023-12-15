@@ -48,6 +48,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     final ClickHouseContainer db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
         .waitingFor(Wait.forHttp("/ping").forPort(8123)
             .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+    db.start();
     return new ClickHouseTestDatabase(db).initialized();
   }
 

@@ -24,12 +24,6 @@ public class ClickHouseTestDatabase extends
   }
 
   @Override
-  public ClickHouseTestDatabase initialized() {
-    container.start();
-    return super.initialized();
-  }
-
-  @Override
   public String getJdbcUrl() {
     return container.getJdbcUrl();
   }

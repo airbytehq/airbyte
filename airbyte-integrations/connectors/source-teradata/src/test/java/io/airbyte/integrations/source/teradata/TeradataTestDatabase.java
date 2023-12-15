@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.teradata;
 
 import static io.airbyte.cdk.db.factory.DatabaseDriver.TERADATA;
+import static io.airbyte.integrations.source.teradata.TeradataJdbcSourceAcceptanceTest.deleteDatabase;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
@@ -72,7 +73,9 @@ public class TeradataTestDatabase extends TestDatabase<NonContainer, TeradataTes
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    deleteDatabase();
+  }
 
   static public class TeradataDbConfigBuilder extends TestDatabase.ConfigBuilder<TeradataTestDatabase, TeradataDbConfigBuilder> {
 

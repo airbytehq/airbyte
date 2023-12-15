@@ -107,7 +107,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
         Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
-  void cleanUpTables() throws SQLException {
+  static void cleanUpTables() throws SQLException {
     final Connection connection = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
@@ -129,6 +129,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
 
   @Override
   protected OracleStrictEncryptTestDatabase createTestDatabase() {
+    ORACLE_DB.start();
     return new OracleStrictEncryptTestDatabase(ORACLE_DB, List.of(SCHEMA_NAME, SCHEMA_NAME2)).initialized();
   }
 
@@ -167,13 +168,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     }
   }
 
-  @Override
-  protected void dropSchemas() {
-    // ORACLE doesn't have DROP SCHEMA query
-  }
-
-  @Override
-  protected void customCleanUp() {
+  static void cleanUpTablesAndWait() {
     try {
       cleanUpTables();
       Thread.sleep(1000);

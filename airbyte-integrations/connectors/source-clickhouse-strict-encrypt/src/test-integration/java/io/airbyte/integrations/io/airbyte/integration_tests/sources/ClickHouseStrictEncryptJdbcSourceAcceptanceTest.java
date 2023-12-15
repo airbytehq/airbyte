@@ -45,7 +45,7 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest
         .withClasspathResourceMapping("ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
         .waitingFor(Wait.forHttp("/ping").forPort(HTTP_PORT)
             .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
-
+    db.start();
     return new ClickHouseStrictEncryptTestDatabase(db).initialized();
   }
 

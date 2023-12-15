@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.oracle_strict_encrypt;
 
+import static io.airbyte.integrations.source.oracle_strict_encrypt.OracleStrictEncryptJdbcSourceAcceptanceTest.cleanUpTablesAndWait;
+
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -16,7 +18,6 @@ import org.jooq.SQLDialect;
 public class OracleStrictEncryptTestDatabase extends
     TestDatabase<AirbyteOracleTestContainer, OracleStrictEncryptTestDatabase, OracleStrictEncryptTestDatabase.OracleStrictEncryptDbConfigBuilder> {
 
-  private static boolean containerStarted = false;
   private final AirbyteOracleTestContainer container;
   private final List<String> schemaNames;
 
@@ -24,15 +25,6 @@ public class OracleStrictEncryptTestDatabase extends
     super(container);
     this.container = container;
     this.schemaNames = schemaNames;
-  }
-
-  @Override
-  public OracleStrictEncryptTestDatabase initialized() {
-    if (!containerStarted) {
-      container.start();
-      containerStarted = true;
-    }
-    return super.initialized();
   }
 
   @Override
@@ -91,7 +83,9 @@ public class OracleStrictEncryptTestDatabase extends
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    cleanUpTablesAndWait();
+  }
 
   static public class OracleStrictEncryptDbConfigBuilder extends ConfigBuilder<OracleStrictEncryptTestDatabase, OracleStrictEncryptDbConfigBuilder> {
 

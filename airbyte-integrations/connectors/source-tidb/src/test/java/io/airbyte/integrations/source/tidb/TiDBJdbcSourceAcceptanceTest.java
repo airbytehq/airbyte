@@ -31,8 +31,9 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<TiDBSource, 
 
   @Override
   protected TiDBTestDatabase createTestDatabase() {
-    TiDBContainer container = new TiDBContainer(DockerImageName.parse("pingcap/tidb:nightly"))
+    final TiDBContainer container = new TiDBContainer(DockerImageName.parse("pingcap/tidb:nightly"))
         .withExposedPorts(4000);
+    container.start();
     return new TiDBTestDatabase(container).initialized();
   }
 
