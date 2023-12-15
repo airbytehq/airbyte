@@ -135,14 +135,19 @@ class JiraStream(HttpStream, ABC):
 
 
 class StartDateJiraStream(JiraStream, ABC):
-    def __init__(self, start_date: Optional[pendulum.DateTime] = None, lookback_window_minutes: pendulum.Duration = pendulum.duration(minutes=0), **kwargs):
+    def __init__(
+        self,
+        start_date: Optional[pendulum.DateTime] = None,
+        lookback_window_minutes: pendulum.Duration = pendulum.duration(minutes=0),
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self._lookback_window_minutes = lookback_window_minutes
         self._start_date = start_date
 
 
 class IncrementalJiraStream(StartDateJiraStream, ABC):
-    def __init__(self,  **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._starting_point_cache = {}
 
