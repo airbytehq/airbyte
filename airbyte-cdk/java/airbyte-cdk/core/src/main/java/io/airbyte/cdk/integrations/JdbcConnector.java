@@ -18,14 +18,14 @@ public abstract class JdbcConnector extends BaseConnector {
   public static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
   public static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
 
-  protected final String driverClass;
+  protected final String driverClassName;
 
-  protected JdbcConnector(String driverClass) {
-    this.driverClass = driverClass;
+  protected JdbcConnector(String driverClassName) {
+    this.driverClassName = driverClassName;
   }
 
   protected Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
-    return getConnectionTimeout(connectionProperties, driverClass);
+    return getConnectionTimeout(connectionProperties, driverClassName);
   }
 
   /**
