@@ -429,6 +429,8 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: HistoricalLandingPageExperience
               bypass_reason: "dynamic field"
+            - name: LandingPageExperience
+              bypass_reason: "dynamic field"
           keyword_performance_report_daily:
             - name: Language
               bypass_reason: "dynamic field"
