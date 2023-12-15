@@ -29,4 +29,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        "console_scripts": [
+            "source-google-drive=source_google_drive.run:run",
+        ],
+    },
 )
