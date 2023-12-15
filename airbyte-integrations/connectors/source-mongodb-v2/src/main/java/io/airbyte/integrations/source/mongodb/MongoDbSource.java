@@ -103,7 +103,8 @@ public class MongoDbSource extends BaseConnector implements Source {
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
         final String databaseName = sourceConfig.getDatabaseName();
         final Integer sampleSize = sourceConfig.getSampleSize();
-        final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize);
+        final boolean isSchemaEnforced = sourceConfig.getEnforceSchema();
+        final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize, isSchemaEnforced);
         return new AirbyteCatalog().withStreams(streams);
       }
     } catch (final IllegalArgumentException e) {
@@ -119,10 +120,13 @@ public class MongoDbSource extends BaseConnector implements Source {
     final var emittedAt = Instant.now();
     final var cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     final var stateManager = MongoDbStateManager.createStateManager(state);
+    final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
+    if (catalog != null) {
+      MongoUtil.checkSchemaModeMismatch(sourceConfig.getEnforceSchema(),
+          stateManager.getCdcState() != null ? stateManager.getCdcState().schema_enforced() : sourceConfig.getEnforceSchema(), catalog);
+    }
 
     try {
-      final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
-
       // WARNING: do not close the client here since it needs to be used by the iterator
       final MongoClient mongoClient = createMongoClient(sourceConfig);
 
