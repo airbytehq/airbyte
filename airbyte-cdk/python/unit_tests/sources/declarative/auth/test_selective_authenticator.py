@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 import pytest
+from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 
 
 def test_authenticator_selected(mocker):

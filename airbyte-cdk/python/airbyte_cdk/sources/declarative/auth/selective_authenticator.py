@@ -3,16 +3,16 @@
 #
 
 from dataclasses import dataclass
-from typing import Any, Mapping, List
+from typing import Any, List, Mapping
 
 import dpath
-
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 
 
 @dataclass
 class SelectiveAuthenticator(DeclarativeAuthenticator):
-    """Authenticator that selects concrete implementation based on specific config value"""
+    """Authenticator that selects concrete implementation based on specific config value."""
+
     config: Mapping[str, Any]
     authenticators: List[DeclarativeAuthenticator]
     authenticator_selection_path: List[str]

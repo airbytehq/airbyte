@@ -226,7 +226,7 @@ definitions:
         additionalProperties: true
   SelectiveAuthenticator:
     title: Selective Authenticator
-    description: Authenticator component whose behavior is derived from a custom code implementation of the connector.
+    description: Authenticator that selects concrete authenticator based on config property.
     type: object
     additionalProperties: true
     required:
@@ -236,7 +236,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [ SelectiveAuthenticator ]
+        enum: [SelectiveAuthenticator]
       authenticators:
         title: Authenticators
         description: Authenticators to select from.
