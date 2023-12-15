@@ -164,10 +164,11 @@ public class MongoDbCdcInitializer {
       final Document command = new Document("collStats", "oplog.rs");
       final Document result = localDatabase.runCommand(command);
       if (result != null) {
-        LOGGER.info("Max oplog size is {} ", result.getLong("maxSize"));
+        LOGGER.info("Max oplog size is {} bytes", result.getInteger("maxSize"));
+        LOGGER.info("Free space in oplog is {} bytes", result.getInteger("freeStorageSize"));
       }
     } catch (final Exception e) {
-      LOGGER.warn("Unable to query for op log stats");
+      LOGGER.warn("Unable to query for op log stats, exception: {}" + e.getMessage());
     }
   }
 }
