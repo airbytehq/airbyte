@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcceptanceTest {
 
   private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(60);
+
   @Test
   public void testEncryption() throws SQLException {
     final ObjectNode clone = (ObjectNode) Jsons.clone(getConfig());

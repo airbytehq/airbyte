@@ -1005,6 +1005,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
       }
     }
   }
+
   private JsonNode convertIdBasedOnDatabase(final int idValue) {
     return switch (testdb.getDatabaseDriver()) {
       case ORACLE, SNOWFLAKE -> Jsons.jsonNode(BigDecimal.valueOf(idValue));

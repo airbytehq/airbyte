@@ -117,7 +117,7 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-            connectionProperties,
+        connectionProperties,
         getConnectionTimeout(connectionProperties, driverClassName));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);

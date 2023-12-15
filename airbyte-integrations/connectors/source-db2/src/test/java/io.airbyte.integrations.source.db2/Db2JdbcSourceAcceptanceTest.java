@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.Db2Container;
 
 class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Db2Source, Db2TestDatabase> {
