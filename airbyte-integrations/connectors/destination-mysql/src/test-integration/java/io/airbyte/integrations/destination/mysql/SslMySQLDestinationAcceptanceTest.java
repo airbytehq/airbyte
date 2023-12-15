@@ -152,6 +152,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
     }
   }
 
+  @Override
   @Test
   public void testUserHasNoPermissionToDataBase() {
     executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");

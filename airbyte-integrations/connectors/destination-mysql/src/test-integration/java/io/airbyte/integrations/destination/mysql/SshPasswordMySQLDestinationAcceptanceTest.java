@@ -23,6 +23,7 @@ public class SshPasswordMySQLDestinationAcceptanceTest extends SshMySQLDestinati
    * All tests involving the normalization container are broken. That's (mostly) fine;
    * DV2 doesn't rely on that container.
    */
+  @Override
   @Disabled
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
@@ -36,6 +37,7 @@ public class SshPasswordMySQLDestinationAcceptanceTest extends SshMySQLDestinati
    * <p>
    * TODO: get custom dbt transformations working https://github.com/airbytehq/airbyte/issues/33547
    */
+  @Override
   @Disabled
   @Test
   public void testCustomDbtTransformations() throws Exception {
