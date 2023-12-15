@@ -151,3 +151,14 @@ The supported scope types are listed below.
 | Scope Type | Value Type | Value Description |
 |------------|------------|------------------|
 | stream     | `list[str]`  | List of stream names |
+
+#### `pypi`
+The optional `pypi` property allows you to configure how a connector should be published to pypi. This should only be used on python-based connectors.
+Currently, only the `enabled` property is supported. If `enabled` is set to `true`, the connector will be published to pypi.
+
+```yaml
+pypi:
+  enabled: true
+```
+
+The `pypi.enabled` flag defaults to false.
