@@ -296,6 +296,8 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: HistoricalLandingPageExperience
               bypass_reason: "dynamic field"
+            - name: LandingPageExperience
+              bypass_reason: "dynamic field"
           budget_summary_report:
             - name: Date
               bypass_reason: "dynamic field"
