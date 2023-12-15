@@ -162,7 +162,7 @@ Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manua
 
 ### No Schema Mode
 
-When the schema enforced is set to false, MongoDB collections are read in schema-less mode which doesn't assume documents share the same structure.
+When the schema enforced option is disabled, MongoDB collections are read in schema-less mode which doesn't assume documents share the same structure.
 This allows for greater flexibility in reading data that is unstructured or vary a lot in between documents in a single collection.
 In No Schema mode each document will generate a record that only contains the following fields:
 
