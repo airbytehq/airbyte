@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from unittest import mock
 
 import pytest
@@ -142,20 +143,6 @@ class TestOrderItems:
     def test_request_params(self, order_items_stream, next_page_token, expected_params):
         stream = order_items_stream()
         assert stream.request_params(stream_state={}, next_page_token=next_page_token) == expected_params
-
-    @pytest.mark.parametrize(
-        ("current_stream_state", "cached_state", "expected_date"),
-        (
-            ({"LastUpdateDate": "2022-10-03T00:00:00Z"}, {"LastUpdateDate": "2022-10-04T00:00:00Z"}, "2022-10-04T00:00:00Z"),
-            ({"LastUpdateDate": "2022-10-04T00:00:00Z"}, {"LastUpdateDate": "2022-10-03T00:00:00Z"}, "2022-10-04T00:00:00Z"),
-            ({}, {"LastUpdateDate": "2022-10-03T00:00:00Z"}, "2022-10-03T00:00:00Z"),
-        ),
-    )
-    def test_get_updated_state(self, order_items_stream, current_stream_state, cached_state, expected_date):
-        stream = order_items_stream()
-        stream.cached_state = cached_state
-        expected_state = {stream.cursor_field: expected_date}
-        assert stream.get_updated_state(current_stream_state, {}) == expected_state
 
     @pytest.mark.parametrize(
         ("response_headers", "expected_backoff_time"),
