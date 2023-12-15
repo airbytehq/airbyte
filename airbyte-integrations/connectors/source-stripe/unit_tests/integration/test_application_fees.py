@@ -25,6 +25,8 @@ from source_stripe import SourceStripe
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
+from integration.response_builder import a_response_with_status
+
 
 _EVENT_TYPES = ["application_fee.created", "application_fee.refunded"]
 
@@ -74,10 +76,6 @@ def _events_response() -> HttpResponseBuilder:
         FieldPath("data"),
         pagination_strategy=StripePaginationStrategy()
     )
-
-
-def _response_with_status(status_code: int) -> HttpResponse:
-    return HttpResponse(json.dumps(find_template(str(status_code), __file__)), status_code)
 
 
 def _an_application_fee() -> RecordBuilder:
@@ -201,7 +199,7 @@ class FullRefreshTest(TestCase):
     def test_given_http_status_400_when_read_then_stream_is_ignored(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _application_fees_request().with_any_query_params().build(),
-            _response_with_status(400),
+            a_response_with_status(400),
         )
         output = self._read(_config())
         assert len(output.get_stream_statuses(_STREAM_NAME)) == 0
@@ -210,7 +208,7 @@ class FullRefreshTest(TestCase):
     def test_given_http_status_401_when_read_then_system_error(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _application_fees_request().with_any_query_params().build(),
-            _response_with_status(401),
+            a_response_with_status(401),
         )
         output = self._read(_config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.system_error
@@ -221,7 +219,7 @@ class FullRefreshTest(TestCase):
         http_mocker.get(
             _application_fees_request().with_any_query_params().build(),
             [
-                _response_with_status(429),
+                a_response_with_status(429),
                 _application_fees_response().with_record(_an_application_fee()).build(),
             ],
         )
@@ -233,7 +231,7 @@ class FullRefreshTest(TestCase):
         _given_events_availability_check(http_mocker)
         http_mocker.get(
             _application_fees_request().with_any_query_params().build(),
-            [_response_with_status(500), _application_fees_response().with_record(_an_application_fee()).build()],
+            [a_response_with_status(500), _application_fees_response().with_record(_an_application_fee()).build()],
         )
         output = self._read(_config())
         assert len(output.records) == 1
@@ -242,7 +240,7 @@ class FullRefreshTest(TestCase):
     def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _application_fees_request().with_any_query_params().build(),
-            _response_with_status(500),
+            a_response_with_status(500),
         )
         output = self._read(_config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.system_error
