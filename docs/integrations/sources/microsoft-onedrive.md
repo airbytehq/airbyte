@@ -1,4 +1,4 @@
-# Microsoft Teams
+# Microsoft OneDrive
 
 This page contains the setup guide and reference information for the Microsoft OneDrive source connector.
 
@@ -59,7 +59,7 @@ This source requires **Application permissions**. Follow these [instructions](ht
 6. Record the client\_id and tenant\_id which will be used by the tap for authentication and API integration.
 7. Select **Certificates & secrets**
 8. Provide **Description and Expires**
-   1. Description: tap-microsoft-teams client secret
+   1. Description: tap-microsoft-onedrive client secret
    2. Expires: 1-year
    3. Add
 9. Copy the client secret value, this will be the client\_secret
@@ -119,6 +119,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------|
-| 0.1.0   | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | New source |
+| Version | Date       | Pull Request                                             | Subject            |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------|
+| 0.1.1   | 2021-12-15 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | Fix for docs name  |
+| 0.1.0   | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | New source         |
