@@ -315,6 +315,13 @@ definitions:
       name: "quote_line_group"
       primary_key: "id"
       path: "/quotes/{{ stream_slice.id }}/quote_line_groups"
+  site_migration_detail_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "site_migration_detail"
+      primary_key: "entity_id"
+      path: "/site_migration_details"
+      stream_cursor_field: "migrated_at"
 
 streams:
   - "#/definitions/addon_stream"
@@ -339,6 +346,7 @@ streams:
   - "#/definitions/virtual_bank_account_stream"
   - "#/definitions/quote_stream"
   - "#/definitions/quote_line_group_stream"
+  - "#/definitions/site_migration_detail_stream"
 
 check:
   stream_names:

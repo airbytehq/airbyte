@@ -110,5 +110,12 @@
       "stream_state": { "updated_at": 1625596058 },
       "stream_descriptor": { "name": "transaction" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 1625596058 },
+      "stream_descriptor": { "name": "site_migration_detail" }
+    }
   }
 ]
