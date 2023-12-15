@@ -23,7 +23,6 @@ on:
       airbyte_ci_binary_url:
         description: "The URL to download the airbyte-ci binary from"
         required: false
-        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
   pull_request:
     types:
       - opened

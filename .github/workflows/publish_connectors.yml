@@ -21,7 +21,6 @@ on:
       airbyte-ci-binary-url:
         description: "URL to airbyte-ci binary"
         required: false
-        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
 jobs:
   publish_connectors:
     name: Publish connectors

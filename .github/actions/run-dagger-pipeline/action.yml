@@ -79,7 +79,6 @@ inputs:
   airbyte_ci_binary_url:
     description: "URL to airbyte-ci binary"
     required: false
-    default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
 
 runs:
   using: "composite"
@@ -101,11 +100,47 @@ runs:
       id: get-start-timestamp
       shell: bash
       run: echo "name=start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+    - name: Get changed files
+      uses: tj-actions/changed-files@v39
+      id: changes
+      with:
+        files_yaml: |
+          pipelines:
+            - 'airbyte-ci/connectors/pipelines/**'
+    - name: Wait on Binary Release if branch is not master and pipeline/ is modified
+      if: github.event.pull_request.head.ref != 'master' && steps.changes.outputs.pipelines_any_changed == 'true'
+      uses: explorium-ai/wait-github-status-action@v1.0.2
+      with:
+        name: "Connector Ops CI - Airbyte CI Release"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        seconds: 15
+        sha: ${{ github.event.pull_request.head.sha }}
+    # If the airbyte_ci_binary_url is not set generate the download url ourselves
+    # On master the URL is in this format: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
+    # On non-master branches the URL is in this format: https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/$COMMIT/airbyte-ci
+    - name: set binary download URL if inputs.airbyte_ci_binary_url not set or null
+      if: inputs.airbyte_ci_binary_url == ''
+      id: set-binary-download-url
+      shell: bash
+      run: |
+        if [ "${{ github.event.pull_request.head.ref }}" == "master" ]; then
+          echo "::set-output name=airbyte_ci_download_url::https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
+        else
+          echo "::set-output name=airbyte_ci_download_url::https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/${{ github.event.pull_request.head.sha }}/airbyte-ci"
+        fi
+
+    - name: set binary download URL if inputs.airbyte_ci_binary_url is set
+      if: inputs.airbyte_ci_binary_url != ''
+      id: set-binary-download-url
+      shell: bash
+      run: |
+        echo "::set-output name=airbyte_ci_download_url::${{ inputs.airbyte_ci_binary_url }}"
+
     - name: Install airbyte-ci binary
       id: install-airbyte-ci
       shell: bash
       run: |
-        curl -sSL ${{ inputs.airbyte_ci_binary_url }} --output airbyte-ci-bin
+        curl -sSL ${{ env.airbyte_ci_download_url }} --output airbyte-ci-bin
         sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci
         sudo chmod +x /usr/local/bin/airbyte-ci
     - name: Run airbyte-ci
