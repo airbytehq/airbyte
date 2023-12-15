@@ -140,7 +140,7 @@ class StepStatus(Enum):
 
 
 class Step(ABC):
-    """An abstract class to declare and run pipeline step."""
+    """An abstract class to declare and run pipeline step"""
 
     title: ClassVar[str]
     max_retries: ClassVar[int] = 0

@@ -135,8 +135,8 @@ runs:
       shell: bash
       run: |
         set +e
-        for i in {1..40}; do
-          echo "Attempt $i to download airbyte-ci binary"
+        for i in {1..20}; do
+          echo "Attempt $i to download airbyte-ci binary from $AIRBYTE_CI_DOWNLOAD_URL"
           curl -sSLf $AIRBYTE_CI_DOWNLOAD_URL --output airbyte-ci-bin
           exit_code=$?
           if [ $exit_code -eq 0 ]; then
