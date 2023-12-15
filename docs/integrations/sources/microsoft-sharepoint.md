@@ -1,6 +1,6 @@
-# Microsoft OneDrive
+# Microsoft SharePoint
 
-This page contains the setup guide and reference information for the Microsoft OneDrive source connector.
+This page contains the setup guide and reference information for the Microsoft SharePoint source connector.
 
 ### Requirements
 
@@ -18,11 +18,11 @@ This page contains the setup guide and reference information for the Microsoft O
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Microsoft OneDrive** from the Source type dropdown.
-4. Enter the name for the Microsoft OneDrive connector.
+3. On the Set up the source page, select **Microsoft SharePoint** from the Source type dropdown.
+4. Enter the name for the Microsoft SharePoint connector.
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
 6. Enter **Folder Path**. 
-7. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft OneDrive account**. Log in and authorize your Microsoft account.
+7. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
 8. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 9. Add a stream:
    1. Write the **File Type**
@@ -37,7 +37,7 @@ This page contains the setup guide and reference information for the Microsoft O
 
 **For Airbyte Open Source:**
 
-### Step 1: Set up OneDrive application
+### Step 1: Set up SharePoint application
 
 The Microsoft Graph API uses OAuth for authentication. Microsoft Graph exposes granular permissions that control the access that apps have to resources, like users, groups, and mail. When a user signs in to your app they, or, in some cases, an administrator, are given a chance to consent to these permissions. If the user consents, your app is given access to the resources and APIs that it has requested. For apps that don't take a signed-in user, permissions can be pre-consented to by an administrator when the app is installed.
 
@@ -73,12 +73,12 @@ This source requires **Application permissions**. Follow these [instructions](ht
 14. Click **Add permissions**
 15. Click **Grant admin consent**
 
-### Step 2: Set up the Microsoft OneDrive connector in Airbyte
+### Step 2: Set up the Microsoft SharePoint connector in Airbyte
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
-3. On the **Set up** the source page, select **Microsoft OneDrive** from the Source type dropdown.
-4. Enter the name for the Microsoft OneDrive connector.
+3. On the **Set up** the source page, select **Microsoft SharePoint** from the Source type dropdown.
+4. Enter the name for the Microsoft SharePoint connector.
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
 6. Enter **Folder Path**. 
 7. Switch to **Service Key Authentication** 
@@ -121,4 +121,4 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------|
-| 0.1.0   | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | New source |
+| 0.1.0   | 2021-12-06 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | New source |
