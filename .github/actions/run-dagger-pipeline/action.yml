@@ -114,7 +114,7 @@ runs:
       id: set-binary-download-url
       shell: bash
       run: |
-        if [ "${{ github.event.pull_request.head.ref }}" != "master" && "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]; then
+        if [ "${{ github.event.pull_request.head.ref }}" != "master" ] && [ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]; then
           echo "AIRBYTE_CI_DOWNLOAD_URL=https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/${{ github.event.pull_request.head.sha }}/airbyte-ci" >> $GITHUB_ENV
         else
           echo "AIRBYTE_CI_DOWNLOAD_URL=https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci" >> $GITHUB_ENV
