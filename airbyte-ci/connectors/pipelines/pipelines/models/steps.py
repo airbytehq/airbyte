@@ -59,7 +59,7 @@ class MountPath:
 
 @dataclass(frozen=True)
 class StepResult:
-    """A dataclass to capture the result of a step."""
+    """A dataclass to capture the result of a step"""
 
     step: Union[Step, click.command]
     status: StepStatus
