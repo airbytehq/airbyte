@@ -60,6 +60,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   // state.
   static private final MSSQLServerContainer<?> UNSHARED_CONTAINER = new MsSQLContainerFactory()
       .createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
+  private static final Duration CONNECTION_TIME = Duration.ofSeconds(60);
 
   private DataSource testDataSource;
 
@@ -143,7 +144,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         testdb.getPassword(),
         testdb.getDatabaseDriver().getDriverClassName(),
         testdb.getJdbcUrl(),
-        Map.of("encrypt", "false"));
+        Map.of("encrypt", "false"),
+        CONNECTION_TIME);
   }
 
   @Override
