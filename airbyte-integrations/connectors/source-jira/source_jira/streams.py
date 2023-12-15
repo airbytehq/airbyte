@@ -138,7 +138,6 @@ class StartDateJiraStream(JiraStream, ABC):
     def __init__(self, start_date: Optional[pendulum.DateTime] = None, lookback_window_minutes: pendulum.Duration = pendulum.duration(minutes=0), **kwargs):
         super().__init__(**kwargs)
         self._lookback_window_minutes = lookback_window_minutes
-        # self._lookback_window_minutes = kwargs.get("lookback_window_minutes")
         self._start_date = start_date
 
 
