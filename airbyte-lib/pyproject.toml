@@ -9,15 +9,14 @@ packages = [{include = "airbyte_lib"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 
-airbyte-cdk = "^0.57.2"
-airbyte-protocol-models = "^1.0.1"
+airbyte-cdk = "^0.57.6"
 jsonschema = "3.2.0"
-requests = "^2.31.0"
+overrides = "^7.4.0"
 pandas = "^2.1.4"
 pyarrow = "^14.0.1"
 python-ulid = "^2.2.0"
+requests = "^2.31.0"
 SQLAlchemy = "^2.0.23"
-overrides = "^7.4.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.7.1"
