@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.db2;
 
+import static io.airbyte.integrations.source.db2.Db2JdbcSourceAcceptanceTest.deleteTables;
+
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -74,7 +76,9 @@ public class Db2TestDatabase extends
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    deleteTables(this);
+  }
 
   @Override
   public Db2DbConfigBuilder configBuilder() {

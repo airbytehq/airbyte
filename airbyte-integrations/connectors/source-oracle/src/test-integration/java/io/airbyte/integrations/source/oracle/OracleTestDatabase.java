@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.oracle;
 
+import static io.airbyte.integrations.source.oracle.OracleJdbcSourceAcceptanceTest.cleanUpTablesAndWait;
+
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.testutils.TestDatabase;
@@ -85,7 +87,9 @@ public class OracleTestDatabase extends
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    cleanUpTablesAndWait();
+  }
 
   static public class OracleDbConfigBuilder extends TestDatabase.ConfigBuilder<OracleTestDatabase, OracleDbConfigBuilder> {
 

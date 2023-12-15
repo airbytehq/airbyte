@@ -71,8 +71,7 @@ class TeradataJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Teradata
     teradataHttpClient.deleteEnvironment(request, staticConfig.get("env_token").asText()).get();
   }
 
-  @Override
-  protected void customCleanUp() {
+  static void deleteDatabase() {
     executeStatements(List.of(
         statement -> statement.executeUpdate("DELETE DATABASE \"database_name\";"),
         statement -> statement.executeUpdate("DROP DATABASE \"database_name\";")), staticConfig.get("host").asText(),
@@ -81,6 +80,9 @@ class TeradataJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Teradata
 
   @Override
   protected TeradataTestDatabase createTestDatabase() {
+    executeStatements(List.of(
+        statement -> statement.executeUpdate("CREATE DATABASE \"database_name\" AS PERMANENT = 120e6, SPOOL = 120e6;")),
+        staticConfig.get("host").asText(), staticConfig.get("username").asText(), staticConfig.get("password").asText());
     return new TeradataTestDatabase(source().toDatabaseConfig(Jsons.clone(staticConfig))).initialized();
   }
 
@@ -97,13 +99,6 @@ class TeradataJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Teradata
   @Override
   protected TeradataSource source() {
     return new TeradataSource();
-  }
-
-  @Override
-  protected void customSetup() {
-    executeStatements(List.of(
-        statement -> statement.executeUpdate("CREATE DATABASE \"database_name\" AS PERMANENT = 120e6, SPOOL = 120e6;")),
-        staticConfig.get("host").asText(), staticConfig.get("username").asText(), staticConfig.get("password").asText());
   }
 
   @Override

@@ -62,8 +62,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Db2Source, Db
     DB_2_CONTAINER.close();
   }
 
-  @Override
-  protected void customCleanUp() {
+  static void deleteTables(final Db2TestDatabase testDB) {
     // In Db2 before dropping a schema, all objects that were in that schema must be dropped or moved to
     // another schema.
     for (final String tableName : TEST_TABLES) {

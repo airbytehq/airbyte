@@ -146,8 +146,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<OracleSour
     // ORACLE doesn't have DROP SCHEMA query
   }
 
-  @Override
-  protected void customCleanUp() {
+  static void cleanUpTablesAndWait() {
     try {
       cleanUpTables();
       Thread.sleep(1000);
@@ -198,7 +197,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<OracleSour
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
-  void cleanUpTables() throws SQLException {
+  static void cleanUpTables() throws SQLException {
     final Connection connection = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),

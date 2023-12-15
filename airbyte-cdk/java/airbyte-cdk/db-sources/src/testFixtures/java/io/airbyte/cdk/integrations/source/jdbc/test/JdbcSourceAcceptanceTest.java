@@ -168,11 +168,8 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     return clause.toString();
   }
 
-  protected void customSetup() {}
-
   @BeforeEach
   public void setup() throws Exception {
-    customSetup();
     testdb = createTestDatabase();
     if (supportsSchemas()) {
       createSchemas();
@@ -205,12 +202,9 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
 
   @AfterEach
   public void tearDown() {
-    customCleanUp();
     dropSchemas();
     testdb.close();
   }
-
-  protected void customCleanUp() {}
 
   @Test
   void testSpec() throws Exception {

@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.oracle_strict_encrypt;
 
+import static io.airbyte.integrations.source.oracle_strict_encrypt.OracleStrictEncryptJdbcSourceAcceptanceTest.cleanUpTablesAndWait;
+
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -91,7 +93,9 @@ public class OracleStrictEncryptTestDatabase extends
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    cleanUpTablesAndWait();
+  }
 
   static public class OracleStrictEncryptDbConfigBuilder extends ConfigBuilder<OracleStrictEncryptTestDatabase, OracleStrictEncryptDbConfigBuilder> {
 
