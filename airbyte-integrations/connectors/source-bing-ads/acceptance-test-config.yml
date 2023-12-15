@@ -410,6 +410,8 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: HistoricalLandingPageExperience
               bypass_reason: "dynamic field"
+            - name: LandingPageExperience
+              bypass_reason: "dynamic field"
           campaign_performance_report_daily:
             - name: Ctr
               bypass_reason: "dynamic field"
