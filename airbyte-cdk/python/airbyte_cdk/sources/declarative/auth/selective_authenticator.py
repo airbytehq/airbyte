@@ -17,14 +17,15 @@ class SelectiveAuthenticator(DeclarativeAuthenticator):
     authenticators: Mapping[str, DeclarativeAuthenticator]
     authenticator_selection_path: List[str]
 
-    def __new__(
+    # returns "DeclarativeAuthenticator", but must return a subtype of "SelectiveAuthenticator"
+    def __new__(   # type: ignore[misc]
         cls,
         config: Mapping[str, Any],
         authenticators: Mapping[str, DeclarativeAuthenticator],
         authenticator_selection_path: List[str],
-        *args,
-        **kwargs,
-    ):
+        *arg: Any,
+        **kwargs: Any,
+    ) -> DeclarativeAuthenticator:
         try:
             selected_key = str(dpath.util.get(config, authenticator_selection_path))
         except KeyError as err:
