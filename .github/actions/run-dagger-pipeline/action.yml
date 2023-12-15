@@ -96,6 +96,9 @@ runs:
       with:
         username: ${{ inputs.docker_hub_username }}
         password: ${{ inputs.docker_hub_password }}
+    - name: Get short SHA
+      id: get_short_sha
+      uses: benjlevesque/short-sha@v2.2
     - name: Get start timestamp
       id: get-start-timestamp
       shell: bash
@@ -115,7 +118,7 @@ runs:
       shell: bash
       run: |
         if [ "${{ github.event.pull_request.head.ref }}" != "master" ] && [ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]; then
-          echo "AIRBYTE_CI_DOWNLOAD_URL=https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/${{ github.event.pull_request.head.sha }}/airbyte-ci" >> $GITHUB_ENV
+          echo "AIRBYTE_CI_DOWNLOAD_URL=https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/${{ steps.get_short_sha.outputs.sha }}/airbyte-ci" >> $GITHUB_ENV
         else
           echo "AIRBYTE_CI_DOWNLOAD_URL=https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci" >> $GITHUB_ENV
         fi

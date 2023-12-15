@@ -111,7 +111,7 @@ class CommandResult:
 
 
 class StepStatus(Enum):
-    """An Enum to characterize the success, failure or skipping of a Step."""
+    """An Enum to characterize the success, failure or skipping of a Step"""
 
     SUCCESS = "Successful"
     FAILURE = "Failed"
