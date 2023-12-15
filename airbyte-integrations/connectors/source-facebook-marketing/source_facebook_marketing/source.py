@@ -113,10 +113,6 @@ class SourceFacebookMarketing(AbstractSource):
             return False, f"{e.message}. Full error: {e.internal_message}"
 
         except Exception as e:
-            import traceback
-
-            print(e)
-            print(traceback.format_exc())
             return False, f"Unexpected error: {repr(e)}"
 
         return True, None
