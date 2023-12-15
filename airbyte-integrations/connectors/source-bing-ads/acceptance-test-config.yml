@@ -213,6 +213,8 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: ConversionRate
               bypass_reason: "dynamic field"
+            - name: LandingPageExperience
+              bypass_reason: "dynamic field"
           ad_performance_report_daily:
             - name: TimePeriod
               bypass_reason: "dynamic field"
