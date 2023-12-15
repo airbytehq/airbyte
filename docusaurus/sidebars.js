@@ -491,13 +491,14 @@ module.exports = {
     deployAirbyte,
     {
       type: "category",
-      label: "Airbyte Enterprise",
+      label: "Self-Managed Enterprise",
       link: {
         type: "doc",
         id: "enterprise-setup/README",
       },
       items: [
         "enterprise-setup/implementation-guide",
+        "enterprise-setup/upgrading-from-community",
         "enterprise-setup/sso",
       ]
     },
