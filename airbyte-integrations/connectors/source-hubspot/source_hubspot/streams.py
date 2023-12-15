@@ -1777,6 +1777,19 @@ class OwnersArchived(ClientSideIncrementalStream):
         params["archived"] = "true"
         return params
 
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        # The HubSpot API on this endpoint now returns archived + non-archived owners to this request.
+        # To keep the original behaviour of this stream, we keep only the archived owners.
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            if record["archived"] and self.filter_by_state(stream_state=stream_state, record=record):
+                yield record
+
 
 class PropertyHistory(ClientSideIncrementalStream):
     """Contacts Endpoint, API v1
