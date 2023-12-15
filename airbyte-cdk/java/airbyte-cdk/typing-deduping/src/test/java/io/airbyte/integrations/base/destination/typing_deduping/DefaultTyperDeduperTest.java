@@ -17,9 +17,12 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +39,7 @@ public class DefaultTyperDeduperTest {
   void setup() throws Exception {
     sqlGenerator = spy(new MockSqlGenerator());
     destinationHandler = mock(DestinationHandler.class);
-    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.empty());
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.empty()));
     migrator = new NoOpDestinationV1V2Migrator<>();
 
     final ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
@@ -146,7 +149,8 @@ public class DefaultTyperDeduperTest {
    */
   @Test
   void existingNonemptyTable() throws Exception {
-    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.of(Instant.parse("2023-01-01T12:34:56Z")));
+    when(destinationHandler.getInitialRawTableState(any()))
+        .thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-01T12:34:56Z"))));
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
 
@@ -185,7 +189,7 @@ public class DefaultTyperDeduperTest {
    */
   @Test
   void existingNonemptyTableMatchingSchema() throws Exception {
-    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.of(Instant.now()));
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.now())));
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
     when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);
@@ -215,6 +219,48 @@ public class DefaultTyperDeduperTest {
     typerDeduper.commitFinalTables();
 
     verifyNoInteractions(ignoreStubs(destinationHandler));
+  }
+
+  /**
+   * Test a typical sync, where the previous sync left no unprocessed raw records. If this sync writes
+   * some records for a stream, we should run T+D for that stream.
+   */
+  @Test
+  void noUnprocessedRecords() throws Exception {
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(false, Optional.empty()));
+    typerDeduper.prepareTables();
+    clearInvocations(destinationHandler);
+
+    typerDeduper.typeAndDedupe(Map.of(
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new StreamSyncSummary(Optional.of(0L)),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new StreamSyncSummary(Optional.of(1L))));
+
+    // append_stream and dedup_stream should be T+D-ed. overwrite_stream has explicitly 0 records, but
+    // dedup_stream
+    // is missing from the map, so implicitly has nonzero records.
+    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING");
+    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING");
+    verifyNoMoreInteractions(destinationHandler);
+  }
+
+  /**
+   * Test a sync where the previous sync failed to run T+D for some stream. Even if this sync writes
+   * zero records, it should still run T+D.
+   */
+  @Test
+  void unprocessedRecords() throws Exception {
+    when(destinationHandler.getInitialRawTableState(any()))
+        .thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z"))));
+    typerDeduper.prepareTables();
+    clearInvocations(destinationHandler);
+
+    typerDeduper.typeAndDedupe(Map.of(
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new StreamSyncSummary(Optional.of(0L)),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new StreamSyncSummary(Optional.of(1L))));
+
+    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
+    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
+    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
   }
 
 }

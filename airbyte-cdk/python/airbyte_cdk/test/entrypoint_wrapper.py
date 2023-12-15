@@ -61,6 +61,13 @@ class EntrypointOutput:
         return self._get_message_by_types([Type.STATE])
 
     @property
+    def most_recent_state(self) -> Any:
+        state_messages = self._get_message_by_types([Type.STATE])
+        if not state_messages:
+            raise ValueError("Can't provide most recent state as there are no state messages")
+        return state_messages[-1].state.data
+
+    @property
     def logs(self) -> List[AirbyteMessage]:
         return self._get_message_by_types([Type.LOG])
 
@@ -122,7 +129,7 @@ def read(
             "--catalog",
             make_file(tmp_directory_path / "catalog.json", catalog.json()),
         ]
-        if state:
+        if state is not None:
             args.extend(
                 [
                     "--state",

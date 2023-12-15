@@ -89,7 +89,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
-  protected final String driverClass;
   protected final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider;
   protected final JdbcCompatibleSourceOperations<Datatype> sourceOperations;
 
@@ -99,7 +98,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   public AbstractJdbcSource(final String driverClass,
                             final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
                             final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
-    this.driverClass = driverClass;
+    super(driverClass);
     this.streamingQueryConfigProvider = streamingQueryConfigProvider;
     this.sourceOperations = sourceOperations;
   }
@@ -428,13 +427,15 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   @Override
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+    Map<String, String> connectionProperties = JdbcDataSourceUtils.getConnectionProperties(sourceConfig);
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClass,
+        driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcDataSourceUtils.getConnectionProperties(sourceConfig));
+        connectionProperties,
+        getConnectionTimeout(connectionProperties));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
