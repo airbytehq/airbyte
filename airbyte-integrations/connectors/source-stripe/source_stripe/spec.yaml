@@ -61,7 +61,7 @@ connectionSpecification:
       type: integer
       title: Number of concurrent workers
       minimum: 1
-      maximum: 200
+      maximum: 20
       default: 10
       examples: [1, 2, 3]
       description: >-
@@ -76,10 +76,3 @@ connectionSpecification:
         The number of API calls per second that you allow connector to make. This value can not be bigger than real
         API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25 and 100
         calls per second for test and production tokens respectively.
-    max_concurrent_tasks:
-      type: integer
-      title: TODO
-      examples: [1000]
-      default: 10000
-      description: >-
-        TODO!

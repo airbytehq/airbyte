@@ -38,12 +38,10 @@ class ConcurrentSource:
         slice_logger: SliceLogger,
         message_repository: MessageRepository,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
-        max_concurrent_tasks: int = ThreadPoolManager.DEFAULT_MAX_QUEUE_SIZE,
     ) -> "ConcurrentSource":
         threadpool = ThreadPoolManager(
             concurrent.futures.ThreadPoolExecutor(max_workers=num_workers, thread_name_prefix="workerpool"),
             logger,
-            max_concurrent_tasks=max_concurrent_tasks
         )
         return ConcurrentSource(
             threadpool, logger, slice_logger, message_repository, initial_number_of_partitions_to_generate, timeout_seconds
@@ -125,7 +123,6 @@ class ConcurrentSource:
             if concurrent_stream_processor.is_done() and queue.empty():
                 # all partitions were generated and processed. we're done here
                 break
-            #self._logger.info(f"Queue size: {queue.qsize()}")
 
     def _handle_item(
         self,

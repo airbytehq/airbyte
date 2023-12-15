@@ -41,7 +41,6 @@ class ThreadPoolManager:
 
     def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
         # Wait until the number of pending tasks is < self._max_concurrent_tasks
-        #self._logger.info(f"There ware {len(futures)} pending tasks.")
         while True:
             self._prune_futures(futures)
             if len(futures) < self._max_concurrent_tasks:
@@ -61,10 +60,10 @@ class ThreadPoolManager:
 
         for index in reversed(range(len(futures))):
             future = futures[index]
-            optional_exception = future.exception()
-            if optional_exception:
-                exception = RuntimeError(f"Failed reading with error: {optional_exception}")
-                self._stop_and_raise_exception(exception)
+            # optional_exception = future.exception()
+            # if optional_exception:
+            #     exception = RuntimeError(f"Failed reading with error: {optional_exception}")
+            #     self._stop_and_raise_exception(exception)
 
             if future.done():
                 futures.pop(index)

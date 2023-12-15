@@ -36,11 +36,10 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
 )
-from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 
 logger = logging.getLogger("airbyte")
 
-_MAX_CONCURRENCY = 200
+_MAX_CONCURRENCY = 20
 _DEFAULT_CONCURRENCY = 10
 _CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
 USE_CACHE = not _CACHE_DISABLED
@@ -54,13 +53,11 @@ class SourceStripe(ConcurrentSourceAdapter):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], **kwargs):
         if config:
             concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
-            max_concurrent_tasks = config.get("max_concurrent_tasks", ThreadPoolManager.DEFAULT_MAX_QUEUE_SIZE)
         else:
             concurrency_level = _DEFAULT_CONCURRENCY
-            max_concurrent_tasks = ThreadPoolManager.DEFAULT_MAX_QUEUE_SIZE
-        logger.info(f"Using concurrent cdk with concurrency level {concurrency_level} and {max_concurrent_tasks} max concurrent tasks")
+        logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
         concurrent_source = ConcurrentSource.create(
-            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository, max_concurrent_tasks=max_concurrent_tasks
+            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository
         )
         super().__init__(concurrent_source)
         if catalog:
