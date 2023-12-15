@@ -12,6 +12,7 @@ import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
@@ -53,7 +54,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcDestination extends JdbcConnector implements Destination {
+public abstract class AbstractJdbcDestination extends BaseConnector implements Destination, JdbcConnector {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
@@ -64,6 +65,8 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
   private final NamingConventionTransformer namingResolver;
   private final SqlOperations sqlOperations;
 
+  private final String driverClassName;
+
   protected NamingConventionTransformer getNamingResolver() {
     return namingResolver;
   }
@@ -72,12 +75,17 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
     return sqlOperations;
   }
 
-  public AbstractJdbcDestination(final String driverClass,
+  public AbstractJdbcDestination(final String driverClassName,
                                  final NamingConventionTransformer namingResolver,
                                  final SqlOperations sqlOperations) {
-    super(driverClass);
+    super();
+    this.driverClassName = driverClassName;
     this.namingResolver = namingResolver;
     this.sqlOperations = sqlOperations;
+  }
+
+  public String getDriverClassName() {
+    return driverClassName;
   }
 
   @Override

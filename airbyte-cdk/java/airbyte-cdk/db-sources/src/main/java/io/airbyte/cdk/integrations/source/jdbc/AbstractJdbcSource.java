@@ -40,6 +40,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.JdbcStreamingQueryConfig;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.relationaldb.AbstractDbSource;
@@ -85,7 +86,8 @@ import org.slf4j.LoggerFactory;
  * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
-public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Datatype, JdbcDatabase> implements Source {
+public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Datatype, JdbcDatabase> implements
+    JdbcConnector, Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
@@ -94,13 +96,19 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   protected String quoteString;
   protected Collection<DataSource> dataSources = new ArrayList<>();
+  private final String driverClassName;
 
-  public AbstractJdbcSource(final String driverClass,
+  public AbstractJdbcSource(final String driverClassName,
                             final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
                             final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
-    super(driverClass);
+    super();
+    this.driverClassName = driverClassName;
     this.streamingQueryConfigProvider = streamingQueryConfigProvider;
     this.sourceOperations = sourceOperations;
+  }
+
+  public String getDriverClassName() {
+    return driverClassName;
   }
 
   @Override
