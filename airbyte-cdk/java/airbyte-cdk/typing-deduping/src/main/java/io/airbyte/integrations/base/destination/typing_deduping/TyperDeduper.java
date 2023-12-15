@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
 public interface TyperDeduper {
@@ -51,8 +54,14 @@ public interface TyperDeduper {
    * <p>
    * For OVERWRITE streams where we're writing to a temp table, this is where we swap the temp table
    * into the final table.
+   *
+   * @param streamSyncSummaries Information about what happened during the sync. Implementations
+   *        SHOULD use this information to skip T+D when possible (this is not a requirement for
+   *        correctness, but does allow us to save time/money). This parameter MUST NOT be null.
+   *        Streams MAY be omitted, which will be treated as though they were mapped to
+   *        {@link StreamSyncSummary#DEFAULT}.
    */
-  void typeAndDedupe() throws Exception;
+  void typeAndDedupe(Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries) throws Exception;
 
   void commitFinalTables() throws Exception;
 

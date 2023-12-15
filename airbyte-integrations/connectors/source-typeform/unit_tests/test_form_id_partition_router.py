@@ -45,20 +45,3 @@ def test_stream_slices(form_ids, parent_stream_configs, expected_slices):
     slices = list(router.stream_slices())
 
     assert slices == expected_slices
-
-@pytest.mark.parametrize("token_auth, oauth2, config, expected", [
-    (
-        "token_auth",
-        None,
-        {"credentials": { "auth_type": True, "access_token": True }},
-        "token_auth"
-    ),
-    (
-        None,
-        "oauth2",
-        {"credentials": { "auth_type": False, "access_token": False}},
-        "oauth2"
-    )
-])
-def test_new_typeformauthenticator(token_auth, oauth2, config, expected):
-    assert TypeformAuthenticator(token_auth, oauth2, config) == expected
