@@ -149,36 +149,32 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     """Base class for incremental streams"""
 
     cursor_field = "updated_time"
-    partition_field = "account_id"
 
     def __init__(self, start_date: Optional[datetime], end_date: Optional[datetime], **kwargs):
         super().__init__(**kwargs)
-        logger.info("Start date : {}".format(start_date))
-        logger.info("End date : {}".format(end_date))
         self._start_date = pendulum.instance(start_date) if start_date else None
         self._end_date = pendulum.instance(end_date) if end_date else None
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(self,
+                          current_stream_state: MutableMapping[str, Any],
+                          latest_record: Mapping[str, Any],
+                          account_id: str):
         """Update stream state from latest record"""
         potentially_new_records_in_the_past = self._include_deleted and not current_stream_state.get("include_deleted", False)
         record_value = latest_record[self.cursor_field]
-        partition_value = latest_record[self.partition_field] if self.partition_field in latest_record else None
-
-        _current_stream_state = current_stream_state.get(partition_value, current_stream_state)
-
-        state_value = _current_stream_state.get(self.cursor_field) or record_value
+        state_value = current_stream_state.get(account_id, {}).get(self.cursor_field) or record_value
         max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
         if potentially_new_records_in_the_past:
             max_cursor = record_value
 
-        updated_state = {
-            self.cursor_field: str(max_cursor),
-            "include_deleted": self._include_deleted,
-        }
-        partitionned_current_stream_state = {partition_value: updated_state} if partition_value else updated_state
-        result = deep_merge(current_stream_state, partitionned_current_stream_state)
+        updated_state = deep_merge(current_stream_state, {
+            account_id: {
+                self.cursor_field: str(max_cursor),
+                "include_deleted": self._include_deleted,
+            }
+        })
 
-        return result
+        return updated_state
 
     def request_params(self, stream_slice: dict, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         """Include state filter"""
@@ -237,7 +233,11 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
     @state.setter
     def state(self, value: Mapping[str, Any]):
         """State setter, ignore state if current settings mismatch saved state"""
-        return self._cursor_value
+        if self._include_deleted and not value.get("include_deleted"):
+            logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
+            return
+
+        self._cursor_value = value
 
     def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Don't have classic cursor filtering"""
@@ -245,3 +245,38 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
 
     def get_record_deleted_status(self, record) -> bool:
         return False
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Main read method used by CDK
+        - save initial state
+        - save maximum value (it is the first one)
+        - update state only when we reach the end
+        - stop reading when we reached the end
+        """
+        try:
+            account_id = stream_slice.get("account").get("account_id")
+            records_iter = self.list_objects(params=self.request_params(stream_state=stream_state, stream_slice=stream_slice), stream_slice=stream_slice)
+            for record in records_iter:
+                record_cursor_value = pendulum.parse(record[self.cursor_field])
+                cursor_value = None
+                if self._cursor_value:
+                    cursor_value = pendulum.parse(self._cursor_value.get(account_id).get(self.cursor_field))
+                if cursor_value and record_cursor_value < cursor_value:
+                    break
+                if not self._include_deleted and self.get_record_deleted_status(record):
+                    continue
+
+                self._max_cursor_value = max(self._max_cursor_value, record_cursor_value) if self._max_cursor_value else record_cursor_value
+                record = record.export_all_data()
+                self.fix_date_time(record)
+                yield record
+
+            self._cursor_value = self._max_cursor_value
+        except FacebookRequestError as exc:
+            raise traced_exception(exc)

@@ -104,6 +104,7 @@ class Ads(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup"""
 
     entity_prefix = "ad"
+    enable_deleted = True
 
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
         yield from stream_slice.get("account").get_ads(params=params, fields=self.fields)

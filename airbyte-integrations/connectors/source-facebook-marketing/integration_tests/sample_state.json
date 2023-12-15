@@ -1,5 +1,5 @@
 [
-    {
+  {
     "type": "STREAM",
     "stream": {
       "stream_state": {
@@ -7,7 +7,33 @@
           "slices": [
             "2023-12-07"
           ],
-          "updated_time": "2023-12-07"
+          "date_start": "2023-12-07",
+          "time_increment": 1
+        },
+        "1107987959844881": {
+          "slices": [
+            "2023-12-07"
+          ],
+          "date_start": "2023-12-07",
+          "time_increment": 1
+        }
+      },
+      "stream_descriptor": {
+        "name": "ads_insights"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "646247609923744": {
+          "updated_time": "2023-12-15 19:04:24.899176+00",
+          "include_deleted": 1
+        },
+        "1447352185602743": {
+          "updated_time": "2023-12-15 19:04:24.899176+00",
+          "include_deleted": 1
         }
       },
       "stream_descriptor": {
@@ -19,23 +45,29 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "1101472513921186": {
-          "slices": [
-            "2023-12-07"
-          ],
-          "updated_time": "2023-12-07",
-          "time_increment": 1
+        "646247609923744": {
+          "updated_time": "2023-12-15 19:04:24.899176+00",
+          "include_deleted": false
         },
-        "1107987959844881": {
-          "slices": [
-            "2023-12-07"
-          ],
-          "updated_time": "2023-12-07",
-          "time_increment": 1
+        "1447352185602743": {
+          "updated_time": "2023-12-15 19:04:24.899176+00",
+          "include_deleted": false
         }
       },
       "stream_descriptor": {
-        "name": "ads_insights"
+        "name": "ads"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_start": "2023-10-19T00:00:00Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": {
+        "name": "ads_insights_age_and_gender"
       }
     }
   },
