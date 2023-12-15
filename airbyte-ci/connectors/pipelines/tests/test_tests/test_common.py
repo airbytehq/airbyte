@@ -162,7 +162,7 @@ class TestAcceptanceTests:
         test_secrets = {"config.json": dagger_client.set_secret("config.json", "connector_secret")}
         test_context_ci.get_connector_dir = mocker.AsyncMock(return_value=test_input_dir)
         test_context_ci.connector_acceptance_test_image = "bash:latest"
-        test_context_ci.connector_secrets = mocker.AsyncMock(return_value=test_secrets)
+        test_context_ci.get_connector_secrets = mocker.AsyncMock(return_value=test_secrets)
 
         mocker.patch.object(docker, "load_image_to_docker_host", return_value="image_sha")
         mocker.patch.object(docker, "with_bound_docker_host", lambda _, cat_container: cat_container)
