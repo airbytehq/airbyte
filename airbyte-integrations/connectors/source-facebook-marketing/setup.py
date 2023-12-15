@@ -25,9 +25,4 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
-    entry_points={
-        "console_scripts": [
-            "source-facebook-marketing=source_facebook_marketing.run:run",
-        ],
-    },
 )
