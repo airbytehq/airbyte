@@ -125,3 +125,29 @@ releases:
       message: "This version changes the connector’s authentication by removing ApiKey authentication, which is now deprecated by the [upstream source](upsteam-docs-url.com). Users currently using ApiKey auth will need to reauthenticate with OAuth after upgrading to continue syncing."
       upgradeDeadline: "2023-12-31"
 ```
+
+#### `scopedImpact`
+The optional `scopedImpact` property allows you to provide a list of scopes for which the change is breaking.
+This allows you to reduce the scope of the change; it's assumed that any scopes not listed are unaffected by the breaking change.
+
+For example, consider the following `scopedImpact` defintion:
+
+```yaml
+releases:
+  breakingChanges:
+    1.0.0:
+      message: "This version changes the cursor for the `Users` stream. After upgrading, please reset the stream."
+      upgradeDeadline: "2023-12-31"
+      impactScope:
+        - scopeType: stream
+          impactedScopes: ["users"]
+```
+
+This change only breaks the `users` stream - all other streams are unaffected. A user can safely ignore the breaking change
+if they are not syncing the `users` stream.
+
+The supported scope types are listed below.
+
+| Scope Type | Value Type | Value Description |
+|------------|------------|------------------|
+| stream     | `list[str]`  | List of stream names |
