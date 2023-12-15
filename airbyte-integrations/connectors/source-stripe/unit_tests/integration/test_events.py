@@ -25,7 +25,6 @@ from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
 from source_stripe import SourceStripe
 
-
 _STREAM_NAME = "events"
 _NOW = datetime.now(timezone.utc)
 _A_START_DATE = _NOW - timedelta(days=60)
