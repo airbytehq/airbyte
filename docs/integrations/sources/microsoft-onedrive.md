@@ -1,4 +1,4 @@
-# Microsoft Teams
+# Microsoft OneDrive
 
 This page contains the setup guide and reference information for the Microsoft OneDrive source connector.
 
@@ -59,7 +59,7 @@ This source requires **Application permissions**. Follow these [instructions](ht
 6. Record the client\_id and tenant\_id which will be used by the tap for authentication and API integration.
 7. Select **Certificates & secrets**
 8. Provide **Description and Expires**
-   1. Description: tap-microsoft-teams client secret
+   1. Description: tap-microsoft-onedrive client secret
    2. Expires: 1-year
    3. Add
 9. Copy the client secret value, this will be the client\_secret
