@@ -72,11 +72,6 @@ class IURLPropertyRepresentation(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def as_url_param_with_history(self) -> str:
-        """"""
-
-    @property
-    @abc.abstractmethod
     def _term_representation(self):
         """"""
 
@@ -110,7 +105,11 @@ class APIv1Property(IURLPropertyRepresentation):
     def as_url_param(self):
         return {"property": self.properties}
 
-    def as_url_param_with_history(self) -> str:
+
+class APIv1PropertiesWithHistory(IURLPropertyRepresentation):
+    _term_representation = "propertiesWithHistory={property}&"
+
+    def as_url_param(self):
         return "&".join(map(lambda prop: f"propertiesWithHistory={prop}", self.properties))
 
 
@@ -120,7 +119,11 @@ class APIv2Property(IURLPropertyRepresentation):
     def as_url_param(self):
         return {"property": self.properties}
 
-    def as_url_param_with_history(self) -> str:
+
+class APIv2PropertiesWithHistory(IURLPropertyRepresentation):
+    _term_representation = "propertiesWithHistory={property}&"
+
+    def as_url_param(self):
         return "&".join(map(lambda prop: f"propertiesWithHistory={prop}", self.properties))
 
 
@@ -129,6 +132,3 @@ class APIv3Property(IURLPropertyRepresentation):
 
     def as_url_param(self):
         return {"properties": ",".join(self.properties)}
-
-    def as_url_param_with_history(self) -> str:
-        raise NotImplementedError("Not implemented")
