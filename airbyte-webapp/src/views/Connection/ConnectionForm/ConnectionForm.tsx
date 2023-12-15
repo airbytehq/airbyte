@@ -184,7 +184,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
       // Set the scheduleType based on the schedule value
       values["scheduleType"] =
-        typeof values?.scheduleData?.basicSchedule === "string" && values.scheduleData.basicSchedule === "manual"
+        typeof values?.scheduleData?.basicSchedule === "string" && values?.scheduleData?.basicSchedule === "manual"
           ? ConnectionScheduleType.manual
           : ConnectionScheduleType.basic;
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
