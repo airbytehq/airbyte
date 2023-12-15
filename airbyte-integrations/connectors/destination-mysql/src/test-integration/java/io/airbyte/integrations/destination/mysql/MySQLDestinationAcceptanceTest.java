@@ -48,7 +48,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
   protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
 
-  private MySQLContainer<?> db;
+  protected MySQLContainer<?> db;
   private final StandardNameTransformer namingResolver = new MySQLNameTransformer();
 
   @Override

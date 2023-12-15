@@ -24,11 +24,9 @@ import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MySQLContainer;
 
 public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanceTest {
 
-  private MySQLContainer<?> db;
   private DSLContext dslContext;
   private final StandardNameTransformer namingResolver = new MySQLNameTransformer();
 
@@ -87,8 +85,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
 
   @Override
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
-    db = new MySQLContainer<>("mysql:8.0");
-    db.start();
+    super.setup(testEnv, TEST_SCHEMAS);
 
     dslContext = DSLContextFactory.create(
         db.getUsername(),
@@ -99,10 +96,6 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
             db.getFirstMappedPort(),
             db.getDatabaseName()),
         SQLDialect.DEFAULT);
-
-    setLocalInFileToTrue();
-    revokeAllPermissions();
-    grantCorrectPermissions();
   }
 
   @Override
