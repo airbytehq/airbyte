@@ -35,3 +35,9 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mysql')
     integrationTestJavaImplementation libs.testcontainers.mysql
 }
+
+configurations.all {
+    resolutionStrategy {
+        force libs.jooq
+    }
+}
