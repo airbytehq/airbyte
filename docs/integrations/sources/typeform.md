@@ -90,6 +90,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.2.2   | 2023-12-12 | [33345](https://github.com/airbytehq/airbyte/pull/33345) | Fix single use refresh token authentication                                                     |
 | 1.2.1   | 2023-12-04 | [32775](https://github.com/airbytehq/airbyte/pull/32775) | Add 499 status code handling                                                                    |
 | 1.2.0   | 2023-11-29 | [32745](https://github.com/airbytehq/airbyte/pull/32745) | Add `response_type` field to `responses` schema                                                 |
 | 1.1.2   | 2023-10-27 | [31914](https://github.com/airbytehq/airbyte/pull/31914) | Fix pagination for stream Responses                                                             |

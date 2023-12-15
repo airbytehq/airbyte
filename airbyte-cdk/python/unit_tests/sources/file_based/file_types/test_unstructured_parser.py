@@ -9,11 +9,13 @@ from unittest.mock import MagicMock, call, mock_open, patch
 
 import pytest
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.unstructured_format import APIParameterConfigModel, APIProcessingConfigModel, UnstructuredFormat
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError
 from airbyte_cdk.sources.file_based.file_types import UnstructuredParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unstructured.documents.elements import ElementMetadata, Formula, ListItem, Text, Title
 from unstructured.file_utils.filetype import FileType
 
@@ -126,7 +128,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
                 {
                     "content": None,
                     "document_key": FILE_URI,
-                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=path/to/file.xyz message=File type FileType.CSV is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX",
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=path/to/file.xyz message=File type FileType.CSV is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX, FileType.TXT",
                 }
             ],
             False,
@@ -313,7 +315,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
 
 
 @pytest.mark.parametrize(
-    "filetype, format_config, raises_for_status, file_content, json_response, expected_requests, raises, expected_records",
+    "filetype, format_config, raises_for_status, file_content, json_response, expected_requests, raises, expected_records, http_status_code",
     [
         pytest.param(
             FileType.PDF,
@@ -330,6 +332,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                     "_ab_source_file_parse_error": None
                 }
             ],
+            200,
             id="basic_request",
         ),
         pytest.param(
@@ -347,6 +350,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                     "_ab_source_file_parse_error": None
                 }
             ],
+            200,
             id="request_with_params",
         ),
         pytest.param(
@@ -364,6 +368,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                     "_ab_source_file_parse_error": None
                 }
             ],
+            200,
             id="handle_markdown_locally",
         ),
         pytest.param(
@@ -392,6 +397,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             ],
             True,
             None,
+            200,
             id="retry_and_raise_on_api_error",
         ),
         pytest.param(
@@ -420,6 +426,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                     "_ab_source_file_parse_error": None
                 }
             ],
+            200,
             id="retry_and_recover",
         ),
         pytest.param(
@@ -436,6 +443,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             ],
             True,
             None,
+            200,
             id="no_retry_on_unexpected_error",
         ),
         pytest.param(
@@ -452,7 +460,28 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             ],
             True,
             None,
+            400,
             id="no_retry_on_400_error",
+        ),
+        pytest.param(
+            FileType.PDF,
+            UnstructuredFormat(skip_unprocessable_file_types=False, processing=APIProcessingConfigModel(mode="api", api_key="test")),
+            None,
+            "test",
+            [{"detail": "Something went wrong"}],
+            [
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
+            ],
+            False,
+            [
+                {
+                    "content": None,
+                    "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=path/to/file.xyz message=[{'detail': 'Something went wrong'}]",
+                }
+            ],
+            422,
+            id="error_record_on_422_error",
         ),
     ],
 )
@@ -471,6 +500,7 @@ def test_parse_records_remotely(
     expected_requests,
     raises,
     expected_records,
+    http_status_code
 ):
     stream_reader = MagicMock()
     mock_open(stream_reader.open_file, read_data=bytes(str(file_content), "utf-8"))
@@ -482,14 +512,17 @@ def test_parse_records_remotely(
     mock_detect_filetype.return_value = filetype
     mock_response = MagicMock()
     mock_response.json.return_value = json_response
+    mock_response.status_code = http_status_code
     if raises_for_status:
         mock_response.raise_for_status.side_effect = raises_for_status
     requests_mock.post.return_value = mock_response
     requests_mock.exceptions.RequestException = requests.exceptions.RequestException
 
     if raises:
-        with pytest.raises(Exception):
+        with pytest.raises(AirbyteTracedException) as exc:
             list(UnstructuredParser().parse_records(config, fake_file, stream_reader, logger, MagicMock()))
+        # Failures from the API are treated as config errors
+        assert exc.value.failure_type == FailureType.config_error
     else:
         assert list(UnstructuredParser().parse_records(config, fake_file, stream_reader, logger, MagicMock())) == expected_records
 
