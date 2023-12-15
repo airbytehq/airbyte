@@ -4,7 +4,7 @@ VERSION=0.50.38
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
-set -u
+set +u
 
 # text color escape codes (please note \033 == \e but OSX doesn't respect the \e)
 blue_text='\033[94m'
