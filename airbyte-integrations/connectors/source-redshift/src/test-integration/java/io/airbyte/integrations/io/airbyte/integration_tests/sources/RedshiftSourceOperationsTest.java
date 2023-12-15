@@ -42,7 +42,7 @@ public class RedshiftSourceOperationsTest {
         DatabaseDriver.REDSHIFT.getDriverClassName(),
         RedshiftSource.getJdbcUrl(config),
         JdbcDataSourceUtils.getConnectionProperties(config),
-            CONNECTION_TIMEOUT);
+        CONNECTION_TIMEOUT);
     database = new DefaultJdbcDatabase(dataSource, new RedshiftSourceOperations());
   }
 
