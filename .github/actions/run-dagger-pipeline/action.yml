@@ -102,6 +102,7 @@ runs:
       id: get-start-timestamp
       shell: bash
       run: echo "name=start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+
     - name: Get changed files
       uses: tj-actions/changed-files@v39
       id: changes

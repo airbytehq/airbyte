@@ -6,6 +6,15 @@ concurrency:
 
 on:
   push:
+    branches:
+      - master
+    paths:
+      - "airbyte-ci/connectors/pipelines/**"
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
     paths:
       - "airbyte-ci/connectors/pipelines/**"
   workflow_dispatch:
