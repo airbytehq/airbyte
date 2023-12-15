@@ -32,7 +32,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.app_ad.headlines": {
@@ -41,7 +41,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.app_ad.html5_media_bundles": {
@@ -50,7 +50,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.app_ad.images": {
@@ -59,7 +59,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.app_ad.mandatory_ad_text": {
@@ -74,7 +74,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.app_engagement_ad.descriptions": {
@@ -83,7 +83,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.app_engagement_ad.headlines": {
@@ -92,7 +92,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.app_engagement_ad.images": {
@@ -101,7 +101,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.app_engagement_ad.videos": {
@@ -110,7 +110,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.call_ad.business_name": {
@@ -281,7 +281,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.final_mobile_urls": {
@@ -290,7 +290,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.final_url_suffix": {
@@ -305,7 +305,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.hotel_ad": {
@@ -470,7 +470,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.local_ad.descriptions": {
@@ -479,7 +479,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.local_ad.headlines": {
@@ -488,7 +488,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.local_ad.logo_images": {
@@ -497,7 +497,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.local_ad.marketing_images": {
@@ -506,7 +506,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.local_ad.path1": {
@@ -527,7 +527,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.name": {
@@ -584,7 +584,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.format_setting": {
@@ -599,7 +599,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.logo_images": {
@@ -608,7 +608,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.long_headline": {
@@ -629,7 +629,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.price_prefix": {
@@ -650,7 +650,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.square_marketing_images": {
@@ -659,7 +659,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.youtube_videos": {
@@ -668,7 +668,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.responsive_search_ad.descriptions": {
@@ -677,7 +677,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.responsive_search_ad.headlines": {
@@ -686,7 +686,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.responsive_search_ad.path1": {
@@ -725,7 +725,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.smart_campaign_ad.headlines": {
@@ -734,7 +734,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.system_managed_resource_source": {
@@ -779,7 +779,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.url_custom_parameters": {
@@ -788,7 +788,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.video_ad.in_feed.description1": {
@@ -839,7 +839,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.video_responsive_ad.companion_banners": {
@@ -848,7 +848,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.video_responsive_ad.descriptions": {
@@ -857,7 +857,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.video_responsive_ad.headlines": {
@@ -866,7 +866,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.video_responsive_ad.long_headlines": {
@@ -875,7 +875,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad.video_responsive_ad.videos": {
@@ -884,7 +884,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.ad_group": {
@@ -905,7 +905,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.policy_summary.approval_status": {
@@ -920,7 +920,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group_ad.policy_summary.review_status": {

@@ -68,7 +68,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "lead_form_submission_data.resource_name": {
