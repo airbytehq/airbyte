@@ -107,14 +107,6 @@ runs:
         files_yaml: |
           pipelines:
             - 'airbyte-ci/connectors/pipelines/**'
-    - name: Wait on Binary Release if branch is not master and pipeline/ is modified
-      if: github.event.pull_request.head.ref != 'master' && steps.changes.outputs.pipelines_any_changed == 'true'
-      uses: explorium-ai/wait-github-status-action@v1.0.2
-      with:
-        name: "Connector Ops CI - Airbyte CI Release"
-        token: ${{ inputs.github_token }}
-        seconds: 15
-        sha: ${{ github.event.pull_request.head.sha }}
     # If the airbyte_ci_binary_url is not set generate the download url ourselves
     # On master the URL is in this format: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
     # On non-master branches the URL is in this format: https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/$COMMIT/airbyte-ci
@@ -139,7 +131,16 @@ runs:
       id: install-airbyte-ci
       shell: bash
       run: |
-        curl -sSL $AIRBYTE_CI_DOWNLOAD_URL --output airbyte-ci-bin
+        for i in {1..40}; do
+          echo "Attempt $i to download airbyte-ci binary"
+          curl -sSLf $AIRBYTE_CI_DOWNLOAD_URL --output airbyte-ci-bin
+          if [ $? -eq 0 ]; then
+            echo "Successfully downloaded airbyte-ci binary"
+            break
+          fi
+          sleep 15
+        done
+
         sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci
         sudo chmod +x /usr/local/bin/airbyte-ci
     - name: Run airbyte-ci
