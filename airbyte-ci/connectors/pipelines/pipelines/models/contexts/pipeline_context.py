@@ -17,6 +17,7 @@ from github import PullRequest
 from pipelines.consts import CIContext, ContextState
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.github import update_commit_status_check
+from pipelines.helpers.run_steps import RunStepOptions
 from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import AIRBYTE_REPO_URL
 from pipelines.models.reports import Report
@@ -61,6 +62,7 @@ class PipelineContext:
         ci_gcs_credentials: Optional[str] = None,
         ci_git_user: Optional[str] = None,
         ci_github_access_token: Optional[str] = None,
+        run_step_options: RunStepOptions = RunStepOptions(),
         enable_report_auto_open: bool = True,
     ):
         """Initialize a pipeline context.
@@ -104,6 +106,7 @@ class PipelineContext:
         self.started_at = None
         self.stopped_at = None
         self.secrets_to_mask = []
+        self.run_step_options = run_step_options
         self.enable_report_auto_open = enable_report_auto_open
         update_commit_status_check(**self.github_commit_status)
 
