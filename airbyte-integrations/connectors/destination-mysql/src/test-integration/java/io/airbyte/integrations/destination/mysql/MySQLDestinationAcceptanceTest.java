@@ -93,6 +93,17 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
         .build());
   }
 
+  /**
+   * {@link #getConfig()} returns a config with host/port set to the in-docker values. This works
+   * for running the destination-mysql container, but we have some tests which run the destination
+   * code directly from the JUnit process. These tests need to connect using the "normal" host/port.
+   */
+  private JsonNode getConfigForBareMetalConnection() {
+    return ((ObjectNode) getConfig())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort());
+  }
+
   @Override
   protected JsonNode getFailCheckConfig() {
     final ObjectNode config = (ObjectNode) getConfig();
@@ -260,7 +271,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   void testCheckIncorrectPasswordFailure() {
-    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.PASSWORD_KEY, "fake");
+    final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.PASSWORD_KEY, "fake");
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
@@ -269,7 +280,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   public void testCheckIncorrectUsernameFailure() {
-    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, "fake");
+    final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.USERNAME_KEY, "fake");
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
@@ -278,7 +289,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   public void testCheckIncorrectHostFailure() {
-    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.HOST_KEY, "localhost2");
+    final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.HOST_KEY, "localhost2");
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
@@ -287,7 +298,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   public void testCheckIncorrectPortFailure() {
-    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.PORT_KEY, "0000");
+    final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.PORT_KEY, "0000");
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
@@ -296,7 +307,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   public void testCheckIncorrectDataBaseFailure() {
-    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
+    final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
@@ -306,7 +317,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   @Test
   public void testUserHasNoPermissionToDataBase() {
     executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
-    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
+    final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
     final MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus status = destination.check(config);
