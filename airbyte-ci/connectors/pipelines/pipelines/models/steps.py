@@ -127,7 +127,7 @@ class StepStatus(Enum):
             return Style(color="yellow")
 
     def get_emoji(self) -> str:
-        """Match emoji used in the console output to the step status."""
+        """Match emoji used in the console output to the step status"""
         if self is StepStatus.SUCCESS:
             return "✅"
         if self is StepStatus.FAILURE:
