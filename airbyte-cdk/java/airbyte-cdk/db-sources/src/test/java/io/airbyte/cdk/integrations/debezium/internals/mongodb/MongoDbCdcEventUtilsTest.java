@@ -8,6 +8,7 @@ import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcE
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.ID_FIELD;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.OBJECT_ID_FIELD;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.OBJECT_ID_FIELD_PATTERN;
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.SCHEMALESS_MODE_DATA_FIELD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -45,6 +46,7 @@ import org.bson.UuidRepresentation;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 class MongoDbCdcEventUtilsTest {
 
@@ -63,12 +65,11 @@ class MongoDbCdcEventUtilsTest {
     debeziumEventKey = Jsons.jsonNode(Map.of(ID_FIELD, "\"" + OBJECT_ID + "\""));
     updated = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
     assertTrue(updated.contains(DOCUMENT_OBJECT_ID_FIELD));
-    assertEquals(Jsons.serialize(debeziumEventKey).replaceAll(ID_FIELD, DOCUMENT_OBJECT_ID_FIELD), updated);
+    assertEquals(Jsons.serialize(Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, OBJECT_ID))), updated);
   }
 
   @Test
   void testNormalizeObjectId() {
-
     final JsonNode data = MongoDbCdcEventUtils.normalizeObjectId((ObjectNode) Jsons.jsonNode(
         Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of(OBJECT_ID_FIELD, OBJECT_ID))));
     assertEquals(OBJECT_ID, data.get(DOCUMENT_OBJECT_ID_FIELD).asText());
@@ -78,6 +79,29 @@ class MongoDbCdcEventUtilsTest {
     assertNotEquals(OBJECT_ID, dataWithoutObjectId.get(DOCUMENT_OBJECT_ID_FIELD).asText());
 
     final JsonNode dataWithoutId = MongoDbCdcEventUtils.normalizeObjectId((ObjectNode) Jsons.jsonNode(Map.of()));
+    assertNull(dataWithoutId.get(DOCUMENT_OBJECT_ID_FIELD));
+
+    final JsonNode stringId = MongoDbCdcEventUtils.normalizeObjectId((ObjectNode) Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, "abcd")));
+    assertEquals("abcd", stringId.get(DOCUMENT_OBJECT_ID_FIELD).asText());
+  }
+
+  @Test
+  void testNormalizeObjectIdNoSchema() {
+    var objectNode = (ObjectNode) Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of(OBJECT_ID_FIELD, OBJECT_ID)));
+    objectNode.set(SCHEMALESS_MODE_DATA_FIELD,
+        Jsons.jsonNode(ImmutableMap.of(DOCUMENT_OBJECT_ID_FIELD, Map.of(OBJECT_ID_FIELD, OBJECT_ID))));
+
+    final JsonNode data = MongoDbCdcEventUtils.normalizeObjectIdNoSchema(objectNode);
+    assertEquals(OBJECT_ID, data.get(DOCUMENT_OBJECT_ID_FIELD).asText());
+    assertEquals(OBJECT_ID, data.get(SCHEMALESS_MODE_DATA_FIELD).get(DOCUMENT_OBJECT_ID_FIELD).asText());
+
+    objectNode = (ObjectNode) Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of()));
+    objectNode.set(SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(ImmutableMap.of(DOCUMENT_OBJECT_ID_FIELD, Map.of())));
+    final JsonNode dataWithoutObjectId = MongoDbCdcEventUtils.normalizeObjectIdNoSchema(objectNode);
+    assertNotEquals(OBJECT_ID, dataWithoutObjectId.get(DOCUMENT_OBJECT_ID_FIELD).asText());
+    assertNotEquals(OBJECT_ID, dataWithoutObjectId.get(SCHEMALESS_MODE_DATA_FIELD).get(DOCUMENT_OBJECT_ID_FIELD).asText());
+
+    final JsonNode dataWithoutId = MongoDbCdcEventUtils.normalizeObjectIdNoSchema((ObjectNode) Jsons.jsonNode(Map.of()));
     assertNull(dataWithoutId.get(DOCUMENT_OBJECT_ID_FIELD));
   }
 
@@ -180,6 +204,52 @@ class MongoDbCdcEventUtilsTest {
     assertFalse(transformed.has("field14"));
     assertFalse(transformed.has("field15"));
     assertFalse(transformed.has("field16"));
+  }
+
+  @Test
+  void testTransformDataTypesNoSchema() {
+    final BsonTimestamp bsonTimestamp = new BsonTimestamp(394, 1926745562);
+    final String expectedTimestamp = DataTypeUtils.toISO8601StringWithMilliseconds(bsonTimestamp.getValue());
+
+    final Document document = new Document("field1", new BsonBoolean(true))
+        .append("field2", new BsonInt32(1))
+        .append("field3", new BsonInt64(2))
+        .append("field4", new BsonDouble(3.0))
+        .append("field5", new BsonDecimal128(new Decimal128(4)))
+        .append("field6", bsonTimestamp)
+        .append("field7", new BsonDateTime(bsonTimestamp.getValue()))
+        .append("field8", new BsonBinary("test".getBytes(Charset.defaultCharset())))
+        .append("field9", new BsonSymbol("test2"))
+        .append("field10", new BsonString("test3"))
+        .append("field11", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("field12", new BsonJavaScript("code"))
+        .append("field13", new BsonJavaScriptWithScope("code2", new BsonDocument("scope", new BsonString("scope"))))
+        .append("field14", new BsonRegularExpression("pattern"))
+        .append("field15", new BsonNull())
+        .append("field16", new Document("key", "value"));
+
+    final String documentAsJson = document.toJson();
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypesNoSchema(documentAsJson);
+
+    assertNotNull(transformed);
+    final var abDataNode = transformed.get(SCHEMALESS_MODE_DATA_FIELD);
+    assertNotEquals(documentAsJson, Jsons.serialize(abDataNode));
+    assertEquals(true, abDataNode.get("field1").asBoolean());
+    assertEquals(1, abDataNode.get("field2").asInt());
+    assertEquals(2, abDataNode.get("field3").asInt());
+    assertEquals(3.0, abDataNode.get("field4").asDouble());
+    assertEquals(4.0, abDataNode.get("field5").asDouble());
+    assertTrue(abDataNode.has("field6"));
+    assertTrue(abDataNode.has("field7"));
+    assertTrue(abDataNode.has("field8"));
+    assertTrue(abDataNode.has("field9"));
+    assertTrue(abDataNode.has("field10"));
+    assertTrue(abDataNode.has("field11"));
+    assertTrue(abDataNode.has("field12"));
+    assertTrue(abDataNode.has("field13"));
+    assertTrue(abDataNode.has("field14"));
+    assertFalse(abDataNode.has("field15"));
+    assertTrue(abDataNode.has("field16"));
   }
 
 }
