@@ -225,7 +225,6 @@ const buildAConnector = {
       },
       items: [
         "connector-development/testing-connectors/connector-acceptance-tests-reference",
-        "connector-development/testing-connectors/testing-a-local-catalog-in-development",
       ],
     },
     {
@@ -579,6 +578,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/november_2023",
         "release_notes/october_2023",
         "release_notes/upgrading_to_destinations_v2",
         "release_notes/september_2023",

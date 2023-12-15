@@ -77,19 +77,19 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
   }
 
   @Override
-  public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
+  public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
     final ResultSet tables = database.getMetaData().getTables(
         databaseName,
         id.rawNamespace(),
         id.rawName(),
         null);
     if (!tables.next()) {
-      return Optional.empty();
+      return new InitialRawTableState(false, Optional.empty());
     }
     // Snowflake timestamps have nanosecond precision, so decrement by 1ns
     // And use two explicit queries because COALESCE doesn't short-circuit.
     // This first query tries to find the oldest raw record with loaded_at = NULL
-    Optional<String> minUnloadedTimestamp = Optional.ofNullable(database.queryStrings(
+    final Optional<String> minUnloadedTimestamp = Optional.ofNullable(database.queryStrings(
         conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
                 """
@@ -102,22 +102,24 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
                 """)),
         // The query will always return exactly one record, so use .get(0)
         record -> record.getString("MIN_TIMESTAMP")).get(0));
-    if (minUnloadedTimestamp.isEmpty()) {
-      // If there are no unloaded raw records, then we can safely skip all existing raw records.
-      // This second query just finds the newest raw record.
-      minUnloadedTimestamp = Optional.ofNullable(database.queryStrings(
-          conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
-              "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
-                  """
-                  SELECT to_varchar(
-                    MAX("_airbyte_extracted_at"),
-                    'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
-                  ) AS MIN_TIMESTAMP
-                  FROM ${raw_table}
-                  """)),
-          record -> record.getString("MIN_TIMESTAMP")).get(0));
+    if (minUnloadedTimestamp.isPresent()) {
+      return new InitialRawTableState(true, minUnloadedTimestamp.map(Instant::parse));
     }
-    return minUnloadedTimestamp.map(Instant::parse);
+
+    // If there are no unloaded raw records, then we can safely skip all existing raw records.
+    // This second query just finds the newest raw record.
+    final Optional<String> maxTimestamp = Optional.ofNullable(database.queryStrings(
+        conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
+            "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
+                """
+                SELECT to_varchar(
+                  MAX("_airbyte_extracted_at"),
+                  'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
+                ) AS MIN_TIMESTAMP
+                FROM ${raw_table}
+                """)),
+        record -> record.getString("MIN_TIMESTAMP")).get(0));
+    return new InitialRawTableState(false, maxTimestamp.map(Instant::parse));
   }
 
   @Override
