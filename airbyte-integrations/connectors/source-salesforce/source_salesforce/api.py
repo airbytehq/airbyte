@@ -51,7 +51,6 @@ QUERY_RESTRICTED_SALESFORCE_OBJECTS = [
     "AppTabMember",
     "CollaborationGroupRecord",
     "ColorDefinition",
-    "ContentDocumentLink",
     "ContentFolderItem",
     "ContentFolderMember",
     "DataStatistics",
@@ -129,6 +128,19 @@ QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = [
     "UserRecordAccess",
 ]
 
+PARENT_SALESFORCE_OBJECTS = {
+    # parent_name - name of parent stream
+    # field - in each parent record, which is needed for stream slice
+    # schema_minimal - required for getting proper class name full_refresh/incremental, rest/bulk for parent stream
+    "ContentDocumentLink": {
+        "parent_name": "ContentDocument",
+        "field": "Id",
+        "schema_minimal": {
+            "properties": {"Id": {"type": ["string", "null"]}, "SystemModstamp": {"type": ["string", "null"], "format": "date-time"}}
+        },
+    }
+}
+
 # The following objects are not supported by the Bulk API. Listed objects are version specific.
 UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "AcceptedEventRelation",
@@ -184,6 +196,7 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
 UNSUPPORTED_FILTERING_STREAMS = [
     "ApiEvent",
     "BulkApiResultEventStore",
+    "ContentDocumentLink",
     "EmbeddedServiceDetail",
     "EmbeddedServiceLabel",
     "FormulaFunction",
