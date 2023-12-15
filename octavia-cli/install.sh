@@ -17,6 +17,10 @@ detect_profile() {
         if [ -f "$HOME/.zshrc" ]; then
         DETECTED_PROFILE="$HOME/.zshrc"
         fi
+    elif [ "${SHELL#*fish}" != "$SHELL" ]; then
+        if [ -f "$HOME/.config/fish/config.fish" ]; then
+        DETECTED_PROFILE="$HOME/.config/fish/config.fish"
+        fi        
     fi
 
     if [ -z "${DETECTED_PROFILE}" ]; then
