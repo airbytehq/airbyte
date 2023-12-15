@@ -5,8 +5,9 @@
 package io.airbyte.cdk.integrations.source.relationaldb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.withSettings;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
@@ -33,7 +34,7 @@ public class AbstractDbSourceTest {
 
   @Test
   void testDeserializationOfLegacyState() throws IOException {
-    final AbstractDbSource dbSource = spy(AbstractDbSource.class);
+    final AbstractDbSource dbSource = mock(AbstractDbSource.class, withSettings().useConstructor("").defaultAnswer(CALLS_REAL_METHODS));
     final JsonNode config = mock(JsonNode.class);
 
     final String legacyStateJson = MoreResources.readResource("states/legacy.json");
@@ -47,7 +48,7 @@ public class AbstractDbSourceTest {
 
   @Test
   void testDeserializationOfGlobalState() throws IOException {
-    final AbstractDbSource dbSource = spy(AbstractDbSource.class);
+    final AbstractDbSource dbSource = mock(AbstractDbSource.class, withSettings().useConstructor("").defaultAnswer(CALLS_REAL_METHODS));
     final JsonNode config = mock(JsonNode.class);
 
     final String globalStateJson = MoreResources.readResource("states/global.json");
@@ -61,7 +62,7 @@ public class AbstractDbSourceTest {
 
   @Test
   void testDeserializationOfStreamState() throws IOException {
-    final AbstractDbSource dbSource = spy(AbstractDbSource.class);
+    final AbstractDbSource dbSource = mock(AbstractDbSource.class, withSettings().useConstructor("").defaultAnswer(CALLS_REAL_METHODS));
     final JsonNode config = mock(JsonNode.class);
 
     final String streamStateJson = MoreResources.readResource("states/per_stream.json");
@@ -75,7 +76,7 @@ public class AbstractDbSourceTest {
 
   @Test
   void testDeserializationOfNullState() throws IOException {
-    final AbstractDbSource dbSource = spy(AbstractDbSource.class);
+    final AbstractDbSource dbSource = mock(AbstractDbSource.class, withSettings().useConstructor("").defaultAnswer(CALLS_REAL_METHODS));
     final JsonNode config = mock(JsonNode.class);
 
     final List<AirbyteStateMessage> result = StateGeneratorUtils.deserializeInitialState(null, dbSource.getSupportedStateType(config));
