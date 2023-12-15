@@ -112,7 +112,7 @@ runs:
       uses: explorium-ai/wait-github-status-action@v1.0.2
       with:
         name: "Connector Ops CI - Airbyte CI Release"
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ inputs.github_token }}
         seconds: 15
         sha: ${{ github.event.pull_request.head.sha }}
     # If the airbyte_ci_binary_url is not set generate the download url ourselves
