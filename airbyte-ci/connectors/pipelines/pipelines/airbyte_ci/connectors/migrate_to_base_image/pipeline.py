@@ -10,10 +10,10 @@ from base_images import version_registry
 from connector_ops.utils import ConnectorLanguage
 from dagger import Directory
 from jinja2 import Template
-from pipelines import consts
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.helpers import git
 from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
 
@@ -266,7 +266,7 @@ async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, s
             update_base_image_in_metadata_result = await update_base_image_in_metadata.run()
             steps_results.append(update_base_image_in_metadata_result)
             final_repo_dir = update_base_image_in_metadata_result.output_artifact
-            await og_repo_dir.diff(final_repo_dir).export(str(consts.REPO_PATH))
+            await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
             context.report = ConnectorReport(context, steps_results, name="BASE IMAGE UPGRADE RESULTS")
     return context.report
 
@@ -337,7 +337,7 @@ async def run_connector_migration_to_base_image_pipeline(context: ConnectorConte
 
             # EXPORT MODIFIED FILES BACK TO HOST
             final_repo_dir = add_build_instructions_to_doc_results.output_artifact
-            await og_repo_dir.diff(final_repo_dir).export(str(consts.REPO_PATH))
+            await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
 
             context.report = ConnectorReport(context, steps_results, name="MIGRATE TO BASE IMAGE RESULTS")
     return context.report

@@ -54,6 +54,13 @@ def api_fixture(mocker):
     return api_mock
 
 
+@pytest.fixture(name="api_find_account")
+def api_fixture_find_account(mocker):
+    api_mock = mocker.patch("source_facebook_marketing.source.API._find_account")
+    api_mock.return_value = "1234"
+    return api_mock
+
+
 @pytest.fixture(name="logger_mock")
 def logger_mock_fixture(mocker):
     return mocker.patch("source_facebook_marketing.source.logger")
@@ -68,6 +75,15 @@ class TestSourceFacebookMarketing:
     def test_check_connection_ok(self, config, logger_mock, fb_marketing):
         ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
 
+        assert ok
+        assert not error_msg
+
+    def test_check_connection_find_account_was_called(self, api_find_account, config, logger_mock, fb_marketing):
+        """Check if _find_account was called to validate credentials"""
+        ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+        api_find_account.assert_called_once_with(config["account_id"])
+        logger_mock.info.assert_called_once_with("Select account 1234")
         assert ok
         assert not error_msg
 
@@ -94,12 +110,12 @@ class TestSourceFacebookMarketing:
         assert not ok
         assert error_msg
 
-    def test_check_connection_invalid_config(self, api, config, logger_mock, fb_marketing):
+    def test_check_connection_config_no_start_date(self, api, config, logger_mock, fb_marketing):
         config.pop("start_date")
         ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
 
-        assert not ok
-        assert error_msg
+        assert ok
+        assert not error_msg
 
     def test_check_connection_exception(self, api, config, logger_mock, fb_marketing):
         api.side_effect = RuntimeError("Something went wrong!")
@@ -180,18 +196,3 @@ def test_check_config(config_gen, requests_mock, fb_marketing):
 
     assert command_check(fb_marketing, config_gen(end_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
     assert command_check(fb_marketing, config_gen(end_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
-
-
-def test_check_connection_account_type_exception(mocker, fb_marketing, config, logger_mock, requests_mock):
-    account_id = "123"
-    ad_account_response = {"json": {"account_id": account_id, "id": f"act_{account_id}", "is_personal": 1}}
-    requests_mock.reset_mock()
-    requests_mock.register_uri("GET", f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/act_123/", [ad_account_response])
-
-    result, error = fb_marketing.check_connection(logger=logger_mock, config=config)
-
-    assert not result
-    assert (
-        error
-        == "The personal ad account you're currently using is not eligible for this operation. Please switch to a business ad account."
-    )

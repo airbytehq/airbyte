@@ -8,11 +8,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.debezium.internals.mssql.MSSQLConverter;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.time.Duration;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import org.codehaus.plexus.util.StringUtils;
@@ -29,6 +29,11 @@ public class MssqlCdcHelper {
   private static final String METHOD_FIELD = "method";
   private static final String CDC_SNAPSHOT_ISOLATION_FIELD = "snapshot_isolation";
   private static final String CDC_DATA_TO_SYNC_FIELD = "data_to_sync";
+
+  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
+
+  // Test execution latency is lower when heartbeats are more frequent.
+  private static final Duration HEARTBEAT_INTERVAL_IN_TESTS = Duration.ofSeconds(1L);
 
   public enum ReplicationMethod {
     STANDARD,
@@ -139,7 +144,7 @@ public class MssqlCdcHelper {
     return DataToSync.EXISTING_AND_NEW;
   }
 
-  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) {
+  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final boolean isSnapshot) {
     final JsonNode config = database.getSourceConfig();
     final JsonNode dbConfig = database.getDatabaseConfig();
 
@@ -152,13 +157,29 @@ public class MssqlCdcHelper {
     props.setProperty("provide.transaction.metadata", "false");
 
     props.setProperty("converters", "mssql_converter");
-    props.setProperty("mssql_converter.type", MSSQLConverter.class.getName());
+    props.setProperty("mssql_converter.type", MssqlDebeziumConverter.class.getName());
 
-    props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
+    // If new stream(s) are added after a previously successful sync,
+    // the snapshot.mode needs to be initial_only since we don't want to continue streaming changes
+    // https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-mode
+    if (isSnapshot) {
+      props.setProperty("snapshot.mode", "initial_only");
+    } else {
+      props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
+    }
+
     props.setProperty("snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
 
     props.setProperty("schema.include.list", getSchema(catalog));
     props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
+
+    final Duration heartbeatInterval =
+        (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
+            ? HEARTBEAT_INTERVAL_IN_TESTS
+            : HEARTBEAT_INTERVAL;
+    props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
+    // TODO: enable heartbeats in MS SQL Server.
+    props.setProperty("heartbeat.interval.ms", "0");
 
     if (config.has("ssl_method")) {
       final JsonNode sslConfig = config.get("ssl_method");

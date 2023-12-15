@@ -11,19 +11,33 @@ import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -31,14 +45,19 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcDestination extends BaseConnector implements Destination {
+public abstract class AbstractJdbcDestination extends JdbcConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
-  private final String driverClass;
+  public static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
+
+  public static final String DISABLE_TYPE_DEDUPE = "disable_type_dedupe";
+
   private final NamingConventionTransformer namingResolver;
   private final SqlOperations sqlOperations;
 
@@ -53,7 +72,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public AbstractJdbcDestination(final String driverClass,
                                  final NamingConventionTransformer namingResolver,
                                  final SqlOperations sqlOperations) {
-    this.driverClass = driverClass;
+    super(driverClass);
     this.namingResolver = namingResolver;
     this.sqlOperations = sqlOperations;
   }
@@ -65,7 +84,12 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
+      attemptTableOperations(outputSchema, database, namingResolver, sqlOperations, false);
+      if (TypingAndDedupingFlag.isDestinationV2()) {
+        final var v2RawSchema = namingResolver.getIdentifier(TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
+            .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
+        attemptTableOperations(v2RawSchema, database, namingResolver, sqlOperations, false);
+      }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
@@ -111,7 +135,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
    * @param sqlOps - SqlOperations object
    * @param attemptInsert - set true if need to make attempt to insert dummy records to newly created
    *        table. Set false to skip insert step.
-   * @throws Exception
    */
   public static void attemptTableOperations(final String outputSchema,
                                             final JdbcDatabase database,
@@ -155,22 +178,25 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
    *
    * @return AirbyteRecordMessage object with dummy values that may be used to test insert permission.
    */
-  private static AirbyteRecordMessage getDummyRecord() {
+  private static PartialAirbyteMessage getDummyRecord() {
     final JsonNode dummyDataToInsert = Jsons.deserialize("{ \"field1\": true }");
-    return new AirbyteRecordMessage()
-        .withStream("stream1")
-        .withData(dummyDataToInsert)
-        .withEmittedAt(1602637589000L);
+    return new PartialAirbyteMessage()
+        .withRecord(new PartialAirbyteRecordMessage()
+            .withStream("stream1")
+            .withEmittedAt(1602637589000L))
+        .withSerialized(dummyDataToInsert.toString());
   }
 
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
+    Map<String, String> connectionProperties = getConnectionProperties(config);
     return DataSourceFactory.create(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClass,
+        driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        getConnectionProperties(config));
+        connectionProperties,
+        getConnectionTimeout(connectionProperties));
   }
 
   protected JdbcDatabase getDatabase(final DataSource dataSource) {
@@ -197,12 +223,74 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
+  protected abstract JdbcSqlGenerator getSqlGenerator();
+
+  protected JdbcDestinationHandler getDestinationHandler(String databaseName, JdbcDatabase database) {
+    return new JdbcDestinationHandler(databaseName, database);
+  }
+
+  /**
+   * "database" key at root of the config json, for any other variants in config, override this
+   * method.
+   *
+   * @param config
+   * @return
+   */
+  protected String getDatabaseName(final JsonNode config) {
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
+  }
+
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config,
-        catalog);
+    throw new NotImplementedException("Should use the getSerializedMessageConsumer instead");
+  }
+
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
+    final DataSource dataSource = getDataSource(config);
+    final JdbcDatabase database = getDatabase(dataSource);
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      // TODO: This logic exists in all V2 destinations.
+      // This is sad that if we forget to add this, there will be a null pointer during parseCatalog
+      final String defaultNamespace = config.get("schema").asText();
+      for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+        if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
+          stream.getStream().setNamespace(defaultNamespace);
+        }
+      }
+      final JdbcSqlGenerator sqlGenerator = getSqlGenerator();
+      final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
+          .map(override -> new CatalogParser(sqlGenerator, override))
+          .orElse(new CatalogParser(sqlGenerator))
+          .parseCatalog(catalog);
+      final String databaseName = getDatabaseName(config);
+      final var migrator = new JdbcV1V2Migrator(namingResolver, database, databaseName);
+      final DestinationHandler<TableDefinition> destinationHandler = getDestinationHandler(databaseName, database);
+      final TyperDeduper typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, 8);
+      return JdbcBufferedConsumerFactory.createAsync(
+          outputRecordCollector,
+          database,
+          sqlOperations,
+          namingResolver,
+          config,
+          catalog,
+          defaultNamespace,
+          typerDeduper);
+    }
+    return JdbcBufferedConsumerFactory.createAsync(
+        outputRecordCollector,
+        database,
+        sqlOperations,
+        namingResolver,
+        config,
+        catalog,
+        null,
+        new NoopTyperDeduper());
   }
 
 }

@@ -139,6 +139,9 @@ public class IntegrationRunner {
         case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
         case CHECK -> {
           final JsonNode config = parseConfig(parsed.getConfigPath());
+          if (integration instanceof Destination) {
+            DestinationConfig.initialize(config);
+          }
           try {
             validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
           } catch (final Exception e) {
@@ -234,7 +237,8 @@ public class IntegrationRunner {
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
   }
 
-  private void readConcurrent(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
+  private void readConcurrent(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional)
+      throws Exception {
     final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
 
     try (final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(this::consumeFromStream, streams.size())) {
@@ -267,7 +271,7 @@ public class IntegrationRunner {
     }
   }
 
-  private void readSerial(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
+  private void readSerial(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
     try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
       produceMessages(messageIterator, outputRecordCollector);
     } finally {

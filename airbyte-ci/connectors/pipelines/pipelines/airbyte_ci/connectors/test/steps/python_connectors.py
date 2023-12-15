@@ -5,54 +5,21 @@
 """This module groups steps made to run tests for a specific Python connector given a test context."""
 
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, List, Tuple
+from dataclasses import dataclass
+from typing import Callable, Dict, Iterable, List, Tuple, Union
 
 import asyncer
 import pipelines.dagger.actions.python.common
 import pipelines.dagger.actions.system.docker
 from dagger import Container, File
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
-from pipelines.consts import LOCAL_BUILD_PLATFORM, PYPROJECT_TOML_FILE_PATH
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
+from pipelines.helpers.run_steps import StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
-
-
-class CodeFormatChecks(Step):
-    """A step to run the code format checks on a Python connector using Black, Isort and Flake."""
-
-    title = "Code format checks"
-
-    RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "--check", "."]
-    RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
-    RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "."]
-
-    async def _run(self) -> StepResult:
-        """Run a code format check on the container source code.
-
-        We call black, isort and flake commands:
-        - Black formats the code: fails if the code is not formatted.
-        - Isort checks the import orders: fails if the import are not properly ordered.
-        - Flake enforces style-guides: fails if the style-guide is not followed.
-
-        Args:
-            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
-            step (Step): The step in which the code format checks are run. Defaults to Step.CODE_FORMAT_CHECKS
-        Returns:
-            StepResult: Failure or success of the code format checks with stdout and stderr.
-        """
-        connector_under_test = pipelines.dagger.actions.python.common.with_python_connector_source(self.context)
-
-        formatter = (
-            connector_under_test.with_exec(["echo", "Running black"])
-            .with_exec(self.RUN_BLACK_CMD)
-            .with_exec(["echo", "Running Isort"])
-            .with_exec(self.RUN_ISORT_CMD)
-            .with_exec(["echo", "Running Flake"])
-            .with_exec(self.RUN_FLAKE_CMD)
-        )
-        return await self.get_step_result(formatter)
 
 
 class PytestStep(Step, ABC):
@@ -229,47 +196,37 @@ class IntegrationTests(PytestStep):
     bind_to_docker_host = True
 
 
-async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
-    """Run all tests for a Python connector.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[StepResult]: The results of all the steps that ran or were skipped.
+def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
     """
-    step_results = []
-    build_connector_image_results = await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run()
-    if build_connector_image_results.status is StepStatus.FAILURE:
-        return [build_connector_image_results]
-    step_results.append(build_connector_image_results)
-
-    connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
-
-    context.connector_secrets = await secrets.get_connector_secrets(context)
-
-    unit_test_results = await UnitTests(context).run(connector_container)
-
-    if unit_test_results.status is StepStatus.FAILURE:
-        return step_results + [unit_test_results]
-    step_results.append(unit_test_results)
-    async with asyncer.create_task_group() as task_group:
-        tasks = [
-            task_group.soonify(IntegrationTests(context).run)(connector_container),
-            task_group.soonify(AcceptanceTests(context, context.concurrent_cat).run)(connector_container),
-            task_group.soonify(CheckBaseImageIsUsed(context).run)(),
-        ]
-
-    return step_results + [task.value for task in tasks]
-
-
-async def run_code_format_checks(context: ConnectorContext) -> List[StepResult]:
-    """Run the code format check steps for Python connectors.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[StepResult]: Results of the code format checks.
+    Get all the tests steps for a Python connector.
     """
-    return [await CodeFormatChecks(context).run()]
+    return [
+        [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context))],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.UNIT,
+                step=UnitTests(context),
+                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            )
+        ],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
+                step=IntegrationTests(context),
+                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            ),
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
+                step=AcceptanceTests(context, context.concurrent_cat),
+                args=lambda results: {
+                    "connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]
+                },
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            ),
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.CHECK_BASE_IMAGE, step=CheckBaseImageIsUsed(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD]
+            ),
+        ],
+    ]

@@ -2,27 +2,32 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+import os
+from datetime import timedelta
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import SyncMode
 from source_stripe.streams import (
-    CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
     Events,
-    FilteringRecordExtractor,
     IncrementalStripeStream,
+    ParentIncrementalStipeSubStream,
     Persons,
     SetupAttempts,
     StripeLazySubStream,
@@ -32,21 +37,38 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeStream,
 )
 
-_MAX_CONCURRENCY = 3
+logger = logging.getLogger("airbyte")
+
+_MAX_CONCURRENCY = 20
+_DEFAULT_CONCURRENCY = 10
+_CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
+USE_CACHE = not _CACHE_DISABLED
+STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
-class SourceStripe(AbstractSource):
-    def __init__(self, catalog_path: Optional[str] = None, **kwargs):
-        super().__init__(**kwargs)
-        if catalog_path:
-            catalog = self.read_catalog(catalog_path)
-            # Only use concurrent cdk if all streams are running in full_refresh
-            all_sync_mode_are_full_refresh = all(stream.sync_mode == SyncMode.full_refresh for stream in catalog.streams)
-            self._use_concurrent_cdk = all_sync_mode_are_full_refresh
-        else:
-            self._use_concurrent_cdk = False
+class SourceStripe(ConcurrentSourceAdapter):
 
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
+
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], **kwargs):
+        if config:
+            concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
+        else:
+            concurrency_level = _DEFAULT_CONCURRENCY
+        logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+        concurrent_source = ConcurrentSource.create(
+            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository
+        )
+        super().__init__(concurrent_source)
+        if catalog:
+            self._streams_configured_as_full_refresh = {
+                configured_stream.stream.name
+                for configured_stream in catalog.streams
+                if configured_stream.sync_mode == SyncMode.full_refresh
+            }
+        else:
+            # things will NOT be executed concurrently
+            self._streams_configured_as_full_refresh = set()
 
     @staticmethod
     def validate_and_fill_with_defaults(config: MutableMapping) -> MutableMapping:
@@ -65,18 +87,8 @@ class SourceStripe(AbstractSource):
                 failure_type=FailureType.config_error,
             )
         if start_date:
-            try:
-                start_date = pendulum.parse(start_date).int_timestamp
-            except pendulum.parsing.exceptions.ParserError as e:
-                message = f"Invalid start date {start_date}. Please use YYYY-MM-DDTHH:MM:SSZ format."
-                raise AirbyteTracedException(
-                    message=message,
-                    internal_message=message,
-                    failure_type=FailureType.config_error,
-                ) from e
-        else:
-            start_date = pendulum.datetime(2017, 1, 25).int_timestamp
-        config["start_date"] = start_date
+            # verifies the start_date is parseable
+            SourceStripe._start_date_to_timestamp(start_date)
         if slice_range is None:
             config["slice_range"] = 365
         elif not isinstance(slice_range, int) or slice_range < 1:
@@ -97,20 +109,84 @@ class SourceStripe(AbstractSource):
             return False, str(e)
         return True, None
 
+    @staticmethod
+    def customers(**args):
+        # The Customers stream is instantiated in a dedicated method to allow parametrization and avoid duplicated code.
+        # It can be used with and without expanded items (as an independent stream or as a parent stream for other streams).
+        return IncrementalStripeStream(
+            name="customers",
+            path="customers",
+            use_cache=USE_CACHE,
+            event_types=["customer.created", "customer.updated", "customer.deleted"],
+            **args,
+        )
+
+    @staticmethod
+    def is_test_account(config: Mapping[str, Any]) -> bool:
+        """Check if configuration uses Stripe test account (https://stripe.com/docs/keys#obtain-api-keys)
+
+        :param config:
+        :return: True if configured to use a test account, False - otherwise
+        """
+
+        return str(config["client_secret"]).startswith(STRIPE_TEST_ACCOUNT_PREFIX)
+
+    def get_api_call_budget(self, config: Mapping[str, Any]) -> AbstractAPIBudget:
+        """Get API call budget which connector is allowed to use.
+
+        :param config:
+        :return:
+        """
+
+        max_call_rate = 25 if self.is_test_account(config) else 100
+        if config.get("call_rate_limit"):
+            call_limit = config["call_rate_limit"]
+            if call_limit > max_call_rate:
+                logger.warning(
+                    "call_rate_limit is larger than maximum allowed %s, fallback to default %s.",
+                    max_call_rate,
+                    max_call_rate,
+                )
+                call_limit = max_call_rate
+        else:
+            call_limit = max_call_rate
+
+        policies = [
+            MovingWindowCallRatePolicy(
+                rates=[Rate(limit=20, interval=timedelta(seconds=1))],
+                matchers=[
+                    HttpRequestMatcher(url="https://api.stripe.com/v1/files"),
+                    HttpRequestMatcher(url="https://api.stripe.com/v1/file_links"),
+                ],
+            ),
+            MovingWindowCallRatePolicy(
+                rates=[Rate(limit=call_limit, interval=timedelta(seconds=1))],
+                matchers=[],
+            ),
+        ]
+
+        return HttpAPIBudget(policies=policies)
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self.validate_and_fill_with_defaults(config)
         authenticator = TokenAuthenticator(config["client_secret"])
+
+        if "start_date" in config:
+            start_timestamp = self._start_date_to_timestamp(config["start_date"])
+        else:
+            start_timestamp = pendulum.datetime(2017, 1, 25).int_timestamp
         args = {
             "authenticator": authenticator,
             "account_id": config["account_id"],
-            "start_date": config["start_date"],
+            "start_date": start_timestamp,
             "slice_range": config["slice_range"],
+            "api_budget": self.get_api_call_budget(config),
         }
         incremental_args = {**args, "lookback_window_days": config["lookback_window_days"]}
         subscriptions = IncrementalStripeStream(
             name="subscriptions",
             path="subscriptions",
-            use_cache=True,
+            use_cache=USE_CACHE,
             extra_request_params={"status": "all"},
             event_types=[
                 "customer.subscription.created",
@@ -127,38 +203,30 @@ class SourceStripe(AbstractSource):
         subscription_items = StripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, *args, stream_slice, **kwargs: {"subscription": stream_slice[self.parent_id]},
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice["parent"]["id"]},
             parent=subscriptions,
-            use_cache=True,
-            parent_id="subscription_id",
+            use_cache=USE_CACHE,
             sub_items_attr="items",
             **args,
         )
         transfers = IncrementalStripeStream(
             name="transfers",
             path="transfers",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=["transfer.created", "transfer.reversed", "transfer.updated"],
             **args,
         )
         application_fees = IncrementalStripeStream(
             name="application_fees",
             path="application_fees",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=["application_fee.created", "application_fee.refunded"],
-            **args,
-        )
-        customers = IncrementalStripeStream(
-            name="customers",
-            path="customers",
-            use_cache=True,
-            event_types=["customer.created", "customer.updated", "customer.deleted"],
             **args,
         )
         invoices = IncrementalStripeStream(
             name="invoices",
             path="invoices",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=[
                 "invoice.created",
                 "invoice.finalization_failed",
@@ -175,8 +243,22 @@ class SourceStripe(AbstractSource):
             ],
             **args,
         )
+        checkout_sessions = UpdatedCursorIncrementalStripeStream(
+            name="checkout_sessions",
+            path="checkout/sessions",
+            use_cache=USE_CACHE,
+            legacy_cursor_field="created",
+            event_types=[
+                "checkout.session.async_payment_failed",
+                "checkout.session.async_payment_succeeded",
+                "checkout.session.completed",
+                "checkout.session.expired",
+            ],
+            **args,
+        )
+
         streams = [
-            CheckoutSessionsLineItems(**incremental_args),
+            checkout_sessions,
             CustomerBalanceTransactions(**args),
             Events(**incremental_args),
             UpdatedCursorIncrementalStripeStream(
@@ -185,7 +267,7 @@ class SourceStripe(AbstractSource):
                 event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 legacy_cursor_field=None,
                 extra_request_params={"object": "card"},
-                record_extractor=FilteringRecordExtractor("updated", None, "card"),
+                response_filter=lambda record: record["object"] == "card",
                 **args,
             ),
             UpdatedCursorIncrementalStripeStream(
@@ -194,29 +276,20 @@ class SourceStripe(AbstractSource):
                 event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 legacy_cursor_field=None,
                 extra_request_params={"object": "bank_account"},
-                record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
+                response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
             Persons(**args),
             SetupAttempts(**incremental_args),
-            StripeStream(name="accounts", path="accounts", use_cache=True, **args),
+            StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="file_links", path="file_links", **incremental_args),
-            UpdatedCursorIncrementalStripeStream(
-                name="checkout_sessions",
-                path="checkout/sessions",
-                use_cache=True,
-                legacy_cursor_field="expires_at",
-                event_types=[
-                    "checkout.session.async_payment_failed",
-                    "checkout.session.async_payment_succeeded",
-                    "checkout.session.completed",
-                    "checkout.session.expired",
-                ],
-                **args,
-            ),
+            # The Refunds stream does not utilize the Events API as it created issues with data loss during the incremental syncs.
+            # Therefore, we're using the regular API with the `created` cursor field. A bug has been filed with Stripe.
+            # See more at https://github.com/airbytehq/oncall/issues/3090, https://github.com/airbytehq/oncall/issues/3428
+            CreatedCursorIncrementalStripeStream(name="refunds", path="refunds", **incremental_args),
             UpdatedCursorIncrementalStripeStream(
                 name="payment_methods",
                 path="payment_methods",
@@ -246,7 +319,7 @@ class SourceStripe(AbstractSource):
                 event_types=["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"],
                 **args,
             ),
-            customers,
+            self.customers(**args),
             IncrementalStripeStream(
                 name="cardholders",
                 path="issuing/cardholders",
@@ -334,9 +407,6 @@ class SourceStripe(AbstractSource):
             ),
             transfers,
             IncrementalStripeStream(
-                name="refunds", path="refunds", use_cache=True, event_types=["refund.created", "refund.updated"], **args
-            ),
-            IncrementalStripeStream(
                 name="payment_intents",
                 path="payment_intents",
                 event_types=[
@@ -386,62 +456,81 @@ class SourceStripe(AbstractSource):
             ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="application_fees_refunds",
-                path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice[self.parent_id]}/refunds",
+                path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice['parent']['id']}/refunds",
                 parent=application_fees,
                 event_types=["application_fee.refund.updated"],
-                parent_id="refund_id",
                 sub_items_attr="refunds",
-                add_parent_id=True,
                 **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="bank_accounts",
-                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice[self.parent_id]}/sources",
-                parent=customers,
+                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/sources",
+                parent=self.customers(expand_items=["data.sources"], **args),
                 event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"],
                 legacy_cursor_field=None,
-                parent_id="customer_id",
                 sub_items_attr="sources",
-                response_filter={"attr": "object", "value": "bank_account"},
                 extra_request_params={"object": "bank_account"},
-                record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
+                response_filter=lambda record: record["object"] == "bank_account",
+                **args,
+            ),
+            ParentIncrementalStipeSubStream(
+                name="checkout_sessions_line_items",
+                path=lambda self, stream_slice, *args, **kwargs: f"checkout/sessions/{stream_slice['parent']['id']}/line_items",
+                parent=checkout_sessions,
+                expand_items=["data.discounts", "data.taxes"],
+                cursor_field="checkout_session_updated",
+                slice_data_retriever=lambda record, stream_slice: {
+                    "checkout_session_id": stream_slice["parent"]["id"],
+                    "checkout_session_expires_at": stream_slice["parent"]["expires_at"],
+                    "checkout_session_created": stream_slice["parent"]["created"],
+                    "checkout_session_updated": stream_slice["parent"]["updated"],
+                    **record,
+                },
                 **args,
             ),
             StripeLazySubStream(
                 name="invoice_line_items",
-                path=lambda self, *args, stream_slice, **kwargs: f"invoices/{stream_slice[self.parent_id]}/lines",
+                path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice['parent']['id']}/lines",
                 parent=invoices,
-                parent_id="invoice_id",
                 sub_items_attr="lines",
-                add_parent_id=True,
+                slice_data_retriever=lambda record, stream_slice: {"invoice_id": stream_slice["parent"]["id"], **record},
                 **args,
             ),
             subscription_items,
             StripeSubStream(
                 name="transfer_reversals",
-                path=lambda self, stream_slice, *args, **kwargs: f"transfers/{stream_slice.get('parent', {}).get('id')}/reversals",
+                path=lambda self, stream_slice, *args, **kwargs: f"transfers/{stream_slice['parent']['id']}/reversals",
                 parent=transfers,
                 **args,
             ),
             StripeSubStream(
                 name="usage_records",
-                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice.get('parent', {}).get('id')}/usage_record_summaries",
+                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
                 parent=subscription_items,
                 primary_key=None,
                 **args,
             ),
         ]
-        if self._use_concurrent_cdk:
-            # We cap the number of workers to avoid hitting the Stripe rate limit
-            # The limit can be removed or increased once we have proper rate limiting
-            concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
-            streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
-            # The state is known to be empty because concurrent CDK is currently only used for full refresh
-            state = {}
-            cursor = NoopCursor()
-            return [
-                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, state, cursor) for stream in streams
-            ]
-        else:
-            return streams
+        return [
+            StreamFacade.create_from_stream(stream, self, entrypoint_logger, self._create_empty_state(), NoopCursor())
+            if stream.name in self._streams_configured_as_full_refresh
+            else stream
+            for stream in streams
+        ]
+
+    def _create_empty_state(self) -> MutableMapping[str, Any]:
+        # The state is known to be empty because concurrent CDK is currently only used for full refresh
+        return {}
+
+    @staticmethod
+    def _start_date_to_timestamp(start_date: str) -> int:
+        try:
+            return pendulum.parse(start_date).int_timestamp
+        except pendulum.parsing.exceptions.ParserError as e:
+            message = f"Invalid start date {start_date}. Please use YYYY-MM-DDTHH:MM:SSZ format."
+            raise AirbyteTracedException(
+                message=message,
+                internal_message=message,
+                failure_type=FailureType.config_error,
+            ) from e

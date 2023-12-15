@@ -21,9 +21,13 @@ import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator;
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption;
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
@@ -35,18 +39,28 @@ import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.cdk.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopV2TableMigrator;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,6 +151,16 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
+  protected JdbcSqlGenerator getSqlGenerator() {
+    return new RedshiftSqlGenerator(getNamingResolver());
+  }
+
+  @Override
+  protected JdbcDestinationHandler getDestinationHandler(String databaseName, JdbcDatabase database) {
+    return new RedshiftDestinationHandler(databaseName, database);
+  }
+
+  @Override
   @Deprecated
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
@@ -145,9 +169,9 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(JsonNode config,
-                                                                       ConfiguredAirbyteCatalog catalog,
-                                                                       Consumer<AirbyteMessage> outputRecordCollector)
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final EncryptionConfig encryptionConfig =
         config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
@@ -161,23 +185,69 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                   of streams {} this will create more buffers than necessary, leading to nonexistent gains
                   """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
     }
+    // Short circuit old way of running things during transition.
+    if (!TypingAndDedupingFlag.isDestinationV2()) {
+      return new StagingConsumerFactory().createAsync(
+          outputRecordCollector,
+          getDatabase(getDataSource(config)),
+          new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
+          getNamingResolver(),
+          config,
+          catalog,
+          isPurgeStagingData(s3Options),
+          new TypeAndDedupeOperationValve(),
+          new NoopTyperDeduper(),
+          // The parsedcatalog is only used in v2 mode, so just pass null for now
+          null,
+          // Overwriting null namespace with null is perfectly safe
+          null,
+          // still using v1 table format
+          false);
+    }
 
+    final String defaultNamespace = config.get("schema").asText();
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
+        stream.getStream().setNamespace(defaultNamespace);
+      }
+    }
+    final RedshiftSqlGenerator sqlGenerator = new RedshiftSqlGenerator(getNamingResolver());
+    final ParsedCatalog parsedCatalog;
+    final TyperDeduper typerDeduper;
+    final JdbcDatabase database = getDatabase(getDataSource(config));
+    final String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
+    final RedshiftDestinationHandler redshiftDestinationHandler = new RedshiftDestinationHandler(databaseName, database);
+    final CatalogParser catalogParser;
+    if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent()) {
+      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get());
+    } else {
+      catalogParser = new CatalogParser(sqlGenerator);
+    }
+    parsedCatalog = catalogParser.parseCatalog(catalog);
+    final JdbcV1V2Migrator migrator = new JdbcV1V2Migrator(getNamingResolver(), database, databaseName);
+    final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
+    boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
+    final int defaultThreadCount = 8;
+    if (disableTypeDedupe) {
+      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator,
+          defaultThreadCount);
+    } else {
+      typerDeduper =
+          new DefaultTyperDeduper<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, defaultThreadCount);
+    }
     return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
-        getDatabase(getDataSource(config)),
+        database,
         new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
         getNamingResolver(),
         config,
         catalog,
         isPurgeStagingData(s3Options),
         new TypeAndDedupeOperationValve(),
-        new NoopTyperDeduper(),
-        // The parsedcatalog is only used in v2 mode, so just pass null for now
-        null,
-        // Overwriting null namespace with null is perfectly safe
-        null,
-        // still using v1 table format
-        false);
+        typerDeduper,
+        parsedCatalog,
+        defaultNamespace,
+        true);
   }
 
   /**

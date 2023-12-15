@@ -5,8 +5,13 @@ const yaml = require("js-yaml");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const lightCodeTheme = require("prism-react-renderer/themes/github");
-const darkCodeTheme = require("prism-react-renderer/themes/dracula");
+const { themes } = require('prism-react-renderer');
+const lightCodeTheme = themes.github;
+const darkCodeTheme = themes.dracula;
+
+
+
+const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
 
 const redirects = yaml.load(
   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
@@ -14,6 +19,10 @@ const redirects = yaml.load(
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
   title: "Airbyte Documentation",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",
@@ -28,7 +37,7 @@ const config = {
   projectName: "airbyte", // Usually your repo name.
 
   // Adds one off script tags to the head of each page
-  // .e.g <script async data-api-key="..." id="unifytag" src="..."></script>
+  // e.g. <script async data-api-key="..." id="unifytag" src="..."></script>
   scripts: [
     {
       src: "https://cdn.unifygtm.com/tag/v1/unify-tag-script.js",
@@ -36,7 +45,7 @@ const config = {
       type: "module",
       id: "unifytag",
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
-    }
+    },
   ],
 
   plugins: [
@@ -78,6 +87,7 @@ const config = {
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
           exclude: ["**/*.inapp.md"],
+          remarkPlugins: [docsHeaderDecoration],
         },
         blog: false,
         theme: {

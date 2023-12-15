@@ -138,7 +138,7 @@
           "description": "The number of unique opens divided by the total number of successful deliveries."
         },
         "last_open": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "date-time",
           "title": "Last Open",
           "description": "The date and time of the last recorded open in ISO 8601 format."
@@ -171,7 +171,7 @@
           "description": "The number of unique clicks divided by the total number of successful deliveries."
         },
         "last_click": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "date-time",
           "title": "Last Click",
           "description": "The date and time of the last recorded click for the campaign in ISO 8601 format."

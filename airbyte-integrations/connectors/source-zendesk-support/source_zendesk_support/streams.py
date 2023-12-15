@@ -55,6 +55,10 @@ class BaseZendeskSupportStream(HttpStream, ABC):
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
 
+    @property
+    def max_retries(self) -> Union[int, None]:
+        return 10
+
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
         The rate limit is 700 requests per minute
@@ -351,13 +355,14 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        next_page_token = next_page_token or {}
+        parsed_state = self.check_stream_state(stream_state)
+        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
         # check "start_time" is not in the future
         params["start_time"] = self.check_start_time_param(params["start_time"])
         if self.sideload_param:
             params["include"] = self.sideload_param
         if next_page_token:
-            params.pop("start_time", None)
             params.update(next_page_token)
         return params
 
@@ -397,23 +402,6 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
         """
         response_json = response.json()
         return None if response_json.get(END_OF_STREAM_KEY, True) else {"start_time": response_json.get("end_time")}
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        next_page_token = next_page_token or {}
-        parsed_state = self.check_stream_state(stream_state)
-        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        # check "start_time" is not in the future
-        params["start_time"] = self.check_start_time_param(params["start_time"])
-        if self.sideload_param:
-            params["include"] = self.sideload_param
-        if next_page_token:
-            params.update(next_page_token)
-        return params
 
     @property
     def update_event_from_record(self) -> bool:
@@ -455,45 +443,11 @@ class Users(SourceZendeskIncrementalExportStream):
     def path(self, **kwargs) -> str:
         return "incremental/users/cursor.json"
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        next_page_token = next_page_token or {}
-        parsed_state = self.check_stream_state(stream_state)
-        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        # check "start_time" is not in the future
-        params["start_time"] = self.check_start_time_param(params["start_time"])
-        if self.sideload_param:
-            params["include"] = self.sideload_param
-        if next_page_token:
-            params.update(next_page_token)
-        return params
-
 
 class Organizations(SourceZendeskIncrementalExportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
     response_list_name: str = "organizations"
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        next_page_token = next_page_token or {}
-        parsed_state = self.check_stream_state(stream_state)
-        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        # check "start_time" is not in the future
-        params["start_time"] = self.check_start_time_param(params["start_time"])
-        if self.sideload_param:
-            params["include"] = self.sideload_param
-        if next_page_token:
-            params.update(next_page_token)
-        return params
 
 
 class Posts(CursorPaginationZendeskSupportStream):
@@ -656,7 +610,7 @@ class TicketAudits(IncrementalZendeskSupportStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
     # can request a maximum of 1,000 results
-    page_size = 1000
+    page_size = 200
     # ticket audits doesn't have the 'updated_by' field
     cursor_field = "created_at"
 
@@ -894,16 +848,7 @@ class Articles(SourceZendeskIncrementalExportStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        next_page_token = next_page_token or {}
-        parsed_state = self.check_stream_state(stream_state)
-        params = {"sort_by": "updated_at", "sort_order": "asc", "start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        # check "start_time" is not in the future
-        params["start_time"] = self.check_start_time_param(params["start_time"])
-        if self.sideload_param:
-            params["include"] = self.sideload_param
-        if next_page_token:
-            params.update(next_page_token)
-        return params
+        return {"sort_by": "updated_at", "sort_order": "asc", **super().request_params(stream_state, stream_slice, next_page_token)}
 
 
 class ArticleVotes(AbstractVotes, HttpSubStream):

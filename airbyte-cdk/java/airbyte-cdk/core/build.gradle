@@ -3,6 +3,9 @@ java {
     compileJava {
         options.compilerArgs += "-Xlint:-deprecation,-try,-rawtypes,-overloads,-cast,-unchecked"
     }
+    compileTestJava {
+        options.compilerArgs += "-Xlint:-try,-divzero,-cast"
+    }
 }
 
 configurations.all {
@@ -62,7 +65,11 @@ dependencies {
 
     // testImplementation libs.junit.jupiter.api
     implementation libs.hikaricp
-    implementation libs.bundles.debezium.bundle
+    implementation libs.debezium.api
+    implementation libs.debezium.embedded
+    implementation libs.debezium.mysql
+    implementation libs.debezium.postgres
+    implementation libs.debezium.mongodb
 
     api libs.bundles.datadog
     implementation 'org.apache.sshd:sshd-mina:2.8.0'
@@ -86,7 +93,7 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
     testFixturesImplementation 'org.projectlombok:lombok:1.18.20'
-    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20' 
+    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
 
     testImplementation libs.junit.jupiter.system.stubs
 
