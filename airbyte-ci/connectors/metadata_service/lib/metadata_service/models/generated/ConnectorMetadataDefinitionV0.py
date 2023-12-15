@@ -118,6 +118,13 @@ class AirbyteInternal(BaseModel):
     ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
 
 
+class Pypi(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    enabled: bool
+
+
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -264,6 +271,7 @@ class Data(BaseModel):
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
     ab_internal: Optional[AirbyteInternal] = None
+    pypi: Optional[Pypi] = None
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

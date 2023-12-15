@@ -111,3 +111,5 @@ properties:
         "$ref": ActorDefinitionResourceRequirements.yaml
       ab_internal:
         "$ref": AirbyteInternal.yaml
+      pypi:
+        "$ref": Pypi.yaml
