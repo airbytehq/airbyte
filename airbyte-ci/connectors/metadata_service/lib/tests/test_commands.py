@@ -13,7 +13,6 @@ from pydantic import BaseModel, ValidationError, error_wrappers
 from test_gcs_upload import stub_is_image_on_docker_hub
 
 
-# TEST VALIDATE COMMAND
 def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
     runner = CliRunner()
 
