@@ -44,7 +44,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     "--skip-step",
     "-x",
     multiple=True,
-    type=click.Choice(CONNECTOR_TEST_STEP_ID),
+    type=click.Choice([step_id.value for step_id in CONNECTOR_TEST_STEP_ID]),
     help="Skip a step by name. Can be used multiple times to skip multiple steps.",
 )
 @click.pass_context
@@ -75,7 +75,7 @@ async def test(
 
     run_step_options = RunStepOptions(
         fail_fast=fail_fast,
-        skip_steps=skip_step,
+        skip_steps=[CONNECTOR_TEST_STEP_ID(step_id) for step_id in skip_step],
     )
 
     connectors_tests_contexts = [
