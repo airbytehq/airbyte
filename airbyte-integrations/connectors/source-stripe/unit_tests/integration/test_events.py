@@ -24,7 +24,6 @@ from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from source_stripe import SourceStripe
 
-
 _STREAM_NAME = "events"
 _NOW = datetime.now(timezone.utc)
 _A_START_DATE = _NOW - timedelta(days=60)
