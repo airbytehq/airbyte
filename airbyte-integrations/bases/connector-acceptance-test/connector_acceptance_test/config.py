@@ -177,6 +177,23 @@ class IncrementalConfig(BaseConfig):
         smart_union = True
 
 
+class ConnectorAttributesConfig(BaseConfig):
+    """
+    Config that is used to verify that a connector and its streams uphold certain behavior and features that are
+    required to maintain enterprise-level standard of quality.
+
+    Attributes:
+        streams_without_primary_key: A list of streams where a primary key is not available from the API or is not relevant to the record
+    """
+
+    timeout_seconds: int = timeout_seconds
+    config_path: str = config_path
+
+    streams_without_primary_key: Optional[List[str]] = Field(
+        description="Streams that do not support a primary key such as reports streams"
+    )
+
+
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
     bypass_reason: Optional[str]
     tests: Optional[List[TestConfigT]]
@@ -195,6 +212,7 @@ class AcceptanceTestConfigurations(BaseConfig):
     basic_read: Optional[GenericTestConfig[BasicReadTestConfig]]
     full_refresh: Optional[GenericTestConfig[FullRefreshConfig]]
     incremental: Optional[GenericTestConfig[IncrementalConfig]]
+    connector_attributes: Optional[GenericTestConfig[ConnectorAttributesConfig]]
 
 
 class Config(BaseConfig):

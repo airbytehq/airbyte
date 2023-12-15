@@ -32,6 +32,7 @@ from connector_acceptance_test.config import (
     BasicReadTestConfig,
     Config,
     ConnectionTestConfig,
+    ConnectorAttributesConfig,
     DiscoveryTestConfig,
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
@@ -1141,3 +1142,34 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
+
+
+@pytest.mark.default_timeout(TEN_MINUTES)
+class TestConnectorAttributes(BaseTest):
+    @pytest.fixture(name="silver_certification_test")
+    async def silver_certification_test_fixture(self, connector_metadata: dict) -> bool:
+        """
+        Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
+        against silver certification criteria
+        """
+
+        if connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
+            pytest.skip("Skipping silver connector certification test for uncertified connector")
+        return True
+
+    @pytest.fixture(name="streams_without_primary_key")
+    def streams_without_primary_key_fixture(self, inputs: ConnectorAttributesConfig) -> List[str]:
+        return inputs.streams_without_primary_key or []
+
+    async def test_streams_define_primary_key(
+        self, silver_certification_test, streams_without_primary_key, connector_config, docker_runner: ConnectorRunner
+    ):
+        output = await docker_runner.call_discover(config=connector_config)
+        catalog_messages = filter_output(output, Type.CATALOG)
+
+        streams = catalog_messages[0].catalog.streams
+        discovered_streams_without_primary_key = {stream.name for stream in streams if not stream.source_defined_primary_key}
+        missing_primary_keys = discovered_streams_without_primary_key - {stream for stream in streams_without_primary_key}
+
+        quoted_missing_primary_keys = {f"'{primary_key}'" for primary_key in missing_primary_keys}
+        assert not missing_primary_keys, f"The following streams {', '.join(quoted_missing_primary_keys)} do not define a primary_key"
