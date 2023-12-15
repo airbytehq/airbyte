@@ -18,6 +18,7 @@ import io.airbyte.integrations.source.redshift.RedshiftSource;
 import io.airbyte.integrations.source.redshift.RedshiftSourceOperations;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -39,7 +40,8 @@ public class RedshiftSourceOperationsTest {
         config.get("password").asText(),
         DatabaseDriver.REDSHIFT.getDriverClassName(),
         RedshiftSource.getJdbcUrl(config),
-        JdbcDataSourceUtils.getConnectionProperties(config));
+        JdbcDataSourceUtils.getConnectionProperties(config),
+        Duration.ofSeconds(60));
     database = new DefaultJdbcDatabase(dataSource, new RedshiftSourceOperations());
   }
 

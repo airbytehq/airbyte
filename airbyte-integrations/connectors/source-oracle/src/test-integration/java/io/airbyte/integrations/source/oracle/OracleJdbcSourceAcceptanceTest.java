@@ -124,6 +124,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<OracleSour
 
   @Override
   protected OracleTestDatabase createTestDatabase() {
+    ORACLE_DB.start();
     return new OracleTestDatabase(ORACLE_DB, List.of(SCHEMA_NAME, SCHEMA_NAME2)).initialized();
   }
 
@@ -139,11 +140,6 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<OracleSour
                 schemaName));
       }
     }
-  }
-
-  @Override
-  protected void dropSchemas() {
-    // ORACLE doesn't have DROP SCHEMA query
   }
 
   static void cleanUpTablesAndWait() {

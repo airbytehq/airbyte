@@ -26,12 +26,6 @@ public class ClickHouseStrictEncryptTestDatabase extends
   }
 
   @Override
-  public ClickHouseStrictEncryptTestDatabase initialized() {
-    container.start();
-    return super.initialized();
-  }
-
-  @Override
   public String getJdbcUrl() {
     return container.getJdbcUrl();
   }

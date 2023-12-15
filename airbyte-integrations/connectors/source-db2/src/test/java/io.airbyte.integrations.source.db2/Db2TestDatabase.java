@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.db2;
 
-import static io.airbyte.integrations.source.db2.Db2JdbcSourceAcceptanceTest.deleteTables;
+import static io.airbyte.integrations.source.db2.Db2JdbcSourceAcceptanceTest.deleteTablesAndSchema;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
@@ -18,21 +18,11 @@ import org.testcontainers.containers.Db2Container;
 public class Db2TestDatabase extends
     TestDatabase<Db2Container, Db2TestDatabase, Db2TestDatabase.Db2DbConfigBuilder> {
 
-  private static boolean containerStarted = false;
   private final Db2Container container;
 
   protected Db2TestDatabase(final Db2Container container) {
     super(container);
     this.container = container;
-  }
-
-  @Override
-  public Db2TestDatabase initialized() {
-    if (!containerStarted) {
-      container.start();
-      containerStarted = true;
-    }
-    return super.initialized();
   }
 
   @Override
@@ -77,7 +67,7 @@ public class Db2TestDatabase extends
 
   @Override
   public void close() {
-    deleteTables(this);
+    deleteTablesAndSchema(this);
   }
 
   @Override

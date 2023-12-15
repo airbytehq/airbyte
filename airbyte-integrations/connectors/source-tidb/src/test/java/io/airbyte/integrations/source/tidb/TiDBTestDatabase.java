@@ -24,12 +24,6 @@ public class TiDBTestDatabase extends
   }
 
   @Override
-  public TiDBTestDatabase initialized() {
-    container.start();
-    return super.initialized();
-  }
-
-  @Override
   public String getJdbcUrl() {
     return container.getJdbcUrl();
   }

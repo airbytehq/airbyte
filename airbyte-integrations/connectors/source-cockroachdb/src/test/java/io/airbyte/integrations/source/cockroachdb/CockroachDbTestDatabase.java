@@ -24,12 +24,6 @@ public class CockroachDbTestDatabase extends
   }
 
   @Override
-  public CockroachDbTestDatabase initialized() {
-    container.start();
-    return super.initialized();
-  }
-
-  @Override
   public String getJdbcUrl() {
     return container.getJdbcUrl();
   }

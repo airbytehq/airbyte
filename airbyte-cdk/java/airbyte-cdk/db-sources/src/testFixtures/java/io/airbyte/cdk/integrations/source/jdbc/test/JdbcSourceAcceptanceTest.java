@@ -202,7 +202,6 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
 
   @AfterEach
   public void tearDown() {
-    dropSchemas();
     testdb.close();
   }
 
@@ -1006,15 +1005,6 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
       }
     }
   }
-
-  protected void dropSchemas() {
-    if (supportsSchemas()) {
-      for (final String schemaName : TEST_SCHEMAS) {
-        testdb.with(DROP_SCHEMA_QUERY, schemaName);
-      }
-    }
-  }
-
   private JsonNode convertIdBasedOnDatabase(final int idValue) {
     return switch (testdb.getDatabaseDriver()) {
       case ORACLE, SNOWFLAKE -> Jsons.jsonNode(BigDecimal.valueOf(idValue));

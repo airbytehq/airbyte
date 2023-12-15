@@ -16,7 +16,6 @@ import org.jooq.SQLDialect;
 public class OracleTestDatabase extends
     TestDatabase<AirbyteOracleTestContainer, OracleTestDatabase, OracleTestDatabase.OracleDbConfigBuilder> {
 
-  private static boolean containerStarted = false;
   private final AirbyteOracleTestContainer container;
   private final List<String> schemaNames;
 
@@ -24,15 +23,6 @@ public class OracleTestDatabase extends
     super(container);
     this.container = container;
     this.schemaNames = schemaNames;
-  }
-
-  @Override
-  public OracleTestDatabase initialized() {
-    if (!containerStarted) {
-      container.start();
-      containerStarted = true;
-    }
-    return super.initialized();
   }
 
   @Override

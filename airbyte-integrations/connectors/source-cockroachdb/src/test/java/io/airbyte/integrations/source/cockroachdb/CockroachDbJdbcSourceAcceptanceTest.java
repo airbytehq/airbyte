@@ -51,6 +51,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
   @Override
   protected CockroachDbTestDatabase createTestDatabase() {
     final CockroachContainer cockroachContainer = new CockroachContainer("cockroachdb/cockroach:v20.2.18");
+    cockroachContainer.start();
     return new CockroachDbTestDatabase(cockroachContainer).initialized();
   }
 

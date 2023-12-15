@@ -129,6 +129,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
 
   @Override
   protected OracleStrictEncryptTestDatabase createTestDatabase() {
+    ORACLE_DB.start();
     return new OracleStrictEncryptTestDatabase(ORACLE_DB, List.of(SCHEMA_NAME, SCHEMA_NAME2)).initialized();
   }
 
@@ -165,11 +166,6 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
                 schemaName));
       }
     }
-  }
-
-  @Override
-  protected void dropSchemas() {
-    // ORACLE doesn't have DROP SCHEMA query
   }
 
   static void cleanUpTablesAndWait() {

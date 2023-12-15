@@ -18,6 +18,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
@@ -57,7 +58,8 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         Map.of(
             "role", config.get("role").asText(),
             "warehouse", config.get("warehouse").asText(),
-            JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText()));
+            JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText()),
+        Duration.ofSeconds(60));
 
     database = getDatabase();
 

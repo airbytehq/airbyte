@@ -17,7 +17,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.Db2Container;
 
-@Disabled
 class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Db2Source, Db2TestDatabase> {
 
   private final static Db2Container DB_2_CONTAINER = new Db2Container("ibmcom/db2:11.5.5.0").acceptLicense();
@@ -62,7 +61,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Db2Source, Db
     DB_2_CONTAINER.close();
   }
 
-  static void deleteTables(final Db2TestDatabase testDB) {
+  static void deleteTablesAndSchema(final Db2TestDatabase testdb) {
     // In Db2 before dropping a schema, all objects that were in that schema must be dropped or moved to
     // another schema.
     for (final String tableName : TEST_TABLES) {
@@ -90,11 +89,14 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Db2Source, Db
     testdb.with(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
             enquoteIdentifier(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE, QUOTE_STRING)));
-
+    for (final String schemaName : TEST_SCHEMAS) {
+      testdb.with(DROP_SCHEMA_QUERY, schemaName);
+    }
   }
 
   @Override
   protected Db2TestDatabase createTestDatabase() {
+    DB_2_CONTAINER.start();
     return new Db2TestDatabase(DB_2_CONTAINER).initialized();
   }
 

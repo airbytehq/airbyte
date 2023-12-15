@@ -25,7 +25,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestInstance;
 
-@Disabled
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TeradataJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<TeradataSource, TeradataTestDatabase> {
 

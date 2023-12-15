@@ -80,7 +80,11 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Snowfla
 
   @Override
   protected SnowflakeTestDatabase createTestDatabase() {
-    return new SnowflakeTestDatabase(source().toDatabaseConfig(Jsons.clone(snConfig))).initialized();
+    final SnowflakeTestDatabase snowflakeTestDatabase = new SnowflakeTestDatabase(source().toDatabaseConfig(Jsons.clone(snConfig)));
+    for (final String schemaName : TEST_SCHEMAS) {
+      snowflakeTestDatabase.onClose(DROP_SCHEMA_QUERY, schemaName);
+    }
+    return snowflakeTestDatabase.initialized();
   }
 
   @Override
