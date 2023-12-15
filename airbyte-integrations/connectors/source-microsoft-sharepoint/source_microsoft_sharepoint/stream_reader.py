@@ -107,14 +107,14 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 found_items.extend(self.list_directories_and_files(item, item_path))
         return found_items
 
-    def get_files_by_drive_name(self, drives, drive_name, folder_path):
+    def get_files_by_drive_name(self, drives, folder_path):
         """Yields files from the specified drive."""
         path_levels = [level for level in folder_path.split("/") if level]
         folder_path = "/".join(path_levels)
 
         for drive in drives:
-            is_sharepoint = drive.drive_type in ["personal", "business"]
-            if drive.name == drive_name and is_sharepoint:
+            is_sharepoint = drive.drive_type == "documentLibrary"
+            if is_sharepoint:
                 folder = drive.root if folder_path in self.ROOT_PATH else drive.root.get_by_path(folder_path).get().execute_query()
                 yield from self.list_directories_and_files(folder)
 
@@ -133,7 +133,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
         drives.add_child(my_drive)
 
-        files = self.get_files_by_drive_name(drives, self.config.drive_name, self.config.folder_path)
+        files = self.get_files_by_drive_name(drives, self.config.folder_path)
 
         try:
             first_file, path = next(files)
@@ -152,7 +152,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         except StopIteration as e:
             raise AirbyteTracedException(
                 internal_message=str(e),
-                message=f"Drive '{self.config.drive_name}' is empty or does not exist.",
+                message=f"Drive is empty or does not exist.",
                 failure_type=FailureType.config_error,
                 exception=e,
             )

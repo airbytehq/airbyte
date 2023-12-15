@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/microsoft-sharepoint",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/one-drive",
   "connectionSpecification": {
     "title": "Microsoft SharePoint Source Spec",
     "description": "SourceMicrosoftSharePointSpec class for Microsoft SharePoint Source Specification.\nThis class combines the authentication details with additional configuration for the SharePoint API.",
@@ -52,7 +52,8 @@
             },
             "primary_key": {
               "title": "Primary Key",
-              "description": "The column or columns (for a composite key) that serves as the unique identifier of a record.",
+              "description": "The column or columns (for a composite key) that serves as the unique identifier of a record. If empty, the primary key will default to the parser's default primary key.",
+              "airbyte_hidden": true,
               "type": "string"
             },
             "days_to_sync_if_history_is_full": {
@@ -274,12 +275,46 @@
                       "const": "unstructured",
                       "type": "string"
                     },
-                    "skip_unprocessable_file_types": {
-                      "title": "Skip Unprocessable File Types",
-                      "description": "If true, skip files that cannot be parsed because of their file type and log a warning. If false, fail the sync. Corrupted files with valid file types will still result in a failed sync.",
+                    "skip_unprocessable_files": {
+                      "title": "Skip Unprocessable Files",
+                      "description": "If true, skip files that cannot be parsed and pass the error message along as the _ab_source_file_parse_error field. If false, fail the sync.",
                       "default": true,
                       "always_show": true,
                       "type": "boolean"
+                    },
+                    "strategy": {
+                      "title": "Parsing Strategy",
+                      "description": "The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the unstructured.io documentation for more details: https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf",
+                      "default": "auto",
+                      "always_show": true,
+                      "order": 0,
+                      "enum": ["auto", "fast", "ocr_only", "hi_res"],
+                      "type": "string"
+                    },
+                    "processing": {
+                      "title": "Processing",
+                      "description": "Processing configuration",
+                      "default": {
+                        "mode": "local"
+                      },
+                      "type": "object",
+                      "oneOf": [
+                        {
+                          "title": "Local",
+                          "type": "object",
+                          "properties": {
+                            "mode": {
+                              "title": "Mode",
+                              "default": "local",
+                              "const": "local",
+                              "enum": ["local"],
+                              "type": "string"
+                            }
+                          },
+                          "description": "Process files locally, supporting `fast` and `ocr` modes. This is the default option.",
+                          "required": ["mode"]
+                        }
+                      ]
                     }
                   },
                   "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
@@ -392,13 +427,6 @@
             ]
           }
         ]
-      },
-      "drive_name": {
-        "title": "Drive Name",
-        "description": "Name of the Microsoft SharePoint drive where the file(s) exist.",
-        "default": "OneDrive",
-        "order": 2,
-        "type": "string"
       },
       "folder_path": {
         "title": "Folder Path",

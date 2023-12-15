@@ -6,9 +6,10 @@
         "name": "test_csv"
       },
       "stream_state": {
-        "_ab_source_file_last_modified": "2023-12-23T06:49:25.000000Z_Test_folder_2/TestFileOneDrive.csv",
+        "_ab_source_file_last_modified": "2023-12-23T16:46:34.000000Z_Test_folder/Test_folder_2/TestFileSharePoint.csv",
         "history": {
-          "Test_folder_2/TestFileOneDrive.csv": "2023-12-23T06:49:25.000000Z"
+          "Test_folder/TestFile.csv" : "2023-11-23T13:52:35.000000Z",
+          "Test_folder/Test_folder_2/TestFileSharePoint.csv" : "2023-12-23T16:46:34.000000Z"
         }
       }
     }
@@ -20,9 +21,9 @@
         "name": "test_unstructured"
       },
       "stream_state": {
-        "_ab_source_file_last_modified": "2023-12-23T06:49:25.000000Z_simple_pdf_file.pdf",
+        "_ab_source_file_last_modified": "2023-12-23T16:47:21.000000Z_Test_folder/Test_foler_2_1/simple_pdf_file.pdf",
         "history": {
-          "simple_pdf_file.pdf": "2023-12-23T06:49:25.000000Z"
+          "Test_folder/Test_foler_2_1/simple_pdf_file.pdf" : "2023-12-23T16:47:21.000000Z"
         }
       }
     }
