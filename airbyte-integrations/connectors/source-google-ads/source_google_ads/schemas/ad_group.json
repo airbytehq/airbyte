@@ -89,7 +89,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group.optimized_targeting_enabled": {
@@ -116,7 +116,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group.name": {
@@ -167,7 +167,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group.tracking_url_template": {
@@ -188,7 +188,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "ad_group.effective_cpc_bid_micros": {

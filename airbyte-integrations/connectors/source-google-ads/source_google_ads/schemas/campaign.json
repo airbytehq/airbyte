@@ -104,7 +104,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "campaign.dynamic_search_ads_setting.language_code": {
@@ -131,7 +131,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "campaign.experiment_type": {
@@ -152,7 +152,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "campaign.geo_target_type_setting.negative_geo_target_type": {
@@ -185,7 +185,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "campaign.local_campaign_setting.location_source_type": {
@@ -260,7 +260,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "campaign.optimization_score": {
@@ -305,7 +305,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "campaign.serving_status": {
@@ -434,7 +434,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "campaign.tracking_setting.tracking_url": {
@@ -455,7 +455,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "campaign.vanity_pharma.vanity_pharma_display_url_mode": {

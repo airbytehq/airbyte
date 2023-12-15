@@ -249,7 +249,7 @@
         "array"
       ],
       "items": {
-        "type": "string"
+        "type": "object"
       }
     },
     "metrics.interactions": {
