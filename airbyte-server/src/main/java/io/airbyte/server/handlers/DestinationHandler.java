@@ -345,9 +345,9 @@ public class DestinationHandler {
         .destinationName(standardDestinationDefinition.getName());
   }
 
-  public List<WebBackendConnectionFilterParamItem> listFilterParam() throws IOException {
+  public List<WebBackendConnectionFilterParamItem> listFilterParam(UUID workspaceId) throws IOException {
     List<WebBackendConnectionFilterParamItem> result = new LinkedList<>();
-    List<Map<String, String>> listMap = configRepository.listFilterParamDestination();
+    List<Map<String, String>> listMap = configRepository.listFilterParamDestination(workspaceId);
     listMap.forEach(item -> {
       WebBackendConnectionFilterParamItem paramItem = new WebBackendConnectionFilterParamItem();
       paramItem.setValue(item.get("value"));

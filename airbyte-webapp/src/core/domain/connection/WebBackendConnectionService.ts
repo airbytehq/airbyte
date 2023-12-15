@@ -5,12 +5,12 @@ import {
   webBackendGetConnection,
   webBackendListConnectionsForWorkspace,
   webBackendUpdateConnection,
+  getConnectionFilterParams,
 } from "../../request/AirbyteClient";
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 import {
   FilterConnectionRequestBody,
   webBackendListFilteredConnectionsForWorkspace,
-  getConnectionFilterParams,
   ConnectionData,
   webBackendListFilteredConnectionsStatus,
 } from "../../request/DaspireClient";
@@ -38,7 +38,8 @@ export class WebBackendConnectionService extends AirbyteRequestService {
     return webBackendCreateConnection(payload, this.requestOptions);
   }
 
-  public filtersLists() {
-    return getConnectionFilterParams(this.requestOptions);
+  public filtersLists(workspaceId: string) {
+    // workspaceId: string
+    return getConnectionFilterParams({ workspaceId }, this.requestOptions);
   }
 }

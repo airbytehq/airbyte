@@ -63,13 +63,13 @@ const AllSourcesPage: React.FC = () => {
   const { push, query } = useRouter();
   // const { push } = useRouter();
   const [pageConfig, updatePageSize] = usePageConfig();
-  const { sourceOptions } = useConnectionFilterOptions();
   // const [currentPageSize, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
   const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig?.source?.pageSize);
   // const { sources } = useSourceList();
 
   useTrackPage(PageTrackingCodes.SOURCE_LIST);
   const workspace = useCurrentWorkspace();
+  const { sourceOptions } = useConnectionFilterOptions(workspace.workspaceId);
   const initialFiltersState = {
     workspaceId: workspace.workspaceId,
     pageSize: pageCurrent,

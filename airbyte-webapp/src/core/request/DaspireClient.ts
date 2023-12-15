@@ -355,17 +355,6 @@ export interface ReadConnectionFilters {
   destinations: FilterItem[];
 }
 
-export const getConnectionFilterParams = (options?: SecondParameter<typeof apiOverride>) => {
-  return apiOverride<ReadConnectionFilters>(
-    {
-      url: `/etl/web_backend/connections/filter/param`,
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-    },
-    options
-  );
-};
-
 /**
  * @summary Returns notification settings
  */
