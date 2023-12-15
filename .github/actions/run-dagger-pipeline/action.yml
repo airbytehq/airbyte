@@ -91,11 +91,13 @@ runs:
           echo "PR is from a fork. Exiting workflow..."
           exit 78
         fi
+
     - name: Docker login
       uses: docker/login-action@v1
       with:
         username: ${{ inputs.docker_hub_username }}
         password: ${{ inputs.docker_hub_password }}
+
     - name: Get start timestamp
       id: get-start-timestamp
       shell: bash
@@ -107,6 +109,7 @@ runs:
         files_yaml: |
           pipelines:
             - 'airbyte-ci/connectors/pipelines/**'
+
     # If the airbyte_ci_binary_url is not set generate the download url ourselves
     # On master the URL is in this format: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
     # On non-master branches the URL is in this format: https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/$COMMIT/airbyte-ci
@@ -145,6 +148,7 @@ runs:
 
         sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci
         sudo chmod +x /usr/local/bin/airbyte-ci
+
     - name: Run airbyte-ci
       shell: bash
       run: |

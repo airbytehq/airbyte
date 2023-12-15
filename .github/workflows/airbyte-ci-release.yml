@@ -55,12 +55,6 @@ jobs:
           name: airbyte-ci-${{ matrix.os }}-${{ github.sha }}
           path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
 
-      - name: DEBUG SHA
-        id: debug_sha
-        shell: bash
-        run: |
-          echo "Github SHA: ${{ github.sha }}"
-
       - name: Authenticate to Google Cloud Dev
         id: auth_dev
         uses: google-github-actions/auth@v1
