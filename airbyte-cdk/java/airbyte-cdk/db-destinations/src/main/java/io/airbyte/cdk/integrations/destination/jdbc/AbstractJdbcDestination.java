@@ -5,14 +5,15 @@
 package io.airbyte.cdk.integrations.destination.jdbc;
 
 import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+import static org.postgresql.PGProperty.CONNECT_TIMEOUT;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.BaseConnector;
-import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
@@ -40,9 +41,12 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -51,7 +55,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcDestination extends BaseConnector implements Destination, JdbcConnector {
+public abstract class AbstractJdbcDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
@@ -79,10 +83,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     this.driverClassName = driverClassName;
     this.namingResolver = namingResolver;
     this.sqlOperations = sqlOperations;
-  }
-
-  public String getDriverClassName() {
-    return driverClassName;
   }
 
   @Override
@@ -205,6 +205,32 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         connectionProperties,
         getConnectionTimeout(connectionProperties));
+  }
+
+  /**
+   * Retrieves connectionTimeout value from connection properties in millis, default minimum timeout
+   * is 60 seconds since Hikari default of 30 seconds is not enough for acceptance tests. In the case
+   * the value is 0, pass the value along as Hikari and Postgres use default max value for 0 timeout
+   * value.
+   *
+   * NOTE: Postgres timeout is measured in seconds:
+   * https://jdbc.postgresql.org/documentation/head/connect.html
+   *
+   * @param connectionProperties custom jdbc_url_parameters containing information on connection
+   *        properties
+   * @return DataSourceBuilder class used to create dynamic fields for DataSource
+   */
+  public Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
+    final Optional<Duration> parsedConnectionTimeout = switch (DatabaseDriver.findByDriverClassName(driverClassName)) {
+      case POSTGRESQL -> BaseConnector.maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
+          .or(() -> BaseConnector.maybeParseDuration(CONNECT_TIMEOUT.getDefaultValue(), ChronoUnit.SECONDS));
+      case MYSQL -> BaseConnector.maybeParseDuration(connectionProperties.get("connectTimeout"), ChronoUnit.MILLIS);
+      case MSSQLSERVER -> BaseConnector.maybeParseDuration(connectionProperties.get("loginTimeout"), ChronoUnit.SECONDS);
+      default -> BaseConnector.maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
+          // Enforce minimum timeout duration for unspecified data sources.
+          .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0);
+    };
+    return parsedConnectionTimeout.orElse(CONNECT_TIMEOUT_DEFAULT);
   }
 
   protected JdbcDatabase getDatabase(final DataSource dataSource) {

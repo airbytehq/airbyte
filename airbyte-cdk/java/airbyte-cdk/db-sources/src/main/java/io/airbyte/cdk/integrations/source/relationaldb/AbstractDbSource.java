@@ -14,7 +14,6 @@ import io.airbyte.cdk.db.AbstractDatabase;
 import io.airbyte.cdk.db.IncrementalUtils;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.BaseConnector;
-import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
@@ -49,7 +48,9 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -691,6 +692,13 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    */
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
     return AirbyteStateType.LEGACY;
+  }
+
+  public Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
+    return maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
+        // Enforce minimum timeout duration for unspecified data sources.
+        .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0)
+        .orElse(CONNECT_TIMEOUT_DEFAULT);
   }
 
 }

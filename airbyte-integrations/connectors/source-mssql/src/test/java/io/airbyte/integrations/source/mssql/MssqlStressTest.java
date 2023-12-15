@@ -12,7 +12,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.JdbcConnector;
+import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcStressTest;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -58,7 +58,7 @@ public class MssqlStressTest extends JdbcStressTest {
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
             configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
         Map.of("encrypt", "false"),
-        JdbcConnector.CONNECT_TIMEOUT_DEFAULT);
+        BaseConnector.CONNECT_TIMEOUT_DEFAULT);
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

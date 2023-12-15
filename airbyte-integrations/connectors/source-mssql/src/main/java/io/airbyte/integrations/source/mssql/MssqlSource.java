@@ -26,7 +26,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
-import io.airbyte.cdk.integrations.JdbcConnector;
+import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
@@ -637,8 +637,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
   }
 
+  @Override
   public Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
-    return JdbcConnector.maybeParseDuration(connectionProperties.get("loginTimeout"), ChronoUnit.SECONDS).orElse(CONNECT_TIMEOUT_DEFAULT);
+    return BaseConnector.maybeParseDuration(connectionProperties.get("loginTimeout"), ChronoUnit.SECONDS).orElse(CONNECT_TIMEOUT_DEFAULT);
   };
 
   private boolean cloudDeploymentMode() {

@@ -43,13 +43,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import datadog.trace.api.Trace;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
-import io.airbyte.cdk.integrations.JdbcConnector;
+import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
@@ -118,7 +116,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -321,11 +318,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     this.publicizedTablesInCdc = PostgresCatalogHelper.getPublicizedTables(database);
   }
 
+  /**
+   * NOTE: Postgres timeout is measured in seconds:
+   * https://jdbc.postgresql.org/documentation/head/connect.html
+   */
   @Override
   public Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
-    return JdbcConnector.maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
-          .or(() -> JdbcConnector.maybeParseDuration(CONNECT_TIMEOUT.getDefaultValue(), ChronoUnit.SECONDS))
-        .orElse(JdbcConnector.CONNECT_TIMEOUT_DEFAULT);
+    return BaseConnector.maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
+          .or(() -> BaseConnector.maybeParseDuration(CONNECT_TIMEOUT.getDefaultValue(), ChronoUnit.SECONDS))
+        .orElse(BaseConnector.CONNECT_TIMEOUT_DEFAULT);
   }
 
   @Override

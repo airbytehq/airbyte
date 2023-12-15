@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
-import io.airbyte.cdk.integrations.JdbcConnector;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ public class MssqlDataSourceFactoryTest {
         container.getDriverClassName(),
         container.getJdbcUrl(),
         connectionProperties,
-        MssqlSource.getConnectionTimeout(connectionProperties, container.getDriverClassName()));
+        new MssqlSource().getConnectionTimeout(connectionProperties));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
