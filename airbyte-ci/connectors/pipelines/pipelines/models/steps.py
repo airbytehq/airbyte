@@ -181,7 +181,7 @@ class Step(ABC):
         return self.context.dagger_client.pipeline(self.title)
 
     async def log_progress(self, completion_event: anyio.Event) -> None:
-        """Log the step progress every 30 seconds until the step is done."""
+        """Log the step progress every 30 seconds until the step is done"""
         while not completion_event.is_set():
             duration = datetime.utcnow() - self.started_at
             elapsed_seconds = duration.total_seconds()
