@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.57.7
+File CDK: Support raw txt file
+
 ## 0.57.6
 Adding more tooling to cover source-stripe events stream
 
