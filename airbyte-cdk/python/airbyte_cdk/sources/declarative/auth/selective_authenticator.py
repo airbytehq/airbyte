@@ -18,7 +18,7 @@ class SelectiveAuthenticator(DeclarativeAuthenticator):
     authenticator_selection_path: List[str]
 
     # returns "DeclarativeAuthenticator", but must return a subtype of "SelectiveAuthenticator"
-    def __new__(   # type: ignore[misc]
+    def __new__(  # type: ignore[misc]
         cls,
         config: Mapping[str, Any],
         authenticators: Mapping[str, DeclarativeAuthenticator],
