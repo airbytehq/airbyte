@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "coupon": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "object": {
+          "type": ["null", "string"]
+        },
+        "code": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "discount": {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "type": ["null", "string"]
+            },
+            "percent": {
+              "type": ["null", "integer"]
+            },
+            "currencies": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "currency": {
+                    "type": ["null", "string"]
+                  },
+                  "amount": {
+                    "type": ["null", "number"]
+                  }
+                }
+              }
+            },
+            "trial": {
+              "type": ["null", "object"],
+              "properties": {
+                "unit": {
+                  "type": ["null", "string"]
+                },
+                "length": {
+                  "type": ["null", "integer"]
+                }
+              }
+            }
+          }
+        },
+        "coupon_type": {
+          "type": ["null", "string"]
+        },
+        "expired_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "discounted": {
+      "type": ["null", "number"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

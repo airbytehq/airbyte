@@ -6,6 +6,9 @@
       "type": ["null", "string"],
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"]
+    },
     "uuid": {
       "type": ["null", "string"],
       "maxLength": 32
@@ -70,6 +73,7 @@
         }
       }
     },
+    "coupon_redemptions": { "$ref": "coupon_redemptions.json" },
     "pending_change": {
       "type": ["null", "object"],
       "title": "Subscription Change",
@@ -153,6 +157,31 @@
     "auto_renew": {
       "type": ["null", "boolean"]
     },
+    "ramp_intervals": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "starting_billing_cycle": {
+            "type": ["null", "integer"]
+          },
+          "remaining_billing_cycles": {
+            "type": ["null", "integer"]
+          },
+          "starting_on": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "ending_on": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "unit_amount": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    },
     "paused_at": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -170,6 +199,9 @@
     },
     "unit_amount": {
       "type": ["null", "number"]
+    },
+    "tax_inclusive": {
+      "type": ["null", "boolean"]
     },
     "quantity": {
       "type": ["null", "number"]
@@ -288,6 +320,20 @@
       "type": ["null", "string"],
       "maxLength": 1024
     },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -319,6 +365,20 @@
     "billing_info_id": {
       "type": ["null", "string"],
       "maxLength": 13
+    },
+    "active_invoice_id": {
+      "type": ["null", "string"]
+    },
+    "started_with_gift": {
+      "type": ["null", "boolean"]
+    },
+    "converted_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "action_result": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     }
   }
 }

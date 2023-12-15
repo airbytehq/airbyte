@@ -1,12 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "id": {
       "type": "string",
       "title": "Shipping Address ID",
       "maxLength": 13,
       "readOnly": true
+    },
+    "object": {
+      "type": ["null", "string"]
     },
     "account_id": {
       "type": "string",
