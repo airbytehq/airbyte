@@ -119,7 +119,6 @@ runs:
     # On master the URL is in this format: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
     # On non-master branches the URL is in this format: https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/$COMMIT/airbyte-ci
     - name: set binary download URL if inputs.airbyte_ci_binary_url not set or null
-      if: inputs.airbyte_ci_binary_url == ''
       id: set-binary-download-url
       shell: bash
       run: |
@@ -131,7 +130,7 @@ runs:
 
     - name: set binary download URL if inputs.airbyte_ci_binary_url is set
       if: inputs.airbyte_ci_binary_url != ''
-      id: set-binary-download-url
+      id: set-binary-download-url-override
       shell: bash
       run: |
         echo "::set-output name=airbyte_ci_download_url::${{ inputs.airbyte_ci_binary_url }}"
