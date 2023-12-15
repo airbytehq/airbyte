@@ -18,12 +18,13 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStreamStatus, ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
 from source_stripe import SourceStripe
+
 
 _STREAM_NAME = "events"
 _NOW = datetime.now(timezone.utc)
