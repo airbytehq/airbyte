@@ -13,7 +13,7 @@ class ThreadPoolManager:
     """
 
     DEFAULT_SLEEP_TIME = 0.1
-    DEFAULT_MAX_QUEUE_SIZE = 1_000
+    DEFAULT_MAX_QUEUE_SIZE = 1000
 
     def __init__(
         self,
