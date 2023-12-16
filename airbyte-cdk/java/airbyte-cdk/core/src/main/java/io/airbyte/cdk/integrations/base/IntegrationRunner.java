@@ -128,6 +128,65 @@ public class IntegrationRunner {
     }
   }
 
+  protected void check(final IntegrationConfig parsed) throws Exception {
+    final JsonNode config = parseConfig(parsed.getConfigPath());
+    if (integration instanceof Destination) {
+      DestinationConfig.initialize(config);
+    }
+    try {
+      validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
+    } catch (final Exception e) {
+      // if validation fails don't throw an exception, return a failed connection check message
+      outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
+          new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
+    }
+
+    outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
+  }
+
+  protected void discover(final IntegrationConfig parsed) throws Exception {
+    final JsonNode config = parseConfig(parsed.getConfigPath());
+    validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
+    outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
+  }
+
+  protected void read(final IntegrationConfig parsed) throws Exception {
+    final JsonNode config = parseConfig(parsed.getConfigPath());
+    validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
+    final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+    final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
+    try {
+      if (featureFlags.concurrentSourceStreamRead()) {
+        LOGGER.info("Concurrent source stream read enabled.");
+        readConcurrent(config, catalog, stateOptional);
+      } else {
+        readSerial(config, catalog, stateOptional);
+      }
+    } finally {
+      if (source instanceof AutoCloseable) {
+        ((AutoCloseable) source).close();
+      }
+    }
+  }
+
+  protected void write(final IntegrationConfig parsed) throws Exception {
+    final JsonNode config = parseConfig(parsed.getConfigPath());
+    validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
+    // save config to singleton
+    DestinationConfig.initialize(config);
+    final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+
+    try (final SerializedAirbyteMessageConsumer consumer = destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)) {
+      consumeWriteStream(consumer);
+    } finally {
+      stopOrphanedThreads(EXIT_HOOK,
+          INTERRUPT_THREAD_DELAY_MINUTES,
+          TimeUnit.MINUTES,
+          EXIT_THREAD_DELAY_MINUTES,
+          TimeUnit.MINUTES);
+    }
+  }
+
   private void runInternal(final IntegrationConfig parsed) throws Exception {
     LOGGER.info("Running integration: {}", integration.getClass().getName());
     LOGGER.info("Command: {}", parsed.getCommand());
@@ -137,65 +196,14 @@ public class IntegrationRunner {
       switch (parsed.getCommand()) {
         // common
         case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
-        case CHECK -> {
-          final JsonNode config = parseConfig(parsed.getConfigPath());
-          if (integration instanceof Destination) {
-            DestinationConfig.initialize(config);
-          }
-          try {
-            validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
-          } catch (final Exception e) {
-            // if validation fails don't throw an exception, return a failed connection check message
-            outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
-                new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
-          }
-
-          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
-        }
+        case CHECK -> check(parsed);
         // source only
-        case DISCOVER -> {
-          final JsonNode config = parseConfig(parsed.getConfigPath());
-          validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
-          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
-        }
+        case DISCOVER -> discover(parsed);
         // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
         // envelope) while the other commands return what goes inside it.
-        case READ -> {
-          final JsonNode config = parseConfig(parsed.getConfigPath());
-          validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
-          final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-          final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-          try {
-            if (featureFlags.concurrentSourceStreamRead()) {
-              LOGGER.info("Concurrent source stream read enabled.");
-              readConcurrent(config, catalog, stateOptional);
-            } else {
-              readSerial(config, catalog, stateOptional);
-            }
-          } finally {
-            if (source instanceof AutoCloseable) {
-              ((AutoCloseable) source).close();
-            }
-          }
-        }
+        case READ -> read(parsed);
         // destination only
-        case WRITE -> {
-          final JsonNode config = parseConfig(parsed.getConfigPath());
-          validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
-          // save config to singleton
-          DestinationConfig.initialize(config);
-          final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-
-          try (final SerializedAirbyteMessageConsumer consumer = destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)) {
-            consumeWriteStream(consumer);
-          } finally {
-            stopOrphanedThreads(EXIT_HOOK,
-                INTERRUPT_THREAD_DELAY_MINUTES,
-                TimeUnit.MINUTES,
-                EXIT_THREAD_DELAY_MINUTES,
-                TimeUnit.MINUTES);
-          }
-        }
+        case WRITE -> write(parsed);
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
     } catch (final Exception e) {
