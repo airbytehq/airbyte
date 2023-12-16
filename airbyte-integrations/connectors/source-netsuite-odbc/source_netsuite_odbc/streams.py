@@ -20,7 +20,9 @@ StreamData = Union[Mapping[str, Any], AirbyteMessage]
 NETSUITE_PAGINATION_INTERVAL: Final[int] = 10000
 EARLIEST_DATE: Final[str] = date(2020, 1, 1)
 YEARS_FORWARD_LOOKING: Final[int] = 1
-STARTING_PRIMARY_KEY_VALUE: Final[int] = -1
+# Sometimes, system created accounts can have primary key values < 0.  To be safe, we choose
+# an arbitrary value of -10000 as the starting value for our primary key
+STARTING_PRIMARY_KEY_VALUE: Final[int] = -10000
 
 
 
