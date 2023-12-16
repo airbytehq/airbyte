@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import datadog.trace.api.Trace;
 import io.airbyte.cdk.integrations.util.ApmTraceUtils;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
@@ -69,23 +68,14 @@ public abstract class IntegrationRunner {
 
   private final IntegrationCliParser cliParser;
   protected final Consumer<AirbyteMessage> outputRecordCollector;
-  protected final Integration integration;
-  protected final Destination destination;
-  protected final Source source;
   protected final FeatureFlags featureFlags;
   private static JsonSchemaValidator validator;
 
   protected IntegrationRunner(final IntegrationCliParser cliParser,
-                              final Consumer<AirbyteMessage> outputRecordCollector,
-                              final Destination destination,
-                              final Source source) {
-    Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
+                              final Consumer<AirbyteMessage> outputRecordCollector) {
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
     // integration iface covers the commands that are the same for both source and destination.
-    integration = source != null ? source : destination;
-    this.source = source;
-    this.destination = destination;
     this.featureFlags = new EnvVariableFeatureFlags();
     validator = new JsonSchemaValidator();
 
@@ -94,10 +84,8 @@ public abstract class IntegrationRunner {
 
   protected IntegrationRunner(final IntegrationCliParser cliParser,
                               final Consumer<AirbyteMessage> outputRecordCollector,
-                              final Destination destination,
-                              final Source source,
                               final JsonSchemaValidator jsonSchemaValidator) {
-    this(cliParser, outputRecordCollector, destination, source);
+    this(cliParser, outputRecordCollector);
     validator = jsonSchemaValidator;
   }
 
@@ -111,18 +99,20 @@ public abstract class IntegrationRunner {
     }
   }
 
+  protected abstract Integration getIntegration();
+
   protected abstract void check(final IntegrationConfig parsed) throws Exception;
 
   protected final void check(JsonNode config) throws Exception {
     try {
-      validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
+      validateConfig(getIntegration().spec().getConnectionSpecification(), config, "CHECK");
     } catch (final Exception e) {
       // if validation fails don't throw an exception, return a failed connection check message
       outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
           new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
     }
 
-    outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
+    outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(getIntegration().check(config)));
   }
 
   protected abstract void discover(final IntegrationConfig parsed) throws Exception;
@@ -132,14 +122,14 @@ public abstract class IntegrationRunner {
   protected abstract void write(final IntegrationConfig parsed) throws Exception;
 
   private void runInternal(final IntegrationConfig parsed) throws Exception {
-    LOGGER.info("Running integration: {}", integration.getClass().getName());
+    LOGGER.info("Running integration: {}", getIntegration().getClass().getName());
     LOGGER.info("Command: {}", parsed.getCommand());
     LOGGER.info("Integration config: {}", parsed);
 
     try {
       switch (parsed.getCommand()) {
         // common
-        case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
+        case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(getIntegration().spec()));
         case CHECK -> check(parsed);
         // source only
         case DISCOVER -> discover(parsed);
@@ -180,7 +170,7 @@ public abstract class IntegrationRunner {
       throw e;
     }
 
-    LOGGER.info("Completed integration: {}", integration.getClass().getName());
+    LOGGER.info("Completed integration: {}", getIntegration().getClass().getName());
   }
 
   @VisibleForTesting
