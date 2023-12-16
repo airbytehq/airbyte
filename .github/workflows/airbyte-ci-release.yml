@@ -39,6 +39,15 @@ jobs:
         with:
           ref: ${{ github.sha }} # This is required to make sure that the same commit is checked out on all runners
 
+      - name: Get the relevant commit SHA
+        id: get-relevant-commit-sha
+        shell: bash
+        run: |
+          echo "Relevant commit SHA: $RELEVANT_SHA"
+          echo "RELEVANT_SHA=$RELEVANT_SHA" >> $GITHUB_ENV
+        env:
+          RELEVANT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
       - name: Install Python
         id: install_python
         uses: actions/setup-python@v4
@@ -61,7 +70,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: airbyte-ci-${{ matrix.os }}-${{ github.sha }}
+          name: airbyte-ci-${{ matrix.os }}-${{ env.RELEVANT_SHA }}
           path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
 
       - name: Authenticate to Google Cloud Dev
@@ -76,14 +85,14 @@ jobs:
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
-          destination: ${{ env.DEV_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/${{ github.sha }}
+          destination: ${{ env.DEV_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/${{ env.RELEVANT_SHA }}
           headers: |-
             cache-control:public, max-age=10
 
       - name: Print pre-release public url
         id: print_pre_release_public_url
         run: |
-          echo "https://storage.googleapis.com/${{ env.DEV_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/${{ github.sha }}/${{ env.BINARY_FILE_NAME }}"
+          echo "https://storage.googleapis.com/${{ env.DEV_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/${{ env.RELEVANT_SHA }}/${{ env.BINARY_FILE_NAME }}"
 
       # if master, upload per version and latest to prod bucket
 

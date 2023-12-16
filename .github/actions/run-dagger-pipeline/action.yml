@@ -92,6 +92,15 @@ runs:
           exit 78
         fi
 
+    - name: Get the relevant commit SHA
+      id: get-relevant-commit-sha
+      shell: bash
+      run: |
+        echo "Relevant commit SHA: $RELEVANT_SHA"
+        echo "RELEVANT_SHA=$RELEVANT_SHA" >> $GITHUB_ENV
+      env:
+        RELEVANT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
     - name: Docker login
       uses: docker/login-action@v1
       with:
@@ -119,7 +128,7 @@ runs:
       shell: bash
       run: |
         if [ "${{ github.ref }}" != "master" ] && [ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]; then
-          echo "AIRBYTE_CI_DOWNLOAD_URL=https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/${{ github.sha }}/airbyte-ci" >> $GITHUB_ENV
+          echo "AIRBYTE_CI_DOWNLOAD_URL=https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/${{ env.RELEVANT_SHA }}/airbyte-ci" >> $GITHUB_ENV
         else
           echo "AIRBYTE_CI_DOWNLOAD_URL=https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci" >> $GITHUB_ENV
         fi
