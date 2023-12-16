@@ -12,9 +12,7 @@ from typing import Any, Mapping
 from destination_vectara.config import VectaraConfig
 
 
-
 METADATA_STREAM_FIELD = "_ab_stream"
-# METADATA_RECORD_ID_FIELD = "_ab_record_id"
 
 class VectaraClient:
 
@@ -25,9 +23,14 @@ class VectaraClient:
         self.corpus_name = config.corpus_name
         self.client_id = config.oauth2.client_id
         self.client_secret = config.oauth2.client_secret
-        # self.corpus_id = config.corpus_id
 
     def check(self):
+        """
+        Check for an existing corpus in Vectara.
+        If more than one exists - then return a message 
+        If exactly one exists with this name - ensure that the corpus has the correct metadata fields, and use it.
+        If not, create it.
+        """
         try:
             jwt_token = self._get_jwt_token()
             if not jwt_token:
@@ -58,12 +61,6 @@ class VectaraClient:
                                         "type": "FILTER_ATTRIBUTE_TYPE__TEXT",
                                         "level": "FILTER_ATTRIBUTE_LEVEL__DOCUMENT"
                                     },
-                                    # {
-                                    #     "name": METADATA_RECORD_ID_FIELD,
-                                    #     "indexed": True,
-                                    #     "type": "FILTER_ATTRIBUTE_TYPE__TEXT",
-                                    #     "level": "FILTER_ATTRIBUTE_LEVEL__DOCUMENT"
-                                    # }
                                 ]
                             }
                         }
@@ -94,7 +91,10 @@ class VectaraClient:
         return self.jwt_token
     
     def _request(
-        self, endpoint: str, http_method: str = "POST", params: Mapping[str, Any] = None, data: Mapping[str, Any] = None
+            self, endpoint: str, 
+            http_method: str = "POST", 
+            params: Mapping[str, Any] = None, 
+            data: Mapping[str, Any] = None
         ):
         
         url = f"{self.BASE_URL}/{endpoint}"
@@ -107,7 +107,8 @@ class VectaraClient:
             "Content-Type": "application/json",
             "Accept": "application/json", 
             "Authorization": f"Bearer {self.jwt_token}",
-            "customer-id": self.customer_id
+            "customer-id": self.customer_id,
+            "X-source": "airbyte"
             }
 
         response = requests.request(method=http_method, url=url, headers=headers, params=params, data=json.dumps(data))
@@ -171,7 +172,7 @@ class VectaraClient:
                                     "text": section_text
                                 } 
                                 for section_title, section_text in document_section.items()
-                                ]
+                            ]
                         }
                     }
                 )

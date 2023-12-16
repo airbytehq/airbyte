@@ -20,7 +20,7 @@ METADATA_STREAM_FIELD = "_ab_stream"
 
 class VectaraWriter:
 
-    write_buffer: List[Mapping[str, Any]] = [] #TODO fix
+    write_buffer: List[Mapping[str, Any]] = []
     flush_interval = 1000
 
     def __init__(self, client: VectaraClient, text_fields: Optional[List[str]], metadata_fields: Optional[List[str]], catalog: ConfiguredAirbyteCatalog):
@@ -97,12 +97,7 @@ class VectaraWriter:
         stream_identifier = f"{record.namespace}_{record.stream}"
         current_stream: ConfiguredAirbyteStream = self.streams[stream_identifier]
         if not current_stream.primary_key:
-            return
-            raise AirbyteTracedException(
-                internal_message="No primary key found in current stream",
-                message=f"Stream {stream_identifier}... does not contain any configured primary key path. Please check your source stream, there has to be a primary key path configured.",
-                failure_type=FailureType.config_error,
-            )
+            return stream_identifier
 
         primary_key = []
         for key in current_stream.primary_key:

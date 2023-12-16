@@ -17,7 +17,7 @@ data:
   icon: vectara.svg
   license: MIT
   name: Vectara
-  releaseDate: 2023-11-10
+  releaseDate: 2023-12-15
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/destinations/vectara
