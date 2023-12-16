@@ -8,12 +8,12 @@ from pathlib import Path
 import pyarrow as pa
 from overrides import overrides
 
-from airbyte_lib.bases.core import CacheBase
+from airbyte_lib.bases.core import CacheBase, BatchHandle
 
 DEFAULT_BATCH_SIZE = 10000
 
 
-class FileCacheBase(CacheBase, abc.ABCMeta):
+class FileWriterBase(CacheBase, abc.ABCMeta):
     """A generic base implementation for a file-based cache."""
 
     @abc.abstractmethod

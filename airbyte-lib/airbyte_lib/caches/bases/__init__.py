@@ -1,11 +1,11 @@
 from .config import CacheConfigBase
 from .core import BaseCache
-from .file import BaseFileCache
+from .file_writers import FileWriterBase
 from .sql import SQLCache, SQLCacheConfigBase
 
 __all__ = [
     "BaseCache",
-    "BaseFileCache",
+    "FileWriterBase",
     "CacheConfigBase",
     "SQLCache",
     "SQLCacheConfigBase",

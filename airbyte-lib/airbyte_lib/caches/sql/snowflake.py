@@ -8,13 +8,13 @@ from overrides import overrides
 import pyarrow as pa
 
 from airbyte_lib.bases import SQLCache, SQLCacheConfigBase
-from airbyte_lib.parquet import ParquetCache, ParquetCacheConfig
+from airbyte_lib.parquet import ParquetWriter, ParquetWriterConfig
 
 
-class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetCacheConfig):
+class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     """Configuration for the Snowflake cache.
 
-    Also inherits config from the ParquetCache, which is responsible for writing files to disk.
+    Also inherits config from the ParquetWriter, which is responsible for writing files to disk.
     """
 
     type: str = "snowflake"
@@ -36,13 +36,14 @@ class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetCacheConfig):
         )
 
 
-class SnowflakeSQLCache(SQLCache, ParquetCache):
+class SnowflakeSQLCache(SQLCache):
     """A Snowflake implementation of the cache.
 
     Parquet is used for local file storage before bulk loading.
     """
 
     config_class = SnowflakeCacheConfig
+    file_writer_class = ParquetWriter
 
     @overrides
     def write_files_to_new_table(

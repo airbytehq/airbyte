@@ -4,20 +4,20 @@ from pathlib import Path
 import pyarrow as pa
 import ulid
 
-from airbyte_lib.bases import CacheConfigBase, FileCacheBase
+from airbyte_lib.bases import CacheConfigBase, FileWriterBase
 
 
-class ParquetCacheConfig(CacheConfigBase):
+class ParquetWriterConfig(CacheConfigBase):
     """Configuration for the Snowflake cache."""
 
     type: str = "parquet"
     cache_path: str
 
 
-class ParquetCache(FileCacheBase):
+class ParquetWriter(FileWriterBase):
     """A Parquet cache implementation."""
 
-    config_class = ParquetCacheConfig
+    config_class = ParquetWriterConfig
 
     def get_new_cache_file_path(
         self,
