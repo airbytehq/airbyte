@@ -43,7 +43,9 @@ class DestinationVectara(Destination):
         """
 
         config_model = VectaraConfig.parse_obj(config)
-        writer = VectaraWriter(client=VectaraClient(config_model), text_fields=config_model.text_fields, metadata_fields=config_model.metadata_fields)
+        writer = VectaraWriter(client=VectaraClient(config_model), 
+                               text_fields=config_model.text_fields, metadata_fields=config_model.metadata_fields,
+                               catalog=configured_catalog)
                 
         writer.delete_streams_to_overwrite(catalog=configured_catalog)
 

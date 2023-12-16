@@ -18,11 +18,14 @@ class VectaraClient:
     BASE_URL = "https://api.vectara.io/v1"
 
     def __init__(self, config: VectaraConfig):
-        self.customer_id = config["customer_id"]
-        self.corpus_name = config["corpus_name"]
-        self.client_id = config["oauth2"]["client_id"]
-        self.client_secret = config["oauth2"]["client_secret"]
-        self.encoder_id =config.get("encoder_id", None)
+        if isinstance(config, dict):
+            config = VectaraConfig.parse_obj(config)
+        self.customer_id = config.customer_id
+        self.corpus_name = config.corpus_name
+        self.client_id = config.oauth2.client_id
+        self.client_secret = config.oauth2.client_secret
+        self.encoder_id =config.encoder_id
+        self.check()
 
     def check(self):
         """

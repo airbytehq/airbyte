@@ -28,7 +28,7 @@ class VectaraWriter:
         self.text_fields = text_fields
         self.metadata_fields = metadata_fields
         self.streams = {f"{stream.stream.namespace}_{stream.stream.name}": stream for stream in catalog.streams}
-        self.ids_to_delete: List[str]
+        self.ids_to_delete: List[str] = []
 
     def delete_streams_to_overwrite(self, catalog: ConfiguredAirbyteCatalog) -> None:
         streams_to_overwrite = [
@@ -44,14 +44,16 @@ class VectaraWriter:
     def queue_write_operation(self, record: AirbyteRecordMessage) -> None:
         """Adds messages to the write queue and flushes if the buffer is full"""
 
+        stream_identifier = self._get_stream_id(record=record)
         document_section = self._get_document_section(record=record)
         document_metadata = self._get_document_metadata(record=record)
         primary_key = self._get_record_primary_key(record=record)
 
-        document_id = uuid.uuid4().int
         if primary_key:
-            document_id = primary_key
-            self.ids_to_delete.append(primary_key)
+            document_id = f"Stream_{stream_identifier}_Key_{primary_key}"
+            self.ids_to_delete.append(document_id)
+        else:
+            document_id = str(uuid.uuid4().int)
 
         self.write_buffer.append((document_section, document_metadata, document_id))
         if len(self.write_buffer) == self.flush_interval:
@@ -90,14 +92,18 @@ class VectaraWriter:
 
     def _get_document_metadata(self, record: AirbyteRecordMessage) -> Dict[str, Any]:        
         document_metadata = self._extract_relevant_fields(record, self.metadata_fields)
-        document_metadata[METADATA_STREAM_FIELD] = record.stream
+        document_metadata[METADATA_STREAM_FIELD] = self._get_stream_id(record)
         return document_metadata
     
+    def _get_stream_id(self, record: AirbyteRecordMessage) -> str:
+        return f"{record.namespace}_{record.stream}"
+
     def _get_record_primary_key(self, record: AirbyteRecordMessage) -> Optional[str]:
-        stream_identifier = f"{record.namespace}_{record.stream}"
+        stream_identifier = self._get_stream_id(record)
         current_stream: ConfiguredAirbyteStream = self.streams[stream_identifier]
+
         if not current_stream.primary_key:
-            return stream_identifier
+            return None
 
         primary_key = []
         for key in current_stream.primary_key:
