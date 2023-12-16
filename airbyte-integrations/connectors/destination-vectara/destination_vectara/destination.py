@@ -75,7 +75,6 @@ class DestinationVectara(Destination):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-
         client = VectaraClient(config=config)
         client_error = client.check()
         if client_error:

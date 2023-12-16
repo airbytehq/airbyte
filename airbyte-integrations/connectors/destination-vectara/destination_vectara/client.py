@@ -11,7 +11,6 @@ from typing import Any, Mapping
 
 from destination_vectara.config import VectaraConfig
 
-
 METADATA_STREAM_FIELD = "_ab_stream"
 
 class VectaraClient:
@@ -19,10 +18,11 @@ class VectaraClient:
     BASE_URL = "https://api.vectara.io/v1"
 
     def __init__(self, config: VectaraConfig):
-        self.customer_id = config.customer_id
-        self.corpus_name = config.corpus_name
-        self.client_id = config.oauth2.client_id
-        self.client_secret = config.oauth2.client_secret
+        self.customer_id = config["customer_id"]
+        self.corpus_name = config["corpus_name"]
+        self.client_id = config["oauth2"]["client_id"]
+        self.client_secret = config["oauth2"]["client_secret"]
+        self.encoder_id =config.get("encoder_id", None)
 
     def check(self):
         """
@@ -49,22 +49,28 @@ class VectaraClient:
             if len(possible_corpora_ids_names_map) == 1:
                 self.corpus_id = list(possible_corpora_ids_names_map.keys())[0]
             else:
+                data = {
+                    "corpus": {
+                        "name": self.corpus_name,
+                        "filterAttributes": [
+                            {
+                                "name": METADATA_STREAM_FIELD,
+                                "indexed": True,
+                                "type": "FILTER_ATTRIBUTE_TYPE__TEXT",
+                                "level": "FILTER_ATTRIBUTE_LEVEL__DOCUMENT"
+                            },
+                        ]
+                    }
+                }
+
+                # allow to override the encoder ID (e.g. if Boomerang is not the default)
+                if self.encoder_id:
+                    data["corpus"]["encoderId"] = self.encoder_id
+
                 create_corpus_response = self._request(
                     endpoint="create-corpus",
-                    data={
-                        "corpus": {
-                            "name": self.corpus_name,
-                            "filterAttributes": [
-                                    {
-                                        "name": METADATA_STREAM_FIELD,
-                                        "indexed": True,
-                                        "type": "FILTER_ATTRIBUTE_TYPE__TEXT",
-                                        "level": "FILTER_ATTRIBUTE_LEVEL__DOCUMENT"
-                                    },
-                                ]
-                            }
-                        }
-                    )
+                    data=data
+                )
                 self.corpus_id = create_corpus_response.get("corpusId")
 
         except Exception as e:
