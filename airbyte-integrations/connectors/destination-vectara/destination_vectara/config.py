@@ -25,7 +25,6 @@ class VectaraConfig(BaseModel):
     oauth2: OAuth2
     customer_id: str = Field(..., title="Customer ID", description="Your customer id as it is in the authenticaion url", order=2, group="account")
     corpus_name: str = Field(..., title="Corpus Name", description="The Name of Corpus to load data into", order=3, group="account")
-    encoder_id: Optional[str] = Field(..., title="Encoder ID", description="The ID of the Embedding model encoder to use (optional)", order=4, group="account")
 
     text_fields: Optional[List[str]] = Field(
         default=[],
