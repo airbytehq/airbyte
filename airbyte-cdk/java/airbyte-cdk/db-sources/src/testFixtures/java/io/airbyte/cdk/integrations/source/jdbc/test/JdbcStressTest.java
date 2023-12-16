@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -66,7 +67,7 @@ public abstract class JdbcStressTest {
   private static String streamName;
 
   private BitSet bitSet;
-  private JsonNode config;
+  private AirbyteSourceConfig config;
   private AbstractJdbcSource<?> source;
 
   /**
@@ -85,7 +86,7 @@ public abstract class JdbcStressTest {
    *
    * @return config
    */
-  public abstract JsonNode getConfig();
+  public abstract AirbyteSourceConfig getConfig();
 
   /**
    * Full qualified class name of the JDBC driver for the database.

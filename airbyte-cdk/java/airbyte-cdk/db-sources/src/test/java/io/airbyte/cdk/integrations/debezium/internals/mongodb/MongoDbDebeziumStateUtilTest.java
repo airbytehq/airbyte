@@ -22,6 +22,7 @@ import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import com.mongodb.connection.ServerDescription;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -72,9 +73,9 @@ class MongoDbDebeziumStateUtilTest {
     final MongoClient mongoClient = mock(MongoClient.class);
     final Properties baseProperties = new Properties();
 
-    final JsonNode config = Jsons.jsonNode(Map.of(
+    final AirbyteSourceConfig config = AirbyteSourceConfig.of(
         MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, database));
+        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, database);
 
     when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
     when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));

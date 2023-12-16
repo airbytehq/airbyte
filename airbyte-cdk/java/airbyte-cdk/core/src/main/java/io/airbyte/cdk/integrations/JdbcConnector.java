@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations;
 
 import static org.postgresql.PGProperty.CONNECT_TIMEOUT;
 
+import io.airbyte.cdk.db.AirbyteConfig;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -13,7 +14,7 @@ import java.time.temporal.TemporalUnit;
 import java.util.Map;
 import java.util.Optional;
 
-public abstract class JdbcConnector extends BaseConnector {
+public abstract class JdbcConnector<T extends AirbyteConfig> extends BaseConnector<T> {
 
   public static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
   public static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);

@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -39,7 +40,7 @@ class DefaultJdbcStressTest extends JdbcStressTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
-  private JsonNode config;
+  private AirbyteSourceConfig config;
 
   @BeforeAll
   static void init() {
@@ -51,19 +52,19 @@ class DefaultJdbcStressTest extends JdbcStressTest {
   public void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
-    config = Jsons.jsonNode(ImmutableMap.of(JdbcUtils.HOST_KEY, "localhost",
+    config = AirbyteSourceConfig.fromJsonNode(Jsons.jsonNode(ImmutableMap.of(JdbcUtils.HOST_KEY, "localhost",
         JdbcUtils.PORT_KEY, 5432,
         JdbcUtils.DATABASE_KEY, "charles",
         JdbcUtils.USERNAME_KEY, "postgres",
-        JdbcUtils.PASSWORD_KEY, ""));
+        JdbcUtils.PASSWORD_KEY, "")));
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
+    config = AirbyteSourceConfig.fromJsonNode(Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
         .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
-        .build());
+        .build()));
 
     final String initScriptName = "init_" + dbName.concat(".sql");
     final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
@@ -83,7 +84,7 @@ class DefaultJdbcStressTest extends JdbcStressTest {
   }
 
   @Override
-  public JsonNode getConfig() {
+  public AirbyteSourceConfig getConfig() {
     return config;
   }
 
@@ -108,7 +109,7 @@ class DefaultJdbcStressTest extends JdbcStressTest {
     }
 
     @Override
-    public JsonNode toDatabaseConfig(final JsonNode config) {
+    public JsonNode toDatabaseConfig(final AirbyteSourceConfig config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
           .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),

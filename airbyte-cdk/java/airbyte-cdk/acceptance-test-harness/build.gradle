@@ -27,6 +27,7 @@ dependencies {
     implementation libs.bundles.datadog
     implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2'
 
+    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-protocol')

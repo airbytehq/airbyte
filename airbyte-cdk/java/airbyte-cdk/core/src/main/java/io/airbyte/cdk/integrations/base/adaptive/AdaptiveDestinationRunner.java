@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.base.adaptive;
 
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.base.Command;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
@@ -93,9 +94,9 @@ public class AdaptiveDestinationRunner {
       // Parse the CLI args just so we can accomplish that.
       IntegrationConfig parsedArgs = new IntegrationCliParser().parse(args);
       if (parsedArgs.getCommand() != Command.SPEC) {
-        DestinationConfig.initialize(IntegrationRunner.parseConfig(parsedArgs.getConfigPath()));
+        DestinationConfig.initialize(AirbyteDestinationConfig.fromPath(parsedArgs.getConfigPath()));
       } else {
-        DestinationConfig.initialize(Jsons.emptyObject());
+        DestinationConfig.initialize(AirbyteDestinationConfig.fromNothing());
       }
 
       final Destination destination = getDestination();

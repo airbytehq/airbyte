@@ -5,6 +5,7 @@
 package io.airbyte.workers.normalization;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.configoss.OperatorDbt;
 import io.airbyte.configoss.ResourceRequirements;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
@@ -37,7 +38,7 @@ public interface NormalizationRunner extends AutoCloseable {
   boolean configureDbt(String jobId,
                        int attempt,
                        Path jobRoot,
-                       JsonNode config,
+                       AirbyteDestinationConfig config,
                        ResourceRequirements resourceRequirements,
                        OperatorDbt dbtConfig)
       throws Exception;

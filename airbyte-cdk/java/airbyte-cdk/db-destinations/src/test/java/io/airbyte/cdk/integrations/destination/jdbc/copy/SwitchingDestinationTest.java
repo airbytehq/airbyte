@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Map;
@@ -43,12 +44,12 @@ class SwitchingDestinationTest {
   public void testInsert() throws Exception {
     final var switchingDestination = new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.INSERT, destinationMap);
 
-    switchingDestination.getConsumer(mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
+    switchingDestination.getConsumer(mock(AirbyteDestinationConfig.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
 
     verify(insertDestination, times(1)).getConsumer(any(), any(), any());
     verify(copyDestination, times(0)).getConsumer(any(), any(), any());
 
-    switchingDestination.check(mock(JsonNode.class));
+    switchingDestination.check(mock(AirbyteDestinationConfig.class));
 
     verify(insertDestination, times(1)).check(any());
     verify(copyDestination, times(0)).check(any());
@@ -58,12 +59,12 @@ class SwitchingDestinationTest {
   public void testCopy() throws Exception {
     final var switchingDestination = new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.COPY, destinationMap);
 
-    switchingDestination.getConsumer(mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
+    switchingDestination.getConsumer(mock(AirbyteDestinationConfig.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
 
     verify(insertDestination, times(0)).getConsumer(any(), any(), any());
     verify(copyDestination, times(1)).getConsumer(any(), any(), any());
 
-    switchingDestination.check(mock(JsonNode.class));
+    switchingDestination.check(mock(AirbyteDestinationConfig.class));
 
     verify(insertDestination, times(0)).check(any());
     verify(copyDestination, times(1)).check(any());

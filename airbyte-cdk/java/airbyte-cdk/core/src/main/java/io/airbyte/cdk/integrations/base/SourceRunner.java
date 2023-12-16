@@ -3,13 +3,18 @@ package io.airbyte.cdk.integrations.base;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.AirbyteConfig;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.util.concurrent.ConcurrentStreamConsumer;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.StreamStatusUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -18,12 +23,14 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SourceRunner extends IntegrationRunner {
+public class SourceRunner extends IntegrationRunner<AirbyteSourceConfig> {
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceRunner.class);
 
   private final Source source;
+
   public SourceRunner(final Source source) {
     super(new IntegrationCliParser(), Destination::defaultOutputRecordCollector);
+    this.source = source;
   }
 
   @VisibleForTesting
@@ -50,22 +57,22 @@ public class SourceRunner extends IntegrationRunner {
 
   @Override
   protected void check(IntegrationConfig parsed) throws Exception {
-    final JsonNode config = parseConfig(parsed.getConfigPath());
+    final AirbyteSourceConfig config = parseConfig(parsed.getConfigPath());
     check(config);
   }
 
   @Override
   protected void discover(final IntegrationConfig parsed) throws Exception {
-    final JsonNode config = parseConfig(parsed.getConfigPath());
+    final AirbyteSourceConfig config = parseConfig(parsed.getConfigPath());
     validateConfig(source.spec().getConnectionSpecification(), config, "DISCOVER");
     outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
   }
 
   protected void read(final IntegrationConfig parsed) throws Exception {
-    final JsonNode config = parseConfig(parsed.getConfigPath());
+    final AirbyteSourceConfig config = parseConfig(parsed.getConfigPath());
     validateConfig(source.spec().getConnectionSpecification(), config, "READ");
-    final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-    final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
+    final ConfiguredAirbyteCatalog catalog = Jsons.object(Jsons.deserialize(IOs.readFile(parsed.getCatalogPath())), ConfiguredAirbyteCatalog.class);
+    final Optional<JsonNode> stateOptional = parsed.getStatePath().map(path -> Jsons.deserialize(IOs.readFile(path)));
     try {
       if (featureFlags.concurrentSourceStreamRead()) {
         LOGGER.info("Concurrent source stream read enabled.");
@@ -85,7 +92,12 @@ public class SourceRunner extends IntegrationRunner {
     throw new IllegalStateException("Cannot execute write on a source!");
   }
 
-  private void readConcurrent(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional)
+  @Override
+  public AirbyteSourceConfig parseConfig(Path path) {
+    return AirbyteSourceConfig.fromPath(path);
+  }
+
+  private void readConcurrent(final AirbyteSourceConfig config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional)
       throws Exception {
     final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
 
@@ -119,7 +131,7 @@ public class SourceRunner extends IntegrationRunner {
     }
   }
 
-  private void readSerial(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
+  private void readSerial(final AirbyteSourceConfig config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
     try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
       produceMessages(messageIterator, outputRecordCollector);
     } finally {

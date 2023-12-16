@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
@@ -79,7 +80,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
   private final HashMap<String, String> previousCheckpointOffset;
   private final DebeziumConnectorType debeziumConnectorType;
   private final ConfiguredAirbyteCatalog configuredAirbyteCatalog;
-  private final JsonNode config;
+  private final AirbyteSourceConfig config;
 
   /**
    * @param changeEventIterator Base iterator that we want to enrich with checkpoint messages
@@ -105,7 +106,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
                                          final Long checkpointRecords,
                                          final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
                                          final DebeziumConnectorType debeziumConnectorType,
-                                         final JsonNode config) {
+                                         final AirbyteSourceConfig config) {
     this.changeEventIterator = changeEventIterator;
     this.cdcStateHandler = cdcStateHandler;
     this.targetPosition = targetPosition;

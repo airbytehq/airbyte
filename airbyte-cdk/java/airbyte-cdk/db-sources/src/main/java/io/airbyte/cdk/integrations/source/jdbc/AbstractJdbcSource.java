@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import datadog.trace.api.Trace;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.SqlDatabase;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
@@ -135,7 +136,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
    * @return list of consumers that run queries for the check command.
    */
   @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
-  protected List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
+  protected List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final AirbyteSourceConfig config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
       database.bufferedResultSetQuery(connection -> connection.getMetaData().getCatalogs(), sourceOperations::rowToJson);
@@ -425,7 +426,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+  public JdbcDatabase createDatabase(final AirbyteSourceConfig sourceConfig) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
     Map<String, String> connectionProperties = JdbcDataSourceUtils.getConnectionProperties(sourceConfig);
     // Create the data source

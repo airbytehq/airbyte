@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
@@ -64,27 +65,27 @@ public class ParquetSerializedBufferTest {
 
   @BeforeAll
   public static void setup() {
-    DestinationConfig.initialize(Jsons.deserialize("{}"));
+    DestinationConfig.initialize(AirbyteDestinationConfig.fromJsonString("{}"));
   }
 
   @Test
   public void testUncompressedParquetWriter() throws Exception {
-    final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(Jsons.jsonNode(Map.of(
+    final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(AirbyteDestinationConfig.of(
         "format", Map.of(
             "format_type", "parquet"),
         "s3_bucket_name", "test",
-        "s3_bucket_region", "us-east-2")));
+        "s3_bucket_region", "us-east-2"));
     runTest(225L, 245L, config, getExpectedString());
   }
 
   @Test
   public void testCompressedParquetWriter() throws Exception {
-    final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(Jsons.jsonNode(Map.of(
+    final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(AirbyteDestinationConfig.of(
         "format", Map.of(
             "format_type", "parquet",
             "compression_codec", "GZIP"),
         "s3_bucket_name", "test",
-        "s3_bucket_region", "us-east-2")));
+        "s3_bucket_region", "us-east-2"));
     // TODO: Compressed parquet is the same size as uncompressed??
     runTest(225L, 245L, config, getExpectedString());
   }
@@ -125,12 +126,12 @@ public class ParquetSerializedBufferTest {
   }
 
   private void runLzoParquetTest() throws Exception {
-    final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(Jsons.jsonNode(Map.of(
+    final S3DestinationConfig config = S3DestinationConfig.getS3DestinationConfig(AirbyteDestinationConfig.of(
         "format", Map.of(
             "format_type", "parquet",
             "compression_codec", "LZO"),
         "s3_bucket_name", "test",
-        "s3_bucket_region", "us-east-2")));
+        "s3_bucket_region", "us-east-2"));
     runTest(225L, 245L, config, getExpectedString());
   }
 

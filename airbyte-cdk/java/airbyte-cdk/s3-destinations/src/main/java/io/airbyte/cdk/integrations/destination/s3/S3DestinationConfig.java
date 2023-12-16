@@ -22,6 +22,7 @@ import com.amazonaws.retry.RetryMode;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AWSDefaultProfileCredentialConfig;
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialConfig;
@@ -110,11 +111,11 @@ public class S3DestinationConfig {
         .withFormatConfig(config.getFormatConfig());
   }
 
-  public static S3DestinationConfig getS3DestinationConfig(@Nonnull final JsonNode config) {
+  public static S3DestinationConfig getS3DestinationConfig(@Nonnull final AirbyteDestinationConfig config) {
     return getS3DestinationConfig(config, StorageProvider.AWS_S3);
   }
 
-  public static S3DestinationConfig getS3DestinationConfig(@Nonnull final JsonNode config, @Nonnull final StorageProvider storageProvider) {
+  public static S3DestinationConfig getS3DestinationConfig(@Nonnull final AirbyteDestinationConfig config, @Nonnull final StorageProvider storageProvider) {
     Builder builder = create(
         getProperty(config, S_3_BUCKET_NAME),
         "",
@@ -168,7 +169,7 @@ public class S3DestinationConfig {
   }
 
   @Nullable
-  private static String getProperty(@Nonnull final JsonNode config, @Nonnull final String key) {
+  private static String getProperty(@Nonnull final AirbyteDestinationConfig config, @Nonnull final String key) {
     final JsonNode node = config.get(key);
     if (node == null) {
       return null;

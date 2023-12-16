@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
@@ -62,7 +63,7 @@ public class SshWrappedDestination implements Destination {
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+  public AirbyteConnectionStatus check(final AirbyteDestinationConfig config) throws Exception {
     try {
       return (endPointKey != null) ? SshTunnel.sshWrap(config, endPointKey, delegate::check)
           : SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
@@ -76,11 +77,11 @@ public class SshWrappedDestination implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+  public AirbyteMessageConsumer getConsumer(final AirbyteDestinationConfig config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    final SshTunnel tunnel = getTunnelInstance(config);
+    final SshTunnel<AirbyteDestinationConfig> tunnel = getTunnelInstance(config);
 
     final AirbyteMessageConsumer delegateConsumer;
     try {
@@ -94,11 +95,11 @@ public class SshWrappedDestination implements Destination {
   }
 
   @Override
-  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final AirbyteDestinationConfig config,
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    final SshTunnel tunnel = getTunnelInstance(config);
+    final SshTunnel<AirbyteDestinationConfig> tunnel = getTunnelInstance(config);
     final SerializedAirbyteMessageConsumer delegateConsumer;
     try {
       delegateConsumer = delegate.getSerializedMessageConsumer(tunnel.getConfigInTunnel(), catalog, outputRecordCollector);
@@ -110,7 +111,7 @@ public class SshWrappedDestination implements Destination {
     return SerializedAirbyteMessageConsumer.appendOnClose(delegateConsumer, tunnel::close);
   }
 
-  protected SshTunnel getTunnelInstance(final JsonNode config) throws Exception {
+  protected SshTunnel<AirbyteDestinationConfig> getTunnelInstance(final AirbyteDestinationConfig config) throws Exception {
     return (endPointKey != null)
         ? SshTunnel.getInstance(config, endPointKey)
         : SshTunnel.getInstance(config, hostKey, portKey);

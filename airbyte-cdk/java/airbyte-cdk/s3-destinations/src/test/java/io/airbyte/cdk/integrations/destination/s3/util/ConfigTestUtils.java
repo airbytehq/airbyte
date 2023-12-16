@@ -7,14 +7,15 @@ package io.airbyte.cdk.integrations.destination.s3.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.commons.json.Jsons;
 
 public class ConfigTestUtils {
 
-  public static JsonNode getBaseConfig(final JsonNode formatConfig) {
-    return Jsons.deserialize("{\n"
+  public static AirbyteDestinationConfig getBaseConfig(final JsonNode formatConfig) {
+    return AirbyteDestinationConfig.fromJsonString("{\n"
         + "  \"s3_endpoint\": \"some_test-endpoint\",\n"
         + "  \"s3_bucket_name\": \"test-bucket-name\",\n"
         + "  \"s3_bucket_path\": \"test_path\",\n"

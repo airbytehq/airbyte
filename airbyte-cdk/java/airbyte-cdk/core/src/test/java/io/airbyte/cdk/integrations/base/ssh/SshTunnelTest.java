@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod;
 import io.airbyte.commons.json.Jsons;
 import java.nio.charset.StandardCharsets;
@@ -98,9 +99,9 @@ class SshTunnelTest {
   @ParameterizedTest
   @ValueSource(strings = {HOST_PORT_CONFIG, URL_CONFIG_WITH_PORT, URL_CONFIG_NO_PORT})
   public void testConfigInTunnel(final String configString) throws Exception {
-    final JsonNode config = (new ObjectMapper()).readTree(String.format(configString, SSH_RSA_PRIVATE_KEY));
-    String endPointURL = Jsons.getStringOrNull(config, "endpoint");
-    final SshTunnel sshTunnel = new SshTunnel(
+    final AirbyteSourceConfig config =AirbyteSourceConfig.fromJsonString(String.format(configString, SSH_RSA_PRIVATE_KEY));
+    String endPointURL = config.getStringOrNull("endpoint");
+    try (final SshTunnel<AirbyteSourceConfig> sshTunnel = new SshTunnel<>(
         config,
         endPointURL == null ? Arrays.asList(new String[] {"host"}) : null,
         endPointURL == null ? Arrays.asList(new String[] {"port"}) : null,
@@ -115,26 +116,27 @@ class SshTunnelTest {
         endPointURL == null ? "fakeHost.com" : null,
         endPointURL == null ? 5432 : 0) {
 
-      @Override
-      ClientSession openTunnel(final SshClient client) {
-        tunnelLocalPort = 8080;
-        return null; // Prevent tunnel from attempting to connect
+        @Override
+        ClientSession openTunnel(final SshClient client) {
+          tunnelLocalPort = 8080;
+          return null; // Prevent tunnel from attempting to connect
+        }
+
+      }) {
+
+      final AirbyteSourceConfig configInTunnel = sshTunnel.getConfigInTunnel();
+      if (endPointURL == null) {
+        assertTrue(configInTunnel.has("port"));
+        assertTrue(configInTunnel.has("host"));
+        assertFalse(configInTunnel.has("endpoint"));
+        assertEquals(8080, configInTunnel.get("port").asInt());
+        assertEquals("127.0.0.1", configInTunnel.get("host").asText());
+      } else {
+        assertFalse(configInTunnel.has("port"));
+        assertFalse(configInTunnel.has("host"));
+        assertTrue(configInTunnel.has("endpoint"));
+        assertEquals("http://127.0.0.1:8080/service", configInTunnel.get("endpoint").asText());
       }
-
-    };
-
-    final JsonNode configInTunnel = sshTunnel.getConfigInTunnel();
-    if (endPointURL == null) {
-      assertTrue(configInTunnel.has("port"));
-      assertTrue(configInTunnel.has("host"));
-      assertFalse(configInTunnel.has("endpoint"));
-      assertEquals(8080, configInTunnel.get("port").asInt());
-      assertEquals("127.0.0.1", configInTunnel.get("host").asText());
-    } else {
-      assertFalse(configInTunnel.has("port"));
-      assertFalse(configInTunnel.has("host"));
-      assertTrue(configInTunnel.has("endpoint"));
-      assertEquals("http://127.0.0.1:8080/service", configInTunnel.get("endpoint").asText());
     }
   }
 
@@ -148,8 +150,8 @@ class SshTunnelTest {
   @ParameterizedTest
   @ValueSource(strings = {SSH_ED25519_PRIVATE_KEY, SSH_RSA_PRIVATE_KEY})
   public void getKeyPair(final String privateKey) throws Exception {
-    final JsonNode config = (new ObjectMapper()).readTree(String.format(HOST_PORT_CONFIG, privateKey));
-    final SshTunnel sshTunnel = new SshTunnel(
+    final AirbyteSourceConfig config = AirbyteSourceConfig.fromJsonString(String.format(HOST_PORT_CONFIG, privateKey));
+    try (final SshTunnel<AirbyteSourceConfig> sshTunnel = new SshTunnel<>(
         config,
         Arrays.asList(new String[] {"host"}),
         Arrays.asList(new String[] {"port"}),
@@ -169,10 +171,11 @@ class SshTunnelTest {
         return null; // Prevent tunnel from attempting to connect
       }
 
-    };
+    };) {
 
-    final KeyPair authKeyPair = sshTunnel.getPrivateKeyPair();
-    assertNotNull(authKeyPair);// actually, all is good if there is no exception on previous line
+      final KeyPair authKeyPair = sshTunnel.getPrivateKeyPair();
+      assertNotNull(authKeyPair);// actually, all is good if there is no exception on previous line
+    }
   }
 
   /**

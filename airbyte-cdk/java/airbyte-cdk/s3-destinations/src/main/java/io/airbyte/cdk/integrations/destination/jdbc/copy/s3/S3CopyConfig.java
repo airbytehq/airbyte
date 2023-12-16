@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.destination.jdbc.copy.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 
 /**
@@ -14,7 +15,7 @@ import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
  */
 public record S3CopyConfig(boolean purgeStagingData, S3DestinationConfig s3Config) {
 
-  public static boolean shouldPurgeStagingData(final JsonNode config) {
+  public static boolean shouldPurgeStagingData(final AirbyteDestinationConfig config) {
     if (config.get("purge_staging_data") == null) {
       return true;
     } else {
@@ -22,7 +23,7 @@ public record S3CopyConfig(boolean purgeStagingData, S3DestinationConfig s3Confi
     }
   }
 
-  public static S3CopyConfig getS3CopyConfig(final JsonNode config) {
+  public static S3CopyConfig getS3CopyConfig(final AirbyteDestinationConfig config) {
     return new S3CopyConfig(S3CopyConfig.shouldPurgeStagingData(config),
         S3DestinationConfig.getS3DestinationConfig(config));
   }

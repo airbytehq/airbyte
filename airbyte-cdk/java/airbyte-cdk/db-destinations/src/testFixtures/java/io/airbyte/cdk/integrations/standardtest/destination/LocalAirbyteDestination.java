@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.standardtest.destination;
 
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.commons.json.Jsons;
@@ -32,7 +33,7 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot, final Map<String, String> additionalEnvironmentVariables)
       throws Exception {
     consumer =
-        dest.getConsumer(destinationConfig.getDestinationConnectionConfiguration(),
+        dest.getConsumer(AirbyteDestinationConfig.fromJsonNode(destinationConfig.getDestinationConnectionConfiguration()),
             Jsons.object(Jsons.jsonNode(destinationConfig.getCatalog()), io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class),
             Destination::defaultOutputRecordCollector);
     consumer.start();

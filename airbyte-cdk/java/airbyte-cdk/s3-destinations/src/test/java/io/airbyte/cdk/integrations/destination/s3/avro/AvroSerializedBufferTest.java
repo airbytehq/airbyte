@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
@@ -53,7 +54,7 @@ public class AvroSerializedBufferTest {
 
   @BeforeAll
   public static void setup() {
-    DestinationConfig.initialize(Jsons.deserialize("{}"));
+    DestinationConfig.initialize(AirbyteDestinationConfig.fromJsonString("{}"));
   }
 
   @Test

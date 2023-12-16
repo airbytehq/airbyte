@@ -14,15 +14,14 @@ import com.fasterxml.jackson.databind.JsonNode;
  * to avoid accidentally closing a shared resource.
  */
 public class AbstractDatabase {
-
-  private JsonNode sourceConfig;
+  private AirbyteSourceConfig sourceConfig;
   private JsonNode databaseConfig;
 
-  public JsonNode getSourceConfig() {
+  public AirbyteSourceConfig getSourceConfig() {
     return sourceConfig;
   }
 
-  public void setSourceConfig(final JsonNode sourceConfig) {
+  public void setSourceConfig(final AirbyteSourceConfig sourceConfig) {
     this.sourceConfig = sourceConfig;
   }
 

@@ -6,6 +6,8 @@ package io.airbyte.cdk.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.cdk.db.AirbyteConfig;
+import io.airbyte.cdk.db.AirbyteConfig.AirbyteConfigBuilder;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -23,6 +25,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
@@ -40,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * Encapsulates the connection configuration for an ssh tunnel port forward through a proxy/bastion
  * host plus the remote host and remote port to forward to a specified local port.
  */
-public class SshTunnel implements AutoCloseable {
+public class SshTunnel<CONFIG_TYPE extends AirbyteConfig> implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SshTunnel.class);
   public static final String SSH_TIMEOUT_DISPLAY_MESSAGE =
@@ -54,7 +57,7 @@ public class SshTunnel implements AutoCloseable {
 
   public static final int TIMEOUT_MILLIS = 15000; // 15 seconds
 
-  private final JsonNode config;
+  private final CONFIG_TYPE config;
   private final List<String> hostKey;
   private final List<String> portKey;
 
@@ -100,7 +103,7 @@ public class SshTunnel implements AutoCloseable {
    * @param remoteServicePort - the actual port of the remote service (as it is known to the tunnel
    *        host).
    */
-  public SshTunnel(final JsonNode config,
+  public SshTunnel(final CONFIG_TYPE config,
                    final List<String> hostKey,
                    final List<String> portKey,
                    final String endPointKey,
@@ -173,77 +176,79 @@ public class SshTunnel implements AutoCloseable {
     }
   }
 
-  public JsonNode getOriginalConfig() {
+  public CONFIG_TYPE getOriginalConfig() {
     return config;
   }
 
-  public JsonNode getConfigInTunnel() throws Exception {
+  public CONFIG_TYPE getConfigInTunnel() throws Exception {
     if (tunnelMethod.equals(TunnelMethod.NO_TUNNEL)) {
       return getOriginalConfig();
     } else {
-      final JsonNode clone = Jsons.clone(config);
+      final AirbyteConfigBuilder<CONFIG_TYPE> clone = config.cloneBuilder();
       if (hostKey != null) {
-        Jsons.replaceNestedString(clone, hostKey, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName());
+        clone.replaceNestedString(hostKey, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName());
       }
       if (portKey != null) {
-        Jsons.replaceNestedInt(clone, portKey, tunnelLocalPort);
+        clone.replaceNestedInt(portKey, tunnelLocalPort);
       }
       if (endPointKey != null) {
         final URL tunnelEndPointURL =
             new URL(remoteServiceProtocol, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), tunnelLocalPort, remoteServicePath);
-        Jsons.replaceNestedString(clone, Arrays.asList(endPointKey), tunnelEndPointURL.toString());
+        clone.replaceNestedString(Arrays.asList(endPointKey), tunnelEndPointURL.toString());
       }
-      return clone;
+      return clone.build();
     }
   }
 
-  public static SshTunnel getInstance(final JsonNode config, final List<String> hostKey, final List<String> portKey) {
-    final TunnelMethod tunnelMethod = Jsons.getOptional(config, "tunnel_method", "tunnel_method")
+  public static <CONFIG_TYPE extends AirbyteConfig> SshTunnel<CONFIG_TYPE> getInstance(final CONFIG_TYPE config, final List<String> hostKey, final List<String> portKey) {
+    Optional<JsonNode> tunnelMethodJsonConfig = config.getOptional("tunnel_method", "tunnel_method");
+    final TunnelMethod tunnelMethod = tunnelMethodJsonConfig
         .map(method -> TunnelMethod.valueOf(method.asText().trim()))
         .orElse(TunnelMethod.NO_TUNNEL);
     LOGGER.info("Starting connection with method: {}", tunnelMethod);
 
-    return new SshTunnel(
+    return new SshTunnel<CONFIG_TYPE>(
         config,
         hostKey,
         portKey,
         null,
         null,
         tunnelMethod,
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
-        Jsons.getIntOrZero(config, "tunnel_method", "tunnel_port"),
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user")),
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")),
-        Strings.safeTrim(Jsons.getStringOrNull(config, hostKey)),
-        Jsons.getIntOrZero(config, portKey));
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "tunnel_host")),
+        config.getIntOrZero( "tunnel_method", "tunnel_port"),
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "tunnel_user")),
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "ssh_key")),
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "tunnel_user_password")),
+        Strings.safeTrim(config.getStringOrNull(hostKey)),
+        config.getIntOrZero(portKey));
   }
 
-  public static SshTunnel getInstance(final JsonNode config, final String endPointKey) throws Exception {
-    final TunnelMethod tunnelMethod = Jsons.getOptional(config, "tunnel_method", "tunnel_method")
+  public static <CONFIG_TYPE extends AirbyteConfig> SshTunnel<CONFIG_TYPE> getInstance(final CONFIG_TYPE config, final String endPointKey) throws Exception {
+    final Optional<JsonNode> tunnelMethodJson = config.getOptional("tunnel_method", "tunnel_method");
+    final TunnelMethod tunnelMethod = tunnelMethodJson
         .map(method -> TunnelMethod.valueOf(method.asText().trim()))
         .orElse(TunnelMethod.NO_TUNNEL);
     LOGGER.info("Starting connection with method: {}", tunnelMethod);
 
-    return new SshTunnel(
+    return new SshTunnel<CONFIG_TYPE>(
         config,
         null,
         null,
         endPointKey,
-        Jsons.getStringOrNull(config, endPointKey),
+        config.getStringOrNull(endPointKey),
         tunnelMethod,
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
-        Jsons.getIntOrZero(config, "tunnel_method", "tunnel_port"),
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user")),
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")),
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "tunnel_host")),
+        config.getIntOrZero("tunnel_method", "tunnel_port"),
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "tunnel_user")),
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "ssh_key")),
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "tunnel_user_password")),
         null, 0);
   }
 
-  public static void sshWrap(final JsonNode config,
+  public static<CONFIG_TYPE extends AirbyteConfig> void sshWrap(final CONFIG_TYPE config,
                              final List<String> hostKey,
                              final List<String> portKey,
-                             final CheckedConsumer<JsonNode, Exception> wrapped)
+                             final CheckedConsumer<CONFIG_TYPE, Exception> wrapped)
       throws Exception {
     sshWrap(config, hostKey, portKey, (configInTunnel) -> {
       wrapped.accept(configInTunnel);
@@ -251,9 +256,9 @@ public class SshTunnel implements AutoCloseable {
     });
   }
 
-  public static void sshWrap(final JsonNode config,
+  public static<CONFIG_TYPE extends AirbyteConfig> void sshWrap(final CONFIG_TYPE config,
                              final String endPointKey,
-                             final CheckedConsumer<JsonNode, Exception> wrapped)
+                             final CheckedConsumer<CONFIG_TYPE, Exception> wrapped)
       throws Exception {
     sshWrap(config, endPointKey, (configInTunnel) -> {
       wrapped.accept(configInTunnel);
@@ -261,21 +266,21 @@ public class SshTunnel implements AutoCloseable {
     });
   }
 
-  public static <T> T sshWrap(final JsonNode config,
+  public static <CONFIG_TYPE extends AirbyteConfig, T> T sshWrap(final CONFIG_TYPE config,
                               final List<String> hostKey,
                               final List<String> portKey,
-                              final CheckedFunction<JsonNode, T, Exception> wrapped)
+                              final CheckedFunction<CONFIG_TYPE, T, Exception> wrapped)
       throws Exception {
-    try (final SshTunnel sshTunnel = SshTunnel.getInstance(config, hostKey, portKey)) {
+    try (final SshTunnel<CONFIG_TYPE> sshTunnel = SshTunnel.getInstance(config, hostKey, portKey)) {
       return wrapped.apply(sshTunnel.getConfigInTunnel());
     }
   }
 
-  public static <T> T sshWrap(final JsonNode config,
+  public static <CONFIG_TYPE extends AirbyteConfig, T> T sshWrap(final CONFIG_TYPE config,
                               final String endPointKey,
-                              final CheckedFunction<JsonNode, T, Exception> wrapped)
+                              final CheckedFunction<CONFIG_TYPE, T, Exception> wrapped)
       throws Exception {
-    try (final SshTunnel sshTunnel = SshTunnel.getInstance(config, endPointKey)) {
+    try (final SshTunnel<CONFIG_TYPE> sshTunnel = SshTunnel.getInstance(config, endPointKey)) {
       return wrapped.apply(sshTunnel.getConfigInTunnel());
     }
   }

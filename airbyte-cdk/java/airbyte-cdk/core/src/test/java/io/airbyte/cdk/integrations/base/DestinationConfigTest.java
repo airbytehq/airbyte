@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +25,7 @@ public class DestinationConfigTest {
                                      }
                                      """;
 
-  private static final JsonNode NODE = Jsons.deserialize(JSON);
+  private static final AirbyteDestinationConfig NODE = AirbyteDestinationConfig.fromJsonString(JSON);
 
   @Test
   public void testInitialization() {
@@ -38,7 +39,7 @@ public class DestinationConfigTest {
     assertEquals(NODE, DestinationConfig.getInstance().root);
 
     // initializing again doesn't change the config
-    final JsonNode nodeUnused = Jsons.deserialize("{}");
+    final AirbyteDestinationConfig nodeUnused = AirbyteDestinationConfig.fromJsonString("{}");
     DestinationConfig.initialize(nodeUnused);
     assertEquals(NODE, DestinationConfig.getInstance().root);
   }

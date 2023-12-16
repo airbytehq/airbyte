@@ -9,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import datadog.trace.api.Trace;
+import io.airbyte.cdk.db.AirbyteConfig;
 import io.airbyte.cdk.integrations.util.ApmTraceUtils;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.cdk.integrations.util.concurrent.ConcurrentStreamConsumer;
@@ -48,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * methods on the integration. Keeps itself DRY for methods that are common between source and
  * destination.
  */
-public abstract class IntegrationRunner {
+public abstract class IntegrationRunner<CONFIG_TYPE extends AirbyteConfig<CONFIG_TYPE>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunner.class);
 
@@ -112,7 +113,7 @@ public abstract class IntegrationRunner {
 
   protected abstract void check(final IntegrationConfig parsed) throws Exception;
 
-  protected final void check(JsonNode config) throws Exception {
+  protected final void check(CONFIG_TYPE config) throws Exception {
     try {
       validateConfig(getIntegration().spec().getConnectionSpecification(), config, "CHECK");
     } catch (final Exception e) {
@@ -284,22 +285,15 @@ public abstract class IntegrationRunner {
         Strings.join(List.of(thread.getStackTrace()), "\n        at "));
   }
 
-  protected static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
-    final Set<String> validationResult = validator.validate(schemaJson, objectJson);
+  protected void validateConfig(final JsonNode schemaJson, final CONFIG_TYPE config, final String operationType) throws Exception {
+    final Set<String> validationResult = config.validateWith(validator, schemaJson);
     if (!validationResult.isEmpty()) {
       throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ",
           operationType, validationResult));
     }
   }
 
-  public static JsonNode parseConfig(final Path path) {
-    return Jsons.deserialize(IOs.readFile(path));
-  }
-
-  protected <T> T parseConfig(final Path path, final Class<T> klass) {
-    final JsonNode jsonNode = parseConfig(path);
-    return Jsons.object(jsonNode, klass);
-  }
+  public abstract CONFIG_TYPE parseConfig(final Path path);
 
   /**
    * @param connectorImage Expected format: [organization/]image[:version]

@@ -22,6 +22,7 @@ import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvWriter.Builder;
@@ -248,7 +249,7 @@ class S3CsvWriterTest {
    */
   @Test
   public void writesContentsCorrectly_when_stagingDatabaseConfig() throws IOException {
-    DestinationConfig.initialize(Jsons.emptyObject());
+    DestinationConfig.initialize(AirbyteDestinationConfig.fromNothing());
     final S3DestinationConfig s3Config = S3DestinationConfig.create(
         "fake-bucket",
         "fake-bucketPath",

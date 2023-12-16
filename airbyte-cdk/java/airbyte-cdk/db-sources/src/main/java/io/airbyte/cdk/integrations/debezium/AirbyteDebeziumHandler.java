@@ -10,6 +10,7 @@ import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYN
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
@@ -53,13 +54,13 @@ public class AirbyteDebeziumHandler<T> {
    */
   private static final int QUEUE_CAPACITY = 10000;
 
-  private final JsonNode config;
+  private final AirbyteSourceConfig config;
   private final CdcTargetPosition<T> targetPosition;
   private final boolean trackSchemaHistory;
   private final Duration firstRecordWaitTime, subsequentRecordWaitTime;
   private final OptionalInt queueSize;
 
-  public AirbyteDebeziumHandler(final JsonNode config,
+  public AirbyteDebeziumHandler(final AirbyteSourceConfig config,
                                 final CdcTargetPosition<T> targetPosition,
                                 final boolean trackSchemaHistory,
                                 final Duration firstRecordWaitTime,

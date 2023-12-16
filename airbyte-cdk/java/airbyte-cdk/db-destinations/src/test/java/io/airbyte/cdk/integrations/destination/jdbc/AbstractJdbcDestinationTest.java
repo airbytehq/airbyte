@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
@@ -20,21 +21,21 @@ import org.junit.jupiter.api.Test;
 
 public class AbstractJdbcDestinationTest {
 
-  private JsonNode buildConfigNoJdbcParameters() {
-    return Jsons.jsonNode(ImmutableMap.of(
+  private AirbyteDestinationConfig buildConfigNoJdbcParameters() {
+    return AirbyteDestinationConfig.of(
         JdbcUtils.HOST_KEY, "localhost",
         JdbcUtils.PORT_KEY, 1337,
         JdbcUtils.USERNAME_KEY, "user",
-        JdbcUtils.DATABASE_KEY, "db"));
+        JdbcUtils.DATABASE_KEY, "db");
   }
 
-  private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
-    return Jsons.jsonNode(ImmutableMap.of(
+  private AirbyteDestinationConfig buildConfigWithExtraJdbcParameters(final String extraParam) {
+    return AirbyteDestinationConfig.of(
         JdbcUtils.HOST_KEY, "localhost",
         JdbcUtils.PORT_KEY, 1337,
         JdbcUtils.USERNAME_KEY, "user",
         JdbcUtils.DATABASE_KEY, "db",
-        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
+        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam);
   }
 
   @Test
@@ -124,13 +125,13 @@ public class AbstractJdbcDestinationTest {
     }
 
     @Override
-    protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    protected Map<String, String> getDefaultConnectionProperties(final AirbyteDestinationConfig config) {
       return defaultProperties;
     }
 
     @Override
-    public JsonNode toJdbcConfig(final JsonNode config) {
-      return config;
+    public JsonNode toJdbcConfig(final AirbyteDestinationConfig config) {
+      return config.asJsonNode();
     }
 
     @Override
