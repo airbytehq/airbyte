@@ -59,7 +59,7 @@ class MountPath:
 
 @dataclass(frozen=True)
 class StepResult:
-    """A dataclass to capture the result of a step"""
+    """A dataclass to capture the result of a step."""
 
     step: Union[Step, click.command]
     status: StepStatus
@@ -111,7 +111,7 @@ class CommandResult:
 
 
 class StepStatus(Enum):
-    """An Enum to characterize the success, failure or skipping of a Step"""
+    """An Enum to characterize the success, failure or skipping of a Step."""
 
     SUCCESS = "Successful"
     FAILURE = "Failed"
@@ -127,7 +127,7 @@ class StepStatus(Enum):
             return Style(color="yellow")
 
     def get_emoji(self) -> str:
-        """Match emoji used in the console output to the step status"""
+        """Match emoji used in the console output to the step status."""
         if self is StepStatus.SUCCESS:
             return "✅"
         if self is StepStatus.FAILURE:
@@ -140,7 +140,7 @@ class StepStatus(Enum):
 
 
 class Step(ABC):
-    """An abstract class to declare and run pipeline step"""
+    """An abstract class to declare and run pipeline step."""
 
     title: ClassVar[str]
     max_retries: ClassVar[int] = 0
@@ -181,7 +181,7 @@ class Step(ABC):
         return self.context.dagger_client.pipeline(self.title)
 
     async def log_progress(self, completion_event: anyio.Event) -> None:
-        """Log the step progress every 30 seconds until the step is done"""
+        """Log the step progress every 30 seconds until the step is done."""
         while not completion_event.is_set():
             duration = datetime.utcnow() - self.started_at
             elapsed_seconds = duration.total_seconds()
