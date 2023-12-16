@@ -10,6 +10,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.SourceRunner;
 import java.sql.JDBCType;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -37,7 +38,7 @@ public class JdbcSource extends AbstractJdbcSource<JDBCType> implements Source {
   public static void main(final String[] args) throws Exception {
     final Source source = new JdbcSource();
     LOGGER.info("starting source: {}", JdbcSource.class);
-    new IntegrationRunner(source).run(args);
+    new SourceRunner(source).run(args);
     LOGGER.info("completed source: {}", JdbcSource.class);
   }
 

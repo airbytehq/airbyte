@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.base.adaptive;
 import io.airbyte.cdk.integrations.base.Command;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.base.DestinationRunner;
 import io.airbyte.cdk.integrations.base.IntegrationCliParser;
 import io.airbyte.cdk.integrations.base.IntegrationConfig;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
@@ -99,7 +100,7 @@ public class AdaptiveDestinationRunner {
 
       final Destination destination = getDestination();
       LOGGER.info("Starting destination: {}", destination.getClass().getName());
-      new IntegrationRunner(destination).run(args);
+      new DestinationRunner(destination).run(args);
       LOGGER.info("Completed destination: {}", destination.getClass().getName());
     }
 

@@ -14,6 +14,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.SourceRunner;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.cdk.testutils.TestDatabase;
@@ -135,7 +136,7 @@ class DefaultJdbcSourceAcceptanceTest
     public static void main(final String[] args) throws Exception {
       final Source source = new PostgresTestSource();
       LOGGER.info("starting source: {}", PostgresTestSource.class);
-      new IntegrationRunner(source).run(args);
+      new SourceRunner(source).run(args);
       LOGGER.info("completed source: {}", PostgresTestSource.class);
     }
 

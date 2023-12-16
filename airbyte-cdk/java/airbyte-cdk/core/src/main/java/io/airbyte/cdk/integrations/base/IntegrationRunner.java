@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * methods on the integration. Keeps itself DRY for methods that are common between source and
  * destination.
  */
-public class IntegrationRunner {
+public abstract class IntegrationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunner.class);
 
@@ -72,26 +72,18 @@ public class IntegrationRunner {
 
   public static final int FORCED_EXIT_CODE = 2;
 
-  private static final Runnable EXIT_HOOK = () -> System.exit(FORCED_EXIT_CODE);
+  protected static final Runnable EXIT_HOOK = () -> System.exit(FORCED_EXIT_CODE);
 
   private final IntegrationCliParser cliParser;
-  private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final Integration integration;
-  private final Destination destination;
-  private final Source source;
-  private final FeatureFlags featureFlags;
+  protected final Consumer<AirbyteMessage> outputRecordCollector;
+  protected final Integration integration;
+  protected final Destination destination;
+  protected final Source source;
+  protected final FeatureFlags featureFlags;
   private static JsonSchemaValidator validator;
 
-  public IntegrationRunner(final Destination destination) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
-  }
 
-  public IntegrationRunner(final Source source) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
-  }
-
-  @VisibleForTesting
-  IntegrationRunner(final IntegrationCliParser cliParser,
+  protected IntegrationRunner(final IntegrationCliParser cliParser,
                     final Consumer<AirbyteMessage> outputRecordCollector,
                     final Destination destination,
                     final Source source) {
@@ -108,8 +100,7 @@ public class IntegrationRunner {
     Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
   }
 
-  @VisibleForTesting
-  IntegrationRunner(final IntegrationCliParser cliParser,
+  protected IntegrationRunner(final IntegrationCliParser cliParser,
                     final Consumer<AirbyteMessage> outputRecordCollector,
                     final Destination destination,
                     final Source source,
@@ -128,11 +119,9 @@ public class IntegrationRunner {
     }
   }
 
-  protected void check(final IntegrationConfig parsed) throws Exception {
-    final JsonNode config = parseConfig(parsed.getConfigPath());
-    if (integration instanceof Destination) {
-      DestinationConfig.initialize(config);
-    }
+  protected abstract void check(final IntegrationConfig parsed) throws Exception;
+
+  protected final void check(JsonNode config) throws Exception {
     try {
       validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
     } catch (final Exception e) {
@@ -144,48 +133,11 @@ public class IntegrationRunner {
     outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
   }
 
-  protected void discover(final IntegrationConfig parsed) throws Exception {
-    final JsonNode config = parseConfig(parsed.getConfigPath());
-    validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
-    outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
-  }
+  protected abstract void discover(final IntegrationConfig parsed) throws Exception;
 
-  protected void read(final IntegrationConfig parsed) throws Exception {
-    final JsonNode config = parseConfig(parsed.getConfigPath());
-    validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
-    final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-    final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-    try {
-      if (featureFlags.concurrentSourceStreamRead()) {
-        LOGGER.info("Concurrent source stream read enabled.");
-        readConcurrent(config, catalog, stateOptional);
-      } else {
-        readSerial(config, catalog, stateOptional);
-      }
-    } finally {
-      if (source instanceof AutoCloseable) {
-        ((AutoCloseable) source).close();
-      }
-    }
-  }
+  protected abstract void read(final IntegrationConfig parsed) throws Exception;
 
-  protected void write(final IntegrationConfig parsed) throws Exception {
-    final JsonNode config = parseConfig(parsed.getConfigPath());
-    validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
-    // save config to singleton
-    DestinationConfig.initialize(config);
-    final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-
-    try (final SerializedAirbyteMessageConsumer consumer = destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)) {
-      consumeWriteStream(consumer);
-    } finally {
-      stopOrphanedThreads(EXIT_HOOK,
-          INTERRUPT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES,
-          EXIT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES);
-    }
-  }
+  protected abstract void write(final IntegrationConfig parsed) throws Exception;
 
   private void runInternal(final IntegrationConfig parsed) throws Exception {
     LOGGER.info("Running integration: {}", integration.getClass().getName());
@@ -237,69 +189,6 @@ public class IntegrationRunner {
     }
 
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
-  }
-
-  private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator, final Consumer<AirbyteMessage> recordCollector) {
-    messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Producing messages for stream {}...", s));
-    messageIterator.forEachRemaining(recordCollector);
-    messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
-  }
-
-  private void readConcurrent(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional)
-      throws Exception {
-    final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
-
-    try (final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(this::consumeFromStream, streams.size())) {
-      /*
-       * Break the streams into partitions equal to the number of concurrent streams supported by the
-       * stream consumer.
-       */
-      final Integer partitionSize = streamConsumer.getParallelism();
-      final List<List<AutoCloseableIterator<AirbyteMessage>>> partitions = Lists.partition(streams.stream().toList(),
-          partitionSize);
-
-      // Submit each stream partition for concurrent execution
-      partitions.forEach(partition -> {
-        streamConsumer.accept(partition);
-      });
-
-      // Check for any exceptions that were raised during the concurrent execution
-      if (streamConsumer.getException().isPresent()) {
-        throw streamConsumer.getException().get();
-      }
-    } catch (final Exception e) {
-      LOGGER.error("Unable to perform concurrent read.", e);
-      throw e;
-    } finally {
-      stopOrphanedThreads(EXIT_HOOK,
-          INTERRUPT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES,
-          EXIT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES);
-    }
-  }
-
-  private void readSerial(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
-    try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
-      produceMessages(messageIterator, outputRecordCollector);
-    } finally {
-      stopOrphanedThreads(EXIT_HOOK,
-          INTERRUPT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES,
-          EXIT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES);
-    }
-  }
-
-  private void consumeFromStream(final AutoCloseableIterator<AirbyteMessage> stream) {
-    try {
-      final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer = StreamStatusUtils.statusTrackingRecordCollector(stream,
-          outputRecordCollector, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
-      produceMessages(stream, streamStatusTrackingRecordConsumer);
-    } catch (final Exception e) {
-      stream.getAirbyteStream().ifPresent(s -> LOGGER.error("Failed to consume from stream {}.", s, e));
-      throw new RuntimeException(e);
-    }
   }
 
   @VisibleForTesting
@@ -404,7 +293,7 @@ public class IntegrationRunner {
         Strings.join(List.of(thread.getStackTrace()), "\n        at "));
   }
 
-  private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
+  protected static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
     final Set<String> validationResult = validator.validate(schemaJson, objectJson);
     if (!validationResult.isEmpty()) {
       throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ",
@@ -416,7 +305,7 @@ public class IntegrationRunner {
     return Jsons.deserialize(IOs.readFile(path));
   }
 
-  private static <T> T parseConfig(final Path path, final Class<T> klass) {
+  protected <T> T parseConfig(final Path path, final Class<T> klass) {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
   }
