@@ -9,15 +9,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class DestinationRunner extends IntegrationRunner {
+  private final Destination destination
   public DestinationRunner(final Destination destination) {
-    super(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
+    super(new IntegrationCliParser(), Destination::defaultOutputRecordCollector);
+    this.destination = destination;
   }
 
   @VisibleForTesting
   DestinationRunner(final IntegrationCliParser cliParser,
       final Consumer<AirbyteMessage> outputRecordCollector,
       final Destination destination) {
-    super(cliParser, outputRecordCollector, destination, null);
+    super(cliParser, outputRecordCollector);
+    this.destination = destination;
   }
 
   @VisibleForTesting
@@ -25,7 +28,13 @@ public class DestinationRunner extends IntegrationRunner {
       final Consumer<AirbyteMessage> outputRecordCollector,
       final Destination destination,
       final JsonSchemaValidator jsonSchemaValidator) {
-    super(cliParser, outputRecordCollector, destination, null, jsonSchemaValidator);
+    super(cliParser, outputRecordCollector, jsonSchemaValidator);
+    this.destination = destination;
+  }
+
+  @Override
+  protected Integration getIntegration() {
+    return destination;
   }
 
   @Override
@@ -47,7 +56,7 @@ public class DestinationRunner extends IntegrationRunner {
   @Override
   protected void write(final IntegrationConfig parsed) throws Exception {
     final JsonNode config = parseConfig(parsed.getConfigPath());
-    validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
+    validateConfig(destination.spec().getConnectionSpecification(), config, "WRITE");
     // save config to singleton
     DestinationConfig.initialize(config);
     final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);

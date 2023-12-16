@@ -20,15 +20,18 @@ import org.slf4j.LoggerFactory;
 
 public class SourceRunner extends IntegrationRunner {
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceRunner.class);
+
+  private final Source source;
   public SourceRunner(final Source source) {
-    super(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
+    super(new IntegrationCliParser(), Destination::defaultOutputRecordCollector);
   }
 
   @VisibleForTesting
   SourceRunner(final IntegrationCliParser cliParser,
       final Consumer<AirbyteMessage> outputRecordCollector,
       final Source source) {
-    super(cliParser, outputRecordCollector, null, source);
+    super(cliParser, outputRecordCollector);
+    this.source = source;
   }
 
   @VisibleForTesting
@@ -36,7 +39,13 @@ public class SourceRunner extends IntegrationRunner {
       final Consumer<AirbyteMessage> outputRecordCollector,
       final Source source,
       final JsonSchemaValidator jsonSchemaValidator) {
-    super(cliParser, outputRecordCollector, null, source, jsonSchemaValidator);
+    super(cliParser, outputRecordCollector, jsonSchemaValidator);
+    this.source = source;
+  }
+
+  @Override
+  protected Integration getIntegration() {
+    return source;
   }
 
   @Override
@@ -48,13 +57,13 @@ public class SourceRunner extends IntegrationRunner {
   @Override
   protected void discover(final IntegrationConfig parsed) throws Exception {
     final JsonNode config = parseConfig(parsed.getConfigPath());
-    validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
+    validateConfig(source.spec().getConnectionSpecification(), config, "DISCOVER");
     outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
   }
 
   protected void read(final IntegrationConfig parsed) throws Exception {
     final JsonNode config = parseConfig(parsed.getConfigPath());
-    validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
+    validateConfig(source.spec().getConnectionSpecification(), config, "READ");
     final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
     final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
     try {
