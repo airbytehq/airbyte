@@ -12,6 +12,7 @@ import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -68,7 +69,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   public boolean configureDbt(final String jobId,
                               final int attempt,
                               final Path jobRoot,
-                              final JsonNode config,
+                              final AirbyteDestinationConfig config,
                               final ResourceRequirements resourceRequirements,
                               final OperatorDbt dbtConfig)
       throws Exception {

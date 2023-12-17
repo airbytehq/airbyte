@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -20,7 +21,7 @@ import org.codehaus.plexus.util.StringUtils;
 public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesManager {
 
   public RelationalDbDebeziumPropertiesManager(final Properties properties,
-                                               final JsonNode config,
+                                               final AirbyteSourceConfig config,
                                                final ConfiguredAirbyteCatalog catalog,
                                                final AirbyteFileOffsetBackingStore offsetManager,
                                                final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
@@ -28,7 +29,7 @@ public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesMan
   }
 
   @Override
-  protected Properties getConnectionConfiguration(JsonNode config) {
+  protected Properties getConnectionConfiguration(AirbyteSourceConfig config) {
     final Properties properties = new Properties();
 
     // db connection configuration
@@ -45,12 +46,12 @@ public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesMan
   }
 
   @Override
-  protected String getName(JsonNode config) {
+  protected String getName(AirbyteSourceConfig config) {
     return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
-  protected Properties getIncludeConfiguration(ConfiguredAirbyteCatalog catalog, JsonNode config) {
+  protected Properties getIncludeConfiguration(ConfiguredAirbyteCatalog catalog, AirbyteSourceConfig config) {
     final Properties properties = new Properties();
 
     // table selection

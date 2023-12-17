@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +22,11 @@ public class DestinationConfig {
   private static DestinationConfig config;
 
   @VisibleForTesting
-  protected JsonNode root;
+  protected AirbyteDestinationConfig root;
 
   private DestinationConfig() {}
 
-  public static void initialize(final JsonNode root) {
+  public static void initialize(final AirbyteDestinationConfig root) {
     if (config == null) {
       if (root == null) {
         throw new IllegalArgumentException("Cannot create DestinationConfig from null.");

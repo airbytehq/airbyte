@@ -9,6 +9,7 @@ import static io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestinati
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
@@ -65,7 +66,7 @@ public class JdbcBufferedConsumerFactory {
                                                              final JdbcDatabase database,
                                                              final SqlOperations sqlOperations,
                                                              final NamingConventionTransformer namingResolver,
-                                                             final JsonNode config,
+                                                             final AirbyteDestinationConfig config,
                                                              final ConfiguredAirbyteCatalog catalog,
                                                              final String defaultNamespace,
                                                              final TyperDeduper typerDeduper) {
@@ -82,7 +83,7 @@ public class JdbcBufferedConsumerFactory {
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
-                                                      final JsonNode config,
+                                                      final AirbyteDestinationConfig config,
                                                       final ConfiguredAirbyteCatalog catalog,
                                                       final boolean schemaRequired) {
     if (schemaRequired) {
@@ -93,7 +94,7 @@ public class JdbcBufferedConsumerFactory {
 
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
                                                                               final NamingConventionTransformer namingResolver,
-                                                                              final JsonNode config,
+                                                                              final AirbyteDestinationConfig config,
                                                                               final boolean schemaRequired) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");

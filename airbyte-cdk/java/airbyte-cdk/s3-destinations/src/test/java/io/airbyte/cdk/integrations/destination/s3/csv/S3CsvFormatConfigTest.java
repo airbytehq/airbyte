@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig;
@@ -41,7 +42,7 @@ public class S3CsvFormatConfigTest {
   @Test
   public void testHandlePartSizeConfig() throws IllegalAccessException {
 
-    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+    final AirbyteDestinationConfig config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
         + "  \"format_type\": \"CSV\",\n"
         + "  \"flattening\": \"Root level flattening\"\n"
         + "}"));
@@ -64,7 +65,7 @@ public class S3CsvFormatConfigTest {
   @Test
   public void testHandleAbsenceOfPartSizeConfig() throws IllegalAccessException {
 
-    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+    final AirbyteDestinationConfig config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
         + "  \"format_type\": \"CSV\",\n"
         + "  \"flattening\": \"Root level flattening\"\n"
         + "}"));
@@ -84,7 +85,7 @@ public class S3CsvFormatConfigTest {
   @Test
   public void testGzipCompressionConfig() {
     // without gzip compression config
-    final JsonNode configWithoutGzipCompression = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+    final AirbyteDestinationConfig configWithoutGzipCompression = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
         + "  \"format_type\": \"CSV\"\n"
         + "}"));
     final S3DestinationConfig s3ConfigWithoutGzipCompression = S3DestinationConfig.getS3DestinationConfig(configWithoutGzipCompression);
@@ -93,7 +94,7 @@ public class S3CsvFormatConfigTest {
         ((S3CsvFormatConfig) s3ConfigWithoutGzipCompression.getFormatConfig()).getCompressionType());
 
     // with gzip compression config
-    final JsonNode configWithGzipCompression = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+    final AirbyteDestinationConfig configWithGzipCompression = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
         + "  \"format_type\": \"CSV\",\n"
         + "  \"gzip_compression\": false\n"
         + "}"));

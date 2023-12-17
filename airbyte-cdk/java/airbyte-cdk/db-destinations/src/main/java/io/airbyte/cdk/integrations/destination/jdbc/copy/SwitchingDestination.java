@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.destination.jdbc.copy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
@@ -32,14 +33,14 @@ import org.slf4j.LoggerFactory;
  * This class exists to make it easy to define a destination in terms of multiple other destination
  * implementations, switching between them based on the config provided.
  */
-public class SwitchingDestination<T extends Enum<T>> extends BaseConnector implements Destination {
+public class SwitchingDestination<T extends Enum<T>> extends BaseConnector<AirbyteDestinationConfig> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SwitchingDestination.class);
 
-  private final Function<JsonNode, T> configToType;
+  private final Function<AirbyteDestinationConfig, T> configToType;
   private final Map<T, Destination> typeToDestination;
 
-  public SwitchingDestination(final Class<T> enumClass, final Function<JsonNode, T> configToType, final Map<T, Destination> typeToDestination) {
+  public SwitchingDestination(final Class<T> enumClass, final Function<AirbyteDestinationConfig, T> configToType, final Map<T, Destination> typeToDestination) {
     final Set<T> allEnumConstants = new HashSet<>(Arrays.asList(enumClass.getEnumConstants()));
     final Set<T> supportedEnumConstants = typeToDestination.keySet();
 
@@ -51,14 +52,14 @@ public class SwitchingDestination<T extends Enum<T>> extends BaseConnector imple
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+  public AirbyteConnectionStatus check(final AirbyteDestinationConfig config) throws Exception {
     final T destinationType = configToType.apply(config);
     LOGGER.info("Using destination type: " + destinationType.name());
     return typeToDestination.get(destinationType).check(config);
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+  public AirbyteMessageConsumer getConsumer(final AirbyteDestinationConfig config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
@@ -68,7 +69,7 @@ public class SwitchingDestination<T extends Enum<T>> extends BaseConnector imple
   }
 
   @Override
-  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final AirbyteDestinationConfig config,
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {

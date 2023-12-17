@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.cdk.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
@@ -17,7 +18,7 @@ public class S3FormatConfigs {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(S3FormatConfigs.class);
 
-  public static S3FormatConfig getS3FormatConfig(final JsonNode config) {
+  public static S3FormatConfig getS3FormatConfig(final AirbyteDestinationConfig config) {
     final JsonNode formatConfig = config.get("format");
     LOGGER.info("S3 format config: {}", formatConfig.toString());
     final S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());

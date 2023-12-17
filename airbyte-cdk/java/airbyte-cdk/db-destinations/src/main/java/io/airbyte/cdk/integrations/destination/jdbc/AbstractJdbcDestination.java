@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -50,7 +51,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcDestination extends JdbcConnector implements Destination {
+public abstract class AbstractJdbcDestination extends JdbcConnector<AirbyteDestinationConfig> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
@@ -78,7 +79,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
+  public AirbyteConnectionStatus check(final AirbyteDestinationConfig config) {
     final DataSource dataSource = getDataSource(config);
 
     try {
@@ -187,7 +188,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
         .withSerialized(dummyDataToInsert.toString());
   }
 
-  protected DataSource getDataSource(final JsonNode config) {
+  protected DataSource getDataSource(final AirbyteDestinationConfig config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
     Map<String, String> connectionProperties = getConnectionProperties(config);
     return DataSourceFactory.create(
@@ -203,7 +204,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
     return new DefaultJdbcDatabase(dataSource);
   }
 
-  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+  protected Map<String, String> getConnectionProperties(final AirbyteDestinationConfig config) {
     final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY);
     final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
@@ -219,9 +220,9 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
     }
   }
 
-  protected abstract Map<String, String> getDefaultConnectionProperties(final JsonNode config);
+  protected abstract Map<String, String> getDefaultConnectionProperties(final AirbyteDestinationConfig config);
 
-  public abstract JsonNode toJdbcConfig(JsonNode config);
+  public abstract JsonNode toJdbcConfig(AirbyteDestinationConfig config);
 
   protected abstract JdbcSqlGenerator getSqlGenerator();
 
@@ -236,19 +237,19 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
    * @param config
    * @return
    */
-  protected String getDatabaseName(final JsonNode config) {
+  protected String getDatabaseName(final AirbyteDestinationConfig config) {
     return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+  public AirbyteMessageConsumer getConsumer(final AirbyteDestinationConfig config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     throw new NotImplementedException("Should use the getSerializedMessageConsumer instead");
   }
 
   @Override
-  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final AirbyteDestinationConfig config,
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {

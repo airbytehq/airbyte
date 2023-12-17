@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.json.Jsons;
@@ -124,7 +125,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
   protected abstract S source();
 
-  protected abstract JsonNode config();
+  protected abstract AirbyteSourceConfig config();
 
   protected abstract CdcTargetPosition<?> cdcLatestTargetPosition();
 

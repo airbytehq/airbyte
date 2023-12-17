@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.s3;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonSchemaType;
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.NumberDataTypeTestArgumentProvider;
 import io.airbyte.commons.json.Jsons;
@@ -44,7 +45,7 @@ public abstract class S3AvroParquetDestinationAcceptanceTest extends S3Destinati
     final AirbyteCatalog catalog = readCatalogFromFile(catalogFileName);
     final List<AirbyteMessage> messages = readMessagesFromFile(messagesFileName);
 
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);

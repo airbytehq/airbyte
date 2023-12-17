@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,7 @@ class S3DestinationConfigTest {
 
   @Test
   public void testGetS3DestinationConfigAWS_S3Provider() {
-    final JsonNode s3config = Jsons.deserialize("{\n"
+    final AirbyteDestinationConfig s3config = AirbyteDestinationConfig.fromJsonString("{\n"
         + "  \"s3_bucket_name\": \"paste-bucket-name-here\",\n"
         + "  \"s3_bucket_path\": \"integration-test\",\n"
         + "  \"s3_bucket_region\": \"paste-bucket-region-here\",\n"
@@ -79,7 +80,7 @@ class S3DestinationConfigTest {
 
   @Test
   public void testGetS3DestinationConfigCF_R2Provider() {
-    final JsonNode s3config = Jsons.deserialize("{\n"
+    final AirbyteDestinationConfig s3config = AirbyteDestinationConfig.fromJsonString("{\n"
         + "  \"s3_bucket_name\": \"paste-bucket-name-here\",\n"
         + "  \"s3_bucket_path\": \"integration-test\",\n"
         + "  \"account_id\": \"paster-account-id-here\",\n"

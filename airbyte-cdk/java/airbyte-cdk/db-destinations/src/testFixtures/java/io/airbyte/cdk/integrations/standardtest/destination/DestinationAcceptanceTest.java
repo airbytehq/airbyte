@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
+import io.airbyte.cdk.db.AirbyteDestinationConfig.DestinationConfigBuilder;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
@@ -164,7 +166,7 @@ public abstract class DestinationAcceptanceTest {
    *
    * @return integration-specific configuration
    */
-  protected abstract JsonNode getConfig() throws Exception;
+  protected abstract AirbyteDestinationConfig getConfig() throws Exception;
 
   /**
    * Configuration specific to the integration. Will be passed to integration where appropriate in
@@ -173,7 +175,7 @@ public abstract class DestinationAcceptanceTest {
    *
    * @return integration-specific configuration
    */
-  protected abstract JsonNode getFailCheckConfig() throws Exception;
+  protected abstract AirbyteDestinationConfig getFailCheckConfig() throws Exception;
 
   /**
    * Function that returns all of the records in destination as json at the time this method is
@@ -207,7 +209,7 @@ public abstract class DestinationAcceptanceTest {
    * @param config - integration-specific configuration returned by {@link #getConfig()}.
    * @return the default schema, if applicatble.
    */
-  protected String getDefaultSchema(final JsonNode config) throws Exception {
+  protected String getDefaultSchema(final AirbyteDestinationConfig config) throws Exception {
     if (config.get("schema") == null) {
       return null;
     }
@@ -415,7 +417,7 @@ public abstract class DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
 
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
@@ -450,7 +452,7 @@ public abstract class DestinationAcceptanceTest {
                     : message.toString()))
         .collect(Collectors.toList());
 
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
   }
 
@@ -475,7 +477,7 @@ public abstract class DestinationAcceptanceTest {
         DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
 
     // We need to make sure that other streams\tables\files in the same location will not be
@@ -536,7 +538,7 @@ public abstract class DestinationAcceptanceTest {
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
@@ -606,7 +608,7 @@ public abstract class DestinationAcceptanceTest {
         DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
@@ -666,7 +668,7 @@ public abstract class DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
 
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
 
     final String defaultSchema = getDefaultSchema(config);
@@ -721,7 +723,7 @@ public abstract class DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
 
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
 
     final String defaultSchema = getDefaultSchema(config);
@@ -764,7 +766,7 @@ public abstract class DestinationAcceptanceTest {
         DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, true);
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
@@ -860,7 +862,7 @@ public abstract class DestinationAcceptanceTest {
       return;
     }
 
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
 
     // This may throw IllegalStateException "Requesting normalization, but it is not included in the
     // normalization mappings"
@@ -945,7 +947,7 @@ public abstract class DestinationAcceptanceTest {
       return;
     }
 
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
 
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory,
         new DefaultNormalizationRunner(
@@ -997,7 +999,7 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(
         messages, namespace);
 
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
     runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, messagesWithNewNamespace, defaultSchema);
@@ -1047,7 +1049,7 @@ public abstract class DestinationAcceptanceTest {
     final var allMessages = new ArrayList<>(ns1MessagesAtNamespace1);
     allMessages.addAll(ns2MessagesAtNamespace2);
 
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
     runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
@@ -1095,7 +1097,7 @@ public abstract class DestinationAcceptanceTest {
         .collect(Collectors.toList());
     final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespaceInCatalog);
 
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     try {
       runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false);
       // Add to the list of schemas to clean up.
@@ -1149,7 +1151,7 @@ public abstract class DestinationAcceptanceTest {
         DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
     final var stream = catalog.getStreams().get(0);
 
@@ -1220,11 +1222,11 @@ public abstract class DestinationAcceptanceTest {
         ConnectorSpecification.class);
   }
 
-  protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws TestHarnessException {
+  protected StandardCheckConnectionOutput runCheck(final AirbyteDestinationConfig config) throws TestHarnessException {
     return new DefaultCheckConnectionTestHarness(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
-            .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
+            .run(new StandardCheckConnectionInput().withConnectionConfiguration(config.asJsonNode()), jobRoot)
             .getCheckConnection();
   }
 
@@ -1248,7 +1250,7 @@ public abstract class DestinationAcceptanceTest {
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()));
   }
 
-  protected void runSyncAndVerifyStateOutput(final JsonNode config,
+  protected void runSyncAndVerifyStateOutput(final AirbyteDestinationConfig config,
                                              final List<AirbyteMessage> messages,
                                              final ConfiguredAirbyteCatalog catalog,
                                              final boolean runNormalization)
@@ -1291,7 +1293,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   private List<AirbyteMessage> runSync(
-                                       final JsonNode config,
+                                       final AirbyteDestinationConfig config,
                                        final List<AirbyteMessage> messages,
                                        final ConfiguredAirbyteCatalog catalog,
                                        final boolean runNormalization)
@@ -1300,7 +1302,7 @@ public abstract class DestinationAcceptanceTest {
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
         .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class))
-        .withDestinationConnectionConfiguration(config);
+        .withDestinationConnectionConfiguration(config.asJsonNode());
 
     final AirbyteDestination destination = getDestination();
 
@@ -1499,11 +1501,11 @@ public abstract class DestinationAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredTestCatalog = CatalogHelpers
         .toDefaultConfiguredCatalog(testCatalog);
 
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
         .withCatalog(convertProtocolObject(configuredTestCatalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class))
-        .withDestinationConnectionConfiguration(config);
+        .withDestinationConnectionConfiguration(config.asJsonNode());
     final AirbyteDestination destination = getDestination();
 
     // Start destination
@@ -1673,7 +1675,7 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(NUMBER_TYPE_CATALOG, getProtocolVersion()));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(NAN_TYPE_MESSAGE, getProtocolVersion()));
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
 
     runAndCheck(catalog, configuredCatalog, messages);
@@ -1689,7 +1691,7 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(INTEGER_TYPE_CATALOG, getProtocolVersion()));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(NAN_TYPE_MESSAGE, getProtocolVersion()));
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
 
     runAndCheck(catalog, configuredCatalog, messages);
@@ -1705,7 +1707,7 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(NUMBER_TYPE_CATALOG, getProtocolVersion()));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(INFINITY_TYPE_MESSAGE, getProtocolVersion()));
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
 
     runAndCheck(catalog, configuredCatalog, messages);
@@ -1721,7 +1723,7 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(INTEGER_TYPE_CATALOG, getProtocolVersion()));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(INFINITY_TYPE_MESSAGE, getProtocolVersion()));
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
 
     runAndCheck(catalog, configuredCatalog, messages);
@@ -1753,7 +1755,7 @@ public abstract class DestinationAcceptanceTest {
                                             final ConfiguredAirbyteCatalog configuredCatalog,
                                             final AirbyteCatalog catalog)
       throws Exception {
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
 
     final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog,
@@ -1765,7 +1767,7 @@ public abstract class DestinationAcceptanceTest {
                                                final ConfiguredAirbyteCatalog configuredCatalog,
                                                final AirbyteCatalog catalog)
       throws Exception {
-    final JsonNode config = getConfig();
+    final AirbyteDestinationConfig config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, getDefaultSchema(config));
   }

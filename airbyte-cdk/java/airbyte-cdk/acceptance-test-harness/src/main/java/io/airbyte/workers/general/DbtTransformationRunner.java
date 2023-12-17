@@ -12,6 +12,7 @@ import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope.Builder;
@@ -67,7 +68,7 @@ public class DbtTransformationRunner implements AutoCloseable {
   public boolean run(final String jobId,
                      final int attempt,
                      final Path jobRoot,
-                     final JsonNode config,
+                     final AirbyteDestinationConfig config,
                      final ResourceRequirements resourceRequirements,
                      final OperatorDbt dbtConfig)
       throws Exception {
@@ -80,7 +81,7 @@ public class DbtTransformationRunner implements AutoCloseable {
   public boolean transform(final String jobId,
                            final int attempt,
                            final Path jobRoot,
-                           final JsonNode config,
+                           final AirbyteDestinationConfig config,
                            final ResourceRequirements resourceRequirements,
                            final OperatorDbt dbtConfig)
       throws Exception {

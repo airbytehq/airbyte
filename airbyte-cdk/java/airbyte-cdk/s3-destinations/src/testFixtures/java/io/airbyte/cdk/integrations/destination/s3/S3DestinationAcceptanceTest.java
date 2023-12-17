@@ -12,6 +12,10 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
+import io.airbyte.cdk.db.AirbyteDestinationConfig.DestinationConfigBuilder;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
+import io.airbyte.cdk.db.AirbyteSourceConfig.SourceConfigBuilder;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -50,7 +54,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
 
   protected final String secretFilePath = "secrets/config.json";
   protected final S3Format outputFormat;
-  protected JsonNode configJson;
+  protected AirbyteDestinationConfig airbyteDestinationConfig;
   protected S3DestinationConfig config;
   protected AmazonS3 s3Client;
   protected NamingConventionTransformer nameTransformer;
@@ -60,8 +64,8 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
     this.outputFormat = outputFormat;
   }
 
-  protected JsonNode getBaseConfigJson() {
-    return Jsons.deserialize(IOs.readFile(Path.of(secretFilePath)));
+  protected AirbyteDestinationConfig getBaseConfig() {
+    return AirbyteDestinationConfig.fromPath(Path.of(secretFilePath));
   }
 
   @Override
@@ -70,12 +74,12 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected JsonNode getConfig() {
-    return configJson;
+  protected AirbyteDestinationConfig getConfig() {
+    return airbyteDestinationConfig;
   }
 
   @Override
-  protected String getDefaultSchema(final JsonNode config) {
+  protected String getDefaultSchema(final AirbyteDestinationConfig config) {
     if (config.has("s3_bucket_path")) {
       return config.get("s3_bucket_path").asText();
     }
@@ -83,13 +87,13 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() {
-    final JsonNode baseJson = getBaseConfigJson();
-    final JsonNode failCheckJson = Jsons.clone(baseJson);
+  protected AirbyteDestinationConfig getFailCheckConfig() {
+    final AirbyteDestinationConfig baseConfig = getBaseConfig();
+    final DestinationConfigBuilder failCheckBuilder = baseConfig.cloneBuilder();
     // invalid credential
-    ((ObjectNode) failCheckJson).put("access_key_id", "fake-key");
-    ((ObjectNode) failCheckJson).put("secret_access_key", "fake-secret");
-    return failCheckJson;
+    failCheckBuilder.with("access_key_id", "fake-key");
+    failCheckBuilder.with("secret_access_key", "fake-secret");
+    return failCheckBuilder.build();
   }
 
   /**
@@ -127,18 +131,18 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    */
   @Override
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
-    final JsonNode baseConfigJson = getBaseConfigJson();
+    final AirbyteDestinationConfig baseConfig = getBaseConfig();
     // Set a random s3 bucket path for each integration test
-    final JsonNode configJson = Jsons.clone(baseConfigJson);
+    final DestinationConfigBuilder configBuilder = baseConfig.cloneBuilder();
     final String testBucketPath = String.format(
         "%s_test_%s",
         outputFormat.name().toLowerCase(Locale.ROOT),
         RandomStringUtils.randomAlphanumeric(5));
-    ((ObjectNode) configJson)
-        .put("s3_bucket_path", testBucketPath)
-        .set("format", getFormatConfig());
-    this.configJson = configJson;
-    this.config = S3DestinationConfig.getS3DestinationConfig(configJson, storageProvider());
+    configBuilder
+        .with("s3_bucket_path", testBucketPath)
+        .with("format", getFormatConfig());
+    this.airbyteDestinationConfig = configBuilder.build();
+    this.config = S3DestinationConfig.getS3DestinationConfig(airbyteDestinationConfig, storageProvider());
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
 
     this.s3Client = config.getS3Client();

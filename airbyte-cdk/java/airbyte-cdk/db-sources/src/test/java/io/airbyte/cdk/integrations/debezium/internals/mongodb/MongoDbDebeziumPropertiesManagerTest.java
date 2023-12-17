@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.commons.json.Jsons;
@@ -57,7 +58,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final List<ConfiguredAirbyteStream> streams = createStreams(4);
     final AirbyteFileOffsetBackingStore offsetManager = mock(AirbyteFileOffsetBackingStore.class);
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    final AirbyteSourceConfig config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
 
     when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
@@ -90,9 +91,9 @@ class MongoDbDebeziumPropertiesManagerTest {
     final List<ConfiguredAirbyteStream> streams = createStreams(4);
     final AirbyteFileOffsetBackingStore offsetManager = mock(AirbyteFileOffsetBackingStore.class);
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
-        .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
+    final AirbyteSourceConfig configWithPlaceholders = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    final AirbyteSourceConfig config = configWithPlaceholders.cloneBuilder().with(CONNECTION_STRING_CONFIGURATION_KEY, configWithPlaceholders.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
+        .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER)).build();
 
     when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
@@ -125,9 +126,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     final List<ConfiguredAirbyteStream> streams = createStreams(4);
     final AirbyteFileOffsetBackingStore offsetManager = mock(AirbyteFileOffsetBackingStore.class);
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
-
+    final AirbyteSourceConfig configWithPlaceholders = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    final AirbyteSourceConfig config = configWithPlaceholders.cloneBuilder().with(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + configWithPlaceholders.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"").build();
     when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
 
@@ -160,7 +160,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final AirbyteFileOffsetBackingStore offsetManager = mock(AirbyteFileOffsetBackingStore.class);
     final AirbyteSchemaHistoryStorage schemaHistoryManager = mock(AirbyteSchemaHistoryStorage.class);
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final JsonNode config = createConfiguration(Optional.empty(), Optional.empty(), Optional.empty());
+    final AirbyteSourceConfig config = createConfiguration(Optional.empty(), Optional.empty(), Optional.empty());
 
     when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
@@ -204,7 +204,7 @@ class MongoDbDebeziumPropertiesManagerTest {
 
   @Test
   void testCreateConnectionString() {
-    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    final AirbyteSourceConfig config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
     final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
@@ -212,16 +212,15 @@ class MongoDbDebeziumPropertiesManagerTest {
 
   @Test
   void testCreateConnectionStringQuotedString() {
-    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    final AirbyteSourceConfig config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
     final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
-    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
   }
 
   @Test
   void testCreateConnectionStringUseSecondary() {
-    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    final AirbyteSourceConfig config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
     final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, true);
     assertNotNull(connectionString);
     assertEquals("mongodb://localhost:27017/?retryWrites=false&provider=airbyte&tls=true&readPreference=secondary", connectionString);
@@ -229,15 +228,15 @@ class MongoDbDebeziumPropertiesManagerTest {
 
   @Test
   void testCreateConnectionStringPlaceholderCredentials() {
-    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
-        .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
+    final AirbyteSourceConfig configWithPlaceHolders = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    final AirbyteSourceConfig config = configWithPlaceHolders.cloneBuilder().with(CONNECTION_STRING_CONFIGURATION_KEY, configWithPlaceHolders.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
+        .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER)).build();
     final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
   }
 
-  private JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final Optional<String> authMode) {
+  private AirbyteSourceConfig createConfiguration(final Optional<String> username, final Optional<String> password, final Optional<String> authMode) {
     final Map<String, Object> baseConfig = Map.of(
         DATABASE_CONFIGURATION_KEY, DATABASE_NAME,
         CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/");
@@ -246,7 +245,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     authMode.ifPresent(a -> config.put(AUTH_SOURCE_CONFIGURATION_KEY, a));
     username.ifPresent(u -> config.put(USERNAME_CONFIGURATION_KEY, u));
     password.ifPresent(p -> config.put(PASSWORD_CONFIGURATION_KEY, p));
-    return Jsons.deserialize(Jsons.serialize(config));
+    return AirbyteSourceConfig.fromJsonNode(Jsons.deserialize(Jsons.serialize(config)));
   }
 
   private List<ConfiguredAirbyteStream> createStreams(final int numberOfStreams) {

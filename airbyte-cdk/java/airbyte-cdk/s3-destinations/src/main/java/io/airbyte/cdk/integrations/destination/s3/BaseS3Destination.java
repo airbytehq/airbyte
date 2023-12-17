@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.destination.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
@@ -20,7 +21,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseS3Destination extends BaseConnector implements Destination {
+public abstract class BaseS3Destination extends BaseConnector<AirbyteDestinationConfig> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseS3Destination.class);
 
@@ -38,7 +39,7 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
+  public AirbyteConnectionStatus check(final AirbyteDestinationConfig config) {
     try {
       final S3DestinationConfig destinationConfig = configFactory.getS3DestinationConfig(config, storageProvider());
       final AmazonS3 s3Client = destinationConfig.getS3Client();
@@ -58,7 +59,7 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+  public AirbyteMessageConsumer getConsumer(final AirbyteDestinationConfig config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3DestinationConfig s3Config = configFactory.getS3DestinationConfig(config, storageProvider());

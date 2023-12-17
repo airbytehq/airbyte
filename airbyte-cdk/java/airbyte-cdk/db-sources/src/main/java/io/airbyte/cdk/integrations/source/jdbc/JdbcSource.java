@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -26,8 +27,8 @@ public class JdbcSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   // no-op for JdbcSource since the config it receives is designed to be use for JDBC.
   @Override
-  public JsonNode toDatabaseConfig(final JsonNode config) {
-    return config;
+  public JsonNode toDatabaseConfig(final AirbyteSourceConfig config) {
+    return config.asJsonNode();
   }
 
   @Override

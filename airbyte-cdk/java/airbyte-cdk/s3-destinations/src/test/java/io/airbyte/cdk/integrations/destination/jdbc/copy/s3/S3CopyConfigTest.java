@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
@@ -17,14 +18,14 @@ public class S3CopyConfigTest {
 
   @Test
   public void setsDefaultValues() throws IOException {
-    final boolean purgeStagingData = S3CopyConfig.shouldPurgeStagingData(OBJECT_MAPPER.readTree("{}"));
+    final boolean purgeStagingData = S3CopyConfig.shouldPurgeStagingData(AirbyteDestinationConfig.fromJsonString("{}"));
 
     assertTrue(purgeStagingData);
   }
 
   @Test
   public void parsesPurgeStagingDataCorrectly() throws IOException {
-    final boolean purgeStagingData = S3CopyConfig.shouldPurgeStagingData(OBJECT_MAPPER.readTree(
+    final boolean purgeStagingData = S3CopyConfig.shouldPurgeStagingData(AirbyteDestinationConfig.fromJsonString(
         """
         {
           "purge_staging_data": false

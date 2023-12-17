@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.cdk.integrations.destination.s3.util.ConfigTestUtils;
@@ -39,7 +40,7 @@ public class S3JsonlFormatConfigTest {
   @Test
   public void testHandlePartSizeConfig() throws IllegalAccessException {
 
-    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+    final AirbyteDestinationConfig config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
         + "  \"format_type\": \"JSONL\"\n"
         + "}"));
 
@@ -62,7 +63,7 @@ public class S3JsonlFormatConfigTest {
   @Test
   public void testHandleAbsenceOfPartSizeConfig() throws IllegalAccessException {
 
-    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+    final AirbyteDestinationConfig config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
         + "  \"format_type\": \"JSONL\"\n"
         + "}"));
 

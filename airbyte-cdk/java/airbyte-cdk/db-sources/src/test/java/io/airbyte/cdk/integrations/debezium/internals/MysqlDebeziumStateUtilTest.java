@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.debezium.internals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
@@ -100,14 +101,14 @@ public class MysqlDebeziumStateUtilTest {
         "{\"transaction_id\":null,\"ts_sec\":1686040570,\"file\":\"binlog.000002\",\"pos\":633,\"gtids\":\"3E11FA47-71CA-11E1-9E33-C80AA9429562:1-5\"}",
         stateAsMap.get("[\"db_fgnfxvllud\",{\"server\":\"db_fgnfxvllud\"}]"));
 
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
+    final AirbyteSourceConfig config = AirbyteSourceConfig.fromJsonNode(Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, "host")
         .put(JdbcUtils.PORT_KEY, "5432")
         .put(JdbcUtils.DATABASE_KEY, "db_fgnfxvllud")
         .put(JdbcUtils.USERNAME_KEY, "username")
         .put(JdbcUtils.PASSWORD_KEY, "password")
         .put(JdbcUtils.SSL_KEY, false)
-        .build());
+        .build()));
 
     final Optional<MysqlDebeziumStateAttributes> parsedOffset = mySqlDebeziumStateUtil.savedOffset(MYSQL_PROPERTIES, CONFIGURED_CATALOG,
         debeziumState, config);
@@ -128,14 +129,14 @@ public class MysqlDebeziumStateUtilTest {
     Assertions.assertEquals("{\"transaction_id\":null,\"ts_sec\":1686040570,\"file\":\"binlog.000002\",\"pos\":633}",
         stateAsMap.get("[\"db_fgnfxvllud\",{\"server\":\"db_fgnfxvllud\"}]"));
 
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
+    final AirbyteSourceConfig config = AirbyteSourceConfig.fromJsonNode(Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, "host")
         .put(JdbcUtils.PORT_KEY, "5432")
         .put(JdbcUtils.DATABASE_KEY, "db_fgnfxvllud")
         .put(JdbcUtils.USERNAME_KEY, "username")
         .put(JdbcUtils.PASSWORD_KEY, "password")
         .put(JdbcUtils.SSL_KEY, false)
-        .build());
+        .build()));
 
     final Optional<MysqlDebeziumStateAttributes> parsedOffset = mySqlDebeziumStateUtil.savedOffset(MYSQL_PROPERTIES, CONFIGURED_CATALOG,
         debeziumState, config);
@@ -172,14 +173,14 @@ public class MysqlDebeziumStateUtilTest {
     db.query(ctx -> ctx.execute(TABLE_CREATE_QUERY));
   }
 
-  private JsonNode getSourceConfig(final MySQLContainer<?> container) {
+  private AirbyteSourceConfig getSourceConfig(final MySQLContainer<?> container) {
     final Map<String, Object> config = new HashMap<>();
     config.put(JdbcUtils.USERNAME_KEY, "root");
     config.put(JdbcUtils.PASSWORD_KEY, "test");
     config.put(JdbcUtils.HOST_KEY, container.getHost());
     config.put(JdbcUtils.PORT_KEY, container.getFirstMappedPort());
     config.put(JdbcUtils.DATABASE_KEY, DB_NAME);
-    return Jsons.jsonNode(config);
+    return AirbyteSourceConfig.fromJsonNode(Jsons.jsonNode(config));
   }
 
 }

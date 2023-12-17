@@ -16,6 +16,8 @@ import static org.mockito.Mockito.spy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
+import io.airbyte.cdk.db.AirbyteSourceConfig.SourceConfigBuilder;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Source;
@@ -119,7 +121,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
    *
    * @return config
    */
-  abstract protected JsonNode config();
+  abstract protected AirbyteSourceConfig config();
 
   /**
    * An instance of the source that should be tests.
@@ -196,7 +198,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
             getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK));
   }
 
-  protected void maybeSetShorterConnectionTimeout(final JsonNode config) {
+  protected void maybeSetShorterConnectionTimeout(final AirbyteSourceConfig config) {
     // Optionally implement this to speed up test cases which will result in a connection timeout.
   }
 
@@ -225,8 +227,9 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   void testCheckFailure() throws Exception {
     final var config = config();
     maybeSetShorterConnectionTimeout(config);
-    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus actual = source().check(config);
+    SourceConfigBuilder configBuilder = config.cloneBuilder();
+    configBuilder.with(JdbcUtils.PASSWORD_KEY, "fake");
+    final AirbyteConnectionStatus actual = source().check(configBuilder.build());
     assertEquals(Status.FAILED, actual.getStatus());
   }
 

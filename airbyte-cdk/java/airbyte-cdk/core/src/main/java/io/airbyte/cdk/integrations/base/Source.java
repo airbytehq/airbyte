@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -12,7 +13,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Collection;
 import java.util.List;
 
-public interface Source extends Integration {
+public interface Source extends Integration<AirbyteSourceConfig> {
 
   /**
    * Discover the current schema in the source.
@@ -22,7 +23,7 @@ public interface Source extends Integration {
    * @return Description of the schema.
    * @throws Exception - any exception.
    */
-  AirbyteCatalog discover(JsonNode config) throws Exception;
+  AirbyteCatalog discover(AirbyteSourceConfig config) throws Exception;
 
   /**
    * Return a iterator of messages pulled from the source.
@@ -36,7 +37,7 @@ public interface Source extends Integration {
    *         will always be called once regardless of success or failure.
    * @throws Exception - any exception.
    */
-  AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
+  AutoCloseableIterator<AirbyteMessage> read(AirbyteSourceConfig config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
 
   /**
    * Returns a collection of iterators of messages pulled from the source, each representing a
@@ -50,7 +51,7 @@ public interface Source extends Integration {
    *         configured "stream"
    * @throws Exception - any exception
    */
-  default Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
+  default Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(AirbyteSourceConfig config, ConfiguredAirbyteCatalog catalog, JsonNode state)
       throws Exception {
     return List.of(read(config, catalog, state));
   }

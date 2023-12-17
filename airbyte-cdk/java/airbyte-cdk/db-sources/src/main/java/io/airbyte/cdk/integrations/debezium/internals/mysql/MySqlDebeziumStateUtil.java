@@ -9,6 +9,7 @@ import static io.debezium.relational.RelationalDatabaseConnectorConfig.DATABASE_
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
@@ -164,7 +165,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
   public Optional<MysqlDebeziumStateAttributes> savedOffset(final Properties baseProperties,
                                                             final ConfiguredAirbyteCatalog catalog,
                                                             final JsonNode cdcOffset,
-                                                            final JsonNode config) {
+                                                            final AirbyteSourceConfig config) {
     if (Objects.isNull(cdcOffset)) {
       return Optional.empty();
     }

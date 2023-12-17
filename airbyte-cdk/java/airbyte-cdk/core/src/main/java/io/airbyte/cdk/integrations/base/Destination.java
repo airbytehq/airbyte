@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -16,7 +17,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 
-public interface Destination extends Integration {
+public interface Destination extends Integration<AirbyteDestinationConfig> {
 
   /**
    * Return a consumer that writes messages to the destination.
@@ -30,7 +31,7 @@ public interface Destination extends Integration {
    *         or failure.
    * @throws Exception - any exception.
    */
-  AirbyteMessageConsumer getConsumer(JsonNode config,
+  AirbyteMessageConsumer getConsumer(AirbyteDestinationConfig config,
                                      ConfiguredAirbyteCatalog catalog,
                                      Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception;
@@ -47,7 +48,7 @@ public interface Destination extends Integration {
    *         behavior.
    * @throws Exception exception
    */
-  default SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+  default SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final AirbyteDestinationConfig config,
                                                                         final ConfiguredAirbyteCatalog catalog,
                                                                         final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {

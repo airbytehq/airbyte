@@ -2,14 +2,20 @@ package io.airbyte.cdk.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.db.AirbyteConfig;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class DestinationRunner extends IntegrationRunner {
-  private final Destination destination
+public class DestinationRunner extends IntegrationRunner<AirbyteDestinationConfig> {
+  private final Destination destination;
+
   public DestinationRunner(final Destination destination) {
     super(new IntegrationCliParser(), Destination::defaultOutputRecordCollector);
     this.destination = destination;
@@ -39,7 +45,7 @@ public class DestinationRunner extends IntegrationRunner {
 
   @Override
   protected void check(IntegrationConfig parsed) throws Exception {
-    final JsonNode config = parseConfig(parsed.getConfigPath());
+    final AirbyteDestinationConfig config = parseConfig(parsed.getConfigPath());
     DestinationConfig.initialize(config);
     check(config);
   }
@@ -55,11 +61,11 @@ public class DestinationRunner extends IntegrationRunner {
 
   @Override
   protected void write(final IntegrationConfig parsed) throws Exception {
-    final JsonNode config = parseConfig(parsed.getConfigPath());
+    final AirbyteDestinationConfig config = parseConfig(parsed.getConfigPath());
     validateConfig(destination.spec().getConnectionSpecification(), config, "WRITE");
     // save config to singleton
     DestinationConfig.initialize(config);
-    final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog catalog = Jsons.object(Jsons.deserialize(IOs.readFile(parsed.getCatalogPath())), ConfiguredAirbyteCatalog.class);
 
     try (final SerializedAirbyteMessageConsumer consumer = destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)) {
       consumeWriteStream(consumer);
@@ -70,5 +76,10 @@ public class DestinationRunner extends IntegrationRunner {
           EXIT_THREAD_DELAY_MINUTES,
           TimeUnit.MINUTES);
     }
+  }
+
+  @Override
+  public AirbyteDestinationConfig parseConfig(Path path) {
+    return AirbyteDestinationConfig.fromPath(path);
   }
 }

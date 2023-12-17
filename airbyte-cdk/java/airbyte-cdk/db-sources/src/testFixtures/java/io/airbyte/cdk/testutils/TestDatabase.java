@@ -6,6 +6,7 @@ package io.airbyte.cdk.testutils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.AirbyteSourceConfig;
 import io.airbyte.cdk.db.ContextQueryFunction;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
@@ -247,6 +248,10 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
 
     public JsonNode build() {
       return Jsons.jsonNode(builder.build());
+    }
+
+    public AirbyteSourceConfig buildSourceConfig() {
+      return AirbyteSourceConfig.fromJsonNode(build());
     }
 
     @SuppressWarnings("unchecked")

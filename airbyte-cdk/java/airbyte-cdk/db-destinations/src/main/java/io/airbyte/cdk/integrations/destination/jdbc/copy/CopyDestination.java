@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.jdbc.copy;
 import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.BaseConnector;
@@ -22,7 +23,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class CopyDestination extends BaseConnector implements Destination {
+public abstract class CopyDestination extends BaseConnector<AirbyteDestinationConfig> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyDestination.class);
 
@@ -42,18 +43,18 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
    * A self contained method for writing a file to the persistence for testing. This method should try
    * to clean up after itself by deleting the file it creates.
    */
-  public abstract void checkPersistence(JsonNode config) throws Exception;
+  public abstract void checkPersistence(AirbyteDestinationConfig config) throws Exception;
 
   public abstract StandardNameTransformer getNameTransformer();
 
-  public abstract DataSource getDataSource(JsonNode config);
+  public abstract DataSource getDataSource(AirbyteDestinationConfig config);
 
   public abstract JdbcDatabase getDatabase(DataSource dataSource);
 
   public abstract SqlOperations getSqlOperations();
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
+  public AirbyteConnectionStatus check(final AirbyteDestinationConfig config) {
     try {
       checkPersistence(config);
     } catch (final Exception e) {

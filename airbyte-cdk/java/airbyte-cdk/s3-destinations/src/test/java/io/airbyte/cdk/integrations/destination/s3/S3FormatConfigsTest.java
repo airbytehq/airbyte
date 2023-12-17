@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.AirbyteDestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionType;
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening;
@@ -22,12 +23,12 @@ public class S3FormatConfigsTest {
   @Test
   @DisplayName("When CSV format is specified, it returns CSV format config")
   public void testGetCsvS3FormatConfig() {
-    final JsonNode configJson = Jsons.jsonNode(Map.of(
+    final AirbyteDestinationConfig configJson = AirbyteDestinationConfig.fromJsonNode(Jsons.jsonNode(Map.of(
         "format", Jsons.jsonNode(Map.of(
             "format_type", S3Format.CSV.toString(),
             "flattening", Flattening.ROOT_LEVEL.getValue(),
             "compression", Jsons.jsonNode(Map.of(
-                "compression_type", "No Compression"))))));
+                "compression_type", "No Compression")))))));
 
     final S3FormatConfig formatConfig = S3FormatConfigs.getS3FormatConfig(configJson);
     assertEquals(formatConfig.getFormat(), S3Format.CSV);
