@@ -116,6 +116,8 @@ class ConcurrentSource:
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
+            #self._logger.info(f"Handling queue item: {airbyte_message_or_record_or_exception}")
+            #self._logger.info(f"Queue size: {queue.qsize()}")
             yield from self._handle_item(
                 airbyte_message_or_record_or_exception,
                 concurrent_stream_processor,

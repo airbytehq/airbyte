@@ -60,12 +60,12 @@ class ThreadPoolManager:
 
         for index in reversed(range(len(futures))):
             future = futures[index]
-            # optional_exception = future.exception()
-            # if optional_exception:
-            #     exception = RuntimeError(f"Failed reading with error: {optional_exception}")
-            #     self._stop_and_raise_exception(exception)
 
             if future.done():
+                optional_exception = future.exception()
+                if optional_exception:
+                    exception = RuntimeError(f"Failed reading with error: {optional_exception}")
+                    self._stop_and_raise_exception(exception)
                 futures.pop(index)
 
     def shutdown(self) -> None:

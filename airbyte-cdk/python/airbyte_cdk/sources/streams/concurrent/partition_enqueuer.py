@@ -3,6 +3,7 @@
 #
 
 from queue import Queue
+import time
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
@@ -34,6 +35,9 @@ class PartitionEnqueuer:
         """
         try:
             for partition in stream.generate_partitions():
+                while self._queue.qsize() > 1000:
+                    #print(f"parition enqueueur sleeping for 0.5s")
+                    time.sleep(0.5)
                 self._queue.put(partition)
             self._queue.put(PartitionGenerationCompletedSentinel(stream))
         except Exception as e:
