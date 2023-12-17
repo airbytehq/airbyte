@@ -716,6 +716,8 @@ class ModelToComponentFactory:
             model.http_method if isinstance(model.http_method, str) else model.http_method.value if model.http_method is not None else "GET"
         )
 
+        assert model.use_cache is not None  # for mypy
+
         return HttpRequester(
             name=name,
             url_base=model.url_base,
