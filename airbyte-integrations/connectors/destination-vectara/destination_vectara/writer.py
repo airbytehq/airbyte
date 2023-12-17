@@ -16,7 +16,6 @@ from destination_vectara.client import VectaraClient
 
 
 METADATA_STREAM_FIELD = "_ab_stream"
-# METADATA_RECORD_ID_FIELD = "_ab_record_id"
 
 class VectaraWriter:
 
@@ -78,7 +77,7 @@ class VectaraWriter:
         document_section = relevant_fields
         return document_section
     
-    def _extract_relevant_fields(self, record: AirbyteRecordMessage, fields: Optional[List[str]]) -> Dict[str, Any]:
+    def _extract_relevant_fields(self, record: AirbyteRecordMessage, fields: Optional[List[str]]) -> Dict[str, Any]:        
         relevant_fields = {}
         if fields and len(fields) > 0:
             for field in fields:

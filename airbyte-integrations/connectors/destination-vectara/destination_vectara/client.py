@@ -122,25 +122,26 @@ class VectaraClient:
     def delete_doc_by_metadata(self, metadata_field_name, metadata_field_values):
         document_ids = []
         for value in metadata_field_values:
-            query_documents_response = self._request(
-                endpoint="query",
-                data= {
-                    "query": [
+            data = {
+                "query": [
+                    {
+                        "query": "", 
+                        "numResults": 100,
+                        "corpusKey": [
                             {
-                                "query": "", 
-                                "numResults": 100,
-                                "corpusKey": [
-                                    {
-                                    "customerId": self.customer_id,
-                                    "corpusId": self.corpus_id,
-                                    "metadataFilter": f"doc.{metadata_field_name} = '{value}'"
-                                    }
-                                ]
+                                "customerId": self.customer_id,
+                                "corpusId": self.corpus_id,
+                                "metadataFilter": f"doc.{metadata_field_name} = '{value}'"
                             }
                         ]
                     }
-                )
-            document_ids.extend([document.get("id") for document in query_documents_response.get("responseSet").get("document")])
+                ]
+            }
+            query_documents_response = self._request(
+                endpoint="query",
+                data = data
+            )
+            document_ids.extend([document.get("id") for document in query_documents_response.get("responseSet")[0].get("document")])
         return self.delete_docs_by_id(document_ids=document_ids)
     
     def delete_docs_by_id(self, document_ids):
@@ -162,24 +163,23 @@ class VectaraClient:
     def index_documents(self, documents):
         for document_section, document_metadata, document_id in documents:
             document_metadata = self._normalize(document_metadata)
-            index_document_response = self._request(
-                endpoint="index",
-                data={
-                        "customerId": self.customer_id, 
-                        "corpusId": self.corpus_id,
-                        "document": {
-                            "documentId": document_id,
-                            "metadataJson": json.dumps(document_metadata),
-                            "section": [
-                                {
-                                    "title": section_title, 
-                                    "text": section_text
-                                } 
-                                for section_title, section_text in document_section.items()
-                            ]
-                        }
-                    }
-                )
+            data = {
+                "customerId": self.customer_id, 
+                "corpusId": self.corpus_id,
+                "document": {
+                    "documentId": document_id,
+                    "metadataJson": json.dumps(document_metadata),
+                    "section": [
+                        {
+                            "text": f"{section_key}: {section_value}"
+                        } 
+                        for section_key, section_value in document_section.items()
+                        if section_key != METADATA_STREAM_FIELD
+                    ]
+                }
+            }
+            print(f"DEBUG index_documents: data={data}")
+            index_document_response = self._request(endpoint="index", data=data)
             assert index_document_response.get("status").get("code") == "OK", index_document_response.get("status").get("statusDetail")
     
     def _normalize(self, metadata: dict) -> dict:
