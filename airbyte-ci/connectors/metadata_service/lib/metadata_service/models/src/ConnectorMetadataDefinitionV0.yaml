@@ -111,5 +111,5 @@ properties:
         "$ref": ActorDefinitionResourceRequirements.yaml
       ab_internal:
         "$ref": AirbyteInternal.yaml
-      remotePackageIndex:
-        "$ref": RemotePackageIndex.yaml
+      remoteRegistries:
+        "$ref": RemoteRegistries.yaml

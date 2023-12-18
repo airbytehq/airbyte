@@ -9,10 +9,10 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/existingsource
   connectorSubtype: database
   releaseStage: generally_available
-  remotePackageIndex:
+  remoteRegistries:
     pypi:
       enabled: true
       projectUrl: https://pypi.org/project/airbyte-source-alloydb-strict-encrypt/
   license: MIT
   tags:
-    - language:java
+    - language:python

@@ -1,8 +1,8 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/RemotePackageIndex.yml
-title: RemotePackageIndex
-description: describes how the connector is published to remote package indices
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/RemoteRegistries.yml
+title: RemoteRegistries
+description: describes how the connector is published to remote registries
 type: object
 additionalProperties: false
 properties:

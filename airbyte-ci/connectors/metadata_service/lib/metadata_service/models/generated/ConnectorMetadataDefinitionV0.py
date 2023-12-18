@@ -141,7 +141,7 @@ class BreakingChangeScope(BaseModel):
     )
 
 
-class RemotePackageIndex(BaseModel):
+class RemoteRegistries(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -279,7 +279,7 @@ class Data(BaseModel):
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
     ab_internal: Optional[AirbyteInternal] = None
-    remotePackageIndex: Optional[RemotePackageIndex] = None
+    remoteRegistries: Optional[RemoteRegistries] = None
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

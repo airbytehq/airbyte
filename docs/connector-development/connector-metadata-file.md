@@ -152,16 +152,16 @@ The supported scope types are listed below.
 |------------|------------|------------------|
 | stream     | `list[str]`  | List of stream names |
 
-#### `remotePackageIndex`
-The optional `remotePackageIndex` property allows you to configure how a connector should be published remote package indices. 
+#### `remoteRegistries`
+The optional `remoteRegistries` property allows you to configure how a connector should be published to registries like Pypi.
 
 **Important note**: Currently no automated publishing will occur.
 
 ```yaml
-remotePackageIndex:
+remoteRegistries:
   pypi:
     enabled: true
     projectUrl: https://pypi.org/project/airbyte-source-connector-name/
 ```
 
-If not specified, all remote package configurations are disabled by default.
+If not specified, all remote registry configurations are disabled by default.

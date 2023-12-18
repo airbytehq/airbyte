@@ -176,7 +176,7 @@ def validate_pypi_only_for_python(
 ) -> ValidationResult:
     """Ensure that if pypi publishing is enabled for a connector, it has a python language tag."""
 
-    pypi_enabled = get(metadata_definition, "data.remotePackageIndex.pypi.enabled", False)
+    pypi_enabled = get(metadata_definition, "data.remoteRegistries.pypi.enabled", False)
     if not pypi_enabled:
         return True, None
 
