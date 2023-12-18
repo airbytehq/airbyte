@@ -335,12 +335,12 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
    * disabling the test case.
    */
   @Override
-  @Disabled
-  @ParameterizedTest
-  @ArgumentsSource(DataTypeTestArgumentProvider.class)
+  @Disabled("MySQL normalization uses the wrong datatype for numbers. This will not be fixed, because we intend to replace normalization with DV2.")
   public void testDataTypeTestWithNormalization(final String messagesFilename,
                                                 final String catalogFilename,
                                                 final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
-      throws Exception {}
+      throws Exception {
+    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
+  }
 
 }
