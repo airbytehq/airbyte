@@ -178,7 +178,6 @@ class VectaraClient:
                     ]
                 }
             }
-            print(f"DEBUG index_documents: data={data}")
             index_document_response = self._request(endpoint="index", data=data)
             assert index_document_response.get("status").get("code") == "OK", index_document_response.get("status").get("statusDetail")
     
