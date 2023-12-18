@@ -30,6 +30,10 @@ Other bug fixes and improvements, more info: `https://github.com/airbytehq/airby
 * The `Order Refunds` stream, now has the schema `refund_line_items.line_item.properties` to array of `strings`, instead of `object` with properties.
 * The `Fulfillment Orders` stream now has the `supported_actions` schema as `array of objects` instead of `array of strings`.
 
+   - if `API_PASSWORD` is used for authentication:
+      - BEFORE UPDATING to the `1.2.0`: update your `Private Developer Application` scopes with `read_publications` and save the changes, in your Shopify Account.
+   - if `OAuth2.0` is used for authentication:
+      - `re-auth` in order to obtain new scope automatically, after the upgrade.
    - `Refresh Schema` + `Reset` is required for these streams after the upgrade from previous version.
 
 
