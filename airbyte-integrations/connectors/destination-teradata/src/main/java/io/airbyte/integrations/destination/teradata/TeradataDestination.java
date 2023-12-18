@@ -49,14 +49,10 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
 
   protected static final String CA_CERT_KEY = "ssl_ca_certificate";
 
-<<<<<<< HEAD
-    protected static final String ENCRYPTDATA = "ENCRYPTDATA";
+  protected static final String ENCRYPTDATA = "ENCRYPTDATA";
 
-    protected static final String ENCRYPTDATA_ON = "ON";
+  protected static final String ENCRYPTDATA_ON = "ON";
 
-    public static void main(String[] args) throws Exception {
-        new IntegrationRunner(new TeradataDestination()).run(args);
-=======
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new TeradataDestination()).run(args);
   }
@@ -65,44 +61,28 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
     super(DRIVER_CLASS, new StandardNameTransformer(), new TeradataSqlOperations());
   }
 
-  @Override
-  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    final Map<String, String> additionalParameters = new HashMap<>();
-    if (config.has(PARAM_SSL) && config.get(PARAM_SSL).asBoolean()) {
-      LOGGER.debug("SSL Enabled");
-      if (config.has(PARAM_SSL_MODE)) {
-        LOGGER.debug("Selected SSL Mode : " + config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText());
-        additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
-      } else {
-        additionalParameters.put(PARAM_SSLMODE, REQUIRE);
-      }
->>>>>>> master
-    }
-    return additionalParameters;
-  }
-
   private static void createCertificateFile(String fileName, String fileValue) throws IOException {
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
     }
   }
 
-<<<<<<< HEAD
-    @Override
-    protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-        final Map<String, String> additionalParameters = new HashMap<>();
-        if (config.has(PARAM_SSL) && config.get(PARAM_SSL).asBoolean()) {
-            LOGGER.debug("SSL Enabled");
-            if (config.has(PARAM_SSL_MODE)) {
-                LOGGER.debug("Selected SSL Mode : " + config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText());
-                additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
-            } else {
-                additionalParameters.put(PARAM_SSLMODE, REQUIRE);
-            }
-        } 
-       	additionalParameters.put(ENCRYPTDATA, ENCRYPTDATA_ON);
-        return additionalParameters;
-=======
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+      final Map<String, String> additionalParameters = new HashMap<>();
+      if (config.has(PARAM_SSL) && config.get(PARAM_SSL).asBoolean()) {
+          LOGGER.debug("SSL Enabled");
+          if (config.has(PARAM_SSL_MODE)) {
+              LOGGER.debug("Selected SSL Mode : " + config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText());
+              additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
+          } else {
+              additionalParameters.put(PARAM_SSLMODE, REQUIRE);
+          }
+      } 
+      additionalParameters.put(ENCRYPTDATA, ENCRYPTDATA_ON);
+      return additionalParameters;
+  }
+
   private Map<String, String> obtainConnectionOptions(final JsonNode encryption) {
     final Map<String, String> additionalParameters = new HashMap<>();
     if (!encryption.isNull()) {
@@ -139,7 +119,6 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
->>>>>>> master
     }
 
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
