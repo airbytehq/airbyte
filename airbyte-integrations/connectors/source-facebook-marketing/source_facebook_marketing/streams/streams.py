@@ -217,7 +217,7 @@ class AdAccount(FBMarketingStream):
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
         """noop in case of AdAccount"""
         # return [FBAdAccount(self._api.account.get_id()).api_get(fields=self.fields)]
-        account = stream_slice.get("account")
+        account = stream_slice.get("account").api_get(fields=self.fields)
         yield account
 
 

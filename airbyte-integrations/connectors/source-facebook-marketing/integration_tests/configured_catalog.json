@@ -2,6 +2,17 @@
   "streams": [
         {
       "stream": {
+        "name": "ad_account",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+        {
+      "stream": {
         "name": "ads_insights",
         "json_schema": {},
         "supported_sync_modes": [
