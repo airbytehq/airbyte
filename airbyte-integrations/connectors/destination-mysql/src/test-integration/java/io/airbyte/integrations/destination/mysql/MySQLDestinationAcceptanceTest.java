@@ -94,9 +94,9 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   /**
-   * {@link #getConfig()} returns a config with host/port set to the in-docker values. This works
-   * for running the destination-mysql container, but we have some tests which run the destination
-   * code directly from the JUnit process. These tests need to connect using the "normal" host/port.
+   * {@link #getConfig()} returns a config with host/port set to the in-docker values. This works for
+   * running the destination-mysql container, but we have some tests which run the destination code
+   * directly from the JUnit process. These tests need to connect using the "normal" host/port.
    */
   private JsonNode getConfigForBareMetalConnection() {
     return ((ObjectNode) getConfig())
@@ -330,9 +330,9 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   /**
-   * Legacy mysql normalization is broken, and uses the FLOAT type for numbers.
-   * This rounds off e.g. 12345.678 to 12345.7. We can fix this in DV2, but will not fix
-   * legacy normalization. As such, disabling the test case.
+   * Legacy mysql normalization is broken, and uses the FLOAT type for numbers. This rounds off e.g.
+   * 12345.678 to 12345.7. We can fix this in DV2, but will not fix legacy normalization. As such,
+   * disabling the test case.
    */
   @Override
   @Disabled
@@ -341,7 +341,6 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   public void testDataTypeTestWithNormalization(final String messagesFilename,
                                                 final String catalogFilename,
                                                 final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
-      throws Exception {
-  }
+      throws Exception {}
 
 }

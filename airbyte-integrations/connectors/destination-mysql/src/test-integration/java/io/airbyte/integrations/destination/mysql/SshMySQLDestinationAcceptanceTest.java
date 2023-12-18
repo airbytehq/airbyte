@@ -164,8 +164,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   /**
-   * Disabled for the same reason as in {@link MySQLDestinationAcceptanceTest}.
-   * But for some reason, this class doesn't extend that one so we have to do it again.
+   * Disabled for the same reason as in {@link MySQLDestinationAcceptanceTest}. But for some reason,
+   * this class doesn't extend that one so we have to do it again.
    */
   @Override
   @Disabled
@@ -174,7 +174,6 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   public void testDataTypeTestWithNormalization(final String messagesFilename,
                                                 final String catalogFilename,
                                                 final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
-      throws Exception {
-  }
+      throws Exception {}
 
 }

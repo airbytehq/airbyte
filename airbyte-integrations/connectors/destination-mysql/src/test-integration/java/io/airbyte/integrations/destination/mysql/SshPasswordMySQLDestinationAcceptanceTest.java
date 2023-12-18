@@ -19,9 +19,8 @@ public class SshPasswordMySQLDestinationAcceptanceTest extends SshMySQLDestinati
   }
 
   /**
-   * Legacy normalization doesn't correctly parse the SSH password (or something).
-   * All tests involving the normalization container are broken. That's (mostly) fine;
-   * DV2 doesn't rely on that container.
+   * Legacy normalization doesn't correctly parse the SSH password (or something). All tests involving
+   * the normalization container are broken. That's (mostly) fine; DV2 doesn't rely on that container.
    */
   @Override
   @Disabled
@@ -43,4 +42,5 @@ public class SshPasswordMySQLDestinationAcceptanceTest extends SshMySQLDestinati
   public void testCustomDbtTransformations() throws Exception {
 
   }
+
 }
