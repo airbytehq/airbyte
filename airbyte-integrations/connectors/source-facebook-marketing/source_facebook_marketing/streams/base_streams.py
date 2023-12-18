@@ -213,6 +213,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
     """The base class for streams that don't support filtering and return records sorted desc by cursor_value"""
 
     enable_deleted = False  # API don't have any filtering, so implement include_deleted in code
+    cursor_field = "updated_time"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -277,6 +278,6 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
                 self.fix_date_time(record)
                 yield record
 
-            self._cursor_value = self._max_cursor_value
+            self._cursor_value[account_id][cursor_field] = self._max_cursor_value
         except FacebookRequestError as exc:
             raise traced_exception(exc)
