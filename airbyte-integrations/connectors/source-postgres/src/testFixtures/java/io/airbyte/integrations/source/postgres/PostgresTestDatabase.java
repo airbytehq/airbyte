@@ -19,10 +19,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class PostgresTestDatabase extends
     TestDatabase<PostgreSQLContainer<?>, PostgresTestDatabase, PostgresTestDatabase.PostgresConfigBuilder> {
 
-  public static enum BaseImage {
+  public enum BaseImage {
 
     POSTGRES_16("postgres:16-bullseye"),
     POSTGRES_12("postgres:12-bullseye"),
+    POSTGRES_13("postgres:13-alpine"),
     POSTGRES_9("postgres:9-alpine"),
     POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev");
 
