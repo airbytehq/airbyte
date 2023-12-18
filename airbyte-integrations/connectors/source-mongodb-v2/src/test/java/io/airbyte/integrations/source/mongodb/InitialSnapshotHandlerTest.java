@@ -144,7 +144,7 @@ class InitialSnapshotHandlerTest {
     final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
         initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
-            MongoConstants.CHECKPOINT_INTERVAL);
+            MongoConstants.CHECKPOINT_INTERVAL, true);
 
     assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
 
@@ -218,7 +218,7 @@ class InitialSnapshotHandlerTest {
         .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.OBJECT_ID)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
         initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
-            MongoConstants.CHECKPOINT_INTERVAL);
+            MongoConstants.CHECKPOINT_INTERVAL, true);
 
     assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
 
@@ -266,7 +266,7 @@ class InitialSnapshotHandlerTest {
 
     final var thrown = assertThrows(ConfigErrorException.class,
         () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
-            MongoConstants.CHECKPOINT_INTERVAL));
+            MongoConstants.CHECKPOINT_INTERVAL, true));
     assertTrue(thrown.getMessage().contains("must be consistently typed"));
   }
 
@@ -282,7 +282,7 @@ class InitialSnapshotHandlerTest {
 
     final var thrown = assertThrows(ConfigErrorException.class,
         () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
-            MongoConstants.CHECKPOINT_INTERVAL));
+            MongoConstants.CHECKPOINT_INTERVAL, true));
     assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
   }
 
@@ -308,7 +308,7 @@ class InitialSnapshotHandlerTest {
     final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
         initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
-            MongoConstants.CHECKPOINT_INTERVAL);
+            MongoConstants.CHECKPOINT_INTERVAL, true);
 
     assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
 
