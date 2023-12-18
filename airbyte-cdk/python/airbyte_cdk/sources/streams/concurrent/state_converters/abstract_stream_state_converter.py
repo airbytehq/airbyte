@@ -20,8 +20,15 @@ class AbstractStreamStateConverter(ABC):
 
     def get_concurrent_stream_state(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         if self.is_state_message_compatible(state):
-            return state
+            return self.deserialize(state)
         return self.convert_from_sequential_state(state)
+
+    @abstractmethod
+    def deserialize(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """
+        Perform any transformations needed for compatibility with the converter.
+        """
+        ...
 
     @staticmethod
     def is_state_message_compatible(state: MutableMapping[str, Any]) -> bool:

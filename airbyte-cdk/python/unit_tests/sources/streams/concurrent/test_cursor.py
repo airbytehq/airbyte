@@ -11,7 +11,7 @@ from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.cursor import Comparable, ConcurrentCursor, CursorField
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.state_converter import EpochValueConcurrentStreamStateConverter
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 
 _A_STREAM_NAME = "a stream name"
 _A_STREAM_NAMESPACE = "a stream namespace"

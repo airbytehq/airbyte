@@ -18,8 +18,13 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
     END_KEY = "end"
 
     @property
+    @abstractmethod
+    def _zero_value(self) -> Any:
+        ...
+
+    @property
     def zero_value(self) -> datetime:
-        return datetime(1, 1, 1, 0, 0, 0, 0)
+        return self.parse_timestamp(self._zero_value)
 
     @abstractmethod
     def increment(self, timestamp: datetime) -> datetime:
@@ -32,6 +37,12 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
     @abstractmethod
     def output_format(self, timestamp: datetime) -> Any:
         ...
+
+    def deserialize(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        for stream_slice in state.get("slices", []):
+            stream_slice[self.START_KEY] = self.parse_timestamp(stream_slice[self.START_KEY])
+            stream_slice[self.END_KEY] = self.parse_timestamp(stream_slice[self.END_KEY])
+        return state
 
     def parse_value(self, value: Any) -> Any:
         """
@@ -130,6 +141,7 @@ class EpochValueConcurrentStreamStateConverter(DateTimeStreamStateConverter):
         ]
     }
     """
+    _zero_value = 0
 
     def increment(self, timestamp: datetime) -> Any:
         return timestamp + timedelta(seconds=1)
@@ -154,6 +166,7 @@ class IsoMillisConcurrentStreamStateConverter(DateTimeStreamStateConverter):
         ]
     }
     """
+    _zero_value = "0001-01-01T00:00:00.000Z"
 
     def __init__(self, cursor_field: str, slice_timestamp_format: str):
         super().__init__(cursor_field)

@@ -84,7 +84,7 @@ class ConcurrentCursor(Cursor):
         self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
         self._most_recent_record: Optional[Record] = None
         self._has_closed_at_least_one_slice = False
-        self._state = connector_state_converter.get_concurrent_stream_state(stream_state)
+        self._state = stream_state
 
     def observe(self, record: Record) -> None:
         if self._slice_boundary_fields:

@@ -206,7 +206,7 @@ def test_concurrent_stream_state_converter_is_state_message_compatible(converter
             {"created": 1617030403},
             {
                 "state_type": "date-range",
-                "slices": [{"start": datetime(1, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                "slices": [{"start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
                             "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc)}],
                 "legacy": {"created": 1617030403},
             },
