@@ -5,7 +5,7 @@ import { useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, DropDown, DropDownRow, MainPageWithScroll } from "components";
+import { Button, DropDown, DropDownRow, NewMainPageWithScroll } from "components";
 import HeadTitle from "components/HeadTitle";
 import { PageSize } from "components/PageSize";
 import PageTitle from "components/PageTitle";
@@ -123,7 +123,7 @@ const AllDestinationsPage: React.FC = () => {
   // }
 
   return (
-    <MainPageWithScroll
+    <NewMainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.destinations" }]} />}
       pageTitle={
         <PageTitle
@@ -165,7 +165,7 @@ const AllDestinationsPage: React.FC = () => {
         </Box>
       </Footer>
       <Separator height="24px" />
-    </MainPageWithScroll>
+    </NewMainPageWithScroll>
   );
 };
 
