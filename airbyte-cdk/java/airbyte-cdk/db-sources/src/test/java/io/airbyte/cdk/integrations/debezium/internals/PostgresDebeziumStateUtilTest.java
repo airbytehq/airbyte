@@ -12,6 +12,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresDebeziumStateUtil;
 import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
 import io.airbyte.commons.io.IOs;
@@ -41,7 +42,7 @@ public class PostgresDebeziumStateUtilTest {
       .put("plugin", "pgoutput")
       .build());
 
-  private static final JsonNode CONFIG = Jsons.jsonNode(ImmutableMap.builder()
+  private static final AirbyteSourceConfig CONFIG = AirbyteSourceConfig.fromJsonNode(Jsons.jsonNode(ImmutableMap.builder()
       .put(JdbcUtils.HOST_KEY, "host")
       .put(JdbcUtils.PORT_KEY, "5432")
       .put(JdbcUtils.DATABASE_KEY, "db_jagkjrgxhw")
@@ -50,7 +51,7 @@ public class PostgresDebeziumStateUtilTest {
       .put(JdbcUtils.PASSWORD_KEY, "password")
       .put(JdbcUtils.SSL_KEY, false)
       .put("replication_method", REPLICATION_METHOD)
-      .build());
+      .build()));
 
   // Lsn.valueOf("0/16CA330") = 23896880
   // Lsn.valueOf("0/16CA368") = 23896936

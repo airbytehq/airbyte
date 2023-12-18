@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.base.ssh;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -49,7 +50,7 @@ public class SshWrappedSource implements Source {
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+  public AirbyteConnectionStatus check(final AirbyteSourceConfig config) throws Exception {
     try {
       return SshTunnelForSource.sshWrap(config, hostKey, portKey, delegate::check);
     } catch (final RuntimeException e) {
@@ -62,12 +63,12 @@ public class SshWrappedSource implements Source {
   }
 
   @Override
-  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+  public AirbyteCatalog discover(final AirbyteSourceConfig config) throws Exception {
     return SshTunnelForSource.sshWrap(config, hostKey, portKey, delegate::discover);
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(final AirbyteSourceConfig config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final SshTunnelForSource tunnel = SshTunnelForSource.getInstance(config, hostKey, portKey);
     final AutoCloseableIterator<AirbyteMessage> delegateRead;
@@ -82,7 +83,7 @@ public class SshWrappedSource implements Source {
   }
 
   @Override
-  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(AirbyteSourceConfig config, ConfiguredAirbyteCatalog catalog, JsonNode state)
       throws Exception {
     final SshTunnelForSource tunnel = SshTunnelForSource.getInstance(config, hostKey, portKey);
     try {

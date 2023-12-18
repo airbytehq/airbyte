@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.debezium.internals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -37,7 +38,7 @@ public class DebeziumEventUtils {
                                                 final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
                                                 final Instant emittedAt,
                                                 final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
-                                                final JsonNode config) {
+                                                final AirbyteSourceConfig config) {
     return switch (debeziumConnectorType) {
       case MONGODB -> formatMongoDbEvent(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, config);
       case RELATIONALDB -> formatRelationalDbEvent(event, cdcMetadataInjector, emittedAt);
@@ -66,7 +67,7 @@ public class DebeziumEventUtils {
                                                    final CdcMetadataInjector cdcMetadataInjector,
                                                    final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
                                                    final Instant emittedAt,
-                                                   final JsonNode config) {
+                                                   final AirbyteSourceConfig config) {
     final JsonNode debeziumEventKey = event.eventKeyAsJson();
     final JsonNode debeziumEvent = event.eventValueAsJson();
     final JsonNode before = debeziumEvent.get(BEFORE_EVENT);

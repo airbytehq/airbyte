@@ -11,8 +11,6 @@ import io.airbyte.cdk.integrations.util.ApmTraceUtils;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -21,7 +19,6 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -283,15 +280,6 @@ public abstract class IntegrationRunner<CONFIG_TYPE> {
       throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ",
           operationType, validationResult));
     }
-  }
-
-  public static JsonNode parseConfig(final Path path) {
-    return Jsons.deserialize(IOs.readFile(path));
-  }
-
-  protected <T> T parseConfig(final Path path, final Class<T> klass) {
-    final JsonNode jsonNode = parseConfig(path);
-    return Jsons.object(jsonNode, klass);
   }
 
   /**

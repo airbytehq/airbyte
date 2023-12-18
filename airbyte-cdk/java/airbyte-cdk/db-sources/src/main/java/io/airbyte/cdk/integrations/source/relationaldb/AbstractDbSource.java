@@ -16,6 +16,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
@@ -69,7 +70,7 @@ import org.slf4j.LoggerFactory;
  * source of both non-relational and relational type
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
-    JdbcConnector<JsonNode> implements Source, AutoCloseable {
+    JdbcConnector<AirbyteSourceConfig> implements Source, AutoCloseable {
 
   public static final String CHECK_TRACE_OPERATION_NAME = "check-operation";
   public static final String DISCOVER_TRACE_OPERATION_NAME = "discover-operation";
@@ -91,7 +92,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   @Override
   @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
-  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+  public AirbyteConnectionStatus check(final AirbyteSourceConfig config) throws Exception {
     try {
       final Database database = createDatabase(config);
       for (final CheckedConsumer<Database, Exception> checkOperation : getCheckOperations(config)) {
@@ -120,7 +121,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   @Override
   @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
-  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+  public AirbyteCatalog discover(final AirbyteSourceConfig config) throws Exception {
     try {
       final Database database = createDatabase(config);
       final List<TableInfo<CommonField<DataType>>> tableInfos = discoverWithoutSystemTables(database);
@@ -143,7 +144,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @throws Exception
    */
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
+  public AutoCloseableIterator<AirbyteMessage> read(final AirbyteSourceConfig config,
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
       throws Exception {
@@ -539,7 +540,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return database spec config
    */
   @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
-  public abstract JsonNode toDatabaseConfig(JsonNode config);
+  public abstract JsonNode toDatabaseConfig(AirbyteSourceConfig config);
 
   /**
    * Creates a database instance using the database spec config.
@@ -549,7 +550,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @throws Exception might throw an error during connection to database
    */
   @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
-  protected abstract Database createDatabase(JsonNode config) throws Exception;
+  protected abstract Database createDatabase(AirbyteSourceConfig config) throws Exception;
 
   /**
    * Gets and logs relevant and useful database metadata such as DB product/version, index names and
@@ -566,7 +567,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *
    * @return list of consumers that run queries for the check command.
    */
-  protected abstract List<CheckedConsumer<Database, Exception>> getCheckOperations(JsonNode config)
+  protected abstract List<CheckedConsumer<Database, Exception>> getCheckOperations(AirbyteSourceConfig config)
       throws Exception;
 
   /**
@@ -688,7 +689,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param config The connector configuration.
    * @return A {@link AirbyteStateType} representing the state supported by this connector.
    */
-  protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+  protected AirbyteStateType getSupportedStateType(final AirbyteSourceConfig config) {
     return AirbyteStateType.STREAM;
   }
 

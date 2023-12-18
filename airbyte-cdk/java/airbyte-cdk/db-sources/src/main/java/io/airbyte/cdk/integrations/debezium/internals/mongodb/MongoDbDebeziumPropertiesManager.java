@@ -11,7 +11,7 @@ import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebe
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -44,14 +44,14 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   static final String MONGODB_USER_KEY = "mongodb.user";
 
   public MongoDbDebeziumPropertiesManager(final Properties properties,
-                                          final JsonNode config,
+                                          final AirbyteSourceConfig config,
                                           final ConfiguredAirbyteCatalog catalog,
                                           final AirbyteFileOffsetBackingStore offsetManager) {
     super(properties, config, catalog, offsetManager, Optional.empty());
   }
 
   @Override
-  protected Properties getConnectionConfiguration(final JsonNode config) {
+  protected Properties getConnectionConfiguration(final AirbyteSourceConfig config) {
     final Properties properties = new Properties();
 
     properties.setProperty(MONGODB_CONNECTION_STRING_KEY, buildConnectionString(config, false));
@@ -71,12 +71,12 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   }
 
   @Override
-  protected String getName(final JsonNode config) {
+  protected String getName(final AirbyteSourceConfig config) {
     return normalizeName(config.get(DATABASE_CONFIGURATION_KEY).asText());
   }
 
   @Override
-  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
+  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final AirbyteSourceConfig config) {
     final Properties properties = new Properties();
 
     // Database/collection selection
@@ -110,7 +110,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
    * @param useSecondary Whether to use the secondary for reads.
    * @return The connection string.
    */
-  public static String buildConnectionString(final JsonNode config, final boolean useSecondary) {
+  public static String buildConnectionString(final AirbyteSourceConfig config, final boolean useSecondary) {
     final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY)
         .asText()
         .trim()

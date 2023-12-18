@@ -9,6 +9,7 @@ import com.mongodb.MongoChangeStreamException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoClient;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
@@ -138,7 +139,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
   public Optional<BsonDocument> savedOffset(final Properties baseProperties,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final JsonNode cdcState,
-                                            final JsonNode config,
+                                            final AirbyteSourceConfig config,
                                             final MongoClient mongoClient) {
     LOGGER.debug("Initializing file offset backing store with state '{}'...", cdcState);
     final DebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(baseProperties,

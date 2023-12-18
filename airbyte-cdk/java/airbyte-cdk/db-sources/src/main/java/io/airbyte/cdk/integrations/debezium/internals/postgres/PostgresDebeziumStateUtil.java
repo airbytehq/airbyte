@@ -13,6 +13,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.cdk.db.PostgresUtils;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
@@ -82,7 +83,7 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
   public OptionalLong savedOffset(final Properties baseProperties,
                                   final ConfiguredAirbyteCatalog catalog,
                                   final JsonNode cdcState,
-                                  final JsonNode config) {
+                                  final AirbyteSourceConfig config) {
     final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()),
         Optional.empty());

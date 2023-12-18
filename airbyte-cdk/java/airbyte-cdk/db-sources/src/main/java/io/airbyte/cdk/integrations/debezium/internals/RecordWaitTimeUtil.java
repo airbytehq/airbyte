@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import java.time.Duration;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -19,7 +20,7 @@ public class RecordWaitTimeUtil {
   public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(5);
   public static final Duration DEFAULT_SUBSEQUENT_RECORD_WAIT_TIME = Duration.ofMinutes(1);
 
-  public static void checkFirstRecordWaitTime(final JsonNode config) {
+  public static void checkFirstRecordWaitTime(final AirbyteSourceConfig config) {
     // we need to skip the check because in tests, we set initial_waiting_seconds
     // to 5 seconds for performance reasons, which is shorter than the minimum
     // value allowed in production
@@ -38,7 +39,7 @@ public class RecordWaitTimeUtil {
     }
   }
 
-  public static Duration getFirstRecordWaitTime(final JsonNode config) {
+  public static Duration getFirstRecordWaitTime(final AirbyteSourceConfig config) {
     final boolean isTest = config.has("is_test") && config.get("is_test").asBoolean();
     Duration firstRecordWaitTime = DEFAULT_FIRST_RECORD_WAIT_TIME;
 
@@ -60,7 +61,7 @@ public class RecordWaitTimeUtil {
     return firstRecordWaitTime;
   }
 
-  public static Duration getSubsequentRecordWaitTime(final JsonNode config) {
+  public static Duration getSubsequentRecordWaitTime(final AirbyteSourceConfig config) {
     Duration subsequentRecordWaitTime = DEFAULT_SUBSEQUENT_RECORD_WAIT_TIME;
     final boolean isTest = config.has("is_test") && config.get("is_test").asBoolean();
     final Optional<Integer> firstRecordWaitSeconds = getFirstRecordWaitSeconds(config);
@@ -72,7 +73,7 @@ public class RecordWaitTimeUtil {
     return subsequentRecordWaitTime;
   }
 
-  public static Optional<Integer> getFirstRecordWaitSeconds(final JsonNode config) {
+  public static Optional<Integer> getFirstRecordWaitSeconds(final AirbyteSourceConfig config) {
     final JsonNode replicationMethod = config.get("replication_method");
     if (replicationMethod != null && replicationMethod.has("initial_waiting_seconds")) {
       final int seconds = config.get("replication_method").get("initial_waiting_seconds").asInt();

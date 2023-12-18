@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.integrations.debezium.internals;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Optional;
 import java.util.Properties;
@@ -16,7 +16,7 @@ public abstract class DebeziumPropertiesManager {
   public static final String NAME_KEY = "name";
   public static final String TOPIC_PREFIX_KEY = "topic.prefix";
 
-  private final JsonNode config;
+  private final AirbyteSourceConfig config;
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
 
@@ -24,7 +24,7 @@ public abstract class DebeziumPropertiesManager {
   private final ConfiguredAirbyteCatalog catalog;
 
   public DebeziumPropertiesManager(final Properties properties,
-                                   final JsonNode config,
+                                   final AirbyteSourceConfig config,
                                    final ConfiguredAirbyteCatalog catalog,
                                    final AirbyteFileOffsetBackingStore offsetManager,
                                    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
@@ -97,11 +97,11 @@ public abstract class DebeziumPropertiesManager {
     return props;
   }
 
-  protected abstract Properties getConnectionConfiguration(final JsonNode config);
+  protected abstract Properties getConnectionConfiguration(final AirbyteSourceConfig config);
 
-  protected abstract String getName(final JsonNode config);
+  protected abstract String getName(final AirbyteSourceConfig config);
 
-  protected abstract Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config);
+  protected abstract Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final AirbyteSourceConfig config);
 
   public enum DebeziumConnectorType {
     RELATIONALDB,

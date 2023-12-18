@@ -5,6 +5,7 @@
 package io.airbyte.cdk.db;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 
 /**
  * A wrapper around the instantiated {@link javax.sql.DataSource}.
@@ -15,14 +16,14 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public class AbstractDatabase {
 
-  private JsonNode sourceConfig;
+  private AirbyteSourceConfig sourceConfig;
   private JsonNode databaseConfig;
 
-  public JsonNode getSourceConfig() {
+  public AirbyteSourceConfig getSourceConfig() {
     return sourceConfig;
   }
 
-  public void setSourceConfig(final JsonNode sourceConfig) {
+  public void setSourceConfig(final AirbyteSourceConfig sourceConfig) {
     this.sourceConfig = sourceConfig;
   }
 
