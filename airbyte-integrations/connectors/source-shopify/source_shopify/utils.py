@@ -140,12 +140,14 @@ class ShopifyRateLimiter:
     Define timings for RateLimits. Adjust timings if needed.
 
     :: on_unknown_load = 1.0 sec - Shopify recommended time to hold between each API call.
+    :: on_very_low_load = 0.0 sec - when the bucket is empty, don't hold, because each api call can already take more than 200 miliseconds.
     :: on_low_load = 0.2 sec (200 miliseconds) - ideal ratio between hold time and api call, also the standard hold time between each API call.
     :: on_mid_load = 1.5 sec - great timing to retrieve another 15% of request capacity while having mid_load.
     :: on_high_load = 5.0 sec - ideally we should wait 2.0 sec while having high_load, but we hold 5 sec to retrieve up to 80% of request capacity.
     """
 
     on_unknown_load: float = 1.0
+    on_very_low_load: float = 0.0
     on_low_load: float = 0.2
     on_mid_load: float = 1.5
     on_high_load: float = 5.0
@@ -162,16 +164,19 @@ class ShopifyRateLimiter:
         :: wait_time - time to wait between each request in seconds
 
         """
-        mid_load = threshold / 2  # average load based on threshold
+        half_of_threshold = threshold / 2  # average load based on threshold
+        quarter_of_threshold = threshold / 4 # low load based on threshold
         if not load:
             # when there is no rate_limits from header, use the `sleep_on_unknown_load`
             wait_time = ShopifyRateLimiter.on_unknown_load
-        elif load >= threshold:
+        elif threshold <= load:
             wait_time = ShopifyRateLimiter.on_high_load
-        elif load >= mid_load:
+        elif half_of_threshold <= load < threshold :
             wait_time = ShopifyRateLimiter.on_mid_load
-        elif load < mid_load:
+        elif quarter_of_threshold <= load < half_of_threshold:
             wait_time = ShopifyRateLimiter.on_low_load
+        elif load < quarter_of_threshold:
+            wait_time = ShopifyRateLimiter.on_very_low_load
         return wait_time
 
     @staticmethod
