@@ -73,7 +73,7 @@
         "description": "Support schema evolution for all streams. If \"false\", the connector might fail when a stream's schema changes.",
         "default": false,
         "order": 8
-      }, 
+      },
       "data_source": {
         "title": "Data Source",
         "type": "object",

@@ -29,12 +29,13 @@ def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
         "FLOAT": {"type": "number"},
         "DOUBLE": {"type": "number"},
         "DOUBLE PRECISION": {"type": "number"},
-        "BOOLEAN": {"type": "integer"},
+        "BOOLEAN": {"type": "boolean"},
         # Firebolt bigint is max 8 byte so it fits in Airbyte's "integer"
         "BIGINT": {"type": "integer"},
         "LONG": {"type": "integer"},
         "DECIMAL": {"type": "string", "airbyte_type": "big_number"},
         "DATE": {"type": "string", "format": "date"},
+        "PGDATE": {"type": "string", "format": "date"},
         "TIMESTAMP": {
             "type": "string",
             "format": "date-time",
@@ -44,6 +45,16 @@ def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
             "type": "string",
             "format": "date-time",
             "airbyte_type": "timestamp_without_timezone",
+        },
+        "TIMESTAMPNTZ": {
+            "type": "string",
+            "format": "datetime",
+            "airbyte_type": "timestamp_without_timezone",
+        },
+        "TIMESTAMPTZ": {
+            "type": "string",
+            "format": "datetime",
+            "airbyte_type": "timestamp_with_timezone",
         },
     }
     if fb_type.upper().startswith("ARRAY"):

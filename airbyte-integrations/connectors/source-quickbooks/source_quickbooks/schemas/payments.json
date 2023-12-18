@@ -1,147 +1,78 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": [
-    "null",
-    "object"
-  ],
+  "type": ["null", "object"],
   "properties": {
     "DepositToAccountRef": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
     "CurrencyRef": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
     "ARAccountRef": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
     "Line": {
-      "type": [
-        "null",
-        "array"
-      ],
+      "type": ["null", "array"],
       "items": {
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": ["null", "object"],
         "properties": {
           "LineEx": {
-            "type": [
-              "null",
-              "object"
-            ],
+            "type": ["null", "object"],
             "properties": {
               "any": {
-                "type": [
-                  "null",
-                  "array"
-                ],
+                "type": ["null", "array"],
                 "items": {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "properties": {
                     "typeSubstituted": {
-                      "type": [
-                        "null",
-                        "boolean"
-                      ]
+                      "type": ["null", "boolean"]
                     },
                     "scope": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "nil": {
-                      "type": [
-                        "null",
-                        "boolean"
-                      ]
+                      "type": ["null", "boolean"]
                     },
                     "value": {
-                      "type": [
-                        "null",
-                        "object"
-                      ],
+                      "type": ["null", "object"],
                       "properties": {
                         "Name": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
+                          "type": ["null", "string"]
                         },
                         "Value": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
+                          "type": ["null", "string"]
                         }
                       }
                     },
                     "declaredType": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "name": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "globalScope": {
-                      "type": [
-                        "null",
-                        "boolean"
-                      ]
+                      "type": ["null", "boolean"]
                     }
                   }
                 }
@@ -149,194 +80,107 @@
             }
           },
           "LinkedTxn": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": ["null", "array"],
             "items": {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "TxnType": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "TxnId": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 }
               }
             }
           },
           "Amount": {
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           }
         }
       }
     },
     "ProcessPayment": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "SyncToken": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "PrivateNote": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "ExchangeRate": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "TotalAmt": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "LinkedTxn": {
-      "type": [
-        "null",
-        "array"
-      ],
+      "type": ["null", "array"],
       "items": {
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": ["null", "object"],
         "properties": {
           "TxnType": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "TxnId": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       }
     },
     "UnappliedAmt": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "domain": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "MetaData": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "LastUpdatedTime": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "CreateTime": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "TxnDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date"
     },
     "Id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "PaymentMethodRef": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
     "CustomerRef": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
     "PaymentRefNum": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "sparse": {
-      "type":  [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "airbyte_cursor": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     }
   }
 }

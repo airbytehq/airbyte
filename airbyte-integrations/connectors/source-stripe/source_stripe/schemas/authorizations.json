@@ -31,10 +31,12 @@
       "$ref": "card.json"
     },
     "cardholder": {
-
       "type": ["null", "string"]
     },
     "created": {
+      "type": ["null", "integer"]
+    },
+    "updated": {
       "type": ["null", "integer"]
     },
     "currency": {
@@ -173,7 +175,6 @@
             "type": ["null", "string"]
           },
           "balance_transaction": {
-
             "type": ["null", "string"]
           },
           "card": {
@@ -189,7 +190,6 @@
             "type": ["null", "string"]
           },
           "dispute": {
-
             "type": ["null", "string"]
           },
           "id": {

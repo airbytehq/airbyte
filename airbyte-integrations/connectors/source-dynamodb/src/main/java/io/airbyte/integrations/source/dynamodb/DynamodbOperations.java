@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.dynamodb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import io.airbyte.db.AbstractDatabase;
+import io.airbyte.cdk.db.AbstractDatabase;
 import java.io.Closeable;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;

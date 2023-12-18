@@ -5,9 +5,9 @@
 package io.airbyte.integrations.source.mysql.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.util.List;

@@ -39,7 +39,14 @@ connectionSpecification:
       title: Site
       description: The site where Datadog data resides in.
       type: string
-      enum: ["datadoghq.com", "us3.datadoghq.com", "us5.datadoghq.com", "datadoghq.eu", "ddog-gov.com"]
+      enum:
+        [
+          "datadoghq.com",
+          "us3.datadoghq.com",
+          "us5.datadoghq.com",
+          "datadoghq.eu",
+          "ddog-gov.com",
+        ]
       default: "datadoghq.com"
       order: 5
     end_date:
@@ -84,7 +91,7 @@ connectionSpecification:
             title: Data Source
             description: A data source that is powered by the platform.
             type: string
-            enum: [ "metrics", "cloud_cost", "logs", "rum" ]
+            enum: ["metrics", "cloud_cost", "logs", "rum"]
             order: 2
           query:
             title: Query

@@ -20,7 +20,7 @@
         "examples": ["2021-01-01"],
         "default": "2021-01-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "format": "date-time"
+        "format": "date"
       }
     }
   }

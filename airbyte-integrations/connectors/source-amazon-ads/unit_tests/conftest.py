@@ -16,7 +16,7 @@ def config():
         "refresh_token": "test_refresh",
         "region": "NA",
         "look_back_window": 3,
-        "report_record_types": []
+        "report_record_types": [],
     }
 
 
@@ -70,6 +70,13 @@ def product_ads_response():
 def targeting_response():
     return """
 [{"targetId":123,"adGroupId":321,"state":"enabled","expressionType":"manual","bid":1.5,"expression":[{"type":"asinSameAs","value":"B0123456789"}],"resolvedExpression":[{"type":"views","values":{"type":"asinCategorySameAs","value":"B0123456789"}}]}]
+"""
+
+
+@fixture
+def creatives_response():
+    return """
+[{"creativeId":0,"adGroupId":0,"creativeType":"IMAGE","properties":{"headline":"string"},"moderationStatus":"APPROVED"}]
 """
 
 

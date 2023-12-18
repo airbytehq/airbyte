@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 import gzip
 import io
 import json
@@ -99,8 +100,21 @@ class Events(HttpStream):
                 record[item] = pendulum.parse(record[item]).to_rfc3339_string()
         return record
 
+    def get_most_recent_cursor(self, stream_state: Mapping[str, Any] = None) -> datetime.datetime:
+        """
+        Use `start_time` instead of `cursor` in the case of more recent.
+        This can happen whenever a user simply finds that they are syncing to much data and would like to change `start_time` to be more recent.
+        See: https://github.com/airbytehq/airbyte/issues/25367 for more details
+        """
+        cursor_date = (
+            pendulum.parse(stream_state[self.cursor_field])
+            if stream_state and self.cursor_field in stream_state
+            else datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
+        )
+        return max(self._start_date, cursor_date)
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
+        most_recent_cursor = self.get_most_recent_cursor(stream_state).strftime(self.compare_date_template)
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         except zipfile.BadZipFile as e:
@@ -114,7 +128,7 @@ class Events(HttpStream):
         for gzip_filename in zip_file.namelist():
             with zip_file.open(gzip_filename) as file:
                 for record in self._parse_zip_file(file):
-                    if record[self.cursor_field] >= state_value:
+                    if record[self.cursor_field] >= most_recent_cursor:
                         yield self._date_time_to_rfc3339(record)  # transform all `date-time` to RFC3339
 
     def _parse_zip_file(self, zip_file: IO[bytes]) -> Iterable[MutableMapping]:
@@ -124,7 +138,7 @@ class Events(HttpStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
-        start = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self._start_date
+        start = self.get_most_recent_cursor(stream_state=stream_state)
         end = pendulum.now()
         if start > end:
             self.logger.info("The data cannot be requested in the future. Skipping stream.")

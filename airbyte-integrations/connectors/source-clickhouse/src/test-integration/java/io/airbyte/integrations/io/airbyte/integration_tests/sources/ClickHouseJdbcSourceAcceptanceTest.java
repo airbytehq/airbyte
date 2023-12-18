@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.db.jdbc.JdbcUtils.JDBC_URL_KEY;
+import static io.airbyte.cdk.db.jdbc.JdbcUtils.JDBC_URL_KEY;
 import static io.airbyte.integrations.source.clickhouse.ClickHouseSource.SSL_MODE;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -12,12 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.time.Duration;

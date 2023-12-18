@@ -71,8 +71,9 @@ class TwilioStream(HttpStream, ABC):
             for record in records:
                 for field in self.changeable_fields:
                     record.pop(field, None)
-                    yield record
-        yield from records
+                yield record
+        else:
+            yield from records
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """This method is called if we run into the rate limit.
@@ -430,6 +431,23 @@ class Executions(TwilioNestedStream):
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"flow_sid": record["sid"]}
+
+
+class Step(TwilioNestedStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources
+    """
+
+    parent_stream = Executions
+    url_base = TWILIO_STUDIO_API_BASE
+    uri_from_subresource = False
+    data_field = "steps"
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Flows/{stream_slice['flow_sid']}/Executions/{stream_slice['execution_sid']}/Steps"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"flow_sid": record["flow_sid"], "execution_sid": record["sid"]}
 
 
 class OutgoingCallerIds(TwilioNestedStream):

@@ -5,9 +5,9 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "pytz", "requests-futures~=1.0.0", "pendulum~=2.1.2"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "pytz"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6", "connector-acceptance-test", "requests-mock==1.9.3"]
+TEST_REQUIREMENTS = ["freezegun", "pytest~=6.1", "pytest-mock~=3.6", "requests-mock==1.9.3"]
 
 setup(
     version="0.1.0",

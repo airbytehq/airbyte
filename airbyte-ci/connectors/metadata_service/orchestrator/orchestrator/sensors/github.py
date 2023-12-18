@@ -1,5 +1,10 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from datetime import datetime
-from dagster import sensor, RunRequest, SkipReason, SensorDefinition, SensorEvaluationContext, build_resources, DefaultSensorStatus
+
+from dagster import DefaultSensorStatus, RunRequest, SensorDefinition, SensorEvaluationContext, SkipReason, build_resources, sensor
 
 # e.g. 2023-06-02T17:42:36Z
 EXPECTED_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"

@@ -27,7 +27,15 @@
       "type": ["null", "string"]
     },
     "review": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "properties": {
+        "status": {
+          "type": ["null", "string"]
+        },
+        "rejectionReasons": {
+          "type": ["null", "array"]
+        }
+      }
     },
     "isServing": {
       "type": ["null", "boolean"]
@@ -43,6 +51,17 @@
     },
     "account": {
       "type": ["null", "string"]
+    },
+    "leadgenCallToAction": {
+      "type": ["null", "object"],
+      "properties": {
+        "destination": {
+          "type": ["null", "string"]
+        },
+        "label": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

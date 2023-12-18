@@ -84,11 +84,11 @@
       "type": ["null", "boolean"]
     },
     "created_at": {
-      "type":  ["null", "string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
-      "type":  ["null", "string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "time_zone": {
@@ -111,11 +111,11 @@
           "type": ["null", "string"]
         },
         "created_at": {
-          "type":  ["null", "string"],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "updated_at": {
-          "type":  ["null", "string"],
+          "type": ["null", "string"],
           "format": "date-time"
         }
       }

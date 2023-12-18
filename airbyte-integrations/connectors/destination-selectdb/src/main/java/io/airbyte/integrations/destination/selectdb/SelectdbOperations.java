@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.selectdb;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

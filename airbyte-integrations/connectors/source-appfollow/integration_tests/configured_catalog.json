@@ -2,22 +2,44 @@
   "streams": [
     {
       "stream": {
+        "name": "users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "app_collections",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "app_lists",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "stat_reviews",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "ratings",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "ext_id": {
-              "type": "string"
-            },
-            "cid": {
-              "type": "string"
-            },
-            "country": {
-              "type": "string"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",

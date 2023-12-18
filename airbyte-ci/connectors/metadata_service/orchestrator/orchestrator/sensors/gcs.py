@@ -1,13 +1,18 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from dagster import (
-    sensor,
+    DefaultSensorStatus,
     RunRequest,
-    SkipReason,
     SensorDefinition,
     SensorEvaluationContext,
-    build_resources,
-    DefaultSensorStatus,
     SensorResult,
+    SkipReason,
+    build_resources,
+    sensor,
 )
+from orchestrator.logging import sentry
 from orchestrator.utils.dagster_helpers import string_array_to_hash
 
 
@@ -29,9 +34,8 @@ def new_gcs_blobs_sensor(
         minimum_interval_seconds=interval,
         default_status=DefaultSensorStatus.STOPPED,
     )
+    @sentry.instrument_sensor
     def new_gcs_blobs_sensor_definition(context: SensorEvaluationContext):
-        context.log.info(f"Starting {sensor_name}")
-
         with build_resources(resources_def) as resources:
             context.log.info(f"Got resources for {sensor_name}")
 
@@ -74,6 +78,7 @@ def new_gcs_blobs_partition_sensor(
         minimum_interval_seconds=interval,
         default_status=DefaultSensorStatus.STOPPED,
     )
+    @sentry.instrument_sensor
     def new_gcs_blobs_sensor_definition(context: SensorEvaluationContext):
         context.log.info(f"Starting {sensor_name}")
 

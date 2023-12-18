@@ -7,7 +7,7 @@ import logging
 import re
 from collections import defaultdict
 from datetime import datetime
-from typing import Dict, FrozenSet, Iterable, List
+from typing import Dict, FrozenSet, Iterable, List, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
@@ -218,3 +218,11 @@ class Helpers(object):
                 return m.group(2)
         else:
             return id_or_url
+
+    @staticmethod
+    def check_sheet_is_valid(client, spreadsheet_id: str, sheet_name: str) -> Tuple[bool, str]:
+        try:
+            Helpers.get_first_row(client, spreadsheet_id, sheet_name)
+            return True, ""
+        except Exception as e:
+            return False, str(e)

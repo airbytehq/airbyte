@@ -8,6 +8,11 @@ definitions:
   list_selector:
     extractor:
       field_path: ["{{ parameters['name'] }}"]
+  event_selector:
+    extractor:
+      class_name: source_braze.components.EventsRecordExtractor
+      field_path:
+        - events
 
   # ----- Requester -----
   requester:
@@ -34,6 +39,21 @@ definitions:
       $ref: "#/definitions/requester"
       request_parameters:
         last_edit.time[gt]: "{{ config['start_date'] }}"
+
+  event_retriever:
+    record_selector:
+      $ref: "#/definitions/event_selector"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 2
+      page_token_option:
+        type: RequestOption
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "#/definitions/requester"
 
   # ----- Stream bases -----
   list_stream:
@@ -66,12 +86,8 @@ definitions:
       primary_key: "id"
       path: "/segments/list"
   custom_events_stream:
-    $ref: "#/definitions/list_stream"
-    transformations:
-      - class_name: "source_braze.TransformToRecordComponent"
-        fields:
-          - path: ["event_name"]
-            value: "{{ record }}"
+    retriever:
+      $ref: "#/definitions/event_retriever"
     $parameters:
       name: "events"
       path: "/events/list"
@@ -164,6 +180,11 @@ definitions:
       $ref: "#/definitions/datetime_14d_incremental_sync"
     retriever:
       $ref: "#/definitions/non_paginated_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          include_variant_breakdown: "true"
+          include_step_breakdown: "true"
       record_selector:
         extractor:
           field_path: ["data", "stats"]
@@ -271,11 +292,93 @@ definitions:
       name: "events_analytics"
       path: "/events/data_series"
 
+  # -- Details streams
+  segments_details_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/segments_stream"
+            parent_key: "id"
+            partition_field: "segment_id"
+            request_option:
+              field_name: "segment_id"
+              inject_into: "request_parameter"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["segment_id"]
+            value: "{{ stream_slice.segment_id }}"
+    $parameters:
+      name: "segments_details"
+      path: "/segments/details"
+  campaigns_details_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/campaigns_stream"
+            parent_key: "id"
+            partition_field: "campaign_id"
+            request_option:
+              field_name: "campaign_id"
+              inject_into: "request_parameter"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["campaign_id"]
+            value: "{{ stream_slice.campaign_id }}"
+    $parameters:
+      name: "campaigns_details"
+      path: "/campaigns/details"
+  canvases_details_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/canvases_stream"
+            parent_key: "id"
+            partition_field: "canvas_id"
+            request_option:
+              field_name: "canvas_id"
+              inject_into: "request_parameter"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["canvas_id"]
+            value: "{{ stream_slice.canvas_id }}"
+    $parameters:
+      name: "canvases_details"
+      path: "/canvas/details"
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/campaigns_analytics_stream"
+  - "#/definitions/campaigns_details_stream"
   - "#/definitions/canvases_stream"
   - "#/definitions/canvases_analytics_stream"
+  - "#/definitions/canvases_details_stream"
   - "#/definitions/custom_events_stream"
   - "#/definitions/events_analytics_stream"
   - "#/definitions/kpi_daily_new_users_stream"
@@ -285,6 +388,7 @@ streams:
   - "#/definitions/cards_analytics_stream"
   - "#/definitions/segments_stream"
   - "#/definitions/segments_analytics_stream"
+  - "#/definitions/segments_details_stream"
 
 check:
   stream_names:

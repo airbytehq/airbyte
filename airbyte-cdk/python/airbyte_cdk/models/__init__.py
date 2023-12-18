@@ -7,6 +7,7 @@
 # of airbyte-cdk rather than a standalone package.
 from .airbyte_protocol import (
     AdvancedAuth,
+    AirbyteAnalyticsTraceMessage,
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteControlConnectorConfigMessage,
@@ -27,8 +28,6 @@ from .airbyte_protocol import (
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
     AuthFlowType,
-    AuthSpecification,
-    AuthType,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
@@ -36,7 +35,6 @@ from .airbyte_protocol import (
     EstimateType,
     FailureType,
     Level,
-    OAuth2Specification,
     OAuthConfigSpecification,
     OrchestratorType,
     Status,

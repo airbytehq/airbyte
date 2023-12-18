@@ -10,7 +10,10 @@ from urllib.parse import urlencode
 
 import pendulum
 import requests
+from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils import casing
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
@@ -35,11 +38,19 @@ class LinkedinAdsStream(HttpStream, ABC):
     def __init__(self, config: Dict):
         super().__init__(authenticator=config.get("authenticator"))
         self.config = config
+        self.date_time_fields = self._get_date_time_items_from_schema()
+
+    def _get_date_time_items_from_schema(self):
+        """
+        Get all properties from schema with format: 'date-time'
+        """
+        schema = self.get_json_schema()
+        return [k for k, v in schema["properties"].items() if v.get("format") == "date-time"]
 
     @property
     def accounts(self):
         """Property to return the list of the user Account Ids from input"""
-        return ",".join(map(str, self.config.get("account_ids")))
+        return ",".join(map(str, self.config.get("account_ids", [])))
 
     def path(
         self,
@@ -83,7 +94,17 @@ class LinkedinAdsStream(HttpStream, ABC):
         """
         We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
         """
-        yield from transform_data(response.json().get("elements"))
+        for record in transform_data(response.json().get("elements")):
+            yield self._date_time_to_rfc3339(record)
+
+    def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """
+        Transform 'date-time' items to RFC3339 format
+        """
+        for item in record:
+            if item in self.date_time_fields and record[item]:
+                record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+        return record
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 429:
@@ -154,7 +175,7 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         """Define the checkpoint from the records output size."""
-        return super().records_limit
+        return 100
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = {self.cursor_field: self.config.get("start_date")} if not current_stream_state else current_stream_state
@@ -172,7 +193,6 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
 
     parent_stream = Accounts
     parent_values_map = {"account_id": "id"}
-    # define default additional request params
 
     def filter_records_newer_than_state(
         self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping[str, Any]] = None
@@ -256,6 +276,7 @@ class Campaigns(LinkedInAdsStreamSlicing):
     """
 
     endpoint = "adCampaigns"
+    use_cache = True
 
     def path(
         self,
@@ -332,6 +353,43 @@ class Creatives(LinkedInAdsStreamSlicing):
         return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
 
 
+class Conversions(LinkedInAdsStreamSlicing):
+    """
+    Get Conversions data using `account_id` slicing.
+    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account
+    """
+
+    endpoint = "conversions"
+    search_param = "account"
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        headers = super().request_headers(stream_state, stream_slice, next_page_token)
+        headers.update({"X-Restli-Protocol-Version": "2.0.0"})
+        return headers
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["q"] = self.search_param
+        params["account"] = f"urn%3Ali%3AsponsoredAccount%3A{stream_slice.get('account_id')}"
+
+        return urlencode(params, safe="():,%")
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = (
+            {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
+            if not current_stream_state
+            else current_stream_state
+        )
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
+
+
 class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     """
     AdAnalytics Streams more info:
@@ -342,11 +400,29 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     # For Analytics streams the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc] + `end_date`
     primary_key = ["pivotValue", "end_date"]
     cursor_field = "end_date"
+    records_limit = 15000
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
+
+    def __init__(self, name: str = None, pivot_by: str = None, time_granularity: str = None, **kwargs):
+        self.user_stream_name = name
+        if pivot_by:
+            self.pivot_by = pivot_by
+        if time_granularity:
+            self.time_granularity = time_granularity
+        super().__init__(**kwargs)
+
+    @property
+    def name(self) -> str:
+        """We override stream name to let the user change it via configuration."""
+        name = self.user_stream_name or self.__class__.__name__
+        return casing.camel_to_snake(name)
 
     @property
     def base_analytics_params(self) -> MutableMapping[str, Any]:
         """Define the base parameters for analytics streams"""
-        return {"q": "analytics", "pivot": self.pivot_by, "timeGranularity": "(value:DAILY)"}
+        return {"q": "analytics", "pivot": f"(value:{self.pivot_by})", "timeGranularity": f"(value:{self.time_granularity})"}
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -364,6 +440,20 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         params.update(**update_analytics_params(stream_slice))
         params[self.search_param] = f"List(urn%3Ali%3A{self.search_param_value}%3A{self.get_primary_key_from_slice(stream_slice)})"
         return urlencode(params, safe="():,%")
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Pagination is not supported
+        (See Restrictions: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-09&tabs=http#restrictions)
+        """
+        parsed_response = response.json()
+        if len(parsed_response.get("elements")) < self.records_limit:
+            return None
+        raise Exception(
+            f"Limit {self.records_limit} elements exceeded. "
+            f"Try to request your data in more granular pieces. "
+            f"(For example switch `Time Granularity` from MONTHLY to DAILY)"
+        )
 
     def get_primary_key_from_slice(self, stream_slice) -> str:
         return stream_slice.get(self.primary_slice_key)
@@ -401,7 +491,8 @@ class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
     parent_values_map = {"campaign_id": "id"}
     search_param = "campaigns"
     search_param_value = "sponsoredCampaign"
-    pivot_by = "(value:CAMPAIGN)"
+    pivot_by = "CAMPAIGN"
+    time_granularity = "DAILY"
 
 
 class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
@@ -413,8 +504,45 @@ class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     parent_values_map = {"creative_id": "id"}
     search_param = "creatives"
     search_param_value = "sponsoredCreative"
-    pivot_by = "(value:CREATIVE)"
+    pivot_by = "CREATIVE"
+    time_granularity = "DAILY"
 
     def get_primary_key_from_slice(self, stream_slice) -> str:
         creative_id = stream_slice.get(self.primary_slice_key).split(":")[-1]
         return creative_id
+
+
+class AdImpressionDeviceAnalytics(AdCampaignAnalytics):
+    pivot_by = "IMPRESSION_DEVICE_TYPE"
+
+
+class AdMemberCompanySizeAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_COMPANY_SIZE"
+
+
+class AdMemberIndustryAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_INDUSTRY"
+
+
+class AdMemberSeniorityAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_SENIORITY"
+
+
+class AdMemberJobTitleAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_JOB_TITLE"
+
+
+class AdMemberJobFunctionAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_JOB_FUNCTION"
+
+
+class AdMemberCountryAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_COUNTRY_V2"
+
+
+class AdMemberRegionAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_REGION_V2"
+
+
+class AdMemberCompanyAnalytics(AdCampaignAnalytics):
+    pivot_by = "MEMBER_COMPANY"

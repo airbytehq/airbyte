@@ -23,9 +23,6 @@ on:
         description: "Set a specific connector acceptance test version to use. Enter 'dev' to test, build and use a local version of Connector Acceptance Test."
         required: false
         default: "latest"
-      local_cdk:
-        description: "Run Connector Acceptance Tests against the CDK version on the current branch."
-        required: false
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
@@ -99,11 +96,12 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Install CI scripts
         # all CI python packages have the prefix "ci_"
         run: |
-          pip install --quiet -e ./tools/ci_*
+          pip install --quiet -e ./airbyte-ci/connectors/ci_credentials
+          pip install --quiet -e ./airbyte-ci/connectors/connector_ops
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: |
           ci_credentials ${{ github.event.inputs.connector }} write-to-storage
@@ -115,6 +113,9 @@ jobs:
           fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      - name: Build Java CDK Snapshot if Needed
+        # If a snapshot version is specified for the Java CDK, build publish locally. Otherwise, do nothing.
+        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded
       - name: Test ${{ github.event.inputs.connector }}
         id: test
         env:
@@ -126,7 +127,7 @@ jobs:
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
         uses: Wandalen/wretry.action@v1.0.42
         with:
-          command: ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }} ${{ github.event.inputs.local_cdk }}
+          command: ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
           attempt_limit: 3
           attempt_delay: 10000 # in ms
       - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}

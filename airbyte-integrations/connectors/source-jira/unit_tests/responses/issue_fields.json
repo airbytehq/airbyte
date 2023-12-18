@@ -7,9 +7,7 @@
     "orderable": false,
     "navigable": true,
     "searchable": true,
-    "clauseNames": [
-      "statusCategoryChangedDate"
-    ],
+    "clauseNames": ["statusCategoryChangedDate"],
     "schema": {
       "type": "datetime",
       "system": "statuscategorychangedate"
@@ -23,12 +21,9 @@
     "orderable": true,
     "navigable": true,
     "searchable": true,
-    "clauseNames": [
-      "issuetype",
-      "type"
-    ],
+    "clauseNames": ["issuetype", "type"],
     "schema": {
-      "type": "issuetype",
+      "type": "option",
       "system": "issuetype"
     }
   },
@@ -40,8 +35,34 @@
     "orderable": false,
     "navigable": true,
     "searchable": false,
-    "clauseNames": [
-      "parent"
-    ]
+    "clauseNames": ["parent"]
+  },
+  {
+    "id": "issuetype2",
+    "key": "issuetype2",
+    "name": "Issue Type2",
+    "custom": true,
+    "orderable": true,
+    "navigable": true,
+    "searchable": true,
+    "clauseNames": ["issuetype", "type"],
+    "schema": {
+      "type": "option",
+      "system": "issuetype"
+    }
+  },
+  {
+    "id": "issuetype3",
+    "key": "issuetype3",
+    "name": "Issue Type3",
+    "custom": true,
+    "orderable": true,
+    "navigable": true,
+    "searchable": true,
+    "clauseNames": ["issuetype", "type"],
+    "schema": {
+      "type": "option",
+      "system": "issuetype"
+    }
   }
 ]

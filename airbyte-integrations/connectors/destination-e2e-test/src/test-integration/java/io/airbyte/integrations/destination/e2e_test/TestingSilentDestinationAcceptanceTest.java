@@ -7,12 +7,13 @@ package io.airbyte.integrations.destination.e2e_test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.e2e_test.TestingDestinations.TestDestinationType;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -42,7 +43,7 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     // do nothing
   }
 

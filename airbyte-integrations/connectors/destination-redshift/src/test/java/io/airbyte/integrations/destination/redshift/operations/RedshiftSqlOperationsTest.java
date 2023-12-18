@@ -42,5 +42,5 @@ public class RedshiftSqlOperationsTest {
     boolean isValid = uut.isValidData(testNode);
     assertEquals(true, isValid);
   }
-  
+
 }

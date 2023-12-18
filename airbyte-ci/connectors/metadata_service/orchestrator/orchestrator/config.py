@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import os
 from typing import Optional
 
@@ -15,6 +19,13 @@ CI_MASTER_TEST_OUTPUT_REGEX = f".*master.*output.json$"
 CONNECTOR_REPO_NAME = "airbytehq/airbyte"
 CONNECTORS_PATH = "airbyte-integrations/connectors"
 CONNECTOR_TEST_SUMMARY_FOLDER = "test_summary"
+
+MAX_METADATA_PARTITION_RUN_REQUEST = 50
+
+HIGH_QUEUE_PRIORITY = "3"
+MED_QUEUE_PRIORITY = "2"
+LOW_QUEUE_PRIORITY = "1"
+NO_QUEUE_PRIORITY = "-1"
 
 
 def get_public_url_for_gcs_file(bucket_name: str, file_path: str, cdn_url: Optional[str] = None) -> str:

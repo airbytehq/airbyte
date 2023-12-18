@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination.azure_blob_storage;
 
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

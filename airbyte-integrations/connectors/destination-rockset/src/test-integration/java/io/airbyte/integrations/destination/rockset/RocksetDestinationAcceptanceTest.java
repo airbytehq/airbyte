@@ -14,16 +14,17 @@ import com.rockset.client.api.QueriesApi;
 import com.rockset.client.model.QueryRequest;
 import com.rockset.client.model.QueryRequestSql;
 import com.squareup.okhttp.Response;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -147,7 +148,7 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     // Nothing to do
   }
 

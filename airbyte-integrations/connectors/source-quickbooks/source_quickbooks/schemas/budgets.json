@@ -1,65 +1,35 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": [
-    "null",
-    "object"
-  ],
+  "type": ["null", "object"],
   "properties": {
     "BudgetEntryType": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "domain": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Active": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "EndDate": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "StartDate": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "BudgetType": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "SyncToken": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "BudgetDetail": {
       "items": {
@@ -67,134 +37,74 @@
           "ClassRef": {
             "properties": {
               "name": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "value": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               }
             },
-            "type": [
-              "null",
-              "object"
-            ]
+            "type": ["null", "object"]
           },
           "DepartmentRef": {
             "properties": {
               "name": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "value": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               }
             },
-            "type": [
-              "null",
-              "object"
-            ]
+            "type": ["null", "object"]
           },
           "CustomerRef": {
             "properties": {
               "name": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "value": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               }
             },
-            "type": [
-              "null",
-              "object"
-            ]
+            "type": ["null", "object"]
           },
           "AccountRef": {
             "properties": {
               "name": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "value": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               }
             },
-            "type": [
-              "null",
-              "object"
-            ]
+            "type": ["null", "object"]
           },
           "BudgetDate": {
             "format": "date-time",
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "Amount": {
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           }
         },
-        "type": [
-          "null",
-          "object"
-        ]
+        "type": ["null", "object"]
       },
-      "type": [
-        "null",
-        "array"
-      ]
+      "type": ["null", "array"]
     },
     "MetaData": {
       "properties": {
         "CreateTime": {
           "format": "date-time",
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "LastUpdatedTime": {
           "format": "date-time",
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "airbyte_cursor": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     }
   }
 }

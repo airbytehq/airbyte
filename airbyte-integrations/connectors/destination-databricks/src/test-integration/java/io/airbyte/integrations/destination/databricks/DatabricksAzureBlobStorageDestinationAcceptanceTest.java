@@ -13,11 +13,12 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.HashSet;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
@@ -45,7 +46,7 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(SECRETS_CONFIG_JSON)));
 
     // Set a random Azure path and database schema for each integration test
