@@ -14,36 +14,36 @@ from pendulum import parse, today
 
 from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
-from .models import Customer
+from .models import CustomerModel
 from .streams import (
-    AccountLabels,
     AccountPerformanceReport,
-    Accounts,
-    AdGroupAdLabels,
-    AdGroupAdReport,
-    AdGroupAds,
-    AdGroupBiddingStrategies,
-    AdGroupCriterionLabels,
-    AdGroupCriterions,
-    AdGroupLabels,
-    AdGroups,
-    AdListingGroupCriterions,
+    AdGroup,
+    AdGroupAd,
+    AdGroupAdLabel,
+    AdGroupAdLegacy,
+    AdGroupBiddingStrategy,
+    AdGroupCriterion,
+    AdGroupCriterionLabel,
+    AdGroupLabel,
+    AdListingGroupCriterion,
     Audience,
-    CampaignBiddingStrategies,
+    Campaign,
+    CampaignBiddingStrategy,
     CampaignBudget,
     CampaignCriterion,
-    CampaignLabels,
-    Campaigns,
+    CampaignLabel,
     ClickView,
-    DisplayKeywordPerformanceReport,
-    DisplayTopicsPerformanceReport,
-    GeographicReport,
-    KeywordReport,
-    Labels,
+    Customer,
+    CustomerLabel,
+    DisplayKeywordView,
+    GeographicView,
+    KeywordView,
+    Label,
     ServiceAccounts,
-    ShoppingPerformanceReport,
+    ShoppingPerformanceView,
+    TopicView,
     UserInterest,
-    UserLocationReport,
+    UserLocationView,
 )
 from .utils import GAQL
 
@@ -58,7 +58,6 @@ FULL_REFRESH_CUSTOM_TABLE = [
 
 
 class SourceGoogleAds(AbstractSource):
-
     # Skip exceptions on missing streams
     raise_exception_on_missing_stream = False
 
@@ -87,7 +86,7 @@ class SourceGoogleAds(AbstractSource):
         return credentials
 
     @staticmethod
-    def get_incremental_stream_config(google_api: GoogleAds, config: Mapping[str, Any], customers: List[Customer]):
+    def get_incremental_stream_config(google_api: GoogleAds, config: Mapping[str, Any], customers: List[CustomerModel]):
         # date range is mandatory parameter for incremental streams, so default start day is used
         start_date = config.get("start_date", today().subtract(years=2).to_date_string())
 
@@ -106,7 +105,7 @@ class SourceGoogleAds(AbstractSource):
         return incremental_stream_config
 
     def get_account_info(self, google_api: GoogleAds, config: Mapping[str, Any]) -> Iterable[Iterable[Mapping[str, Any]]]:
-        dummy_customers = [Customer(id=_id) for _id in config["customer_id"].split(",")]
+        dummy_customers = [CustomerModel(id=_id) for _id in config["customer_id"].split(",")]
         accounts_stream = ServiceAccounts(google_api, customers=dummy_customers)
         for slice_ in accounts_stream.stream_slices():
             yield accounts_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_)
@@ -125,7 +124,7 @@ class SourceGoogleAds(AbstractSource):
         google_api = GoogleAds(credentials=self.get_credentials(config))
 
         accounts = self.get_account_info(google_api, config)
-        customers = Customer.from_accounts(accounts)
+        customers = CustomerModel.from_accounts(accounts)
         # Check custom query request validity by sending metric request with non-existant time window
         for customer in customers:
             for query in config.get("custom_queries", []):
@@ -151,44 +150,44 @@ class SourceGoogleAds(AbstractSource):
         config = self._validate_and_transform(config)
         google_api = GoogleAds(credentials=self.get_credentials(config))
         accounts = self.get_account_info(google_api, config)
-        customers = Customer.from_accounts(accounts)
+        customers = CustomerModel.from_accounts(accounts)
         non_manager_accounts = [customer for customer in customers if not customer.is_manager_account]
         default_config = dict(api=google_api, customers=customers)
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
         streams = [
-            AdGroupAds(**incremental_config),
-            AdGroupAdLabels(**default_config),
-            AdGroups(**incremental_config),
-            AdGroupBiddingStrategies(**incremental_config),
-            AdGroupCriterions(**default_config),
-            AdGroupCriterionLabels(**default_config),
-            AdGroupLabels(**default_config),
-            AdListingGroupCriterions(**default_config),
-            Accounts(**incremental_config),
-            AccountLabels(**default_config),
+            AdGroup(**incremental_config),
+            AdGroupAd(**incremental_config),
+            AdGroupAdLabel(**default_config),
+            AdGroupBiddingStrategy(**incremental_config),
+            AdGroupCriterion(**default_config),
+            AdGroupCriterionLabel(**default_config),
+            AdGroupLabel(**default_config),
+            AdListingGroupCriterion(**default_config),
             Audience(**default_config),
-            CampaignBiddingStrategies(**incremental_config),
+            CampaignBiddingStrategy(**incremental_config),
             CampaignCriterion(**default_config),
-            CampaignLabels(google_api, customers=customers),
+            CampaignLabel(google_api, customers=customers),
             ClickView(**incremental_config),
-            Labels(**default_config),
+            Customer(**incremental_config),
+            CustomerLabel(**default_config),
+            Label(**default_config),
             UserInterest(**default_config),
         ]
         # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:
             streams.extend(
                 [
-                    Campaigns(**non_manager_incremental_config),
+                    Campaign(**non_manager_incremental_config),
                     CampaignBudget(**non_manager_incremental_config),
-                    UserLocationReport(**non_manager_incremental_config),
+                    UserLocationView(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),
-                    DisplayTopicsPerformanceReport(**non_manager_incremental_config),
-                    DisplayKeywordPerformanceReport(**non_manager_incremental_config),
-                    ShoppingPerformanceReport(**non_manager_incremental_config),
-                    AdGroupAdReport(**non_manager_incremental_config),
-                    GeographicReport(**non_manager_incremental_config),
-                    KeywordReport(**non_manager_incremental_config),
+                    TopicView(**non_manager_incremental_config),
+                    DisplayKeywordView(**non_manager_incremental_config),
+                    ShoppingPerformanceView(**non_manager_incremental_config),
+                    AdGroupAdLegacy(**non_manager_incremental_config),
+                    GeographicView(**non_manager_incremental_config),
+                    KeywordView(**non_manager_incremental_config),
                 ]
             )
         for single_query_config in config.get("custom_queries", []):

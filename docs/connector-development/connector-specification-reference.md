@@ -4,7 +4,11 @@ The [connector specification](../understanding-airbyte/airbyte-protocol.md#spec)
 
 ## Demoing your specification
 
-While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions [here](https://github.com/airbytehq/airbyte-platform/blob/master/airbyte-webapp/docs/HowTo-ConnectionSpecification.md).
+While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions below.
+1. Open the `ConnectorForm` preview component in our deployed Storybook at: https://components.airbyte.dev/?path=/story/connector-connectorform--preview
+2. Press `raw` on the `connectionSpecification` property, so you will be able to paste a JSON structured string
+3. Set the string you want to preview the UI for
+4. When submitting the form you can see a preview of the values in the "Actions" tab
 
 ### Secret obfuscation
 

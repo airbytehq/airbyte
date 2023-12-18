@@ -29,6 +29,7 @@ acceptance_tests:
           - name: products
           - name: stages
           - name: deal_products
+          - name: mail
 
   incremental:
     tests:

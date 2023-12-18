@@ -13,7 +13,7 @@ from google.ads.googleads.v11.errors.types.request_error import RequestErrorEnum
 from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import Accounts, ClickView
+from source_google_ads.streams import ClickView, Customer
 
 # EXPIRED_PAGE_TOKEN exception will be raised when page token has expired.
 exception = GoogleAdsException(
@@ -223,7 +223,7 @@ def test_retry_transient_errors(mocker, config, customers, error_cls):
 
 def test_parse_response(mocker, customers, config):
     """
-    Tests the `parse_response` method of the `Accounts` class.
+    Tests the `parse_response` method of the `Customer` class.
     The test checks if the optimization_score_weight of type int is converted to float.
     """
 
@@ -246,8 +246,8 @@ def test_parse_response(mocker, customers, config):
         customers=customers,
     )
 
-    # Create an instance of the Accounts class
-    accounts = Accounts(**incremental_stream_config)
+    # Create an instance of the Customer class
+    accounts = Customer(**incremental_stream_config)
 
     # Use the parse_response method and get the output
     output = list(accounts.parse_response(response))

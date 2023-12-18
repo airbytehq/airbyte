@@ -16,6 +16,8 @@ import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorag
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -44,16 +46,12 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-import org.apache.kafka.connect.json.JsonConverter;
-import org.apache.kafka.connect.json.JsonConverterConfig;
-import org.apache.kafka.connect.runtime.WorkerConfig;
-import org.apache.kafka.connect.runtime.standalone.StandaloneConfig;
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlDebeziumStateUtil {
+public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlDebeziumStateUtil.class);
 
@@ -150,7 +148,7 @@ public class MySqlDebeziumStateUtil {
           }
           return Optional.empty();
         })) {
-      List<Optional<GtidSet>> gtidSet = stream.toList();
+      final List<Optional<GtidSet>> gtidSet = stream.toList();
       if (gtidSet.isEmpty()) {
         return Optional.empty();
       } else if (gtidSet.size() == 1) {
@@ -179,36 +177,23 @@ public class MySqlDebeziumStateUtil {
   }
 
   private Optional<MysqlDebeziumStateAttributes> parseSavedOffset(final Properties properties) {
-
     FileOffsetBackingStore fileOffsetBackingStore = null;
     OffsetStorageReaderImpl offsetStorageReader = null;
-    try {
-      fileOffsetBackingStore = new FileOffsetBackingStore();
-      final Map<String, String> propertiesMap = Configuration.from(properties).asMap();
-      propertiesMap.put(WorkerConfig.KEY_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
-      propertiesMap.put(WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
-      fileOffsetBackingStore.configure(new StandaloneConfig(propertiesMap));
-      fileOffsetBackingStore.start();
 
-      final Map<String, String> internalConverterConfig = Collections.singletonMap(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, "false");
-      final JsonConverter keyConverter = new JsonConverter();
-      keyConverter.configure(internalConverterConfig, true);
-      final JsonConverter valueConverter = new JsonConverter();
-      valueConverter.configure(internalConverterConfig, false);
+    try {
+      fileOffsetBackingStore = getFileOffsetBackingStore(properties);
+      offsetStorageReader = getOffsetStorageReader(fileOffsetBackingStore, properties);
 
       final MySqlConnectorConfig connectorConfig = new MySqlConnectorConfig(Configuration.from(properties));
       final MySqlOffsetContext.Loader loader = new MySqlOffsetContext.Loader(connectorConfig);
       final Set<Partition> partitions =
           Collections.singleton(new MySqlPartition(connectorConfig.getLogicalName(), properties.getProperty(DATABASE_NAME.name())));
 
-      offsetStorageReader = new OffsetStorageReaderImpl(fileOffsetBackingStore, properties.getProperty("name"), keyConverter,
-          valueConverter);
       final OffsetReader<Partition, MySqlOffsetContext, Loader> offsetReader = new OffsetReader<>(offsetStorageReader,
           loader);
       final Map<Partition, MySqlOffsetContext> offsets = offsetReader.offsets(partitions);
 
       return extractStateAttributes(partitions, offsets);
-
     } finally {
       LOGGER.info("Closing offsetStorageReader and fileOffsetBackingStore");
       if (offsetStorageReader != null) {
@@ -270,10 +255,18 @@ public class MySqlDebeziumStateUtil {
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
         if (event == null) {
-          if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5L)) > 0) {
-            LOGGER.error("No record is returned even after 5 minutes of waiting, closing the engine");
+          Duration initialWaitingDuration = Duration.ofMinutes(5L);
+          // If initial waiting seconds is configured and it's greater than 5 minutes, use that value instead
+          // of the default value
+          final Duration configuredDuration = RecordWaitTimeUtil.getFirstRecordWaitTime(database.getSourceConfig());
+          if (configuredDuration.compareTo(initialWaitingDuration) > 0) {
+            initialWaitingDuration = configuredDuration;
+          }
+          if (Duration.between(engineStartTime, Instant.now()).compareTo(initialWaitingDuration) > 0) {
+            LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", initialWaitingDuration.getSeconds());
             publisher.close();
-
+            throw new RuntimeException(
+                "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
           }
           continue;
         }
@@ -295,6 +288,9 @@ public class MySqlDebeziumStateUtil {
     final JsonNode asJson = serialize(offset, schemaHistory);
     LOGGER.info("Initial Debezium state constructed: {}", asJson);
 
+    if (asJson.get(MysqlCdcStateConstants.MYSQL_DB_HISTORY).asText().isBlank()) {
+      throw new RuntimeException("Schema history snapshot returned empty history.");
+    }
     return asJson;
   }
 

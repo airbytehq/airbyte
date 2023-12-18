@@ -1,3 +1,16 @@
+[tool.poetry]
+name = "airbyte"
+version = "0.1.0"
+description = "Airbyte open source connector code"
+authors = ["Airbyte <contact@airbyte.io>"]
+
+[tool.poetry.dependencies]
+python = "~3.10"
+
+[tool.poetry.group.dev.dependencies]
+isort = "5.6.4"
+black = "~22.3.0"
+
 [tool.black]
 line-length = 140
 target-version = ["py37"]

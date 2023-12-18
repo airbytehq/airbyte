@@ -5,7 +5,7 @@
 import json
 import logging
 import os
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 from urllib.parse import unquote
 
 import pyarrow as pa
@@ -22,6 +22,12 @@ from pyarrow import Scalar
 class ParquetParser(FileTypeParser):
 
     ENCODING = None
+
+    def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
+        """
+        ParquetParser does not require config checks, implicit pydantic validation is enough.
+        """
+        return True, None
 
     async def infer_schema(
         self,
@@ -95,7 +101,10 @@ class ParquetParser(FileTypeParser):
 
         # Decode binary strings to utf-8
         if ParquetParser._is_binary(parquet_value.type):
-            return parquet_value.as_py().decode("utf-8")
+            py_value = parquet_value.as_py()
+            if py_value is None:
+                return py_value
+            return py_value.decode("utf-8")
         if pa.types.is_decimal(parquet_value.type):
             if parquet_format.decimal_as_float:
                 return parquet_value.as_py()

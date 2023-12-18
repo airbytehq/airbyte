@@ -248,3 +248,25 @@ class TestEventsExtractor:
         )
         params = stream.request_params(stream_slice={"start": "20230801T00", "end": "20230801T23"})
         assert params == {"start": "20230801T00", "end": "20230801T23"}
+
+    def test_updated_state(self):
+        stream = Events(
+            authenticator=MagicMock(),
+            start_date="2023-08-01T00:00:00Z",
+            data_region="Standard Server",
+            event_time_interval={"size_unit": "hours", "size": 24},
+        )
+
+        # Sample is in unordered state on purpose. We need to ensure state allways keeps latest value
+        cursor_fields_smaple = [
+            {"server_upload_time": "2023-08-29"},
+            {"server_upload_time": "2023-08-28"},
+            {"server_upload_time": "2023-08-31"},
+            {"server_upload_time": "2023-08-30"},
+        ]
+
+        state = {"server_upload_time": "2023-01-01"}
+        for record in cursor_fields_smaple:
+            state = stream.get_updated_state(state, record)
+
+        assert state["server_upload_time"] == "2023-08-31 00:00:00.000000"

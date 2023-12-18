@@ -1,6 +1,6 @@
 # Connector Builder Intro
 
-The connector builder UI provides an intuitive UI on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) and to use built connectors for syncs within the same workspace directly from within the UI. We recommend using it to iterate on your low-code connectors.
+The connector builder UI provides an intuitive UI on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) and uses built connectors for syncs within the same workspace directly from within the UI. We recommend using it to iterate on your low-code connectors.
 
 :::note
 The connector builder UI is in beta, which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests with us on our Slack channel or email us at feedback@airbyte.io
@@ -21,27 +21,27 @@ The connector builder is the right tool if the following points are met:
 
 The high level flow for using the connector builder is as follows:
 
-1. Access the connector builder in the Airbyte webapp
+1. Access the connector builder in the Airbyte web app
 2. Use the connector builder to iterate on your low-code connector
 3. Once the connector is ready, publish it to the local workspace
 4. Configure a Source based on the released connector
 5. Use the Source in a connection to sync data
 
-Follow [the tutorial](./tutorial.mdx) for an example of this flow. The concept pages in the side bar to the left go into greater detail of more complex configurations.
+Follow [the tutorial](./tutorial.mdx) for an example of this flow. The concept pages in the sidebar to the left go into greater detail of more complex configurations.
 
 ## Connector vs. configured source vs. connection
 
-When building a connector, it's important to differentiate between the connector, the configured source based on a connector and the connection:
+When building a connector, it's important to differentiate between the connector, the configured source based on a connector, and the connection:
 
-The **connector** defines the functionality how to access an API or a database, for example protocol, URL paths to access, the way requests need to be structured and how to extract records from responses.
+The **connector** defines the functionality of how to access an API or a database, for example protocol, URL paths to access, the way requests need to be structured, and how to extract records from responses.
 
 :::info
 While configuring a connector in the builder, make sure to not hardcode things like API keys or passwords - these should be passed in as user input when configuring a Source based on your connector.
 
-Follow [the tutorial](./tutorial.mdx) for an example how this looks like in practice.
+Follow [the tutorial](./tutorial.mdx) for an example of how this looks like in practice.
 :::
 
-The **configured source** is configuring a connector to actually extract records. The exact fields of the configuration depend on the connector, but in most cases it provides authentication information (username and password, api key) and information about which data to extract, for example start date to sync records from, a search query records have to match.
+The **configured source** is configuring a connector to actually extract records. The exact fields of the configuration depend on the connector, but in most cases, it provides authentication information (username and password, API key) and information about which data to extract, for example, the start date to sync records from, a search query records have to match.
 
 The **connection** links up a configured source and a configured destination to perform syncs. It defines things like the replication frequency (e.g. hourly, daily, manually) and which streams to replicate.
 
@@ -82,7 +82,7 @@ To do so, follow these steps:
 * Change and test the connector
 
 The following connectors are good showcases for real-world use cases:
-* The [Pendo.io API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-pendo/source_pendo/manifest.yaml) is a simple connector implementing multiple streams and api-key based authentication
+* The [Pendo.io API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-pendo/source_pendo/manifest.yaml) is a simple connector implementing multiple streams and API-key based authentication
 * The [News API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-news-api/source_news_api/manifest.yaml) implements pagination and user-configurable request parameters
 * The [CoinGecko API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-coingecko-coins/source_coingecko_coins/manifest.yaml) implements incremental syncs
 

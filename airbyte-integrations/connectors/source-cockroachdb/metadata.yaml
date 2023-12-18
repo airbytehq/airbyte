@@ -13,7 +13,7 @@ data:
   name: Cockroachdb
   registries:
     cloud:
-      enabled: false
+      enabled: false # Can not be in cloud until security is handled via DEPLOYMENT_MODE=cloud.
     oss:
       enabled: true
   releaseStage: alpha

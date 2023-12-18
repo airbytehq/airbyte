@@ -4,9 +4,19 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = ['db-sources']
     useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileTestJava {
+        options.compilerArgs.remove("-Werror")
+    }
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -16,18 +26,14 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
-    implementation project(':airbyte-json-validation')
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'com.networknt:json-schema-validator:1.0.72'
 
     // random Json object generation from Json schema
     // https://github.com/airbytehq/jsongenerator
-    implementation 'net.jimblackler.jsonschemafriend:core:0.11.2'
+    implementation 'net.jimblackler.jsonschemafriend:core:0.12.1'
     implementation 'org.mozilla:rhino-engine:1.7.14'
-    implementation group: 'com.github.airbytehq', name: 'jsongenerator', version: '1.0.1'
-
-    testImplementation project(":airbyte-json-validation")
+    implementation group: 'com.github.airbytehq', name: 'jsongenerator', version: '1.0.2'
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-e2e-test')
 }

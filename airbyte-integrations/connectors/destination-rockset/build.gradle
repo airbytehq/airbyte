@@ -4,9 +4,16 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = ['db-destinations']
     useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -16,14 +23,7 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-repositories {
-    maven { url "https://mvnrepository.com/artifact/com.rockset/rockset-java" }
-    maven { url "https://mvnrepository.com/artifact/org.awaitility/awaitility" }
-}
-
 dependencies {
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation libs.airbyte.protocol
 
     implementation group: 'com.rockset', name: 'rockset-java', version: '0.9.0'
     implementation group: 'org.awaitility', name: 'awaitility', version: '4.1.1'

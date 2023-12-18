@@ -303,13 +303,12 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     Preconditions.checkArgument(lowerBound != null, "Lower bound ctid expected");
     Preconditions.checkArgument(upperBound != null, "Upper bound ctid expected");
     try {
-      LOGGER.info("*** one more {}", lowerBound);
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
           quoteString);
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
       final String sql =
-          "SELECT ctid::text, %s FROM %s WHERE ctid = ANY (ARRAY (SELECT FORMAT('(%%s,%%s)', page, tuple)::tid FROM generate_series(?, ?) as page, generate_series(?,?) as tuple))"
+          "SELECT ctid::text, %s FROM %s WHERE ctid = ANY (ARRAY (SELECT FORMAT('(%%s,%%s)', page, tuple)::tid tid_addr FROM generate_series(?, ?) as page, generate_series(?,?) as tuple ORDER BY tid_addr))"
               .formatted(
                   wrappedColumnNames, fullTableName);
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);

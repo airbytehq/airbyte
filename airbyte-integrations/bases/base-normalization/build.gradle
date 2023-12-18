@@ -1,26 +1,22 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
 plugins {
-    id 'airbyte-docker'
+    id 'airbyte-docker-legacy'
     id 'airbyte-python'
 }
 
-airbytePython {
-    moduleDirectory 'normalization'
-}
-
 dependencies {
-    project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+    project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
 }
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
 def copySshScript = tasks.register('copySshScript', Copy) {
-    from "${project(':airbyte-connector-test-harnesses:acceptance-test-harness').buildDir}/resources/main"
+    from "${project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness').buildDir}/resources/main"
     into "${buildDir}"
     include "sshtunneling.sh"
 }
 copySshScript.configure {
-    dependsOn project(':airbyte-connector-test-harnesses:acceptance-test-harness').tasks.named('processResources')
+    dependsOn project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness').tasks.named('processResources')
 }
 
 // make sure the copy task above worked (if it fails, it fails silently annoyingly)
@@ -43,20 +39,6 @@ tasks.named('check').configure {
     dependsOn generate
 }
 
-def customIntegrationTestPython = tasks.register('customIntegrationTestPython', PythonTask) {
-    module = "pytest"
-    command = "-s integration_tests"
-}
-customIntegrationTestPython.configure {
-    dependsOn tasks.named('installTestReqs')
-    dependsOn tasks.named('assemble')
-}
-
-def customIntegrationTestsCoverage = tasks.named('_customIntegrationTestsCoverage')
-customIntegrationTestsCoverage.configure {
-    dependsOn tasks.named('assemble')
-}
-
 [
         'bigquery',
         'mysql',
@@ -69,25 +51,7 @@ customIntegrationTestsCoverage.configure {
         'tidb',
         'duckdb',
 ].each {destinationName ->
-    customIntegrationTestPython.configure {
+    tasks.matching { it.name == 'integrationTestPython' }.configureEach {
         dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')
     }
-    // Not really sure what this task does differently from customIntegrationTestPython,
-    // but it seems to also run integration tests and as such it depends on the docker images.
-    customIntegrationTestsCoverage.configure {
-        dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')
-    }
-}
-
-// DATs have some additional tests that exercise normalization code paths,
-// so we want to run these in addition to the base-normalization integration tests.
-// If you add more items here, make sure to also to have CI fetch their credentials.
-// See git history for an example.
-// TODO reenable these - they're causing flakiness in our test results, need to figure that out
-// integrationTest.dependsOn(":airbyte-integrations:connectors:destination-bigquery:integrationTest")
-// integrationTest.dependsOn(":airbyte-integrations:connectors:destination-postgres:integrationTest")
-// integrationTest.dependsOn(":airbyte-integrations:connectors:destination-snowflake:integrationTest")
-
-tasks.named('customIntegrationTests').configure {
-    dependsOn customIntegrationTestPython
 }

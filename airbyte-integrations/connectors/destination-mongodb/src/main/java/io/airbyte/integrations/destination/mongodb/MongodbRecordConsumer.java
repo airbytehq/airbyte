@@ -9,7 +9,6 @@ import static com.mongodb.client.model.Projections.excludeId;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCursor;
-import io.airbyte.cdk.db.mongodb.MongoDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.commons.json.Jsons;

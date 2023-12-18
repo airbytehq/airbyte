@@ -11,17 +11,23 @@ import io.debezium.engine.ChangeEvent;
 public class ChangeEventWithMetadata {
 
   private final ChangeEvent<String, String> event;
+  private final JsonNode eventKeyAsJson;
   private final JsonNode eventValueAsJson;
   private final SnapshotMetadata snapshotMetadata;
 
   public ChangeEventWithMetadata(final ChangeEvent<String, String> event) {
     this.event = event;
+    this.eventKeyAsJson = Jsons.deserialize(event.key());
     this.eventValueAsJson = Jsons.deserialize(event.value());
     this.snapshotMetadata = SnapshotMetadata.fromString(eventValueAsJson.get("source").get("snapshot").asText());
   }
 
   public ChangeEvent<String, String> event() {
     return event;
+  }
+
+  public JsonNode eventKeyAsJson() {
+    return eventKeyAsJson;
   }
 
   public JsonNode eventValueAsJson() {

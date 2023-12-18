@@ -4,7 +4,10 @@
   "additionalProperties": true,
   "properties": {
     "type": {
-      "enum": ["database_id", "page_id", "workspace"]
+      "enum": ["block_id", "database_id", "page_id", "workspace"]
+    },
+    "block_id": {
+      "type": "string"
     },
     "database_id": {
       "type": "string"

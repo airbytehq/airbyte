@@ -6,13 +6,13 @@ package io.airbyte.cdk.integrations.debezium.internals.mongodb;
 
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.AUTH_SOURCE_CONFIGURATION_KEY;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CREDENTIALS_PLACEHOLDER;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USER_CONFIGURATION_KEY;
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -33,6 +33,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   static final String COLLECTION_INCLUDE_LIST_KEY = "collection.include.list";
   static final String DATABASE_INCLUDE_LIST_KEY = "database.include.list";
+  static final String DOUBLE_QUOTES_PATTERN = "\"";
   static final String MONGODB_AUTHSOURCE_KEY = "mongodb.authsource";
   static final String MONGODB_CONNECTION_MODE_KEY = "mongodb.connection.mode";
   static final String MONGODB_CONNECTION_MODE_VALUE = "replica_set";
@@ -45,20 +46,19 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   public MongoDbDebeziumPropertiesManager(final Properties properties,
                                           final JsonNode config,
                                           final ConfiguredAirbyteCatalog catalog,
-                                          final AirbyteFileOffsetBackingStore offsetManager,
-                                          final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
-    super(properties, config, catalog, offsetManager, schemaHistoryManager);
+                                          final AirbyteFileOffsetBackingStore offsetManager) {
+    super(properties, config, catalog, offsetManager, Optional.empty());
   }
 
   @Override
   protected Properties getConnectionConfiguration(final JsonNode config) {
     final Properties properties = new Properties();
 
-    properties.setProperty(MONGODB_CONNECTION_STRING_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText());
+    properties.setProperty(MONGODB_CONNECTION_STRING_KEY, buildConnectionString(config, false));
     properties.setProperty(MONGODB_CONNECTION_MODE_KEY, MONGODB_CONNECTION_MODE_VALUE);
 
-    if (config.has(USER_CONFIGURATION_KEY)) {
-      properties.setProperty(MONGODB_USER_KEY, config.get(USER_CONFIGURATION_KEY).asText());
+    if (config.has(USERNAME_CONFIGURATION_KEY)) {
+      properties.setProperty(MONGODB_USER_KEY, config.get(USERNAME_CONFIGURATION_KEY).asText());
     }
     if (config.has(PASSWORD_CONFIGURATION_KEY)) {
       properties.setProperty(MONGODB_PASSWORD_KEY, config.get(PASSWORD_CONFIGURATION_KEY).asText());
@@ -72,7 +72,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   @Override
   protected String getName(final JsonNode config) {
-    return config.get(DATABASE_CONFIGURATION_KEY).asText().replaceAll("_", "-");
+    return normalizeName(config.get(DATABASE_CONFIGURATION_KEY).asText());
   }
 
   @Override
@@ -90,6 +90,39 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
     return streams.stream()
         .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
         .collect(Collectors.joining(","));
+  }
+
+  /**
+   * Ensure that the name property is formatted correctly for use by Debezium.
+   *
+   * @param name The name to be associated with the Debezium connector.
+   * @return The normalized name.
+   */
+  public static String normalizeName(final String name) {
+    return name != null ? name.replaceAll("_", "-") : null;
+  }
+
+  /**
+   * Builds the MongoDB connection string from the provided configuration. This method handles
+   * removing any values accidentally copied and pasted from the MongoDB Atlas UI.
+   *
+   * @param config The connector configuration.
+   * @param useSecondary Whether to use the secondary for reads.
+   * @return The connection string.
+   */
+  public static String buildConnectionString(final JsonNode config, final boolean useSecondary) {
+    final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY)
+        .asText()
+        .trim()
+        .replaceAll(DOUBLE_QUOTES_PATTERN, "")
+        .replaceAll(CREDENTIALS_PLACEHOLDER, "");
+    final StringBuilder builder = new StringBuilder();
+    builder.append(connectionString);
+    builder.append("?retryWrites=false&provider=airbyte&tls=true");
+    if (useSecondary) {
+      builder.append("&readPreference=secondary");
+    }
+    return builder.toString();
   }
 
 }

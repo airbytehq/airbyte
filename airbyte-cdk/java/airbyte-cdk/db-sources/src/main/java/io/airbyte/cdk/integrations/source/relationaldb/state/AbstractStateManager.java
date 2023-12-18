@@ -22,7 +22,7 @@ import java.util.function.Supplier;
  * @param <T> The type associated with the state object managed by this manager.
  * @param <S> The type associated with the state object stored in the state managed by this manager.
  */
-public abstract class AbstractStateManager<T, S> implements StateManager<T, S> {
+public abstract class AbstractStateManager<T, S> implements StateManager {
 
   /**
    * The {@link CursorManager} responsible for keeping track of the current cursor value for each

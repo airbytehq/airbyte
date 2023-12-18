@@ -1,13 +1,19 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - mixpanel.com
       - eu.mixpanel.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
-  dockerImageTag: 0.1.41
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-mixpanel
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   githubIssueLabel: source-mixpanel
   icon: mixpanel.svg
   license: MIT
@@ -18,6 +24,23 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      2.0.0:
+        message:
+          In this release, the default primary key for stream Export has been deleted,
+          allowing users to select the key that best fits their data.
+          Refreshing the source schema and resetting affected streams is necessary
+          only if new primary keys are to be applied following the upgrade.
+        upgradeDeadline: "2023-11-30"
+      1.0.0:
+        message:
+          In this release, the datetime field of stream engage has had its
+          type changed from date-time to string due to inconsistent data from Mixpanel.
+          Additionally, the primary key for stream export has been fixed to uniquely
+          identify records. Users will need to refresh the source schema and reset
+          affected streams after upgrading.
+        upgradeDeadline: "2023-10-31"
   suggestedStreams:
     streams:
       - export
@@ -27,11 +50,7 @@ data:
       - annotations
       - revenue
       - funnels
-  documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

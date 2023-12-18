@@ -2,6 +2,11 @@ name: Connector Ops CI - Check review requirements
 
 on:
   pull_request:
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
     paths:
       - "airbyte-integrations/connectors/source-**"
   pull_request_review:
@@ -12,7 +17,7 @@ jobs:
     name: "Check if a review is required from Connector teams"
     runs-on: ubuntu-latest
 
-    if: ${{ github.repository == 'airbytehq/airbyte' }}
+    if: ${{ github.repository == 'airbytehq/airbyte' && github.event.pull_request.draft == false }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -39,4 +44,5 @@ jobs:
         with:
           status: ${{ steps.get-mandatory-reviewers.outputs.MANDATORY_REVIEWERS  }}
           token: ${{ secrets.OCTAVIA_4_ROOT_ACCESS }}
+          request-reviews: true
           requirements-file: .github/connector_org_review_requirements.yaml

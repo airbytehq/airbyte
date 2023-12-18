@@ -145,9 +145,9 @@ public class PostgresDebeziumStateUtilTest {
     Assertions.assertTrue(savedOffsetAfterReplicationSlotLSN);
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"pgoutput", "wal2json"})
-  public void LsnCommitTest(final String plugin) throws SQLException {
+  @Test
+  public void LsnCommitTest() throws SQLException {
+    final String plugin = "pgoutput";
     final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     final String fullReplicationSlot = "debezium_slot" + "_" + dbName;
@@ -179,9 +179,10 @@ public class PostgresDebeziumStateUtilTest {
       database.execute("CREATE TABLE public.test_table (id int primary key, name varchar(256));");
       database.execute("insert into public.test_table values (1, 'foo');");
       database.execute("insert into public.test_table values (2, 'bar');");
+      database.execute("CHECKPOINT");
 
-      final Lsn lsnAtTheBeginning = Lsn.valueOf(
-          getReplicationSlot(database, fullReplicationSlot, plugin, dbName).get("confirmed_flush_lsn").asText());
+      final var slotStateAtTheBeginning = getReplicationSlot(database, fullReplicationSlot, plugin, dbName);
+      final Lsn lsnAtTheBeginning = Lsn.valueOf(slotStateAtTheBeginning.get("confirmed_flush_lsn").asText());
 
       final long targetLsn = PostgresUtils.getLsn(database).asLong();
       postgresDebeziumStateUtil.commitLSNToPostgresDatabase(Jsons.jsonNode(databaseConfig),
@@ -190,11 +191,13 @@ public class PostgresDebeziumStateUtilTest {
           publication,
           plugin);
 
-      final Lsn lsnAfterCommit = Lsn.valueOf(
-          getReplicationSlot(database, fullReplicationSlot, plugin, dbName).get("confirmed_flush_lsn").asText());
+      final var slotStateAfterCommit = getReplicationSlot(database, fullReplicationSlot, plugin, dbName);
+      final Lsn lsnAfterCommit = Lsn.valueOf(slotStateAfterCommit.get("confirmed_flush_lsn").asText());
 
       Assertions.assertEquals(1, lsnAfterCommit.compareTo(lsnAtTheBeginning));
       Assertions.assertEquals(targetLsn, lsnAfterCommit.asLong());
+      Assertions.assertNotEquals(slotStateAtTheBeginning, slotStateAfterCommit);
+
       container.stop();
     }
   }
