@@ -15,4 +15,4 @@ data:
       projectUrl: https://pypi.org/project/airbyte-source-alloydb-strict-encrypt/
   license: MIT
   tags:
-    - language:python
+    - language:java

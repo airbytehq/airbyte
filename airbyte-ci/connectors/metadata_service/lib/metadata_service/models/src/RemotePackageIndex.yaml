@@ -16,7 +16,10 @@ definitions:
     additionalProperties: false
     required:
       - enabled
+      - projectUrl
     properties:
       enabled:
         type: boolean
-        default: false
+      projectUrl:
+        type: string
+        description: The url of the project on pypi

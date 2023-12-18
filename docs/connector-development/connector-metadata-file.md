@@ -157,11 +157,11 @@ The optional `remotePackageIndex` property allows you to configure how a connect
 
 **Important note**: Currently no automated publishing will occur.
 
-
 ```yaml
 remotePackageIndex:
   pypi:
     enabled: true
+    projectUrl: https://pypi.org/project/airbyte-source-connector-name/
 ```
 
-The `remotePackageIndex.pypi.enabled` flag defaults to false.
+If not specified, all remote package configurations are disabled by default.

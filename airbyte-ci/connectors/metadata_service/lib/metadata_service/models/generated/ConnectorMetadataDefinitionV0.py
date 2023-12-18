@@ -123,6 +123,7 @@ class Pypi(BaseModel):
         extra = Extra.forbid
 
     enabled: bool
+    projectUrl: str = Field(..., description="The url of the project on pypi")
 
 
 class JobTypeResourceLimit(BaseModel):

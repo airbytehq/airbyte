@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, Extra, Field
 
 
 class Pypi(BaseModel):
@@ -13,6 +13,7 @@ class Pypi(BaseModel):
         extra = Extra.forbid
 
     enabled: bool
+    projectUrl: str = Field(..., description="The url of the project on pypi")
 
 
 class RemotePackageIndex(BaseModel):
