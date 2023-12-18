@@ -16,14 +16,17 @@ from datetime import datetime
 from typing import Mapping, Any
 from .errors import (
   NETSUITE_DRIVER_NOT_FOUND_ERROR,
-  AIRBYTE_ODBC_DRIVER_DOES_NOT_EXIST_ERROR,
   NETSUITE_INCORRECT_PASSWORD,
   AIRBYTE_ODBC_DRIVER_INCORRECT_PASSWORD_ERROR,
   NETSUITE_HOST_RESOLUTION_FAILURE,
-  AIRBYTE_ODBC_DRIVER_HOST_RESOLUTION_FAILURE
+  generate_host_resolution_error_message
 )
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk.models import FailureType
 
-
+#  Info on connecting using a connection string: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4406003916.html#Related-Topics
+# info regarding the certificate auth: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4041410260.html#Authentication-Using-Server-Certificates-for-ODBC
+# Password construction info here: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_163239871614.html#Token-based-Authentication-for-Connect
 class NetsuiteODBCCursorConstructor:
   def generate_nonce(self) -> str:
     # Define the characters to choose from
@@ -34,6 +37,7 @@ class NetsuiteODBCCursorConstructor:
   
   def generate_timestamp(self) -> str:
     time_tuple = datetime.now().timetuple() 
+    # The timestamp constructed provides MS, and we only want S, so we truncate the string
     return str(time.mktime(time_tuple))[0:10]
     
   def construct_password(self, config: Mapping[str, Any]) -> str:
@@ -60,7 +64,7 @@ class NetsuiteODBCCursorConstructor:
     return connection_string
 
     
-  def create_database_cursor(self, config: Mapping[str, Any]) -> pyodbc.Cursor:
+  def create_database_connection(self, config: Mapping[str, Any]) -> pyodbc.Cursor:
     connection_string = self.construct_db_string(config)
     try:
       cxn = pyodbc.connect(connection_string)
@@ -68,10 +72,10 @@ class NetsuiteODBCCursorConstructor:
     except Exception as e:
       message = str(e)
       if NETSUITE_DRIVER_NOT_FOUND_ERROR in message:
-        raise Exception(AIRBYTE_ODBC_DRIVER_DOES_NOT_EXIST_ERROR)
+        raise AirbyteTracedException.from_exception(e, failure_type=FailureType.system_error)
       elif NETSUITE_INCORRECT_PASSWORD in message:
-        raise Exception(AIRBYTE_ODBC_DRIVER_INCORRECT_PASSWORD_ERROR)
+        raise AirbyteTracedException(message=AIRBYTE_ODBC_DRIVER_INCORRECT_PASSWORD_ERROR, failure_type=FailureType.config_error)
       elif NETSUITE_HOST_RESOLUTION_FAILURE in message:
-        raise Exception(AIRBYTE_ODBC_DRIVER_HOST_RESOLUTION_FAILURE)
+        raise AirbyteTracedException(message=generate_host_resolution_error_message(config["service_host"]), failure_type=FailureType.config_error)
       else:
-        raise e
+        raise AirbyteTracedException.from_exception(e)

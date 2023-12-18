@@ -19,7 +19,7 @@ class SourceNetsuiteOdbc(AbstractSource):
     
     def streams(self, config: Mapping[str, Any]) -> Iterable[Stream]:
         cursor_constructor = NetsuiteODBCCursorConstructor()
-        cursor = cursor_constructor.create_database_cursor(config)
+        cursor = cursor_constructor.create_database_connection(config)
         discoverer = NetsuiteODBCTableDiscoverer(cursor)
         streams = discoverer.get_streams()
         number_streams = 0
@@ -28,6 +28,7 @@ class SourceNetsuiteOdbc(AbstractSource):
             number_streams = number_streams + 1
             netsuite_stream = NetsuiteODBCStream(cursor=cursor, table_name=stream_name, stream=stream)
             yield netsuite_stream
+        self.logger.info(f"Finished generating streams.  Discovered {number_streams} streams.")
     
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -42,7 +43,7 @@ class SourceNetsuiteOdbc(AbstractSource):
         """
         try:
             cursor_constructor = NetsuiteODBCCursorConstructor()
-            cursor = cursor_constructor.create_database_cursor(config)
+            cursor = cursor_constructor.create_database_connection(config)
 
             cursor.execute("SELECT * FROM OA_TABLES")
             cursor.fetchone()
@@ -50,8 +51,4 @@ class SourceNetsuiteOdbc(AbstractSource):
         except Exception as e:
             logger.error(e)
             return False, e
-
-    def find_emitted_at(self):
-        return int(datetime.now().timestamp()) * 1000
-
 

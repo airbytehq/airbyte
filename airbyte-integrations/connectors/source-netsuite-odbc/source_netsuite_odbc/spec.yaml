@@ -13,9 +13,12 @@ connectionSpecification:
     account_id:
       type: string
       title: Account ID (Realm)
-      description: Netsuite Account ID or Realm e.g. 2344535, as for `production` or 2344535_SB1, as for the `sandbox`
+      description: Netsuite Account ID or Realm.  This will have SB appended to it if you're connecting to a sandbox instance.
+      examples:
+        - "2344535"
+        - "2344535_SB1"
       order: 0
-      airbyte_secret: true
+      airbyte_secret: false
     consumer_key:
       type: string
       title: Consumer Key
@@ -33,7 +36,7 @@ connectionSpecification:
       title: Token Key (Token Id)
       description: Access token key created as part of token based auth. This will typically be a 64 character string of alphanumerical characters.
       order: 3
-      airbyte_secret: true
+      airbyte_secret: false
     token_secret:
       type: string
       title: Token Secret
@@ -45,16 +48,19 @@ connectionSpecification:
       title: Service Host
       description: The host url for the SuiteAnalytics Connect service, eg. xxxxxxx-sb1.connect.api.netsuite.com where "x" is replaced by numbers and production urls will not have the sb appended
       order: 5
-      airbyte_secret: true
+      airbyte_secret: false
     service_port:
       type: string
       title: Service Port
-      description: The host post for the SuiteAnalytics Connect service, eg. 1404.
+      description: The host post for the SuiteAnalytics Connect service
+      examples:
+        - "1404"
       order: 6
-      airbyte_secret: true
+      airbyte_secret: false
     role_id:
       type: string
       title: Role Id
-      description: The ID of the role used to access the ODBC connection, e.g. 57
+      description: The ID of the role used to access the ODBC connection
+        - "57"
       order: 7
       airbyte_secret: false

@@ -12,4 +12,6 @@ AIRBYTE_ODBC_DRIVER_INCORRECT_PASSWORD_ERROR = """We failed to login using TBA. 
  an incorrect config.  Please check that your config is accurate."""
 
 NETSUITE_HOST_RESOLUTION_FAILURE = "Network problem, host resolution failure"
-AIRBYTE_ODBC_DRIVER_HOST_RESOLUTION_FAILURE = "We received a host resolution failure from netsuite.  Please make sure your host subdomains are correct."
+
+def generate_host_resolution_error_message(host_received):
+  return f"We received a host resolution failure from netsuite.  Please make sure your host subdomains are correct.  We received the host: {host_received}"

@@ -56,7 +56,12 @@ class TestNetsuiteODBCCursorConstructor:
   def test_properly_handled_failure_for_host_resolution_failure(self, config_one):
     with pytest.raises(Exception, match=AIRBYTE_ODBC_DRIVER_HOST_RESOLUTION_FAILURE):
       constructor = NetsuiteODBCCursorConstructor()
-      constructor.create_database_cursor(config_one)
+      constructor.create_database_connection(config_one)
+
+  def test_nonce_generation_is_10_characters(self):
+    constructor = NetsuiteODBCCursorConstructor()
+    nonce = constructor.generate_nonce()
+    assert len(nonce) == 10
 
   def test_nonce_generation_is_random(self):
     constructor = NetsuiteODBCCursorConstructor()

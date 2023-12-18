@@ -31,10 +31,10 @@ def test_processing_individual_column(joined_table_with_column):
 def test_processing_incremental_column(joined_table_with_column, joined_table_with_incremental_column):
   discoverer = NetsuiteODBCTableDiscoverer({})
   processed_table = discoverer.process_table_result(joined_table_with_column)
-  assert discoverer.is_column_incremental_join(processed_table) == False
+  assert discoverer.is_column_incremental(processed_table) == False
 
   processed_incremental_table = discoverer.process_table_result(joined_table_with_incremental_column)
-  assert discoverer.is_column_incremental_join(processed_incremental_table) == True
+  assert discoverer.is_column_incremental(processed_incremental_table) == True
 
 
 

@@ -6,10 +6,10 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.2",
-    "requests-oauthlib",
+    "airbyte-cdk~=0.57",
+    "requests-oauthlib~=1.3.1",
     "pytest~=6.2",
-    "pyodbc"
+    "pyodbc~=5.0.1"
 ]
 
 TEST_REQUIREMENTS = [

@@ -11,6 +11,7 @@ from airbyte_cdk.models import (
     AirbyteStreamState,
     StreamDescriptor,
 )
+import pyodbc
 
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
@@ -28,14 +29,14 @@ STARTING_PRIMARY_KEY_VALUE: Final[int] = -10000
 
 class NetsuiteODBCStream(Stream):
 
-    def get_primary_key_from_stream(self, stream):
+    def get_primary_key_from_airbyte_stream(self, stream: AirbyteStream):
       key = stream.primary_key
       if not key:
         return []
       else:
         return sorted(key, reverse=True)
   
-    def get_incremental_column_from_stream(self, stream):
+    def get_incremental_column_from_airbyte_stream(self, stream: AirbyteStream):
       cursor_field = stream.default_cursor_field
       if not cursor_field:
         return None
@@ -53,12 +54,12 @@ class NetsuiteODBCStream(Stream):
         primary_key_last_value_seen[key] = STARTING_PRIMARY_KEY_VALUE
       return primary_key_last_value_seen
 
-    def __init__(self, cursor, table_name, stream):
-      self.cursor = cursor
+    def __init__(self, db_connection: pyodbc.Cursor, table_name, stream):
+      self.db_connection = db_connection
       self.table_name = table_name
       self.properties = self.get_properties_from_stream(stream)
-      self.primary_key_column = self.get_primary_key_from_stream(stream)
-      self.incremental_column = self.get_incremental_column_from_stream(stream)
+      self.primary_key_column = self.get_primary_key_from_airbyte_stream(stream)
+      self.incremental_column = self.get_incremental_column_from_airbyte_stream(stream)
       self.primary_key_last_value_seen = self.set_up_primary_key_last_value_seen(self.primary_key_column)
       self.incremental_most_recent_value_seen = None
       self.json_schema = stream.json_schema
@@ -91,17 +92,17 @@ class NetsuiteODBCStream(Stream):
       stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
       self.process_stream_state(stream_state)
-      self.cursor.execute(self.generate_ordered_query(stream_slice))
+      self.db_connection.execute(self.generate_ordered_query(stream_slice))
       number_records = 0
       while True:
-        row = self.cursor.fetchone()
+        row = self.db_connection.fetchone()
         if not row and number_records < NETSUITE_PAGINATION_INTERVAL:
           break
         # if number of rows >= page limit, we need to fetch another page
         elif not row:
           self.logger.info(f"Fetching another page for the stream {self.table_name}.  Current primary key is {str(self.primary_key_last_value_seen)}")
           number_records = 0
-          self.cursor.execute(self.generate_ordered_query(stream_slice))
+          self.db_connection.execute(self.generate_ordered_query(stream_slice))
           continue
         # data from netsuite does not include columns, so we need to assign each value to the correct column name
         serialized_data = self.serialize_row_to_response(row)
