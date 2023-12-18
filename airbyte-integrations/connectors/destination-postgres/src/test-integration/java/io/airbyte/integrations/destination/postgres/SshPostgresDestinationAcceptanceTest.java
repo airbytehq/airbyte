@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
@@ -13,21 +12,13 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
-import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
-import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.functional.CheckedFunction;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
+import io.airbyte.integrations.destination.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.destination.postgres.PostgresTestDatabase.ContainerModifier;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
