@@ -115,16 +115,20 @@ class ConcurrentSource:
         queue: Queue[QueueItem],
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
-        while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
-            #self._logger.info(f"Handling queue item: {airbyte_message_or_record_or_exception}")
-            #self._logger.info(f"Queue size: {queue.qsize()}")
-            yield from self._handle_item(
-                airbyte_message_or_record_or_exception,
-                concurrent_stream_processor,
-            )
-            if concurrent_stream_processor.is_done() and queue.empty():
-                # all partitions were generated and processed. we're done here
-                break
+        try:
+            while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
+                self._logger.info(f"Handling queue item: {airbyte_message_or_record_or_exception}")
+                self._logger.info(f"Queue size: {queue.qsize()}")
+                yield from self._handle_item(
+                    airbyte_message_or_record_or_exception,
+                    concurrent_stream_processor,
+                )
+                if concurrent_stream_processor.is_done() and queue.empty():
+                    # all partitions were generated and processed. we're done here
+                    break
+        except Exception as e:
+            self._logger.error(f"Error while reading from queue: {e}")
+            raise e
 
     def _handle_item(
         self,
