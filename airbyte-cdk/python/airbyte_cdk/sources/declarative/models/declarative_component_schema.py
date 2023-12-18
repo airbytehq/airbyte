@@ -1074,6 +1074,12 @@ class SelectiveAuthenticator(BaseModel):
         extra = Extra.allow
 
     type: Literal['SelectiveAuthenticator']
+    authenticator_selection_path: List[str] = Field(
+        ...,
+        description='Path of the field in config with selected authenticator name',
+        examples=[['auth'], ['auth', 'type']],
+        title='Authenticator Selection Path',
+    )
     authenticators: Dict[
         str,
         Union[
@@ -1089,7 +1095,14 @@ class SelectiveAuthenticator(BaseModel):
     ] = Field(
         ...,
         description='Authenticators to select from.',
-        examples=['TODO'],
+        examples=[
+            {
+                'authenticators': {
+                    'token': '#/definitions/ApiKeyAuthenticator',
+                    'oauth': '#/definitions/OAuthAuthenticator',
+                }
+            }
+        ],
         title='Authenticators',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
