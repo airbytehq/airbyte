@@ -66,7 +66,7 @@
           "total_budget_effective_time": {"type": ["string", "null"]},
           "total_budget_effective_timezone": {"type": ["integer", "null"]},
           "daily_cap_type": {"type": ["string", "null"]},
-          "daily_cap": {"type": ["integer", "null"]}
+          "daily_cap": {"type": ["string", "null"]}
         }
       }
     },
