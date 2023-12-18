@@ -13,7 +13,7 @@ from source_wildberries_statistics.types import WildberriesCredentials, IsSucces
 
 
 def check_statistics_stream_connection(credentials: WildberriesCredentials) -> tuple[IsSuccess, Optional[Message]]:
-    url = "https://statistics-api-sandbox.wildberries.ru/api/v1/supplier/incomes" + f"?dateFrom={date.today().isoformat()}"
+    url = "https://statistics-api.wildberries.ru/api/v1/supplier/incomes" + f"?dateFrom={date.today().isoformat()}"
     headers = {"Authorization": credentials["api_key"]}
     try:
         response = requests.get(url, headers=headers)
