@@ -29,12 +29,15 @@ import java.time.OffsetTime;
 import java.time.chrono.IsoEra;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
+import org.slf4j.Logger;
 import javax.xml.bind.DatatypeConverter;
+import org.slf4j.LoggerFactory;
 
 /**
  * Source operation skeleton for JDBC compatible databases.
  */
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
+  protected final Logger LOG = LoggerFactory.getLogger(AbstractJdbcCompatibleSourceOperations.class);
 
   /**
    * A Date representing the earliest date in CE. Any date before this is in BCE.
@@ -51,13 +54,23 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
       // attempt to access the column. this allows us to know if it is null before we do type-specific
       // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
       // checking for null values with jdbc.
-      queryContext.getObject(i);
-      if (queryContext.wasNull()) {
-        continue;
-      }
+      try {
+        queryContext.getObject(i);
+        if (queryContext.wasNull()) {
+          continue;
+        }
 
-      // convert to java types that will convert into reasonable json.
-      copyToJsonField(queryContext, i, jsonNode);
+        // convert to java types that will convert into reasonable json.
+        copyToJsonField(queryContext, i, jsonNode);
+      } catch (Exception ex) {
+        // In some cases JDBC would fail to call getObject; normally because the data wouldn't pass validation.
+        // We are logging it here to understand what data violates that and print it out for debugging purpose.
+        LOG.error("Failed to retrieve or convert column {} to json. Error: {}. Printing out the faulty row below: ", i, ex.getMessage());
+        for (int j = 0; j <= columnCount; j++) {
+          LOG.error("queryContext.getString({}) = {}", j, queryContext.getString(j));
+        }
+        throw ex;
+      }
     }
 
     return jsonNode;
