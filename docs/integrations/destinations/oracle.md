@@ -2,15 +2,15 @@
 
 ## Features
 
-| Feature                       | Supported?\(Yes/No\) | Notes                                                                 |
-| :---------------------------- | :------------------- | :-------------------------------------------------------------------- |
-| Full Refresh Sync             | Yes                  |                                                                       |
-| Incremental - Append Sync     | Yes                  |                                                                       |
-| Incremental - Deduped History | Yes                  |                                                                       |
-| Namespaces                    | Yes                  |                                                                       |
-| Basic Normalization           | Yes                  | Doesn't support for nested json yet                                   |
-| SSH Tunnel Connection         | Yes                  |                                                                       |
-| Encryption                    | Yes                  | Support Native Network Encryption (NNE) as well as TLS using SSL cert |
+| Feature                        | Supported?\(Yes/No\) | Notes                                                                 |
+| :----------------------------- | :------------------- | :-------------------------------------------------------------------- |
+| Full Refresh Sync              | Yes                  |                                                                       |
+| Incremental - Append Sync      | Yes                  |                                                                       |
+| Incremental - Append + Deduped | Yes                  |                                                                       |
+| Namespaces                     | Yes                  |                                                                       |
+| Basic Normalization            | Yes                  | Doesn't support for nested json yet                                   |
+| SSH Tunnel Connection          | Yes                  |                                                                       |
+| Encryption                     | Yes                  | Support Native Network Encryption (NNE) as well as TLS using SSL cert |
 
 ## Output Schema
 
@@ -26,7 +26,7 @@ Enabling normalization will also create normalized, strongly typed tables.
 
 The Oracle connector is currently in Alpha on Airbyte Cloud. Only TLS encrypted connections to your DB can be made from Airbyte Cloud. Other than that, follow the open-source instructions below.
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 #### Requirements
 

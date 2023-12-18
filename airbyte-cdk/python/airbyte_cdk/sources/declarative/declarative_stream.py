@@ -37,14 +37,17 @@ class DeclarativeStream(Stream):
     schema_loader: Optional[SchemaLoader] = None
     _name: str = field(init=False, repr=False, default="")
     _primary_key: str = field(init=False, repr=False, default="")
-    _schema_loader: SchemaLoader = field(init=False, repr=False, default=None)
     stream_cursor_field: Optional[Union[InterpolatedString, str]] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self.stream_cursor_field = InterpolatedString.create(self.stream_cursor_field, parameters=parameters)
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._stream_cursor_field = (
+            InterpolatedString.create(self.stream_cursor_field, parameters=parameters)
+            if isinstance(self.stream_cursor_field, str)
+            else self.stream_cursor_field
+        )
         self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, parameters=parameters)
 
-    @property
+    @property  # type: ignore
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return self._primary_key
 
@@ -53,7 +56,7 @@ class DeclarativeStream(Stream):
         if not isinstance(value, property):
             self._primary_key = value
 
-    @property
+    @property  # type: ignore
     def name(self) -> str:
         """
         :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
@@ -67,14 +70,16 @@ class DeclarativeStream(Stream):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self.retriever.state
+        return self.retriever.state  # type: ignore
 
     @state.setter
-    def state(self, value: MutableMapping[str, Any]):
+    def state(self, value: MutableMapping[str, Any]) -> None:
         """State setter, accept state serialized by state getter."""
         self.retriever.state = value
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
         return self.state
 
     @property
@@ -83,22 +88,22 @@ class DeclarativeStream(Stream):
         Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
-        cursor = self.stream_cursor_field.eval(self.config)
+        cursor = self._stream_cursor_field.eval(self.config)
         return cursor if cursor else []
 
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
         """
-        yield from self.retriever.read_records(sync_mode, cursor_field, stream_slice)
+        yield from self.retriever.read_records(stream_slice)
 
-    def get_json_schema(self) -> Mapping[str, Any]:
+    def get_json_schema(self) -> Mapping[str, Any]:  # type: ignore
         """
         :return: A dict of the JSON schema representing this stream.
 
@@ -108,7 +113,7 @@ class DeclarativeStream(Stream):
         return self._schema_loader.get_json_schema()
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.

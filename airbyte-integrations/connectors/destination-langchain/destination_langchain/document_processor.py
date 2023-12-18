@@ -84,7 +84,7 @@ class DocumentProcessor:
         metadata[METADATA_STREAM_FIELD] = stream_identifier
         # if the sync mode is deduping, use the primary key to upsert existing records instead of appending new ones
         if current_stream.primary_key and current_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
-            metadata[METADATA_RECORD_ID_FIELD] = self._extract_primary_key(record, current_stream)
+            metadata[METADATA_RECORD_ID_FIELD] = f"{stream_identifier}_{self._extract_primary_key(record, current_stream)}"
         return metadata
 
     def _extract_primary_key(self, record: AirbyteRecordMessage, stream: ConfiguredAirbyteStream) -> dict:

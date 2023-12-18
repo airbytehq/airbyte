@@ -33,7 +33,7 @@ The PrestaShop source connector supports the following [ sync modes](https://doc
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
@@ -103,7 +103,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                              | Subject                                              |
-|:--------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------|
+| :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------- |
 | 1.0.0   | 2023-06-26 | [27716](https://github.com/airbytehq/airbyte/pull/27716)  | update schema; remove empty datetime fields          |
 | 0.3.1   | 2023-02-13 | [22905](https://github.com/airbytehq/airbyte/pull/22905)  | Specified date formatting in specification           |
 | 0.3.0   | 2022-11-08 | [#18927](https://github.com/airbytehq/airbyte/pull/18927) | Migrate connector from Alpha (Python) to Beta (YAML) |

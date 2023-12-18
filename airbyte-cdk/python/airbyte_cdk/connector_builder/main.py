@@ -7,21 +7,16 @@ import sys
 from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.connector import BaseConnector
-from airbyte_cdk.connector_builder.connector_builder_handler import (
-    TestReadLimits,
-    create_source,
-    get_limits,
-    list_streams,
-    read_stream,
-    resolve_manifest,
-)
+from airbyte_cdk.connector_builder.connector_builder_handler import TestReadLimits, create_source, get_limits, read_stream, resolve_manifest
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str, Any], Optional[ConfiguredAirbyteCatalog]]:
+    # TODO: Add functionality for the `debug` logger.
+    #  Currently, no one `debug` level log will be displayed during `read` a stream for a connector created through `connector-builder`.
     parsed_args = AirbyteEntrypoint.parse_args(args)
     config_path, catalog_path = parsed_args.config, parsed_args.catalog
     if parsed_args.command != "read":
@@ -49,20 +44,22 @@ def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str,
 
 
 def handle_connector_builder_request(
-    source: ManifestDeclarativeSource, command: str, config: Mapping[str, Any], catalog: Optional[ConfiguredAirbyteCatalog], limits: TestReadLimits
-):
+    source: ManifestDeclarativeSource,
+    command: str,
+    config: Mapping[str, Any],
+    catalog: Optional[ConfiguredAirbyteCatalog],
+    limits: TestReadLimits,
+) -> AirbyteMessage:
     if command == "resolve_manifest":
         return resolve_manifest(source)
     elif command == "test_read":
         assert catalog is not None, "`test_read` requires a valid `ConfiguredAirbyteCatalog`, got None."
         return read_stream(source, config, catalog, limits)
-    elif command == "list_streams":
-        return list_streams(source, config)
     else:
         raise ValueError(f"Unrecognized command {command}.")
 
 
-def handle_request(args: List[str]):
+def handle_request(args: List[str]) -> AirbyteMessage:
     command, config, catalog = get_config_and_catalog_from_args(args)
     limits = get_limits(config)
     source = create_source(config, limits)

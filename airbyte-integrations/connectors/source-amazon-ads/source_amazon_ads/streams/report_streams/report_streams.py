@@ -109,6 +109,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         # Check if the connector received an error like: 'Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3.'
         # https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
         (400, re.compile(r"^Tactic T00020 is not supported for report API in marketplace [A-Z\d]+\.$")),
+        (400, re.compile(r"^Tactic T00030 is not supported for report API in marketplace [A-Z\d]+\.$")),
         # Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
         # In theory, it does not have to get such an error because the connector correctly calculates the start date,
         # but from practice, we can still catch such errors from time to time.
@@ -162,10 +163,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             return
         profile = stream_slice["profile"]
         report_date = stream_slice[self.cursor_field]
-        report_infos = self._init_and_try_read_records(profile, report_date)
+        report_info_list = self._init_and_try_read_records(profile, report_date)
         self._update_state(profile, report_date)
 
-        for report_info in report_infos:
+        for report_info in report_info_list:
             for metric_object in report_info.metric_objects:
                 yield self._model(
                     profileId=report_info.profile_id,
@@ -196,16 +197,16 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     @backoff_max_tries
     def _init_and_try_read_records(self, profile: Profile, report_date):
-        report_infos = self._init_reports(profile, report_date)
-        self.logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
-        self._try_read_records(report_infos)
-        return report_infos
+        report_info_list = self._init_reports(profile, report_date)
+        self.logger.info(f"Waiting for {len(report_info_list)} report(s) to be generated")
+        self._try_read_records(report_info_list)
+        return report_info_list
 
     @backoff_max_time
-    def _try_read_records(self, report_infos):
-        incomplete_report_infos = self._incomplete_report_infos(report_infos)
-        self.logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remaining")
-        for report_info in incomplete_report_infos:
+    def _try_read_records(self, report_info_list):
+        incomplete_report_info = self._incomplete_report_info(report_info_list)
+        self.logger.info(f"Checking report status, {len(incomplete_report_info)} report(s) remaining")
+        for report_info in incomplete_report_info:
             report_status, download_url = self._check_status(report_info)
             report_info.status = report_status
 
@@ -218,13 +219,13 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 except requests.HTTPError as error:
                     raise ReportGenerationFailure(error)
 
-        pending_report_status = [(r.profile_id, r.report_id, r.status) for r in self._incomplete_report_infos(report_infos)]
+        pending_report_status = [(r.profile_id, r.report_id, r.status) for r in self._incomplete_report_info(report_info_list)]
         if len(pending_report_status) > 0:
             message = f"Report generation in progress: {repr(pending_report_status)}"
             raise ReportGenerationInProgress(message)
 
-    def _incomplete_report_infos(self, report_infos):
-        return [r for r in report_infos if r.status != Status.SUCCESS and r.status != Status.COMPLETED]
+    def _incomplete_report_info(self, report_info_list):
+        return [r for r in report_info_list if r.status != Status.SUCCESS and r.status != Status.COMPLETED]
 
     def _generate_model(self):
         """
@@ -380,46 +381,48 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         :report_date - date for generating metric report.
         :return List of ReportInfo objects each of them has reportId field to check report status.
         """
-        report_infos = []
+        report_info_list = []
         for record_type, metrics in self.metrics_map.items():
             if len(self._report_record_types) > 0 and record_type not in self._report_record_types:
                 continue
 
-            report_init_body = self._get_init_report_body(report_date, record_type, profile)
-            if not report_init_body:
-                continue
-            # Some of the record types has subtypes. For example asins type
-            # for  product report have keyword and targets subtypes and it
-            # represented as asins_keywords and asins_targets types. Those
-            # subtypes have mutually excluded parameters so we requesting
-            # different metric list for each record.
-            request_record_type = record_type.split("_")[0]
-            self.logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date")
-            response = self._send_http_request(
-                urljoin(self._url, self.report_init_endpoint(request_record_type)),
-                profile.profileId,
-                report_init_body,
-            )
-            if response.status_code != self.report_is_created:
-                error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
-                if self._skip_known_errors(response):
-                    self.logger.warning(error_msg)
-                    break
-                raise ReportInitFailure(error_msg)
-
-            response = ReportInitResponse.parse_raw(response.text)
-            report_infos.append(
-                ReportInfo(
-                    report_id=response.reportId,
-                    record_type=record_type,
-                    profile_id=profile.profileId,
-                    status=Status.IN_PROGRESS,
-                    metric_objects=[],
+            for report_init_body in self._get_init_report_body(report_date, record_type, profile):
+                if not report_init_body:
+                    continue
+                # Some of the record types has subtypes. For example asins type
+                # for  product report have keyword and targets subtypes and it
+                # represented as asins_keywords and asins_targets types. Those
+                # subtypes have mutually excluded parameters so we requesting
+                # different metric list for each record.
+                request_record_type = record_type.split("_")[0]
+                self.logger.info(
+                    f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date"
                 )
-            )
-            self.logger.info("Initiated successfully")
+                response = self._send_http_request(
+                    urljoin(self._url, self.report_init_endpoint(request_record_type)),
+                    profile.profileId,
+                    report_init_body,
+                )
+                if response.status_code != self.report_is_created:
+                    error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
+                    if self._skip_known_errors(response):
+                        self.logger.warning(error_msg)
+                        break
+                    raise ReportInitFailure(error_msg)
 
-        return report_infos
+                response = ReportInitResponse.parse_raw(response.text)
+                report_info_list.append(
+                    ReportInfo(
+                        report_id=response.reportId,
+                        record_type=record_type,
+                        profile_id=profile.profileId,
+                        status=Status.IN_PROGRESS,
+                        metric_objects=[],
+                    )
+                )
+                self.logger.info("Initiated successfully")
+
+        return report_info_list
 
     @backoff.on_exception(
         backoff.expo,

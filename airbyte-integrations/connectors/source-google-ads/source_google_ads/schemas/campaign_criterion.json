@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "deleted_at": {
+      "type": ["null", "string"]
+    },
+    "change_status.last_change_date_time": {
+      "type": ["null", "string"]
+    },
+    "campaign.id": {
+      "type": ["null", "integer"]
+    },
+    "campaign_criterion.resource_name": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.campaign": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.age_range.type": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.mobile_application.name": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.negative": {
+      "type": ["null", "boolean"]
+    },
+    "campaign_criterion.youtube_channel.channel_id": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.youtube_video.video_id": {
+      "type": ["null", "string"]
+    }
+  }
+}

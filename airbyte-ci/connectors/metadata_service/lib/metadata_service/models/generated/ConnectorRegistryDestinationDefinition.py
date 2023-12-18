@@ -19,6 +19,14 @@ class ReleaseStage(BaseModel):
     )
 
 
+class SupportLevel(BaseModel):
+    __root__: Literal["community", "certified"] = Field(
+        ...,
+        description="enum that describes a connector's release stage",
+        title="SupportLevel",
+    )
+
+
 class ResourceRequirements(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -73,6 +81,52 @@ class AllowedHosts(BaseModel):
     )
 
 
+class StreamBreakingChangeScope(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    scopeType: Any = Field("stream", const=True)
+    impactedScopes: List[str] = Field(
+        ...,
+        description="List of streams that are impacted by the breaking change.",
+        min_items=1,
+    )
+
+
+class AirbyteInternal(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    sl: Optional[Literal[100, 200, 300]] = None
+    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
+
+
+class JobTypeResourceLimit(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    jobType: JobType
+    resourceRequirements: ResourceRequirements
+
+
+class BreakingChangeScope(BaseModel):
+    __root__: StreamBreakingChangeScope = Field(
+        ...,
+        description="A scope that can be used to limit the impact of a breaking change.",
+    )
+
+
+class ActorDefinitionResourceRequirements(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    default: Optional[ResourceRequirements] = Field(
+        None,
+        description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
+    )
+    jobSpecific: Optional[List[JobTypeResourceLimit]] = None
+
+
 class VersionBreakingChange(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -88,14 +142,11 @@ class VersionBreakingChange(BaseModel):
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
     )
-
-
-class JobTypeResourceLimit(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    jobType: JobType
-    resourceRequirements: ResourceRequirements
+    scopedImpact: Optional[List[BreakingChangeScope]] = Field(
+        None,
+        description="List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.",
+        min_items=1,
+    )
 
 
 class ConnectorBreakingChanges(BaseModel):
@@ -106,17 +157,6 @@ class ConnectorBreakingChanges(BaseModel):
         ...,
         description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
     )
-
-
-class ActorDefinitionResourceRequirements(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    default: Optional[ResourceRequirements] = Field(
-        None,
-        description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
-    )
-    jobSpecific: Optional[List[JobTypeResourceLimit]] = None
 
 
 class ConnectorReleases(BaseModel):
@@ -154,6 +194,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
         False, description="whether this is a custom connector definition"
     )
     releaseStage: Optional[ReleaseStage] = None
+    supportLevel: Optional[SupportLevel] = None
     releaseDate: Optional[date] = Field(
         None,
         description="The date when this connector was first released, in yyyy-mm-dd format.",
@@ -173,3 +214,4 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     )
     allowedHosts: Optional[AllowedHosts] = None
     releases: Optional[ConnectorReleases] = None
+    ab_internal: Optional[AirbyteInternal] = None

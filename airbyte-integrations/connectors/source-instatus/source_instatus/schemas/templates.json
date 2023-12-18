@@ -51,29 +51,29 @@
       "items": {
         "type": ["null", "object"],
         "properties": {
-          "id": { "type": ["null", "string"]},
-          "name": { "type": ["null", "string"]},
-          "status": { "type": ["null", "string"]},
-          "showUptime": { "type": ["null", "boolean"]},
+          "id": { "type": ["null", "string"] },
+          "name": { "type": ["null", "string"] },
+          "status": { "type": ["null", "string"] },
+          "showUptime": { "type": ["null", "boolean"] },
           "site": {
             "type": ["null", "object"],
             "properties": {
-              "id": { "type": ["null", "string"]},
-              "name": { "type": ["null", "string"]},
-              "subdomain": { "type": ["null", "string"]},
-              "color": { "type": ["null", "string"]},
-              "logoUrl": { "type": ["null", "string"]},
-              "publicEmail": { "type": ["null", "string"]}
-             }
-           }
-         }
-       }
+              "id": { "type": ["null", "string"] },
+              "name": { "type": ["null", "string"] },
+              "subdomain": { "type": ["null", "string"] },
+              "color": { "type": ["null", "string"] },
+              "logoUrl": { "type": ["null", "string"] },
+              "publicEmail": { "type": ["null", "string"] }
+            }
+          }
+        }
+      }
     },
     "translations": {
       "type": ["null", "object"],
       "properties": {
-        "name": {"type": ["null", "string"]},
-        "message": {"type": ["null", "string"]}
+        "name": { "type": ["null", "string"] },
+        "message": { "type": ["null", "string"] }
       }
     }
   }

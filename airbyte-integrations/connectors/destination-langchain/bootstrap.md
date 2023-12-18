@@ -23,4 +23,8 @@ You can use the `test_pinecone.py` file to check whether the pipeline works as e
 
 The DocArrayHnswSearch integration is storing the vector metadata in a local file in the local root (`/local` in the container, `/tmp/airbyte_local` on the host). It's not possible to dedupe records, so only full refresh syncs are supported. DocArrayHnswSearch uses hnswlib under the hood, but the integration is fully relying on the langchain abstraction.
 
+## Chroma integration
+
+The Chroma integration is storing the vector metadata in a local file in the local root (`/local` in the container, `/tmp/airbyte_local` on the host), similar to the DocArrayHnswSearch. This is called the "persistent client" mode in Chroma. The integration is mostly using langchains abstraction, but it can also dedupe records and reset streams independently.
+
 You can use the `test_local.py` file to check whether the pipeline works as expected.

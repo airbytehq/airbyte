@@ -39,9 +39,7 @@ def test_rest_api_with_unknown_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = limiter.get_rest_api_wait_time(
-        test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER
-    )
+    actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
     assert limiter.on_unknown_load == actual_sleep_time
 
@@ -55,9 +53,7 @@ def test_rest_api_with_low_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = limiter.get_rest_api_wait_time(
-        test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER
-    )
+    actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
     assert limiter.on_low_load == actual_sleep_time
 
@@ -71,9 +67,7 @@ def test_rest_api_with_mid_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = limiter.get_rest_api_wait_time(
-        test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER
-    )
+    actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
     assert limiter.on_mid_load == actual_sleep_time
 
@@ -87,9 +81,7 @@ def test_rest_api_with_high_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = limiter.get_rest_api_wait_time(
-        test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER
-    )
+    actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
     assert limiter.on_high_load == actual_sleep_time
 

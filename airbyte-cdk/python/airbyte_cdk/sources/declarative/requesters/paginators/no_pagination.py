@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
@@ -27,7 +27,7 @@ class NoPagination(Paginator):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
+    ) -> MutableMapping[str, Any]:
         return {}
 
     def get_request_headers(
@@ -60,6 +60,6 @@ class NoPagination(Paginator):
     def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Mapping[str, Any]:
         return {}
 
-    def reset(self):
+    def reset(self) -> None:
         # No state to reset
         pass

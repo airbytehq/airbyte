@@ -17,6 +17,7 @@ data:
   license: MIT
   name: Scaffold Java Jdbc
   releaseDate: TODO
+  supportLevel: community
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/scaffold-java-jdbc
   tags:

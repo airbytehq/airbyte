@@ -406,6 +406,115 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
+
+    {
+      "stream": {
+        "name": "databases",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "description": { "type": "string" },
+            "features": {
+              "type": ["null", "array"],
+              "items": { "type": ["null", "string"] }
+            },
+            "cache_field_values_schedule": { "type": ["null", "string"] },
+            "timezone": { "type": ["null", "string"] },
+            "auto_run_queries": { "type": ["null", "boolean"] },
+            "metadata_sync_schedule": { "type": ["null", "string"] },
+            "name": { "type": ["null", "string"] },
+            "settings": { "type": ["null", "string"] },
+            "caveats": { "type": ["null", "string"] },
+            "creator_id": { "type": ["null", "integer"] },
+            "is_full_sync": { "type": ["null", "boolean"] },
+            "updated_at": { "type": ["null", "string"] },
+            "native_permissions": { "type": ["null", "string"] },
+            "cache_ttl": { "type": ["null", "integer"] },
+            "details": {
+              "type": "object",
+              "properties": {
+                "project-id": { "type": ["null", "string"] },
+                "service-account-json": { "type": ["null", "string"] },
+                "dataset-filters-type": { "type": ["null", "string"] },
+                "dataset-filters-patterns": { "type": ["null", "string"] },
+                "cloud-ip-address-info": { "type": ["null", "string"] },
+                "advanced-options": { "type": ["null", "boolean"] },
+                "project-id-from-credentials": { "type": ["null", "string"] },
+                "db": { "type": ["null", "string"] },
+                "ssl": { "type": ["null", "boolean"] },
+                "let-user-control-scheduling": { "type": ["null", "boolean"] },
+                "use-jvm-timezone": { "type": ["null", "boolean"] },
+                "include-user-id-and-hash": { "type": ["null", "boolean"] }
+              }
+            },
+            "is_sample": { "type": ["null", "boolean"] },
+            "id": { "type": "integer" },
+            "is_on_demand": { "type": ["null", "boolean"] },
+            "options": { "type": ["null", "string"] },
+            "engine": { "type": ["null", "string"] },
+            "initial_sync_status": { "type": ["null", "string"] },
+            "is_audit": { "type": ["null", "boolean"] },
+            "dbms_version": {
+              "type": "object",
+              "properties": {
+                "flavor": { "type": ["null", "string"] },
+                "version": { "type": ["null", "string"] },
+                "semantic-version": {
+                  "type": "array",
+                  "items": { "type": "integer" }
+                }
+              }
+            },
+            "refingerprint": { "type": ["null", "boolean"] },
+            "created_at": { "type": ["null", "string"] },
+            "points_of_interest": { "type": ["null", "string"] },
+            "can_upload": { "type": ["null", "boolean"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "native_query_snippets",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "description": { "type": ["null", "string"] },
+            "archived": { "type": ["null", "boolean"] },
+            "creator": {
+              "type": ["null", "object"],
+              "properties": {
+                "email": { "type": ["null", "string"] },
+                "first_name": { "type": ["null", "string"] },
+                "last_login": { "type": ["null", "string"] },
+                "is_qbnewb": { "type": ["null", "boolean"] },
+                "is_superuser": { "type": ["null", "boolean"] },
+                "id": { "type": "integer" },
+                "last_name": { "type": ["null", "string"] },
+                "date_joined": { "type": ["null", "string"] },
+                "common_name": { "type": ["null", "string"] }
+              }
+            },
+            "content": { "type": ["null", "string"] },
+            "collection_id": { "type": ["null", "integer"] },
+            "name": { "type": ["null", "string"] },
+            "creator_id": { "type": ["null", "integer"] },
+            "updated_at": { "type": ["null", "string"] },
+            "id": { "type": "integer" },
+            "entity_id": { "type": ["null", "string"] },
+            "created_at": { "type": ["null", "string"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
     {
       "stream": {
         "name": "users",

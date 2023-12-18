@@ -140,9 +140,12 @@ class SourcePivotalTracker(AbstractSource):
         return project_ids
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        auth = SourcePivotalTracker._get_authenticator(config)
-        self._generate_project_ids(auth)
-        return True, None
+        try:
+            auth = SourcePivotalTracker._get_authenticator(config)
+            self._generate_project_ids(auth)
+            return True, None
+        except Exception as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)

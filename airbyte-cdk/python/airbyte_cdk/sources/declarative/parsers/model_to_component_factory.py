@@ -80,6 +80,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
@@ -232,14 +233,35 @@ class ModelToComponentFactory:
     @staticmethod
     def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config, **kwargs: Any) -> AddedFieldDefinition:
         interpolated_value = InterpolatedString.create(model.value, parameters=model.parameters or {})
-        return AddedFieldDefinition(path=model.path, value=interpolated_value, parameters=model.parameters or {})
+        return AddedFieldDefinition(
+            path=model.path,
+            value=interpolated_value,
+            value_type=ModelToComponentFactory._json_schema_type_name_to_type(model.value_type),
+            parameters=model.parameters or {},
+        )
 
     def create_add_fields(self, model: AddFieldsModel, config: Config, **kwargs: Any) -> AddFields:
         added_field_definitions = [
-            self._create_component_from_model(model=added_field_definition_model, config=config)
+            self._create_component_from_model(
+                model=added_field_definition_model,
+                value_type=ModelToComponentFactory._json_schema_type_name_to_type(added_field_definition_model.value_type),
+                config=config,
+            )
             for added_field_definition_model in model.fields
         ]
         return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
+
+    @staticmethod
+    def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:
+        if not value_type:
+            return None
+        names_to_types = {
+            ValueType.string: str,
+            ValueType.number: float,
+            ValueType.integer: int,
+            ValueType.boolean: bool,
+        }
+        return names_to_types[value_type]
 
     @staticmethod
     def create_api_key_authenticator(
@@ -289,11 +311,13 @@ class ModelToComponentFactory:
         )
         if model.request_authentication.type == "Bearer":
             return ModelToComponentFactory.create_bearer_authenticator(
-                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""), config, token_provider=token_provider
+                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),
+                config,
+                token_provider=token_provider,  # type: ignore # $parameters defaults to None
             )
         else:
             return ModelToComponentFactory.create_api_key_authenticator(
-                ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token="", inject_into=model.request_authentication.inject_into),
+                ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token="", inject_into=model.request_authentication.inject_into),  # type: ignore # $parameters and headers default to None
                 config=config,
                 token_provider=token_provider,
             )
@@ -507,6 +531,7 @@ class ModelToComponentFactory:
 
         return DatetimeBasedCursor(
             cursor_field=model.cursor_field,
+            cursor_datetime_formats=model.cursor_datetime_formats if model.cursor_datetime_formats else [],
             cursor_granularity=model.cursor_granularity,
             datetime_format=model.datetime_format,
             end_datetime=end_datetime,
@@ -695,7 +720,10 @@ class ModelToComponentFactory:
             http_method=model_http_method,
             request_options_provider=request_options_provider,
             config=config,
+            disable_retries=self._disable_retries,
             parameters=model.parameters or {},
+            message_repository=self._message_repository,
+            use_cache=model.use_cache,
         )
 
     @staticmethod
@@ -788,7 +816,7 @@ class ModelToComponentFactory:
                 token_expiry_date_format=model.token_expiry_date_format,
                 message_repository=self._message_repository,
             )
-        # ignore type error beause fixing it would have a lot of dependencies, revisit later
+        # ignore type error because fixing it would have a lot of dependencies, revisit later
         return DeclarativeOauth2Authenticator(  # type: ignore
             access_token_name=model.access_token_name or "access_token",
             client_id=model.client_id,
@@ -800,6 +828,7 @@ class ModelToComponentFactory:
             scopes=model.scopes,
             token_expiry_date=model.token_expiry_date,
             token_expiry_date_format=model.token_expiry_date_format,  # type: ignore
+            token_expiry_is_time_of_expiration=bool(model.token_expiry_date_format),
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters or {},
@@ -808,11 +837,21 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_offset_increment(model: OffsetIncrementModel, config: Config, **kwargs: Any) -> OffsetIncrement:
-        return OffsetIncrement(page_size=model.page_size, config=config, parameters=model.parameters or {})
+        return OffsetIncrement(
+            page_size=model.page_size,
+            config=config,
+            inject_on_first_request=model.inject_on_first_request or False,
+            parameters=model.parameters or {},
+        )
 
     @staticmethod
     def create_page_increment(model: PageIncrementModel, config: Config, **kwargs: Any) -> PageIncrement:
-        return PageIncrement(page_size=model.page_size, start_from_page=model.start_from_page or 0, parameters=model.parameters or {})
+        return PageIncrement(
+            page_size=model.page_size,
+            start_from_page=model.start_from_page or 0,
+            inject_on_first_request=model.inject_on_first_request or False,
+            parameters=model.parameters or {},
+        )
 
     def create_parent_stream_config(self, model: ParentStreamConfigModel, config: Config, **kwargs: Any) -> ParentStreamConfig:
         declarative_stream = self._create_component_from_model(model.stream, config=config)
@@ -912,8 +951,6 @@ class ModelToComponentFactory:
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched or 5,
                 parameters=model.parameters or {},
-                disable_retries=self._disable_retries,
-                message_repository=self._message_repository,
             )
         return SimpleRetriever(
             name=name,
@@ -925,8 +962,6 @@ class ModelToComponentFactory:
             cursor=cursor,
             config=config,
             parameters=model.parameters or {},
-            disable_retries=self._disable_retries,
-            message_repository=self._message_repository,
         )
 
     @staticmethod

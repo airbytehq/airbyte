@@ -4,12 +4,16 @@
 
 import logging
 import os
+import urllib
 from dataclasses import InitVar, dataclass
 from functools import lru_cache
-from typing import Any, Callable, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from pathlib import Path
+from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 
 import requests
+import requests_cache
+from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.exceptions import ReadException
@@ -22,9 +26,13 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
+from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
+from airbyte_cdk.utils.mapping_helpers import combine_mappings
 from requests.auth import AuthBase
 
 
@@ -42,6 +50,7 @@ class HttpRequester(Requester):
         authenticator (DeclarativeAuthenticator): Authenticator defining how to authenticate to the source
         error_handler (Optional[ErrorHandler]): Error handler defining how to detect and handle errors
         config (Config): The user-provided configuration as specified by the source's spec
+        use_cache (bool): Indicates that data should be cached for this stream
     """
 
     name: str
@@ -53,6 +62,13 @@ class HttpRequester(Requester):
     http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
     error_handler: Optional[ErrorHandler] = None
+    disable_retries: bool = False
+    message_repository: MessageRepository = NoopMessageRepository()
+    use_cache: bool = False
+
+    _DEFAULT_MAX_RETRY = 5
+    _DEFAULT_RETRY_FACTOR = 5
+    _DEFAULT_MAX_TIME = 60 * 10
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
@@ -68,7 +84,10 @@ class HttpRequester(Requester):
         self.error_handler = self.error_handler
         self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
-        self._session = requests.Session()
+        self._session = self.request_cache()
+        self._session.mount(
+            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+        )
 
         if isinstance(self._authenticator, AuthBase):
             self._session.auth = self._authenticator
@@ -78,6 +97,33 @@ class HttpRequester(Requester):
     # but this has a cascading effect where all dataclass fields must also be set to frozen.
     def __hash__(self) -> int:
         return hash(tuple(self.__dict__))
+
+    @property
+    def cache_filename(self) -> str:
+        """
+        Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
+        """
+        return f"{self.name}.sqlite"
+
+    def request_cache(self) -> requests.Session:
+        if self.use_cache:
+            cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
+            # Use in-memory cache if cache_dir is not set
+            # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
+            if cache_dir:
+                sqlite_path = str(Path(cache_dir) / self.cache_filename)
+            else:
+                sqlite_path = "file::memory:?cache=shared"
+            return requests_cache.CachedSession(sqlite_path, backend="sqlite")  # type: ignore # there are no typeshed stubs for requests_cache
+        else:
+            return requests.Session()
+
+    def clear_cache(self) -> None:
+        """
+        Clear cached requests for current session, can be called any time
+        """
+        if isinstance(self._session, requests_cache.CachedSession):
+            self._session.cache.clear()  # type: ignore # cache.clear is not typed
 
     def get_authenticator(self) -> DeclarativeAuthenticator:
         return self._authenticator
@@ -95,13 +141,15 @@ class HttpRequester(Requester):
     def get_method(self) -> HttpMethod:
         return self._http_method
 
-    # use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
-    # only care about the status of the last response received
-    @lru_cache(maxsize=10)
     def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
-        # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
         if self.error_handler is None:
             raise ValueError("Cannot interpret response status without an error handler")
+
+        # Change CachedRequest to PreparedRequest for response
+        request = response.request
+        if isinstance(request, requests_cache.CachedRequest):
+            response.request = request.prepare()
+
         return self.error_handler.interpret_response(response)
 
     def get_request_params(
@@ -153,21 +201,6 @@ class HttpRequester(Requester):
             stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         )
 
-    def request_kwargs(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        # todo: there are a few integrations that override the request_kwargs() method, but the use case for why kwargs over existing
-        #  constructs is a little unclear. We may revisit this, but for now lets leave it out of the DSL
-        return {}
-
-    disable_retries: bool = False
-    _DEFAULT_MAX_RETRY = 5
-    _DEFAULT_RETRY_FACTOR = 5
-
     @property
     def max_retries(self) -> Union[int, None]:
         if self.disable_retries:
@@ -175,6 +208,15 @@ class HttpRequester(Requester):
         if self.error_handler is None:
             return self._DEFAULT_MAX_RETRY
         return self.error_handler.max_retries
+
+    @property
+    def max_time(self) -> Union[int, None]:
+        """
+        Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
+        """
+        if self.error_handler is None:
+            return self._DEFAULT_MAX_TIME
+        return self.error_handler.max_time
 
     @property
     def logger(self) -> logging.Logger:
@@ -192,7 +234,16 @@ class HttpRequester(Requester):
         """
         if self.error_handler is None:
             return response.status_code == 429 or 500 <= response.status_code < 600
-        return bool(self.interpret_response_status(response).action == ResponseAction.RETRY)
+
+        if self.use_cache:
+            interpret_response_status = self.interpret_response_status
+        else:
+            # Use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
+            # only care about the status of the last response received
+            # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
+            interpret_response_status = lru_cache(maxsize=10)(self.interpret_response_status)
+
+        return bool(interpret_response_status(response).action == ResponseAction.RETRY)
 
     def _backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -221,20 +272,9 @@ class HttpRequester(Requester):
         """
         return self.interpret_response_status(response).error_message
 
-    def _get_mapping(
-        self, method: Callable[..., Optional[Union[Mapping[str, Any], str]]], **kwargs: Any
-    ) -> Tuple[Union[Mapping[str, Any], str], Set[str]]:
-        """
-        Get mapping from the provided method, and get the keys of the mapping.
-        If the method returns a string, it will return the string and an empty set.
-        If the method returns a dict, it will return the dict and its keys.
-        """
-        mapping = method(**kwargs) or {}
-        keys = set(mapping.keys()) if not isinstance(mapping, str) else set()
-        return mapping, keys
-
     def _get_request_options(
         self,
+        stream_state: Optional[StreamState],
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
         requester_method: Callable[..., Optional[Union[Mapping[str, Any], str]]],
@@ -246,34 +286,17 @@ class HttpRequester(Requester):
         Raise a ValueError if there's a key collision
         Returned merged mapping otherwise
         """
-        requester_mapping, requester_keys = self._get_mapping(requester_method, stream_slice=stream_slice, next_page_token=next_page_token)
-        auth_options_mapping, auth_options_keys = self._get_mapping(auth_options_method)
-        extra_options = extra_options or {}
-        extra_mapping, extra_keys = self._get_mapping(lambda: extra_options)
-
-        all_mappings = [requester_mapping, auth_options_mapping, extra_mapping]
-        all_keys = [requester_keys, auth_options_keys, extra_keys]
-
-        # If more than one mapping is a string, raise a ValueError
-        if sum(isinstance(mapping, str) for mapping in all_mappings) > 1:
-            raise ValueError("Cannot combine multiple options if one is a string")
-
-        # If any mapping is a string, return it
-        for mapping in all_mappings:
-            if isinstance(mapping, str):
-                return mapping
-
-        # If there are duplicate keys across mappings, raise a ValueError
-        intersection = set().union(*all_keys)
-        if len(intersection) < sum(len(keys) for keys in all_keys):
-            raise ValueError(f"Duplicate keys found: {intersection}")
-
-        # Return the combined mappings
-        # ignore type because mypy doesn't follow all mappings being dicts
-        return {**requester_mapping, **auth_options_mapping, **extra_mapping}  # type: ignore
+        return combine_mappings(
+            [
+                requester_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                auth_options_method(),
+                extra_options,
+            ]
+        )
 
     def _request_headers(
         self,
+        stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
         extra_headers: Optional[Mapping[str, Any]] = None,
@@ -283,6 +306,7 @@ class HttpRequester(Requester):
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
         headers = self._get_request_options(
+            stream_state,
             stream_slice,
             next_page_token,
             self.get_request_headers,
@@ -295,6 +319,7 @@ class HttpRequester(Requester):
 
     def _request_params(
         self,
+        stream_state: Optional[StreamState],
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
         extra_params: Optional[Mapping[str, Any]] = None,
@@ -305,14 +330,20 @@ class HttpRequester(Requester):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
         options = self._get_request_options(
-            stream_slice, next_page_token, self.get_request_params, self.get_authenticator().get_request_params, extra_params
+            stream_state, stream_slice, next_page_token, self.get_request_params, self.get_authenticator().get_request_params, extra_params
         )
         if isinstance(options, str):
             raise ValueError("Request params cannot be a string")
+
+        for k, v in options.items():
+            if isinstance(v, (list, dict)):
+                raise ValueError(f"Invalid value for `{k}` parameter. The values of request params cannot be an array or object.")
+
         return options
 
     def _request_body_data(
         self,
+        stream_state: Optional[StreamState],
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
         extra_body_data: Optional[Union[Mapping[str, Any], str]] = None,
@@ -328,11 +359,17 @@ class HttpRequester(Requester):
         """
         # Warning: use self.state instead of the stream_state passed as argument!
         return self._get_request_options(
-            stream_slice, next_page_token, self.get_request_body_data, self.get_authenticator().get_request_body_data, extra_body_data
+            stream_state,
+            stream_slice,
+            next_page_token,
+            self.get_request_body_data,
+            self.get_authenticator().get_request_body_data,
+            extra_body_data,
         )
 
     def _request_body_json(
         self,
+        stream_state: Optional[StreamState],
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
         extra_body_json: Optional[Mapping[str, Any]] = None,
@@ -344,11 +381,35 @@ class HttpRequester(Requester):
         """
         # Warning: use self.state instead of the stream_state passed as argument!
         options = self._get_request_options(
-            stream_slice, next_page_token, self.get_request_body_json, self.get_authenticator().get_request_body_json, extra_body_json
+            stream_state,
+            stream_slice,
+            next_page_token,
+            self.get_request_body_json,
+            self.get_authenticator().get_request_body_json,
+            extra_body_json,
         )
         if isinstance(options, str):
             raise ValueError("Request body json cannot be a string")
         return options
+
+    def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
+        """
+        Remove query parameters from params mapping if they are already encoded in the URL.
+        :param url: URL with
+        :param params:
+        :return:
+        """
+        if params is None:
+            params = {}
+        query_string = urllib.parse.urlparse(url).query
+        query_dict = {k: v[0] for k, v in urllib.parse.parse_qs(query_string).items()}
+
+        duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
+        return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
+
+    @classmethod
+    def _join_url(cls, url_base: str, path: str) -> str:
+        return urljoin(url_base, path)
 
     def _create_prepared_request(
         self,
@@ -358,8 +419,10 @@ class HttpRequester(Requester):
         json: Any = None,
         data: Any = None,
     ) -> requests.PreparedRequest:
+        url = urljoin(self.get_url_base(), path)
         http_method = str(self._http_method.value)
-        args = {"method": http_method, "url": urljoin(self.get_url_base(), path), "headers": headers, "params": params}
+        query_params = self.deduplicate_query_params(url, params)
+        args = {"method": http_method, "url": url, "headers": headers, "params": query_params}
         if http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -374,6 +437,7 @@ class HttpRequester(Requester):
 
     def send_request(
         self,
+        stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
         path: Optional[str] = None,
@@ -381,19 +445,26 @@ class HttpRequester(Requester):
         request_params: Optional[Mapping[str, Any]] = None,
         request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
         request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> Optional[requests.Response]:
         request = self._create_prepared_request(
-            path=path if path is not None else self.get_path(stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token),
-            headers=self._request_headers(stream_slice, next_page_token, request_headers),
-            params=self._request_params(stream_slice, next_page_token, request_params),
-            json=self._request_body_json(stream_slice, next_page_token, request_body_json),
-            data=self._request_body_data(stream_slice, next_page_token, request_body_data),
+            path=path
+            if path is not None
+            else self.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            headers=self._request_headers(stream_state, stream_slice, next_page_token, request_headers),
+            params=self._request_params(stream_state, stream_slice, next_page_token, request_params),
+            json=self._request_body_json(stream_state, stream_slice, next_page_token, request_body_json),
+            data=self._request_body_data(stream_state, stream_slice, next_page_token, request_body_data),
         )
 
-        response = self._send_with_retry(request)
+        response = self._send_with_retry(request, log_formatter=log_formatter)
         return self._validate_response(response)
 
-    def _send_with_retry(self, request: requests.PreparedRequest) -> requests.Response:
+    def _send_with_retry(
+        self,
+        request: requests.PreparedRequest,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> requests.Response:
         """
         Creates backoff wrappers which are responsible for retry logic
         """
@@ -418,15 +489,27 @@ class HttpRequester(Requester):
         Add this condition to avoid an endless loop if it hasn't been set
         explicitly (i.e. max_retries is not None).
         """
+        max_time = self.max_time
+        """
+        According to backoff max_time docstring:
+            max_time: The maximum total amount of time to try for before
+                giving up. Once expired, the exception will be allowed to
+                escape. If a callable is passed, it will be
+                evaluated at runtime and its return value used.
+        """
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
 
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
-        backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self._DEFAULT_RETRY_FACTOR)
+        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)  # type: ignore # we don't pass in kwargs to the backoff handler
+        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
         # backoff handlers wrap _send, so it will always return a response
-        return backoff_handler(user_backoff_handler)(request)  # type: ignore
+        return backoff_handler(user_backoff_handler)(request, log_formatter=log_formatter)  # type: ignore
 
-    def _send(self, request: requests.PreparedRequest) -> requests.Response:
+    def _send(
+        self,
+        request: requests.PreparedRequest,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> requests.Response:
         """
         Wraps sending the request in rate limit and error handlers.
         Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
@@ -450,6 +533,12 @@ class HttpRequester(Requester):
         )
         response: requests.Response = self._session.send(request)
         self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
+        if log_formatter:
+            formatter = log_formatter
+            self.message_repository.log_message(
+                Level.DEBUG,
+                lambda: formatter(response),
+            )
         if self._should_retry(response):
             custom_backoff_time = self._backoff_time(response)
             if custom_backoff_time:
@@ -497,7 +586,8 @@ class HttpRequester(Requester):
             if isinstance(value, str):
                 return value
             elif isinstance(value, list):
-                return ", ".join(_try_get_error(v) for v in value)
+                error_list = [_try_get_error(v) for v in value]
+                return ", ".join(v for v in error_list if v is not None)
             elif isinstance(value, dict):
                 new_value = (
                     value.get("message")
@@ -506,6 +596,8 @@ class HttpRequester(Requester):
                     or value.get("errors")
                     or value.get("failures")
                     or value.get("failure")
+                    or value.get("details")
+                    or value.get("detail")
                 )
                 return _try_get_error(new_value)
             return None

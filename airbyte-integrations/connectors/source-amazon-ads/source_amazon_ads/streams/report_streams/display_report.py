@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from enum import Enum
 
 from .report_streams import RecordType, ReportStream
 
@@ -214,12 +213,7 @@ METRICS_MAP = {
 
 METRICS_TYPE_TO_ID_MAP = {"campaigns": "campaignId", "adGroups": "adGroupId", "productAds": "adId", "targets": "targetId", "asins": "asin"}
 
-
-class Tactics(str, Enum):
-    T00001 = "T00001"
-    T00020 = "T00020"
-    T00030 = "T00030"
-    REMARKETING = "remarketing"
+TACTICS = ["T00020", "T00030"]
 
 
 class SponsoredDisplayReportStream(ReportStream):
@@ -234,15 +228,15 @@ class SponsoredDisplayReportStream(ReportStream):
     metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
-        metrics_list = self.metrics_map[record_type]
-        if record_type == RecordType.ASINS and profile.accountInfo.type == "vendor":
-            return None
-        elif record_type == RecordType.PRODUCTADS and profile.accountInfo.type != "seller":
-            # Remove SKU from metrics since it is only available for seller accounts in Product Ad report
-            metrics_list = [m for m in metrics_list if m != "sku"]
-        return {
-            "reportDate": report_date,
-            # Only for most common T00020 tactic for now
-            "tactic": Tactics.T00020,
-            "metrics": ",".join(metrics_list),
-        }
+        for tactic in TACTICS:
+            metrics_list = self.metrics_map[record_type]
+            if record_type == RecordType.ASINS and profile.accountInfo.type == "vendor":
+                return None
+            elif record_type == RecordType.PRODUCTADS and profile.accountInfo.type != "seller":
+                # Remove SKU from metrics since it is only available for seller accounts in Product Ad report
+                metrics_list = [m for m in metrics_list if m != "sku"]
+            yield {
+                "reportDate": report_date,
+                "tactic": tactic,
+                "metrics": ",".join(metrics_list),
+            }

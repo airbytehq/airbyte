@@ -84,6 +84,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 ## CHANGELOG
 
+<<<<<<< HEAD
 | Version | Date       | Pull Request                                    | Subject                                   |
 | :------ | :--------- | :---------------------------------------------- | :---------------------------------------- |
 | 0.1.4   | 2023-12-04 | https://github.com/airbytehq/airbyte/pull/28667 | Make connector available on Airbyte Cloud |
@@ -91,3 +92,11 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 | 0.1.2   | 2023-08-09 | https://github.com/airbytehq/airbyte/pull/29174 | Small internal refactor                   |
 | 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760 | Added SSL support                         |
 | 0.1.0   | 2022-12-13 | https://github.com/airbytehq/airbyte/pull/20428 | New Destination Teradata Vantage          |
+=======
+| Version | Date       | Pull Request                                    | Subject                          |
+| :------ | :--------- | :---------------------------------------------- | :------------------------------- |
+| 0.1.3   | 2023-08-17 | https://github.com/airbytehq/airbyte/pull/30740 | Enable custom DBT transformation |
+| 0.1.2   | 2023-08-09 | https://github.com/airbytehq/airbyte/pull/29174 | Small internal refactor          |
+| 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760 | Added SSL support                |
+| 0.1.0   | 2022-12-13 | https://github.com/airbytehq/airbyte/pull/20428 | New Destination Teradata Vantage |
+>>>>>>> master
