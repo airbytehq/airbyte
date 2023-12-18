@@ -32,6 +32,7 @@ from requests import HTTPError, codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import (
+    APIPropertiesWithHistory,
     APIv1Property,
     APIv2Property,
     APIv3Property,
@@ -1942,6 +1943,11 @@ class ContactsPropertyHistory(PropertyHistory):
 
 
 class CompaniesPropertyHistory(PropertyHistory):
+    @cached_property
+    def _property_wrapper(self) -> IURLPropertyRepresentation:
+        properties = list(self.properties.keys())
+        return APIPropertiesWithHistory(properties=properties)
+
     @property
     def scopes(self) -> set:
         return {"crm.objects.companies.read"}
@@ -2001,10 +2007,15 @@ class CompaniesPropertyHistory(PropertyHistory):
         next_page_token: Mapping[str, Any] = None,
         properties: IURLPropertyRepresentation = None,
     ) -> str:
-        return f"{self.url}?{properties.as_url_param_with_history()}"
+        return f"{self.url}?{properties.as_url_param()}"
 
 
 class DealsPropertyHistory(PropertyHistory):
+    @cached_property
+    def _property_wrapper(self) -> IURLPropertyRepresentation:
+        properties = list(self.properties.keys())
+        return APIPropertiesWithHistory(properties=properties)
+
     @property
     def scopes(self) -> set:
         return {"crm.objects.deals.read"}
@@ -2064,7 +2075,7 @@ class DealsPropertyHistory(PropertyHistory):
         next_page_token: Mapping[str, Any] = None,
         properties: IURLPropertyRepresentation = None,
     ) -> str:
-        return f"{self.url}?{properties.as_url_param_with_history()}"
+        return f"{self.url}?{properties.as_url_param()}"
 
 
 class SubscriptionChanges(IncrementalStream):
