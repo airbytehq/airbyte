@@ -11,6 +11,7 @@
     "permissions": { "type": ["null", "array"] },
     "icon": { "type": ["null", "object"] },
     "description": { "type": ["null", "object"] },
+    "lastUpdated": { "type": ["null", "string"] },
     "_expandable": { "type": ["null", "object"] },
     "_links": { "type": ["null", "object"] }
   }

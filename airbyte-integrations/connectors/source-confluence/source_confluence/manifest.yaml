@@ -202,7 +202,7 @@ spec:
       space_name:
         type: string
         title: "Space Name"
-        description: 'The name of the Space you wish to extract.'
+        description: 'The name of the <a href="https://support.atlassian.com/confluence-cloud/docs/use-spaces-to-organize-your-work/">Confluence space</a> you wish to extract.'
         examples: ["Sample_Space"]
         order: 3
       start_date:
