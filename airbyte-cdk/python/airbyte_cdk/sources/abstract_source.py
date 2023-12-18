@@ -41,7 +41,7 @@ class AbstractSource(Source, ABC):
     """
 
     @abstractmethod
-    def say_moo(self, times=0):
+    def say_moo(self, times=1):
         pass
 
     @abstractmethod
