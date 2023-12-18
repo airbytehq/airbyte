@@ -1780,6 +1780,7 @@ definitions:
         "$ref": "#/definitions/RecordFilter"
       schema_normalization:
         "$ref": "#/definitions/SchemaNormalization"
+        default: None
       $parameters:
         type: object
         additionalProperties: true
@@ -1790,7 +1791,6 @@ definitions:
     enum:
       - None
       - Default
-    default: None
     examples:
       - None
       - Default

@@ -9,14 +9,14 @@ import requests
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
-from airbyte_cdk.sources.declarative.models import SchemaNormalizationType
+from airbyte_cdk.sources.declarative.models import SchemaNormalization
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 SCHEMA_TRANSFORMER_TYPE_MAPPING = {
-    SchemaNormalizationType.NONE: TransformConfig.NoTransform,
-    SchemaNormalizationType.DEFAULT: TransformConfig.DefaultSchemaNormalization,
+    SchemaNormalization.None_: TransformConfig.NoTransform,
+    SchemaNormalization.Default: TransformConfig.DefaultSchemaNormalization,
 }
 
 

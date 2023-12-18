@@ -1024,7 +1024,7 @@ class RecordSelector(BaseModel):
         description='Responsible for filtering records to be emitted by the Source.',
         title='Record Filter',
     )
-    schema_normalization: Optional[SchemaNormalization] = None
+    schema_normalization: Optional[SchemaNormalization] = SchemaNormalization.None_
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -1199,7 +1199,7 @@ class HttpRequester(BaseModel):
         title='Error Handler',
     )
     http_method: Optional[Union[str, HttpMethodEnum]] = Field(
-        'GET',
+        HttpMethodEnum.GET,
         description='The HTTP method used to fetch data from the source (can be GET or POST).',
         examples=['GET', 'POST'],
         title='HTTP Method',
