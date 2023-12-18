@@ -122,12 +122,10 @@
         "items": {
           "type": "object",
           "title": "Report Options",
-          "required": [
-            "stream_name",
-            "options_list"
-          ],
+          "required": ["stream_name", "options_list"],
           "properties": {
             "stream_name": {
+              "title": "Stream Name",
               "type": "string",
               "order": 0,
               "enum": [
@@ -185,10 +183,7 @@
               "type": "array",
               "items": {
                 "type": "object",
-                "required": [
-                  "option_name",
-                  "option_value"
-                ],
+                "required": ["option_name", "option_value"],
                 "properties": {
                   "option_name": {
                     "title": "Name",

@@ -3,15 +3,18 @@
 #
 
 import sys
+from typing import List
 
 import asyncclick as click
 from pipelines import main_logger
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import LOCAL_BUILD_PLATFORM, ContextState
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
+from pipelines.helpers.run_steps import RunStepOptions
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
@@ -31,26 +34,26 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     is_flag=True,
 )
 @click.option(
-    "--fast-tests-only",
-    help="When enabled, slow tests are skipped.",
-    default=False,
-    type=bool,
-    is_flag=True,
-)
-@click.option(
     "--concurrent-cat",
     help="When enabled, the CAT tests will run concurrently. Be careful about rate limits",
     default=False,
     type=bool,
     is_flag=True,
 )
+@click.option(
+    "--skip-step",
+    "-x",
+    multiple=True,
+    type=click.Choice([step_id.value for step_id in CONNECTOR_TEST_STEP_ID]),
+    help="Skip a step by name. Can be used multiple times to skip multiple steps.",
+)
 @click.pass_context
 async def test(
     ctx: click.Context,
     code_tests_only: bool,
     fail_fast: bool,
-    fast_tests_only: bool,
     concurrent_cat: bool,
+    skip_step: List[str],
 ) -> bool:
     """Runs a test pipeline for the selected connectors.
 
@@ -70,6 +73,11 @@ async def test(
         update_global_commit_status_check_for_tests(ctx.obj, "success")
         return True
 
+    run_step_options = RunStepOptions(
+        fail_fast=fail_fast,
+        skip_steps=[CONNECTOR_TEST_STEP_ID(step_id) for step_id in skip_step],
+    )
+
     connectors_tests_contexts = [
         ConnectorContext(
             pipeline_name=f"Testing connector {connector.technical_name}",
@@ -86,8 +94,6 @@ async def test(
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
-            fail_fast=fail_fast,
-            fast_tests_only=fast_tests_only,
             code_tests_only=code_tests_only,
             use_local_cdk=ctx.obj.get("use_local_cdk"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
@@ -95,10 +101,12 @@ async def test(
             docker_hub_username=ctx.obj.get("docker_hub_username"),
             docker_hub_password=ctx.obj.get("docker_hub_password"),
             concurrent_cat=concurrent_cat,
+            run_step_options=run_step_options,
             targeted_platforms=[LOCAL_BUILD_PLATFORM],
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
+
     try:
         await run_connectors_pipelines(
             [connector_context for connector_context in connectors_tests_contexts],

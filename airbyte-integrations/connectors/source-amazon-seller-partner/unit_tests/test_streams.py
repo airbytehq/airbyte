@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from typing import Any, Dict
 from unittest.mock import patch
 
@@ -64,7 +65,10 @@ class TestReportsAmazonSPStream:
             (
                 "2022-10-01T00:00:00Z",
                 None,
-                [{"dataStartTime": "2022-10-03T00:00:00Z", "dataEndTime": "2022-12-31T23:59:59Z"}],
+                [
+                    {"dataStartTime": "2022-10-01T00:00:00Z", "dataEndTime": "2022-12-29T23:59:59Z"},
+                    {"dataStartTime": "2022-12-30T00:00:00Z", "dataEndTime": "2023-01-01T00:00:00Z"}
+                ],
             ),
             (
                 "2022-11-01T00:00:00Z",
