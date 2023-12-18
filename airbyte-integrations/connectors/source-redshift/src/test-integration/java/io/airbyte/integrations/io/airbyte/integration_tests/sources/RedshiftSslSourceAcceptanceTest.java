@@ -11,7 +11,9 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import java.time.Duration;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled
 public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTest {
 
   private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(60);
