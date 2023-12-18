@@ -425,6 +425,22 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: LowQualityImpressionsPercent
               bypass_reason: "dynamic field"
+            - name: ExactMatchImpressionSharePercent
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionSharePercent
+              bypass_reason: "dynamic field"
+            - name: TopImpressionShareLostToRankPercent
+              bypass_reason: "dynamic field"
+            - name: TopImpressionShareLostToBudgetPercent
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionShareLostToRankPercent
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionShareLostToBudgetPercent
+              bypass_reason: "dynamic field"
+            - name: TopImpressionSharePercent
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionRatePercent
+              bypass_reason: "dynamic field"
           ad_group_impression_performance_report_daily:
             - name: Ctr
               bypass_reason: "dynamic field"
