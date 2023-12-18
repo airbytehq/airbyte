@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "airbyte-lib"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Joe Reuter <joe@airbyte.io>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.9"
 jsonschema = "3.2.0"
 requests = "^2.31.0"
 airbyte-protocol-models = "^1.0.1"

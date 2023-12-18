@@ -221,7 +221,7 @@ class AirbyteLibValidation(Step):
 
         connector_secrets = await self.context.get_connector_secrets()
         first_secret_name = list(connector_secrets.keys())[0]
-        test_execution = test_environment.with_exec(["airbyte-lib-validate-source", "--connector-dir", str(self.context.connector.code_directory), "--sample-config", "/secrets/" + first_secret_name])
+        test_execution = test_environment.with_exec(["airbyte-lib-validate-source", "--connector-dir", ".", "--sample-config", "secrets/" + first_secret_name])
 
         return await self.get_step_result(test_execution)
 
