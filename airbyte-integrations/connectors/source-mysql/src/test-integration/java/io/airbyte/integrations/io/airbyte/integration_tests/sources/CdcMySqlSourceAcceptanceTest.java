@@ -19,6 +19,8 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -32,7 +34,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 
 public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -101,7 +103,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) {
-    testdb = MySQLTestDatabase.in("mysql:8.0", extraContainerFactoryMethods().toArray(String[]::new))
+    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, getContainerModifiers())
         .withCdcPermissions()
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
         .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
@@ -109,8 +111,8 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .with("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
   }
 
-  protected Stream<String> extraContainerFactoryMethods() {
-    return Stream.empty();
+  protected ContainerModifier[] getContainerModifiers() {
+    return ArrayUtils.toArray();
   }
 
   @Override
