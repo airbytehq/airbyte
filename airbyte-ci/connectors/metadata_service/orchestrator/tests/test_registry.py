@@ -13,6 +13,7 @@ from metadata_service.models.generated.ConnectorRegistrySourceDefinition import 
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 from orchestrator.assets.registry_entry import (
     get_connector_type_from_registry_entry,
+    get_registry_entry_write_path,
     get_registry_status_lists,
     metadata_to_registry_entry,
     safe_parse_metadata_definition,
@@ -277,11 +278,15 @@ def test_overrides_application(registry_type, expected_docker_image_tag, expecte
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.file_path = f"metadata/{expected_docker_image_tag}/metadata.yaml"
     mock_metadata_entry.icon_url = "test-icon-url"
 
-    result = metadata_to_registry_entry(mock_metadata_entry, registry_type)
-    assert result["dockerImageTag"] == expected_docker_image_tag
-    assert result["additionalField"] == expected_additional_field
+    registry_entry = metadata_to_registry_entry(mock_metadata_entry, registry_type)
+    assert registry_entry["dockerImageTag"] == expected_docker_image_tag
+    assert registry_entry["additionalField"] == expected_additional_field
+
+    expected_write_path = f"metadata/{expected_docker_image_tag}/{registry_type}"
+    assert get_registry_entry_write_path(registry_entry, mock_metadata_entry, registry_type) == expected_write_path
 
 
 def test_source_type_extraction():

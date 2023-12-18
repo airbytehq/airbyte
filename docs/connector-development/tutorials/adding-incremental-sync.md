@@ -2,7 +2,7 @@
 
 ## Overview
 
-This tutorial will assume that you already have a working source. If you do not, feel free to refer to the [Building a Toy Connector](building-a-python-source.md) tutorial. This tutorial will build directly off the example from that article. We will also assume that you have a basic understanding of how Airbyte's Incremental-Append replication strategy works. We have a brief explanation of it [here](../../understanding-airbyte/connections/incremental-append.md).
+This tutorial will assume that you already have a working source. If you do not, feel free to refer to the [Building a Toy Connector](building-a-python-source.md) tutorial. This tutorial will build directly off the example from that article. We will also assume that you have a basic understanding of how Airbyte's Incremental-Append replication strategy works. We have a brief explanation of it [here](/using-airbyte/core-concepts/sync-modes/incremental-append.md).
 
 ## Update Catalog in `discover`
 
@@ -293,6 +293,6 @@ Bonus points: go to Airbyte UI and reconfigure the connection to use incremental
 
 Incremental definitely requires more configurability than full refresh, so your implementation may deviate slightly depending on whether your cursor
 field is source defined or user-defined. If you think you are running into one of those cases, check out 
-our [incremental](../../understanding-airbyte/connections/incremental-append.md) documentation for more information on different types of
+our [incremental](/using-airbyte/core-concepts/sync-modes/incremental-append.md) documentation for more information on different types of
 configuration.
 

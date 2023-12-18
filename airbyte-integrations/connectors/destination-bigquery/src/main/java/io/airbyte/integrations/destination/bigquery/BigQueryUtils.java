@@ -35,6 +35,7 @@ import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
@@ -93,7 +94,9 @@ public class BigQueryUtils {
 
   static Job waitForQuery(final Job queryJob) {
     try {
-      return queryJob.waitFor();
+      final Job job = queryJob.waitFor();
+      AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
+      return job;
     } catch (final Exception e) {
       LOGGER.error("Failed to wait for a query job:" + queryJob);
       throw new RuntimeException(e);
@@ -246,7 +249,7 @@ public class BigQueryUtils {
             + "}"))
         .build());
 
-    LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
+    // Do not log the gcsJsonNode to avoid accidentally emitting credentials (even at DEBUG/TRACE level)
     return gcsJsonNode;
   }
 
@@ -303,6 +306,14 @@ public class BigQueryUtils {
     } else {
       return "US";
     }
+  }
+
+  public static boolean getDisableTypeDedupFlag(final JsonNode config) {
+    if (config.has(BigQueryConsts.DISABLE_TYPE_DEDUPE)) {
+      return config.get(BigQueryConsts.DISABLE_TYPE_DEDUPE).asBoolean(false);
+    }
+
+    return false;
   }
 
   static TableDefinition getTableDefinition(final BigQuery bigquery, final String datasetName, final String tableName) {
@@ -435,6 +446,7 @@ public class BigQueryUtils {
 
   public static void waitForJobFinish(final Job job) throws InterruptedException {
     if (job != null) {
+      AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
       try {
         LOGGER.info("Waiting for job finish {}. Status: {}", job, job.getStatus());
         job.waitFor();

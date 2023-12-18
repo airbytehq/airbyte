@@ -4,6 +4,9 @@
 
 
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_protocol.models import SyncMode
+from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 """
@@ -17,19 +20,22 @@ User input schema rules:
 
 _base_user_input_schema_scenario = (
     TestScenarioBuilder()
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -112,6 +118,7 @@ single_stream_user_input_schema_scenario_schema_is_invalid = (
             ]
         }
     )
+    .set_catalog(CatalogBuilder().with_stream("stream1", SyncMode.full_refresh).build())
     .set_expected_check_status("FAILED")
     .set_expected_check_error(None, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
@@ -224,35 +231,38 @@ single_stream_user_input_schema_scenario_skip_nonconforming_records = (
 
 _base_multi_stream_user_input_schema_scenario = (
     TestScenarioBuilder()
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", 21),
-                    ("val12a", 22),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "c.csv": {
-                "contents": [
-                    ("col1",),
-                    ("val11c",),
-                    ("val21c",),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", 21),
+                        ("val12a", 22),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "c.csv": {
+                    "contents": [
+                        ("col1",),
+                        ("val11c",),
+                        ("val21c",),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -432,6 +442,7 @@ multi_stream_user_input_schema_scenario_schema_is_invalid = (
             ]
         }
     )
+    .set_catalog(CatalogBuilder().with_stream("stream1", SyncMode.full_refresh).with_stream("stream2", SyncMode.full_refresh).with_stream("stream3", SyncMode.full_refresh).build())
     .set_expected_check_status("FAILED")
     .set_expected_check_error(None, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)

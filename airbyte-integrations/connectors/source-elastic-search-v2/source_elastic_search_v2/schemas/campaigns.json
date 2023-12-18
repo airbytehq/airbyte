@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string"
+    },
+    "publisher_campaign_id": {
+      "type": "string"
+    },
+    "clicks": {
+      "type": "integer"
+    },
+    "hits": {
+      "type": "integer"
+    },
+    "cost": {
+      "type": "number"
+    },
+    "average_cpc": {
+      "type": "number"
+    },
+    "conversions": {
+      "type": "integer"
+    },
+    "advertiser": {
+      "type": "string"
+    },
+    "account": {
+      "type": "string"
+    },
+    "publisher": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "campaign": {
+      "type": "string"
+    },
+    "revenue": {
+      "type": "number"
+    },
+    "all_conversions": {
+      "type": "integer"
+    },
+    "conversions_one_per_click": {
+      "type": "integer"
+    },
+    "conversions_many_per_click": {
+      "type": "integer"
+    }
+  }
+}

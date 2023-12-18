@@ -65,7 +65,9 @@ def test_check_connection_404_error(config):
     with pytest.raises(AirbyteTracedException) as e:
         source.check_connection(logger=logger_mock, config=config)
 
-    assert e.value.message == "Config validation error: please validate your domain."
+    assert (
+        e.value.message == "Config validation error: please check that your domain is valid and does not include protocol (e.g: https://)."
+    )
 
 
 def test_get_authenticator(config):

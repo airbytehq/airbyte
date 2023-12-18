@@ -1,15 +1,21 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - api.amazon.com
       - advertising-api.amazon.com
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 3.3.0
+  dockerImageTag: 3.4.1
   dockerRepository: airbyte/source-amazon-ads
+  documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
   license: MIT
@@ -20,6 +26,11 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      3.0.0:
+        message: Attribution report stream schemas fix.
+        upgradeDeadline: "2023-07-24"
   suggestedStreams:
     streams:
       - profiles
@@ -27,16 +38,7 @@ data:
       - sponsored_display_report_stream
       - sponsored_brands_report_stream
       - sponsored_products_report_stream
-  documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
+  supportLevel: certified
   tags:
     - language:python
-  releases:
-    breakingChanges:
-      3.0.0:
-        message: "Attribution report stream schemas fix."
-        upgradeDeadline: "2023-07-24"
-  ab_internal:
-    sl: 300
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

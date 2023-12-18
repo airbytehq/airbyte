@@ -5,6 +5,7 @@
 from urllib.parse import parse_qsl, urlparse, urlunparse
 
 from facebook_business.api import Cursor
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 
 
 class CursorPatch(Cursor):
@@ -36,6 +37,8 @@ class CursorPatch(Cursor):
 
         if self._include_summary and "default_summary" not in self.params and "summary" not in self.params:
             self.params["summary"] = True
+
+        self.params["limit"] = 100
 
         response_obj = self._api.call(
             "GET",

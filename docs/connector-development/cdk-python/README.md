@@ -74,7 +74,7 @@ You can find a complete tutorial for implementing an HTTP source connector in [t
 
 **Simple Python connectors using the barebones `Source` abstraction**:
 
-- [Google Sheets](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/google_sheets_source.py)
+- [Google Sheets](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/source_google_sheets/source.py)
 - [Mailchimp](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mailchimp/source_mailchimp/source.py)
 
 ## Contributing

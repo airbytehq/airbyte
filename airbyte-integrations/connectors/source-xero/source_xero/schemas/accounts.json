@@ -1,61 +1,72 @@
 {
-  "type": ["null", "object"],
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
   "properties": {
+    "AccountID": {
+      "type": "string"
+    },
     "Code": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "Name": {
-      "type": ["null", "string"]
-    },
-    "Type": {
-      "type": ["null", "string"]
-    },
-    "UpdatedDateUTC": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "ReportingCodeName": {
-      "type": ["null", "string"]
-    },
-    "SystemAccount": {
-      "type": ["null", "string"]
-    },
-    "BankAccountType": {
-      "type": ["null", "string"]
-    },
-    "TaxType": {
-      "type": ["null", "string"]
-    },
-    "Description": {
-      "type": ["null", "string"]
-    },
-    "Class": {
-      "type": ["null", "string"]
-    },
-    "AccountID": {
-      "type": ["string"]
-    },
-    "BankAccountNumber": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "Status": {
-      "type": ["null", "string"]
+      "type": "string"
     },
-    "ShowInExpenseClaims": {
-      "type": ["null", "boolean"]
+    "Type": {
+      "type": "string"
     },
-    "CurrencyCode": {
-      "type": ["null", "string"]
+    "TaxType": {
+      "type": "string"
     },
-    "ReportingCode": {
-      "type": ["null", "string"]
+    "Description": {
+      "type": "string"
+    },
+    "Class": {
+      "type": "string"
     },
     "EnablePaymentsToAccount": {
-      "type": ["null", "boolean"]
+      "type": "boolean"
+    },
+    "ShowInExpenseClaims": {
+      "type": "boolean"
+    },
+    "BankAccountType": {
+      "type": "string"
+    },
+    "ReportingCode": {
+      "type": "string"
+    },
+    "ReportingCodeName": {
+      "type": "string"
     },
     "HasAttachments": {
-      "type": ["null", "boolean"]
+      "type": "boolean"
+    },
+    "UpdatedDateUTC": {
+      "type": "string"
+    },
+    "AddToWatchlist": {
+      "type": "boolean"
     }
   },
-  "additionalProperties": true
+  "required": [
+    "AccountID",
+    "Code",
+    "Name",
+    "Status",
+    "Type",
+    "TaxType",
+    "Description",
+    "Class",
+    "EnablePaymentsToAccount",
+    "ShowInExpenseClaims",
+    "BankAccountType",
+    "ReportingCode",
+    "ReportingCodeName",
+    "HasAttachments",
+    "UpdatedDateUTC",
+    "AddToWatchlist"
+  ]
 }

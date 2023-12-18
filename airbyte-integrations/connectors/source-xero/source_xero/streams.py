@@ -1,250 +1,322 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
-import decimal
-import re
+import datetime
+import logging
 from abc import ABC
-from datetime import date, datetime, time, timedelta, timezone
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Union, Dict
+from urllib.parse import urljoin
 
-import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
 
 
-def parse_date(value):
-    # Xero datetimes can be .NET JSON date strings which look like
-    # "/Date(1419937200000+0000)/"
-    # https://developer.xero.com/documentation/api/requests-and-responses
-    pattern = r"Date\((\-?\d+)([-+])?(\d+)?\)"
-    match = re.search(pattern, value)
+class XeroHttpStream(HttpStream, ABC):
+    url_base = "http://abilling01.prod.dld"
+    xero_id = ""
+    BODY_REQUEST_METHODS = ("POST", "PUT", "PATCH", "GET")
+    dolead_id = "ed4cac23-e9fe-4e05-89d6-b5c9fc6d2a32"
+    dolead_inc_id = "c1de2758-b8aa-45d7-8c01-163c3bbf8c39"
+    dolead_uk_id = "bfa6caee-df20-41f8-a42b-8b73603159d7"
+    dolead_dds_id = "8cfa6be1-0d88-4046-b9d4-e5055b0ade76"
 
-    iso8601pattern = r"((\d{4})-([0-2]\d)-0?([0-3]\d)T([0-5]\d):([0-5]\d):([0-6]\d))"
+    # Set this as a noop.
+    primary_key = None
 
-    if not match:
-        iso8601match = re.search(iso8601pattern, value)
-        if iso8601match:
-            try:
-                return datetime.strptime(value)
-            except Exception:
-                return None
-        else:
-            return None
-
-    millis_timestamp, offset_sign, offset = match.groups()
-    if offset:
-        if offset_sign == "+":
-            offset_sign = 1
-        else:
-            offset_sign = -1
-        offset_hours = offset_sign * int(offset[:2])
-        offset_minutes = offset_sign * int(offset[2:])
-    else:
-        offset_hours = 0
-        offset_minutes = 0
-
-    return datetime.fromtimestamp((int(millis_timestamp) / 1000), tz=timezone.utc) + timedelta(hours=offset_hours, minutes=offset_minutes)
-
-
-def _json_load_object_hook(_dict):
-    """Hook for json.parse(...) to parse Xero date formats."""
-    # This was taken from the pyxero library and modified
-    # to format the dates according to RFC3339
-    for key, value in _dict.items():
-        if isinstance(value, str):
-            value = parse_date(value)
-            if value:
-                if type(value) is date:
-                    value = datetime.combine(value, time.min)
-                value = value.replace(tzinfo=timezone.utc)
-                _dict[key] = datetime.isoformat(value, timespec="seconds")
-    return _dict
-
-
-class XeroStream(HttpStream, ABC):
-    url_base = "https://api.xero.com/api.xro/2.0/"
-    page_size = 100
-    current_page = 1
-    pagination = False
-
-    def __init__(self, tenant_id: str, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.tenant_id = tenant_id
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        records = response.json().get(self.data_field) or []
-        if not self.pagination:
+    @property
+    def retry_factor(self) -> float:
+        """
+        Override if needed. Specifies factor for backoff policy.
+        """
+        return 40
+
+    def path(self, **kwargs) -> str:
+        return ""
+
+    def next_page_token(self, response: requests.Response, **kwargs) -> int:
+        decoded_response = response.json()
+        if decoded_response.get("data") != []:
+            last_object_page = decoded_response.get("page")
+            return int(last_object_page) + 1
+        else:
             return None
-        if len(records) == self.page_size:
-            self.current_page += 1
-            return {"has_next_page": True}
+
+    def request_headers(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"Content-Type": "application/json"}
+
+    def _create_prepared_request(
+            self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
+    ) -> requests.PreparedRequest:
+        args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
+        if self.http_method.upper() in self.BODY_REQUEST_METHODS:
+            if json and data:
+                raise RequestBodyException(
+                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
+                )
+            elif json:
+                args["json"] = json
+            elif data:
+                args["data"] = data
+
+        return self._session.prepare_request(requests.Request(**args))
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        return response.json()
+
+
+class XeroPaginatedData(XeroHttpStream):
+
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_id, "page": str(next_page_token)}
+
+    def parse_response(self,
+                       response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        return response.json().get("data")
+
+    def next_page_token(self, response: requests.Response, **kwargs) -> int:
+        decoded_response = response.json()
+        if decoded_response.get("data") != []:
+            last_object_page = decoded_response.get("page")
+            return int(last_object_page) + 1
+        else:
+            return None
+
+
+class TrackingCategories(XeroHttpStream):
+
+    def next_page_token(self, response: requests.Response, **kwargs) -> int:
         return None
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = {}
-        if self.pagination:
-            params["page"] = self.current_page
-        return params
+    def path(self, **kwargs) -> str:
+        return "/xero/tracking_categories"
+
+
+class DoleadManualJournals(XeroPaginatedData):
+
+    def path(self, **kwargs) -> str:
+        return "/xero/manualjournals"
+
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_id, "page": "0"}
+
+
+class DoleadIncManualJournals(DoleadManualJournals):
+    dolead_id = "c1de2758-b8aa-45d7-8c01-163c3bbf8c39"
+
+
+class DoleadUkManualJournals(DoleadManualJournals):
+    dolead_id = "bfa6caee-df20-41f8-a42b-8b73603159d7"
+
+
+class DoleadDdsManualJournals(DoleadManualJournals):
+    dolead_id = "8cfa6be1-0d88-4046-b9d4-e5055b0ade76"
+
+
+class Journals(XeroHttpStream):
+    date_range = datetime.datetime.today() - datetime.timedelta(days=1825)
+    date_range = date_range.date().isoformat()
+
+    def path(self, **kwargs) -> str:
+        return "/xero/journals"
+
+    def parse_response(self,
+                       response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        return response.json().get("data")
+
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_id, "offset": next_page_token}
+        else:
+            return {"tenant_id": self.dolead_id, "offset": "0"}
+
+    def next_page_token(self, response: requests.Response, **kwargs) -> int:
+        decoded_response = response.json()
+        if decoded_response.get("data"):
+            # Get the last "CreatedDateUTC" from the batch
+            last_object_number = decoded_response.get("data")[len(decoded_response.get("data")) - 1].get("JournalNumber")
+            return str(last_object_number)
+        else:
+            return None
+
+
+class DoleadJournals(Journals):
+    dolead_id = "ed4cac23-e9fe-4e05-89d6-b5c9fc6d2a32"
+
+
+class DoleadIncJournals(DoleadJournals):
+    dolead_id = "c1de2758-b8aa-45d7-8c01-163c3bbf8c39"
+
+
+class DoleadUkJournals(DoleadJournals):
+    dolead_id = "bfa6caee-df20-41f8-a42b-8b73603159d7"
+
+
+class DoleadDdsJournals(DoleadJournals):
+    dolead_id = "8cfa6be1-0d88-4046-b9d4-e5055b0ade76"
+
+
+class Contacts(XeroHttpStream):
+
+    def next_page_token(self, response: requests.Response, **kwargs) -> int:
+        return None
+
+    def path(self, **kwargs) -> str:
+        return "/xero/all_contacts"
+
+
+class Accounts(XeroHttpStream):
+
+    def next_page_token(self, response: requests.Response, **kwargs) -> int:
+        return None
+
+    def path(self, **kwargs) -> str:
+        return "/xero/accounts"
+
+
+class DoleadInvoices(XeroPaginatedData):
+    def path(self, **kwargs) -> str:
+        return "/xero/all_invoices"
+
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_id, "page": "1"}
+
+
+class DoleadIncInvoices(DoleadInvoices):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_inc_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_inc_id, "page": "1"}
+
+
+class DoleadUkInvoices(DoleadInvoices):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_uk_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_uk_id, "page": "1"}
+
+
+class DoleadDdsInvoices(DoleadInvoices):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_dds_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_dds_id, "page": "1"}
+
+
+class DoleadCreditNotes(XeroPaginatedData):
+    def path(self, **kwargs) -> str:
+        return "/xero/credit_notes"
+
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_id, "page": "1"}
+
+
+class DoleadIncCreditNotes(DoleadCreditNotes):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_inc_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_inc_id, "page": "1"}
+
+
+class DoleadUkCreditNotes(DoleadCreditNotes):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_uk_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_uk_id, "page": "1"}
+
+
+class DoleadDdsCreditNotes(DoleadCreditNotes):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_dds_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_dds_id, "page": "1"}
+
+
+class DoleadBankTransactions(XeroPaginatedData):
+    def path(self, **kwargs) -> str:
+        return "/xero/bank_transactions"
+
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_id, "page": "1"}
+
+
+class DoleadIncBankTransactions(DoleadBankTransactions):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_inc_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_inc_id, "page": "1"}
+
+
+class DoleadUkBankTransactions(DoleadBankTransactions):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_uk_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_uk_id, "page": "1"}
+
+
+class DoleadDdsBankTransactions(DoleadBankTransactions):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_dds_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_dds_id, "page": "1"}
+
+
+class Tenants(XeroHttpStream):
+    url_base = "http://acore01.prod.dld/"
+    headers = {"Dolead-Current-User": "1", "Dolead-User": "1", "User-Agent": "dolead_client/billing"}
+
+    def next_page_token(self, response: requests.Response, **kwargs) -> int:
+        return None
+
+    def path(self, **kwargs) -> str:
+        return "biller/list"
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        headers = {
-            "Accept": "application/json",
-            "Xero-Tenant-Id": self.tenant_id,
-        }
-        return headers
+        return self.headers
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json(object_hook=_json_load_object_hook, parse_float=decimal.Decimal).get(self.data_field) or []
-        for record in records:
-            record = record.get(self.data_field) or record
-            if self.primary_key in record and record[self.primary_key] is None:
-                record[self.primary_key] = 0
-            yield record
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
 
-    def path(self, **kwargs) -> str:
-        class_name = self.__class__.__name__
-        return f"{class_name[0].lower()}{class_name[1:]}"
-
-    @property
-    def data_field(self, **kwargs) -> str:
-        class_name = self.__class__.__name__
-        re.sub(r"(?<!^)(?=[A-Z])", "_", class_name).lower()
-        return class_name
-
-
-class IncrementalXeroStream(XeroStream, ABC):
-    state_checkpoint_interval = 100
-
-    def __init__(self, start_date: datetime, **kwargs):
-        super().__init__(**kwargs)
-        self.start_date = start_date
-
-    @property
-    def cursor_field(self) -> str:
-        return "UpdatedDateUTC"
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        request_headers = super().request_headers(stream_state, stream_slice, next_page_token)
-        stream_date = stream_state.get(self.cursor_field) or self.start_date
-        if isinstance(stream_date, str):
-            stream_date = pendulum.parse(stream_date)
-        request_headers["If-Modified-Since"] = stream_date.strftime("%Y-%m-%dT%H:%M:%S")
-
-        return request_headers
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        record_cursor_value = latest_record[self.cursor_field]
-        state_cursor_value = current_stream_state.get(self.cursor_field)
-        if state_cursor_value:
-            record_cursor_value = max(record_cursor_value, state_cursor_value)
-        current_stream_state[self.cursor_field] = record_cursor_value
-        return current_stream_state
-
-
-class BankTransactions(IncrementalXeroStream):
-    primary_key = "BankTransactionID"
-    pagination = True
-
-
-class Contacts(IncrementalXeroStream):
-    primary_key = "ContactID"
-    pagination = True
-
-
-class CreditNotes(IncrementalXeroStream):
-    primary_key = "CreditNoteID"
-    pagination = True
-
-
-class Invoices(IncrementalXeroStream):
-    primary_key = "InvoiceID"
-    pagination = True
-
-
-class ManualJournals(IncrementalXeroStream):
-    primary_key = "ManualJournalID"
-    pagination = True
-
-
-class Overpayments(IncrementalXeroStream):
-    primary_key = "OverpaymentID"
-    pagination = True
-
-
-class Prepayments(IncrementalXeroStream):
-    primary_key = "PrepaymentID"
-    pagination = True
-
-
-class PurchaseOrders(IncrementalXeroStream):
-    primary_key = "PurchaseOrderID"
-    pagination = True
-
-
-class Accounts(IncrementalXeroStream):
-    primary_key = "AccountID"
-
-
-class BankTransfers(IncrementalXeroStream):
-    primary_key = "BankTransferID"
-    pagination = True
-
-    @property
-    def cursor_field(self) -> str:
-        return "CreatedDateUTC"
-
-
-class Employees(IncrementalXeroStream):
-    primary_key = "EmployeeID"
-    pagination = True
-
-
-class Items(IncrementalXeroStream):
-    primary_key = "ItemID"
-
-
-class Payments(IncrementalXeroStream):
-    primary_key = "PaymentID"
-    pagination = True
-
-
-class Users(IncrementalXeroStream):
-    primary_key = "UserID"
-
-
-class BrandingThemes(XeroStream):
-    primary_key = "BrandingThemeID"
-
-
-class ContactGroups(XeroStream):
-    primary_key = "ContactGroupID"
-
-
-class Currencies(XeroStream):
-    primary_key = "Code"
-
-
-class Organisations(XeroStream):
-    primary_key = "OrganisationID"
-
-    def path(self, **kwargs) -> str:
-        return "Organisation"
-
-
-class RepeatingInvoices(XeroStream):
-    primary_key = "RepeatingInvoiceID"
-
-
-class TaxRates(XeroStream):
-    primary_key = "Name"
-
-
-class TrackingCategories(XeroStream):
-    primary_key = "TrackingCategoryID"
+        return response.json()

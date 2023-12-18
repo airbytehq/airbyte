@@ -51,7 +51,7 @@ public class FlushWorkers implements AutoCloseable {
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
   private static final long SUPERVISOR_PERIOD_SECS = 1L;
   private static final long DEBUG_INITIAL_DELAY_SECS = 0L;
-  private static final long DEBUG_PERIOD_SECS = 10L;
+  private static final long DEBUG_PERIOD_SECS = 60L;
 
   private final ScheduledExecutorService supervisorThread;
   private final ExecutorService workerPool;
@@ -72,14 +72,23 @@ public class FlushWorkers implements AutoCloseable {
                       final Consumer<AirbyteMessage> outputRecordCollector,
                       final FlushFailure flushFailure,
                       final GlobalAsyncStateManager stateManager) {
+    this(bufferDequeue, flushFunction, outputRecordCollector, flushFailure, stateManager, Executors.newFixedThreadPool(5));
+  }
+
+  public FlushWorkers(final BufferDequeue bufferDequeue,
+                      final DestinationFlushFunction flushFunction,
+                      final Consumer<AirbyteMessage> outputRecordCollector,
+                      final FlushFailure flushFailure,
+                      final GlobalAsyncStateManager stateManager,
+                      final ExecutorService workerPool) {
     this.bufferDequeue = bufferDequeue;
     this.outputRecordCollector = outputRecordCollector;
     this.flushFailure = flushFailure;
     this.stateManager = stateManager;
+    this.workerPool = workerPool;
     flusher = flushFunction;
     debugLoop = Executors.newSingleThreadScheduledExecutor();
     supervisorThread = Executors.newScheduledThreadPool(1);
-    workerPool = Executors.newFixedThreadPool(5);
     isClosing = new AtomicBoolean(false);
     runningFlushWorkers = new RunningFlushWorkers();
     detectStreamToFlush = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, isClosing, flusher);
@@ -126,14 +135,14 @@ public class FlushWorkers implements AutoCloseable {
   }
 
   private void printWorkerInfo() {
-    final var workerInfo = new StringBuilder().append("WORKER INFO").append(System.lineSeparator());
+    final var workerInfo = new StringBuilder().append("[ASYNC WORKER INFO] ");
 
     final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
 
     final int queueSize = threadPoolExecutor.getQueue().size();
     final int activeCount = threadPoolExecutor.getActiveCount();
 
-    workerInfo.append(String.format("  Pool queue size: %d, Active threads: %d", queueSize, activeCount));
+    workerInfo.append(String.format("Pool queue size: %d, Active threads: %d", queueSize, activeCount));
     log.info(workerInfo.toString());
 
   }

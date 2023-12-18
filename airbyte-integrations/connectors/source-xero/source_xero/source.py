@@ -1,91 +1,51 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import logging
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from typing import Any, List, Mapping, Tuple
-
-import pendulum
-from airbyte_cdk.models import SyncMode
+import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
 
-from .oauth import XeroSingleUseRefreshTokenOauth2Authenticator
-from .streams import (
-    Accounts,
-    BankTransactions,
-    BankTransfers,
-    BrandingThemes,
-    ContactGroups,
-    Contacts,
-    CreditNotes,
-    Currencies,
-    Employees,
-    Invoices,
-    Items,
-    ManualJournals,
-    Organisations,
-    Overpayments,
-    Payments,
-    Prepayments,
-    PurchaseOrders,
-    RepeatingInvoices,
-    TaxRates,
-    TrackingCategories,
-    Users,
-)
+import datetime
+import logging
+from typing import Any, Iterable, Mapping, Optional, Union, Dict
+
+import requests
+from airbyte_cdk.sources.streams.http import HttpStream
+
+
+from abc import ABC
+from typing import Any, Iterable, Mapping, Optional, Union
+
+import requests
+from airbyte_cdk.sources.streams.http import HttpStream
+from urllib.parse import urljoin
+
+from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
+
+from .streams import *
 
 
 class SourceXero(AbstractSource):
-    def _validate_and_transform(self, config: Mapping[str, Any]):
-        pendulum.parse(config["start_date"])
-        return config
+    headers = {"Dolead-Current-User": "1", "Dolead-User": "1", "User-Agent": "dolead_client/billing"}
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        config = self._validate_and_transform(config)
-        stream = Organisations(authenticator=self.get_authenticator(config), tenant_id=config["tenant_id"])
-        records = stream.read_records(sync_mode=SyncMode.full_refresh)
-        record = next(records)
-        return record["OrganisationID"] == config["tenant_id"], None
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        response = requests.get(url="http://abilling01.prod.dld/monitoring/version", headers=self.headers)
+        if response.status_code == 200:
+            return True, None
+        else:
+            return False, f"The API endpoint is unreachable. Please check your API."
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        stream_kwargs = {
-            "authenticator": self.get_authenticator(config),
-            "tenant_id": config["tenant_id"],
-        }
-        incremental_kwargs = {**stream_kwargs, "start_date": pendulum.parse(config["start_date"])}
-        streams = [
-            BankTransactions(**incremental_kwargs),
-            Contacts(**incremental_kwargs),
-            CreditNotes(**incremental_kwargs),
-            Invoices(**incremental_kwargs),
-            ManualJournals(**incremental_kwargs),
-            Overpayments(**incremental_kwargs),
-            Prepayments(**incremental_kwargs),
-            PurchaseOrders(**incremental_kwargs),
-            Accounts(**incremental_kwargs),
-            BankTransfers(**incremental_kwargs),
-            Employees(**incremental_kwargs),
-            Items(**incremental_kwargs),
-            Payments(**incremental_kwargs),
-            Users(**incremental_kwargs),
-            BrandingThemes(**stream_kwargs),
-            ContactGroups(**stream_kwargs),
-            Currencies(**stream_kwargs),
-            Organisations(**stream_kwargs),
-            RepeatingInvoices(**stream_kwargs),
-            TaxRates(**stream_kwargs),
-            TrackingCategories(**stream_kwargs),
-        ]
-        return streams
-
-    @staticmethod
-    def get_authenticator(config: Mapping[str, Any]) -> Mapping[str, Any]:
-        return XeroSingleUseRefreshTokenOauth2Authenticator(
-            connector_config=config,
-            token_refresh_endpoint="https://identity.xero.com/connect/token",
-            client_id=config["authentication"]["client_id"],
-            client_secret=config["authentication"]["client_secret"],
-            access_token_config_path=["authentication", "access_token"],
-            refresh_token_config_path=["authentication", "refresh_token"],
-            token_expiry_date_config_path=["authentication", "token_expiry_date"],
-        )
+        return [Accounts(),
+                DoleadManualJournals(), DoleadIncManualJournals(), DoleadUkManualJournals(), DoleadDdsManualJournals(),
+                DoleadJournals(), DoleadIncJournals(), DoleadUkJournals(), DoleadDdsJournals(),
+                Contacts(),
+                DoleadInvoices(), DoleadIncInvoices(), DoleadUkInvoices(), DoleadDdsInvoices(),
+                TrackingCategories(),
+                Tenants(),
+                DoleadCreditNotes(), DoleadIncCreditNotes(), DoleadUkCreditNotes(), DoleadDdsCreditNotes(),
+                DoleadBankTransactions(), DoleadIncBankTransactions(), DoleadUkBankTransactions(), DoleadDdsBankTransactions()]

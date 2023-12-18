@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination_async.buffers;
 
+import static io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager.BLOCK_SIZE_BYTES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -130,6 +131,40 @@ public class BufferDequeueTest {
     assertTrue(dequeue.getQueueSizeBytes(ghostStream).isEmpty());
 
     assertTrue(dequeue.getTimeOfLastRecord(ghostStream).isEmpty());
+  }
+
+  @Test
+  void cleansUpMemoryForEmptyQueues() throws Exception {
+    final var bufferManager = new BufferManager();
+    final var enqueue = bufferManager.getBufferEnqueue();
+    final var dequeue = bufferManager.getBufferDequeue();
+    final var memoryManager = bufferManager.getMemoryManager();
+
+    // we initialize with a block for state
+    assertEquals(BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes());
+
+    // allocate a block for new stream
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+    assertEquals(2 * BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes());
+
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+
+    // no re-allocates as we haven't breached block size
+    assertEquals(2 * BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes());
+
+    final var totalBatchSize = RECORD_SIZE_20_BYTES * 4;
+
+    // read the whole queue
+    try (final var batch = dequeue.take(STREAM_DESC, totalBatchSize)) {
+      // slop allocation gets cleaned up
+      assertEquals(BLOCK_SIZE_BYTES + totalBatchSize, memoryManager.getCurrentMemoryBytes());
+      batch.close();
+      // back to initial state after flush clears the batch
+      assertEquals(BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes());
+      assertEquals(0, bufferManager.getBuffers().get(STREAM_DESC).getMaxMemoryUsage());
+    }
   }
 
 }

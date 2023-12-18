@@ -17,77 +17,77 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "geographic_report" }
+      "stream_descriptor": { "name": "geographic_view" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "keyword_report" }
+      "stream_descriptor": { "name": "keyword_view" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "display_topics_performance_report" }
+      "stream_descriptor": { "name": "topic_view" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "shopping_performance_report" }
+      "stream_descriptor": { "name": "shopping_performance_view" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "ad_group_ads" }
+      "stream_descriptor": { "name": "ad_group_ad" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "ad_groups" }
+      "stream_descriptor": { "name": "ad_group" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "accounts" }
+      "stream_descriptor": { "name": "customer" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "campaigns" }
+      "stream_descriptor": { "name": "campaign" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "user_location_report" }
+      "stream_descriptor": { "name": "user_location_view" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "ad_group_ad_report" }
+      "stream_descriptor": { "name": "ad_group_ad_legacy" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "display_keyword_performance_report" }
+      "stream_descriptor": { "name": "display_keyword_view" }
     }
   },
   {
@@ -101,14 +101,14 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "campaign_bidding_strategies" }
+      "stream_descriptor": { "name": "campaign_bidding_strategy" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
-      "stream_descriptor": { "name": "ad_group_bidding_strategies" }
+      "stream_descriptor": { "name": "ad_group_bidding_strategy" }
     }
   },
   {
@@ -121,7 +121,7 @@
           }
         }
       },
-      "stream_descriptor": { "name": "ad_group_criterions" }
+      "stream_descriptor": { "name": "ad_group_criterion" }
     }
   },
   {

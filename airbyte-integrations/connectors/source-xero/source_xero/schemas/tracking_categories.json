@@ -1,57 +1,203 @@
 {
-  "type": ["null", "object"],
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
   "properties": {
-    "Status": {
-      "type": ["null", "string"]
+    "ContactID": {
+      "type": "string"
     },
-    "TrackingCategoryID": {
-      "type": ["string"]
-    },
-    "Option": {
-      "type": ["null", "string"]
-    },
-    "TrackingCategoryName": {
-      "type": ["null", "string"]
-    },
-    "TrackingOptionID": {
-      "type": ["null", "string"]
-    },
-    "TrackingOptionName": {
-      "type": ["null", "string"]
-    },
-    "Options": {
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "IsActive": {
-            "type": ["null", "boolean"]
-          },
-          "IsDeleted": {
-            "type": ["null", "boolean"]
-          },
-          "TrackingOptionID": {
-            "type": ["null", "string"]
-          },
-          "IsArchived": {
-            "type": ["null", "boolean"]
-          },
-          "Status": {
-            "type": ["null", "string"]
-          },
-          "Name": {
-            "type": ["null", "string"]
-          },
-          "HasValidationErrors": {
-            "type": ["null", "boolean"]
-          }
-        },
-        "additionalProperties": true
-      },
-      "type": ["null", "array"]
+    "ContactStatus": {
+      "type": "string"
     },
     "Name": {
-      "type": ["null", "string"]
+      "type": "string"
+    },
+    "EmailAddress": {
+      "type": "string"
+    },
+    "BankAccountDetails": {
+      "type": "string"
+    },
+    "Addresses": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "AddressType": {
+              "type": "string"
+            },
+            "City": {
+              "type": "string"
+            },
+            "Region": {
+              "type": "string"
+            },
+            "PostalCode": {
+              "type": "string"
+            },
+            "Country": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "AddressType",
+            "City",
+            "Region",
+            "PostalCode",
+            "Country"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "AddressType": {
+              "type": "string"
+            },
+            "City": {
+              "type": "string"
+            },
+            "Region": {
+              "type": "string"
+            },
+            "PostalCode": {
+              "type": "string"
+            },
+            "Country": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "AddressType",
+            "City",
+            "Region",
+            "PostalCode",
+            "Country"
+          ]
+        }
+      ]
+    },
+    "Phones": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "PhoneType": {
+              "type": "string"
+            },
+            "PhoneNumber": {
+              "type": "string"
+            },
+            "PhoneAreaCode": {
+              "type": "string"
+            },
+            "PhoneCountryCode": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "PhoneType",
+            "PhoneNumber",
+            "PhoneAreaCode",
+            "PhoneCountryCode"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "PhoneType": {
+              "type": "string"
+            },
+            "PhoneNumber": {
+              "type": "string"
+            },
+            "PhoneAreaCode": {
+              "type": "string"
+            },
+            "PhoneCountryCode": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "PhoneType",
+            "PhoneNumber",
+            "PhoneAreaCode",
+            "PhoneCountryCode"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "PhoneType": {
+              "type": "string"
+            },
+            "PhoneNumber": {
+              "type": "string"
+            },
+            "PhoneAreaCode": {
+              "type": "string"
+            },
+            "PhoneCountryCode": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "PhoneType",
+            "PhoneNumber",
+            "PhoneAreaCode",
+            "PhoneCountryCode"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "PhoneType": {
+              "type": "string"
+            },
+            "PhoneNumber": {
+              "type": "string"
+            },
+            "PhoneAreaCode": {
+              "type": "string"
+            },
+            "PhoneCountryCode": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "PhoneType",
+            "PhoneNumber",
+            "PhoneAreaCode",
+            "PhoneCountryCode"
+          ]
+        }
+      ]
+    },
+    "UpdatedDateUTC": {
+      "type": "string"
+    },
+    "ContactGroups": {
+      "type": "array",
+      "items": {}
+    },
+    "IsSupplier": {
+      "type": "boolean"
+    },
+    "IsCustomer": {
+      "type": "boolean"
+    },
+    "DefaultCurrency": {
+      "type": "string"
+    },
+    "ContactPersons": {
+      "type": "array",
+      "items": {}
+    },
+    "HasAttachments": {
+      "type": "boolean"
+    },
+    "HasValidationErrors": {
+      "type": "boolean"
     }
-  },
-  "additionalProperties": true
+  }
 }

@@ -11,6 +11,7 @@ import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoClient;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
@@ -22,7 +23,6 @@ import io.debezium.connector.mongodb.ReplicaSetDiscovery;
 import io.debezium.connector.mongodb.ReplicaSets;
 import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,10 +30,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import org.apache.kafka.connect.json.JsonConverter;
-import org.apache.kafka.connect.json.JsonConverterConfig;
-import org.apache.kafka.connect.runtime.WorkerConfig;
-import org.apache.kafka.connect.runtime.standalone.StandaloneConfig;
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.bson.BsonDocument;
@@ -45,7 +41,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Collection of utility methods related to the Debezium offset state.
  */
-public class MongoDbDebeziumStateUtil {
+public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbDebeziumStateUtil.class);
 
@@ -162,19 +158,10 @@ public class MongoDbDebeziumStateUtil {
   private Optional<BsonDocument> parseSavedOffset(final Properties properties, final MongoClient mongoClient) {
     FileOffsetBackingStore fileOffsetBackingStore = null;
     OffsetStorageReaderImpl offsetStorageReader = null;
-    try {
-      fileOffsetBackingStore = new FileOffsetBackingStore();
-      final Map<String, String> propertiesMap = Configuration.from(properties).asMap();
-      propertiesMap.put(WorkerConfig.KEY_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
-      propertiesMap.put(WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
-      fileOffsetBackingStore.configure(new StandaloneConfig(propertiesMap));
-      fileOffsetBackingStore.start();
 
-      final Map<String, String> internalConverterConfig = Collections.singletonMap(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, "false");
-      final JsonConverter keyConverter = new JsonConverter();
-      keyConverter.configure(internalConverterConfig, true);
-      final JsonConverter valueConverter = new JsonConverter();
-      valueConverter.configure(internalConverterConfig, false);
+    try {
+      fileOffsetBackingStore = getFileOffsetBackingStore(properties);
+      offsetStorageReader = getOffsetStorageReader(fileOffsetBackingStore, properties);
 
       final Configuration config = Configuration.from(properties);
       final MongoDbTaskContext taskContext = new MongoDbTaskContext(config);
@@ -182,8 +169,6 @@ public class MongoDbDebeziumStateUtil {
       final ReplicaSets replicaSets = new ReplicaSetDiscovery(taskContext).getReplicaSets(mongoClient);
 
       LOGGER.debug("Parsing saved offset state for replica set '{}' and server ID '{}'...", replicaSets.all().get(0), properties.getProperty("name"));
-
-      offsetStorageReader = new OffsetStorageReaderImpl(fileOffsetBackingStore, properties.getProperty("name"), keyConverter, valueConverter);
 
       final MongoDbOffsetContext.Loader loader = new MongoDbCustomLoader(mongoDbConnectorConfig, replicaSets);
       final Collection<Map<String, String>> partitions = loader.getPartitions();

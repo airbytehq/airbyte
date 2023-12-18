@@ -7,16 +7,16 @@ from unittest.mock import MagicMock
 from source_xero.source import SourceXero
 
 
-def test_check_connection(mock_auth, mock_stream, mock_response, config):
-    mock_stream("Organisation", response={"Organisations": [{"OrganisationID": "tenant_id"}]})
-    mock_auth({"access_token": "TOKEN", "expires_in": 123})
+def test_check_connection(mocker):
     source = SourceXero()
-    logger_mock, config_mock = MagicMock(), config
+    logger_mock, config_mock = MagicMock(), MagicMock()
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 
-def test_streams(config):
+def test_streams(mocker):
     source = SourceXero()
-    streams = source.streams(config)
-    expected_streams_number = 21
+    config_mock = MagicMock()
+    streams = source.streams(config_mock)
+    # TODO: replace this with your streams number
+    expected_streams_number = 2
     assert len(streams) == expected_streams_number
