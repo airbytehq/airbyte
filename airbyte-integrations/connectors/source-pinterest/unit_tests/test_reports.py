@@ -12,8 +12,8 @@ from source_pinterest.reports import CampaignAnalyticsReport
 from source_pinterest.reports.reports import (
     AdGroupReport,
     AdGroupTargetingReport,
-    AdvertizerReport,
-    AdvertizerTargetingReport,
+    AdvertiserReport,
+    AdvertiserTargetingReport,
     CampaignTargetingReport,
     KeywordReport,
     PinPromotionReport,
@@ -108,8 +108,8 @@ def test_custom_streams(test_config):
     [
         [CampaignAnalyticsReport, 'CAMPAIGN'],
         [CampaignTargetingReport, 'CAMPAIGN_TARGETING'],
-        [AdvertizerReport, 'ADVERTISER'],
-        [AdvertizerTargetingReport, 'ADVERTISER_TARGETING'],
+        [AdvertiserReport, 'ADVERTISER'],
+        [AdvertiserTargetingReport, 'ADVERTISER_TARGETING'],
         [AdGroupReport, 'AD_GROUP'],
         [AdGroupTargetingReport, 'AD_GROUP_TARGETING'],
         [PinPromotionReport, 'PIN_PROMOTION'],

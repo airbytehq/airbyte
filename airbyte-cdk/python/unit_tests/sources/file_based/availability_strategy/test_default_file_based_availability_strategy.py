@@ -32,6 +32,7 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
         self._strategy = DefaultFileBasedAvailabilityStrategy(self._stream_reader)
 
         self._parser = Mock(spec=FileTypeParser)
+        self._parser.check_config.return_value = (True, None)
         self._stream = Mock(spec=AbstractFileBasedStream)
         self._stream.get_parser.return_value = self._parser
         self._stream.catalog_schema = _ANY_SCHEMA
@@ -75,6 +76,15 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
         assert is_available
         assert not self._parser.parse_records.called
         assert self._stream_reader.open_file.called
+
+    def test_passing_config_check(self) -> None:
+        """
+        Test if the DefaultFileBasedAvailabilityStrategy correctly handles the check_config method defined on the parser.
+        """
+        self._parser.check_config.return_value = (False, "Ran into error")
+        is_available, error_message = self._strategy.check_availability_and_parsability(self._stream, Mock(), Mock())
+        assert not is_available
+        assert "Ran into error" in error_message
 
     def test_catching_and_raising_custom_file_based_exception(self) -> None:
         """

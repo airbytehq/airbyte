@@ -29,6 +29,10 @@ class NonJSONResponse(Exception):
     pass
 
 
+class RateLimitExceeded(Exception):
+    pass
+
+
 class PinterestStream(HttpStream, ABC):
     url_base = "https://api.pinterest.com/v5/"
     primary_key = "id"
@@ -90,7 +94,12 @@ class PinterestStream(HttpStream, ABC):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:
             self.logger.error(f"For stream {self.name} rate limit exceeded.")
-            return float(response.headers.get("X-RateLimit-Reset", 0))
+            sleep_time = float(response.headers.get("X-RateLimit-Reset", 0))
+            if sleep_time > 600:
+                raise RateLimitExceeded(
+                    f"Rate limit exceeded for stream {self.name}. Waiting time is longer than 10 minutes: {sleep_time}s."
+                )
+            return sleep_time
 
 
 class PinterestSubStream(HttpSubStream):

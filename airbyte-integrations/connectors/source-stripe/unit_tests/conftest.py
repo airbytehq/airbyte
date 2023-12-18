@@ -39,7 +39,7 @@ def stream_by_name(config):
     from source_stripe.source import SourceStripe
 
     def mocker(stream_name, source_config=config):
-        source = SourceStripe(None)
+        source = SourceStripe(None, source_config)
         streams = source.streams(source_config)
         for stream in streams:
             if stream.name == stream_name:

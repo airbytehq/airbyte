@@ -12,7 +12,8 @@ import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
@@ -39,14 +40,26 @@ from source_stripe.streams import (
 logger = logging.getLogger("airbyte")
 
 _MAX_CONCURRENCY = 20
+_DEFAULT_CONCURRENCY = 10
 _CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
 USE_CACHE = not _CACHE_DISABLED
 STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
-class SourceStripe(AbstractSource):
-    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], **kwargs):
-        super().__init__(**kwargs)
+class SourceStripe(ConcurrentSourceAdapter):
+
+    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
+
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], **kwargs):
+        if config:
+            concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
+        else:
+            concurrency_level = _DEFAULT_CONCURRENCY
+        logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+        concurrent_source = ConcurrentSource.create(
+            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository
+        )
+        super().__init__(concurrent_source)
         if catalog:
             self._streams_configured_as_full_refresh = {
                 configured_stream.stream.name
@@ -56,8 +69,6 @@ class SourceStripe(AbstractSource):
         else:
             # things will NOT be executed concurrently
             self._streams_configured_as_full_refresh = set()
-
-    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
     @staticmethod
     def validate_and_fill_with_defaults(config: MutableMapping) -> MutableMapping:
@@ -76,18 +87,8 @@ class SourceStripe(AbstractSource):
                 failure_type=FailureType.config_error,
             )
         if start_date:
-            try:
-                start_date = pendulum.parse(start_date).int_timestamp
-            except pendulum.parsing.exceptions.ParserError as e:
-                message = f"Invalid start date {start_date}. Please use YYYY-MM-DDTHH:MM:SSZ format."
-                raise AirbyteTracedException(
-                    message=message,
-                    internal_message=message,
-                    failure_type=FailureType.config_error,
-                ) from e
-        else:
-            start_date = pendulum.datetime(2017, 1, 25).int_timestamp
-        config["start_date"] = start_date
+            # verifies the start_date is parseable
+            SourceStripe._start_date_to_timestamp(start_date)
         if slice_range is None:
             config["slice_range"] = 365
         elif not isinstance(slice_range, int) or slice_range < 1:
@@ -169,10 +170,15 @@ class SourceStripe(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self.validate_and_fill_with_defaults(config)
         authenticator = TokenAuthenticator(config["client_secret"])
+
+        if "start_date" in config:
+            start_timestamp = self._start_date_to_timestamp(config["start_date"])
+        else:
+            start_timestamp = pendulum.datetime(2017, 1, 25).int_timestamp
         args = {
             "authenticator": authenticator,
             "account_id": config["account_id"],
-            "start_date": config["start_date"],
+            "start_date": start_timestamp,
             "slice_range": config["slice_range"],
             "api_budget": self.get_api_call_budget(config),
         }
@@ -506,11 +512,8 @@ class SourceStripe(AbstractSource):
             ),
         ]
 
-        concurrency_level = min(config.get("num_workers", 10), _MAX_CONCURRENCY)
-        streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-
         return [
-            StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, self._create_empty_state(), NoopCursor())
+            StreamFacade.create_from_stream(stream, self, entrypoint_logger, self._create_empty_state(), NoopCursor())
             if stream.name in self._streams_configured_as_full_refresh
             else stream
             for stream in streams
@@ -519,3 +522,15 @@ class SourceStripe(AbstractSource):
     def _create_empty_state(self) -> MutableMapping[str, Any]:
         # The state is known to be empty because concurrent CDK is currently only used for full refresh
         return {}
+
+    @staticmethod
+    def _start_date_to_timestamp(start_date: str) -> int:
+        try:
+            return pendulum.parse(start_date).int_timestamp
+        except pendulum.parsing.exceptions.ParserError as e:
+            message = f"Invalid start date {start_date}. Please use YYYY-MM-DDTHH:MM:SSZ format."
+            raise AirbyteTracedException(
+                message=message,
+                internal_message=message,
+                failure_type=FailureType.config_error,
+            ) from e

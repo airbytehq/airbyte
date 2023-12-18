@@ -31,7 +31,8 @@ Depending on the amount of team members and time logs the source provides a prop
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                           | Subject |
-| :------ | :--------- | :----------------------------------------------------- | :------ |
-| 0.1.1   | 2022-06-08 | [12964](https://github.com/airbytehq/airbyte/pull/12964) | Update schema for time_logs stream |
-| 0.1.0   | 2021-11-26 | [8270](https://github.com/airbytehq/airbyte/pull/8270) | New Source: My Hours |
+| Version | Date       | Pull Request                                             | Subject                              |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------- |
+| 0.1.2   | 2023-11-20 | [32680](https://github.com/airbytehq/airbyte/pull/32680) | Schema and CDK updates               |
+| 0.1.1   | 2022-06-08 | [12964](https://github.com/airbytehq/airbyte/pull/12964) | Update schema for time_logs stream   |
+| 0.1.0   | 2021-11-26 | [8270](https://github.com/airbytehq/airbyte/pull/8270)   | New Source: My Hours                 |

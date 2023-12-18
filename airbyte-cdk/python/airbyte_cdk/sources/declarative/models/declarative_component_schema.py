@@ -1235,6 +1235,11 @@ class HttpRequester(BaseModel):
         ],
         title='Query Parameters',
     )
+    use_cache: Optional[bool] = Field(
+        False,
+        description='Enables stream requests caching. This field is automatically set by the CDK.',
+        title='Use Cache',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 

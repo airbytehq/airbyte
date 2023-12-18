@@ -133,7 +133,7 @@ async def get_connector_secrets(context: ConnectorContext) -> dict[str, Secret]:
     return connector_secrets
 
 
-async def mounted_connector_secrets(context: PipelineContext, secret_directory_path: str) -> Callable[[Container], Container]:
+async def mounted_connector_secrets(context: ConnectorContext, secret_directory_path: str) -> Callable[[Container], Container]:
     # By default, mount the secrets properly as dagger secret files.
     #
     # This will cause the contents of these files to be scrubbed from the logs. This scrubbing comes at the cost of
@@ -156,11 +156,12 @@ async def mounted_connector_secrets(context: PipelineContext, secret_directory_p
     # [3] https://github.com/dagger/dagger/blob/v0.6.4/cmd/shim/main.go#L294
     # [4] https://github.com/airbytehq/airbyte/issues/30394
     #
+    connector_secrets = await context.get_connector_secrets()
     if context.is_local:
         # Special case for local development.
         # Query dagger for the contents of the secrets and mount these strings as files in the container.
         contents = {}
-        for secret_file_name, secret in context.connector_secrets.items():
+        for secret_file_name, secret in connector_secrets.items():
             contents[secret_file_name] = await secret.plaintext()
 
         def with_secrets_mounted_as_regular_files(container: Container) -> Container:
@@ -173,7 +174,7 @@ async def mounted_connector_secrets(context: PipelineContext, secret_directory_p
 
     def with_secrets_mounted_as_dagger_secrets(container: Container) -> Container:
         container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
-        for secret_file_name, secret in context.connector_secrets.items():
+        for secret_file_name, secret in connector_secrets.items():
             container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
         return container
 
