@@ -1,16 +1,14 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import json
-
-import freezegun
-
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 from unittest import TestCase
 
+import freezegun
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read, EntrypointOutput
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -20,13 +18,13 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
-from source_stripe import SourceStripe
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
-
+from source_stripe import SourceStripe
 
 _EVENT_TYPES = ["review.closed", "review.opened"]
 
