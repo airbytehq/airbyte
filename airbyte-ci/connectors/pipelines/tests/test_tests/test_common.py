@@ -11,6 +11,7 @@ import dagger
 import pytest
 import yaml
 from freezegun import freeze_time
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps import common
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
@@ -39,8 +40,19 @@ class TestAcceptanceTests:
         return container.with_new_file("/stupid_bash_script.sh", contents=f"echo {stdout}; echo {stderr} >&2; exit {exit_code}")
 
     @pytest.fixture
-    def test_context(self, mocker, dagger_client):
-        return mocker.MagicMock(connector=ConnectorWithModifiedFiles("source-faker", frozenset()), dagger_client=dagger_client)
+    def test_context_ci(self, current_platform, dagger_client):
+        context = ConnectorContext(
+            pipeline_name="test",
+            connector=ConnectorWithModifiedFiles("source-faker", frozenset()),
+            git_branch="test",
+            git_revision="test",
+            report_output_prefix="test",
+            is_local=False,
+            use_remote_secrets=True,
+            targeted_platforms=[current_platform],
+        )
+        context.dagger_client = dagger_client
+        return context
 
     @pytest.fixture
     def dummy_connector_under_test_container(self, dagger_client) -> dagger.Container:
@@ -50,9 +62,9 @@ class TestAcceptanceTests:
     def another_dummy_connector_under_test_container(self, dagger_client) -> dagger.File:
         return dagger_client.container().from_("airbyte/source-pokeapi:latest")
 
-    async def test_skipped_when_no_acceptance_test_config(self, mocker, test_context):
-        test_context.connector = mocker.MagicMock(acceptance_test_config=None)
-        acceptance_test_step = common.AcceptanceTests(test_context)
+    async def test_skipped_when_no_acceptance_test_config(self, mocker, test_context_ci):
+        test_context_ci.connector = mocker.MagicMock(acceptance_test_config=None)
+        acceptance_test_step = common.AcceptanceTests(test_context_ci)
         step_result = await acceptance_test_step._run(None)
         assert step_result.status == StepStatus.SKIPPED
 
@@ -112,7 +124,7 @@ class TestAcceptanceTests:
     )
     async def test__run(
         self,
-        test_context,
+        test_context_ci,
         mocker,
         exit_code: int,
         expected_status: StepStatus,
@@ -122,23 +134,23 @@ class TestAcceptanceTests:
     ):
         """Test the behavior of the run function using a dummy container."""
         cat_container = self.get_dummy_cat_container(
-            test_context.dagger_client, exit_code, secrets_file_names, stdout="hello", stderr="world"
+            test_context_ci.dagger_client, exit_code, secrets_file_names, stdout="hello", stderr="world"
         )
         async_mock = mocker.AsyncMock(return_value=cat_container)
         mocker.patch.object(common.AcceptanceTests, "_build_connector_acceptance_test", side_effect=async_mock)
         mocker.patch.object(common.AcceptanceTests, "get_cat_command", return_value=["bash", "/stupid_bash_script.sh"])
-        test_context.get_connector_dir = mocker.AsyncMock(return_value=test_input_dir)
-        acceptance_test_step = common.AcceptanceTests(test_context)
+        test_context_ci.get_connector_dir = mocker.AsyncMock(return_value=test_input_dir)
+        acceptance_test_step = common.AcceptanceTests(test_context_ci)
         step_result = await acceptance_test_step._run(None)
         assert step_result.status == expected_status
         assert step_result.stdout.strip() == "hello"
         assert step_result.stderr.strip() == "world"
         if expect_updated_secrets:
             assert (
-                await test_context.updated_secrets_dir.entries()
+                await test_context_ci.updated_secrets_dir.entries()
                 == await cat_container.directory(f"{common.AcceptanceTests.CONTAINER_SECRETS_DIRECTORY}").entries()
             )
-            assert any("updated_configurations" in str(file_name) for file_name in await test_context.updated_secrets_dir.entries())
+            assert any("updated_configurations" in str(file_name) for file_name in await test_context_ci.updated_secrets_dir.entries())
 
     @pytest.fixture
     def test_input_dir(self, dagger_client, tmpdir):
@@ -146,17 +158,18 @@ class TestAcceptanceTests:
             yaml.safe_dump({"connector_image": "airbyte/connector_under_test_image:dev"}, f)
         return dagger_client.host().directory(str(tmpdir))
 
-    def get_patched_acceptance_test_step(self, dagger_client, mocker, test_context, test_input_dir):
-        test_context.get_connector_dir = mocker.AsyncMock(return_value=test_input_dir)
-        test_context.connector_acceptance_test_image = "bash:latest"
-        test_context.connector_secrets = {"config.json": dagger_client.set_secret("config.json", "connector_secret")}
+    def get_patched_acceptance_test_step(self, dagger_client, mocker, test_context_ci, test_input_dir):
+        test_secrets = {"config.json": dagger_client.set_secret("config.json", "connector_secret")}
+        test_context_ci.get_connector_dir = mocker.AsyncMock(return_value=test_input_dir)
+        test_context_ci.connector_acceptance_test_image = "bash:latest"
+        test_context_ci.get_connector_secrets = mocker.AsyncMock(return_value=test_secrets)
 
         mocker.patch.object(docker, "load_image_to_docker_host", return_value="image_sha")
         mocker.patch.object(docker, "with_bound_docker_host", lambda _, cat_container: cat_container)
-        return common.AcceptanceTests(test_context)
+        return common.AcceptanceTests(test_context_ci)
 
     async def test_cat_container_provisioning(
-        self, dagger_client, mocker, test_context, test_input_dir, dummy_connector_under_test_container
+        self, dagger_client, mocker, test_context_ci, test_input_dir, dummy_connector_under_test_container
     ):
         """Check that the acceptance test container is correctly provisioned.
         We check that:
@@ -168,9 +181,8 @@ class TestAcceptanceTests:
         # The mounted_connector_secrets behaves differently when the test is run locally or in CI.
         # It is not masking the secrets when run locally.
         # We want to confirm that the secrets are correctly masked when run in CI.
-        test_context.is_local = False
-        test_context.is_ci = True
-        acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context, test_input_dir)
+
+        acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context_ci, test_input_dir)
         cat_container = await acceptance_test_step._build_connector_acceptance_test(dummy_connector_under_test_container, test_input_dir)
         assert (await cat_container.with_exec(["pwd"]).stdout()).strip() == acceptance_test_step.CONTAINER_TEST_INPUT_DIRECTORY
         test_input_ls_result = await cat_container.with_exec(["ls"]).stdout()
@@ -185,7 +197,7 @@ class TestAcceptanceTests:
         self,
         dagger_client,
         mocker,
-        test_context,
+        test_context_ci,
         test_input_dir,
         dummy_connector_under_test_container,
         another_dummy_connector_under_test_container,
@@ -195,7 +207,7 @@ class TestAcceptanceTests:
         initial_datetime = datetime.datetime(year=1992, month=6, day=19, hour=13, minute=1, second=0)
 
         with freeze_time(initial_datetime) as frozen_datetime:
-            acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context, test_input_dir)
+            acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context_ci, test_input_dir)
             cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 dummy_connector_under_test_container, test_input_dir
             )
