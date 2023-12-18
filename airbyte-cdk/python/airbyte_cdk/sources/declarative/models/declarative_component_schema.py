@@ -1069,6 +1069,32 @@ class DeclarativeSource(BaseModel):
     )
 
 
+class SelectiveAuthenticator(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['SelectiveAuthenticator']
+    authenticators: Dict[
+        str,
+        Union[
+            ApiKeyAuthenticator,
+            BasicHttpAuthenticator,
+            BearerAuthenticator,
+            CustomAuthenticator,
+            OAuthAuthenticator,
+            NoAuth,
+            SessionTokenAuthenticator,
+            LegacySessionTokenAuthenticator,
+        ],
+    ] = Field(
+        ...,
+        description='Authenticators to select from.',
+        examples=['TODO'],
+        title='Authenticators',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class DeclarativeStream(BaseModel):
     class Config:
         extra = Extra.allow
@@ -1179,6 +1205,7 @@ class HttpRequester(BaseModel):
             NoAuth,
             SessionTokenAuthenticator,
             LegacySessionTokenAuthenticator,
+            SelectiveAuthenticator,
         ]
     ] = Field(
         None,
@@ -1313,6 +1340,7 @@ class SubstreamPartitionRouter(BaseModel):
 
 CompositeErrorHandler.update_forward_refs()
 DeclarativeSource.update_forward_refs()
+SelectiveAuthenticator.update_forward_refs()
 DeclarativeStream.update_forward_refs()
 SessionTokenAuthenticator.update_forward_refs()
 SimpleRetriever.update_forward_refs()
