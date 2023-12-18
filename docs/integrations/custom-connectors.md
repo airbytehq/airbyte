@@ -4,13 +4,17 @@ description: Missing a connector?
 
 # Custom or New Connector
 
-If you'd like to **ask for a new connector,** you can request it directly [here](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=).
+If you'd like to **ask for a new connector,** you can request it directly [here](https://github.com/airbytehq/airbyte/discussions/new?category=new-connector-request).
 
 If you'd like to build new connectors and **make them part of the pool of pre-built connectors on Airbyte,** first a big thank you. We invite you to check our [contributing guide on building connectors](../contributing-to-airbyte/README.md).
 
 If you'd like to build new connectors, or update existing ones, **for your own usage,** without contributing to the Airbyte codebase, read along.
 
 ## Developing your own connector
+
+:::info
+Custom connectors are currently exclusive to Airbyte Open-Source deployments. However, there are plans for their release on Airbyte Cloud, scheduled for January 2024. You can track the progress on this development [here](https://github.com/orgs/airbytehq/projects/37?pane=issue&itemId=45471174).
+:::
 
 It's easy to code your own connectors on Airbyte. Here is a link to instruct on how to code new sources and destinations: [building new connectors](../connector-development/README.md)
 
