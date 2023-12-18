@@ -140,6 +140,13 @@ class BreakingChangeScope(BaseModel):
     )
 
 
+class RemotePackageIndex(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    pypi: Optional[Pypi] = None
+
+
 class ActorDefinitionResourceRequirements(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -271,7 +278,7 @@ class Data(BaseModel):
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
     ab_internal: Optional[AirbyteInternal] = None
-    pypi: Optional[Pypi] = None
+    remotePackageIndex: Optional[RemotePackageIndex] = None
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):
