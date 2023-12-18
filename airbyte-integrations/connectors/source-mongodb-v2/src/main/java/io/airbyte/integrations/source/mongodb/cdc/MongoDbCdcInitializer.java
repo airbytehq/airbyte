@@ -171,4 +171,5 @@ public class MongoDbCdcInitializer {
       LOGGER.warn("Unable to query for op log stats, exception: {}" + e.getMessage());
     }
   }
+
 }
