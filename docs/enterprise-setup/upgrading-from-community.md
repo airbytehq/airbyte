@@ -52,7 +52,7 @@ auth:
 
 ### Step 3: Deploy Self-Managed Enterprise
 
-1. You can now run the following command to upgrade your instance to Self-Managed Enterprise:
+1. You can now run the following command to upgrade your instance to Self-Managed Enterprise. If you previously included additional `values` files on your existing deployment, be sure to add these here as well:
 
 ```sh
 helm upgrade [RELEASE_NAME] airbyte/airbyte \
