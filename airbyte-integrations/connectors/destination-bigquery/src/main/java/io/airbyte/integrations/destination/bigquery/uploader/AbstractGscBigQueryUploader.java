@@ -39,7 +39,7 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
                               final BigQuery bigQuery,
                               final boolean isKeepFilesInGcs,
                               final BigQueryRecordFormatter recordFormatter) {
-    super(table, tmpTable, writer, syncMode, bigQuery, recordFormatter);
+    super(table, writer, syncMode, bigQuery, recordFormatter);
     this.isKeepFilesInGcs = isKeepFilesInGcs;
     this.gcsDestinationConfig = gcsDestinationConfig;
   }
