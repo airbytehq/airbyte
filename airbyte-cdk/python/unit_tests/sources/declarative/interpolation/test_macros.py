@@ -71,3 +71,50 @@ def test_timestamp(test_name, input_value, expected_output):
     timestamp_function = macros["timestamp"]
     actual_output = timestamp_function(input_value)
     assert actual_output == expected_output
+
+
+@pytest.mark.parametrize(
+    "test_name, input_value, input_format, expected_output",
+    [
+        ("test_datetime_string_without_tz", "2024-01-01T01:01:01Z", "%Y-%m-%dT%H:%M:%SZ", datetime.datetime(2024, 1, 1, 1, 1, 1, tzinfo=datetime.timezone.utc)),
+        ("test_datetime_string_with_tz", "2024-01-01T01:01:01-0800", "%Y-%m-%dT%H:%M:%S%z", datetime.datetime(2024, 1, 1, 9, 1, 1, tzinfo=datetime.timezone.utc)),
+        ("test_datetime_string_with_tz", "2024-01-02T01:01:01+1100", "%Y-%m-%dT%H:%M:%S%z", datetime.datetime(2024, 1, 1, 14, 1, 1, tzinfo=datetime.timezone.utc)),
+        ("test_date_string_without_tz", "2024-01-01Z", "%Y-%m-%dZ", datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)),
+        ("test_date_string_with_tz", "2024-01-01+0400", "%Y-%m-%d%z", datetime.datetime(2023, 12, 31, 20, 0, 0, tzinfo=datetime.timezone.utc)),
+    ],
+)
+def test_parse_datetime(test_name, input_value, input_format, expected_output):
+    timestamp_function = macros["parse_datetime"]
+    actual_output = timestamp_function(input_value, input_format)
+    assert actual_output == expected_output
+
+
+@pytest.mark.parametrize(
+    "dt1, dt2, expected_delta",
+    [
+        pytest.param(
+            datetime.datetime(2023, 12, 18, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc),
+            datetime.timedelta(days=14),
+            id="test_two_object_with_same_tz_d1_less_than_d2",
+        ),
+        pytest.param(
+            datetime.datetime(2024, 1, 4, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2023, 12, 15, tzinfo=datetime.timezone.utc),
+            datetime.timedelta(days=20),
+            id="test_two_object_with_same_tz_d2_less_than_d1",
+        ),
+        pytest.param(
+            datetime.datetime(2024, 1, 4, 2, tzinfo=datetime.timezone.utc),
+            datetime.datetime.strptime("2024-01-01T01-0800", "%Y-%m-%dT%H%z"),
+            datetime.timedelta(days=2, seconds=61200),
+            id="test_two_datetime_object_with_diff_tz",
+        ),
+    ],
+)
+def test_compute_delta(dt1, dt2, expected_delta):
+    timestamp_function = macros["compute_delta"]
+    actual_output = timestamp_function(dt1, dt2)
+    assert actual_output == expected_delta
+
+

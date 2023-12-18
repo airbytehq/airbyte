@@ -226,10 +226,32 @@ def test_undeclared_variables(template_string, expected_error, expected_value):
         pytest.param("{{ day_delta(1, format='%Y-%m-%d') }}", "2021-09-02", id="test_day_delta_with_format"),
         pytest.param("{{ duration('P1D') }}", "1 day, 0:00:00", id="test_duration_one_day"),
         pytest.param("{{ duration('P6DT23H') }}", "6 days, 23:00:00", id="test_duration_six_days_and_23_hours"),
+        pytest.param("{{ parse_datetime('2023-12-18T01:00:26+1200', '%Y-%m-%dT%H:%M:%S%z') }}", "2023-12-17 13:00:26+00:00", id="test_parse_datetime_datetime_with_tz"),
+        pytest.param("{{ parse_datetime('2023-12-18', '%Y-%m-%d') }}", "2023-12-18 00:00:00+00:00", id="test_parse_datetime_date_without_tz"),
         pytest.param(
             "{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}",
             "2021-08-31T00:00:00Z",
             id="test_now_utc_with_duration_and_format",
+        ),
+        pytest.param(
+            "{{ compute_delta(parse_datetime('2023-12-25T01+0400', '%Y-%m-%dT%H%z'), parse_datetime('2023-12-18T21Z', '%Y-%m-%dT%HZ')) }}",
+            "6 days, 0:00:00",
+            id="test_compute_delta_between_datetime_objects_and_diff_tz"
+        ),
+        pytest.param(
+            "{{ compute_delta(parse_datetime('2023-12-18', '%Y-%m-%d'), parse_datetime('2024-01-02', '%Y-%m-%d')).days }}",
+            15,
+            id="test_compute_delta_days_between_two_dates"
+        ),
+        pytest.param(
+            "{{ compute_delta(parse_datetime('2023-12-25T01+0400', '%Y-%m-%dT%H%z'), parse_datetime('2023-12-18T21Z', '%Y-%m-%dT%HZ')).days }}",
+            6,
+            id="test_compute_delta_days_between_datetime_objects_and_diff_tz"
+        ),
+        pytest.param(
+            "{{ compute_delta(parse_datetime('2021-10-01T01', '%Y-%m-%dT%H'), now_utc()).days }}",
+            30,
+            id="test_compute_delta_days_between_datetime_objects_and_now_utc"
         ),
     ],
 )

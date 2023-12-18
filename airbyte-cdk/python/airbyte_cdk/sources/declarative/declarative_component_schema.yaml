@@ -2218,6 +2218,24 @@ interpolation:
       examples:
         - "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
         - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+    - title: Parse Datetime
+      description: Converts a datetime string to the datetime object.
+      arguments:
+        datetime_string: The string that contains data to be converted to a datetime object.
+        datetime_format: The datetime format.
+      return_type: datetime
+      examples:
+        - "{{ parse_datetime(config['start_time'], '%Y-%m-%dT%H:%M:%S%z') }}"
+        - "{{ parse_datetime(config['start_date'], '%Y-%m-%d') }}"
+    - title: Compute Delta
+      description: Calculate difference between two datetime objects.
+      arguments:
+        dt1: First datetime object.
+        dt2: Second datetime object.
+      return_type: str
+      examples:
+        - "{{ compute_delta(parse_datetime('2023-12-25T01+0400', '%Y-%m-%dT%H%z'), parse_datetime('2023-12-18T21Z', '%Y-%m-%dT%HZ')).days }}"
+        - "{{ compute_delta(parse_datetime('2025-10-01T01', '%Y-%m-%dT%H'), now_utc()).days }}"
   filters:
     - title: Hash
       description: Convert the specified value to a hashed string.

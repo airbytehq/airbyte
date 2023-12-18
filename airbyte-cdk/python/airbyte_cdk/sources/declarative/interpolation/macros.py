@@ -5,7 +5,7 @@
 import builtins
 import datetime
 import numbers
-from typing import Union
+from typing import Union, Optional
 
 from dateutil import parser
 from isodate import parse_duration
@@ -54,8 +54,12 @@ def timestamp(dt: Union[numbers.Number, str]):
         return _str_to_datetime(dt).astimezone(datetime.timezone.utc).timestamp()
 
 
-def _str_to_datetime(s: str) -> datetime.datetime:
-    parsed_date = parser.isoparse(s)
+def _str_to_datetime(s: str, s_format: Optional[str] = None) -> datetime.datetime:
+    if s_format is not None:
+        parsed_date = datetime.datetime.strptime(s, s_format)
+    else:
+        parsed_date = parser.isoparse(s)
+
     if not parsed_date.tzinfo:
         # Assume UTC if the input does not contain a timezone
         parsed_date = parsed_date.replace(tzinfo=datetime.timezone.utc)
@@ -117,5 +121,35 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
     return _str_to_datetime(dt).strftime(format)
 
 
-_macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime]
+def parse_datetime(datetime_string: str, datetime_format: str) -> datetime.datetime:
+    """
+    Converts string to datetime object
+
+    Usage:
+    `"{{ parse_datetime("2022-01-01T01:01:01-0800", "%Y-%m-%dT%H:%M:%SZ") }}"`
+    """
+    return _str_to_datetime(datetime_string, datetime_format)
+
+
+def compute_delta(dt1: datetime.datetime, dt2: datetime.datetime) -> datetime.timedelta:
+    """
+    Returns delta between two datetime objects
+
+    Usage:
+    `"{{ compute_delta(datetime(2020, 1, 1), now_utc())" }}`
+    """
+
+    # tzinfo have to be for both datetime objects
+    if dt1.tzinfo is None:
+        dt1 = dt1.replace(tzinfo=datetime.timezone.utc)
+    if dt2.tzinfo is None:
+        dt2 = dt2.replace(tzinfo=datetime.timezone.utc)
+
+    # Hack to avoid having negative values on the output
+    if dt1 > dt2:
+        return dt1 - dt2
+    return dt2 - dt1
+
+
+_macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime, parse_datetime, compute_delta]
 macros = {f.__name__: f for f in _macros_list}
