@@ -441,6 +441,12 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: AbsoluteTopImpressionRatePercent
               bypass_reason: "dynamic field"
+            - name: ImpressionSharePercent
+              bypass_reason: "dynamic field"
+            - name: ImpressionLostToBudgetPercent
+              bypass_reason: "dynamic field"
+            - name: ImpressionLostToRankAggPercent
+              bypass_reason: "dynamic field"
           ad_group_impression_performance_report_daily:
             - name: Ctr
               bypass_reason: "dynamic field"
