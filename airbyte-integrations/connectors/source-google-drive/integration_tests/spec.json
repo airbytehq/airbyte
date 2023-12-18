@@ -52,8 +52,9 @@
             },
             "primary_key": {
               "title": "Primary Key",
-              "description": "The column or columns (for a composite key) that serves as the unique identifier of a record.",
-              "type": "string"
+              "description": "The column or columns (for a composite key) that serves as the unique identifier of a record. If empty, the primary key will default to the parser's default primary key.",
+              "type": "string",
+              "airbyte_hidden": true
             },
             "days_to_sync_if_history_is_full": {
               "title": "Days To Sync If History Is Full",
@@ -274,12 +275,46 @@
                       "const": "unstructured",
                       "type": "string"
                     },
-                    "skip_unprocessable_file_types": {
+                    "skip_unprocessable_files": {
                       "type": "boolean",
                       "default": true,
-                      "title": "Skip Unprocessable File Types",
-                      "description": "If true, skip files that cannot be parsed because of their file type and log a warning. If false, fail the sync. Corrupted files with valid file types will still result in a failed sync.",
+                      "title": "Skip Unprocessable Files",
+                      "description": "If true, skip files that cannot be parsed and pass the error message along as the _ab_source_file_parse_error field. If false, fail the sync.",
                       "always_show": true
+                    },
+                    "strategy": {
+                      "type": "string",
+                      "always_show": true,
+                      "order": 0,
+                      "default": "auto",
+                      "title": "Parsing Strategy",
+                      "enum": ["auto", "fast", "ocr_only", "hi_res"],
+                      "description": "The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the unstructured.io documentation for more details: https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf"
+                    },
+                    "processing": {
+                      "title": "Processing",
+                      "description": "Processing configuration",
+                      "default": {
+                        "mode": "local"
+                      },
+                      "type": "object",
+                      "oneOf": [
+                        {
+                          "title": "Local",
+                          "type": "object",
+                          "properties": {
+                            "mode": {
+                              "title": "Mode",
+                              "default": "local",
+                              "const": "local",
+                              "enum": ["local"],
+                              "type": "string"
+                            }
+                          },
+                          "description": "Process files locally, supporting `fast` and `ocr` modes. This is the default option.",
+                          "required": ["mode"]
+                        }
+                      ]
                     }
                   },
                   "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",

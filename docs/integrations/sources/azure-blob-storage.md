@@ -126,8 +126,8 @@ Or any other reason! The schema must be provided as valid JSON as a map of `{"co
 
 For example:
 
-- {"id": "integer", "location": "string", "longitude": "number", "latitude": "number"}
-- {"username": "string", "friends": "array", "information": "object"}
+- `{"id": "integer", "location": "string", "longitude": "number", "latitude": "number"}`
+- `{"username": "string", "friends": "array", "information": "object"}`
 
 ## File Format Settings
 
@@ -182,7 +182,7 @@ There are currently no options for JSONL parsing.
 The Document File Type Format is currently an experimental feature and not subject to SLAs. Use at your own risk.
 :::
 
-The Document File Type Format is a special format that allows you to extract text from Markdown, PDF, Word and Powerpoint documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`), Word (`docx`) or Powerpoint (`.pptx`) file.
+The Document File Type Format is a special format that allows you to extract text from Markdown, TXT, PDF, Word and Powerpoint documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`), Word (`docx`) or Powerpoint (`.pptx`) file.
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
 
@@ -191,11 +191,13 @@ To perform the text extraction from PDF and Docx files, the connector uses the [
 
 ## Changelog
 
-| Version | Date       | Pull Request                                    | Subject                                                                 |
-|:--------|:-----------|:------------------------------------------------|:------------------------------------------------------------------------|
-| 0.2.4 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser |
-| 0.2.3 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
-| 0.2.2 | 2023-10-30 | [31904](https://github.com/airbytehq/airbyte/pull/31904) | Update CDK to support document file types |
-| 0.2.1 | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.0   | 2023-10-10 | https://github.com/airbytehq/airbyte/pull/31336 | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files   |
-| 0.1.0   | 2023-02-17 | https://github.com/airbytehq/airbyte/pull/23222 | Initial release with full-refresh and incremental sync with JSONL files |
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 0.3.0   | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411)  | Bump CDK version to auto-set primary key for document file streams and support raw txt files         |
+| 0.2.5   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key                             |
+| 0.2.4   | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser                                               |
+| 0.2.3   | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                             |
+| 0.2.2   | 2023-10-30 | [31904](https://github.com/airbytehq/airbyte/pull/31904) | Update CDK to support document file types                                       |
+| 0.2.1   | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.0   | 2023-10-10 | https://github.com/airbytehq/airbyte/pull/31336          | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files           |
+| 0.1.0   | 2023-02-17 | https://github.com/airbytehq/airbyte/pull/23222          | Initial release with full-refresh and incremental sync with JSONL files         |
