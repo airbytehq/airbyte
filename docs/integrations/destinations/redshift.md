@@ -54,9 +54,9 @@ NOTE: S3 staging does not use the SSH Tunnel option, if configured. SSH Tunnel s
 
 1. [Log in](https://aws.amazon.com/console/) to AWS Management console.
    If you don't have a AWS account already, you’ll need to [create](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/) one in order to use the API.
-2. Go to the AWS Redshift service
-3. [Create](https://docs.aws.amazon.com/ses/latest/dg/event-publishing-redshift-cluster.html) and activate AWS Redshift cluster if you don't have one ready
-4. (Optional) [Allow](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/) connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\)
+2. Go to the AWS Redshift service.
+3. [Create](https://docs.aws.amazon.com/ses/latest/dg/event-publishing-redshift-cluster.html) and activate AWS Redshift cluster if you don't have one ready.
+4. (Optional) [Allow](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/) connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\).
 5. (Optional) [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a staging S3 bucket \(for the COPY strategy\).
 6. Create a user with at least create table permissions for the schema. If the schema does not exist you need to add permissions for that, too. Something like this:
 
@@ -78,7 +78,7 @@ Enter the bastion host, port and credentials in the destination configuration.
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a name for this connector.
-4. Fill in all the required fields to use the INSERT or COPY strategy
+4. Fill in all the required fields to use the INSERT or COPY strategy.
 5. Click `Set up destination`.
 
 **For Airbyte Open Source:**
@@ -86,7 +86,7 @@ Enter the bastion host, port and credentials in the destination configuration.
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a name for this connector.
-4. Fill in all the required fields to use the INSERT or COPY strategy
+4. Fill in all the required fields to use the INSERT or COPY strategy.
 5. Click `Set up destination`.
 
 ## Supported sync modes
@@ -100,7 +100,7 @@ The Redshift destination connector supports the following [sync modes](https://d
 ## Performance considerations
 
 Synchronization performance depends on the amount of data to be transferred.
-Cluster scaling issues can be resolved directly using the cluster settings in the AWS Redshift console
+Cluster scaling issues can be resolved directly using the cluster settings in the AWS Redshift console.
 
 ## Connector-specific features & highlights
 
@@ -123,12 +123,12 @@ Therefore, Airbyte Redshift destination will create tables and schemas using the
 
 ### Data Size Limitations
 
-Redshift specifies a maximum limit of 1MB (and 65535 bytes for any VARCHAR fields within the JSON record) to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
-See docs for [SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html)
+Redshift specifies a maximum limit of 16MB (and 65535 bytes for any VARCHAR fields within the JSON record) to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
+See docs for [SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html).
 
 ### Encryption
 
-All Redshift connections are encrypted using SSL
+All Redshift connections are encrypted using SSL.
 
 ### Output schema
 
