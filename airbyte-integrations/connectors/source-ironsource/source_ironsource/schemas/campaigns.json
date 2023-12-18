@@ -71,87 +71,87 @@
         "string"
       ]
     },
-    "frequencyCapping": {
+    "frequencyCapping" : {
       "type" : "object",
-      "properties": {
-        "minHoursBetweenCompletions": {
+      "properties" : {
+        "minHoursBetweenCompletions" : {
           "type" : [
             "null",
             "number"
           ]
         },
-        "dailyCompletionsLimit": {
+        "dailyCompletionsLimit" : {
           "type" : [
             "null",
             "number"
           ]
         },
-        "totalCompletionsLimit": {
+        "totalCompletionsLimit" : {
           "type" : [
             "null",
             "number"
           ]
         }
-      },
-      "budget": {
-        "type": "object",
-        "properties": {
-          "type" : {
-            "type" : [
-              "null",
-              "string"
-            ]
-          },
-          "total" : {
-            "type" : [
-              "null",
-              "string"
-            ]
-          },
-          "daily" : {
-            "type" : [
-              "null",
-              "string"
-            ]
-          }
-        }
-      },
-      "bidType": {
-        "type" : [
-          "null",
-          "number"
-        ]
-      },
-      "campaignType": {
-        "type" : [
-          "null",
-          "number"
-        ]
-      },
-      "deliveryStatus": {
-        "type" : [
-          "null",
-          "number"
-        ]
-      },
-      "optimizationType": {
-        "type" : [
-          "null",
-          "number"
-        ]
-      },
-      "isActive": {
-        "type" : [
-          "null",
-          "boolean"
-        ]
-      },
-      "isArchived": {
-        "type" : [
-          "null",
-          "boolean"
-        ]
       }
+    },
+    "budget" : {
+      "type" : "object",
+      "properties" : {
+        "type" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "total" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "daily" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "bidType" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "campaignType" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "deliveryStatus" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "optimizationType" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "isActive" : {
+      "type" : [
+        "null",
+        "boolean"
+      ]
+    },
+    "isArchived" : {
+      "type" : [
+        "null",
+        "boolean"
+      ]
     }
   }
 }

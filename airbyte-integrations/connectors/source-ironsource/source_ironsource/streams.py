@@ -51,15 +51,15 @@ class IronsourceStream(HttpStream, ABC):
         params = {}
         if self.send_fields:
             params["fields"] = self.fields
-        if not next_page_token:
-            if self.paginate:
-                params["resultsBulkSize"] = self.page_size
-        else:
-            params.update(next_page_token)
+        if self.paginate:
+            params["resultsBulkSize"] = self.page_size
+            if next_page_token:
+                params.update(next_page_token)
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if not response:
+            # We reset page number for caching (stream might be unrolled several times)
             self.page_number = 1
             return None
         if self.entity not in response.json():
