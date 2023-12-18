@@ -35,9 +35,9 @@ class PartitionEnqueuer:
         """
         try:
             for partition in stream.generate_partitions():
-                while self._queue.qsize() > 1000:
+                while self._queue.qsize() > 2000:
                     #print(f"parition enqueueur sleeping for 0.5s")
-                    time.sleep(0.5)
+                    time.sleep(0.1)
                 self._queue.put(partition)
             self._queue.put(PartitionGenerationCompletedSentinel(stream))
         except Exception as e:
