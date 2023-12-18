@@ -5,7 +5,6 @@
 from datetime import datetime, timezone
 
 import pytest
-
 from airbyte_cdk.models import (
     AirbyteStateBlob,
     AirbyteStateMessage,

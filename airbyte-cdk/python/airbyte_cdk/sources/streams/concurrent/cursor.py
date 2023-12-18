@@ -96,7 +96,7 @@ class ConcurrentCursor(Cursor):
         if not self._most_recent_record or self._extract_cursor_value(self._most_recent_record) < self._extract_cursor_value(record):
             self._most_recent_record = record
 
-    def _extract_cursor_value(self, record: Record) -> Comparable:
+    def _extract_cursor_value(self, record: Record) -> Any:
         return self._connector_state_converter.parse_value(self._cursor_field.extract_value(record))
 
     def close_partition(self, partition: Partition) -> None:

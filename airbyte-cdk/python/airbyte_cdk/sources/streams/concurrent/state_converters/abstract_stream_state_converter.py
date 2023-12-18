@@ -82,3 +82,8 @@ class AbstractStreamStateConverter(ABC):
         Parse the value of the cursor field into a comparable value.
         """
         ...
+
+    @property
+    @abstractmethod
+    def zero_value(self) -> Any:
+        ...

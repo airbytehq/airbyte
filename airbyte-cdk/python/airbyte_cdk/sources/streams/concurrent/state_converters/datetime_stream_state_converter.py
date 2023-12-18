@@ -7,11 +7,12 @@ from datetime import datetime, timedelta
 from typing import Any, List, MutableMapping, Optional
 
 import pendulum
-
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import (
     AbstractStreamStateConverter,
     ConcurrencyCompatibleStateType,
 )
+from pendulum.datetime import DateTime
+
 
 class DateTimeStreamStateConverter(AbstractStreamStateConverter):
     START_KEY = "start"
@@ -68,8 +69,8 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
 
         return merged_intervals
 
-    def compare_intervals(self, end_time, start_time):
-        return self.increment(end_time) >= start_time
+    def compare_intervals(self, end_time: Any, start_time: Any) -> bool:
+        return bool(self.increment(end_time) >= start_time)
 
     def convert_from_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
@@ -112,7 +113,9 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
         if self.is_state_message_compatible(stream_state):
             legacy_state = stream_state.get("legacy", {})
             if slices := stream_state.pop("slices", None):
-                legacy_state.update({self._cursor_field: self.output_format(self._get_latest_complete_time(slices))})
+                latest_complete_time = self._get_latest_complete_time(slices)
+                if latest_complete_time:
+                    legacy_state.update({self._cursor_field: self.output_format(latest_complete_time)})
             return legacy_state or {}
         else:
             return stream_state
@@ -141,6 +144,7 @@ class EpochValueConcurrentStreamStateConverter(DateTimeStreamStateConverter):
         ]
     }
     """
+
     _zero_value = 0
 
     def increment(self, timestamp: datetime) -> Any:
@@ -150,7 +154,10 @@ class EpochValueConcurrentStreamStateConverter(DateTimeStreamStateConverter):
         return int(timestamp.timestamp())
 
     def parse_timestamp(self, timestamp: int) -> datetime:
-        return pendulum.from_timestamp(timestamp)
+        dt_object = pendulum.from_timestamp(timestamp)
+        if not isinstance(dt_object, DateTime):
+            raise ValueError(f"DateTime object was expected but got {type(dt_object)} from pendulum.parse({timestamp})")
+        return dt_object  # type: ignore  # we are manually type checking because pendulum.parse may return different types
 
 
 class IsoMillisConcurrentStreamStateConverter(DateTimeStreamStateConverter):
@@ -166,6 +173,7 @@ class IsoMillisConcurrentStreamStateConverter(DateTimeStreamStateConverter):
         ]
     }
     """
+
     _zero_value = "0001-01-01T00:00:00.000Z"
 
     def __init__(self, cursor_field: str, slice_timestamp_format: str):
@@ -179,4 +187,7 @@ class IsoMillisConcurrentStreamStateConverter(DateTimeStreamStateConverter):
         return timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
 
     def parse_timestamp(self, timestamp: str) -> datetime:
-        return pendulum.parse(timestamp)
+        dt_object = pendulum.parse(timestamp)
+        if not isinstance(dt_object, DateTime):
+            raise ValueError(f"DateTime object was expected but got {type(dt_object)} from pendulum.parse({timestamp})")
+        return dt_object  # type: ignore  # we are manually type checking because pendulum.parse may return different types
