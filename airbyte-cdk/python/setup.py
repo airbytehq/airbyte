@@ -71,7 +71,7 @@ setup(
         "isodate~=0.6.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
-        "pendulum",
+        "pendulum<3.0.0",
         "genson==1.2.2",
         "pydantic>=1.10.8,<2.0.0",
         "pyrate-limiter~=3.1.0",
