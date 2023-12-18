@@ -9,7 +9,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.state_converter import ConcurrentStreamStateConverter
+from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import AbstractStreamStateConverter
 
 
 def _extract_value(mapping: Mapping[str, Any], path: List[str]) -> Any:
@@ -70,7 +70,7 @@ class ConcurrentCursor(Cursor):
         stream_state: Any,
         message_repository: MessageRepository,
         connector_state_manager: ConnectorStateManager,
-        connector_state_converter: ConcurrentStreamStateConverter,
+        connector_state_converter: AbstractStreamStateConverter,
         cursor_field: CursorField,
         slice_boundary_fields: Optional[Tuple[str, str]],
     ) -> None:
@@ -97,7 +97,7 @@ class ConcurrentCursor(Cursor):
             self._most_recent_record = record
 
     def _extract_cursor_value(self, record: Record) -> Comparable:
-        return self._cursor_field.extract_value(record)
+        return self._connector_state_converter.parse_value(self._cursor_field.extract_value(record))
 
     def close_partition(self, partition: Partition) -> None:
         slice_count_before = len(self._state.get("slices", []))
@@ -126,6 +126,8 @@ class ConcurrentCursor(Cursor):
 
             self._state["slices"].append(
                 {
+                    # TODO: if we migrate stored state to the concurrent state format, we may want this to be the config start date
+                    #  instead of zero_value.
                     "start": self._connector_state_converter.zero_value,
                     "end": self._extract_cursor_value(self._most_recent_record),
                 }
@@ -135,6 +137,9 @@ class ConcurrentCursor(Cursor):
         self._connector_state_manager.update_state_for_stream(
             self._stream_name, self._stream_namespace, self._connector_state_converter.convert_to_sequential_state(self._state)
         )
+        # TODO: if we migrate stored state to the concurrent state format
+        #  (aka stop calling self._connector_state_converter.convert_to_sequential_state`), we'll need to cast datetimes to string or
+        #  int before emitting state
         state_message = self._connector_state_manager.create_state_message(
             self._stream_name, self._stream_namespace, send_per_stream_state=True
         )
@@ -148,6 +153,6 @@ class ConcurrentCursor(Cursor):
             _slice = partition.to_slice()
             if not _slice:
                 raise KeyError(f"Could not find key `{key}` in empty slice")
-            return _slice[key]  # type: ignore  # we expect the devs to specify a key that would return a Comparable
+            return self._connector_state_converter.parse_value(_slice[key])  # type: ignore  # we expect the devs to specify a key that would return a Comparable
         except KeyError as exception:
             raise KeyError(f"Partition is expected to have key `{key}` but could not be found") from exception
