@@ -11,7 +11,6 @@ import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -115,7 +114,8 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
       for (final PartialAirbyteMessage record : records) {
         final var uuid = UUID.randomUUID().toString();
-        // TODO we only need to do this is formatData is overridden. If not, we can just do jsonData = record.getSerialized()
+        // TODO we only need to do this is formatData is overridden. If not, we can just do jsonData =
+        // record.getSerialized()
         final var jsonData = Jsons.serialize(formatData(Jsons.deserializeExact(record.getSerialized())));
         final var extractedAt = Timestamp.from(Instant.ofEpochMilli(record.getRecord().getEmittedAt()));
         if (TypingAndDedupingFlag.isDestinationV2()) {
