@@ -31,7 +31,6 @@ class HourlyReportTransformerMixin:
     @transformer.registerCustomTransform
     def custom_transform_datetime_rfc3339(original_value, field_schema):
         if original_value and "format" in field_schema and field_schema["format"] == "date-time":
-            print(original_value)
             transformed_value = transform_report_hourly_datetime_format_to_rfc_3339(original_value)
             return transformed_value
         return original_value
@@ -230,9 +229,11 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         self,
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            for period in self.default_time_periods:
-                yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
+        accounts = Accounts(self.client, self.config)
+        for _slice in accounts.stream_slices():
+            for account in accounts.read_records(SyncMode.full_refresh, _slice):
+                for period in self.default_time_periods:
+                    yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
 
 
 class BingAdsReportingServicePerformanceStream(BingAdsReportingServiceStream, ABC):

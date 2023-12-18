@@ -296,12 +296,6 @@ module.exports = function (plop) {
         templateFile: `${javaDestinationInput}/.dockerignore.hbs`,
         path: `${javaDestinationOutputRoot}/.dockerignore`
       },
-      {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/Dockerfile.hbs`,
-        path: `${javaDestinationOutputRoot}/Dockerfile`
-      },
       // Java
       {
         type: 'add',
