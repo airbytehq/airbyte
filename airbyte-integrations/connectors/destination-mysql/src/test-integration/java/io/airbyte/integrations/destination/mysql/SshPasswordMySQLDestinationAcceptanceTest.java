@@ -4,12 +4,8 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public class SshPasswordMySQLDestinationAcceptanceTest extends SshMySQLDestinationAcceptanceTest {
 
