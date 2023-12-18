@@ -23,6 +23,7 @@ SCOPES_MAPPING = {
     "AbandonedCheckouts": ["read_orders"],
     "TenderTransactions": ["read_orders"],
     "Transactions": ["read_orders"],
+    "TransactionsGraphql": ["read_orders"],
     "Fulfillments": ["read_orders"],
     "OrderRefunds": ["read_orders"],
     "OrderRisks": ["read_orders"],

@@ -58,6 +58,7 @@ from .streams.streams import (
     SmartCollections,
     TenderTransactions,
     Transactions,
+    TransactionsGraphql,
 )
 from .utils import SCOPES_MAPPING, ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyConnectionError, ShopifyWrongShopNameError
 
@@ -182,6 +183,7 @@ class SourceShopify(AbstractSource):
             SmartCollections(config),
             TenderTransactions(config),
             Transactions(config),
+            TransactionsGraphql(config),
             CustomerSavedSearch(config),
             CustomerAddress(config),
             Countries(config),

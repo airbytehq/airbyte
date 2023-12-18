@@ -4,6 +4,8 @@
 
 
 from abc import abstractmethod
+from enum import Enum
+from json import loads
 from string import Template
 from typing import Any, List, Mapping, Optional, Union
 
@@ -54,79 +56,27 @@ class ShopifyBulkTemplates:
         return bulk_template.substitute(query=query)
 
 
-class GraphQlQueryBuilder:
-
-    operation = "query"
-    edge_key = "edges"
-    node_key = "node"
-
-    def get_edge_node(self, name: str, fields: Union[List[str], List[Field], str]) -> Field:
-        """
-        Defines the edge of the graph and it's fields to select for Shopify BULK Operaion.
-        https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
-        """
-        return Field(name=name, fields=[Field(name=self.edge_key, fields=[Field(name=self.node_key, fields=fields)])])
-
-    def get_edge_inline_frargment(self, name: str, fields: Union[List[InlineFragment], InlineFragment]) -> Field:
-        """
-        Defines the edge of the graph and it's fields to select for Shopify BULK Operaion.
-        https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
-        """
-        return Field(name=name, fields=fields)
-
-    def build_query(
-        self,
-        name: str,
-        edges: Optional[Union[List[Field], Field]] = None,
-        filter_query: Optional[str] = None,
-        sort_key: Optional[str] = None,
-    ) -> Query:
-        """
-        Defines the root of the graph with edges.
-        """
-        args: List[Argument] = []
-        # constructing arguments
-        if filter_query:
-            args.append(Argument(name=self.operation, value=f'"{filter_query}"'))
-        if sort_key:
-            args.append(Argument(name="sortKey", value=sort_key))
-        # constructing edges
-        fields = [
-            Field(name=self.edge_key, fields=[Field(name=self.node_key, fields=["id"] + edges if edges else ["id"])]),
-        ]
-        # return constucted query
-        return Query(name=name, arguments=args, fields=fields)
-
-
 class ShopifyBulkQuery:
-    def __new__(
-        cls,
-        query_path: Optional[Union[List[str], str]],
-        filter_field: Optional[str] = None,
-        start: Optional[str] = None,
-        end: Optional[str] = None,
-        sort_key: Optional[str] = None,
-    ) -> str:
 
-        # builder instance
-        cls.builder: GraphQlQueryBuilder = GraphQlQueryBuilder()
-        cls.tools: BulkTools = BulkTools()
+    tools: BulkTools = BulkTools()
 
-        if not query_path:
-            raise ValueError("The `query_path` is not defined.")
-        else:
-            # define filter query string, if passed
-            filter_query = f"{filter_field}:>='{start}' AND {filter_field}:<='{end}'" if filter_field else None
-            # building query
-            cls.built_query: Query = cls.query(query_path, filter_query, sort_key)
-            # resolving
-            cls.operation: str = cls.resolve_query(cls.built_query)
-            # returning objec class
-            return object.__new__(cls)
+    def get(self, filter_field: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> str:
+        # define filter query string, if passed
+        filter_query = f"{filter_field}:>='{start}' AND {filter_field}:<='{end}'" if filter_field else None
+        # building query
+        self.constructed_query: Query = self.query(filter_query)
+        # resolving
+        return self.resolve(self.constructed_query)
 
     @property
     @abstractmethod
-    def record_identifier(self) -> str:
+    def query_name(self) -> str:
+        """
+        Defines the root graph node name to fetch from: https://shopify.dev/docs/api/admin-graphql
+        """
+
+    @property
+    def record_identifier(self) -> Optional[str]:
         """
         Defines the record identifier to fetch only records related to the choosen stream.
         Example:
@@ -134,43 +84,41 @@ class ShopifyBulkQuery:
             In this example the record could be identified by it's reference = ".../Metafield/..."
         The property should be defined like:
             record_identifier = "Metafield"
+        IF
+            record_indetifier = None :
+                The resulted file would be read as is line by line  without matching records.
         """
+        return None
 
     @property
-    def edge_name(self) -> str:
+    def substream(self) -> bool:
         """
-        Defines the root graph node name to fetch from.
-        https://shopify.dev/docs/api/admin-graphql
+        Defines, if the full JSONL content would be emitted or just a subset of the records,
+        depending on `record_identifier` property.
         """
+        return False
 
     @property
-    @classmethod
-    def edge_nodes(cls) -> Optional[Union[List[Field], List[str]]]:
+    def sort_key(self) -> Optional[str]:
+        """
+        The field name by which the records are ASC sorted, if defined.
+        """
+        return None
+
+    @property
+    def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
         """
         Defines the fields for final graph selection.
         https://shopify.dev/docs/api/admin-graphql
         """
+        return ["id"]
 
-    @property
-    @classmethod
-    def edge_inline_fragments(cls) -> Optional[Union[List[InlineFragment], InlineFragment]]:
+    def query(self, filter_query: Optional[str] = None) -> Query:
         """
-        Defines the inline frragments for final graph selection.
-        https://shopify.dev/docs/api/admin-graphql
-        """
-        ...
-
-    @classmethod
-    def query(
-        cls,
-        query_path: Optional[Union[List[str], str]] = None,
-        filter_query: Optional[str] = None,
-        sort_key: Optional[str] = None,
-    ) -> Query:
-        """
-        Output example to BULK query `<query_path>` with `filter query`:
+        Overide this method, if you need to customize query build logic.
+        Output example to BULK query `<query_name>` with `filter query`:
             {
-                <query_path>(query: "<filter_query>") {
+                <query_name>(query: "<filter_query>") {
                     edges {
                         node {
                             id
@@ -179,66 +127,356 @@ class ShopifyBulkQuery:
                 }
             }
         """
+
         # return the constructed query operation
-        return cls.builder.build_query(query_path, cls.edge_nodes, filter_query, sort_key)
+        return self.build(self.query_name, self.query_nodes, filter_query)
+
+    def build(
+        self,
+        name: str,
+        edges: Optional[Union[List[Field], List[InlineFragment], Field, InlineFragment]] = None,
+        filter_query: Optional[str] = None,
+    ) -> Query:
+        """
+        Defines the root of the graph with edges.
+        """
+        args: List[Argument] = []
+        # constructing arguments
+        if filter_query:
+            args.append(Argument(name="query", value=f'"{filter_query}"'))
+        if self.sort_key:
+            args.append(Argument(name="sortKey", value=self.sort_key))
+        # constructing edges
+        fields = [
+            Field(name="edges", fields=[Field(name="node", fields=edges if edges else ["id"])]),
+        ]
+        # return constucted query
+        return Query(name=name, arguments=args, fields=fields)
 
     @classmethod
-    def resolve_query(cls, query: Query) -> str:
+    def resolve(self, query: Query) -> str:
         """
         Default query resolver from type(Operation) > type(str).
+        Overide this method to build multiple queries in one, if needed.
         """
         # return the constructed query operation
         return Operation(type="", queries=[query]).render()
 
 
 class Metafield(ShopifyBulkQuery):
+    """
+    Only 2 lvl nesting is available: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions
+    Output example to BULK query `customers.metafields` with `filter query` by `updated_at` sorted `ASC`:
+    {
+        <Type>(
+            query: "updated_at:>='2023-04-13' AND updated_at:<='2023-12-01'"
+            sortKey: UPDATED_AT
+        ) {
+            edges {
+                node {
+                    id
+                    metafields {
+                        edges {
+                            node {
+                                id
+                                namespace
+                                value
+                                key
+                                description
+                                createdAt
+                                updatedAt
+                                type
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    class Type(Enum):
+        CUSTOMERS = "customers"
+        ORDERS = "orders"
+        DRAFT_ORDERS = "draftOrders"
+        PRODUCTS = "products"
+        PRODUCT_IMAGES = ["products", "images"]
+        PRODUCT_VARIANTS = "productVariants"
+        COLLECTIONS = "collections"
+        LOCATIONS = "locations"
 
     record_identifier = "Metafield"
-    edge_name = "metafields"
+    sort_key = "UPDATED_AT"
+    substream = True
 
-    # list of available fields:
-    # https://shopify.dev/docs/api/admin-graphql/unstable/objects/Metafield
-    edge_nodes: List[Field] = [
-        Field(name="id"),
-        Field(name="namespace"),
-        Field(name="value"),
-        Field(name="key"),
-        Field(name="description"),
-        Field(name="createdAt"),
-        Field(name="updatedAt"),
-        Field(name="type"),
+    metafield_fields: List[Field] = [
+        "id",
+        "namespace",
+        "value",
+        "key",
+        "description",
+        "createdAt",
+        "updatedAt",
+        "type",
     ]
 
-    @classmethod
-    def query(
-        cls,
-        query_path: Optional[Union[List[str], str]] = None,
-        filter_query: Optional[str] = None,
-        sort_key: Optional[str] = None,
-    ) -> Query:
+    @property
+    def query_name(self) -> str:
+        if isinstance(self.type, list):
+            return self.type[0]
+        elif isinstance(self.type, str):
+            return self.type
+        else:
+            raise Exception(f"Invalid type for `query_name`: {self.type}.")
+
+    @property
+    @abstractmethod
+    def type(self) -> Type:
         """
-        Defines how query object should be constructed and resolved based on the root query selection.
-        Only 2 lvl nesting is available: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions
-        Output example to BULK query `customers.metafields` with `filter query` by `updated_at` sorted `ASC`:
-            {
-                customers(
-                    query: "updated_at:>='2023-04-13' AND updated_at:<='2023-12-01'"
-                    sortKey: UPDATED_AT
-                ) {
-                    edges {
-                        node {
-                            id
-                            metafields {
-                                edges {
-                                    node {
-                                        id
-                                        namespace
-                                        value
-                                        key
-                                        description
-                                        createdAt
-                                        updatedAt
-                                        type
+        Defines the Metafield type to fetch.
+        """
+
+    def get_edge_node(self, name: str, fields: Union[List[str], List[Field], str]) -> Field:
+        """
+        Defines the edge of the graph and it's fields to select for Shopify BULK Operaion.
+        https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
+        """
+        return Field(name=name, fields=[Field(name="edges", fields=[Field(name="node", fields=fields)])])
+
+    @property
+    def query_nodes(self) -> List[Field]:
+        """
+        List of available fields:
+        https://shopify.dev/docs/api/admin-graphql/unstable/objects/Metafield
+        """
+        # define metafield node
+        metafield_node = self.get_edge_node("metafields", self.metafield_fields)
+
+        if isinstance(self.type, list):
+            return ["id", self.get_edge_node(self.type[1], ["id", metafield_node])]
+        elif isinstance(self.type, str):
+            return ["id", metafield_node]
+        else:
+            raise Exception(f"Invalid type for `query_nodes`: {self.type}.")
+
+
+class MetafieldCollection(Metafield):
+    """
+    {
+        collections(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    id
+                    metafields {
+                        edges {
+                            node {
+                                id
+                                namespace
+                                value
+                                key
+                                description
+                                createdAt
+                                updatedAt
+                                type
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    @property
+    def type(self) -> str:
+        return self.Type.COLLECTIONS.value
+
+
+class MetafieldCustomer(Metafield):
+    """
+    {
+        customers(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    id
+                    metafields {
+                        edges {
+                            node {
+                                id
+                                namespace
+                                value
+                                key
+                                description
+                                createdAt
+                                updatedAt
+                                type
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    @property
+    def type(self) -> str:
+        return self.Type.CUSTOMERS.value
+
+
+class MetafieldLocation(Metafield):
+    """
+    {
+        locations {
+            edges {
+                node {
+                    id
+                    metafields {
+                        edges {
+                            node {
+                                id
+                                namespace
+                                value
+                                key
+                                description
+                                createdAt
+                                updatedAt
+                                type
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    sort_key = None
+
+    @property
+    def type(self) -> str:
+        return self.Type.LOCATIONS.value
+
+
+class MetafieldOrder(Metafield):
+    """
+    {
+        orders(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    id
+                    metafields {
+                        edges {
+                            node {
+                                id
+                                namespace
+                                value
+                                key
+                                description
+                                createdAt
+                                updatedAt
+                                type
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    @property
+    def type(self) -> str:
+        return self.Type.ORDERS.value
+
+
+class MetafieldDraftOrder(Metafield):
+    """
+    {
+        draftOrders(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    id
+                    metafields {
+                        edges {
+                            node {
+                                id
+                                namespace
+                                value
+                                key
+                                description
+                                createdAt
+                                updatedAt
+                                type
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    @property
+    def type(self) -> str:
+        return self.Type.DRAFT_ORDERS.value
+
+
+class MetafieldProduct(Metafield):
+    """
+    {
+        products(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    id
+                    metafields {
+                        edges {
+                            node {
+                                id
+                                namespace
+                                value
+                                key
+                                description
+                                createdAt
+                                updatedAt
+                                type
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    @property
+    def type(self) -> str:
+        return self.Type.PRODUCTS.value
+
+
+class MetafieldProductImage(Metafield):
+    """
+    {
+        products(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    id
+                    images{
+                        edges{
+                            node{
+                                id
+                                metafields {
+                                    edges {
+                                        node {
+                                            id
+                                            namespace
+                                            value
+                                            key
+                                            description
+                                            createdAt
+                                            updatedAt
+                                            type
+                                        }
                                     }
                                 }
                             }
@@ -246,177 +484,192 @@ class Metafield(ShopifyBulkQuery):
                     }
                 }
             }
-        """
-        # resolve query path if the List[str] is provided
-        if isinstance(query_path, list):
-            if len(query_path) > 3:
-                raise Exception(f"The `query_path` length should be limited to 3 elements, actual: {query_path}.")
-            else:
-                if len(query_path) == 1:
-                    # resolve query path for single list element
-                    query = cls.builder.build_query(
-                        query_path[0], [cls.builder.get_edge_node(cls.edge_name, cls.edge_nodes)], filter_query, sort_key
-                    )
-                elif len(query_path) == 2:
-                    # resolve query path for 2 list elements
-                    # first is `root`, second is it's entity
-                    edges = cls.builder.get_edge_node(query_path[1], ["id", cls.builder.get_edge_node(cls.edge_name, cls.edge_nodes)])
-                    query = cls.builder.build_query(query_path[0], [edges], filter_query, sort_key)
-                elif len(query_path) == 3:
-                    # resolve query path for 3 list elements (max)
-                    # first is `root`, second and third are it's entities
-                    edges = cls.builder.get_edge_node(
-                        query_path[1],
-                        [
-                            "id",
-                            cls.builder.get_edge_node(query_path[2], ["id", cls.builder.get_edge_node(cls.edge_name, cls.edge_nodes)]),
-                        ],
-                    )
-                    query = cls.builder.build_query(query_path[0], [edges], filter_query, sort_key)
-        # resolve quey path if `str` is provided for the single entity, basically the query `root`
-        elif isinstance(query_path, str):
-            query = cls.builder.build_query(query_path, [cls.builder.get_edge_node(cls.edge_name, cls.edge_nodes)], filter_query, sort_key)
-        # return the constructed query operation
-        return query
+        }
+    }
+    """
+
+    @property
+    def type(self) -> str:
+        return self.Type.PRODUCT_IMAGES.value
+
+
+class MetafieldProductVariant(Metafield):
+    """
+    {
+        productVariants(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'") {
+            edges {
+                node {
+                    id
+                    metafields {
+                        edges {
+                            node {
+                                id
+                                namespace
+                                value
+                                key
+                                description
+                                createdAt
+                                updatedAt
+                                type
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    sort_key = None
+
+    @property
+    def type(self) -> str:
+        return self.Type.PRODUCT_VARIANTS.value
 
 
 class DiscountCode(ShopifyBulkQuery):
+    """
+    Output example to BULK query `codeDiscountNodes` with `filter query` by `updated_at` sorted `ASC`:
+        {
+            codeDiscountNodes(query: "updated_at:>='2023-12-07T00:00:00Z' AND updated_at:<='2023-12-30T00:00:00Z'", sortKey: UPDATED_AT) {
+                edges {
+                    node {
+                        id
+                        codeDiscount {
+                            ... on DiscountCodeApp {
+                                updatedAt
+                                createdAt
+                                discountType: discountClass
+                                codes {
+                                    edges {
+                                        node {
+                                            usageCount: asyncUsageCount
+                                            code
+                                            id
+                                        }
+                                    }
+                                }
+                            }
+                            ... on DiscountCodeBasic {
+                                createdAt
+                                updatedAt
+                                discountType: discountClass
+                                summary
+                                codes {
+                                    edges {
+                                        node {
+                                            usageCount: asyncUsageCount
+                                            code
+                                            id
+                                        }
+                                    }
+                                }
+                            }
+                            ... on DiscountCodeBxgy {
+                                updatedAt
+                                createdAt
+                                discountType: discountClass
+                                summary
+                                codes {
+                                    edges {
+                                        node {
+                                            usageCount: asyncUsageCount
+                                            code
+                                            id
+                                        }
+                                    }
+                                }
+                            }
+                            ... on DiscountCodeFreeShipping {
+                                updatedAt
+                                createdAt
+                                discountType: discountClass
+                                summary
+                                codes {
+                                    edges {
+                                        node {
+                                            usageCount: asyncUsageCount
+                                            code
+                                            id
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    """
 
-    record_identifier = None
-    edge_name = "codeDiscount"
+    query_name = "codeDiscountNodes"
+    sort_key = "UPDATED_AT"
 
-    edge_nodes: List[Field] = [
+    code_discount_fields: List[Field] = [
         Field(name="discountClass", alias="discountType"),
         Field(
             name="codes",
             fields=[
-                Field(
-                    name="edges",
-                    fields=[
-                        Field(
-                            name="node",
-                            fields=[
-                                Field(name="asyncUsageCount", alias="usageCount"),
-                                Field(name="code"),
-                                Field(name="id"),
-                            ],
-                        )
-                    ],
-                )
+                Field(name="edges", fields=[Field(name="node", fields=[Field(name="asyncUsageCount", alias="usageCount"), "code", "id"])])
             ],
         ),
     ]
 
-    @classmethod
-    def edge_inline_fragments(cls) -> Optional[Union[List[InlineFragment], InlineFragment]]:
-        mandatory_fields = ["updatedAt", "createdAt"]
-        return [
-            # the type: DiscountCodeApp has no `"summary"` field available
-            InlineFragment(type="DiscountCodeApp", fields=[*mandatory_fields, *cls.edge_nodes]),
-            InlineFragment(type="DiscountCodeBasic", fields=[*mandatory_fields, "summary", *cls.edge_nodes]),
-            InlineFragment(type="DiscountCodeBxgy", fields=[*mandatory_fields, "summary", *cls.edge_nodes]),
-            InlineFragment(type="DiscountCodeFreeShipping", fields=[*mandatory_fields, "summary", *cls.edge_nodes]),
-        ]
+    code_discount_fragments: List[InlineFragment] = [
+        # the type: DiscountCodeApp has no `"summary"` field available
+        InlineFragment(type="DiscountCodeApp", fields=["updatedAt", "createdAt", *code_discount_fields]),
+        InlineFragment(type="DiscountCodeBasic", fields=["updatedAt", "createdAt", "summary", *code_discount_fields]),
+        InlineFragment(type="DiscountCodeBxgy", fields=["updatedAt", "createdAt", "summary", *code_discount_fields]),
+        InlineFragment(type="DiscountCodeFreeShipping", fields=["updatedAt", "createdAt", "summary", *code_discount_fields]),
+    ]
 
-    @classmethod
-    def query(
-        cls,
-        query_path: Optional[Union[List[str], str]] = None,
-        filter_query: Optional[str] = None,
-        sort_key: Optional[str] = None,
-    ) -> Query:
-        """
-        Output example to BULK query `codeDiscountNodes` with `filter query` by `updated_at` sorted `ASC`:
-            {
-                codeDiscountNodes(query: "updated_at:>='2023-12-07T00:00:00Z' AND updated_at:<='2023-12-30T00:00:00Z'", sortKey: UPDATED_AT) {
-                    edges {
-                        node {
-                            id
-                            codeDiscount {
-                                ... on DiscountCodeApp {
-                                    updatedAt
-                                    createdAt
-                                    discountType: discountClass
-                                    codes {
-                                        edges {
-                                            node {
-                                                usageCount: asyncUsageCount
-                                                code
-                                                id
-                                            }
-                                        }
-                                    }
-                                }
-                                ... on DiscountCodeBasic {
-                                    createdAt
-                                    updatedAt
-                                    discountType: discountClass
-                                    summary
-                                    codes {
-                                        edges {
-                                            node {
-                                                usageCount: asyncUsageCount
-                                                code
-                                                id
-                                            }
-                                        }
-                                    }
-                                }
-                                ... on DiscountCodeBxgy {
-                                    updatedAt
-                                    createdAt
-                                    discountType: discountClass
-                                    summary
-                                    codes {
-                                        edges {
-                                            node {
-                                                usageCount: asyncUsageCount
-                                                code
-                                                id
-                                            }
-                                        }
-                                    }
-                                }
-                                ... on DiscountCodeFreeShipping {
-                                    updatedAt
-                                    createdAt
-                                    discountType: discountClass
-                                    summary
-                                    codes {
-                                        edges {
-                                            node {
-                                                usageCount: asyncUsageCount
-                                                code
-                                                id
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        """
-
-        edges = cls.builder.get_edge_inline_frargment(cls.edge_name, cls.edge_inline_fragments())
-        # return the constructed query operation
-        return cls.builder.build_query(query_path, [edges], filter_query, sort_key)
+    query_nodes: List[Field] = [
+        "id",
+        Field(name="codeDiscount", fields=code_discount_fragments),
+    ]
 
 
 class Collection(ShopifyBulkQuery):
+    """
+    {
+        collections(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    id
+                    handle
+                    title
+                    updatedAt
+                    bodyHtml: descriptionHtml
+                    publications {
+                        edges {
+                            node {
+                                publishedAt: publishDate
+                            }
+                        }
+                    }
+                    sortOrder
+                    templateSuffix
+                    productsCount
+                }
+            }
+        }
+    }
+    """
 
-    record_identifier = None
+    query_name = "collections"
+    sort_key = "UPDATED_AT"
 
-    edge_nodes: List[Field] = [
+    publications_fields: List[Field] = [
+        Field(name="edges", fields=[Field(name="node", fields=[Field(name="publishDate", alias="publishedAt")])])
+    ]
+
+    query_nodes: List[Field] = [
+        "id",
         Field(name="handle"),
         Field(name="title"),
         Field(name="updatedAt"),
         Field(name="descriptionHtml", alias="bodyHtml"),
-        Field(
-            name="publications",
-            fields=[Field(name="edges", fields=[Field(name="node", fields=[Field(name="publishDate", alias="publishedAt")])])],
-        ),
+        Field(name="publications", fields=publications_fields),
         Field(name="sortOrder"),
         Field(name="templateSuffix"),
         Field(name="productsCount"),
@@ -424,16 +677,47 @@ class Collection(ShopifyBulkQuery):
 
 
 class InventoryItem(ShopifyBulkQuery):
+    """
+    {
+        inventoryItems(query: "updated_at:>='2022-04-13T00:00:00+00:00' AND updated_at:<='2023-02-07T00:00:00+00:00'") {
+            edges {
+                node {
+                    unitCost {
+                        cost: amount
+                    }
+                    countryCodeOfOrigin
+                    countryHarmonizedSystemCodes {
+                        edges {
+                            node {
+                                harmonizedSystemCode
+                                countryCode
+                            }
+                        }
+                    }
+                    harmonizedSystemCode
+                    provinceCodeOfOrigin
+                    updatedAt
+                    createdAt
+                    sku
+                    tracked
+                    requiresShipping
+                }
+            }
+        }
+    }
+    """
 
-    record_identifier = None
+    query_name = "inventoryItems"
 
-    edge_nodes: List[Field] = [
+    country_harmonizedS_system_codes: List[Field] = [
+        Field(name="edges", fields=[Field(name="node", fields=["harmonizedSystemCode", "countryCode"])])
+    ]
+
+    query_nodes: List[Field] = [
+        "id",
         Field(name="unitCost", fields=[Field(name="amount", alias="cost")]),
         Field(name="countryCodeOfOrigin"),
-        Field(
-            name="countryHarmonizedSystemCodes",
-            fields=[Field(name="edges", fields=[Field(name="node", fields=["harmonizedSystemCode", "countryCode"])])],
-        ),
+        Field(name="countryHarmonizedSystemCodes", fields=country_harmonizedS_system_codes),
         Field(name="harmonizedSystemCode"),
         Field(name="provinceCodeOfOrigin"),
         Field(name="updatedAt"),
@@ -445,53 +729,49 @@ class InventoryItem(ShopifyBulkQuery):
 
 
 class InventoryLevel(ShopifyBulkQuery):
-
-    record_identifier = "InventoryLevel"
-
-    edge_nodes: List[Field] = [
-        Field(name="available"),
-        Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
-        Field(name="updatedAt"),
-    ]
-
-    @classmethod
-    def query(
-        cls,
-        query_path: Optional[Union[List[str], str]] = None,
-        filter_query: Optional[str] = None,
-        sort_key: Optional[str] = None,
-    ) -> Query:
-        """
-        Output example to BULK query `inventory_levels` from `locations` with `filter query` by `updated_at`:
-            {
-                locations {
-                    edges {
-                        node {
-                            id
-                            inventoryLevels(query: "updated_at:>='2023-04-14T00:00:00+00:00'") {
-                                edges {
-                                    node {
-                                        id
-                                        available
-                                        item {
-                                            inventory_item_id: id
-                                        }
-                                        updatedAt
+    """
+    Output example to BULK query `inventory_levels` from `locations` with `filter query` by `updated_at`:
+        {
+            locations {
+                edges {
+                    node {
+                        id
+                        inventoryLevels(query: "updated_at:>='2023-04-14T00:00:00+00:00'") {
+                            edges {
+                                node {
+                                    id
+                                    available
+                                    item {
+                                        inventory_item_id: id
                                     }
+                                    updatedAt
                                 }
                             }
                         }
                     }
                 }
             }
-        """
+        }
+    """
+
+    query_name = "locations"
+    record_identifier = "InventoryLevel"
+    substream = True
+
+    inventory_levels_fields: List[Field] = [
+        "id",
+        Field(name="available"),
+        Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
+        Field(name="updatedAt"),
+    ]
+
+    def query(self, filter_query: Optional[str] = None) -> Query:
         # resolve query path if the List[str] is provided
         # build the nested query first with `filter_query` to have the incremental syncs
-        edges = cls.builder.build_query(query_path[1], [*cls.edge_nodes], filter_query, sort_key)
+        inventory_levels: List[Query] = [self.build("inventoryLevels", self.inventory_levels_fields, filter_query)]
         # build the main query around previous
-        query = cls.builder.build_query(query_path[0], [edges], sort_key)
         # return the constructed query operation
-        return query
+        return self.build(self.query_name, self.query_nodes + inventory_levels)
 
 
 class FulfillmentOrder(ShopifyBulkQuery):
@@ -538,6 +818,8 @@ class FulfillmentOrder(ShopifyBulkQuery):
                                     deliveryMethod {
                                         id
                                         methodType
+                                        minDeliveryDateTime
+                                        maxDeliveryDateTime
                                     }
                                     fulfillAt
                                     fulfillBy
@@ -593,149 +875,92 @@ class FulfillmentOrder(ShopifyBulkQuery):
         }
     """
 
-    record_identifier = None
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
 
-    edge_nodes: List[Field] = [
+    assigned_location_fields: List[Field] = [
+        "address1",
+        "address2",
+        "city",
+        "countryCode",
+        "name",
+        "phone",
+        "province",
+        "zip",
+        Field(name="location", fields=[Field(name="id", alias="locationId")]),
+    ]
+
+    destination_fields: List[Field] = [
+        "id",
+        "address1",
+        "address2",
+        "city",
+        "company",
+        "countryCode",
+        "email",
+        "firstName",
+        "lastName",
+        "phone",
+        "province",
+        "zip",
+    ]
+
+    delivery_method_fields: List[Field] = [
+        "id",
+        "methodType",
+        "minDeliveryDateTime",
+        "maxDeliveryDateTime",
+    ]
+
+    line_items_fields: List[Field] = [
         "__typename",
+        "id",
+        "inventoryItemId",
         Field(
-            name="fulfillmentOrders",
+            name="lineItem",
             fields=[
-                Field(
-                    name="edges",
-                    fields=[
-                        Field(
-                            name="node",
-                            fields=[
-                                "__typename",
-                                "id",
-                                Field(
-                                    name="assignedLocation",
-                                    fields=[
-                                        "address1",
-                                        "address2",
-                                        "city",
-                                        "countryCode",
-                                        "name",
-                                        "phone",
-                                        "province",
-                                        "zip",
-                                        Field(
-                                            name="location",
-                                            fields=[
-                                                Field(name="id", alias="locationId"),
-                                            ],
-                                        ),
-                                    ],
-                                ),
-                                Field(
-                                    name="destination",
-                                    fields=[
-                                        "id",
-                                        "address1",
-                                        "address2",
-                                        "city",
-                                        "company",
-                                        "countryCode",
-                                        "email",
-                                        "firstName",
-                                        "lastName",
-                                        "phone",
-                                        "province",
-                                        "zip",
-                                    ],
-                                ),
-                                Field(
-                                    name="deliveryMethod",
-                                    fields=[
-                                        "id",
-                                        "methodType",
-                                        "minDeliveryDateTime",
-                                        "maxDeliveryDateTime",
-                                    ],
-                                ),
-                                "fulfillAt",
-                                "fulfillBy",
-                                Field(
-                                    name="internationalDuties",
-                                    fields=[
-                                        "incoterm",
-                                    ],
-                                ),
-                                Field(
-                                    name="fulfillmentHolds",
-                                    fields=[
-                                        "reason",
-                                        "reasonNotes",
-                                    ],
-                                ),
-                                Field(
-                                    name="lineItems",
-                                    fields=[
-                                        Field(
-                                            name="edges",
-                                            fields=[
-                                                Field(
-                                                    name="node",
-                                                    fields=[
-                                                        "__typename",
-                                                        "id",
-                                                        "inventoryItemId",
-                                                        Field(
-                                                            name="lineItem",
-                                                            fields=[
-                                                                Field(name="id", alias="lineItemId"),
-                                                                "fulfillableQuantity",
-                                                                Field(name="currentQuantity", alias="quantity"),
-                                                                Field(name="variant", fields=[Field(name="id", alias="variantId")]),
-                                                            ],
-                                                        ),
-                                                    ],
-                                                )
-                                            ],
-                                        )
-                                    ],
-                                ),
-                                "createdAt",
-                                "updatedAt",
-                                "requestStatus",
-                                "status",
-                                Field(
-                                    name="supportedActions",
-                                    fields=[
-                                        "action",
-                                        "externalUrl",
-                                    ],
-                                ),
-                                Field(
-                                    name="merchantRequests",
-                                    fields=[
-                                        Field(
-                                            name="edges",
-                                            fields=[
-                                                Field(
-                                                    name="node",
-                                                    fields=[
-                                                        "__typename",
-                                                        "id",
-                                                        "message",
-                                                        "kind",
-                                                        "requestOptions",
-                                                    ],
-                                                )
-                                            ],
-                                        )
-                                    ],
-                                ),
-                            ],
-                        )
-                    ],
-                )
+                Field(name="id", alias="lineItemId"),
+                "fulfillableQuantity",
+                Field(name="currentQuantity", alias="quantity"),
+                Field(name="variant", fields=[Field(name="id", alias="variantId")]),
             ],
         ),
     ]
 
-    @classmethod
-    def prep_fulfillment_order(cls, record: Mapping[str, Any], shop_id: Optional[int] = 0) -> Mapping[str, Any]:
+    merchant_requests_fields: List[Field] = [
+        "__typename",
+        "id",
+        "message",
+        "kind",
+        "requestOptions",
+    ]
+
+    fulfillment_order_fields: List[Field] = [
+        "__typename",
+        "id",
+        Field(name="assignedLocation", fields=assigned_location_fields),
+        Field(name="destination", fields=destination_fields),
+        Field(name="deliveryMethod", fields=delivery_method_fields),
+        "fulfillAt",
+        "fulfillBy",
+        Field(name="internationalDuties", fields=["incoterm"]),
+        Field(name="fulfillmentHolds", fields=["reason", "reasonNotes"]),
+        Field(name="lineItems", fields=[Field(name="edges", fields=[Field(name="node", fields=line_items_fields)])]),
+        "createdAt",
+        "updatedAt",
+        "requestStatus",
+        "status",
+        Field(name="supportedActions", fields=["action", "externalUrl"]),
+        Field(name="merchantRequests", fields=[Field(name="edges", fields=[Field(name="node", fields=merchant_requests_fields)])]),
+    ]
+
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        Field(name="fulfillmentOrders", fields=[Field(name="edges", fields=[Field(name="node", fields=fulfillment_order_fields)])]),
+    ]
+
+    def prep_fulfillment_order(self, record: Mapping[str, Any], shop_id: Optional[int] = 0) -> Mapping[str, Any]:
         # addings
         record["shop_id"] = shop_id
         record["order_id"] = record.get(BULK_PARENT_KEY)
@@ -756,38 +981,37 @@ class FulfillmentOrder(ShopifyBulkQuery):
         if location:
             location_id = location.get("locationId")
             if location_id:
-                record["assignedLocation"]["locationId"] = cls.tools.resolve_str_id(location_id)
+                record["assignedLocation"]["locationId"] = self.tools.resolve_str_id(location_id)
         # assigned_location_id
-        record["assignedLocationId"] = cls.tools.resolve_str_id(record.get("assignedLocationId"))
+        record["assignedLocationId"] = self.tools.resolve_str_id(record.get("assignedLocationId"))
         # destination id
         destination = record.get("destination", {})
         if destination:
             destination_id = destination.get("id")
             if destination_id:
-                record["destination"]["id"] = cls.tools.resolve_str_id(destination_id)
+                record["destination"]["id"] = self.tools.resolve_str_id(destination_id)
         # delivery method id
         delivery_method = record.get("deliveryMethod", {})
         if delivery_method:
             delivery_method_id = delivery_method.get("id")
             if delivery_method_id:
-                record["deliveryMethod"]["id"] = cls.tools.resolve_str_id(delivery_method_id)
+                record["deliveryMethod"]["id"] = self.tools.resolve_str_id(delivery_method_id)
         # order id
-        record["order_id"] = cls.tools.resolve_str_id(record.get("order_id"))
+        record["order_id"] = self.tools.resolve_str_id(record.get("order_id"))
         # field names to snake for nested objects
         # `assignedLocation`(object) field names to snake case
-        record["assignedLocation"] = cls.tools.fields_names_to_snake_case(record.get("assignedLocation"))
+        record["assignedLocation"] = self.tools.fields_names_to_snake_case(record.get("assignedLocation"))
         # `deliveryMethod`(object) field names to snake case
-        record["deliveryMethod"] = cls.tools.fields_names_to_snake_case(record.get("deliveryMethod"))
+        record["deliveryMethod"] = self.tools.fields_names_to_snake_case(record.get("deliveryMethod"))
         # `destination`(object) field names to snake case
-        record["destination"] = cls.tools.fields_names_to_snake_case(record.get("destination"))
+        record["destination"] = self.tools.fields_names_to_snake_case(record.get("destination"))
         # `fulfillmentHolds`(list[object]) field names to snake case
-        record["fulfillmentHolds"] = [cls.tools.fields_names_to_snake_case(el) for el in record.get("fulfillmentHolds", [])]
+        record["fulfillmentHolds"] = [self.tools.fields_names_to_snake_case(el) for el in record.get("fulfillmentHolds", [])]
         # `supportedActions`(list[object]) field names to snake case
-        record["supportedActions"] = [cls.tools.fields_names_to_snake_case(el) for el in record.get("supportedActions", [])]
+        record["supportedActions"] = [self.tools.fields_names_to_snake_case(el) for el in record.get("supportedActions", [])]
         return record
 
-    @classmethod
-    def prep_line_item(cls, record: Mapping[str, Any], shop_id: Optional[int] = 0) -> Mapping[str, Any]:
+    def prep_line_item(self, record: Mapping[str, Any], shop_id: Optional[int] = 0) -> Mapping[str, Any]:
         # addings
         record["shop_id"] = shop_id
         record["fulfillmentOrderId"] = record.get(BULK_PARENT_KEY)
@@ -805,26 +1029,164 @@ class FulfillmentOrder(ShopifyBulkQuery):
         record.pop(BULK_PARENT_KEY)
         record.pop("lineItem")
         # resolve ids from `str` to `int`
-        record["id"] = cls.tools.resolve_str_id(record.get("id"))
+        record["id"] = self.tools.resolve_str_id(record.get("id"))
         # inventoryItemId
-        record["inventoryItemId"] = cls.tools.resolve_str_id(record.get("inventoryItemId"))
+        record["inventoryItemId"] = self.tools.resolve_str_id(record.get("inventoryItemId"))
         # fulfillmentOrderId
-        record["fulfillmentOrderId"] = cls.tools.resolve_str_id(record.get("fulfillmentOrderId"))
+        record["fulfillmentOrderId"] = self.tools.resolve_str_id(record.get("fulfillmentOrderId"))
         # lineItemId
-        record["lineItemId"] = cls.tools.resolve_str_id(record.get("lineItemId"))
+        record["lineItemId"] = self.tools.resolve_str_id(record.get("lineItemId"))
         # variantId
-        record["variantId"] = cls.tools.resolve_str_id(record.get("variantId"))
+        record["variantId"] = self.tools.resolve_str_id(record.get("variantId"))
         # field names to snake case
-        record = cls.tools.fields_names_to_snake_case(record)
+        record = self.tools.fields_names_to_snake_case(record)
         return record
 
-    @classmethod
-    def prep_merchant_request(cls, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def prep_merchant_request(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         # cleaning
         record.pop("__typename")
         record.pop(BULK_PARENT_KEY)
         # resolve ids from `str` to `int`
-        record["id"] = cls.tools.resolve_str_id(record.get("id"))
+        record["id"] = self.tools.resolve_str_id(record.get("id"))
         # field names to snake case
-        record = cls.tools.fields_names_to_snake_case(record)
+        record = self.tools.fields_names_to_snake_case(record)
+        return record
+
+
+class Transaction(ShopifyBulkQuery):
+    """
+    Output example to BULK query `transactions` from `orders` with `filter query` by `updated_at` sorted `ASC`:
+        {
+            orders(query: "updated_at:>='2021-05-23T00:00:00+00:00' AND updated_at:<'2021-12-22T00:00:00+00:00'", sortKey:UPDATED_AT) {
+                edges {
+                    node {
+                        id
+                        currency: currencyCode
+                        transactions {
+                            id
+                            errorCode
+                            parentTransaction {
+                                parentId: id
+                            }
+                            test
+                            kind
+                            amount
+                            receipt: receiptJson
+                            gateway
+                            authorization: authorizationCode
+                            createdAt
+                            status
+                            processedAt
+                            totalUnsettledSet {
+                                presentmentMoney {
+                                    amount
+                                    currency: currencyCode
+                                }
+                                shopMoney {
+                                    amount
+                                    currency: currencyCode
+                                }
+                            }
+                            paymentId
+                            paymentDetails {
+                                ... on CardPaymentDetails {
+                                        avsResultCode
+                                        creditCardBin: bin
+                                        creditCardCompany: company
+                                        creditCardNumber: number
+                                        creditCardName: name
+                                        cvvResultCode
+                                        creditCardWallet: wallet
+                                        creditCardExpirationYear: expirationYear
+                                        creditCardExpirationMonth: expirationMonth
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    """
+
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
+
+    total_unsettled_set_fields: List[Field] = [
+        Field(name="presentmentMoney", fields=["amount", Field(name="currencyCode", alias="currency")]),
+        Field(name="shopMoney", fields=["amount", Field(name="currencyCode", alias="currency")]),
+    ]
+
+    payment_details: List[InlineFragment] = [
+        InlineFragment(
+            type="CardPaymentDetails",
+            fields=[
+                "avsResultCode",
+                "cvvResultCode",
+                Field(name="bin", alias="creditCardBin"),
+                Field(name="company", alias="creditCardCompany"),
+                Field(name="number", alias="creditCardNumber"),
+                Field(name="name", alias="creditCardName"),
+                Field(name="wallet", alias="creditCardWallet"),
+                Field(name="expirationYear", alias="creditCardExpirationYear"),
+                Field(name="expirationMonth", alias="creditCardExpirationMonth"),
+            ],
+        )
+    ]
+
+    query_nodes: List[Field] = [
+        "id",
+        Field(name="currencyCode", alias="currency"),
+        Field(
+            name="transactions",
+            fields=[
+                "id",
+                "errorCode",
+                Field(name="parentTransaction", fields=[Field(name="id", alias="parentId")]),
+                "test",
+                "kind",
+                "amount",
+                Field(name="receiptJson", alias="receipt"),
+                "gateway",
+                Field(name="authorizationCode", alias="authorization"),
+                "createdAt",
+                "status",
+                "processedAt",
+                Field(name="totalUnsettledSet", fields=total_unsettled_set_fields),
+                "paymentId",
+                Field(name="paymentDetails", fields=payment_details),
+            ],
+        ),
+    ]
+
+    def prep_transaction(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        # save the id before it's resolved
+        record["admin_graphql_api_id"] = record.get("id")
+        # unnest nested fields
+        parent_transaction = record.get("parentTransaction", {})
+        if parent_transaction:
+            record["parent_id"] = parent_transaction.get("parentId")
+        # str values to float
+        record["amount"] = float(record.get("amount"))
+        # convert dates from ISO-8601 to RFC-3339
+        record["processedAt"] = self.tools.from_iso8601_to_rfc3339(record, "processedAt")
+        record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+        # resolve ids
+        record["id"] = self.tools.resolve_str_id(record.get("id"))
+        record["parent_id"] = self.tools.resolve_str_id(record.get("parent_id"))
+        # remove leftovers
+        record.pop("parentTransaction", None)
+        # field names to snake case
+        total_unsettled_set = record.get("totalUnsettledSet", {})
+        if total_unsettled_set:
+            record["totalUnsettledSet"] = self.tools.fields_names_to_snake_case(total_unsettled_set)
+            # nested str values to float
+            record["totalUnsettledSet"]["presentment_money"]["amount"] = float(
+                total_unsettled_set.get("presentmentMoney", {}).get("amount")
+            )
+            record["totalUnsettledSet"]["shop_money"]["amount"] = float(total_unsettled_set.get("shopMoney", {}).get("amount"))
+        payment_details = record.get("paymentDetails", {})
+        if payment_details:
+            record["paymentDetails"] = self.tools.fields_names_to_snake_case(payment_details)
+        # field names to snake case for oot level
+        record = self.tools.fields_names_to_snake_case(record)
         return record

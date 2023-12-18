@@ -3,12 +3,13 @@
 #
 
 
-import re
 from io import TextIOWrapper
 from json import loads
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.query import (
     BULK_PARENT_KEY,
@@ -17,7 +18,15 @@ from source_shopify.shopify_graphql.bulk.query import (
     FulfillmentOrder,
     InventoryItem,
     InventoryLevel,
-    Metafield,
+    MetafieldCollection,
+    MetafieldCustomer,
+    MetafieldDraftOrder,
+    MetafieldLocation,
+    MetafieldOrder,
+    MetafieldProduct,
+    MetafieldProductImage,
+    MetafieldProductVariant,
+    Transaction,
 )
 from source_shopify.shopify_graphql.graphql import get_query_products
 from source_shopify.utils import ApiTypeEnum
@@ -45,15 +54,6 @@ class MetafieldShopifySubstream(IncrementalShopifySubstream):
 
 
 class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
-    bulk_query: Metafield = Metafield
-
-    @property
-    def substream(self) -> bool:
-        """
-        Emit only Metafield-related records.
-        """
-        return True
-
     def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
         The dependent resources have `__parentId` key in record, which signifies about the parnt-to-child relation.
@@ -109,7 +109,7 @@ class Customers(IncrementalShopifyStream):
 
 
 class MetafieldCustomers(MetafieldShopifyGraphQlBulkStream):
-    query_path = "customers"
+    bulk_query: MetafieldCustomer = MetafieldCustomer
 
 
 class Orders(IncrementalShopifyStreamWithDeletedEvents):
@@ -136,7 +136,7 @@ class Disputes(IncrementalShopifyStream):
 
 
 class MetafieldOrders(MetafieldShopifyGraphQlBulkStream):
-    query_path = "orders"
+    bulk_query: MetafieldOrder = MetafieldOrder
 
 
 class DraftOrders(IncrementalShopifyStream):
@@ -144,7 +144,7 @@ class DraftOrders(IncrementalShopifyStream):
 
 
 class MetafieldDraftOrders(MetafieldShopifyGraphQlBulkStream):
-    query_path = "draftOrders"
+    bulk_query: MetafieldDraftOrder = MetafieldDraftOrder
 
 
 class Products(IncrementalShopifyStreamWithDeletedEvents):
@@ -203,7 +203,7 @@ class ProductsGraphQl(IncrementalShopifyStream):
 
 
 class MetafieldProducts(MetafieldShopifyGraphQlBulkStream):
-    query_path = "products"
+    bulk_query: MetafieldProduct = MetafieldProduct
 
 
 class ProductImages(IncrementalShopifyNestedSubstream):
@@ -214,8 +214,7 @@ class ProductImages(IncrementalShopifyNestedSubstream):
 
 
 class MetafieldProductImages(MetafieldShopifyGraphQlBulkStream):
-    query_path = ["products", "images"]
-    sort_key = None
+    bulk_query: MetafieldProductImage = MetafieldProductImage
 
 
 class ProductVariants(IncrementalShopifyNestedSubstream):
@@ -226,8 +225,7 @@ class ProductVariants(IncrementalShopifyNestedSubstream):
 
 
 class MetafieldProductVariants(MetafieldShopifyGraphQlBulkStream):
-    query_path = "productVariants"
-    sort_key = None
+    bulk_query: MetafieldProductVariant = MetafieldProductVariant
 
 
 class AbandonedCheckouts(IncrementalShopifyStream):
@@ -274,7 +272,6 @@ class Collects(IncrementalShopifyStream):
 
 class Collections(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Collection = Collection
-    query_path = "collections"
 
     def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
@@ -321,7 +318,7 @@ class Collections(IncrementalShopifyGraphQlBulkStream):
 
 
 class MetafieldCollections(MetafieldShopifyGraphQlBulkStream):
-    query_path = "collections"
+    bulk_query: MetafieldCollection = MetafieldCollection
 
 
 class BalanceTransactions(IncrementalShopifyStream):
@@ -369,6 +366,34 @@ class Transactions(IncrementalShopifySubstream):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
+class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: Transaction = Transaction
+    cursor_field = "created_at"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        This stream has the same schema as `Transactions` stream, except of:
+         - fields: [ `device_id, source_name, user_id, location_id` ]
+
+           Specifically:
+            - `user_id` field requires `Shopify Plus` / be authorised via `Financialy Embedded App`.
+            - additional `read_users` scope is required https://shopify.dev/docs/api/usage/access-scopes#authenticated-access-scopes
+        """
+        return ResourceSchemaLoader(package_name_from_class(Transactions)).get_schema("transactions")
+
+    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        """
+        Custom transformation for produced records.
+        """
+        transactions_key = "transactions"
+        if transactions_key in record.keys():
+            for transaction in record.get(transactions_key):
+                # populate parent record keys
+                transaction["order_id"] = record.get("id")
+                transaction["currency"] = record.get("currency")
+                yield self.query.prep_transaction(transaction)
+
+
 class TenderTransactions(IncrementalShopifyStream):
     data_field = "tender_transactions"
     cursor_field = "processed_at"
@@ -391,7 +416,6 @@ class PriceRules(IncrementalShopifyStreamWithDeletedEvents):
 
 class DiscountCodes(IncrementalShopifyGraphQlBulkStream):
     bulk_query: DiscountCode = DiscountCode
-    query_path = "codeDiscountNodes"
 
     def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
@@ -451,18 +475,12 @@ class Locations(ShopifyStream):
 
 
 class MetafieldLocations(MetafieldShopifyGraphQlBulkStream):
-    query_path = "locations"
+    bulk_query: MetafieldLocation = MetafieldLocation
     filter_field = None
-    sort_key = None
 
 
 class InventoryLevels(IncrementalShopifyGraphQlBulkStream):
     bulk_query: InventoryLevel = InventoryLevel
-    query_path = ["locations", "inventoryLevels"]
-    # doesn't support sort_key
-    sort_key = None
-    # process records with `InventoryLevel` identifier
-    substream = True
 
     def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
@@ -484,9 +502,6 @@ class InventoryLevels(IncrementalShopifyGraphQlBulkStream):
 
 class InventoryItems(IncrementalShopifyGraphQlBulkStream):
     bulk_query: InventoryItem = InventoryItem
-    query_path = "inventoryItems"
-    # doesn't support sort_key
-    sort_key = None
 
     def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
@@ -508,7 +523,6 @@ class InventoryItems(IncrementalShopifyGraphQlBulkStream):
 
 class FulfillmentOrders(IncrementalShopifyGraphQlBulkStream):
     bulk_query: FulfillmentOrder = FulfillmentOrder
-    query_path = "orders"
 
     def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
@@ -560,13 +574,13 @@ class FulfillmentOrders(IncrementalShopifyGraphQlBulkStream):
                     buffer.clear()
                 elif self.bulk_job.record_producer.check_type(record, "FulfillmentOrder"):
                     # append the prepared record to the buffer
-                    buffer.append(self.bulk_query.prep_fulfillment_order(record, shop_id))
+                    buffer.append(self.query.prep_fulfillment_order(record, shop_id))
                 elif self.bulk_job.record_producer.check_type(record, "FulfillmentOrderLineItem"):
                     # append the prepared line item to the last element of the `buffer`
-                    buffer[-1]["line_items"].append(self.bulk_query.prep_line_item(record, shop_id))
+                    buffer[-1]["line_items"].append(self.query.prep_line_item(record, shop_id))
                 elif self.bulk_job.record_producer.check_type(record, "FulfillmentOrderMerchantRequest"):
                     # append the prepared mechant request to the last element of the `buffer`
-                    buffer[-1]["merchant_requests"].append(self.bulk_query.prep_merchant_request(record))
+                    buffer[-1]["merchant_requests"].append(self.query.prep_merchant_request(record))
 
                 # check for the end of the file
                 if jsonl_file.tell() == file_size:

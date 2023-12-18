@@ -5,7 +5,7 @@
 
 import pytest
 from graphql_query import Argument, Field, Operation, Query
-from source_shopify.shopify_graphql.bulk.query import GraphQlQueryBuilder, Metafield, ShopifyBulkTemplates
+from source_shopify.shopify_graphql.bulk.query import MetafieldCustomer, MetafieldProductImage, ShopifyBulkQuery, ShopifyBulkTemplates
 
 
 def test_query_status():
@@ -51,167 +51,97 @@ def test_bulk_query_prepare():
     assert repr(template) == repr(expected)
     
 
-def test_base_get_edge_node():
-    """
-    Expected result rendered: (var = expected)
-    '''
-        test_root {
-            edges {
-                node {
-                    id
-                    test1
-                    test2
-                }
-            }
-        }
-    '''
-    """
-    builder = GraphQlQueryBuilder()
-    expected = Field(name='test_root', fields=[Field(name='edges', fields=[Field(name='node', fields=['id', 'test1', 'test2'])])])
-    edge_node = builder.get_edge_node(name="test_root", fields=["id", "test1", "test2"])
-    assert expected.render() == edge_node.render()
-    
-
 @pytest.mark.parametrize(
-    "query_path, sub_edge_name, sub_edge_fields, filter_query, sort_key, expected",
+    "query_name, fields, filter_field, start, end, expected",
     [
         (
             "test_root", 
-            "sub_entity", 
             ["test_field1", "test_field2"], 
-            "updated_at:>'2023-01-01' AND updated_at:<='2023-01-02'", 
-            "UPDATED_AT", 
+            "updated_at",
+            "2023-01-01",
+            "2023-01-02", 
             Query(
                 name='test_root', 
                 arguments=[
-                    Argument(name="query", value=f"\"updated_at:>'2023-01-01' AND updated_at:<='2023-01-02'\""),
-                    Argument(name="sortKey", value="UPDATED_AT"),    
+                    Argument(name="query", value=f"\"updated_at:>'2023-01-01' AND updated_at:<='2023-01-02'\""), 
                 ], 
-                fields=[Field(name='edges', fields=[Field(name='node', fields=['id',Field(name="sub_entity", fields=[Field(name="edges", fields=[Field(name="node", fields=["test_field1", "test_field2"])])])])])]
+                fields=[Field(name='edges', fields=[Field(name='node', fields=["test_field1", "test_field2"])])]
             )
         )
     ],
     ids=["simple query with filter and sort"]
 )
-def test_base_build_query(query_path, sub_edge_name, sub_edge_fields, filter_query, sort_key, expected):
+def test_base_build_query(query_name, fields, filter_field, start, end, expected):
     """
     Expected result rendered:
     '''
-        test_root(
-            query: "updated_at:>'2023-01-01' AND updated_at:<='2023-01-02'"
-            sortKey: UPDATED_AT
-            ) {
-                edges {
-                    node {
-                    id
-                    sub_entity {
-                        edges {
-                            node {
-                                test_field1
-                                test_field2
-                            }
-                        }
-                    }
-                }
+    {
+        test_root(query: "updated_at:>'2023-01-01' AND updated_at:<='2023-01-02'") {
+            edges {
+                node {
+                id
+                test_field1
+                test_field2
             }
+        }
+    }
     '''
     """
-    builder = GraphQlQueryBuilder()
-    sub_edge_fields = builder.get_edge_node(name=sub_edge_name, fields=sub_edge_fields)
-    built_query = builder.build_query(query_path, [sub_edge_fields], filter_query, sort_key)
+    
+    
+    builder = ShopifyBulkQuery()
+    filter_query = f"{filter_field}:>'{start}' AND {filter_field}:<='{end}'"
+    built_query = builder.build(query_name, fields, filter_query)
     assert expected.render() == built_query.render()
 
 
 @pytest.mark.parametrize(
-    "query_path, filter_field, start, end, sot_key, expected",
+    "query_class, filter_field, start, end, expected",
     [
         (
-            "test_root", 
-            "updated_at", 
+            MetafieldCustomer,
+            "updated_at",
             "2023-01-01",
-            "2023-01-02", 
-            "UPDATED_AT",
+            "2023-01-02",
             Operation(
                 type="",
                 queries=[
                     Query(
-                        name='test_root', 
+                        name='customers', 
                         arguments=[
                             Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
                             Argument(name="sortKey", value="UPDATED_AT"),    
                         ], 
-                        fields=[Field(name='edges', fields=[Field(name='node', fields=['id',Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])]
+                        fields=[Field(name='edges', fields=[Field(name='node', fields=['id', Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])]
                     )
                 ]
             ),
         ),
         (
-            ["test_root"], 
-            "updated_at", 
+            MetafieldProductImage,
+            "updated_at",
             "2023-01-01",
-            "2023-01-02", 
-            "UPDATED_AT",
+            "2023-01-02",
             Operation(
                 type="",
                 queries=[
                     Query(
-                        name='test_root', 
+                        name='products', 
                         arguments=[
                             Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
                             Argument(name="sortKey", value="UPDATED_AT"),    
                         ], 
-                        fields=[Field(name='edges', fields=[Field(name='node', fields=['id',Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])]
-                    )
-                ]
-            ),
-        ),
-        (
-            ["test_root", "sub_entity"], 
-            "updated_at", 
-            "2023-01-01",
-            "2023-01-02", 
-            "UPDATED_AT",
-            Operation(
-                type="",
-                queries=[
-                    Query(
-                        name='test_root', 
-                        arguments=[
-                            Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
-                            Argument(name="sortKey", value="UPDATED_AT"),    
-                        ], 
-                        fields=[Field(name='edges', fields=[Field(name='node', fields=['id',Field(name="sub_entity", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])])])])]
-                    )
-                ]
-            ),
-        ),
-        (
-            ["test_root", "1st_element", "2nd_element"], 
-            "updated_at", 
-            "2023-01-01",
-            "2023-01-02", 
-            "UPDATED_AT",
-            Operation(
-                type="",
-                queries=[
-                    Query(
-                        name='test_root', 
-                        arguments=[
-                            Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
-                            Argument(name="sortKey", value="UPDATED_AT"),    
-                        ], 
-                        fields=[Field(name='edges', fields=[Field(name='node', fields=['id',Field(name="1st_element", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", Field(name="2nd_element", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])])])])])])])]
+                        fields=[Field(name='edges', fields=[Field(name='node', fields=['id',Field(name="images", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])])])])]
                     )
                 ]
             ),
         ),
     ],
     ids=[
-        "query with 1 query_path(str), filter, sort",
-        "query with 1 query_path(List[1]), filter, sort",
-        "query with composite quey_path(List[2]), filter, sort",
-        "query with composite query_path(List[3]), filter, sort",
+        "Metafield query with 1 query_path(str)",
+        "Metafield query with composite quey_path(List[2])",
     ]
 )
-def test_metafield_bulk_query(query_path, filter_field, start, end, sot_key, expected):
-    assert Metafield(query_path, filter_field, start, end, sot_key).operation == expected.render()
+def test_metafield_bulk_query(query_class, filter_field, start, end, expected):
+    stream = query_class()
+    assert stream.get(filter_field, start, end) == expected.render()

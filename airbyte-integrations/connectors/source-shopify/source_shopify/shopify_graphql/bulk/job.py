@@ -3,6 +3,7 @@
 #
 
 
+from enum import Enum
 from os import remove
 from time import sleep, time
 from typing import Any, Callable, Iterable, Mapping, Optional
@@ -14,10 +15,21 @@ from source_shopify.utils import ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
 from .exceptions import ShopifyBulkExceptions
-from .query import ShopifyBulkTemplates
+from .query import ShopifyBulkQuery, ShopifyBulkTemplates
 from .record import ShopifyBulkRecord
-from .status import ShopifyBulkStatus
+
+# from .status import ShopifyBulkStatus
 from .tools import BulkTools
+
+
+class ShopifyBulkStatus(Enum):
+    CREATED = "CREATED"
+    COMPLETED = "COMPLETED"
+    RUNNING = "RUNNING"
+    CANCELED = "CANCELED"
+    FAILED = "FAILED"
+    TIMEOUT = "TIMEOUT"
+    ACCESS_DENIED = "ACCESS_DENIED"
 
 
 class ShopifyBulkJob:
@@ -219,9 +231,8 @@ class ShopifyBulkJob:
     def job_record_producer(
         self,
         job_result_url: str,
-        substream: Optional[bool] = False,
+        query: Optional[ShopifyBulkQuery] = None,
         custom_transform: Optional[Callable] = None,
-        record_identifier: Optional[str] = None,
         remove_file: Optional[bool] = True,
         **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
@@ -239,6 +250,8 @@ class ShopifyBulkJob:
         """
 
         try:
+            substream: Optional[bool] = query.substream if query else None
+            record_identifier: Optional[str] = query.record_identifier if query else None
             # save the content to the local file
             filename = self.job_retrieve_result(job_result_url)
             # produce records from saved result

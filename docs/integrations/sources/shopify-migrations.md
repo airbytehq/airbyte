@@ -14,6 +14,7 @@ This version implements `Shopify GraphQL BULK Operations` to speed up the follow
  - `Fulfillment Orders`
  - `Inventory Items`
  - `Inventory Levels`
+ - `Transactions Graphql` (duplicated `Transactions` stream to provide faster fetch)
 
 Increased the performance for the following streams:
  - `Product Images`

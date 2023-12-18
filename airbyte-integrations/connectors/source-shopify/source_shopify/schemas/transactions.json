@@ -107,21 +107,29 @@
       "type": ["null", "string"]
     },
     "receipt": {
-      "type": ["null", "object"],
-      "properties": {
-        "fee_amount": {
-          "type": ["null", "number"],
-          "multipleOf": 1e-10
+      "oneOf": [
+        {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "fee_amount": {
+              "type": ["null", "number"],
+              "multipleOf": 1e-10
+            },
+            "gross_amount": {
+              "type": ["null", "number"],
+              "multipleOf": 1e-10
+            },
+            "tax_amount": {
+              "type": ["null", "number"],
+              "multipleOf": 1e-10
+            }
+          }
         },
-        "gross_amount": {
-          "type": ["null", "number"],
-          "multipleOf": 1e-10
-        },
-        "tax_amount": {
-          "type": ["null", "number"],
-          "multipleOf": 1e-10
+        {
+          "type": ["null", "string"]
         }
-      }
+      ]
     },
     "location_id": {
       "type": ["null", "integer"]

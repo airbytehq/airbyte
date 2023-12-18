@@ -551,7 +551,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     filter_field = "updated_at"
     cursor_field = "updated_at"
-    sort_key = "UPDATED_AT"
 
     data_field = "graphql"
     http_method = "POST"
@@ -565,17 +564,11 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.bulk_job: ShopifyBulkJob = ShopifyBulkJob(
             session=self._session,
             logger=self.logger,
-            # register `custom_record_reader` if overiden.
+            # register `custom_record_reader` if defined in class.
             custom_reader=self.custom_record_reader if self.custom_record_reader else None,
         )
-
-    @property
-    def substream(self) -> bool:
-        """
-        Defines, if the full JSONL content would be emitted or just a subset of the records,
-        depending on `record_identifier` property.
-        """
-        return False
+        # init BULK Query instance
+        self.query = self.bulk_query()
 
     def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
@@ -595,41 +588,11 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         return f"{self.url_base}/{self.path()}"
 
     @property
-    def record_identifier(self) -> str:
-        """
-        Defines the record identifier to fetch only records related to the choosen stream.
-        Example:
-            { "admin_graphql_api_id": "gid://shopify/Metafield/22533588451517" }
-            In this example the record could be identified by it's reference = ".../Metafield/..."
-        The property should be defined like:
-            record_identifier = "Metafield"
-        """
-        return self.bulk_query.record_identifier
-
-    @property
     @abstractmethod
     def bulk_query(self) -> ShopifyBulkQuery:
         """
         This method property should be defined in the stream class instance,
         and should be instantiated from the `ShopifyBulkQuery` class.
-        """
-
-    @property
-    @abstractmethod
-    def query_path(self) -> Union[List[str], str]:
-        """
-        Defines the root object to build the GraphQL Query.
-        Maximum of 2 level nesting is available:
-        https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions
-
-        Regular Example:
-            query_path: str = "orders"
-                OR
-            query_path: List[str] = ["products", "images"]
-
-        Maximum example:
-            query_path: List[str] = ["products", "images", "metafields"]
-                                    ^ root,    ^ 1-lvl,    ^ 2nd-lvl
         """
 
     def add_shop_url_field(self, records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
@@ -690,13 +653,13 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                     # check end period is less than now() or now() is applied otherwise.
                     slice_end = slice_end if slice_end < end else end
                     # making pre-defined sliced query to pass it directly
-                    prepared_query = self.bulk_query(self.query_path, self.filter_field, start, slice_end, self.sort_key).operation
+                    prepared_query = self.query.get(self.filter_field, start.to_rfc3339_string(), slice_end.to_rfc3339_string())
                     self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}.")
                     yield {"query": prepared_query}
                     start = slice_end
         else:
             # for the streams that don't support filtering
-            yield {"query": self.bulk_query(self.query_path, self.sort_key).operation}
+            yield {"query": self.query.get()}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs
@@ -709,9 +672,8 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             records = self.add_shop_url_field(
                 self.bulk_job.job_record_producer(
                     job_result_url=job_result_url,
-                    substream=self.substream,
+                    query=self.query,
                     custom_transform=self.custom_transform,
-                    record_identifier=self.record_identifier,
                 )
             )
             yield from self.filter_records_newer_than_state(stream_state, records)

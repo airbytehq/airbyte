@@ -40,7 +40,7 @@ data:
     streams:
       - customers
       - order_refunds
-      - transactions
+      - transactions_graphql
       - product_variants
       - abandoned_checkouts
       - discount_codes
@@ -51,7 +51,6 @@ data:
       - inventory_levels
       - custom_collections
       - fulfillments
-      - order_risks
       - products_graph_ql
       - product_images
       - collects

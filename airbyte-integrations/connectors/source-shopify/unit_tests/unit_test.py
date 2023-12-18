@@ -51,6 +51,7 @@ def test_privileges_validation(requests_mock, basic_config):
         "shop",
         "tender_transactions",
         "transactions",
+        "transactions_graphql",
         "countries",
     ]
     # mock the get_shop_id method
