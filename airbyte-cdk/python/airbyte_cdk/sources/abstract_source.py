@@ -41,6 +41,10 @@ class AbstractSource(Source, ABC):
     """
 
     @abstractmethod
+    def say_moo(self):
+        pass
+
+    @abstractmethod
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         :param logger: source logger
