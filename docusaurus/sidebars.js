@@ -498,7 +498,6 @@ module.exports = {
       },
       items: [
         "enterprise-setup/implementation-guide",
-        "enterprise-setup/sso",
       ]
     },
     "operator-guides/upgrading-airbyte",
