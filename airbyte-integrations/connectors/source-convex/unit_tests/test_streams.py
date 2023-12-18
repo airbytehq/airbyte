@@ -5,10 +5,10 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-from airbyte_cdk.models import SyncMode
 import pytest
-import responses
 import requests
+import responses
+from airbyte_cdk.models import SyncMode
 from source_convex.source import ConvexStream
 
 
