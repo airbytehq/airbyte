@@ -9,6 +9,7 @@ import traceback
 import backoff
 
 from typing import Any, Mapping
+from concurrent.futures import ThreadPoolExecutor
 
 from destination_vectara.config import VectaraConfig
 
@@ -171,7 +172,44 @@ class VectaraClient:
                 documents_not_deleted.append(document_id)
         return documents_not_deleted
 
+    def index_document(self, document):
+        document_section, document_metadata, document_id = document
+        if len(document_section) == 0:
+            return None            # Document is empty, so skip it
+        document_metadata = self._normalize(document_metadata)
+        data = {
+            "customerId": self.customer_id, 
+            "corpusId": self.corpus_id,
+            "document": {
+                "documentId": document_id,
+                "metadataJson": json.dumps(document_metadata),
+                "section": [
+                    {
+                        "text": f"{section_key}: {section_value}"
+                    } 
+                    for section_key, section_value in document_section.items()
+                    if section_key != METADATA_STREAM_FIELD
+                ]
+            }
+        }
+        index_document_response = self._request(endpoint="index", data=data)
+        return index_document_response
+    
     def index_documents(self, documents):
+        with ThreadPoolExecutor() as executor:
+            futures = [executor.submit(self.index_document, doc) for doc in documents]
+            for future in futures:
+                try:
+                    response = future.result()
+                    if response is None:
+                        continue
+                    assert (response.get("status").get("code") == "OK" or 
+                            response.get("status").get("statusDetail") == 'Document should have at least one part.')
+                except AssertionError as e:
+                    # Handle the assertion error
+                    pass
+
+    def index_documents_old(self, documents):
         for document_section, document_metadata, document_id in documents:
             if len(document_section) == 0:
                 continue            # Document is empty, so skip it
