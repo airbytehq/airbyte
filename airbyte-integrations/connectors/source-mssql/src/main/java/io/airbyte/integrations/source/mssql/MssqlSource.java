@@ -635,6 +635,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
 
+  public Duration getConnectionTimeoutMssql(final Map<String, String> connectionProperties) {
+    return getConnectionTimeout(connectionProperties);
+  }
+
   public static void main(final String[] args) throws Exception {
     final Source source = MssqlSource.sshWrappedSource(new MssqlSource());
     LOGGER.info("starting source: {}", MssqlSource.class);
