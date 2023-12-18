@@ -1,11 +1,11 @@
 connector_image: airbyte/source-amazon-seller-partner:dev
+test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "integration_tests/spec.json"
-        # massively refactored `spec`
+      - spec_path: "source_amazon_seller_partner/spec.json"
         backward_compatibility_tests_config:
-          disable_for_version: "1.2.0"
+          disable_for_version: "2.0.1"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -24,7 +24,38 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 2400
+        timeout_seconds: 3600
+        ignored_fields:
+          GET_MERCHANT_LISTINGS_ALL_DATA:
+            - name: "dataEndTime"
+              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
+          GET_FLAT_FILE_OPEN_LISTINGS_DATA:
+            - name: "dataEndTime"
+              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
+          GET_MERCHANTS_LISTINGS_FYP_REPORT:
+            - name: "dataEndTime"
+              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
+          GET_MERCHANT_LISTINGS_DATA:
+            - name: "dataEndTime"
+              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
+          GET_MERCHANT_LISTINGS_INACTIVE_DATA:
+            - name: "dataEndTime"
+              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
+          GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT:
+            - name: "dataEndTime"
+              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
+          GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE:
+            - name: "dataEndTime"
+              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
+          GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT:
+            - name: "dataEndTime"
+              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
+          GET_XML_BROWSE_TREE_DATA:
+            - name: "dataEndTime"
+              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
+          ListFinancialEvents:
+            - name: "PostedBefore"
+              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no
@@ -36,8 +67,6 @@ acceptance_tests:
             bypass_reason: "no access and no data"
           - name: GET_ORDER_REPORT_DATA_SHIPPING
             bypass_reason: "no access and no data"
-          - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
-            bypass_reason: "no records"
           - name: GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
             bypass_reason: "no records"
           - name: GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA
@@ -48,15 +77,11 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA
             bypass_reason: "no records"
-          - name: GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT
-            bypass_reason: "no records"
           - name: GET_LEDGER_DETAIL_VIEW_DATA
             bypass_reason: "no records"
           - name: GET_AFN_INVENTORY_DATA_BY_COUNTRY
             bypass_reason: "no records"
           - name: GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE
-            bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA
             bypass_reason: "no records"
           - name: GET_VENDOR_SALES_REPORT
             bypass_reason: "no records"
@@ -65,10 +90,6 @@ acceptance_tests:
           - name: GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA
             bypass_reason: "no records"
           - name: GET_FBA_SNS_FORECAST_DATA
-            bypass_reason: "no records"
-          - name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
-            bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA
             bypass_reason: "no records"
           - name: GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT
             bypass_reason: "no records"
@@ -84,10 +105,6 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT
             bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_INVENTORY_ADJUSTMENTS_DATA
-            bypass_reason: "no records"
-          - name: GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT
-            bypass_reason: "no records"
           - name: GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT
             bypass_reason: "no records"
           - name: VendorDirectFulfillmentShipping
@@ -98,15 +115,11 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: GET_FBA_SNS_PERFORMANCE_DATA
             bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_CURRENT_INVENTORY_DATA
-            bypass_reason: "no records"
           - name: GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA
             bypass_reason: "no records"
           - name: GET_FBA_INVENTORY_PLANNING_DATA
             bypass_reason: "no records"
           - name: GET_FBA_STORAGE_FEE_CHARGES_DATA
-            bypass_reason: "no records"
-          - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL
             bypass_reason: "no records"
           - name: GET_SALES_AND_TRAFFIC_REPORT
             bypass_reason: "no records"
@@ -114,17 +127,13 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: GET_STRANDED_INVENTORY_UI_DATA
             bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_INVENTORY_RECEIPTS_DATA
-            bypass_reason: "no records"
-          - name: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
-            bypass_reason: "no records"
-          - name: ListFinancialEvents
-            bypass_reason: "no records"
-          - name: ListFinancialEventGroups
-            bypass_reason: "no records"
           - name: GET_FBA_REIMBURSEMENTS_DATA
             bypass_reason: "no records"
-          - name: GET_XML_BROWSE_TREE_DATA
+          - name: GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
+            bypass_reason: "no records"
+          - name: GET_VENDOR_REAL_TIME_INVENTORY_REPORT
+            bypass_reason: "no records"
+          - name: GET_VENDOR_TRAFFIC_REPORT
             bypass_reason: "no records"
   incremental:
     tests:

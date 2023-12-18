@@ -6,40 +6,51 @@ import {SnowflakeMigrationGenerator, BigQueryMigrationGenerator} from './destina
 
 ## What is Destinations V2?
 
-Starting today, Airbyte Destinations V2 provides you with:
+Airbyte Destinations V2 provides you with:
 
 - One-to-one table mapping: Data in one stream will always be mapped to one table in your data warehouse. No more sub-tables.
 - Improved error handling with `_airbyte_meta`: Airbyte will now populate typing errors in the `_airbyte_meta` column instead of failing your sync. You can query these results to audit misformatted or unexpected data.
 - Internal Airbyte tables in the `airbyte_internal` schema: Airbyte will now generate all raw tables in the `airbyte_internal` schema. We no longer clutter your destination schema with raw data tables.
 - Incremental delivery for large syncs: Data will be incrementally delivered to your final tables. No more waiting hours to see the first rows in your destination table.
 
-To see more details and examples on the contents of the Destinations V2 release, see this [guide](understanding-airbyte/typing-deduping.md). The remainder of this page will walk you through upgrading connectors from legacy normalization to Destinations V2.
+To see more details and examples on the contents of the Destinations V2 release, see this [guide](../using-airbyte/core-concepts/typing-deduping.md). The remainder of this page will walk you through upgrading connectors from legacy normalization to Destinations V2.
+
+Destinations V2 were in preview for Snowflake and BigQuery during August 2023, and launched on August 29th, 2023. Other destinations will be transitioned to Destinations V2 in early 2024.
 
 ## Deprecating Legacy Normalization
 
-The upgrade to Destinations V2 is handled by moving your connections to use [updated versions of Airbyte destinations](#destinations-v2-compatible-versions). Existing normalization options, both `Raw data (JSON)` and `Normalized tabular data` will be unsupported starting **Nov 1, 2023**.
+The upgrade to Destinations V2 is handled by moving your connections to use [updated versions of Airbyte destinations](#destinations-v2-compatible-versions). Existing normalization options, both `Raw data (JSON)` and `Normalized tabular data`, will be unsupported starting the upgrade deadline.
 
 ![Legacy Normalization](./assets/airbyte_legacy_normalization.png)
 
-As a Cloud user, existing connections using legacy normalization will be paused on **Oct 1, 2023**. As an Open Source user, you may choose to upgrade at your convenience. However, destination connector versions prior to Destinations V2 will no longer be supported as of **Nov 1, 2023**.
+As a Cloud user, existing connections using legacy normalization will be paused on the upgrade deadline. As an Open Source user, you may choose to upgrade at your convenience. However, destination connector versions prior to Destinations V2 will no longer be supported starting the upgrade deadline.
+
+Note that Destinations V2 also removes the option to _only_ replicate raw data. The vast majority of Airbyte users prefer typed final tables, and our future feature development will rely on this implementation. Learn more [below](#upgrading-as-a-user-of-raw-tables).
 
 ### Breakdown of Breaking Changes
 
 The following table details the delivered data modified by Destinations V2:
 
 | Current Normalization Setting | Source Type                           | Impacted Data (Breaking Changes)                         |
-| ----------------------------- | ------------------------------------- | -------------------------------------------------------- |
+|-------------------------------|---------------------------------------|----------------------------------------------------------|
 | Raw JSON                      | All                                   | `_airbyte` metadata columns, raw table location          |
 | Normalized tabular data       | API Source                            | Unnested tables, `_airbyte` metadata columns, SCD tables |
 | Normalized tabular data       | Tabular Source (database, file, etc.) | `_airbyte` metadata columns, SCD tables                  |
 
-![Airbyte Destinations V2 Column Changes](./assets/destinations-v2-column-changes.png)
+![Airbyte Destinations V2 Column Changes](./assets/updated_table_columns.png)
 
 Whenever possible, we've taken this opportunity to use the best data type for storing JSON for your querying convenience. For example, `destination-bigquery` now loads `JSON` blobs as type `JSON` in BigQuery (introduced last [year](https://cloud.google.com/blog/products/data-analytics/bigquery-now-natively-supports-semi-structured-data)), instead of type `string`.
 
 ## Quick Start to Upgrading
 
-The quickest path to upgrading is to click upgrade on any out-of-date connection in the UI:
+**The quickest path to upgrading is to click upgrade on any out-of-date connection in the UI**.  The advanced options later in this document will allow you to test out the upgrade in more detail if you choose.  
+
+:::caution
+
+**[Airbyte Open Source Only]** You should upgrade to 0.50.24+ of the Airbyte Platform _before_ updating to Destinations V2. Failure to do so may cause upgraded connections to fail.
+
+:::
+
 
 ![Upgrade Path](./assets/airbyte_destinations_v2_upgrade_prompt.png)
 
@@ -51,16 +62,10 @@ After upgrading the out-of-date destination to a [Destinations V2 compatible ver
 4. The new raw tables will be typed and de-duplicated according to the Destinations V2 format.
 5. Once typing and de-duplication has completed successfully, your previous final table will be replaced with the updated data.
 
-:::caution
-
-Due to the amount of operations to be completed, this first sync after upgrading to Destination V2 **will be longer than normal**. Once your first sync has completed successfully, you may need to make changes to downstream models (dbt, sql, etc.) transforming data. See this [walkthrough of top changes to expect for more details](#updating-downstream-transformations).
-
-:::
+Due to the amount of operations to be completed, the first sync after upgrading to Destination V2 **will be longer than normal**. Once your first sync has completed successfully, you may need to make changes to downstream models (dbt, sql, etc.) transforming data. See this [walkthrough of top changes to expect for more details](#updating-downstream-transformations).
 
 Pre-existing raw tables, SCD tables and "unnested" tables will always be left untouched. You can delete these at your convenience, but these tables will no longer be kept up-to-date by Airbyte syncs.
 Each destination version is managed separately, so if you have multiple destinations, they all need to be upgraded one by one.
-
-
 
 Versions are tied to the destination. When you update the destination, **all connections tied to that destination will be sending data in the Destinations V2 format**. For upgrade paths that will minimize disruption to existing dashboards, see:
 
@@ -127,51 +132,60 @@ If you have written downstream transformations directly from the output of raw t
 
 - Multiple column names are being updated (from `airbyte_ab_id` to `airbyte_raw_id`, and `airbyte_emitted_at` to `airbyte_extracted_at`).
 - The location of raw tables will from now on default to an `airbyte` schema in your destination.
-- When you upgrade to a [Destinations V2 compatible version](#destinations-v2-effective-versions) of your destination, we will never alter your existing raw data. Although existing downstream dashboards will go stale, they will never be broken.
+- When you upgrade to a [Destinations V2 compatible version](#destinations-v2-effective-versions) of your destination, we will leave a copy of your existing raw tables as they are, and new syncs will work from a new copy we make in the new `airbyte_internal` schema. Although existing downstream dashboards will go stale, they will not be broken.  
 - You can dual write by following the [steps above](#upgrading-connections-one-by-one-with-dual-writing) and copying your raw data to the schema of your newly created connection.
 
-We may make further changes to raw tables in the future, as these tables are intended to be a staging ground for Airbyte to optimize the performance of your syncs. We cannot guarantee the same level of stability as for final tables in your destination schema.
+We may make further changes to raw tables in the future, as these tables are intended to be a staging ground for Airbyte to optimize the performance of your syncs. We cannot guarantee the same level of stability as for final tables in your destination schema, nor will features like error handling be implemented in the raw tables.
+
+As a user previously not running Normalization, Upgrading to Destinations V2 will increase the compute costs in your destination data warehouse. This is because Destinations V2 will now be performing the operations to generate a final typed table. Some destinations may provide an option to disable this - check your connectors's settings.
 
 ### Upgrade Paths for Connections using CDC
 
 For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) source connector, we recommend the following:
 
 | CDC Source | Recommendation                                               | Notes                                                                                                                                                                                                                                                |
-| ---------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Postgres   | [Upgrade connection in place](#quick-start-to-upgrading)     | You can optionally dual write, but this requires resyncing historical data from the source. You must create a new Postgres source with a different replication slot than your existing source to preserve the integrity of your existing connection. |
 | MySQL      | [All above upgrade paths supported](#advanced-upgrade-paths) | You can upgrade the connection in place, or dual write. When dual writing, Airbyte can leverage the state of an existing, active connection to ensure historical data is not re-replicated from MySQL.                                               |
-| SQL Server | [Upgrade connection in place](#quick-start-to-upgrading)     | You can optionally dual write, but this requires resyncing historical data from the SQL Server source.                                                                                                                                               |
 
 ## Destinations V2 Compatible Versions
 
 For each destination connector, Destinations V2 is effective as of the following versions:
 
-| Destination Connector | Safe Rollback Version | Destinations V2 Compatible |
-| --------------------- | --------------------- | -------------------------- |
-| BigQuery              | 1.4.4                 | 2.0.0+                     |
-| Snowflake             | 0.4.1                 | 2.0.0+                     |
-| Redshift              | 0.4.8                 | 2.0.0+                     |
-| MSSQL                 | 0.1.24                | 2.0.0+                     |
-| MySQL                 | 0.1.20                | 2.0.0+                     |
-| Oracle                | 0.1.19                | 2.0.0+                     |
-| TiDB                  | 0.1.3                 | 2.0.0+                     |
-| DuckDB                | 0.1.0                 | 2.0.0+                     |
-| Clickhouse            | 0.2.3                 | 2.0.0+                     |
+| Destination Connector | Safe Rollback Version | Destinations V2 Compatible | Upgrade Deadline         |
+|-----------------------|-----------------------|----------------------------|--------------------------|
+| BigQuery              | 1.10.2                | 2.0.6+                     | November 7, 2023         |
+| Snowflake             | 2.1.7                 | 3.1.0+                     | November 7, 2023         |
+| Redshift              | 0.6.11                | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| Postgres              | 0.4.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| MySQL                 | 0.2.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
 
-## Destinations V2 Implementation Differences 
+Note that legacy normalization will be deprecated for ClickHouse, DuckDB, MSSQL, TiDB, and Oracle DB in early 2024. If you wish to add Destinations V2 capability to these destinations, please reference our implementation guide (coming soon).
+
+### [Open Source Only] Rolling Back to Legacy Normalization
+
+If you upgrade to Destinations V2 and start encountering issues, as an Open Source user you can optionally roll back. If you are running an outdated Airbyte Platform version (prior to `v0.50.24`), this may occur more frequently by accidentally upgrading to Destinations V2. However:
+
+- Rolling back will require resetting each of your upgraded connections.
+- If you are hoping to receive support from the Airbyte team, you will need to re-upgrade to Destinations V2 by the upgrade deadline.
+
+To roll back, follow these steps:
+
+1. In the Airbyte UI, go to the 'Settings page, then to 'Destinations'.
+2. Manually type in the previous destination version you were running, or one of the versions listed in the table above.
+3. Enter this older version to roll back to the previous connector version.
+4. Reset all connections which synced at least once to a previously upgraded destination. To be safe, you may reset all connections sending data to a previously upgraded destination.
+
+If you are an Airbyte Cloud customer, and encounter errors while upgrading from a V1 to a V2 destination, please reach out to support. We do not always recommend doing a full reset, depending on the type of error.
+
+## Destinations V2 Implementation Differences
 
 In addition to the changes which apply for all destinations described above, there are some per-destination fixes and updates included in Destinations V2:
 
 ### BigQuery
 
-1. [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns.  Previously, we had used TEXT, which made querying sub-properties more difficult.
-     * In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a *quirk* of Bigquery.  Learn more [here](https://github.com/airbytehq/airbyte/issues/29594). 
-
-### Snowflake
-
-1. `destination-snowflake` is now case-sensitive, and was not previously.  This means that if you have a source stream "users", `destination-snowflake` would have previously created a "USERS" table in your data warehouse.  We now correctly create a "users" table.
-    * Note that to properly query case-sensitive tables and columns in Snowflake, you will need to quote your table and column names, e.g. `select "first_name" from "users";`
-    * If you are migrating from Destinations v1 to Destinations V2, we will leave your old "USERS" table, and create a new "users" table - please note the case sensitivity.
+1. [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns. Previously, we had used TEXT, which made querying sub-properties more difficult.
+   - In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a _quirk_ of Bigquery. Learn more [here](https://github.com/airbytehq/airbyte/issues/29594).
 
 ## Updating Downstream Transformations
 

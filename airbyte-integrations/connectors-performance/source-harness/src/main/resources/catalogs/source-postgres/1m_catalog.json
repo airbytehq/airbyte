@@ -2,53 +2,8 @@
   "streams": [
     {
       "stream": {
-        "name": "purchases",
-        "namespace": "1m_users",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number",
-              "airbyte_type": "integer"
-            },
-            "user_id": {
-              "type": "number",
-              "airbyte_type": "integer"
-            },
-            "product_id": {
-              "type": "number",
-              "airbyte_type": "integer"
-            },
-            "returned_at": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_with_timezone"
-            },
-            "purchased_at": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_with_timezone"
-            },
-            "added_to_cart_at": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_with_timezone"
-            }
-          }
-        },
-        "default_cursor_field": [],
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "cursor_field": ["id"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "users",
-        "namespace": "1m_users",
+        "namespace": "public",
         "json_schema": {
           "type": "object",
           "properties": {
@@ -111,50 +66,12 @@
         },
         "default_cursor_field": [],
         "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "%s",
       "primary_key": [["id"]],
-      "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "products",
-        "namespace": "1m_users",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number",
-              "airbyte_type": "integer"
-            },
-            "make": {
-              "type": "string"
-            },
-            "year": {
-              "type": "string"
-            },
-            "model": {
-              "type": "string"
-            },
-            "price": {
-              "type": "number"
-            },
-            "created_at": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_with_timezone"
-            }
-          }
-        },
-        "default_cursor_field": [],
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "cursor_field": ["created_at"],
+      "cursor_field": [],
       "destination_sync_mode": "append"
     }
   ]

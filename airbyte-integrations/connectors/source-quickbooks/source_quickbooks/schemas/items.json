@@ -73,7 +73,7 @@
       "type": ["null", "integer"]
     },
     "UnitPrice": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "SyncToken": {
       "type": ["null", "string"]

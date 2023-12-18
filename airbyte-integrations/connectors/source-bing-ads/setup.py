@@ -5,9 +5,10 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "bingads~=13.0.13", "vcrpy==4.1.1", "backoff==1.10.0", "pendulum==2.1.2", "urllib3<2.0"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "bingads~=13.0.17", "urllib3<2.0", "pandas"]
 
 TEST_REQUIREMENTS = [
+    "freezegun",
     "requests-mock~=1.9.3",
     "pytest-mock~=3.6.1",
     "pytest~=6.1",

@@ -3,8 +3,7 @@
 #
 
 import logging
-import uuid
-from typing import Any, Dict, Iterable, Mapping, Optional
+from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
 import fastavro
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
@@ -42,6 +41,12 @@ AVRO_LOGICAL_TYPE_TO_JSON = {
 class AvroParser(FileTypeParser):
     ENCODING = None
 
+    def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
+        """
+        AvroParser does not require config checks, implicit pydantic validation is enough.
+        """
+        return True, None
+
     async def infer_schema(
         self,
         config: FileBasedStreamConfig,
@@ -49,7 +54,7 @@ class AvroParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
-        avro_format = config.format or AvroFormat()
+        avro_format = config.format
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
@@ -135,7 +140,7 @@ class AvroParser(FileTypeParser):
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
-        avro_format = config.format or AvroFormat()
+        avro_format = config.format or AvroFormat(filetype="avro")
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
@@ -159,9 +164,7 @@ class AvroParser(FileTypeParser):
             if record_type == "double" and avro_format.double_as_string:
                 return str(record_value)
             return record_value
-        if record_type.get("logicalType") == "uuid":
-            return uuid.UUID(bytes=record_value)
-        elif record_type.get("logicalType") == "decimal":
+        if record_type.get("logicalType") in ("decimal", "uuid"):
             return str(record_value)
         elif record_type.get("logicalType") == "date":
             return record_value.isoformat()

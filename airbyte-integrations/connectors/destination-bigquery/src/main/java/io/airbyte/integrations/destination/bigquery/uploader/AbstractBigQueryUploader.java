@@ -18,12 +18,13 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.s3.writer.DestinationWriter;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
-import io.airbyte.integrations.destination.s3.writer.DestinationWriter;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -42,7 +43,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
   protected final T writer;
   protected final BigQuery bigQuery;
   protected final BigQueryRecordFormatter recordFormatter;
-  protected final boolean use1s1t;
 
   AbstractBigQueryUploader(final TableId table,
                            final TableId tmpTable,
@@ -50,17 +50,12 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
                            final WriteDisposition syncMode,
                            final BigQuery bigQuery,
                            final BigQueryRecordFormatter recordFormatter) {
-    this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
     this.table = table;
     this.tmpTable = tmpTable;
     this.writer = writer;
     this.syncMode = syncMode;
     this.bigQuery = bigQuery;
     this.recordFormatter = recordFormatter;
-  }
-
-  public BigQueryRecordFormatter getRecordFormatter() {
-    return recordFormatter;
   }
 
   protected void postProcessAction(final boolean hasFailed) throws Exception {
@@ -73,9 +68,21 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     } catch (final IOException | RuntimeException e) {
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
       LOGGER.error(String.format(
-          "Failed to process a message for job: \n%s, \nAirbyteMessage: %s",
-          writer.toString(),
-          airbyteMessage.getRecord()));
+          "Failed to process a message for job: %s",
+          writer.toString()));
+      printHeapMemoryConsumption();
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void upload(final PartialAirbyteMessage airbyteMessage) {
+    try {
+      writer.write(recordFormatter.formatRecord(airbyteMessage));
+    } catch (final IOException | RuntimeException e) {
+      LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
+      LOGGER.error(String.format(
+          "Failed to process a message for job: %s",
+          writer.toString()));
       printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
@@ -85,14 +92,12 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     try {
       recordFormatter.printAndCleanFieldFails();
 
-      LOGGER.info("Closing connector: {}", this);
       this.writer.close(hasFailed);
 
       if (!hasFailed) {
         uploadData(outputRecordCollector, lastStateMessage);
       }
       this.postProcessAction(hasFailed);
-      LOGGER.info("Closed connector: {}", this);
     } catch (final Exception e) {
       LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
       printHeapMemoryConsumption();
@@ -100,15 +105,16 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     }
   }
 
+  public void closeAfterPush() {
+    try {
+      this.writer.close(false);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   protected void uploadData(final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) throws Exception {
     try {
-      if (!use1s1t) {
-        // This only needs to happen if we actually wrote to a tmp table.
-        LOGGER.info("Uploading data from the tmp table {} to the source table {}.", tmpTable.getTable(), table.getTable());
-        uploadDataToTableFromTmpTable();
-        LOGGER.info("Data is successfully loaded to the source table {}!", table.getTable());
-      }
-
       outputRecordCollector.accept(lastStateMessage);
       LOGGER.info("Final state message is accepted.");
     } catch (final Exception e) {
@@ -229,6 +235,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
         .build();
 
     final Job job = bigQuery.create(JobInfo.of(configuration));
+    AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
     final ImmutablePair<Job, String> jobStringImmutablePair = BigQueryUtils.executeQuery(job);
     if (jobStringImmutablePair.getRight() != null) {
       LOGGER.error("Failed on copy tables with error:" + job.getStatus());

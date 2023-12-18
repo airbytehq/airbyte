@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d60f5393-f99e-4310-8d05-b1876820f40e
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-pivotal-tracker
   githubIssueLabel: source-pivotal-tracker
   icon: pivotal-tracker.svg

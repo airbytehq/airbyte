@@ -6,8 +6,9 @@ import json
 import logging
 import pkgutil
 import re
+from copy import deepcopy
 from importlib import metadata
-from typing import Any, Iterator, List, Mapping, MutableMapping, Union
+from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import yaml
 from airbyte_cdk.models import (
@@ -28,6 +29,7 @@ from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import M
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.utils.slice_logger import AlwaysLogSliceLogger, DebugSliceLogger, SliceLogger
 from jsonschema.exceptions import ValidationError
 from jsonschema.validators import validate
 
@@ -42,7 +44,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         source_config: ConnectionDefinition,
         debug: bool = False,
         emit_connector_builder_messages: bool = False,
-        component_factory: ModelToComponentFactory = None,
+        component_factory: Optional[ModelToComponentFactory] = None,
     ):
         """
         :param source_config(Mapping[str, Any]): The manifest of low-code components that describe the source connector
@@ -63,6 +65,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._constructor = component_factory if component_factory else ModelToComponentFactory(emit_connector_builder_messages)
         self._message_repository = self._constructor.get_message_repository()
+        self._slice_logger: SliceLogger = AlwaysLogSliceLogger() if emit_connector_builder_messages else DebugSliceLogger()
 
         self._validate_source()
 
@@ -89,18 +92,46 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
+        stream_configs = self._stream_configs(self._source_config)
 
         source_streams = [
             self._constructor.create_component(
                 DeclarativeStreamModel, stream_config, config, emit_connector_builder_messages=self._emit_connector_builder_messages
             )
-            for stream_config in self._stream_configs(self._source_config)
+            for stream_config in self._initialize_cache_for_parent_streams(deepcopy(stream_configs))
         ]
 
-        for stream in source_streams:
-            # make sure the log level is always applied to the stream's logger
-            self._apply_log_level_to_stream_logger(self.logger, stream)
         return source_streams
+
+    @staticmethod
+    def _initialize_cache_for_parent_streams(stream_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        parent_streams = set()
+
+        def update_with_cache_parent_configs(parent_configs: list[dict[str, Any]]) -> None:
+            for parent_config in parent_configs:
+                parent_streams.add(parent_config["stream"]["name"])
+                parent_config["stream"]["retriever"]["requester"]["use_cache"] = True
+
+        for stream_config in stream_configs:
+            if stream_config.get("incremental_sync", {}).get("parent_stream"):
+                parent_streams.add(stream_config["incremental_sync"]["parent_stream"]["name"])
+                stream_config["incremental_sync"]["parent_stream"]["retriever"]["requester"]["use_cache"] = True
+
+            elif stream_config.get("retriever", {}).get("partition_router", {}):
+                partition_router = stream_config["retriever"]["partition_router"]
+
+                if isinstance(partition_router, dict) and partition_router.get("parent_stream_configs"):
+                    update_with_cache_parent_configs(partition_router["parent_stream_configs"])
+                elif isinstance(partition_router, list):
+                    for router in partition_router:
+                        if router.get("parent_stream_configs"):
+                            update_with_cache_parent_configs(router["parent_stream_configs"])
+
+        for stream_config in stream_configs:
+            if stream_config["name"] in parent_streams:
+                stream_config["retriever"]["requester"]["use_cache"] = True
+
+        return stream_configs
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """
@@ -130,28 +161,28 @@ class ManifestDeclarativeSource(DeclarativeSource):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         self._configure_logger_level(logger)
         yield from super().read(logger, config, catalog, state)
 
-    def should_log_slice_message(self, logger: logging.Logger):
-        return self._emit_connector_builder_messages or super().should_log_slice_message(logger)
-
-    def _configure_logger_level(self, logger: logging.Logger):
+    def _configure_logger_level(self, logger: logging.Logger) -> None:
         """
         Set the log level to logging.DEBUG if debug mode is enabled
         """
         if self._debug:
             logger.setLevel(logging.DEBUG)
 
-    def _validate_source(self):
+    def _validate_source(self) -> None:
         """
         Validates the connector manifest against the declarative component schema
         """
         try:
             raw_component_schema = pkgutil.get_data("airbyte_cdk", "sources/declarative/declarative_component_schema.yaml")
-            declarative_component_schema = yaml.load(raw_component_schema, Loader=yaml.SafeLoader)
+            if raw_component_schema is not None:
+                declarative_component_schema = yaml.load(raw_component_schema, Loader=yaml.SafeLoader)
+            else:
+                raise RuntimeError("Failed to read manifest component json schema required for validation")
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Failed to read manifest component json schema required for validation: {e}")
 
@@ -167,6 +198,10 @@ class ManifestDeclarativeSource(DeclarativeSource):
         cdk_version = metadata.version("airbyte_cdk")
         cdk_major, cdk_minor, cdk_patch = self._get_version_parts(cdk_version, "airbyte-cdk")
         manifest_version = self._source_config.get("version")
+        if manifest_version is None:
+            raise RuntimeError(
+                "Manifest version is not defined in the manifest. This is unexpected since it should be a required field. Please contact support."
+            )
         manifest_major, manifest_minor, manifest_patch = self._get_version_parts(manifest_version, "manifest")
 
         if cdk_major < manifest_major or (cdk_major == manifest_major and cdk_minor < manifest_minor):
@@ -182,22 +217,22 @@ class ManifestDeclarativeSource(DeclarativeSource):
             )
 
     @staticmethod
-    def _get_version_parts(version: str, version_type: str) -> (int, int, int):
+    def _get_version_parts(version: str, version_type: str) -> Tuple[int, int, int]:
         """
         Takes a semantic version represented as a string and splits it into a tuple of its major, minor, and patch versions.
         """
         version_parts = re.split(r"\.", version)
         if len(version_parts) != 3 or not all([part.isdigit() for part in version_parts]):
             raise ValidationError(f"The {version_type} version {version} specified is not a valid version format (ex. 1.2.3)")
-        return (int(part) for part in version_parts)
+        return tuple(int(part) for part in version_parts)  # type: ignore # We already verified there were 3 parts and they are all digits
 
-    def _stream_configs(self, manifest: Mapping[str, Any]):
+    def _stream_configs(self, manifest: Mapping[str, Any]) -> List[Dict[str, Any]]:
         # This has a warning flag for static, but after we finish part 4 we'll replace manifest with self._source_config
-        stream_configs = manifest.get("streams", [])
+        stream_configs: List[Dict[str, Any]] = manifest.get("streams", [])
         for s in stream_configs:
             if "type" not in s:
                 s["type"] = "DeclarativeStream"
         return stream_configs
 
-    def _emit_manifest_debug_message(self, extra_args: dict):
+    def _emit_manifest_debug_message(self, extra_args: dict[str, Any]) -> None:
         self.logger.debug("declarative source created from manifest", extra=extra_args)
