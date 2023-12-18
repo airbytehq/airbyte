@@ -45,6 +45,24 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
+        "1101472513921186": {
+          "event_time": "2023-12-07",
+          "include_deleted": 0
+        },
+        "1107987959844881": {
+          "event_time": "2023-12-07",
+          "include_deleted": 0
+        }
+      },
+      "stream_descriptor": {
+        "name": "activities"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
         "646247609923744": {
           "updated_time": "2023-12-15 19:04:24.899176+00",
           "include_deleted": false
