@@ -3,7 +3,7 @@
 import json
 import logging
 import os
-from typing import Iterator, List
+from typing import Any, Iterator, List
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -26,14 +26,33 @@ from airbyte_protocol.models import (
     Type,
 )
 
+
+def _a_state_message(state: Any) -> AirbyteMessage:
+    return AirbyteMessage(
+        type=Type.STATE,
+        state=AirbyteStateMessage(data=state)
+    )
+
+
+def _a_status_message(stream_name: str, status: AirbyteStreamStatus) -> AirbyteMessage:
+    return AirbyteMessage(
+        type=Type.TRACE,
+        trace=AirbyteTraceMessage(
+            type=TraceType.STREAM_STATUS,
+            emitted_at=0,
+            stream_status=AirbyteStreamStatusTraceMessage(
+                stream_descriptor=StreamDescriptor(name=stream_name),
+                status=status,
+            ),
+        ),
+    )
+
+
 _A_RECORD = AirbyteMessage(
     type=Type.RECORD,
     record=AirbyteRecordMessage(stream="stream", data={"record key": "record value"}, emitted_at=0)
 )
-_A_STATE_MESSAGE = AirbyteMessage(
-    type=Type.STATE,
-    state=AirbyteStateMessage(data={"state key": "state value"},)
-)
+_A_STATE_MESSAGE = _a_state_message({"state key": "state value for _A_STATE_MESSAGE"})
 _A_LOG = AirbyteMessage(
     type=Type.LOG,
     log=AirbyteLogMessage(level=Level.INFO, message="This is an Airbyte log message")
@@ -74,20 +93,6 @@ _A_CATALOG = ConfiguredAirbyteCatalog.parse_obj(
 )
 _A_STATE = {"state_key": "state_value"}
 _A_LOG_MESSAGE = "a log message"
-
-
-def _a_status_message(stream_name: str, status: AirbyteStreamStatus) -> AirbyteMessage:
-    return AirbyteMessage(
-        type=Type.TRACE,
-        trace=AirbyteTraceMessage(
-            type=TraceType.STREAM_STATUS,
-            emitted_at=0,
-            stream_status=AirbyteStreamStatusTraceMessage(
-                stream_descriptor=StreamDescriptor(name=stream_name),
-                status=status,
-            ),
-        ),
-    )
 
 
 def _to_entrypoint_output(messages: List[AirbyteMessage]) -> Iterator[str]:
@@ -172,6 +177,15 @@ class EntrypointWrapperTest(TestCase):
         entrypoint.return_value.run.return_value = _to_entrypoint_output([_A_RECORD, _A_STATE_MESSAGE])
         output = read(self._a_source, _A_CONFIG, _A_CATALOG, _A_STATE)
         assert output.records_and_state_messages == [_A_RECORD, _A_STATE_MESSAGE]
+
+    @patch("airbyte_cdk.test.entrypoint_wrapper.AirbyteEntrypoint")
+    def test_given_many_state_messages_and_records_when_read_then_output_has_records_and_state_message(self, entrypoint):
+        last_emitted_state = {"last state key": "last state value"}
+        entrypoint.return_value.run.return_value = _to_entrypoint_output([_A_STATE_MESSAGE, _a_state_message(last_emitted_state)])
+
+        output = read(self._a_source, _A_CONFIG, _A_CATALOG, _A_STATE)
+
+        assert output.most_recent_state == last_emitted_state
 
     @patch("airbyte_cdk.test.entrypoint_wrapper.AirbyteEntrypoint")
     def test_given_log_when_read_then_output_has_log(self, entrypoint):

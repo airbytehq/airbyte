@@ -48,7 +48,10 @@
     "ship-promotion-discount": { "type": ["null", "string"] },
     "carrier": { "type": ["null", "string"] },
     "tracking-number": { "type": ["null", "string"] },
-    "estimated-arrival-date": { "type": ["null", "string"] },
+    "estimated-arrival-date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "fulfillment-center-id": { "type": ["null", "string"] },
     "fulfillment-channel": { "type": ["null", "string"] },
     "sales-channel": { "type": ["null", "string"] },

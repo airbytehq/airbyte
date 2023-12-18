@@ -124,6 +124,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.14.0  | 2023-12-15 | [33532](https://github.com/airbytehq/airbyte/pull/33532)   | Add lookback window                                                                                                     |
 | 0.13.0  | 2023-12-12 | [33353](https://github.com/airbytehq/airbyte/pull/33353)   | Fix check command to check access for all available streams                                                             |
 | 0.12.0  | 2023-12-01 | [33011](https://github.com/airbytehq/airbyte/pull/33011)   | Fix BoardIssues stream; increase number of retries for backoff policy to 10                                             |
 | 0.11.0  | 2023-11-29 | [32927](https://github.com/airbytehq/airbyte/pull/32927)   | Fix incremental syncs for stream Issues                                                                                 |

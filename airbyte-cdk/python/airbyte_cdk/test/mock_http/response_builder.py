@@ -4,7 +4,7 @@ import functools
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path as FilePath
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 from airbyte_cdk.test.mock_http import HttpResponse
 
@@ -20,7 +20,18 @@ def _replace_value(dictionary: Dict[str, Any], path: List[str], value: Any) -> N
     current[path[-1]] = value
 
 
+def _write(dictionary: Dict[str, Any], path: List[str], value: Any) -> None:
+    current = dictionary
+    for key in path[:-1]:
+        current = current.setdefault(key, {})
+    current[path[-1]] = value
+
+
 class Path(ABC):
+    @abstractmethod
+    def write(self, template: Dict[str, Any], value: Any) -> None:
+        pass
+
     @abstractmethod
     def update(self, template: Dict[str, Any], value: Any) -> None:
         pass
@@ -32,6 +43,9 @@ class Path(ABC):
 class FieldPath(Path):
     def __init__(self, field: str):
         self._path = [field]
+
+    def write(self, template: Dict[str, Any], value: Any) -> None:
+        _write(template, self._path, value)
 
     def update(self, template: Dict[str, Any], value: Any) -> None:
         _replace_value(template, self._path, value)
@@ -46,6 +60,9 @@ class FieldPath(Path):
 class NestedPath(Path):
     def __init__(self, path: List[str]):
         self._path = path
+
+    def write(self, template: Dict[str, Any], value: Any) -> None:
+        _write(template, self._path, value)
 
     def update(self, template: Dict[str, Any], value: Any) -> None:
         _replace_value(template, self._path, value)
@@ -101,6 +118,10 @@ class RecordBuilder:
 
     def with_cursor(self, cursor_value: Any) -> "RecordBuilder":
         self._set_field("cursor", self._cursor_path, cursor_value)
+        return self
+
+    def with_field(self, path: Path, value: Any) -> "RecordBuilder":
+        path.write(self._record, value)
         return self
 
     def _set_field(self, field_name: str, path: Optional[Path], value: Any) -> None:
@@ -165,27 +186,28 @@ def find_template(resource: str, execution_folder: str) -> Dict[str, Any]:
         return json.load(template_file)  # type: ignore  # we assume the dev correctly set up the resource file
 
 
-def create_builders_from_resource(
+def create_record_builder(
     response_template: Dict[str, Any],
     records_path: Union[FieldPath, NestedPath],
     record_id_path: Optional[Path] = None,
     record_cursor_path: Optional[Union[FieldPath, NestedPath]] = None,
-    pagination_strategy: Optional[PaginationStrategy] = None
-) -> Tuple[RecordBuilder, HttpResponseBuilder]:
+) -> RecordBuilder:
     """
     This will use the first record define at `records_path` as a template for the records. If more records are defined, they will be ignored
     """
-    if not isinstance(records_path, (FieldPath, NestedPath)):
-        raise ValueError(f"records_path only supports FieldPath and NestedPath but {type(records_path)} was provided")
-
     try:
         record_template = records_path.extract(response_template)[0]
         if not record_template:
             raise ValueError(f"Could not extract any record from template at path `{records_path}`. "
                              f"Please fix the template to provide a record sample or fix `records_path`.")
-        return (
-            RecordBuilder(record_template, record_id_path, record_cursor_path),
-            HttpResponseBuilder(response_template, records_path, pagination_strategy)
-        )
+        return RecordBuilder(record_template, record_id_path, record_cursor_path)
     except (IndexError, KeyError):
         raise ValueError(f"Error while extracting records at path `{records_path}` from response template `{response_template}`")
+
+
+def create_response_builder(
+    response_template: Dict[str, Any],
+    records_path: Union[FieldPath, NestedPath],
+    pagination_strategy: Optional[PaginationStrategy] = None
+) -> HttpResponseBuilder:
+    return HttpResponseBuilder(response_template, records_path, pagination_strategy)
