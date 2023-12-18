@@ -99,7 +99,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
-  protected static HashSet<String> TEST_SCHEMAS;
+  protected HashSet<String> TEST_SCHEMAS;
 
   private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
