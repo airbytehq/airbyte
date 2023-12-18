@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,7 +32,6 @@ public abstract class AbstractPostgresDestinationAcceptanceTest extends JdbcDest
     return clone;
   }
 
-
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
@@ -49,7 +52,7 @@ public abstract class AbstractPostgresDestinationAcceptanceTest extends JdbcDest
   }
 
   protected List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
-    //TODO: Change emitted_at with DV2
+    // TODO: Change emitted_at with DV2
     return getTestDb().query(ctx -> {
       ctx.execute("set time zone 'UTC';");
       return ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))

@@ -15,7 +15,6 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
@@ -244,7 +243,8 @@ public class PostgresDestinationTest {
   void sanityTest() throws Exception {
     final Destination destination = new PostgresDestination();
     DestinationConfig.initialize(config);
-    final SerializedAirbyteMessageConsumer consumer = destination.getSerializedMessageConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
+    final SerializedAirbyteMessageConsumer consumer =
+        destination.getSerializedMessageConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
     final List<AirbyteMessage> expectedRecords = getNRecords(10);
 
     consumer.start();
@@ -257,8 +257,8 @@ public class PostgresDestinationTest {
       }
     });
     final String stateMessage = Jsons.serialize(new AirbyteMessage()
-                                                    .withType(Type.STATE)
-                                                    .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
     consumer.accept(stateMessage, stateMessage.getBytes(StandardCharsets.UTF_8).length);
     consumer.close();
 

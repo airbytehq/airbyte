@@ -25,10 +25,12 @@ import org.jooq.SQLDialect;
  * or with a password.
  */
 public abstract class SshPostgresDestinationAcceptanceTest extends AbstractPostgresDestinationAcceptanceTest {
+
   private PostgresTestDatabase testdb;
   private SshBastionContainer bastion;
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
+
   @Override
   protected JsonNode getConfig() throws Exception {
     // Here we use inner address because the tunnel is created inside the connector's container.
@@ -37,7 +39,6 @@ public abstract class SshPostgresDestinationAcceptanceTest extends AbstractPostg
         .with("schema", "public")
         .withoutSsl()
         .build();
-    /*return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName), false);*/
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
@@ -55,7 +56,8 @@ public abstract class SshPostgresDestinationAcceptanceTest extends AbstractPostg
 
   @Override
   protected List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
-    // Here we DO NOT use the inner address because the tunnel is created in the integration test's java process.
+    // Here we DO NOT use the inner address because the tunnel is created in the integration test's java
+    // process.
     final JsonNode config = testdb.integrationTestConfigBuilder()
         .with("tunnel_method", bastion.getTunnelMethod(getTunnelMethod(), false))
         .with("schema", "public")
@@ -92,4 +94,5 @@ public abstract class SshPostgresDestinationAcceptanceTest extends AbstractPostg
   protected PostgresTestDatabase getTestDb() {
     return testdb;
   }
+
 }

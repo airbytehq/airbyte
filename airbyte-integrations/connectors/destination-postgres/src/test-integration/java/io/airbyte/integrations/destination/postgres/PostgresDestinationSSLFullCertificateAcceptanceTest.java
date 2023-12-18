@@ -30,28 +30,12 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends Abstrac
         .withResolvedHostAndPort()
         .withCredentials()
         .withSsl(ImmutableMap.builder()
-                     .put("mode", "verify-ca")
-                     .put("ca_certificate", testDb.getCertificates().caCertificate())
-//                     .put("client_certificate", testDb.getCertificates().clientCertificate())
-//                     .put("client_key", testDb.getCertificates().clientKey())
-                     .build())
-        .build();
-    /*return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", "postgres")
-        .put("password", "postgres")
-        .put("schema", "public")
-        .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
-        .put("ssl", true)
-        .put("ssl_mode", ImmutableMap.builder()
-            .put("mode", "verify-full")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
-            .put("client_key_password", "Passw0rd")
+            .put("mode", "verify-ca")
+            .put("ca_certificate", testDb.getCertificates().caCertificate())
+            // .put("client_certificate", testDb.getCertificates().clientCertificate())
+            // .put("client_key", testDb.getCertificates().clientKey())
             .build())
-        .build());*/
+        .build();
   }
 
   @Override
@@ -75,4 +59,5 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends Abstrac
   public void testCustomDbtTransformations() {
 
   }
+
 }

@@ -21,15 +21,6 @@ public class PostgresDestinationAcceptanceTest extends AbstractPostgresDestinati
         .withCredentials()
         .withoutSsl()
         .build();
-    /*return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_KEY, false)
-        .build());*/
   }
 
   @Override

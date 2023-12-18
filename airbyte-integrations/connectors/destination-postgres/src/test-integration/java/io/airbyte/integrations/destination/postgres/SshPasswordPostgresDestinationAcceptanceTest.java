@@ -23,8 +23,10 @@ public class SshPasswordPostgresDestinationAcceptanceTest extends SshPostgresDes
 
   @Disabled
   @Override
-  public void testDataTypeTestWithNormalization(String messagesFilename, String catalogFilename,
-                                                TestCompatibility testCompatibility) throws Exception {
+  public void testDataTypeTestWithNormalization(String messagesFilename,
+                                                String catalogFilename,
+                                                TestCompatibility testCompatibility)
+      throws Exception {
 
   }
 
@@ -39,4 +41,5 @@ public class SshPasswordPostgresDestinationAcceptanceTest extends SshPostgresDes
   public void testCustomDbtTransformations() throws Exception {
 
   }
+
 }
