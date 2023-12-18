@@ -6,12 +6,22 @@ import datetime
 import json
 import requests
 import traceback
+import backoff
 
 from typing import Any, Mapping
 
 from destination_vectara.config import VectaraConfig
 
 METADATA_STREAM_FIELD = "_ab_stream"
+
+def user_error(e: Exception) -> bool:
+    """
+    Return True if this exception is caused by user error, False otherwise.
+    """
+    if not isinstance(e, requests.exceptions.RequestException):
+        return False
+    return bool(e.response and 400 <= e.response.status_code < 500)
+
 
 class VectaraClient:
 
@@ -94,6 +104,7 @@ class VectaraClient:
         self.jwt_token_expires_ts = request_time + response_json.get("expires_in")
         return self.jwt_token
     
+    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=5, giveup=user_error)
     def _request(
             self, endpoint: str, 
             http_method: str = "POST", 
@@ -162,6 +173,8 @@ class VectaraClient:
 
     def index_documents(self, documents):
         for document_section, document_metadata, document_id in documents:
+            if len(document_section) == 0:
+                continue            # Document is empty, so skip it
             document_metadata = self._normalize(document_metadata)
             data = {
                 "customerId": self.customer_id, 
@@ -179,7 +192,8 @@ class VectaraClient:
                 }
             }
             index_document_response = self._request(endpoint="index", data=data)
-            assert index_document_response.get("status").get("code") == "OK", index_document_response.get("status").get("statusDetail")
+            assert (index_document_response.get("status").get("code") == "OK" or 
+                    index_document_response.get("status").get("statusDetail") == 'Document should have at least one part.'), index_document_response.get("status").get("statusDetail")
     
     def _normalize(self, metadata: dict) -> dict:
         result = {}
