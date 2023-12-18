@@ -6,7 +6,7 @@ import abc
 import io
 import sys
 from collections import defaultdict
-from typing import final, Any
+from typing import final, Any, cast
 
 import orjson
 import pyarrow as pa
@@ -33,6 +33,7 @@ class CacheBase(abc.ABC, EnforceOverrides):
     def __init__(
         self,
         config: CacheConfigBase | dict,
+        source_catalog: dict[str, Any],  # TODO: Better typing for ConfiguredAirbyteCatalog
         **kwargs,  # Added for future proofing purposes.
     ):
         if isinstance(config, dict):
@@ -42,7 +43,9 @@ class CacheBase(abc.ABC, EnforceOverrides):
             err_msg = f"Expected config class of type '{self.config_class.__name__}'.  Instead found '{type(config).__name__}'."
             raise RuntimeError(err_msg)
 
-        self.config = self.config_class
+        self.config = config
+        self.source_catalog = source_catalog
+
         self._pending_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
         self._completed_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
 
@@ -96,6 +99,9 @@ class CacheBase(abc.ABC, EnforceOverrides):
             if batch:
                 record_batch = pa.Table.from_pydict(batch)
                 self._process_batch(stream_name, record_batch)
+
+        for stream_name in self._pending_batches:
+            self._finalize_batches(stream_name)
 
 
     @final
@@ -153,20 +159,12 @@ class CacheBase(abc.ABC, EnforceOverrides):
         batch_id = batch_id or self.new_batch_id()
         return f"{stream_name}_{batch_id}"
 
-    @final
     def _finalize_batches(self, stream_name: str) -> dict[str, BatchHandle]:
-        """Commit all uncommitted batches for a given stream."""
+        """Commit all uncommitted batches for a given stream.
+        
+        Returns a mapping of batch IDs to batch handles, for those batches that were processed.
+        """
         batches_to_finalize = self._pending_batches[stream_name]
-        self.finalize_batches(stream_name, batches_to_finalize)
         self._completed_batches.update(batches_to_finalize)
         self._pending_batches.clear()
         return batches_to_finalize
-
-    @abc.abstractmethod
-    def finalize_batches(
-        self, stream_name: str, batches: dict[str, BatchHandle]
-    ) -> bool:
-        """Finalize all uncommitted batches.
-
-        If a stream name is provided, only process uncommitted batches for that stream.
-        """
