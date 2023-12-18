@@ -23,6 +23,9 @@ Improve integration tests tooling
 
 ## 0.57.0
 low-code: cache requests sent for parent streams
+File-based CDK: Add support for automatic primary key for document file type format
+File-based CDK: Add support for remote parsing of document file type format via API
+Vector DB CDK: Fix bug with embedding tokens with special meaning like `<|endoftext|>`
 
 ## 0.56.1
 no-op to verify pypi publish flow
