@@ -40,12 +40,19 @@ def tests(connector_name, sample_config):
     source.check()
 
     print("Fetching streams...")
-    first_stream = source.get_available_streams()[0]
+    streams = source.get_available_streams()
 
-    source.set_streams([first_stream])
-
-    print("Performing read...")
-    source.peek(first_stream, 1)
+    # try to peek all streams - if one works, stop, if none works, throw exception
+    for stream in streams:
+        try:
+            print(f"Trying to peek stream {stream}...")
+            records = source.peek(stream, 1)
+            assert len(records) == 1
+            break
+        except Exception as e:
+            print(f"Could not peek stream {stream}: {e}")
+    else:
+        raise Exception(f"Could not peek any stream from {streams}")
 
 def run():
     """
