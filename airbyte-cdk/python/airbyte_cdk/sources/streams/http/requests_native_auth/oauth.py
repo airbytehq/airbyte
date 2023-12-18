@@ -234,7 +234,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             new_token_expiry_date = self.get_new_token_expiry_date(access_token_expires_in, self._token_expiry_date_format)
             self.access_token = new_access_token
             self.set_refresh_token(new_refresh_token)
-            self.set_token_expiry_date(new_token_expiry_date)
+            self.set_token_expiry_date(new_token_expiry_date.to_iso8601_string())
             # FIXME emit_configuration_as_airbyte_control_message as been deprecated in favor of package airbyte_cdk.sources.message
             #  Usually, a class shouldn't care about the implementation details but to keep backward compatibility where we print the
             #  message directly in the console, this is needed

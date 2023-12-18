@@ -322,9 +322,9 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
     @pytest.mark.parametrize(
         "test_name, expires_in_value, expiry_date_format, expected_expiry_date",
         [
-            ("number_of_seconds", 42, None, "2022-12-31T00:00:42+00:00"),
-            ("string_of_seconds", "42", None, "2022-12-31T00:00:42+00:00"),
-            ("date_format", "2023-04-04", "YYYY-MM-DD", "2023-04-04T00:00:00+00:00"),
+            ("number_of_seconds", 42, None, "2022-12-31T00:00:42Z"),
+            ("string_of_seconds", "42", None, "2022-12-31T00:00:42Z"),
+            ("date_format", "2023-04-04", "YYYY-MM-DD", "2023-04-04T00:00:00Z"),
         ],
     )
     def test_given_no_message_repository_get_access_token(
@@ -376,7 +376,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         assert emitted_message.control.type == OrchestratorType.CONNECTOR_CONFIG
         assert emitted_message.control.connectorConfig.config["credentials"]["access_token"] == "new_access_token"
         assert emitted_message.control.connectorConfig.config["credentials"]["refresh_token"] == "new_refresh_token"
-        assert emitted_message.control.connectorConfig.config["credentials"]["token_expiry_date"] == "2023-04-04T00:00:00+00:00"
+        assert emitted_message.control.connectorConfig.config["credentials"]["token_expiry_date"] == "2023-04-04T00:00:00Z"
         assert emitted_message.control.connectorConfig.config["credentials"]["client_id"] == "my_client_id"
         assert emitted_message.control.connectorConfig.config["credentials"]["client_secret"] == "my_client_secret"
 
