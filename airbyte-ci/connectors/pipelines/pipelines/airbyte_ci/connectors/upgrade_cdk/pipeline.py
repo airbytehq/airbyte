@@ -24,23 +24,28 @@ class SetCDKVersion(Step):
 
     async def _run(self) -> StepResult:
         context: ConnectorContext = self.context
-        connector_dir = await context.get_connector_dir(include=["setup.py"])
-        if not (await connector_dir.entries()):
+        og_connector_dir = await context.get_connector_dir()
+        if not "setup.py" in await og_connector_dir.entries():
             return StepResult(
                 self,
                 StepStatus.FAILURE,
                 stdout="Connector does not have a setup.py file.",
             )
-        setup_py = connector_dir.file("setup.py")
+        setup_py = og_connector_dir.file("setup.py")
         setup_py_content = await setup_py.contents()
         try:
             updated_setup_py = self.update_cdk_version(setup_py_content)
-            full_og_connector_dir = await context.get_connector_dir()
-            updated_connector_dir = full_og_connector_dir.with_new_file("setup.py", updated_setup_py)
-            diff = full_og_connector_dir.diff(updated_connector_dir)
-            await diff.export(os.path.join(git.get_git_repo_path(), context.connector.code_directory))
+            updated_connector_dir = og_connector_dir.with_new_file("setup.py", updated_setup_py)
+            diff = og_connector_dir.diff(updated_connector_dir)
+            exported_successfully = await diff.export(os.path.join(git.get_git_repo_path(), context.connector.code_directory))
+            if not exported_successfully:
+                return StepResult(
+                    self,
+                    StepStatus.FAILURE,
+                    stdout="Could not export diff to local git repo.",
+                )
             return StepResult(self, StepStatus.SUCCESS, stdout=f"Updated CDK version to {self.new_version}", output_artifact=diff)
-        except Exception as e:
+        except ValueError as e:
             return StepResult(
                 self,
                 StepStatus.FAILURE,

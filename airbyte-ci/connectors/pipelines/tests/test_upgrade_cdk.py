@@ -4,6 +4,7 @@
 
 import json
 import random
+from pathlib import Path
 from typing import List
 from unittest.mock import AsyncMock, MagicMock
 
@@ -88,6 +89,7 @@ async def test_run_connector_cdk_upgrade_pipeline(
     # Check that the resulting directory that got passed to the mocked diff method looks as expected
     resulting_directory: Directory = await full_og_connector_dir.diff(updated_connector_dir.diff.call_args[0][0])
     files = await resulting_directory.entries()
+    # validate only setup.py is changed
     assert files == ["setup.py"]
     setup_py = resulting_directory.file("setup.py")
     actual_setup_py_content = await setup_py.contents()

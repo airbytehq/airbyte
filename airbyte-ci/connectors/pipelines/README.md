@@ -403,7 +403,7 @@ Upgrade for source-openweather: `airbyte-ci connectors --name=source-openweather
 
 | Argument              | Description                                                            |
 | --------------------- | ---------------------------------------------------------------------- |
-| `CDK_VERSION`           | CDK version to set                                                  |
+| `CDK_VERSION`         | CDK version to set (default to the most recent version)                |
 
 ### <a id="connectors-upgrade_base_image"></a>`connectors upgrade_base_image` command
 
