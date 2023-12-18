@@ -181,7 +181,7 @@ def validate_pypi_only_for_python(
         return True, None
 
     tags = get(metadata_definition, "data.tags", [])
-    if "language:python" not in tags:
+    if "language:python" not in tags and "language:low-code" not in tags:
         return False, "If pypi publishing is enabled, the connector must have a python language tag."
 
     return True, None
