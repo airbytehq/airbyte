@@ -26,11 +26,7 @@ class SetCDKVersion(Step):
         context: ConnectorContext = self.context
         og_connector_dir = await context.get_connector_dir()
         if not "setup.py" in await og_connector_dir.entries():
-            return StepResult(
-                self,
-                StepStatus.FAILURE,
-                stdout="Connector does not have a setup.py file.",
-            )
+            return self.skip("Connector does not have a setup.py file.")
         setup_py = og_connector_dir.file("setup.py")
         setup_py_content = await setup_py.contents()
         try:

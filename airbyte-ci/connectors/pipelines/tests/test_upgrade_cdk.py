@@ -99,7 +99,7 @@ async def test_run_connector_cdk_upgrade_pipeline(
     assert updated_connector_dir.diff.return_value.export.call_count == 1
 
 
-async def test_fail_connector_cdk_upgrade_pipeline_on_missing_setup_py(connector_context: ConnectorContext):
+async def test_skip_connector_cdk_upgrade_pipeline_on_missing_setup_py(connector_context: ConnectorContext):
     full_og_connector_dir = await connector_context.get_connector_dir()
     updated_connector_dir = full_og_connector_dir.without_file("setup.py")
 
@@ -107,7 +107,7 @@ async def test_fail_connector_cdk_upgrade_pipeline_on_missing_setup_py(connector
 
     step = upgrade_cdk_pipeline.SetCDKVersion(connector_context, "6.6.6")
     step_result = await step.run()
-    assert step_result.status == StepStatus.FAILURE
+    assert step_result.status == StepStatus.SKIPPED
 
 
 async def test_fail_connector_cdk_upgrade_pipeline_on_missing_airbyte_cdk(connector_context: ConnectorContext):
