@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "name": "Credit Note",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": [
@@ -228,12 +229,6 @@
     "object": {
       "type": [
         "string",
-        "null"
-      ]
-    },
-    "is_vat_moss_registered": {
-      "type": [
-        "boolean",
         "null"
       ]
     },
