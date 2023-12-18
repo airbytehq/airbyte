@@ -116,5 +116,3 @@ def test_compute_delta(dt1, dt2, expected_delta):
     timestamp_function = macros["compute_delta"]
     actual_output = timestamp_function(dt1, dt2)
     assert actual_output == expected_delta
-
-
