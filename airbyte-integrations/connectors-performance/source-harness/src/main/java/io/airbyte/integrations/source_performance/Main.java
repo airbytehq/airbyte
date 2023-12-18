@@ -29,8 +29,8 @@ public class Main {
 
     // TODO: (ryankfu) Integrated something akin to {@link Clis} for parsing arguments.
     switch (args.length) {
-      case 0 -> image = "airbyte/source-e2e-test:dev";
-      case 1 -> image = "airbyte/source-e2e-test:dev";
+      case 0 -> image = "airbyte/source-e2e-test:amd-proto";
+      case 1 -> image = "airbyte/source-e2e-test:amd-proto";
       case 2 -> {
         image = args[0];
         dataset = args[1];
@@ -74,7 +74,7 @@ public class Main {
                                                 "schema": "FIVE_STRING_COLUMNS",
                                                 "terminationCondition": {
                                                   "type": "MAX_RECORDS",
-                                                  "max": 24000000
+                                                  "max": 20000000
                                                 }
                                               }
                                               """);
@@ -93,7 +93,7 @@ public class Main {
     log.info("Starting performance harness for {} ({})", image, dataset);
     try {
       final PerformanceTest test = new PerformanceTest(
-          "airbyte/source-e2e-test:dev",
+          "airbyte/source-e2e-test:amd-proto",
           dataset,
           syncMode,
           reportToDatadog,

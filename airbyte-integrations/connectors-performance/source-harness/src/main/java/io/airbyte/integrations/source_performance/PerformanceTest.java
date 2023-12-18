@@ -17,13 +17,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.Jsons;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
 import io.airbyte.workers.internal.HeartbeatMonitor;
@@ -88,7 +88,7 @@ public class PerformanceTest {
     final String localIp = InetAddress.getLocalHost().getHostAddress();
     final String kubeHeartbeatUrl = localIp + ":" + 9000;
     final var workerConfigs = new WorkerConfigs(new EnvConfigs());
-    final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
+    final var processFactory = new KubeProcessFactory2(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
     final ResourceRequirements resourceReqs = new ResourceRequirements()
         .withCpuLimit("2.5")
         .withCpuRequest("2.5")

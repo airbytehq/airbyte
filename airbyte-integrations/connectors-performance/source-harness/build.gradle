@@ -17,6 +17,8 @@ dependencies {
     implementation 'io.airbyte:airbyte-commons-worker:0.42.0'
     implementation 'io.airbyte.airbyte-config:config-models:0.42.0'
     implementation 'com.datadoghq:datadog-api-client:2.16.0'
+    implementation 'org.apache.commons:commons-text:1.10.0'
+
 
     // new protobuf deps
     implementation 'com.google.protobuf:protobuf-java:3.25.1'

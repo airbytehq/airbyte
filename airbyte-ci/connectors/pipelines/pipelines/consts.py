@@ -27,7 +27,7 @@ PLATFORM_MACHINE_TO_DAGGER_PLATFORM = {
     "aarch64": Platform("linux/amd64"),
     "amd64": Platform("linux/amd64"),
 }
-LOCAL_BUILD_PLATFORM = PLATFORM_MACHINE_TO_DAGGER_PLATFORM[platform.machine()]
+LOCAL_BUILD_PLATFORM = Platform("linux/amd64")
 AMAZONCORRETTO_IMAGE = "amazoncorretto:17.0.8-al2023"
 NODE_IMAGE = "node:18.18.0-slim"
 GO_IMAGE = "golang:1.17"
