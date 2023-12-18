@@ -37,9 +37,9 @@ from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelec
 from airbyte_cdk.sources.declarative.models import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models import SubstreamPartitionRouter as SubstreamPartitionRouterModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel, \
-    SelectiveAuthenticator
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import PageIncrement as PageIncrementModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
