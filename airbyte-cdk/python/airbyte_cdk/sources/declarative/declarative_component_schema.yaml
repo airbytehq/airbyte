@@ -244,8 +244,8 @@ definitions:
         items:
           type: string
         examples:
-          - [ "auth" ]
-          - [ "auth", "type" ]
+          - ["auth"]
+          - ["auth", "type"]
       authenticators:
         title: Authenticators
         description: Authenticators to select from.
