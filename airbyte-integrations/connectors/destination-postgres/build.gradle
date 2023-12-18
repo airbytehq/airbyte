@@ -28,11 +28,14 @@ application {
 
 dependencies {
     implementation libs.postgresql
+    // TODO: declare typing-deduping as a CDK feature instead of importing from source.
+    implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
 
     testImplementation libs.testcontainers.postgresql
 
     integrationTestJavaImplementation libs.testcontainers.postgresql
 
+    integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
     //TODO: Needs dependency on source-postgres testFixtures for PostgresContainerFactory & PostgresDatabase.
     // Move it to common module in cdk ?
     integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-postgres'))
