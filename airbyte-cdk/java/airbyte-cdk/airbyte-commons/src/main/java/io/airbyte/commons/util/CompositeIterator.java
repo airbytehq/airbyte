@@ -115,7 +115,7 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
   }
 
   @Override
-  public void close() throws Exception {
+  public void closeSafely() throws Exception {
     hasClosed = true;
 
     final List<Exception> exceptions = new ArrayList<>();

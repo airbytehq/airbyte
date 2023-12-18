@@ -47,7 +47,7 @@ class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements Aut
   }
 
   @Override
-  public void close() throws Exception {
+  public void closeSafely() throws Exception {
     if (!hasClosed) {
       hasClosed = true;
       onClose.call();
