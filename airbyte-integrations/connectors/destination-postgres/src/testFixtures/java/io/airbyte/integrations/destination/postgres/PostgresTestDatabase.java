@@ -16,6 +16,10 @@ import java.util.stream.Stream;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+/**
+ * TODO: This class is a copy from source-postgres:testFixtures. Eventually merge into a common
+ * fixtures module.
+ */
 public class PostgresTestDatabase extends
     TestDatabase<PostgreSQLContainer<?>, PostgresTestDatabase, PostgresTestDatabase.PostgresConfigBuilder> {
 
