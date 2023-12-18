@@ -1,0 +1,30 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_csv"
+      },
+      "stream_state": {
+        "_ab_source_file_last_modified": "2023-12-23T06:49:25.000000Z_Test_folder_2/TestFileOneDrive.csv",
+        "history": {
+          "Test_folder_2/TestFileOneDrive.csv": "2023-12-23T06:49:25.000000Z"
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_unstructured"
+      },
+      "stream_state": {
+        "_ab_source_file_last_modified": "2023-12-23T06:49:25.000000Z_simple_pdf_file.pdf",
+        "history": {
+          "simple_pdf_file.pdf": "2023-12-23T06:49:25.000000Z"
+        }
+      }
+    }
+  }
+]
