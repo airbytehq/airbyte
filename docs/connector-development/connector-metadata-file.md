@@ -152,13 +152,16 @@ The supported scope types are listed below.
 |------------|------------|------------------|
 | stream     | `list[str]`  | List of stream names |
 
-#### `pypi`
-The optional `pypi` property allows you to configure how a connector should be published to pypi. This should only be used on python-based connectors.
-Currently, only the `enabled` property is supported. If `enabled` is set to `true`, the connector will be published to pypi.
+#### `remotePackageIndex`
+The optional `remotePackageIndex` property allows you to configure how a connector should be published remote package indices. 
+
+**Important note**: Currently no automated publishing will occur.
+
 
 ```yaml
-pypi:
-  enabled: true
+remotePackageIndex:
+  pypi:
+    enabled: true
 ```
 
-The `pypi.enabled` flag defaults to false.
+The `remotePackageIndex.pypi.enabled` flag defaults to false.
