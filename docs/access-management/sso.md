@@ -5,7 +5,7 @@ import TabItem from "@theme/TabItem";
 
 Single Sign-On (SSO) allows you to enable logging into Airbyte using your existing Identity Provider (IdP) like Okta or Active Directory.
 
-SSO is available in Airbyte Enterprise and on Cloud with Teams. [Talk to us](https://airbyte.com/company/talk-to-sales) to get started setting up SSO for your organization.
+SSO is available in Airbyte Enterprise and on Cloud with the Teams add-on. [Talk to us](https://airbyte.com/company/talk-to-sales) to get started setting up SSO for your organization.
 
 ## Set up
 
