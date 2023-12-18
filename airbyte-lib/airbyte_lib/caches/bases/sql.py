@@ -3,20 +3,21 @@
 import abc
 from pathlib import Path
 from textwrap import dedent
-from typing import final, Iterable
+from typing import final, Iterable, Any, cast
 import enum
 
 import pandas as pd
 import pyarrow as pa
 import ulid
 import sqlalchemy
+from sqlalchemy import text
 from overrides import overrides
 
-from airbyte_lib.bases.core import BaseCache, BatchHandle
-from airbyte_lib.bases.config import CacheConfigBase
+from airbyte_lib.caches.bases.core import CacheBase, BatchHandle
+from airbyte_lib.caches.bases.config import CacheConfigBase
 
-from airbyte_lib.type_converters import SQLTypeConverterBase
-
+from airbyte_lib.caches.sql.types import SQLTypeConverter
+from airbyte_lib.file_writers import FileWriterBase
 
 class RecordDedupeMode(enum.Enum):
     APPEND = "append"
@@ -44,29 +45,34 @@ class GenericSQLCacheConfig(SQLCacheConfigBase):
     @overrides
     def get_sql_alchemy_url(self):
         """Returns a SQL Alchemy URL."""
-        return self.custom_sql_alchemy_url
+        return self.sql_alchemy_url
 
 
-class SQLCache(BaseCache, abc.ABCMeta):
+class SQLCacheBase(CacheBase, abc.ABCMeta):
     """A base class to be used for SQL Caches.
 
     Optionally we can use a file cache to store the data in parquet files.
     """
 
-    type_converter_class = SQLTypeConverterBase
-    config_class: type[SQLCacheConfigBase] = SQLCacheConfigBase
+    type_converter_class = SQLTypeConverter
+    config_class: type[SQLCacheConfigBase] = SQLCacheConfigBase  # TODO: Fix this type error
+    file_writer_class: type[FileWriterBase]
 
     supports_merge_insert = False
 
     # Constructor:
 
+    @final  # We don't want subclasses to have to override the constructor.
     def __init__(
         self,
-        config: CacheConfigBase,  # Configuration for the SQL cache
-        file_cache: BaseCache | None = None,
+        config: SQLCacheConfigBase,
+        source_catalog: dict[str, Any],  # TODO: Better typing for ConfiguredAirbyteCatalog
+        file_cache: FileWriterBase | None = None,
         **kwargs,  # Added for future proofing purposes.
     ):
-        self.config = config
+        self.config: SQLCacheConfigBase
+        super().__init__(config, source_catalog, **kwargs)
+
         self.file_cache = file_cache
         self.type_converter = self.type_converter_class()
 
@@ -74,12 +80,12 @@ class SQLCache(BaseCache, abc.ABCMeta):
 
     def get_sql_alchemy_url(self) -> str:
         """Return the SQLAlchemy URL to use."""
-        return self.config.sql_alchemy_url
+        return self.config.get_sql_alchemy_url()
 
     @final
     def get_sql_engine(self) -> sqlalchemy.engine.Engine:
         """Return a new SQL engine to use."""
-        return sqlalchemy.create_engine(self.get_sql_alchemy_url(self.config))
+        return sqlalchemy.create_engine(self.get_sql_alchemy_url())
 
     def get_sql_table_name(
         self,
@@ -111,9 +117,9 @@ class SQLCache(BaseCache, abc.ABCMeta):
         stream_name: str,
     ) -> Iterable[sqlalchemy.Row]:
         """Uses SQLAlchemy to select all rows from the table."""
-        table_name = self.get_sql_table_name(stream_name)
+        table_ref = self.get_sql_table(stream_name)
         engine = self.get_sql_engine()
-        stmt = sqlalchemy.select(table_name)
+        stmt = sqlalchemy.select(table_ref)
         with engine.connect() as conn:
             yield from conn.execute(stmt)
 
@@ -141,6 +147,7 @@ class SQLCache(BaseCache, abc.ABCMeta):
     @final
     def _create_table_for_loading(
         self,
+        /,
         stream_name: str,
         batch_id: str,
     ) -> str:
@@ -153,6 +160,8 @@ class SQLCache(BaseCache, abc.ABCMeta):
             ).items()
         )
         self._create_table(temp_table_name, column_definition_str)
+
+        return temp_table_name
 
     def _ensure_final_table_exists(
         self,
@@ -184,15 +193,13 @@ class SQLCache(BaseCache, abc.ABCMeta):
         column_definition_str: str,
     ) -> None:
         with self.get_sql_engine().begin() as conn:
-            conn.execute(
-                dedent(
-                    f"""
-                    CREATE TABLE {table_name} (
-                      {column_definition_str}
-                    )
-                    """
+            conn.execute(text(dedent(
+                f"""
+                CREATE TABLE {table_name} (
+                    {column_definition_str}
                 )
-            )
+                """
+            )))
 
     def _normalize_column_name(
         self,
@@ -212,48 +219,69 @@ class SQLCache(BaseCache, abc.ABCMeta):
         stream_name: str,
     ) -> dict[str, sqlalchemy.sql.sqltypes.TypeEngine]:
         """Return the column definitions for the given stream."""
-        columns = {
-            self._normalize_column_name(property_name): self.type_converter.to_sql_type(
-                json_schema
-            )
-            for property_name, json_schema in self._get_stream_json_schema(stream_name)[
-                "properties"
-            ].items()
-        }
+        columns: dict[str, sqlalchemy.sql.sqltypes.TypeEngine] = {}
+        properties = cast(dict[str, dict[str, str | dict]], self._get_stream_json_schema(stream_name)["properties"])
+        for property_name, json_schema_property_def in properties.items():
+            clean_prop_name = self._normalize_column_name(property_name)
+            columns[clean_prop_name] = self.type_converter.to_sql_type(json_schema_property_def)
+
         # Add the metadata columns
-        columns["_airbyte_extracted_at"] = sqlalchemy.TIMESTAMP
-        columns["_airbyte_loaded_at"] = sqlalchemy.TIMESTAMP
+        columns["_airbyte_extracted_at"] = sqlalchemy.TIMESTAMP()
+        columns["_airbyte_loaded_at"] = sqlalchemy.TIMESTAMP()
         return columns
 
     @final
     def _get_stream_json_schema(
         self,
         stream_name: str,
-    ) -> dict[str, str]:
+    ) -> dict[str, str | dict[str, str | dict]]:
         """Return the column definitions for the given stream."""
-        return self.catalog.streams[stream_name]["json_schema"]
+        return self.source_catalog["streams"][stream_name]["json_schema"]
 
     @final
     @overrides
-    def _finalize_batches(
-        self, stream_name: str, batches: dict[str, BatchHandle]
-    ) -> bool:
+    def _finalize_batches(self, stream_name: str) -> dict[str, BatchHandle]:
         """Finalize all uncommitted batches.
 
         If a stream name is provided, only process uncommitted batches for that stream.
+
+        This is a generic 'final' implementation, which should not be overridden by subclasses.
+
+        Returns a mapping of batch IDs to batch handles, for those batches that were processed.
         """
-        files: list[Path] = [batch_handle for batch_handle in batches.values()]
-        max_batch_id = max(batches.keys())
-        temp_table_name = self._get_temp_table_name(
-            stream_name,
-            batch_id=max_batch_id,
-        )
-        self._write_files_to_new_table(files, temp_table_name)
+        batches_to_finalize = self._pending_batches[stream_name]
+
+        if not batches_to_finalize:
+            return {}
+
+        # Get a list of all files to finalize from all pending batches.
+        files: list[Path] = [
+            file_path for batch_handle
+            in cast(list[list[Path]], batches_to_finalize.values())
+            for file_path in batch_handle
+        ]
+        # Use the max batch ID as the batch ID for table names.
+        max_batch_id = max(batches_to_finalize.keys())
+        temp_table_name = self._write_files_to_new_table(files, stream_name, max_batch_id)
+
+        # TODO: Add a dedupe step here to remove duplicates from the temp table.
+        #       Some sources will send us duplicate records within the same stream,
+        #       although this is a fairly rare edge case we can ignore in V1.
+
+        # Merge to final table
         final_table_name = self._ensure_final_table_exists(
             stream_name, create_if_missing=True
         )
-        self._write_temp_table_to_final_table(temp_table_name, final_table_name)
+        self._write_temp_table_to_final_table(stream_name, temp_table_name, final_table_name)
+
+        # Drop the temp table and do some cleanup
         self._drop_temp_table(temp_table_name)
+        self._completed_batches.update(batches_to_finalize)
+        self._pending_batches.clear()
+
+        # Return the batch handles as measure of work completed.
+        return batches_to_finalize
+
 
     def _drop_temp_table(
         self,
@@ -261,36 +289,35 @@ class SQLCache(BaseCache, abc.ABCMeta):
     ) -> None:
         """Drop the given table."""
         with self.get_sql_engine().begin() as conn:
-            conn.execute(
-                f"""
-                DROP TABLE {table_name};
-                """
-            )
+            conn.execute(text(f"DROP TABLE {table_name}"))
 
     def _write_files_to_new_table(
         self,
         files: list[Path],
-        table_name: str,
-    ) -> None:
+        stream_name: str,
+        batch_id: str,
+    ) -> str:
         """Write a file(s) to a new table.
 
         This is a generic implementation, which can be overridden by subclasses
         to improve performance.
         """
-        self._create_table_for_loading(table_name)
+        temp_table_name = self._create_table_for_loading(stream_name, batch_id)
         for file_path in files:
             with pa.parquet.ParquetFile(file_path) as pf:
                 record_batch = pf.read()
                 record_batch.to_pandas().to_sql(
-                    table_name,
+                    temp_table_name,
                     self.get_sql_alchemy_url(),
                     if_exists="replace",
                     index=False,
                 )
+        return temp_table_name
 
     @final
     def _write_temp_table_to_final_table(
         self,
+        stream_name: str,
         temp_table_name: str,
         final_table_name: str,
     ) -> None:
@@ -301,10 +328,10 @@ class SQLCache(BaseCache, abc.ABCMeta):
                     "Deduping was requested but merge-insert is not yet supported."
                 )
 
-            self._merge_temp_table_to_final_table(temp_table_name, final_table_name)
+            self._merge_temp_table_to_final_table(stream_name, temp_table_name, final_table_name)
 
         else:
-            self._append_temp_table_to_final_table(temp_table_name, final_table_name)
+            self._append_temp_table_to_final_table(stream_name, temp_table_name, final_table_name)
 
     def _append_temp_table_to_final_table(
         self,
@@ -316,14 +343,16 @@ class SQLCache(BaseCache, abc.ABCMeta):
         columns = self._get_sql_column_definitions(stream_name).keys()
         with self.get_sql_engine().begin() as conn:
             conn.execute(
-                f"""
-                INSERT INTO {final_table_name} (
-                  {f',{nl}  '.join(columns)}
+                text(
+                    f"""
+                    INSERT INTO {final_table_name} (
+                    {f',{nl}  '.join(columns)}
+                    )
+                    SELECT
+                    {f',{nl}  '.join(columns)}
+                    FROM {temp_table_name}
+                    """
                 )
-                SELECT
-                  {f',{nl}  '.join(columns)}
-                FROM {temp_table_name}
-                """
             )
 
     def _get_primary_keys(
@@ -335,9 +364,9 @@ class SQLCache(BaseCache, abc.ABCMeta):
 
     def _merge_temp_table_to_final_table(
         self,
+        stream_name: str,
         temp_table_name: str,
         final_table_name: str,
-        stream_name: str,
     ):
         """Merge the temp table into the main one.
 
@@ -354,24 +383,26 @@ class SQLCache(BaseCache, abc.ABCMeta):
         set_clause = "{nl}    ".join(f"{col} = tmp.{col}" for col in non_pk_columns)
         with self.get_sql_engine().begin() as conn:
             conn.execute(
-                f"""
-                MERGE INTO {final_table_name} final
-                USING (
-                  SELECT *
-                  FROM {temp_table_name}
-                ) AS tmp
-                 ON {join_clause}
-                WHEN MATCHED THEN UPDATE
-                  SET
-                    {set_clause}
-                WHEN NOT MATCHED THEN INSERT
-                  (
-                    {f',{nl}    '.join(columns)}
-                  )
-                  VALUES (
-                    tmp.{f',{nl}    tmp.'.join(columns)}
-                  );
-                """
+                text(
+                    f"""
+                    MERGE INTO {final_table_name} final
+                    USING (
+                    SELECT *
+                    FROM {temp_table_name}
+                    ) AS tmp
+                    ON {join_clause}
+                    WHEN MATCHED THEN UPDATE
+                    SET
+                        {set_clause}
+                    WHEN NOT MATCHED THEN INSERT
+                    (
+                        {f',{nl}    '.join(columns)}
+                    )
+                    VALUES (
+                        tmp.{f',{nl}    tmp.'.join(columns)}
+                    );
+                    """
+                )
             )
 
     @final

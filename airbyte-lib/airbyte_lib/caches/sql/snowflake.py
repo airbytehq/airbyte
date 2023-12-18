@@ -7,8 +7,8 @@ from pathlib import Path
 from overrides import overrides
 import pyarrow as pa
 
-from airbyte_lib.bases import SQLCache, SQLCacheConfigBase
-from airbyte_lib.parquet import ParquetWriter, ParquetWriterConfig
+from airbyte_lib.caches.bases import SQLCache, SQLCacheConfigBase
+from airbyte_lib.file_writers import ParquetWriter, ParquetWriterConfig
 
 
 class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
