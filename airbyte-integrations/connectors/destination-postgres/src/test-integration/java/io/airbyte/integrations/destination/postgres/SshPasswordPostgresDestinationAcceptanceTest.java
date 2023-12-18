@@ -15,31 +15,33 @@ public class SshPasswordPostgresDestinationAcceptanceTest extends SshPostgresDes
     return SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
   }
 
-  @Disabled
-  @Override
+  @Disabled("sshpass tunnel is not working with DBT container. https://github.com/airbytehq/airbyte/issues/33547")
   public void testIncrementalDedupeSync() throws Exception {
-
+    super.testIncrementalDedupeSync();
   }
 
-  @Disabled
+  @Disabled("sshpass tunnel is not working with DBT container. https://github.com/airbytehq/airbyte/issues/33547")
   @Override
   public void testDataTypeTestWithNormalization(String messagesFilename,
                                                 String catalogFilename,
                                                 TestCompatibility testCompatibility)
       throws Exception {
-
+    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
 
-  @Disabled
+  @Disabled("sshpass tunnel is not working with DBT container. https://github.com/airbytehq/airbyte/issues/33547")
   @Override
   public void testSyncWithNormalization(String messagesFilename, String catalogFilename) throws Exception {
-
+    super.testSyncWithNormalization(messagesFilename, catalogFilename);
   }
 
-  @Disabled
+  @Disabled("sshpass tunnel is not working with DBT container. https://github.com/airbytehq/airbyte/issues/33547")
   @Override
   public void testCustomDbtTransformations() throws Exception {
-
+    super.testCustomDbtTransformations();
   }
+
+  // TODO: Although testCustomDbtTransformationsFailure is passing, the failure is for wrong reasons.
+  // See disabled tests.
 
 }
