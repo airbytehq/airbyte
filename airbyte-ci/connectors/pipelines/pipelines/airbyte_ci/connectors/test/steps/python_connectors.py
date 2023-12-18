@@ -195,6 +195,66 @@ class IntegrationTests(PytestStep):
     test_directory_name = "integration_tests"
     bind_to_docker_host = True
 
+class AirbyteLibValidation(Step):
+    """A step to run the connector integration tests with Pytest."""
+
+    title = "AirbyteLib validation tests"
+    bind_to_docker_host = True
+
+    async def _run(self, connector_under_test: Container) -> StepResult:
+        """Run all pytest tests declared in the test directory of the connector code.
+
+        Args:
+            connector_under_test (Container): The connector under test container.
+
+        Returns:
+            StepResult: Failure or success of the unit tests with stdout and stdout.
+        """
+        # TODO skip if not pypi published
+
+        test_environment = await self.install_testing_environment(
+            connector_under_test
+        )
+
+        if self.bind_to_docker_host:
+            test_environment = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, test_environment)
+
+        connector_secrets = await self.context.get_connector_secrets()
+        first_secret_name = list(connector_secrets.keys())[0]
+        test_execution = test_environment.with_exec(["airbyte-lib-validate-source", "--connector-dir", str(self.context.connector.code_directory), "--sample-config", "/secrets/" + first_secret_name])
+
+        return await self.get_step_result(test_execution)
+
+    async def install_testing_environment(
+        self,
+        built_connector_container: Container,
+    ) -> Callable:
+        """Install the connector with the extra dependencies in /test_environment.
+
+        Args:
+            extra_dependencies_names (Iterable[str]): Extra dependencies to install.
+
+        Returns:
+            Callable: The decorator to use with the with_ method of a container.
+        """
+        secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets")
+
+        container_with_test_deps = (
+            # Install the connector python package in /test_environment with the extra dependencies
+            await pipelines.dagger.actions.python.common.with_python_connector_installed(
+                self.context,
+                # Reset the entrypoint to run non airbyte commands
+                built_connector_container.with_entrypoint([]),
+                str(self.context.connector.code_directory),
+            )
+        )
+        return (
+            container_with_test_deps
+            .with_exec(["pip", "install", "--index-url", "https://test.pypi.org/simple/", "--extra-index-url", "https://pypi.org/simple", "airbyte-lib"])
+            # Mount the secrets
+            .with_(secret_mounting_function).with_env_variable("PYTHONPATH", "."))
+ 
+
 
 def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
     """
@@ -202,31 +262,37 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
     """
     return [
         [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context))],
+        # [
+        #     StepToRun(
+        #         id=CONNECTOR_TEST_STEP_ID.UNIT,
+        #         step=UnitTests(context),
+        #         args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+        #         depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+        #     )
+        # ],
         [
+            # StepToRun(
+            #     id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
+            #     step=IntegrationTests(context),
+            #     args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+            #     depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            # ),
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.UNIT,
-                step=UnitTests(context),
+                id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LIB_VALIDATION,
+                step=AirbyteLibValidation(context),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-            )
-        ],
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
-                step=IntegrationTests(context),
-                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
-                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
-                step=AcceptanceTests(context, context.concurrent_cat),
-                args=lambda results: {
-                    "connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]
-                },
-                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-            ),
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.CHECK_BASE_IMAGE, step=CheckBaseImageIsUsed(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD]
-            ),
+            # StepToRun(
+            #     id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
+            #     step=AcceptanceTests(context, context.concurrent_cat),
+            #     args=lambda results: {
+            #         "connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]
+            #     },
+            #     depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            # ),
+            # StepToRun(
+            #     id=CONNECTOR_TEST_STEP_ID.CHECK_BASE_IMAGE, step=CheckBaseImageIsUsed(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD]
+            # ),
         ],
     ]

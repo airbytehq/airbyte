@@ -14,6 +14,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     BUILD = "build"
     CHECK_BASE_IMAGE = "check_base_image"
     INTEGRATION = "integration"
+    AIRBYTE_LIB_VALIDATION = "airbyte_lib_validation"
     METADATA_VALIDATION = "metadata_validation"
     QA_CHECKS = "qa_checks"
     UNIT = "unit"
