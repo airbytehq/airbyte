@@ -17,11 +17,27 @@ pyarrow = "^14.0.1"
 python-ulid = "^2.2.0"
 requests = "^2.31.0"
 SQLAlchemy = "^2.0.23"
+orjson = "^3.9.10"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.7.1"
 pytest = "^7.4.3"
 ruff = "^0.1.7"
+pytest-mypy = "^0.10.3"
+faker = "^21.0.0"
+pyarrow-stubs = "^10.0.1.7"
+
+[tool.pytest.ini_options]
+addopts = "--mypy"
+
+[tool.mypy]
+check_untyped_defs = true
+
+[tool.mypy-airbyte_protocol]
+ignore_missing_imports = true  # No stubs yet (😢)
+
+[tool.mypy-airbyte-protocol]
+ignore_missing_imports = true  # No stubs yet (😢)
 
 [build-system]
 requires = ["poetry-core"]

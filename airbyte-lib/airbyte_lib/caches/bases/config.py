@@ -6,5 +6,5 @@ from pydantic import BaseModel
 from overrides import EnforceOverrides
 
 
-class CacheConfigBase(BaseModel, EnforceOverrides):
+class CacheConfigBase(BaseModel, meta=EnforceOverrides):
     pass

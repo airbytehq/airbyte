@@ -8,7 +8,7 @@ from pathlib import Path
 import pyarrow as pa
 from overrides import overrides
 
-from airbyte_lib.bases.core import CacheBase, BatchHandle
+from airbyte_lib.caches.bases.core import CacheBase, BatchHandle
 
 DEFAULT_BATCH_SIZE = 10000
 

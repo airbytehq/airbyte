@@ -4,7 +4,9 @@ from pathlib import Path
 import pyarrow as pa
 import ulid
 
-from airbyte_lib.bases import CacheConfigBase, FileWriterBase
+from .base import FileWriterBase
+
+from airbyte_lib.caches.bases import CacheConfigBase
 
 
 class ParquetWriterConfig(CacheConfigBase):

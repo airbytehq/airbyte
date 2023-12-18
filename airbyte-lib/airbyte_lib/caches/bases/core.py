@@ -5,6 +5,7 @@ from __future__ import annotations
 import abc
 import io
 import sys
+from collections import defaultdict
 from typing import final, Any
 
 import orjson
@@ -12,7 +13,7 @@ import pyarrow as pa
 import ulid
 from overrides import EnforceOverrides
 
-from airbyte_lib.bases.config import CacheConfigBase
+from airbyte_lib.caches.bases.config import CacheConfigBase
 
 DEFAULT_BATCH_SIZE = 10000
 
@@ -23,7 +24,7 @@ class AirbyteMessageParsingError(Exception):
     """Raised when an Airbyte message is invalid or cannot be parsed."""
 
 
-class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
+class CacheBase(abc.ABC, EnforceOverrides):
     """Abstract base class for Caches, which write and read from durable storage."""
 
     config_class: type[CacheConfigBase]
@@ -42,21 +43,21 @@ class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
             raise RuntimeError(err_msg)
 
         self.config = self.config_class
-        self._uncommitted_batches: dict[dict[str, Any]] = {}
-        self._completed_batches: dict[dict[str, Any]] = {}
+        self._pending_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
+        self._completed_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
 
     @final
     def process_stdin(
         self,
         max_batch_size: int = DEFAULT_BATCH_SIZE,
-    ):
+    ) -> None:
         """
         Process the input stream from stdin.
 
         Return a list of summaries for testing.
         """
         input_stream = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8")
-        return self.process_input_stream(input_stream, max_batch_size)
+        self.process_input_stream(input_stream, max_batch_size)
 
     @final
     def process_input_stream(
@@ -69,8 +70,7 @@ class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
 
         Return a list of summaries for testing.
         """
-        stream_batches = {}
-        processing_summaries = []
+        stream_batches: dict[str, Any] = {}
 
         for line in input_stream:
             record = orjson.loads(line)
@@ -89,17 +89,14 @@ class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
 
             if len(stream_batch) >= max_batch_size:
                 record_batch = pa.Table.from_pydict(stream_batch)
-                summary = self._process_batch(stream_name, record_batch)
-                processing_summaries.append(summary)
+                self._process_batch(stream_name, record_batch)
                 stream_batch.clear()
 
         for stream_name, batch in stream_batches.items():
             if batch:
                 record_batch = pa.Table.from_pydict(batch)
-                summary = self._process_batch(stream_name, record_batch)
-                processing_summaries.append(summary)
+                self._process_batch(stream_name, record_batch)
 
-        return processing_summaries
 
     @final
     def _process_batch(
@@ -115,13 +112,14 @@ class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
         batch_handle = self.process_batch(
             stream_name, batch_id, record_batch
         ) or self.get_batch_handle(stream_name, batch_id)
-        if stream_name not in self.processed_batches:
-            self.processed_batches[stream_name] = {}
 
-        if not self.skip_commit_step:
+        if stream_name not in self._pending_batches:
+            self._pending_batches[stream_name] = {}
+
+        if not self.skip_finalize_step:
             self._completed_batches[stream_name][batch_id] = batch_handle
         else:
-            self._uncommitted_batches[stream_name][batch_id] = batch_handle
+            self._pending_batches[stream_name][batch_id] = batch_handle
 
         return batch_id, batch_handle, None
 
@@ -158,10 +156,10 @@ class CacheBase(abc.AbstractBaseClass, EnforceOverrides):
     @final
     def _finalize_batches(self, stream_name: str) -> dict[str, BatchHandle]:
         """Commit all uncommitted batches for a given stream."""
-        batches_to_finalize = self._uncommitted_batches[stream_name]
+        batches_to_finalize = self._pending_batches[stream_name]
         self.finalize_batches(stream_name, batches_to_finalize)
-        self._committed_batches.update(batches_to_finalize)
-        self._uncommitted_batches.clear()
+        self._completed_batches.update(batches_to_finalize)
+        self._pending_batches.clear()
         return batches_to_finalize
 
     @abc.abstractmethod
