@@ -78,7 +78,7 @@ setup(
         "python-dateutil",
         "PyYAML>=6.0.1",
         "requests==2.31.0",
-        "requests_cache==1.0.0",
+        "requests_cache==1.1.0",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
         "cachetools==5.3.2",
