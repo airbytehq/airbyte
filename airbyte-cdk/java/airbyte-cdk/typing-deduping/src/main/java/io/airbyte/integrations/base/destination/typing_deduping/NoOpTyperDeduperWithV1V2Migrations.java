@@ -60,10 +60,10 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
     var rawSchema = parsedCatalog.streams().stream().map(stream -> stream.id().rawNamespace());
     var finalSchema = parsedCatalog.streams().stream().map(stream -> stream.id().finalNamespace());
     var createAllSchemasSql = Streams.concat(rawSchema, finalSchema)
-                                     .filter(Objects::nonNull)
-                                     .distinct()
-                                     .map(sqlGenerator::createSchema)
-                                     .collect(Collectors.joining("\n"));
+        .filter(Objects::nonNull)
+        .distinct()
+        .map(sqlGenerator::createSchema)
+        .collect(Collectors.joining("\n"));
     destinationHandler.execute(createAllSchemasSql);
   }
 
