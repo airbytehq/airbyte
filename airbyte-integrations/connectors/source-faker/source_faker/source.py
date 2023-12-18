@@ -12,8 +12,11 @@ from .streams import Products, Purchases, Users
 
 
 class SourceFaker(AbstractSource):
-    def say_moo(self):
-        print ("moo")
+    def say_moo(self, times=0):
+        if times == 0:
+            return "moo"
+        else:
+            return "m" + "o" * times
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         if type(config["count"]) == int or type(config["count"]) == float:
