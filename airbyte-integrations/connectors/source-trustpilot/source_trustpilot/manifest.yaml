@@ -1,0 +1,262 @@
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+      - client_secret
+      - client_id
+    properties:
+      client_secret:
+        type: string
+        order: 2
+        title: Secret
+        always_show: true
+        description: >-
+          The Secret of the Trustpilot API application. (represents the OAuth
+          Client Secret)
+        airbyte_secret: true
+      client_id:
+        type: string
+        order: 1
+        title: API key
+        description: >-
+          The API key of the Trustpilot API application. (represents the OAuth
+          Client ID)
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 0
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      business_units:
+        type: array
+        order: 3
+        title: Business units
+        description: >-
+          The names of business units which shall be synchronized. Some streams
+          e.g. configured_business_units or private_reviews use this
+          configuration.
+    additionalProperties: true
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - configured_business_units
+streams:
+  - name: configured_business_units
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /business-units/find
+        type: HttpRequester
+        url_base: https://api.trustpilot.com/v1
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: apikey
+          api_token: "{{ config['client_id'] }}"
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        - type: ListPartitionRouter
+          values: "{{ config['business_units'] }}"
+          cursor_field: business_unit
+          request_option:
+            type: RequestOption
+            field_name: name
+            inject_into: request_parameter
+    primary_key:
+      - id
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - ["links"]
+  - name: private_reviews
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: perPage
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+      requester:
+        path: >-
+          /private/business-units/{{ stream_partition['business_unit_id']
+          }}/reviews
+        type: HttpRequester
+        url_base: https://api.trustpilot.com/v1
+        http_method: GET
+        authenticator:
+          type: SessionTokenAuthenticator
+          login_requester:
+            path: accesstoken
+            type: HttpRequester
+            url_base: >-
+              https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications
+            http_method: POST
+            authenticator:
+              type: BasicHttpAuthenticator
+              password: "{{ config['client_secret'] }}"
+              username: "{{ config['client_id'] }}"
+            request_headers: {}
+            request_body_data:
+              grant_type: client_credentials
+            request_parameters: {}
+          session_token_path:
+            - access_token
+          expiration_duration: P4D
+          request_authentication:
+            type: Bearer
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          orderBy: createdat.desc
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - reviews
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                name: configured_business_units
+                type: DeclarativeStream
+                retriever:
+                  type: SimpleRetriever
+                  paginator:
+                    type: NoPagination
+                  requester:
+                    path: /business-units/find
+                    type: HttpRequester
+                    url_base: https://api.trustpilot.com/v1
+                    http_method: GET
+                    authenticator:
+                      type: SessionTokenAuthenticator
+                      login_requester:
+                        path: accesstoken
+                        type: HttpRequester
+                        url_base: >-
+                          https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications
+                        http_method: POST
+                        authenticator:
+                          type: BasicHttpAuthenticator
+                          password: "{{ config['client_secret'] }}"
+                          username: "{{ config['client_id'] }}"
+                        request_headers: {}
+                        request_body_data:
+                          grant_type: client_credentials
+                        request_parameters: {}
+                      session_token_path:
+                        - access_token
+                      expiration_duration: P4D
+                      request_authentication:
+                        type: Bearer
+                    request_headers:
+                      apikey: "{{ config['client_id'] }}"
+                    request_body_json: {}
+                    request_parameters: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  partition_router:
+                    - type: ListPartitionRouter
+                      values: "{{ config['business_units'] }}"
+                      cursor_field: business_unit
+                      request_option:
+                        type: RequestOption
+                        field_name: name
+                        inject_into: request_parameter
+                primary_key:
+                  - id
+              parent_key: id
+              partition_field: business_unit_id
+    primary_key:
+      - id
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - ["links"]
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createdAt
+      is_data_feed: true
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+  - name: business_units
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: perPage
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
+      requester:
+        path: /business-units/all
+        type: HttpRequester
+        url_base: https://api.trustpilot.com/v1
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: apikey
+          api_token: "{{ config['client_id'] }}"
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - businessUnits
+    primary_key:
+      - id
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - ["links"]
+version: 0.51.41
+metadata:
+  autoImportSchema:
+    business_units: true
+    private_reviews: true
+    configured_business_units: true
