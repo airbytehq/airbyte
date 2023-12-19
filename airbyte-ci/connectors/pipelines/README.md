@@ -109,6 +109,7 @@ At this point you can run `airbyte-ci` commands.
 - [Examples](#examples)
 - [Options](#options-2)
 - [`connectors bump_version` command](#connectors-bump_version)
+- [`connectors upgrade_cdk` command](#connectors-upgrade_cdk)
 - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
 - [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
 - [`format` command subgroup](#format-subgroup)
@@ -389,6 +390,20 @@ Bump source-openweather: `airbyte-ci connectors --name=source-openweather bump_v
 | `BUMP_TYPE`           | major, minor or patch                                                  |
 | `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry            |
 | `CHANGELOG_ENTRY`     | The changelog entry that will get added to the connector documentation |
+
+### <a id="connectors-upgrade_cdk"></a>`connectors upgrade_cdk` command
+
+Upgrade the CDK version of the selected connectors by updating the dependency in the setup.py file.
+
+### Examples
+
+Upgrade for source-openweather: `airbyte-ci connectors --name=source-openweather upgrade_cdk <new-cdk-version>`
+
+#### Arguments
+
+| Argument              | Description                                                            |
+| --------------------- | ---------------------------------------------------------------------- |
+| `CDK_VERSION`         | CDK version to set (default to the most recent version)                |
 
 ### <a id="connectors-upgrade_base_image"></a>`connectors upgrade_base_image` command
 
