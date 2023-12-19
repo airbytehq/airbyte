@@ -11,7 +11,7 @@ red_text='\033[31m'
 default_text='\033[39m'
 
 # set -x/xtrace uses a Sony PS4 for more info
-PS4="$blue_text""${BASH_SOURCE}:${LINENO}: ""$default_text"
+PS4="$blue_text""${0}:${LINENO}: ""$default_text"
 
 ############################################################
 # Help                                                     #
