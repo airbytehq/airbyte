@@ -59,7 +59,7 @@ Prepare the Glue database that will be used as destination, see [this](https://d
    - **S3 Endpoint**
      - Leave empty if using AWS S3, fill in S3 URL if using Minio S3.
    - **S3 Filename pattern**
-     - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.
+     - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. Please, don't use empty space and not supportable placeholders, as they won't recognized.
    - **Glue database**
      - The Glue database name that was previously created through the management console or the cli.
    - **Glue serialization library**
@@ -96,7 +96,7 @@ Prepare the Glue database that will be used as destination, see [this](https://d
    - **S3 Endpoint**
      - Leave empty if using AWS S3, fill in S3 URL if using Minio S3.
    - **S3 Filename pattern**
-     - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.
+     - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. Please, don't use empty space and not supportable placeholders, as they won't recognized.
    - **Glue database**
      - The Glue database name that was previously created through the management console or the cli.
    - **Glue serialization library**

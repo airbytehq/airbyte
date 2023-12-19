@@ -195,44 +195,43 @@ def test_sh_dash_c():
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("tar_file_name", [None, "custom_tar_name.tar"])
-async def test_export_containers_to_tarball(mocker, dagger_client, tmp_path, tar_file_name):
+async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_file_name):
     context = mocker.Mock(
         dagger_client=dagger_client,
         connector=mocker.Mock(technical_name="my_connector"),
         host_image_export_dir_path=tmp_path,
         git_revision="my_git_revision",
     )
-    container_variants = [
-        dagger_client.container(platform=dagger.Platform("linux/arm64")).from_("bash:latest"),
-        dagger_client.container(platform=dagger.Platform("linux/amd64")).from_("bash:latest"),
-    ]
-    expected_tar_file_path = tmp_path / "my_connector_my_git_revision.tar" if tar_file_name is None else tmp_path / tar_file_name
-    exported_tar_file, exported_tar_file_path = await utils.export_containers_to_tarball(
-        context, container_variants, tar_file_name=tar_file_name
+    container = dagger_client.container().from_("bash:latest")
+    platform = consts.LOCAL_BUILD_PLATFORM
+
+    expected_tar_file_path = (
+        tmp_path / f"my_connector_my_git_revision_{platform.replace('/', '_')}.tar" if tar_file_name is None else tmp_path / tar_file_name
+    )
+    exported_tar_file, exported_tar_file_path = await utils.export_container_to_tarball(
+        context, container, platform, tar_file_name=tar_file_name
     )
     assert exported_tar_file_path == expected_tar_file_path
     assert await exported_tar_file.size() == expected_tar_file_path.stat().st_size
 
 
 @pytest.mark.anyio
-async def test_export_containers_to_tarball_failure(mocker, tmp_path):
-    mock_dagger_client = mocker.Mock()
-    mock_export = mocker.AsyncMock(return_value=False)
-    mock_dagger_client.container.return_value.export = mock_export
+async def test_export_container_to_tarball_failure(mocker, tmp_path):
 
     context = mocker.Mock(
-        dagger_client=mock_dagger_client,
         connector=mocker.Mock(technical_name="my_connector"),
         host_image_export_dir_path=tmp_path,
         git_revision="my_git_revision",
     )
 
-    container_variants = mocker.Mock()
-    exported_tar_file, exported_tar_file_path = await utils.export_containers_to_tarball(context, container_variants)
-    mock_export.assert_called_once_with(
-        str(tmp_path / "my_connector_my_git_revision.tar"),
-        platform_variants=container_variants,
-        forced_compression=dagger.ImageLayerCompression.Gzip,
-    )
+    mock_export = mocker.AsyncMock(return_value=False)
+    container = mocker.AsyncMock(export=mock_export)
+    platform = consts.LOCAL_BUILD_PLATFORM
+    exported_tar_file, exported_tar_file_path = await utils.export_container_to_tarball(context, container, platform)
     assert exported_tar_file is None
     assert exported_tar_file_path is None
+
+    mock_export.assert_called_once_with(
+        str(tmp_path / f"my_connector_my_git_revision_{platform.replace('/', '_')}.tar"),
+        forced_compression=dagger.ImageLayerCompression.Gzip,
+    )

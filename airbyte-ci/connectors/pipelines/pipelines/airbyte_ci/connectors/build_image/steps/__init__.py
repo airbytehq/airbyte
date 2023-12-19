@@ -32,9 +32,7 @@ async def run_connector_build(context: ConnectorContext) -> StepResult:
     return await LANGUAGE_BUILD_CONNECTOR_MAPPING[context.connector.language](context)
 
 
-async def run_connector_build_pipeline(
-    context: ConnectorContext, semaphore: anyio.Semaphore, image_tag: str
-) -> ConnectorReport:
+async def run_connector_build_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore, image_tag: str) -> ConnectorReport:
     """Run a build pipeline for a single connector.
 
     Args:

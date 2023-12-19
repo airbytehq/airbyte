@@ -225,7 +225,6 @@ const buildAConnector = {
       },
       items: [
         "connector-development/testing-connectors/connector-acceptance-tests-reference",
-        "connector-development/testing-connectors/testing-a-local-catalog-in-development",
       ],
     },
     {
@@ -310,10 +309,9 @@ const contributeToAirbyte = {
       items: [
         "contributing-to-airbyte/resources/pull-requests-handbook",
         "contributing-to-airbyte/resources/code-style",
+        "contributing-to-airbyte/resources/code-formatting",
         "contributing-to-airbyte/resources/developing-locally",
         "contributing-to-airbyte/resources/developing-on-docker",
-        "contributing-to-airbyte/resources/gradle",
-        "contributing-to-airbyte/resources/python-gradle-setup",
       ],
     },
   ],
@@ -492,13 +490,14 @@ module.exports = {
     deployAirbyte,
     {
       type: "category",
-      label: "Airbyte Enterprise",
+      label: "Self-Managed Enterprise",
       link: {
         type: "doc",
         id: "enterprise-setup/README",
       },
       items: [
         "enterprise-setup/implementation-guide",
+        "enterprise-setup/upgrading-from-community",
         "enterprise-setup/sso",
       ]
     },
@@ -580,6 +579,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/november_2023",
         "release_notes/october_2023",
         "release_notes/upgrading_to_destinations_v2",
         "release_notes/september_2023",

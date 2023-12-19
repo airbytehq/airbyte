@@ -6,6 +6,7 @@
 
 import os
 import shutil
+import ssl
 import sys
 import tempfile
 import urllib.request
@@ -13,6 +14,46 @@ import urllib.request
 # !IMPORTANT! This constant is inline here instead of being imported from pipelines/consts.py
 # because we don't want to introduce any dependencies on other files in the repository.
 RELEASE_URL = os.getenv("RELEASE_URL", "https://connectors.airbyte.com/files/airbyte-ci/releases")
+
+
+def _get_custom_certificate_path():
+    """
+    Returns the path to the custom certificate file if certifi is installed, otherwise None.
+
+    HACK: This is a workaround for the fact that the pyinstaller binary does not know how or where to
+    find the ssl certificates file. This happens because the binary is built on a different system
+    than the one it is being run on. This function will return the path to the certifi certificate file
+    if it is installed, otherwise it will return None. This function is used in get_ssl_context() below.
+
+    WHY: this works when certifi is not found:
+    If you run this file directly, it will use the system python interpreter and will be able to find
+    the ssl certificates file. e.g. when running in dev mode or via the makefile.
+
+    WHY: this works when certifi is found:
+    When this file is run by the pyinstaller binary, it is through the pipelines project, which has
+    certifi installed. This means that when this file is run by the pyinstaller binary, it will be able
+    to find the ssl certificates file in the certifi package.
+
+    """
+    # if certifi is not installed, do nothing
+    try:
+        import certifi
+
+        return certifi.where()
+    except ImportError:
+        return
+
+
+def get_ssl_context():
+    """
+    Returns an ssl.SSLContext object with the custom certificate file if certifi is installed, otherwise
+    returns the default ssl.SSLContext object.
+    """
+    certifi_path = _get_custom_certificate_path()
+    if certifi_path is None:
+        return ssl.create_default_context()
+
+    return ssl.create_default_context(cafile=certifi_path)
 
 
 def get_airbyte_os_name():
@@ -49,7 +90,8 @@ def main(version="latest"):
 
         # Download the file using urllib.request
         print(f"Downloading from {url}")
-        with urllib.request.urlopen(url) as response, open(tmp_file, "wb") as out_file:
+        ssl_context = get_ssl_context()
+        with urllib.request.urlopen(url, context=ssl_context) as response, open(tmp_file, "wb") as out_file:
             shutil.copyfileobj(response, out_file)
 
         # Check if the destination path is a symlink and delete it if it is
