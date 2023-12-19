@@ -1,12 +1,9 @@
-import logging
 from typing import Optional, Dict, Tuple
 
 import requests
 from pydantic import BaseModel, SecretStr
 
 from source_ozon.types import IsSuccess, Message
-
-log = logging.getLogger(__name__)
 
 
 class OzonToken(BaseModel):
@@ -23,10 +20,10 @@ def fetch_ozon_token(client_id: str, client_secret: str) -> OzonToken:
         response = requests.post(url, json={"client_id": client_id, "client_secret": client_secret, "grant_type": "client_credentials"})
         response.raise_for_status()
         token = OzonToken(client_id=client_id, client_secret=client_secret, **response.json())
-        log.info(f"Fetched Ozon authorization token. Expires in {token.expires_in} sec")
+        print(f"Fetched Ozon authorization token. Expires in {token.expires_in} sec")
         return token
     except Exception as e:
-        log.error(f"Failed to fetch Ozon token: {str(e)}")
+        print(f"Failed to fetch Ozon token: {str(e)}")
         raise
 
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import io
-import logging
 import time
 import zipfile
 from datetime import date
@@ -20,10 +19,9 @@ from source_ozon.schemas.brend_shelf_report_data import BrandShelfReport
 from source_ozon.schemas.campaign import OzonCampaign, CampaignReport
 from source_ozon.schemas.report import ReportStatusResponse
 from source_ozon.schemas.search_promo_report_data import SearchPromoReport
+from source_ozon.schemas.sku_report_data import SkuReport
 from source_ozon.types import IsSuccess, Message
 from source_ozon.utils import chunks, pairwise
-
-log = logging.getLogger(__name__)
 
 
 def check_ozon_api_connection(credentials: OzonToken) -> tuple[IsSuccess, Optional[Message]]:
@@ -35,7 +33,7 @@ def check_ozon_api_connection(credentials: OzonToken) -> tuple[IsSuccess, Option
         response.raise_for_status()
         return True, None
     except Exception as e:
-        log.exception(f"Ozon API connection check failed: {str(e)}")
+        print(f"Ozon API connection check failed: {str(e)}")
         return False, str(e)
 
 
@@ -103,11 +101,11 @@ class CampaignsReportStream(Stream):
             response.raise_for_status()
             response_data = response.json()
         except Exception as e:
-            log.exception(f"Fail to get Ozon campaigns: {str(e)}")
+            print(f"Fail to get Ozon campaigns: {str(e)}")
             raise
 
         if not (campaigns := response_data.get("list", [])):
-            log.info(f"There is no campaigns in Ozon")
+            print(f"There is no campaigns in Ozon")
             return
 
         for campaign in campaigns:
@@ -115,10 +113,10 @@ class CampaignsReportStream(Stream):
                 campaign_ = OzonCampaign(**campaign)
                 self._campaigns[campaign_.id] = campaign_
             except Exception as e:
-                log.exception(f"Fail to parse Ozon campaigns: {str(e)}")
+                print(f"Fail to parse Ozon campaigns: {str(e)}")
                 raise
 
-        log.info(f"Got {len(campaigns)} Ozon campaigns")
+        print(f"Got {len(campaigns)} Ozon campaigns")
 
     def _run_report(self, campaign_ids: List[str]) -> Iterable[Mapping[str, Any]]:
         report_id = self._create_report(campaign_ids)
@@ -137,23 +135,23 @@ class CampaignsReportStream(Stream):
             response.raise_for_status()
             response_data = response.json()
         except Exception as e:
-            log.exception(f"Fail to create Ozon campaign report: {str(e)}")
+            print(f"Fail to create Ozon campaign report: {str(e)}")
             raise
         else:
             if error := response_data.get("error"):
-                log.error(f"Fail to create Ozon campaign report: {error}")
+                print(f"Fail to create Ozon campaign report: {error}")
                 raise RuntimeError(f"Fail to create Ozon campaign report: {error}")
 
             if (report_id := response_data.get("UUID")) is None:
-                log.error(f"Report ID not found in create report response: {response_data}")
+                print(f"Report ID not found in create report response: {response_data}")
                 raise ValueError(f"Report ID not found in create report response: {response_data}")
 
-            log.info(f"Ozon report created: {report_id}")
+            print(f"Ozon report created: {report_id}")
             return report_id
 
     def _wait_for_report_processing(self, report_id: str) -> str:
         url = f"{self.full_url}/{report_id}"
-        log.info(f"Report {report_id} status check URL: {url}")
+        print(f"Report {report_id} status check URL: {url}")
 
         errors_counter = 0
         while True:
@@ -161,7 +159,7 @@ class CampaignsReportStream(Stream):
                 response = requests.get(url, headers=self._get_headers())
                 response.raise_for_status()
             except Exception as e:
-                log.exception(f"Fail to get report status: {str(e)}")
+                print(f"Fail to get report status: {str(e)}")
                 errors_counter += 1
                 if errors_counter > 5:
                     raise RuntimeError(f"Failed to check report {report_id} status {errors_counter} times") from e
@@ -169,15 +167,15 @@ class CampaignsReportStream(Stream):
                 continue
             else:
                 report_status = ReportStatusResponse(**response.json())
-                log.info(f"Report {report_id} state: {report_status.state}")
+                print(f"Report {report_id} state: {report_status.state}")
 
                 if report_status.state == "OK":
                     download_link = self.HOST + report_status.link
-                    log.info(f"Report {report_id} download URL: {download_link}")
+                    print(f"Report {report_id} download URL: {download_link}")
                     return download_link
 
                 if report_status.state == "ERROR":
-                    log.error(f"Report {report_id} failed: {report_status.error}")
+                    print(f"Report {report_id} failed: {report_status.error}")
                     raise RuntimeError(f"Report {report_id} failed: {report_status.error}")
 
                 time.sleep(10)
@@ -194,10 +192,10 @@ class CampaignsReportStream(Stream):
             with open(filepath, "wb") as file:
                 for chunk in response.iter_content(chunk_size=128):
                     file.write(chunk)
-            log.info(f"Download complete: {filepath}")
+            print(f"Download complete: {filepath}")
             return filepath
         except Exception as e:
-            log.exception(f"Fail to download report: {str(e)}")
+            print(f"Fail to download report: {str(e)}")
             raise RuntimeError(f"Fail to download report: {str(e)}") from e
 
     def _parse_report(self, report_filepath: Path) -> Iterable[Mapping[str, Any]]:
@@ -211,7 +209,7 @@ class CampaignsReportStream(Stream):
                             textfile = io.TextIOWrapper(csvfile, encoding="utf-8")
                             yield from self._read_csv(textfile, campaign)
                     else:
-                        log.error(f"Unknown report file extension in zip archive '{report_filepath.name}': '{filename}'")
+                        print(f"Unknown report file extension in zip archive '{report_filepath.name}': '{filename}'")
                         raise ValueError(f"Unknown report file extension in zip archive '{report_filepath.name}': '{filename}'")
 
         elif file_extension == ".csv":
@@ -220,7 +218,7 @@ class CampaignsReportStream(Stream):
                 yield from self._read_csv(csvfile, campaign)
 
         else:
-            log.error(f"Unknown report file extension: {report_filepath.name}")
+            print(f"Unknown report file extension: {report_filepath.name}")
             raise ValueError(f"Unknown report file extension: {report_filepath.name}")
 
     def _get_campaign_by_campaign_report_name(self, filename: str) -> OzonCampaign:
@@ -228,7 +226,7 @@ class CampaignsReportStream(Stream):
         try:
             return self._campaigns[campaign_id]
         except KeyError as e:
-            log.error(f"Unknown Ozon campaign: '{campaign_id}'")
+            print(f"Unknown Ozon campaign: '{campaign_id}'")
             raise ValueError(f"Unknown Ozon campaign: '{campaign_id}'") from e
 
     def _read_csv(self, csv_file: TextIO, campaign: OzonCampaign) -> Iterable[Mapping[str, Any]]:
@@ -237,26 +235,34 @@ class CampaignsReportStream(Stream):
         next(csvreader, None)  # Skip report header
         next(csvreader, None)  # Skip columns headers
         for current_row, next_row in pairwise(csvreader):
+            if current_row[0] == "Корректировка":  # Не учитываем корректировку
+                continue
             try:
                 row = self.SCHEMA(
                     campaign_id=campaign.id,
                     campaign_name=campaign.title,
                     campaign_type=campaign.advObjectType,
                 )
+
+                if report_schema == BrandShelfReport and not current_row[0]:  # В отчете BrandShelfReport первая колонка может быть пустая
+                    current_row = current_row[1:]
+
                 row.report_data = report_schema.from_list_of_values(values=current_row)
                 yield row.dict()
             except Exception as e:
-                log.exception(f"Failed to parse Ozon report for campaign '{campaign.id}': {str(e)}")
+                print(f"Failed to parse Ozon report for campaign '{campaign.id}': {str(e)}")
                 raise RuntimeError(f"Failed to parse Ozon report for campaign '{campaign.id}': {str(e)}") from e
 
     @staticmethod
-    def _get_campaign_schema(campaign: OzonCampaign) -> Type[SearchPromoReport | BannerReport | BrandShelfReport]:
+    def _get_campaign_schema(campaign: OzonCampaign) -> Type[SearchPromoReport | BannerReport | BrandShelfReport | SkuReport]:
         if campaign.advObjectType == "SEARCH_PROMO":
             return SearchPromoReport
         elif campaign.advObjectType == "BANNER":
             return BannerReport
         elif campaign.advObjectType == "BRAND_SHELF":
             return BrandShelfReport
+        elif campaign.advObjectType == "SKU":
+            return SkuReport
         else:
-            log.error(f"Unknown Ozon campaign '{campaign.id}' type: '{campaign.advObjectType}'")
+            print(f"Unknown Ozon campaign '{campaign.id}' type: '{campaign.advObjectType}'")
             raise ValueError(f"Unknown Ozon campaign '{campaign.id}' type: '{campaign.advObjectType}'")

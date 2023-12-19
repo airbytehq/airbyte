@@ -30,6 +30,9 @@
                 },
                 {
                   "$ref" : "#/definitions/BrandShelfReport"
+                },
+                {
+                  "$ref" : "#/definitions/SkuReport"
                 }
               ]
             }
@@ -215,6 +218,77 @@
                 "expense_rub_with_vat" : {
                   "title" : "Expense Rub With Vat",
                   "description" : "\u0420\u0430\u0441\u0445\u043e\u0434, \u20bd, \u0441 \u041d\u0414\u0421",
+                  "type" : "number"
+                }
+              }
+            },
+            "SkuReport" : {
+              "title" : "SkuReport",
+              "type" : "object",
+              "properties" : {
+                "sku" : {
+                  "title" : "Sku",
+                  "description" : "SKU",
+                  "type" : "string"
+                },
+                "product_name" : {
+                  "title" : "Product Name",
+                  "description" : "\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0442\u043e\u0432\u0430\u0440\u0430",
+                  "type" : "string"
+                },
+                "product_price_rub" : {
+                  "title" : "Product Price Rub",
+                  "description" : "\u0426\u0435\u043d\u0430 \u0442\u043e\u0432\u0430\u0440\u0430, \u20bd",
+                  "type" : "number"
+                },
+                "impressions" : {
+                  "title" : "Impressions",
+                  "description" : "\u041f\u043e\u043a\u0430\u0437\u044b",
+                  "type" : "integer"
+                },
+                "clicks" : {
+                  "title" : "Clicks",
+                  "description" : "\u041a\u043b\u0438\u043a\u0438",
+                  "type" : "integer"
+                },
+                "ctr" : {
+                  "title" : "Ctr",
+                  "description" : "CTR (%)",
+                  "type" : "number"
+                },
+                "conversion" : {
+                  "title" : "Conversion",
+                  "description" : "\u041a\u043e\u043d\u0432\u0435\u0440\u0441\u0438\u044f",
+                  "type" : "number"
+                },
+                "avg_click_price_rub" : {
+                  "title" : "Avg Click Price Rub",
+                  "description" : "\u0421\u0440. \u0446\u0435\u043d\u0430 \u043a\u043b\u0438\u043a\u0430, \u20bd",
+                  "type" : "number"
+                },
+                "expense_with_vat" : {
+                  "title" : "Expense With Vat",
+                  "description" : "\u0420\u0430\u0441\u0445\u043e\u0434, \u20bd, \u0441 \u041d\u0414\u0421",
+                  "type" : "number"
+                },
+                "orders" : {
+                  "title" : "Orders",
+                  "description" : "\u0417\u0430\u043a\u0430\u0437\u044b",
+                  "type" : "integer"
+                },
+                "revenue_rub" : {
+                  "title" : "Revenue Rub",
+                  "description" : "\u0412\u044b\u0440\u0443\u0447\u043a\u0430, \u20bd",
+                  "type" : "number"
+                },
+                "model_orders" : {
+                  "title" : "Model Orders",
+                  "description" : "\u0417\u0430\u043a\u0430\u0437\u044b \u043c\u043e\u0434\u0435\u043b\u0438",
+                  "type" : "integer"
+                },
+                "model_orders_revenue_rub" : {
+                  "title" : "Model Orders Revenue Rub",
+                  "description" : "\u0412\u044b\u0440\u0443\u0447\u043a\u0430 \u0441 \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u043c\u043e\u0434\u0435\u043b\u0438, \u20bd",
                   "type" : "number"
                 }
               }
