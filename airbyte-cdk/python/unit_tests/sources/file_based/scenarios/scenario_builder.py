@@ -1,14 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Generic, List, Mapping, Optional, Tuple, Type, TypeVar
+from typing import Any, Generic, List, Mapping, Optional, Set, Tuple, Type, TypeVar
 
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
 
 @dataclass
@@ -46,9 +46,14 @@ class TestScenario(Generic[SourceType]):
         expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
         incremental_scenario_config: Optional[IncrementalScenarioConfig],
         expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]] = None,
+        log_levels: Optional[Set[str]] = None,
+        catalog: Optional[ConfiguredAirbyteCatalog] = None,
     ):
+        if log_levels is None:
+            log_levels = {"ERROR", "WARN", "WARNING"}
         self.name = name
         self.config = config
+        self.catalog = catalog
         self.source = source
         self.expected_spec = expected_spec
         self.expected_check_status = expected_check_status
@@ -60,27 +65,31 @@ class TestScenario(Generic[SourceType]):
         self.expected_read_error = expected_read_error
         self.incremental_scenario_config = incremental_scenario_config
         self.expected_analytics = expected_analytics
+        self.log_levels = log_levels
         self.validate()
 
     def validate(self) -> None:
         assert self.name
-        if not self.expected_catalog:
-            return
-        if self.expected_read_error or self.expected_check_error:
-            return
-        # Only verify the streams if no errors are expected
-        streams = set([s.name for s in self.source.streams(self.config)])
-        expected_streams = {s["name"] for s in self.expected_catalog["streams"]}
-        assert expected_streams <= streams
 
     def configured_catalog(self, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:
+        # The preferred way of returning the catalog for the TestScenario is by providing it at the initialization. The previous solution
+        # relied on `self.source.streams` which might raise an exception hence screwing the tests results as the user might expect the
+        # exception to be raised as part of the actual check/discover/read commands
+        # Note that to avoid a breaking change, we still attempt to automatically generate the catalog based on the streams
+        if self.catalog:
+            return self.catalog.dict()  # type: ignore  # dict() is not typed
+
         catalog: Mapping[str, Any] = {"streams": []}
         for stream in self.source.streams(self.config):
             catalog["streams"].append(
                 {
-                    "stream": stream.name,
+                    "stream": {
+                        "name": stream.name,
+                        "json_schema": {},
+                        "supported_sync_modes": [sync_mode.value],
+                    },
                     "sync_mode": sync_mode.value,
-                    "destination_sync_mode": "append",
+                    "destination_sync_mode": "append"
                 }
             )
 
@@ -101,6 +110,7 @@ class TestScenarioBuilder(Generic[SourceType]):
     def __init__(self) -> None:
         self._name = ""
         self._config: Mapping[str, Any] = {}
+        self._catalog: Optional[ConfiguredAirbyteCatalog] = None
         self._expected_spec: Optional[Mapping[str, Any]] = None
         self._expected_check_status: Optional[str] = None
         self._expected_catalog: Mapping[str, Any] = {}
@@ -112,6 +122,7 @@ class TestScenarioBuilder(Generic[SourceType]):
         self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
         self._expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]] = None
         self.source_builder: Optional[SourceBuilder[SourceType]] = None
+        self._log_levels = None
 
     def set_name(self, name: str) -> "TestScenarioBuilder[SourceType]":
         self._name = name
@@ -123,6 +134,10 @@ class TestScenarioBuilder(Generic[SourceType]):
 
     def set_expected_spec(self, expected_spec: Mapping[str, Any]) -> "TestScenarioBuilder[SourceType]":
         self._expected_spec = expected_spec
+        return self
+
+    def set_catalog(self, catalog: ConfiguredAirbyteCatalog) -> "TestScenarioBuilder[SourceType]":
+        self._catalog = catalog
         return self
 
     def set_expected_check_status(self, expected_check_status: str) -> "TestScenarioBuilder[SourceType]":
@@ -157,6 +172,10 @@ class TestScenarioBuilder(Generic[SourceType]):
         self._expected_read_error = error, message
         return self
 
+    def set_log_levels(self, levels: Set[str]) -> "TestScenarioBuilder":
+        self._log_levels = levels
+        return self
+
     def set_source_builder(self, source_builder: SourceBuilder[SourceType]) -> "TestScenarioBuilder[SourceType]":
         self.source_builder = source_builder
         return self
@@ -188,6 +207,8 @@ class TestScenarioBuilder(Generic[SourceType]):
             self._expected_read_error,
             self._incremental_scenario_config,
             self._expected_analytics,
+            self._log_levels,
+            self._catalog,
         )
 
     def _configured_catalog(self, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:

@@ -7,9 +7,9 @@ from copy import deepcopy
 
 import semver
 from dagger import Container
-from pipelines import consts
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.helpers import git
 from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
 
@@ -171,6 +171,6 @@ async def run_connector_version_bump_pipeline(
             add_changelog_entry_result = await add_changelog_entry.run()
             steps_results.append(add_changelog_entry_result)
             final_repo_dir = add_changelog_entry_result.output_artifact
-            await og_repo_dir.diff(final_repo_dir).export(str(consts.REPO_PATH))
+            await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
             context.report = ConnectorReport(context, steps_results, name="CONNECTOR VERSION BUMP RESULTS")
     return context.report

@@ -180,7 +180,8 @@
           "type": ["null", "object"],
           "properties": {
             "created_at": {
-              "type": ["null", "string"]
+              "type": ["null", "string"],
+              "format": "date-time"
             },
             "id": {
               "type": ["null", "integer"]
@@ -195,7 +196,8 @@
               "type": ["null", "string"]
             },
             "updated_at": {
-              "type": ["null", "string"]
+              "type": ["null", "string"],
+              "format": "date-time"
             },
             "web_url": {
               "type": ["null", "string"]

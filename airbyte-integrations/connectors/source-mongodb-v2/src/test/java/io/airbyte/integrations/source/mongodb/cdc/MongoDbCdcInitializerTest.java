@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
@@ -148,6 +149,7 @@ class MongoDbCdcInitializerTest {
     when(findIterable.cursor()).thenReturn(findCursor);
     when(findCursor.hasNext()).thenReturn(true);
     when(findCursor.next()).thenReturn(new Document("_id", new ObjectId(ID)));
+    when(findIterable.allowDiskUse(anyBoolean())).thenReturn(findIterable);
 
     mongoDbDebeziumStateUtil = spy(new MongoDbDebeziumStateUtil());
     cdcInitializer = new MongoDbCdcInitializer(mongoDbDebeziumStateUtil);

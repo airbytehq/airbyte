@@ -14,14 +14,6 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "supports_in_connector_normalization": False,
         "yum_packages": [],
     },
-    "destination-duckdb": {
-        "dockerfile": "duckdb.Dockerfile",
-        "dbt_adapter": "dbt-duckdb==1.0.1",
-        "integration_name": "duckdb",
-        "normalization_image": "airbyte/normalization-duckdb:0.4.3",
-        "supports_in_connector_normalization": False,
-        "yum_packages": [],
-    },
     "destination-mssql": {
         "dockerfile": "mssql.Dockerfile",
         "dbt_adapter": "dbt-sqlserver==1.0.0",

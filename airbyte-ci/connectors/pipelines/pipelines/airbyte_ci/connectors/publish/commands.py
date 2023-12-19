@@ -2,14 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import anyio
-import click
+import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.publish.pipeline import reorder_contexts, run_connector_publish_pipeline
+from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import ContextState
+from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
 @click.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
@@ -43,20 +44,6 @@ from pipelines.consts import ContextState
     envvar="METADATA_SERVICE_BUCKET_NAME",
 )
 @click.option(
-    "--docker-hub-username",
-    help="Your username to connect to DockerHub.",
-    type=click.STRING,
-    required=True,
-    envvar="DOCKER_HUB_USERNAME",
-)
-@click.option(
-    "--docker-hub-password",
-    help="Your password to connect to DockerHub.",
-    type=click.STRING,
-    required=True,
-    envvar="DOCKER_HUB_PASSWORD",
-)
-@click.option(
     "--slack-webhook",
     help="The Slack webhook URL to send notifications to.",
     type=click.STRING,
@@ -70,15 +57,13 @@ from pipelines.consts import ContextState
     default="#connector-publish-updates",
 )
 @click.pass_context
-def publish(
+async def publish(
     ctx: click.Context,
     pre_release: bool,
     spec_cache_gcs_credentials: str,
     spec_cache_bucket_name: str,
     metadata_service_bucket_name: str,
     metadata_service_gcs_credentials: str,
-    docker_hub_username: str,
-    docker_hub_password: str,
     slack_webhook: str,
     slack_channel: str,
 ):
@@ -87,10 +72,12 @@ def publish(
     ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
     ctx.obj["metadata_service_gcs_credentials"] = metadata_service_gcs_credentials
     if ctx.obj["is_local"]:
-        click.confirm(
+        confirm(
             "Publishing from a local environment is not recommended and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
             abort=True,
         )
+
+    fail_if_missing_docker_hub_creds(ctx)
 
     publish_connector_contexts = reorder_contexts(
         [
@@ -101,8 +88,8 @@ def publish(
                 spec_cache_bucket_name=spec_cache_bucket_name,
                 metadata_service_gcs_credentials=metadata_service_gcs_credentials,
                 metadata_bucket_name=metadata_service_bucket_name,
-                docker_hub_username=docker_hub_username,
-                docker_hub_password=docker_hub_password,
+                docker_hub_username=ctx.obj["docker_hub_username"],
+                docker_hub_password=ctx.obj["docker_hub_password"],
                 slack_webhook=slack_webhook,
                 reporting_slack_channel=slack_channel,
                 ci_report_bucket=ctx.obj["ci_report_bucket_name"],
@@ -116,6 +103,9 @@ def publish(
                 ci_context=ctx.obj.get("ci_context"),
                 ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
                 pull_request=ctx.obj.get("pull_request"),
+                s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+                s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
+                use_local_cdk=ctx.obj.get("use_local_cdk"),
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
@@ -124,8 +114,7 @@ def publish(
     main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")
     ctx.obj["concurrency"] = 1
 
-    publish_connector_contexts = anyio.run(
-        run_connectors_pipelines,
+    publish_connector_contexts = await run_connectors_pipelines(
         publish_connector_contexts,
         run_connector_publish_pipeline,
         "Publishing connectors",

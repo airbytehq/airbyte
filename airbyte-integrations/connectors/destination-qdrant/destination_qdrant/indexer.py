@@ -8,7 +8,7 @@ from typing import List, Optional
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from airbyte_cdk.destinations.vector_db_based.utils import format_exception
+from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier, format_exception
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level, Type
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_qdrant.config import QdrantIndexingConfigModel
@@ -67,7 +67,9 @@ class QdrantIndexer(Indexer):
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
         streams_to_overwrite = [
-            stream.stream.name for stream in catalog.streams if stream.destination_sync_mode == DestinationSyncMode.overwrite
+            create_stream_identifier(stream.stream)
+            for stream in catalog.streams
+            if stream.destination_sync_mode == DestinationSyncMode.overwrite
         ]
         if streams_to_overwrite:
             self._delete_for_filter(
@@ -102,7 +104,8 @@ class QdrantIndexer(Indexer):
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
             payload = chunk.metadata
-            payload[self.config.text_field] = chunk.page_content
+            if chunk.page_content is not None:
+                payload[self.config.text_field] = chunk.page_content
             entities.append(
                 models.Record(
                     id=str(uuid.uuid4()),

@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -66,7 +67,7 @@ class MongoDbSourceTest {
 
   @BeforeEach
   void setup() {
-    airbyteSourceConfig = createConfiguration(Optional.empty(), Optional.empty());
+    airbyteSourceConfig = createConfiguration(Optional.empty(), Optional.empty(), true);
     sourceConfig = new MongoDbSourceConfig(airbyteSourceConfig);
     mongoClient = mock(MongoClient.class);
     cdcInitializer = mock(MongoDbCdcInitializer.class);
@@ -209,6 +210,7 @@ class MongoDbSourceTest {
     when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
     when(mongoDatabase.runCommand(any())).thenReturn(authorizedCollectionsResponse);
     when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
+    when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
 
     final AirbyteCatalog airbyteCatalog = source.discover(airbyteSourceConfig);
 
@@ -304,12 +306,13 @@ class MongoDbSourceTest {
     verify(mongoClient, never()).close();
   }
 
-  private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password) {
+  private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {
     final Map<String, Object> baseConfig = Map.of(
         MongoConstants.DATABASE_CONFIGURATION_KEY, DB_NAME,
         MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/",
         MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin",
-        MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, DEFAULT_DISCOVER_SAMPLE_SIZE);
+        MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, DEFAULT_DISCOVER_SAMPLE_SIZE,
+        MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced);
 
     final Map<String, Object> config = new HashMap<>(baseConfig);
     username.ifPresent(u -> config.put(MongoConstants.USERNAME_CONFIGURATION_KEY, u));

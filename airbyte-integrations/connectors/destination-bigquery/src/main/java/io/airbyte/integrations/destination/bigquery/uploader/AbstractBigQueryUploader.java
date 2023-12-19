@@ -18,6 +18,7 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationWriter;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
@@ -107,7 +108,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
   public void closeAfterPush() {
     try {
       this.writer.close(false);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -234,6 +235,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
         .build();
 
     final Job job = bigQuery.create(JobInfo.of(configuration));
+    AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
     final ImmutablePair<Job, String> jobStringImmutablePair = BigQueryUtils.executeQuery(job);
     if (jobStringImmutablePair.getRight() != null) {
       LOGGER.error("Failed on copy tables with error:" + job.getStatus());

@@ -4,9 +4,16 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.7.7'
     features = ['db-sources']
     useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -25,13 +32,10 @@ configurations {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.14.1'
     implementation 'com.zaxxer:HikariCP:5.0.1'
 
-    testImplementation project(':airbyte-test-utils')
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
-
+    integrationTestJavaImplementation libs.testcontainers.jdbc
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 }
-

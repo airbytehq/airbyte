@@ -8,7 +8,7 @@ import uuid
 import chromadb
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from airbyte_cdk.destinations.vector_db_based.utils import format_exception
+from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier, format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from chromadb.config import Settings
@@ -58,7 +58,7 @@ class ChromaIndexer(Indexer):
                     "id": str(uuid.uuid4()),
                     "embedding": chunk.embedding,
                     "metadata": self._normalize(chunk.metadata),
-                    "document": chunk.page_content,
+                    "document": chunk.page_content if chunk.page_content is not None else "",
                 }
             )
         self._write_data(entities)
@@ -66,7 +66,9 @@ class ChromaIndexer(Indexer):
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self.client = self._get_client()
         streams_to_overwrite = [
-            stream.stream.name for stream in catalog.streams if stream.destination_sync_mode == DestinationSyncMode.overwrite
+            create_stream_identifier(stream.stream)
+            for stream in catalog.streams
+            if stream.destination_sync_mode == DestinationSyncMode.overwrite
         ]
         if len(streams_to_overwrite):
             self._delete_by_filter(field_name=METADATA_STREAM_FIELD, field_values=streams_to_overwrite)

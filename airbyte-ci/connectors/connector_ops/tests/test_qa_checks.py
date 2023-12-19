@@ -114,6 +114,7 @@ def test_run_qa_checks_error(capsys, mocker):
     "file_name, file_line, expected_in_stdout",
     [
         ("file_with_http_url.foo", "http://foo.bar", True),
+        ("file_with_http_url_and_ignore_comment.foo", "http://foo.bar # ignore-https-check", False),
         ("file_without_https_url.foo", "", False),
         ("file_with_https_url.foo", "https://airbyte.com", False),
         ("file_with_http_url_and_ignored.foo", "http://localhost http://airbyte.com", True),
