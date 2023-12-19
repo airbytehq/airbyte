@@ -1280,6 +1280,9 @@
     "product_set_id": {
       "type": ["null", "string"]
     },
+    "source_instagram_media_id": {
+      "type": ["null", "string"]
+    },
     "status": {
       "type": ["null", "string"]
     },
