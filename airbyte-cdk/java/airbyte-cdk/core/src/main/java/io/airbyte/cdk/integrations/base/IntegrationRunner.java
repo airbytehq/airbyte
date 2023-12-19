@@ -171,7 +171,8 @@ public class IntegrationRunner {
             if (featureFlags.concurrentSourceStreamRead()) {
               LOGGER.info("Concurrent source stream read enabled.");
               final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
-              readConcurrent(config, catalog, stateOptional);
+              final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(this::consumeFromStream, streams.size());
+              readConcurrent(streams, streamConsumer);
             } else {
               AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
               readSerial(messageIterator, outputRecordCollector);
@@ -246,10 +247,9 @@ public class IntegrationRunner {
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
   }
 
-  private void readConcurrent(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional)
+  @VisibleForTesting
+  private static void readConcurrent(final Collection<AutoCloseableIterator<AirbyteMessage>> streams, final ConcurrentStreamConsumer streamConsumer)
       throws Exception {
-    final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
-    final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(this::consumeFromStream, streams.size());
     try {
       /*
        * Break the streams into partitions equal to the number of concurrent streams supported by the
@@ -272,15 +272,26 @@ public class IntegrationRunner {
       LOGGER.error("Unable to perform concurrent read.", e);
       throw e;
     }
+    // It is generally safe to ignore exceptions on close.
+    try {
+      streamConsumer.close();
+      for (AutoCloseableIterator<AirbyteMessage> stream : streams) {
+        stream.close();
+      }
+    } catch (final Exception e) {
+      LOGGER.warn("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ",
+          e.getMessage());
+    }
   }
 
   @VisibleForTesting
   static private void readSerial(final AutoCloseableIterator<AirbyteMessage> iter, Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
     produceMessages(iter, outputRecordCollector);
+    // It is generally safe to ignore exceptions on close.
     try {
       iter.close();
     } catch (Exception e) {
-      LOGGER.error("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ",
+      LOGGER.warn("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ",
           e.getMessage());
     }
   }
