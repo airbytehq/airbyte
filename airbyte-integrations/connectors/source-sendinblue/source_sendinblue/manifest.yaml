@@ -27,12 +27,12 @@ definitions:
     type: DatetimeBasedCursor
     cursor_field: modifiedAt
     cursor_datetime_formats:
-      - '%Y-%m-%dT%H:%M:%S.%f%z'
-    datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
     start_datetime:
       type: MinMaxDatetime
-      datetime: '2000-01-01T00:00:00Z'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime: "2000-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     start_time_option:
       inject_into: request_parameter
       field_name: modifiedSince
