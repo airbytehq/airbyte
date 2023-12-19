@@ -154,12 +154,11 @@ class VectaraClient:
                 data = data
             )
             document_ids.extend([document.get("id") for document in query_documents_response.get("responseSet")[0].get("document")])
-        return self.delete_docs_by_id(document_ids=document_ids)
+        self.delete_docs_by_id(document_ids=document_ids)
     
     def delete_docs_by_id(self, document_ids):
-        documents_not_deleted = []
         for document_id in document_ids:
-            delete_document_response = self._request(
+            self._request(
                 endpoint="delete-doc",
                 data={
                     "customerId": self.customer_id, 
@@ -167,10 +166,6 @@ class VectaraClient:
                     "documentId": document_id
                     }
                 )
-            # TODO whether this is needed?
-            if delete_document_response:
-                documents_not_deleted.append(document_id)
-        return documents_not_deleted
 
     def index_document(self, document):
         document_section, document_metadata, document_id = document

@@ -46,7 +46,6 @@ class DestinationWeaviate(Destination):
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         parsed_config = ConfigModel.parse_obj(config)
-        print(parsed_config)
         self._init_indexer(parsed_config)
         checks = [self.embedder.check(), self.indexer.check(), DocumentProcessor.check_config(parsed_config.processing)]
         errors = [error for error in checks if error is not None]

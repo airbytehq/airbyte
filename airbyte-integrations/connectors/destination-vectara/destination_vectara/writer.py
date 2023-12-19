@@ -7,7 +7,7 @@ import uuid
 
 from typing import Any, Dict, List, Mapping, Optional
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, AirbyteRecordMessage, ConfiguredAirbyteStream
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, AirbyteRecordMessage, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 
@@ -50,7 +50,8 @@ class VectaraWriter:
 
         if primary_key:
             document_id = f"Stream_{stream_identifier}_Key_{primary_key}"
-            self.ids_to_delete.append(document_id)
+            if record.stream.destination_sync_mode == DestinationSyncMode.append_dedup:
+                self.ids_to_delete.append(document_id)
         else:
             document_id = str(uuid.uuid4().int)
 
@@ -59,7 +60,7 @@ class VectaraWriter:
             self.flush()
 
     def flush(self) -> None:
-        """Writes to Convex"""
+        """Flush all documents in Queue to Vectara"""
         self._delete_documents_to_dedupe()
         self.client.index_documents(self.write_buffer)
         self.write_buffer.clear()

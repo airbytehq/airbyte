@@ -32,9 +32,9 @@ Note that there are no restrictions in naming the Vectara corpus and if a corpus
 - [Vectara Corpus](https://docs.vectara.com/docs/console-ui/creating-a-corpus)
 - [OAuth2.0 Credentials](https://docs.vectara.com/docs/learn/authentication/oauth-2)
 
-### Setup the Chroma Destination in Airbyte
+### Setup the Vectara Destination in Airbyte
 
-You should now have all the requirements needed to configure Chroma as a destination in the UI. You'll need the following information to configure the Chroma destination:
+You should now have all the requirements needed to configure Vectara as a destination in the UI. You'll need the following information to configure the Vectara destination:
 
 - (Required) OAuth2.0 Credentials
   - (Required) **Client ID**
