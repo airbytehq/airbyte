@@ -2036,6 +2036,11 @@ paths:
         - web_backend
       summary: Returns all non-deleted connections for a workspace.
       operationId: webBackendConnectionsFilterParam
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
       responses:
         "200":
           description: Successful operation

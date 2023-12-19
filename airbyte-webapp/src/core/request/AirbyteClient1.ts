@@ -3330,9 +3330,17 @@ export const setInstancewideDestinationOauthParams = (
 /**
  * @summary Returns all non-deleted connections for a workspace.
  */
-export const webBackendConnectionsFilterParam = (options?: SecondParameter<typeof apiOverride>) => {
+export const webBackendConnectionsFilterParam = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
   return apiOverride<WebBackendConnectionFilterParam>(
-    { url: `/v1/web_backend/connections/filter/param`, method: "post" },
+    {
+      url: `/v1/web_backend/connections/filter/param`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
     options
   );
 };

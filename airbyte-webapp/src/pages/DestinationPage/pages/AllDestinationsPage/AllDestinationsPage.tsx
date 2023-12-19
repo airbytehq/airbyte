@@ -63,7 +63,7 @@ const AllDestinationsPage: React.FC = () => {
   const { push, query } = useRouter();
   // const { push } = useRouter();
   // const { destinations } = useDestinationList();
-  const { destinationOptions } = useConnectionFilterOptions();
+
   const [pageConfig, updatePageSize] = usePageConfig();
   // const [pageConfig] = usePageConfig();
 
@@ -71,6 +71,7 @@ const AllDestinationsPage: React.FC = () => {
   const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig?.destination?.pageSize);
   useTrackPage(PageTrackingCodes.DESTINATION_LIST);
   const workspace = useCurrentWorkspace();
+  const { destinationOptions } = useConnectionFilterOptions(workspace.workspaceId);
   const initialFiltersState = {
     workspaceId: workspace.workspaceId,
     pageSize: pageCurrent,

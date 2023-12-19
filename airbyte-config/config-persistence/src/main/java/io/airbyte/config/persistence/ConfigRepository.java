@@ -1204,24 +1204,26 @@ public class ConfigRepository {
     return Map.of("Active", StatusType.active.name(), "Inactive", StatusType.inactive.name());
   }
 
-  public List<Map<String, String>> listFilterParam(ActorType actorType) throws IOException {
-    return database.query(ctx -> ctx.select(ACTOR_DEFINITION.ID, ACTOR_DEFINITION.NAME).from(ACTOR_DEFINITION)
-        .where(ACTOR_DEFINITION.PUBLIC.eq(true))
-        .and(ACTOR_DEFINITION.ACTOR_TYPE.eq(actorType))
-        .fetch()).stream()
+  public List<Map<String, String>> listFilterParam(ActorType actorType, UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.selectDistinct(ACTOR_DEFINITION.ID, ACTOR_DEFINITION.NAME)
+        .from(ACTOR)
+        .join(ACTOR_DEFINITION)
+        .on(ACTOR_DEFINITION.ID.eq(ACTOR.ACTOR_DEFINITION_ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId).and(ACTOR.ACTOR_TYPE.eq(actorType))).fetch()).stream()
         .map(record -> {
           UUID uuid = record.get(ACTOR_DEFINITION.ID);
           return Map.of("key", record.get(ACTOR_DEFINITION.NAME), "value", uuid.toString());
         })
         .collect(Collectors.toList());
+
   }
 
-  public List<Map<String, String>> listFilterParamSources() throws IOException {
-    return listFilterParam(ActorType.source);
+  public List<Map<String, String>> listFilterParamSources(UUID workspaceId) throws IOException {
+    return listFilterParam(ActorType.source, workspaceId);
   }
 
-  public List<Map<String, String>> listFilterParamDestination() throws IOException {
-    return listFilterParam(ActorType.destination);
+  public List<Map<String, String>> listFilterParamDestination(UUID workspaceId) throws IOException {
+    return listFilterParam(ActorType.destination, workspaceId);
   }
 
   public StandardDestinationDefinition getStandardDestinationDefinationByDestinationId(final UUID destinationId) throws IOException {

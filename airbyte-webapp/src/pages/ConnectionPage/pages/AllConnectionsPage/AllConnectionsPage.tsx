@@ -76,7 +76,7 @@ const AllConnectionsPage: React.FC = () => {
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const workspace = useCurrentWorkspace();
-  const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions();
+  const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions(workspace.workspaceId);
 
   const initialFiltersState = {
     workspaceId: workspace.workspaceId,

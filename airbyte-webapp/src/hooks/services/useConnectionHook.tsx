@@ -37,7 +37,7 @@ export const connectionsKeys = {
   all: [SCOPE_WORKSPACE, "connections"] as const,
   lists: () => [...connectionsKeys.all, "list"] as const,
   list: (filters: string) => [...connectionsKeys.lists(), { filters }] as const,
-  filtersLists: () => [...connectionsKeys.lists(), "filtersLists"] as const,
+  filtersLists: (workspaceId: string) => [...connectionsKeys.lists(), { workspaceId }] as const,
   filteredList: (filters: FilterConnectionRequestBody) => [...connectionsKeys.lists(), { filters }] as const,
   detail: (connectionId: string) => [...connectionsKeys.all, "details", connectionId] as const,
   getState: (connectionId: string) => [...connectionsKeys.all, "getState", connectionId] as const,
@@ -258,15 +258,15 @@ const useFilteredConnectionList = (filters: FilterConnectionRequestBody): WebBac
   return useSuspenseQuery(connectionsKeys.filteredList(filters), () => service.filteredList(filters));
 };
 
-const useConnectionFilters = (): ReadConnectionFilters => {
+const useConnectionFilters = (workspaceId: string): ReadConnectionFilters => {
   const service = useWebConnectionService();
 
-  return useSuspenseQuery(connectionsKeys.filtersLists(), () => service.filtersLists());
+  return useSuspenseQuery(connectionsKeys.filtersLists(workspaceId), () => service.filtersLists(workspaceId));
 };
 
-const useConnectionFilterOptions = () => {
+const useConnectionFilterOptions = (workspaceId: string) => {
   const { formatMessage } = useIntl();
-  const { status, sources, destinations } = useConnectionFilters();
+  const { status, sources, destinations } = useConnectionFilters(workspaceId);
 
   const statusOptions = status
     .map((statusOption) => {

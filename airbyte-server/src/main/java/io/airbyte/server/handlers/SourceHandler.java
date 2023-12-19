@@ -354,9 +354,9 @@ public class SourceHandler {
         .name(sourceConnection.getName());
   }
 
-  public List<WebBackendConnectionFilterParamItem> listFilterParam() throws IOException {
+  public List<WebBackendConnectionFilterParamItem> listFilterParam(UUID workspaceId) throws IOException {
     List<WebBackendConnectionFilterParamItem> result = new LinkedList<>();
-    List<Map<String, String>> listMap = configRepository.listFilterParamSources();
+    List<Map<String, String>> listMap = configRepository.listFilterParamSources(workspaceId);
     listMap.forEach(item -> {
       WebBackendConnectionFilterParamItem paramItem = new WebBackendConnectionFilterParamItem();
       paramItem.setValue(item.get("value"));

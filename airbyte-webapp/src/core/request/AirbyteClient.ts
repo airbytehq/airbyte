@@ -24,7 +24,12 @@ Change Management:
 
  * OpenAPI spec version: 1.0.0
  */
-import { FilterDestinationRequestBody, FilterSourceItemRequestBody, FilterSourceRequestBody } from "./DaspireClient";
+import {
+    FilterDestinationRequestBody,
+    FilterSourceItemRequestBody,
+    FilterSourceRequestBody,
+    ReadConnectionFilters
+} from "./DaspireClient";
 import { apiOverride } from "./apiOverride";
 /**
  * Input failed validation
@@ -3207,6 +3212,18 @@ export const webBackendListConnectionsForWorkspace = (
     },
     options
   );
+};
+
+export const getConnectionFilterParams = (workspaceIdRequestBody: WorkspaceIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
+    return apiOverride<ReadConnectionFilters>(
+        {
+            url: `/etl/web_backend/connections/filter/param`,
+            method: "post",
+            headers: { "Content-Type": "application/json" },
+            data: workspaceIdRequestBody,
+        },
+        options
+    );
 };
 
 /**

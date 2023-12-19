@@ -253,7 +253,9 @@ font-style: italic;
   <li><a href="#createDestination"><code><span class="http-method">post</span> /v1/destinations/create</code></a></li>
   <li><a href="#deleteDestination"><code><span class="http-method">post</span> /v1/destinations/delete</code></a></li>
   <li><a href="#getDestination"><code><span class="http-method">post</span> /v1/destinations/get</code></a></li>
+  <li><a href="#getDestinationWithConnection"><code><span class="http-method">post</span> /v1/destinations/connection/get</code></a></li>
   <li><a href="#listDestinationsForWorkspace"><code><span class="http-method">post</span> /v1/destinations/list</code></a></li>
+  <li><a href="#pageDestinationsForWorkspace"><code><span class="http-method">post</span> /v1/destinations/page</code></a></li>
   <li><a href="#searchDestinations"><code><span class="http-method">post</span> /v1/destinations/search</code></a></li>
   <li><a href="#updateDestination"><code><span class="http-method">post</span> /v1/destinations/update</code></a></li>
   </ul>
@@ -340,7 +342,9 @@ font-style: italic;
   <li><a href="#deleteSource"><code><span class="http-method">post</span> /v1/sources/delete</code></a></li>
   <li><a href="#discoverSchemaForSource"><code><span class="http-method">post</span> /v1/sources/discover_schema</code></a></li>
   <li><a href="#getSource"><code><span class="http-method">post</span> /v1/sources/get</code></a></li>
+  <li><a href="#getSourceWithConnection"><code><span class="http-method">post</span> /v1/sources/connection/get</code></a></li>
   <li><a href="#listSourcesForWorkspace"><code><span class="http-method">post</span> /v1/sources/list</code></a></li>
+  <li><a href="#pageSourcesForWorkspace"><code><span class="http-method">post</span> /v1/sources/page</code></a></li>
   <li><a href="#searchSources"><code><span class="http-method">post</span> /v1/sources/search</code></a></li>
   <li><a href="#updateSource"><code><span class="http-method">post</span> /v1/sources/update</code></a></li>
   </ul>
@@ -367,11 +371,14 @@ font-style: italic;
   </ul>
   <h4><a href="#WebBackend">WebBackend</a></h4>
   <ul>
+  <li><a href="#webBackendConnectionStatusForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/status</code></a></li>
+  <li><a href="#webBackendConnectionsFilterParam"><code><span class="http-method">post</span> /v1/web_backend/connections/filter/param</code></a></li>
   <li><a href="#webBackendCreateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/create</code></a></li>
   <li><a href="#webBackendGetConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/get</code></a></li>
   <li><a href="#webBackendGetWorkspaceState"><code><span class="http-method">post</span> /v1/web_backend/workspace/state</code></a></li>
   <li><a href="#webBackendListAllConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list_all</code></a></li>
   <li><a href="#webBackendListConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list</code></a></li>
+  <li><a href="#webBackendPageConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/page</code></a></li>
   <li><a href="#webBackendSearchConnections"><code><span class="http-method">post</span> /v1/web_backend/connections/search</code></a></li>
   <li><a href="#webBackendUpdateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/update</code></a></li>
   </ul>
@@ -2592,6 +2599,89 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="getDestinationWithConnection"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destinations/connection/get</code></pre></div>
+    <div class="method-summary">Get destination with connection (<span class="nickname">getDestinationWithConnection</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationIdPageRequestBody <a href="#DestinationIdPageRequestBody">DestinationIdPageRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationReadWithConnectionPage">DestinationReadWithConnectionPage</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "total" : 0,
+  "DestinationRead" : {
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "destinationName" : "destinationName",
+    "name" : "name",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  },
+  "pageSize" : 6,
+  "WebBackendConnectionReadList" : {
+    "connections" : [ {
+      "entityName" : "entityName",
+      "name" : "name",
+      "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "connectorName" : "connectorName"
+    }, {
+      "entityName" : "entityName",
+      "name" : "name",
+      "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "connectorName" : "connectorName"
+    } ]
+  },
+  "pageCurrent" : 1
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationReadWithConnectionPage">DestinationReadWithConnectionPage</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="listDestinationsForWorkspace"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2660,6 +2750,85 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#DestinationReadList">DestinationReadList</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="pageDestinationsForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destinations/page</code></pre></div>
+    <div class="method-summary">Returns all non-deleted destination for a workspace. (<span class="nickname">pageDestinationsForWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationPageRequestBody <a href="#DestinationPageRequestBody">DestinationPageRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationPageReadList">DestinationPageReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "total" : 0,
+  "destinations" : [ {
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "destinationName" : "destinationName",
+    "name" : "name",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "destinationName" : "destinationName",
+    "name" : "name",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ],
+  "pageSize" : 6,
+  "pageCurrent" : 1
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationPageReadList">DestinationPageReadList</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -6788,6 +6957,89 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="getSourceWithConnection"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/connection/get</code></pre></div>
+    <div class="method-summary">Get source with connection (<span class="nickname">getSourceWithConnection</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceIdPageRequestBody <a href="#SourceIdPageRequestBody">SourceIdPageRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceReadWithConnectionPage">SourceReadWithConnectionPage</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "SourceRead" : {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "name" : "name",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceName" : "sourceName",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  },
+  "total" : 0,
+  "pageSize" : 6,
+  "WebBackendConnectionReadList" : {
+    "connections" : [ {
+      "entityName" : "entityName",
+      "name" : "name",
+      "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "connectorName" : "connectorName"
+    }, {
+      "entityName" : "entityName",
+      "name" : "name",
+      "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "connectorName" : "connectorName"
+    } ]
+  },
+  "pageCurrent" : 1
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceReadWithConnectionPage">SourceReadWithConnectionPage</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="listSourcesForWorkspace"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -6856,6 +7108,85 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#SourceReadList">SourceReadList</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="pageSourcesForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/page</code></pre></div>
+    <div class="method-summary">Returns all non-deleted sources for a workspace. (<span class="nickname">pageSourcesForWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourcesPageRequestBody <a href="#SourcesPageRequestBody">SourcesPageRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourcePageReadList">SourcePageReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "total" : 0,
+  "sources" : [ {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "name" : "name",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceName" : "sourceName",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "name" : "name",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceName" : "sourceName",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ],
+  "pageSize" : 6,
+  "pageCurrent" : 1
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourcePageReadList">SourcePageReadList</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -8311,6 +8642,148 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="WebBackend">WebBackend</a></h1>
+  <div class="method"><a name="webBackendConnectionStatusForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/status</code></pre></div>
+    <div class="method-summary">Returns all non-deleted connections status for a workspace. (<span class="nickname">webBackendConnectionStatusForWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectionIdListRequestBody <a href="#ConnectionIdListRequestBody">ConnectionIdListRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WebBackendConnectionStatusReadList">WebBackendConnectionStatusReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "connectionStatusList" : [ {
+    "latestSyncJobCreatedAt" : 0,
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "latestSyncJobCreatedAt" : 0,
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WebBackendConnectionStatusReadList">WebBackendConnectionStatusReadList</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="webBackendConnectionsFilterParam"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/filter/param</code></pre></div>
+    <div class="method-summary">Returns all non-deleted connections for a workspace. (<span class="nickname">webBackendConnectionsFilterParam</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WebBackendConnectionFilterParam">WebBackendConnectionFilterParam</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sources" : [ {
+    "value" : "value",
+    "key" : "key"
+  }, {
+    "value" : "value",
+    "key" : "key"
+  } ],
+  "destinations" : [ {
+    "value" : "value",
+    "key" : "key"
+  }, {
+    "value" : "value",
+    "key" : "key"
+  } ],
+  "status" : [ {
+    "value" : "value",
+    "key" : "key"
+  }, {
+    "value" : "value",
+    "key" : "key"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WebBackendConnectionFilterParam">WebBackendConnectionFilterParam</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="webBackendCreateConnection"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -9532,6 +10005,77 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="webBackendPageConnectionsForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/page</code></pre></div>
+    <div class="method-summary">Returns all non-deleted connections for a workspace. (<span class="nickname">webBackendPageConnectionsForWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdPageRequestBody <a href="#WorkspaceIdPageRequestBody">WorkspaceIdPageRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WebBackendConnectionsPageReadList">WebBackendConnectionsPageReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "total" : 0,
+  "pageSize" : 6,
+  "connections" : [ {
+    "entityName" : "entityName",
+    "name" : "name",
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "connectorName" : "connectorName"
+  }, {
+    "entityName" : "entityName",
+    "name" : "name",
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "connectorName" : "connectorName"
+  } ],
+  "pageCurrent" : 1
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WebBackendConnectionsPageReadList">WebBackendConnectionsPageReadList</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="webBackendSearchConnections"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -10744,6 +11288,7 @@ font-style: italic;
     <li><a href="#CompleteSourceOauthRequest"><code>CompleteSourceOauthRequest</code> - </a></li>
     <li><a href="#ConnectionCreate"><code>ConnectionCreate</code> - </a></li>
     <li><a href="#ConnectionDisplayFlag"><code>ConnectionDisplayFlag</code> - </a></li>
+    <li><a href="#ConnectionIdListRequestBody"><code>ConnectionIdListRequestBody</code> - </a></li>
     <li><a href="#ConnectionIdRequestBody"><code>ConnectionIdRequestBody</code> - </a></li>
     <li><a href="#ConnectionRead"><code>ConnectionRead</code> - </a></li>
     <li><a href="#ConnectionReadList"><code>ConnectionReadList</code> - </a></li>
@@ -10780,10 +11325,14 @@ font-style: italic;
     <li><a href="#DestinationDefinitionReadList"><code>DestinationDefinitionReadList</code> - </a></li>
     <li><a href="#DestinationDefinitionSpecificationRead"><code>DestinationDefinitionSpecificationRead</code> - </a></li>
     <li><a href="#DestinationDefinitionUpdate"><code>DestinationDefinitionUpdate</code> - </a></li>
+    <li><a href="#DestinationIdPageRequestBody"><code>DestinationIdPageRequestBody</code> - </a></li>
     <li><a href="#DestinationIdRequestBody"><code>DestinationIdRequestBody</code> - </a></li>
     <li><a href="#DestinationOauthConsentRequest"><code>DestinationOauthConsentRequest</code> - </a></li>
+    <li><a href="#DestinationPageReadList"><code>DestinationPageReadList</code> - </a></li>
+    <li><a href="#DestinationPageRequestBody"><code>DestinationPageRequestBody</code> - </a></li>
     <li><a href="#DestinationRead"><code>DestinationRead</code> - </a></li>
     <li><a href="#DestinationReadList"><code>DestinationReadList</code> - </a></li>
+    <li><a href="#DestinationReadWithConnectionPage"><code>DestinationReadWithConnectionPage</code> - </a></li>
     <li><a href="#DestinationSearch"><code>DestinationSearch</code> - </a></li>
     <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
@@ -10832,6 +11381,7 @@ font-style: italic;
     <li><a href="#OperatorDbt"><code>OperatorDbt</code> - </a></li>
     <li><a href="#OperatorNormalization"><code>OperatorNormalization</code> - </a></li>
     <li><a href="#OperatorType"><code>OperatorType</code> - </a></li>
+    <li><a href="#PageRequestBody"><code>PageRequestBody</code> - </a></li>
     <li><a href="#Pagination"><code>Pagination</code> - </a></li>
     <li><a href="#PrivateDestinationDefinitionRead"><code>PrivateDestinationDefinitionRead</code> - </a></li>
     <li><a href="#PrivateDestinationDefinitionReadList"><code>PrivateDestinationDefinitionReadList</code> - </a></li>
@@ -10858,12 +11408,16 @@ font-style: italic;
     <li><a href="#SourceDefinitionUpdate"><code>SourceDefinitionUpdate</code> - </a></li>
     <li><a href="#SourceDiscoverSchemaRead"><code>SourceDiscoverSchemaRead</code> - </a></li>
     <li><a href="#SourceDiscoverSchemaRequestBody"><code>SourceDiscoverSchemaRequestBody</code> - </a></li>
+    <li><a href="#SourceIdPageRequestBody"><code>SourceIdPageRequestBody</code> - </a></li>
     <li><a href="#SourceIdRequestBody"><code>SourceIdRequestBody</code> - </a></li>
     <li><a href="#SourceOauthConsentRequest"><code>SourceOauthConsentRequest</code> - </a></li>
+    <li><a href="#SourcePageReadList"><code>SourcePageReadList</code> - </a></li>
     <li><a href="#SourceRead"><code>SourceRead</code> - </a></li>
     <li><a href="#SourceReadList"><code>SourceReadList</code> - </a></li>
+    <li><a href="#SourceReadWithConnectionPage"><code>SourceReadWithConnectionPage</code> - </a></li>
     <li><a href="#SourceSearch"><code>SourceSearch</code> - </a></li>
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
+    <li><a href="#SourcesPageRequestBody"><code>SourcesPageRequestBody</code> - </a></li>
     <li><a href="#StreamDescriptor"><code>StreamDescriptor</code> - </a></li>
     <li><a href="#StreamState"><code>StreamState</code> - </a></li>
     <li><a href="#StreamTransform"><code>StreamTransform</code> - </a></li>
@@ -10871,16 +11425,25 @@ font-style: italic;
     <li><a href="#SynchronousJobRead"><code>SynchronousJobRead</code> - </a></li>
     <li><a href="#UploadRead"><code>UploadRead</code> - </a></li>
     <li><a href="#WebBackendConnectionCreate"><code>WebBackendConnectionCreate</code> - </a></li>
+    <li><a href="#WebBackendConnectionFilterParam"><code>WebBackendConnectionFilterParam</code> - </a></li>
+    <li><a href="#WebBackendConnectionFilterParamItem"><code>WebBackendConnectionFilterParamItem</code> - </a></li>
+    <li><a href="#WebBackendConnectionList"><code>WebBackendConnectionList</code> - </a></li>
+    <li><a href="#WebBackendConnectionPageRead"><code>WebBackendConnectionPageRead</code> - </a></li>
+    <li><a href="#WebBackendConnectionPageReadList"><code>WebBackendConnectionPageReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a></li>
     <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
     <li><a href="#WebBackendConnectionSearch"><code>WebBackendConnectionSearch</code> - </a></li>
+    <li><a href="#WebBackendConnectionStatusRead"><code>WebBackendConnectionStatusRead</code> - </a></li>
+    <li><a href="#WebBackendConnectionStatusReadList"><code>WebBackendConnectionStatusReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a></li>
+    <li><a href="#WebBackendConnectionsPageReadList"><code>WebBackendConnectionsPageReadList</code> - </a></li>
     <li><a href="#WebBackendOperationCreateOrUpdate"><code>WebBackendOperationCreateOrUpdate</code> - </a></li>
     <li><a href="#WebBackendWorkspaceState"><code>WebBackendWorkspaceState</code> - </a></li>
     <li><a href="#WebBackendWorkspaceStateResult"><code>WebBackendWorkspaceStateResult</code> - </a></li>
     <li><a href="#WorkspaceCreate"><code>WorkspaceCreate</code> - </a></li>
     <li><a href="#WorkspaceGiveFeedback"><code>WorkspaceGiveFeedback</code> - </a></li>
+    <li><a href="#WorkspaceIdPageRequestBody"><code>WorkspaceIdPageRequestBody</code> - </a></li>
     <li><a href="#WorkspaceIdRequestBody"><code>WorkspaceIdRequestBody</code> - </a></li>
     <li><a href="#WorkspaceRead"><code>WorkspaceRead</code> - </a></li>
     <li><a href="#WorkspaceReadList"><code>WorkspaceReadList</code> - </a></li>
@@ -11114,6 +11677,13 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">flag </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectionIdListRequestBody"><code>ConnectionIdListRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionIds </div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11458,6 +12028,15 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="DestinationIdPageRequestBody"><code>DestinationIdPageRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="DestinationIdRequestBody"><code>DestinationIdRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11472,6 +12051,26 @@ font-style: italic;
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The url to redirect to after getting the user consent </div>
 <div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationPageReadList"><code>DestinationPageReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinations </div><div class="param-desc"><span class="param-type"><a href="#DestinationRead">array[DestinationRead]</a></span>  </div>
+<div class="param">total (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationPageRequestBody"><code>DestinationPageRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">DestinationDefinitionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11491,6 +12090,17 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">destinations </div><div class="param-desc"><span class="param-type"><a href="#DestinationRead">array[DestinationRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationReadWithConnectionPage"><code>DestinationReadWithConnectionPage</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">DestinationRead </div><div class="param-desc"><span class="param-type"><a href="#DestinationRead">DestinationRead</a></span>  </div>
+<div class="param">WebBackendConnectionReadList (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionList">WebBackendConnectionList</a></span>  </div>
+<div class="param">total (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11903,6 +12513,15 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
           </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="PageRequestBody"><code>PageRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="Pagination"><code>Pagination</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -12128,6 +12747,15 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="SourceIdPageRequestBody"><code>SourceIdPageRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SourceIdRequestBody"><code>SourceIdRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -12142,6 +12770,16 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The url to redirect to after getting the user consent </div>
 <div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourcePageReadList"><code>SourcePageReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sources </div><div class="param-desc"><span class="param-type"><a href="#SourceRead">array[SourceRead]</a></span>  </div>
+<div class="param">total (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -12164,6 +12802,17 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="SourceReadWithConnectionPage"><code>SourceReadWithConnectionPage</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">SourceRead </div><div class="param-desc"><span class="param-type"><a href="#SourceRead">SourceRead</a></span>  </div>
+<div class="param">WebBackendConnectionReadList (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionList">WebBackendConnectionList</a></span>  </div>
+<div class="param">total (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SourceSearch"><code>SourceSearch</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -12182,6 +12831,16 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourcesPageRequestBody"><code>SourcesPageRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">SourceDefinitionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -12262,6 +12921,51 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="WebBackendConnectionFilterParam"><code>WebBackendConnectionFilterParam</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionFilterParamItem">array[WebBackendConnectionFilterParamItem]</a></span>  </div>
+<div class="param">sources (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionFilterParamItem">array[WebBackendConnectionFilterParamItem]</a></span>  </div>
+<div class="param">destinations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionFilterParamItem">array[WebBackendConnectionFilterParamItem]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionFilterParamItem"><code>WebBackendConnectionFilterParamItem</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">key (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">value (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionList"><code>WebBackendConnectionList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connections </div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionPageRead">array[WebBackendConnectionPageRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionPageRead"><code>WebBackendConnectionPageRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">entityName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">connectorName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionPageReadList"><code>WebBackendConnectionPageReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connections </div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionRead">array[WebBackendConnectionRead]</a></span>  </div>
+<div class="param">total (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -12324,6 +13028,22 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="WebBackendConnectionStatusRead"><code>WebBackendConnectionStatusRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">latestSyncJobCreatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> epoch time of the latest sync job. null if no sync job has taken place. format: int64</div>
+<div class="param">latestSyncJobStatus (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionStatusReadList"><code>WebBackendConnectionStatusReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionStatusList </div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionStatusRead">array[WebBackendConnectionStatusRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -12342,6 +13062,16 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">skipReset (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendOperationCreateOrUpdate">array[WebBackendOperationCreateOrUpdate]</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionsPageReadList"><code>WebBackendConnectionsPageReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connections </div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionPageRead">array[WebBackendConnectionPageRead]</a></span>  </div>
+<div class="param">total (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -12389,6 +13119,18 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WorkspaceIdPageRequestBody"><code>WorkspaceIdPageRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceDefinitionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationDefinitionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">pageCurrent (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
