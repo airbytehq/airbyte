@@ -10,7 +10,6 @@ import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.base.DestinationRunner;
 import io.airbyte.cdk.integrations.base.IntegrationCliParser;
 import io.airbyte.cdk.integrations.base.IntegrationConfig;
-import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import java.util.function.Supplier;
@@ -93,7 +92,7 @@ public class AdaptiveDestinationRunner {
       // Parse the CLI args just so we can accomplish that.
       IntegrationConfig parsedArgs = new IntegrationCliParser().parse(args);
       if (parsedArgs.getCommand() != Command.SPEC) {
-        DestinationConfig.initialize(IntegrationRunner.parseConfig(parsedArgs.getConfigPath()));
+        DestinationConfig.initialize(DestinationRunner.parseConfig(parsedArgs.getConfigPath()));
       } else {
         DestinationConfig.initialize(Jsons.emptyObject());
       }

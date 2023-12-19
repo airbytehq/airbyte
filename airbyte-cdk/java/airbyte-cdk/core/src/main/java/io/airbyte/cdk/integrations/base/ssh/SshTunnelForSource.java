@@ -5,21 +5,23 @@
 package io.airbyte.cdk.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfigBuilder;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.commons.functional.CheckedFunction;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SshTunnelForSource extends SshTunnel<JsonNode> {
+public class SshTunnelForSource extends SshTunnel<AirbyteSourceConfig> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SshTunnelForDestination.class);
 
-  public SshTunnelForSource(final JsonNode config,
+  public SshTunnelForSource(final AirbyteSourceConfig config,
                             final List<String> hostKey,
                             final List<String> portKey,
                             final String endPointKey,
@@ -37,32 +39,33 @@ public class SshTunnelForSource extends SshTunnel<JsonNode> {
 
   }
 
-  public JsonNode getOriginalConfig() {
+  public AirbyteSourceConfig getOriginalConfig() {
     return config;
   }
 
-  public JsonNode getConfigInTunnel() throws Exception {
+  public AirbyteSourceConfig getConfigInTunnel() throws Exception {
     if (tunnelMethod.equals(TunnelMethod.NO_TUNNEL)) {
       return getOriginalConfig();
     } else {
-      final JsonNode clone = Jsons.clone(config);
+      final AirbyteSourceConfigBuilder clone = config.cloneBuilder();
       if (hostKey != null) {
-        Jsons.replaceNestedString(clone, hostKey, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName());
+        clone.replaceNestedString(hostKey, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName());
       }
       if (portKey != null) {
-        Jsons.replaceNestedInt(clone, portKey, tunnelLocalPort);
+        clone.replaceNestedInt(portKey, tunnelLocalPort);
       }
       if (endPointKey != null) {
         final URL tunnelEndPointURL =
             new URL(remoteServiceProtocol, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), tunnelLocalPort, remoteServicePath);
-        Jsons.replaceNestedString(clone, Arrays.asList(endPointKey), tunnelEndPointURL.toString());
+        clone.replaceNestedString(Arrays.asList(endPointKey), tunnelEndPointURL.toString());
       }
-      return clone;
+      return clone.build();
     }
   }
 
-  public static SshTunnelForSource getInstance(final JsonNode config, final List<String> hostKey, final List<String> portKey) {
-    final TunnelMethod tunnelMethod = Jsons.getOptional(config, "tunnel_method", "tunnel_method")
+  public static SshTunnelForSource getInstance(final AirbyteSourceConfig config, final List<String> hostKey, final List<String> portKey) {
+    Optional<JsonNode> tunnelMethodJsonConfig = config.getOptional("tunnel_method", "tunnel_method");
+    final TunnelMethod tunnelMethod = tunnelMethodJsonConfig
         .map(method -> TunnelMethod.valueOf(method.asText().trim()))
         .orElse(TunnelMethod.NO_TUNNEL);
     LOGGER.info("Starting connection with method: {}", tunnelMethod);
@@ -74,19 +77,19 @@ public class SshTunnelForSource extends SshTunnel<JsonNode> {
         null,
         null,
         tunnelMethod,
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
-        Jsons.getIntOrZero(config, "tunnel_method", "tunnel_port"),
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user")),
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
-        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")),
-        Strings.safeTrim(Jsons.getStringOrNull(config, hostKey)),
-        Jsons.getIntOrZero(config, portKey));
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "tunnel_host")),
+        config.getIntOrZero("tunnel_method", "tunnel_port"),
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "tunnel_user")),
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "ssh_key")),
+        Strings.safeTrim(config.getStringOrNull("tunnel_method", "tunnel_user_password")),
+        Strings.safeTrim(config.getStringOrNull(hostKey)),
+        config.getIntOrZero(portKey));
   }
 
-  public static <T> T sshWrap(final JsonNode config,
+  public static <T> T sshWrap(final AirbyteSourceConfig config,
                               final List<String> hostKey,
                               final List<String> portKey,
-                              final CheckedFunction<JsonNode, T, Exception> wrapped)
+                              final CheckedFunction<AirbyteSourceConfig, T, Exception> wrapped)
       throws Exception {
     try (final SshTunnelForSource sshTunnel = SshTunnelForSource.getInstance(config, hostKey, portKey)) {
       return wrapped.apply(sshTunnel.getConfigInTunnel());

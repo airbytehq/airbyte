@@ -14,6 +14,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.SourceRunner;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.cdk.testutils.TestDatabase;
@@ -51,7 +52,7 @@ class DefaultJdbcSourceAcceptanceTest
   }
 
   @Override
-  protected JsonNode config() {
+  protected AirbyteSourceConfig config() {
     return testdb.testConfigBuilder().build();
   }
 
@@ -70,8 +71,10 @@ class DefaultJdbcSourceAcceptanceTest
     return true;
   }
 
-  public JsonNode getConfigWithConnectionProperties(final PostgreSQLContainer<?> psqlDb, final String dbName, final String additionalParameters) {
-    return Jsons.jsonNode(ImmutableMap.builder()
+  public AirbyteSourceConfig getConfigWithConnectionProperties(final PostgreSQLContainer<?> psqlDb,
+                                                               final String dbName,
+                                                               final String additionalParameters) {
+    return AirbyteSourceConfig.fromJsonNode(Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(psqlDb))
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(psqlDb))
         .put(JdbcUtils.DATABASE_KEY, dbName)
@@ -79,7 +82,7 @@ class DefaultJdbcSourceAcceptanceTest
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParameters)
-        .build());
+        .build()));
   }
 
   @AfterAll
@@ -98,7 +101,7 @@ class DefaultJdbcSourceAcceptanceTest
     }
 
     @Override
-    public JsonNode toDatabaseConfig(final JsonNode config) {
+    public JsonNode toDatabaseConfig(final AirbyteSourceConfig config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
           .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
@@ -119,7 +122,7 @@ class DefaultJdbcSourceAcceptanceTest
     }
 
     @Override
-    protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+    protected AirbyteStateType getSupportedStateType(final AirbyteSourceConfig config) {
       return AirbyteStateType.STREAM;
     }
 
@@ -188,7 +191,7 @@ class DefaultJdbcSourceAcceptanceTest
   @Test
   void testCustomParametersOverwriteDefaultParametersExpectException() {
     final String connectionPropertiesUrl = "ssl=false";
-    final JsonNode config = getConfigWithConnectionProperties(PSQL_CONTAINER, testdb.getDatabaseName(), connectionPropertiesUrl);
+    final AirbyteSourceConfig config = getConfigWithConnectionProperties(PSQL_CONTAINER, testdb.getDatabaseName(), connectionPropertiesUrl);
     final Map<String, String> customParameters = JdbcUtils.parseJdbcParameters(config, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&");
     final Map<String, String> defaultParameters = Map.of(
         "ssl", "true",

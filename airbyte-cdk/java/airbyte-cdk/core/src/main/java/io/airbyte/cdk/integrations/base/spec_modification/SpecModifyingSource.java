@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.base.spec_modification;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -35,23 +36,23 @@ public abstract class SpecModifyingSource implements Source {
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+  public AirbyteConnectionStatus check(final AirbyteSourceConfig config) throws Exception {
     return source.check(config);
   }
 
   @Override
-  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+  public AirbyteCatalog discover(final AirbyteSourceConfig config) throws Exception {
     return source.discover(config);
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(final AirbyteSourceConfig config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     return source.read(config, catalog, state);
   }
 
   @Override
-  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(AirbyteSourceConfig config, ConfiguredAirbyteCatalog catalog, JsonNode state)
       throws Exception {
     return source.readStreams(config, catalog, state);
   }

@@ -14,6 +14,7 @@ import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
@@ -66,7 +67,7 @@ public abstract class JdbcStressTest {
   private static String streamName;
 
   private BitSet bitSet;
-  private JsonNode config;
+  private AirbyteSourceConfig config;
   private AbstractJdbcSource<?> source;
 
   /**
@@ -85,7 +86,7 @@ public abstract class JdbcStressTest {
    *
    * @return config
    */
-  public abstract JsonNode getConfig();
+  public abstract AirbyteSourceConfig getConfig();
 
   /**
    * Full qualified class name of the JDBC driver for the database.

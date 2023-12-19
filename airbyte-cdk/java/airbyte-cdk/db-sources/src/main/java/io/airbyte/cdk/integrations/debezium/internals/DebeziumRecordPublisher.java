@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.integrations.debezium.internals;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.config.AirbyteSourceConfig;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.engine.ChangeEvent;
@@ -39,7 +39,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private final DebeziumPropertiesManager debeziumPropertiesManager;
 
   public DebeziumRecordPublisher(final Properties properties,
-                                 final JsonNode config,
+                                 final AirbyteSourceConfig config,
                                  final ConfiguredAirbyteCatalog catalog,
                                  final AirbyteFileOffsetBackingStore offsetManager,
                                  final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager,
@@ -55,7 +55,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
 
   private DebeziumPropertiesManager createDebeziumPropertiesManager(final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
                                                                     final Properties properties,
-                                                                    final JsonNode config,
+                                                                    final AirbyteSourceConfig config,
                                                                     final ConfiguredAirbyteCatalog catalog,
                                                                     final AirbyteFileOffsetBackingStore offsetManager,
                                                                     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
