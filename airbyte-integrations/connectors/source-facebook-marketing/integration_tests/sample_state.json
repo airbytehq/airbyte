@@ -45,12 +45,12 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "1101472513921186": {
-          "event_time": "2023-12-07",
+        "646247609923744": {
+          "event_time": "2023-12-18",
           "include_deleted": 0
         },
-        "1107987959844881": {
-          "event_time": "2023-12-07",
+        "1447352185602743": {
+          "event_time": "2023-12-18",
           "include_deleted": 0
         }
       },

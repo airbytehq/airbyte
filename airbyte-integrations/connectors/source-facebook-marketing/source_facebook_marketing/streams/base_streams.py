@@ -155,6 +155,23 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         self._start_date = pendulum.instance(start_date) if start_date else None
         self._end_date = pendulum.instance(end_date) if end_date else None
 
+    @property
+    def state(self) -> Mapping[str, Any]:
+        """State getter, get current state and serialize it to emmit Airbyte STATE message"""
+        if self._cursor_value:
+            return self._cursor_value
+
+        return {}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        """State setter, ignore state if current settings mismatch saved state"""
+        if self._include_deleted and not value.get("include_deleted"):
+            logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
+            return
+
+        self._cursor_value = value
+
     def get_updated_state(self,
                           current_stream_state: MutableMapping[str, Any],
                           latest_record: Mapping[str, Any],
