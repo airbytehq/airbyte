@@ -42,3 +42,5 @@ DEFAULT_FORMAT_IGNORE_LIST = [
     "**/tools/schema_generator/schema_generator/infer_schemas.py",
     "**/.git",
 ]
+
+REPO_MOUNT_PATH = "/src"
