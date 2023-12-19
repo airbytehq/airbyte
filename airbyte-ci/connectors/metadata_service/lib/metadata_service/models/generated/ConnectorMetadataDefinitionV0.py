@@ -118,12 +118,12 @@ class AirbyteInternal(BaseModel):
     ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
 
 
-class Pypi(BaseModel):
+class PyPi(BaseModel):
     class Config:
         extra = Extra.forbid
 
     enabled: bool
-    projectUrl: str = Field(..., description="The url of the project on pypi")
+    packageName: str = Field(..., description="The name of the package on PyPi.")
 
 
 class JobTypeResourceLimit(BaseModel):
@@ -145,7 +145,7 @@ class RemoteRegistries(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    pypi: Optional[Pypi] = None
+    pypi: Optional[PyPi] = None
 
 
 class ActorDefinitionResourceRequirements(BaseModel):

@@ -12,7 +12,7 @@ data:
   remoteRegistries:
     pypi:
       enabled: true
-      projectUrl: https://pypi.org/project/airbyte-source-alloydb-strict-encrypt/
+      packageName: airbyte-source-alloydb-strict-encrypt
   license: MIT
   tags:
     - language:java

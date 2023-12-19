@@ -7,19 +7,19 @@ type: object
 additionalProperties: false
 properties:
   pypi:
-    $ref: "#/definitions/Pypi"
+    $ref: "#/definitions/PyPi"
 definitions:
-  Pypi:
-    title: Pypi
-    description: describes the pypi publishing options
+  PyPi:
+    title: PyPi
+    description: describes the PyPi publishing options
     type: object
     additionalProperties: false
     required:
       - enabled
-      - projectUrl
+      - packageName
     properties:
       enabled:
         type: boolean
-      projectUrl:
+      packageName:
         type: string
-        description: The url of the project on pypi
+        description: The name of the package on PyPi.

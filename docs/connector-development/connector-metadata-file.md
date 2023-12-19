@@ -161,7 +161,9 @@ The optional `remoteRegistries` property allows you to configure how a connector
 remoteRegistries:
   pypi:
     enabled: true
-    projectUrl: https://pypi.org/project/airbyte-source-connector-name/
+    packageName: airbyte-source-connector-name
 ```
+
+The `packageName` property of the `pypi` section is the name of the installable package in the PyPi registry.
 
 If not specified, all remote registry configurations are disabled by default.

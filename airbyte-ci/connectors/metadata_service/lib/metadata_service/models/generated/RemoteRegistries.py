@@ -8,16 +8,16 @@ from typing import Optional
 from pydantic import BaseModel, Extra, Field
 
 
-class Pypi(BaseModel):
+class PyPi(BaseModel):
     class Config:
         extra = Extra.forbid
 
     enabled: bool
-    projectUrl: str = Field(..., description="The url of the project on pypi")
+    packageName: str = Field(..., description="The name of the package on PyPi.")
 
 
 class RemoteRegistries(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    pypi: Optional[Pypi] = None
+    pypi: Optional[PyPi] = None
