@@ -56,6 +56,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
    */
   public JsonNode constructInitialDebeziumState(final BsonDocument resumeToken, final MongoClient mongoClient, final String serverId) {
     final String replicaSet = getReplicaSetName(mongoClient);
+    LOGGER.info("Initial resume token '{}' constructed", ResumeTokens.getData(resumeToken).asString().getValue());
     final JsonNode state = formatState(serverId, replicaSet, ((BsonString) ResumeTokens.getData(resumeToken)).getValue());
     LOGGER.info("Initial Debezium state constructed: {}", state);
     return state;

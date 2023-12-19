@@ -50,6 +50,7 @@ testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.
 testcontainers-pulsar = { module = "org.testcontainers:pulsar", version.ref = "testcontainers" }
 testcontainers-scylla = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 testcontainers-tidb = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-tidb-source = { module = "org.testcontainers:tidb", version.ref = "testcontainers" }
 datadog-trace-api = { module = "com.datadoghq:dd-trace-api", version.ref = "datadog-version" }
 datadog-trace-ot = { module = "com.datadoghq:dd-trace-ot", version.ref = "datadog-version" }
 fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "fasterxml_version" }
