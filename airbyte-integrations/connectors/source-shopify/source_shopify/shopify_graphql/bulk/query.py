@@ -57,7 +57,6 @@ class ShopifyBulkTemplates:
 
 
 class ShopifyBulkQuery:
-
     tools: BulkTools = BulkTools()
 
     def get(self, filter_field: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> str:

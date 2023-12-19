@@ -224,7 +224,7 @@ def bulk_job_completed_response():
             }
         }
     }
-
+    
 
 @pytest.fixture
 def bulk_job_failed_response():
@@ -339,7 +339,7 @@ def bulk_job_unknown_status_response():
     
     
 @pytest.fixture
-def jsonl_content_example():
+def metafield_jsonl_content_example():
     return dumps(
         {
             "id": "gid://shopify/Metafield/123",
@@ -349,9 +349,61 @@ def jsonl_content_example():
         }
     )
     
+    
+@pytest.fixture
+def filfillment_order_jsonl_content_example():
+    return '''{"__typename":"Order","id":"gid:\/\/shopify\/Order\/1"}
+{"__typename":"FulfillmentOrder","id":"gid:\/\/shopify\/FulfillmentOrder\/2","assignedLocation":{"address1":"Test","address2":null,"city":"Test","countryCode":"Test","name":"Test","phone":"","province":null,"zip":"00000","location":{"locationId":"gid:\/\/shopify\/Location\/123"}},"destination":{"id":"gid:\/\/shopify\/Destination\/777"},"deliveryMethod":{"id":"gid:\/\/shopify\/DeliveryMethod\/123","methodType":"SHIPPING","minDeliveryDateTime":"2023-04-13T12:00:00Z","maxDeliveryDateTime":"2023-04-13T12:00:00Z"},"fulfillAt":"2023-04-13T12:00:00Z","fulfillBy":null,"internationalDuties":null,"fulfillmentHolds":[{}],"createdAt":"2023-04-13T12:09:45Z","updatedAt":"2023-04-13T12:09:46Z","requestStatus":"UNSUBMITTED","status":"CLOSED","supportedActions":[{}],"__parentId":"gid:\/\/shopify\/Order\/1"}
+{"__typename":"FulfillmentOrderLineItem","id":"gid:\/\/shopify\/FulfillmentOrderLineItem\/3","inventoryItemId":"gid:\/\/shopify\/InventoryItem\/33","lineItem":{"lineItemId":"gid:\/\/shopify\/LineItem\/31","fulfillableQuantity":0,"quantity":1,"variant":{"variantId":"gid:\/\/shopify\/ProductVariant\/333"}},"__parentId":"gid:\/\/shopify\/FulfillmentOrder\/2"}
+{"__typename":"FulfillmentOrderMerchantRequest","id":"gid:\/\/shopify\/FulfillmentOrderMerchantRequest\/333","message":null,"kind":"FULFILLMENT_REQUEST","requestOptions":{"notify_customer":true},"__parentId":"gid:\/\/shopify\/FulfillmentOrder\/2"}\n'''
+
 
 @pytest.fixture
-def parse_response_expected_result():
+def transactions_jsonl_content_example():
+    return dumps(
+        {
+            "id":"gid://shopify/Order/1",
+            "currency":"USD",
+            "transactions":[
+                {
+                    "id":"gid://shopify/OrderTransaction/1",
+                    "errorCode": None,
+                    "parentTransaction": {
+                        "parentId": "gid://shopify/ParentOrderTransaction/0"  
+                    },
+                    "test": True,
+                    "kind":"SALE",
+                    "amount":"102.00",
+                    "receipt":"{\"paid_amount\":\"102.00\"}",
+                    "gateway":"test",
+                    "authorization":"1234",
+                    "createdAt":"2030-07-02T07:51:49Z",
+                    "status":"SUCCESS",
+                    "processedAt":"2030-07-02T07:51:49Z",
+                    "totalUnsettledSet":{
+                        "presentmentMoney":{"amount":"0.0","currency":"USD"},
+                        "shopMoney":{"amount":"0.0","currency":"USD"}},
+                    "paymentId":"some_payment_id.1",
+                    "paymentDetails":{
+                        "avsResultCode": None,
+                        "cvvResultCode": None,
+                        "creditCardBin":"1",
+                        "creditCardCompany":"Test",
+                        "creditCardNumber":"•••• •••• •••• 1",
+                        "creditCardName":"Test Gateway",
+                        "creditCardWallet": None,
+                        "creditCardExpirationYear":2023,
+                        "creditCardExpirationMonth":11,
+                    }
+                }
+            ]
+        }
+    )
+                    
+    
+
+@pytest.fixture
+def metafield_parse_response_expected_result():
     return {
             "id": 123,
             "admin_graphql_api_id": "gid://shopify/Metafield/123",
@@ -361,3 +413,110 @@ def parse_response_expected_result():
             "created_at": "2023-01-01T01:01:01+00:00",
             "updated_at": "2023-01-01T01:01:01+00:00",
         }
+    
+
+@pytest.fixture
+def fulfillment_orders_response_expected_result():
+    return {
+        'id': 2, 
+        'assigned_location': {
+            'address1': 'Test', 
+            'address2': None, 
+            'city': 'Test', 
+            'country_code': 'Test', 
+            'name': 'Test', 
+            'phone': '', 
+            'province': None, 
+            'zip': '00000', 
+            'location_id': 123,
+        }, 
+        'destination': {
+            'id': 777,
+        }, 
+        'delivery_method': {
+            'id': 123, 
+            'method_type': 'SHIPPING', 
+            'min_delivery_date_time': '2023-04-13T12:00:00+00:00', 
+            'max_delivery_date_time': '2023-04-13T12:00:00+00:00',
+        }, 
+        'fulfill_at': '2023-04-13T12:00:00+00:00', 
+        'fulfill_by': None, 
+        'international_duties': None, 
+        'fulfillment_holds': [None], 
+        'created_at': '2023-04-13T12:09:45+00:00', 
+        'updated_at': '2023-04-13T12:09:46+00:00', 
+        'request_status': 'UNSUBMITTED', 
+        'status': 'CLOSED', 
+        'supported_actions': [None], 
+        'shop_id': None, 
+        'order_id': 1, 
+        'assigned_location_id': 123, 
+        'line_items': [
+            {
+                'id': 3, 
+                'inventory_item_id': 33, 
+                'shop_id': None, 
+                'fulfillment_order_id': 2, 
+                'quantity': 1, 
+                'line_item_id': 31, 
+                'fulfillable_quantity': 0, 
+                'variant_id': 333,
+            },
+        ], 
+        'merchant_requests': [
+            {
+                "id": 333,
+                "message": None,
+                "kind": "FULFILLMENT_REQUEST",
+                "request_options": {
+                    "notify_customer": True
+                }
+            }    
+        ], 
+        'admin_graphql_api_id': 'gid://shopify/FulfillmentOrder/2', 
+        'shop_url': 'test_shop',
+    }
+
+
+@pytest.fixture
+def transactions_response_expected_result():
+    return {
+        "id": 1,
+        "error_code": None,
+        "test": True,
+        "kind": "SALE",
+        "amount": 102.0,
+        "receipt": '{"paid_amount":"102.00"}',
+        "gateway": "test",
+        "authorization": "1234",
+        "created_at": "2030-07-02T07:51:49+00:00",
+        "status": "SUCCESS",
+        "processed_at": "2030-07-02T07:51:49+00:00",
+        "total_unsettled_set": {
+            "presentment_money": {
+                "amount": 0.0,
+                "currency": "USD"
+            },
+            "shop_money": {
+                "amount": 0.0,
+                "currency": "USD"
+            }
+        },
+        "payment_id": "some_payment_id.1",
+        "payment_details": {
+            "avs_result_code": None,
+            "cvv_result_code": None,
+            "credit_card_bin": "1",
+            "credit_card_company": "Test",
+            "credit_card_number": "•••• •••• •••• 1",
+            "credit_card_name": "Test Gateway",
+            "credit_card_wallet": None,
+            "credit_card_expiration_year": 2023,
+            "credit_card_expiration_month": 11
+        },
+        "order_id": 1,
+        "currency": "USD",
+        "admin_graphql_api_id": "gid://shopify/OrderTransaction/1",
+        "parent_id": 0,
+        "shop_url": "test_shop"
+    }

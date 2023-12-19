@@ -6,7 +6,7 @@
 import logging
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Dict, Iterable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum as pdm
@@ -548,7 +548,6 @@ class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
 
 
 class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
-
     filter_field = "updated_at"
     cursor_field = "updated_at"
 

@@ -5,7 +5,13 @@
 
 import pytest
 from graphql_query import Argument, Field, Operation, Query
-from source_shopify.shopify_graphql.bulk.query import MetafieldCustomer, MetafieldProductImage, ShopifyBulkQuery, ShopifyBulkTemplates
+from source_shopify.shopify_graphql.bulk.query import (
+    InventoryLevel,
+    MetafieldCustomer,
+    MetafieldProductImage,
+    ShopifyBulkQuery,
+    ShopifyBulkTemplates,
+)
 
 
 def test_query_status():
@@ -136,12 +142,62 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                 ]
             ),
         ),
+        (
+            InventoryLevel,
+            "updated_at",
+            "2023-01-01",
+            "2023-01-02",
+            Operation(
+                type="",
+                queries=[
+                    Query(
+                        name='locations',
+                        fields=[
+                            Field(
+                                name='edges', 
+                                fields=[
+                                    Field(
+                                        name='node', 
+                                        fields=[
+                                            'id',
+                                            Query(
+                                                name="inventoryLevels", 
+                                                arguments=[
+                                                    Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
+                                                ], 
+                                                fields=[
+                                                    Field(
+                                                        name="edges", 
+                                                        fields=[
+                                                            Field(
+                                                                name="node", 
+                                                                fields=[
+                                                                  "id",
+                                                                  Field(name="available"),
+                                                                  Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
+                                                                  Field(name="updatedAt")
+                                                                ]
+                                                            )
+                                                        ]
+                                                    )
+                                                ]
+                                            )
+                                        ]
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                ]
+            ),
+        ),
     ],
     ids=[
-        "Metafield query with 1 query_path(str)",
-        "Metafield query with composite quey_path(List[2])",
+        "MetafieldCustomers query with 1 query_path(str)",
+        "MetafieldProductImages query with composite quey_path(List[2])",
+        "InventoryLevel query",
     ]
 )
-def test_metafield_bulk_query(query_class, filter_field, start, end, expected):
+def test_bulk_query(query_class, filter_field, start, end, expected):
     stream = query_class()
     assert stream.get(filter_field, start, end) == expected.render()
