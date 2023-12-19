@@ -230,7 +230,7 @@ SELECT
 FROM ad_group
 ```
 
-Note that segments.date is automatically added to the WHERE clause if it is included in the SELECT clause. Custom reports including segments.date in the SELECT clause will be synced by day.
+Note that `segments.date` is automatically added to the `WHERE` clause if it is included in the `SELECT` clause. Custom reports including `segments.date` in the `SELECT` clause will be synced by day.
 
 Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
 

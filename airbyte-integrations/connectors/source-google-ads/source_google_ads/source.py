@@ -117,6 +117,32 @@ class SourceGoogleAds(AbstractSource):
         time_segment_in_select, time_segment_in_where = ["segments.date" in clause for clause in [query.fields, query.where]]
         return time_segment_in_select and not time_segment_in_where
 
+    def create_custom_query_stream(
+        self,
+        google_api: GoogleAds,
+        single_query_config: Mapping[str, Any],
+        customers: List[CustomerModel],
+        non_manager_accounts: List[CustomerModel],
+        incremental_config: Mapping[str, Any],
+        non_manager_incremental_config: Mapping[str, Any],
+    ):
+        query = single_query_config["query"]
+        is_incremental = self.is_custom_query_incremental(query)
+        is_non_manager = self.is_metrics_in_custom_query(query)
+
+        if is_non_manager:
+            # Skip query with metrics if there are no non-manager accounts
+            if not non_manager_accounts:
+                return
+
+            customers = non_manager_accounts
+            incremental_config = non_manager_incremental_config
+
+        if is_incremental:
+            return IncrementalCustomQuery(config=single_query_config, **incremental_config)
+        else:
+            return CustomQuery(config=single_query_config, api=google_api, customers=customers)
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         config = self._validate_and_transform(config)
 
@@ -132,7 +158,7 @@ class SourceGoogleAds(AbstractSource):
                 if customer.is_manager_account and self.is_metrics_in_custom_query(query):
                     logger.warning(
                         f"Metrics are not available for manager account {customer.id}. "
-                        f"Skipping the custom query: \"{query}\" for manager account."
+                        f'Skipping the custom query: "{query}" for manager account.'
                     )
                     continue
 
@@ -194,17 +220,9 @@ class SourceGoogleAds(AbstractSource):
             )
 
         for single_query_config in config.get("custom_queries_array", []):
-            query = single_query_config["query"]
-            if self.is_metrics_in_custom_query(query):
-                if non_manager_accounts:
-                    if self.is_custom_query_incremental(query):
-                        streams.append(IncrementalCustomQuery(config=single_query_config, **non_manager_incremental_config))
-                    else:
-                        streams.append(CustomQuery(config=single_query_config, api=google_api, customers=non_manager_accounts))
-                continue
-
-            if self.is_custom_query_incremental(query):
-                streams.append(IncrementalCustomQuery(config=single_query_config, **incremental_config))
-            else:
-                streams.append(CustomQuery(config=single_query_config, api=google_api, customers=customers))
+            query_stream = self.create_custom_query_stream(
+                google_api, single_query_config, customers, non_manager_accounts, incremental_config, non_manager_incremental_config
+            )
+            if query_stream:
+                streams.append(query_stream)
         return streams

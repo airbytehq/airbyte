@@ -72,9 +72,8 @@ class MigrateCustomQuery:
                 message = f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v13/query_validator"
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
-            if query_object.resource_name not in FULL_REFRESH_CUSTOM_TABLE:
-                if "segments.date" not in query_object.fields:
-                    query_object = query_object.append_field("segments.date")
+            if query_object.resource_name not in FULL_REFRESH_CUSTOM_TABLE and "segments.date" not in query_object.fields:
+                query_object = query_object.append_field("segments.date")
 
             new_query["query"] = str(query_object)
             custom_queries.append(new_query)

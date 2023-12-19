@@ -100,8 +100,8 @@ def test_read_record_error_handling(mocker, config, customers, cls, raise_expect
             None,
             (
                 "Metrics are not available for manager account 8765. "
-                "Skipping the custom query: \"SELECT campaign.accessible_bidding_strategy, "
-                "metrics.clicks FROM campaigns\" for manager account."
+                'Skipping the custom query: "SELECT campaign.accessible_bidding_strategy, '
+                'metrics.clicks FROM campaigns" for manager account.'
             ),
         ),
         (
