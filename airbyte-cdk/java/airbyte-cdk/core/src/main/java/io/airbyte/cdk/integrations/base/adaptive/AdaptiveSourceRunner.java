@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.integrations.base.adaptive;
 
-import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.SourceRunner;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -84,7 +84,7 @@ public class AdaptiveSourceRunner {
     public void run(final String[] args) throws Exception {
       final Source source = getSource();
       LOGGER.info("Starting source: {}", source.getClass().getName());
-      new IntegrationRunner(source).run(args);
+      new SourceRunner(source).run(args);
       LOGGER.info("Completed source: {}", source.getClass().getName());
     }
 
