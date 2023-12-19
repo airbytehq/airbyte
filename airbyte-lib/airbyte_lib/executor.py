@@ -135,7 +135,7 @@ class VenvExecutor(Executor):
 class PathExecutor(Executor):
     def ensure_installation(self):
         try:
-            self.execute(["spec"])
+            self.execute(["spec"], [])
         except Exception as e:
             raise Exception(f"Connector {self.metadata.name} is not available - executing it failed: {e}")
 
