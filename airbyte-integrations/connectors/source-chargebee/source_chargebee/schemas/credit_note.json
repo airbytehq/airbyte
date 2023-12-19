@@ -2,7 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "name": "Credit Note",
   "type": "object",
-  "additionalProperties": true,
   "properties": {
     "id": {
       "type": [
@@ -231,6 +230,13 @@
         "string",
         "null"
       ]
+    },
+    "is_vat_moss_registered": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "$comment": "only available for accounts that are configured for EU taxes"
     },
     "line_items": {
       "type": [
