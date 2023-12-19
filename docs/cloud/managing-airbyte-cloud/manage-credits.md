@@ -14,7 +14,7 @@ To buy credits:
 
 3. Click **Buy credits**.
 
-4. The Stripe payment page displays. If you want to change the amount of credits, click the **Qty 200** dropdown. The **Update quantity** dialog displays, and you can either type the amount or use minus (**–**) or plus (**+**) to change the quantity. Click **Update**. 
+4. Determine the quantity of credits you intend to purchase. Adjust the **credit quantity**. When you're ready, click **Checkout**.
 
     :::note 
 
@@ -24,11 +24,9 @@ To buy credits:
 
     :::
 
-    To buy more credits or discuss a custom plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
+To buy more credits or discuss a custom plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
 
-5. Fill out the payment information. 
-    
-    After you enter your billing address, sales tax (if applicable) is calculated and added to the total.
+5. You'll be renavigated to a Stripe payment page. If this is your first time purchasing, you'll be asked for payment details. After you enter your billing address, sales tax (if applicable) is calculated and added to the total.
 
 6. Click **Pay**.
     
