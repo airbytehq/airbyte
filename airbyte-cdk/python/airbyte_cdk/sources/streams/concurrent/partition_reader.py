@@ -3,6 +3,7 @@
 #
 
 from queue import Queue
+import time
 
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
@@ -32,6 +33,8 @@ class PartitionReader:
         """
         try:
             for record in partition.read():
+                while self._queue.qsize() > 2000:
+                    time.sleep(0.1)
                 self._queue.put(record)
             self._queue.put(PartitionCompleteSentinel(partition))
         except Exception as e:
