@@ -82,7 +82,7 @@ class Source:
         * Make sure the subprocess is killed when the function returns.
         """
         with as_temp_files([self.config]) as [config_file]:
-            for msg in self._execute(["discover", "--config", config_file]):
+            for msg in self._execute(["discover", "--config", config_file], [config_file]):
                 if msg.type == Type.CATALOG and msg.catalog:
                     return msg.catalog
             raise Exception("Connector did not return a catalog")
@@ -110,7 +110,7 @@ class Source:
         * Listen to the messages and return the first AirbyteCatalog that comes along.
         * Make sure the subprocess is killed when the function returns.
         """
-        for msg in self._execute(["spec"]):
+        for msg in self._execute(["spec"], []):
             if msg.type == Type.SPEC and msg.spec:
                 return msg.spec
         raise Exception("Connector did not return a spec")
@@ -155,7 +155,7 @@ class Source:
         * Make sure the subprocess is killed when the function returns.
         """
         with as_temp_files([self.config]) as [config_file]:
-            for msg in self._execute(["check", "--config", config_file]):
+            for msg in self._execute(["check", "--config", config_file], [config_file]):
                 if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
                     if msg.connectionStatus.status == Status.FAILED:
                         raise Exception(f"Connector returned failed status: {msg.connectionStatus.message}")
@@ -204,11 +204,11 @@ class Source:
             config_file,
             catalog_file,
         ]:
-            for msg in self._execute(["read", "--config", config_file, "--catalog", catalog_file]):
+            for msg in self._execute(["read", "--config", config_file, "--catalog", catalog_file], [config_file, catalog_file]):
                 if msg.type == Type.RECORD:
                     yield msg.record
 
-    def _execute(self, args: List[str]) -> Iterable[AirbyteMessage]:
+    def _execute(self, args: List[str], files: List[str]) -> Iterable[AirbyteMessage]:
         """
         Execute the connector with the given arguments.
 
@@ -222,7 +222,7 @@ class Source:
 
         last_log_messages = []
         try:
-            with self.executor.execute(args) as output:
+            with self.executor.execute(args, files) as output:
                 last_log_messages = []
                 for line in output:
                     try:

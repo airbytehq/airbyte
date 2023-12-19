@@ -14,6 +14,7 @@ REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.
 @dataclass
 class ConnectorMetadata:
     name: str
+    dockerRepository: str
     latest_available_version: str
 
 
@@ -29,7 +30,7 @@ def _update_cache():
     _cache = {}
     for connector in data["sources"]:
         name = connector["dockerRepository"].replace("airbyte/", "")
-        _cache[name] = ConnectorMetadata(name, connector["dockerImageTag"])
+        _cache[name] = ConnectorMetadata(name, connector["dockerRepository"], connector["dockerImageTag"])
 
 
 def get_connector_metadata(name: str):
