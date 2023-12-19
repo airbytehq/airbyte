@@ -57,6 +57,8 @@ public class PostgresUtils {
   private static final List<String> EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS =
       List.of(DROP_AGGREGATE_IF_EXISTS_STATEMENT, CREATE_AGGREGATE_STATEMENT, DROP_AGGREGATE_STATEMENT);
 
+  private static final int POSTGRESQL_VERSION_15 = 15;
+
   public static String getPluginValue(final JsonNode field) {
     return field.has("plugin") ? field.get("plugin").asText() : PGOUTPUT_PLUGIN;
   }
@@ -195,11 +197,12 @@ public class PostgresUtils {
 
   public static void advanceLsn(final JdbcDatabase database) {
     try {
-      database.executeWithinTransaction(EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS);
-      LOGGER.info("Succesfully forced LSN advancement by creating & dropping an ephemeral heartbeat aggregate");
+      if (database.getMetaData().getDatabaseMajorVersion() < POSTGRESQL_VERSION_15) {
+        database.executeWithinTransaction(EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS);
+        LOGGER.info("Succesfully forced LSN advancement by creating & dropping an ephemeral heartbeat aggregate");
+      }
     } catch (final Exception e) {
       LOGGER.info("Failed to force LSN advancement by creating & dropping an ephemeral heartbeat aggregate.");
     }
   }
-
 }
