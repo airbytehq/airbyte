@@ -2,13 +2,13 @@
 
 <AppliesTo cloud />
 
-## Buy credits
-
 Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resources when you run a sync. You can purchase credits on Airbyte Cloud to keep your data flowing without interruption. 
 
-To buy credits:
+## Buy credits
 
-1. In the Airbyte UI, click **Billing** in the navigation bar.
+To purchase credits directly through the UI, 
+
+1. Click **Billing** in the left-hand sidebar.
 
 2. If you are unsure of how many credits you need, use our [Cost Estimator](https://www.airbyte.com/pricing) or click **Talk to Sales** to find the right amount for your team.
 
