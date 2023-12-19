@@ -272,8 +272,15 @@ public class IntegrationRunner {
   }
 
   private void readSerial(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
-    try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
+    final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
+    try {
       produceMessages(messageIterator, outputRecordCollector);
+      try {
+        messageIterator.close();
+      } catch (Exception e) {
+        LOGGER.warn("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ",
+            e.getMessage());
+      }
     } finally {
       stopOrphanedThreads(EXIT_HOOK,
           INTERRUPT_THREAD_DELAY_MINUTES,
@@ -333,6 +340,30 @@ public class IntegrationRunner {
     if (baos.size() > 0) {
       consumer.accept(baos.toString(StandardCharsets.UTF_8), baos.size());
     }
+  }
+
+  /**
+   * @param connectorImage Expected format: [organization/]image[:version]
+   */
+  @VisibleForTesting
+  static String parseConnectorVersion(final String connectorImage) {
+    if (connectorImage == null || connectorImage.equals("")) {
+      return "unknown";
+    }
+
+    final String[] tokens = connectorImage.split(":");
+    return tokens[tokens.length - 1];
+  }
+
+  @VisibleForTesting
+  static void swallowIteratorCloseErrors(AutoCloseableIterator<AirbyteMessage> iter, Consumer<AirbyteMessage> outputRecordCollector) {
+    try {
+      iter.close();
+    } catch (Exception e) {
+      LOGGER.warn("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ",
+          e.getMessage());
+    }
+
   }
 
   /**
@@ -411,19 +442,6 @@ public class IntegrationRunner {
   private static <T> T parseConfig(final Path path, final Class<T> klass) {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
-  }
-
-  /**
-   * @param connectorImage Expected format: [organization/]image[:version]
-   */
-  @VisibleForTesting
-  static String parseConnectorVersion(final String connectorImage) {
-    if (connectorImage == null || connectorImage.equals("")) {
-      return "unknown";
-    }
-
-    final String[] tokens = connectorImage.split(":");
-    return tokens[tokens.length - 1];
   }
 
 }
