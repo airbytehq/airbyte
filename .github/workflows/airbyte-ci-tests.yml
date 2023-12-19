@@ -6,6 +6,11 @@ concurrency:
 
 on:
   workflow_dispatch:
+    inputs:
+      airbyte_ci_binary_url:
+        description: "URL to airbyte-ci binary"
+        required: false
+        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
   pull_request:
     types:
       - opened
@@ -50,11 +55,11 @@ jobs:
               - 'airbyte-ci/connectors/pipelines/**'
               - '!**/*.md'
             metadata_lib:
-              - 'airbyte-ci/connectors/metadata/lib/**'
+              - 'airbyte-ci/connectors/metadata_service/lib/**'
               - '!**/*.md'
             metadata_orchestrator:
-              - 'airbyte-ci/connectors/metadata/lib/**'
-              - 'airbyte-ci/connectors/metadata/orchestrator/**'
+              - 'airbyte-ci/connectors/metadata_service/lib/**'
+              - 'airbyte-ci/connectors/metadata_service/orchestrator/**'
               - '!**/*.md'
 
       - name: Run airbyte-ci/connectors/connector_ops tests
@@ -69,6 +74,8 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/connector_ops"
+          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run airbyte-ci/connectors/pipelines tests
         id: run-airbyte-ci-connectors-pipelines-tests
@@ -82,6 +89,8 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/pipelines"
+          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run airbyte-ci/connectors/base_images tests
         id: run-airbyte-ci-connectors-base-images-tests
@@ -95,6 +104,8 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/base_images"
+          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run test pipeline for the metadata lib
         id: metadata_lib-test-pipeline
@@ -106,6 +117,9 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
+
       - name: Run test for the metadata orchestrator
         id: metadata_orchestrator-test-pipeline
         if: steps.changes.outputs.metadata_orchestrator_any_changed == 'true'
@@ -116,3 +130,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}

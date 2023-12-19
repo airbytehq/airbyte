@@ -196,9 +196,9 @@ class ArchivedRecordsStream(IncrementalKlaviyoStream):
         archived_stream_state = stream_state.get("archived") if stream_state else None
         params = super().request_params(archived_stream_state, next_page_token, **kwargs)
         archived_filter = "equals(archived,true)"
-        if "filter" in params:
+        if "filter" in params and archived_filter not in params["filter"]:
             params["filter"] = f"and({params['filter']},{archived_filter})"
-        else:
+        elif "filter" not in params:
             params["filter"] = archived_filter
         return params
 

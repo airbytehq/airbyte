@@ -16,6 +16,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -49,7 +50,7 @@ public class PostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptan
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.in(getServerImageName());
+    testdb = PostgresTestDatabase.in(getServerImage());
     config = getConfig(testdb.getUserName(), testdb.getPassword(), "public");
     testdb.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -200,8 +201,8 @@ public class PostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptan
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
-  protected String getServerImageName() {
-    return "postgres:16-bullseye";
+  protected BaseImage getServerImage() {
+    return BaseImage.POSTGRES_16;
   }
 
 }

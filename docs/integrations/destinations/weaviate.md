@@ -77,12 +77,15 @@ If a class doesn't exist in the schema of the cluster, it will be created using 
 
 You can also create the class in Weaviate in advance if you need more control over the schema in Weaviate. In this case, the text properies `_ab_stream` and `_ab_record_id` need to be created for bookkeeping reasons. In case a sync is run in `Overwrite` mode, the class will be deleted and recreated.
 
-As properties have to start will a lowercase letter in Weaviate, field names might be updated during the loading process. The field names `id`, `_id` and `_additional` are reserved keywords in Weaviate, so they will be renamed to `raw_id`, `raw__id` and `raw_additional` respectively.
+As properties have to start will a lowercase letter in Weaviate and can't contain spaces or special characters.  Field names might be updated during the loading process. The field names `id`, `_id` and `_additional` are reserved keywords in Weaviate, so they will be renamed to `raw_id`, `raw__id` and `raw_additional` respectively.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.13 | 2023-12-11 | [33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens |
+| 0.2.12 | 2023-12-07 | [33218](https://github.com/airbytehq/airbyte/pull/33218) | Normalize metadata field names |
+| 0.2.11 | 2023-12-01 | [32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text |
 | 0.2.10 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources |
 | 0.2.9 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
 | 0.2.8   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Improve test coverage |
