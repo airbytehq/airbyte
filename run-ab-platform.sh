@@ -104,6 +104,7 @@ for argument in $@; do
       ;;
     -r | --refresh)
       DeleteLocalAssets
+      Download
       exit
       ;;
     -h | --help)
