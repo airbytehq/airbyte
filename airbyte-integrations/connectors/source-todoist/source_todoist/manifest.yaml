@@ -36,7 +36,6 @@ definitions:
     $parameters:
       path: "/projects"
 
-
 streams:
   - "#/definitions/tasks_stream"
   - "#/definitions/projects_stream"
@@ -60,3 +59,4 @@ spec:
       token:
         type: string
         description: API authorization bearer token for authenticating the API
+        airbyte_secret: true

@@ -1,10 +1,10 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - api.todoist.com/rest/v2
   registries:
     oss:
-      enabled: false
+      enabled: true
     cloud:
       enabled: false
   connectorBuildOptions:
@@ -15,13 +15,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1a3d38e4-dc6b-4154-b56b-582f9e978ecd
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-todoist
   githubIssueLabel: source-todoist
   icon: todoist.svg
   license: MIT
   name: Todoist
-  releaseDate: TODO
+  releaseDate: 2023-12-10
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/todoist
