@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "name": "Order",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["string", "null"],
@@ -183,7 +184,7 @@
       "maxLength": 3
     },
     "exchange_rate": {
-      "type": ["integer", "null"]
+      "type": ["number", "null"]
     },
     "object": {
       "type": ["string", "null"]
