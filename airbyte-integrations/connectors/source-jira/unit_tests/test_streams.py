@@ -4,6 +4,7 @@
 
 import logging
 
+import pendulum
 import pytest
 import requests
 import responses
@@ -694,6 +695,22 @@ def test_issues_stream(config, mock_projects_responses_additional_project, mock_
     assert len(responses.calls) == 3
     error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"]. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
     assert error_message in caplog.messages
+
+@pytest.mark.parametrize(
+    "start_date, lookback_window, stream_state, expected_query",
+    [
+        (pendulum.parse("2023-09-09T00:00:00Z"), 0, None, None),
+        (None, 10, {"updated": "2023-12-14T09:47:00"}, "updated >= '2023/12/14 09:37'"),
+        (None, 0, {"updated": "2023-12-14T09:47:00"}, "updated >= '2023/12/14 09:47'")
+    ]
+)
+def test_issues_stream_jql_compare_date(config, start_date, lookback_window, stream_state, expected_query, caplog):
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", []) + ["Project3"],
+            "lookback_window_minutes": pendulum.duration(minutes=lookback_window)}
+    stream = Issues(**args)
+    assert stream.jql_compare_date(stream_state) == expected_query
+
 
 
 @responses.activate

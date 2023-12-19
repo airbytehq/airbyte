@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
+    cdkVersionRequired = '0.7.7'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -33,6 +33,8 @@ dependencies {
     testImplementation 'org.apache.commons:commons-text:1.10.0'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
+    integrationTestJavaImplementation libs.testcontainers.jdbc
     testImplementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
 
 

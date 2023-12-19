@@ -62,6 +62,7 @@ This guide describes in details how you can configure the connector to connect w
 
 | Version | Date       | Pull Request                                    | Subject                                                              |
 |:--------|:-----------|:------------------------------------------------|:---------------------------------------------------------------------|
+| 0.2.0   | 18-12-2023 | https://github.com/airbytehq/airbyte/pull/33485 | Remove LEGACY state                                                  |
 | 0.1.2   | 01-19-2023 | https://github.com/airbytehq/airbyte/pull/20172 | Fix reserved words in projection expression & make them configurable |
 | 0.1.1   | 02-09-2023 | https://github.com/airbytehq/airbyte/pull/22682 | Fix build                                                            |
 | 0.1.0   | 11-14-2022 | https://github.com/airbytehq/airbyte/pull/18750 | Initial version                                                      |
