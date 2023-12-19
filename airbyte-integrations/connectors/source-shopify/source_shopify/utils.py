@@ -140,7 +140,7 @@ class ShopifyRateLimiter:
     Define timings for RateLimits. Adjust timings if needed.
 
     :: on_unknown_load = 1.0 sec - Shopify recommended time to hold between each API call.
-    :: on_very_low_load = 0.0 sec - when the bucket is empty, don't hold, because each api call can already take more than 200 miliseconds.
+    :: on_very_low_load = 0.0 sec - when the bucket is empty, don't hold, because current api call processing can already take longer than Shopify's leak rate.
     :: on_low_load = 0.2 sec (200 miliseconds) - ideal ratio between hold time and api call, also the standard hold time between each API call.
     :: on_mid_load = 1.5 sec - great timing to retrieve another 15% of request capacity while having mid_load.
     :: on_high_load = 5.0 sec - ideally we should wait 2.0 sec while having high_load, but we hold 5 sec to retrieve up to 80% of request capacity.

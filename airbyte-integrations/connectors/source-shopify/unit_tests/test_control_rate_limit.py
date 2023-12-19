@@ -112,7 +112,7 @@ def test_graphql_api_with_unknown_load(requests_mock):
     assert limiter.on_unknown_load == actual_sleep_time
 
 
-def test_graphql_api_with_low_load(requests_mock):
+def test_graphql_api_with_very_low_load(requests_mock):
     """
     Test simulates very low load (2000-1800)/2000=0.1 points of rate limit.
     """
