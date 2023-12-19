@@ -31,7 +31,8 @@ class VectaraWriter:
 
     def delete_streams_to_overwrite(self, catalog: ConfiguredAirbyteCatalog) -> None:
         streams_to_overwrite = [
-            stream.stream.name for stream in catalog.streams if stream.destination_sync_mode == DestinationSyncMode.overwrite
+            f"{stream.stream.namespace}_{stream.stream.name}" 
+            for stream in catalog.streams if stream.destination_sync_mode == DestinationSyncMode.overwrite
         ]
         if len(streams_to_overwrite):
             self.client.delete_doc_by_metadata(metadata_field_name=METADATA_STREAM_FIELD, metadata_field_values=streams_to_overwrite)
