@@ -7,6 +7,9 @@
         "number"
       ]
     },
+    "campaignId": {
+      "type": ["null", "number"]
+    },
     "name" : {
       "type" : [
         "null",
