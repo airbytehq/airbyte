@@ -6,11 +6,9 @@ package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.postgres.PostgresTestDatabase.BaseImage;
 import java.util.HashSet;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 public class PostgresDestinationSSLFullCertificateAcceptanceTest extends AbstractPostgresDestinationAcceptanceTest {
 
@@ -29,7 +27,7 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends Abstrac
         .withResolvedHostAndPort()
         .withCredentials()
         .withSsl(ImmutableMap.builder()
-            .put("mode", "verify-ca") //verify-full will not work since the spawned container is only allowed for 127.0.0.1/32 CIDRs
+            .put("mode", "verify-ca") // verify-full will not work since the spawned container is only allowed for 127.0.0.1/32 CIDRs
             .put("ca_certificate", testDb.getCertificates().caCertificate())
             .build())
         .build();

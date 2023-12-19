@@ -35,9 +35,9 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends AbstractPost
         .withResolvedHostAndPort()
         .withCredentials()
         .withSsl(ImmutableMap.builder()
-                     .put("mode", "verify-ca") //verify-full will not work since the spawned container is only allowed for 127.0.0.1/32 CIDRs
-                     .put("ca_certificate", testDb.getCertificates().caCertificate())
-                     .build())
+            .put("mode", "verify-ca") // verify-full will not work since the spawned container is only allowed for 127.0.0.1/32 CIDRs
+            .put("ca_certificate", testDb.getCertificates().caCertificate())
+            .build())
         .build();
   }
 
@@ -65,8 +65,8 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends AbstractPost
         .withCredentials()
         .with("tunnel_method", ImmutableMap.builder().put("tunnel_method", TunnelMethod.NO_TUNNEL.toString()).build())
         .with("ssl_mode", ImmutableMap.builder()
-                     .put("mode", "prefer")
-                     .build())
+            .put("mode", "prefer")
+            .build())
         .build();
     final var actual = runCheck(config);
     assertEquals(Status.FAILED, actual.getStatus());
