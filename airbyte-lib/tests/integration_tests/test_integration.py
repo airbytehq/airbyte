@@ -110,5 +110,3 @@ def test_succeeding_path_connector():
     source.check()
 
     os.environ["PATH"] = old_path
-
-    
