@@ -27,8 +27,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
@@ -155,9 +153,7 @@ class PostgresSourceTest {
   }
 
   public PostgresSource source() {
-    var source = new PostgresSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new PostgresSource();
   }
 
   private static DSLContext getDslContextWithSpecifiedUser(final JsonNode config, final String username, final String password) {
@@ -700,7 +696,7 @@ class PostgresSourceTest {
   @Test
   void testParseJdbcParameters() {
     final String jdbcPropertiesString = "foo=bar&options=-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000&baz=quux";
-    Map<String, String> parameters = PostgresSource.parseJdbcParameters(jdbcPropertiesString, "&");
+    final Map<String, String> parameters = PostgresSource.parseJdbcParameters(jdbcPropertiesString, "&");
     assertEquals("-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000", parameters.get("options"));
     assertEquals("bar", parameters.get("foo"));
     assertEquals("quux", parameters.get("baz"));

@@ -160,15 +160,35 @@ The MongoDB source utilizes change data capture (CDC) as a reliable way to keep 
 
 Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manual/changeStreams/) of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/) to incrementally capture inserts, updates and deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/).
 
+### Schema Enforcement
+
+By default the MongoDB V2 source connector enforces a schema. This means that while setting up a connector it will sample a configureable number of docuemnts and will create a set of fields to sync. From that set of fields, an admin can then deselect specific fields from the Replication screen to filter them out from the sync.
+
+When the schema enforced option is disabled, MongoDB collections are read in schema-less mode which doesn't assume documents share the same structure.
+This allows for greater flexibility in reading data that is unstructured or vary a lot in between documents in a single collection.
+When schema is not enforced, each document will generate a record that only contains the following top-level fields:
+```json
+{
+  "_id": <document id>,
+  "data": {<a JSON cotaining the entire set of fields found in document>}
+}
+```
+The contents of `data` will vary according to the contents of each document read from MongoDB.
+Unlike in Schema enforced mode, the same field can vary in type between document. For example field `"xyz"` may be a String on one document and a Date on another.
+As a result no field will be omitted and no document will be rejected.
+When Schema is not enforced there is not way to deselect fields as all fields are read for every document.
+
 ## Limitations & Troubleshooting
 
 * Only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster type.
-* Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields.  This value is universally applied to all collections discovered in the target database.  The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency.  By default, 10,000 documents are sampled.  This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered.  However, the trade-off is time, as a higher value will take the process longer to sample the collection.
+* Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields.  This value is universally applied to all collections discovered in the target database.  The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency.  By default, 10,000 documents are sampled.  This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered.  However, the trade-off is time, as a higher value will take the process longer to sample the collection. 
+* When Running with Schema Enforced set to `false` there is no attempt to discover any schema. See more in [Schema Enforcement](#Schema-Enforcement).
 * TLS/SSL is required by this connector. TLS/SSL is enabled by default for MongoDB Atlas clusters. To enable TSL/SSL connection for a self-hosted MongoDB instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
 * Views, capped collections and clustered collections are not supported.
 * Empty collections are excluded from schema discovery.
 * Collections with different data types for the values in the `_id` field among the documents in a collection are not supported.  All `_id` values within the collection must be the same data type.
 * [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/) are based on the [Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/), which has retention limitations.  Syncs that run less frequently than the retention period of the oplog may encounter issues with missing data.
+* Atlas DB cluster are only supported in a dedicated M10 tier and above. Lower tiers may fail during connection setup.
 
 ## Configuration Parameters
 
@@ -180,6 +200,7 @@ Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manua
 | Username                                   | The username which is used to access the database.  Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                     |
 | Password                                   | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                             |
 | Authentication Source                      | (MongoDB Atlas clusters only) Specifies the database that the supplied credentials should be validated against. Defaults to `admin`.  See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                             |
+| Schema Enforced                            | Controls whether schema is discovered and enforced. See discussion in [Schema Enforcement](#Schema-Enforcement).                                                                                                                                                                                                                                                                                                                                     |
 | Initial Waiting Time in Seconds (Advanced) | The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.                                                                                                                                                                                                                                                             |
 | Size of the queue (Advanced)               | The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.                                                                                                                                                                                                                                                                                                               |
 | Discovery Sample Size (Advanced)           | The maximum number of documents to sample when attempting to discover the unique fields for a collection.  Default is 10,000 with a valid range of 1,000 to 100,000.  See the [MongoDB sampling method](https://www.mongodb.com/docs/compass/current/sampling/#sampling-method) for more details.                                                                                                                                            |
@@ -190,6 +211,11 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 1.2.1   | 2023-12-18 | [33549](https://github.com/airbytehq/airbyte/pull/33549) | Add logging to understand op log size.                                                                    |
+| 1.2.0   | 2023-12-18 | [33438](https://github.com/airbytehq/airbyte/pull/33438) | Remove LEGACY state flag                                                                                  |
+| 1.1.0   | 2023-12-14 | [32328](https://github.com/airbytehq/airbyte/pull/32328) | Schema less mode in mongodb.                                                                              |
+| 1.0.12  | 2023-12-13 | [33430](https://github.com/airbytehq/airbyte/pull/33430) | Add more verbose logging.                                                                                 |
+| 1.0.11  | 2023-11-28 | [33356](https://github.com/airbytehq/airbyte/pull/33356) | Support for better debugging tools.                                                                       |
 | 1.0.10  | 2023-11-28 | [32886](https://github.com/airbytehq/airbyte/pull/32886) | Handle discover phase OOMs                                                                                |
 | 1.0.9   | 2023-11-08 | [32285](https://github.com/airbytehq/airbyte/pull/32285) | Additional support to read UUIDs                                                                          |
 | 1.0.8   | 2023-11-08 | [32125](https://github.com/airbytehq/airbyte/pull/32125) | Fix compilation warnings                                                                                  |

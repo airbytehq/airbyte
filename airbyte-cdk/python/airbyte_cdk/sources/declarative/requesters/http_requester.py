@@ -334,6 +334,11 @@ class HttpRequester(Requester):
         )
         if isinstance(options, str):
             raise ValueError("Request params cannot be a string")
+
+        for k, v in options.items():
+            if isinstance(v, (list, dict)):
+                raise ValueError(f"Invalid value for `{k}` parameter. The values of request params cannot be an array or object.")
+
         return options
 
     def _request_body_data(
