@@ -3,13 +3,13 @@ import TabItem from '@theme/TabItem';
 
 # Implementation Guide
 
-[Airbyte Enterprise](./README.md) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Enterprise license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
+[Airbyte Self-Managed Enterprise](./README.md) is in an early access stage for select priority users. Once you [are qualified for a Self-Managed Enterprise license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
 
-Airbyte Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
+Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
 
 ## Prerequisites
 
-There are three prerequisites to deploying Enterprise: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
+There are three prerequisites to deploying: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
 
 For production, we recommend deploying to EKS, GKE or AKS. If you are doing some local testing, follow the cluster setup instructions outlined [here](/deploying-airbyte/on-kubernetes-via-helm.md#cluster-setup).
 
@@ -57,7 +57,7 @@ Follow these instructions to add the Airbyte helm repository:
 cp configs/airbyte.sample.yml configs/airbyte.yml
 ```
 
-3. Add your Airbyte Enterprise license key to your `airbyte.yml`. 
+3. Add your Airbyte Self-Managed Enterprise license key to your `airbyte.yml`. 
 
 4. Add your [auth details](/enterprise-setup/sso) to your `airbyte.yml`. Auth configurations aren't easy to modify after Airbyte is installed, so please double check them to make sure they're accurate before proceeding.
 
@@ -185,7 +185,7 @@ global:
             
         gcs:
             bucket: airbyte-dev-logs # GCS bucket name that you've created.
-            credentials: "" ## ???
+            credentials: ""
             credentialsJson: "" ## Base64 encoded json GCP credentials file contents
 ```
 
@@ -204,7 +204,9 @@ To access the Airbyte UI, you will need to manually attach an ingress configurat
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: enterprise-demo
+  name: # ingress name, example: enterprise-demo
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
   - host: # host, example: enterprise-demo.airbyte.com
