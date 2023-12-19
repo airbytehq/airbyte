@@ -337,19 +337,6 @@ public class IntegrationRunner {
   }
 
   /**
-   * @param connectorImage Expected format: [organization/]image[:version]
-   */
-  @VisibleForTesting
-  static String parseConnectorVersion(final String connectorImage) {
-    if (connectorImage == null || connectorImage.equals("")) {
-      return "unknown";
-    }
-
-    final String[] tokens = connectorImage.split(":");
-    return tokens[tokens.length - 1];
-  }
-  
-  /**
    * Stops any non-daemon threads that could block the JVM from exiting when the main thread is done.
    * <p>
    * If any active non-daemon threads would be left as orphans, this method will schedule some
@@ -425,6 +412,19 @@ public class IntegrationRunner {
   private static <T> T parseConfig(final Path path, final Class<T> klass) {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
+  }
+
+  /**
+   * @param connectorImage Expected format: [organization/]image[:version]
+   */
+  @VisibleForTesting
+  static String parseConnectorVersion(final String connectorImage) {
+    if (connectorImage == null || connectorImage.equals("")) {
+      return "unknown";
+    }
+
+    final String[] tokens = connectorImage.split(":");
+    return tokens[tokens.length - 1];
   }
 
 }
