@@ -53,8 +53,8 @@ class Source:
     ):
         self.executor = executor
         self.name = name
-        self.streams = None
-        self.config = None
+        self.streams: Optional[List[str]] = None
+        self.config: Optional[Dict[str, Any]] = None
         if config is not None:
             self.set_config(config)
         if streams is not None:
@@ -87,7 +87,7 @@ class Source:
                     return msg.catalog
             raise Exception("Connector did not return a catalog")
 
-    def _validate_config(self, config: Dict[str, any]) -> None:
+    def _validate_config(self, config: Dict[str, Any]) -> None:
         """
         Validate the config against the spec.
         """
@@ -220,19 +220,18 @@ class Source:
 
         self.executor.ensure_installation()
 
-        last_log_messages = []
+        last_log_messages: List[str] = []
         try:
-            with self.executor.execute(args) as output:
-                last_log_messages = []
-                for line in output:
-                    try:
-                        message = AirbyteMessage.parse_raw(line)
-                        yield message
-                        if message.type == Type.LOG:
-                            last_log_messages.append(message.log.message)
-                            last_log_messages = last_log_messages[-10:]
-                    except Exception:
-                        last_log_messages.append(line)
+            last_log_messages = []
+            for line in self.executor.execute(args):
+                try:
+                    message = AirbyteMessage.parse_raw(line)
+                    yield message
+                    if message.type == Type.LOG:
+                        last_log_messages.append(message.log.message)
                         last_log_messages = last_log_messages[-10:]
+                except Exception:
+                    last_log_messages.append(line)
+                    last_log_messages = last_log_messages[-10:]
         except Exception as e:
             raise Exception(f"{str(e)}. Last logs: {last_log_messages}")

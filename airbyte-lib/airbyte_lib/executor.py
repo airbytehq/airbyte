@@ -6,7 +6,7 @@ import sys
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, List
+from typing import IO, Generator, Iterable, List
 
 from airbyte_lib.registry import ConnectorMetadata
 
@@ -17,8 +17,7 @@ class Executor(ABC):
         self.target_version = target_version if target_version != "latest" else metadata.latest_available_version
 
     @abstractmethod
-    @contextmanager
-    def execute(self, args: List[str]) -> IO[str]:
+    def execute(self, args: List[str]) -> Iterable[str]:
         pass
 
     @abstractmethod
@@ -26,7 +25,8 @@ class Executor(ABC):
         pass
 
 
-def _stream_from_subprocess(args: List[str]) -> IO[str]:
+@contextmanager
+def _stream_from_subprocess(args: List[str]) -> Generator[Iterable[str], None, None]:
     process = subprocess.Popen(
         args,
         stdout=subprocess.PIPE,
@@ -34,8 +34,17 @@ def _stream_from_subprocess(args: List[str]) -> IO[str]:
         universal_newlines=True,
     )
 
+    def _stream_from_file(file: IO[str]):
+        while True:
+            line = file.readline()
+            if not line:
+                break
+            yield line
+
+    if process.stdout is None:
+        raise Exception("Failed to start subprocess")
     try:
-        yield process.stdout
+        yield _stream_from_file(process.stdout)
     finally:
         # Close the stdout stream
         if process.stdout:
@@ -114,11 +123,11 @@ class VenvExecutor(Executor):
                     f"Failed to install connector {self.metadata.name} version {self.target_version}. Installed version is {version_after_install}"
                 )
 
-    @contextmanager
-    def execute(self, args: List[str]) -> IO[str]:
+    def execute(self, args: List[str]) -> Iterable[str]:
         connector_path = self._get_connector_path()
 
-        return _stream_from_subprocess([str(connector_path)] + args)
+        with _stream_from_subprocess([str(connector_path)] + args) as stream:
+            yield from stream
 
 
 class PathExecutor(Executor):
@@ -128,6 +137,6 @@ class PathExecutor(Executor):
         except Exception as e:
             raise Exception(f"Connector {self.metadata.name} is not available - executing it failed: {e}")
 
-    @contextmanager
-    def execute(self, args: List[str]) -> IO[str]:
-        return _stream_from_subprocess([self.metadata.name] + args)
+    def execute(self, args: List[str]) -> Iterable[str]:
+        with _stream_from_subprocess([self.metadata.name] + args) as stream:
+            yield from stream

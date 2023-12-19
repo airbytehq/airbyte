@@ -16,10 +16,10 @@ class Cache(ABC):
 class InMemoryCache(Cache):
     """The in-memory cache is accepting airbyte messages and stores them in a dictionary for streams (one list of dicts per stream)."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.streams: Dict[str, List[Dict[str, Any]]] = {}
 
-    def write(self, messages: Iterable[AirbyteRecordMessage]):
+    def write(self, messages: Iterable[AirbyteRecordMessage]) -> None:
         for message in messages:
             if message.stream not in self.streams:
                 self.streams[message.stream] = []

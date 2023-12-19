@@ -3,12 +3,9 @@
 import json
 import os
 from dataclasses import dataclass
+from typing import Dict, Optional
 
 import requests
-
-_cache = None
-
-REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 
 
 @dataclass
@@ -17,10 +14,15 @@ class ConnectorMetadata:
     latest_available_version: str
 
 
-def _update_cache():
+_cache: Optional[Dict[str, ConnectorMetadata]] = None
+
+REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
+
+
+def _update_cache() -> None:
     global _cache
     if os.environ.get("AIRBYTE_LOCAL_REGISTRY"):
-        with open(os.environ.get("AIRBYTE_LOCAL_REGISTRY"), "r") as f:
+        with open(str(os.environ.get("AIRBYTE_LOCAL_REGISTRY")), "r") as f:
             data = json.load(f)
     else:
         response = requests.get(REGISTRY_URL)
@@ -38,6 +40,6 @@ def get_connector_metadata(name: str):
     """
     if not _cache:
         _update_cache()
-    if name not in _cache:
+    if not _cache or name not in _cache:
         raise Exception(f"Connector {name} not found")
     return _cache[name]
