@@ -149,7 +149,7 @@
             "type": ["null", "string"]
           },
           "external_url": {
-            "type": ["null",  "string"]
+            "type": ["null", "string"]
           }
         }
       }
