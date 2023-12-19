@@ -72,7 +72,7 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
     def compare_intervals(self, end_time: Any, start_time: Any) -> bool:
         return bool(self.increment(end_time) >= start_time)
 
-    def convert_from_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def convert_from_sequential_state(self, cursor_field: str, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Convert the state message to the format required by the ConcurrentCursor.
 
@@ -86,13 +86,13 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
         """
         if self.is_state_message_compatible(stream_state):
             return stream_state
-        if self._cursor_field in stream_state:
+        if cursor_field in stream_state:
             slices = [
                 {
                     # TODO: if we migrate stored state to the concurrent state format, we may want this to be the config start date
                     # instead of `zero_value`
                     self.START_KEY: self.zero_value,
-                    self.END_KEY: self.parse_timestamp(stream_state[self._cursor_field]),
+                    self.END_KEY: self.parse_timestamp(stream_state[cursor_field]),
                 },
             ]
         else:
@@ -103,7 +103,7 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
             "legacy": stream_state,
         }
 
-    def convert_to_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def convert_to_sequential_state(self, cursor_field: str, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Convert the state message from the concurrency-compatible format to the stream's original format.
 
@@ -115,7 +115,7 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
             if slices := stream_state.pop("slices", None):
                 latest_complete_time = self._get_latest_complete_time(slices)
                 if latest_complete_time:
-                    legacy_state.update({self._cursor_field: self.output_format(latest_complete_time)})
+                    legacy_state.update({cursor_field: self.output_format(latest_complete_time)})
             return legacy_state or {}
         else:
             return stream_state
@@ -176,8 +176,8 @@ class IsoMillisConcurrentStreamStateConverter(DateTimeStreamStateConverter):
 
     _zero_value = "0001-01-01T00:00:00.000Z"
 
-    def __init__(self, cursor_field: str, slice_timestamp_format: str):
-        super().__init__(cursor_field)
+    def __init__(self, slice_timestamp_format: str):
+        super().__init__()
         self._slice_timestamp_format = slice_timestamp_format
 
     def increment(self, timestamp: datetime) -> Any:

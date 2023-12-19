@@ -135,7 +135,7 @@ class ConcurrentCursor(Cursor):
 
     def _emit_state_message(self) -> None:
         self._connector_state_manager.update_state_for_stream(
-            self._stream_name, self._stream_namespace, self._connector_state_converter.convert_to_sequential_state(self._state)
+            self._stream_name, self._stream_namespace, self._connector_state_converter.convert_to_sequential_state(self._cursor_field, self._state)
         )
         # TODO: if we migrate stored state to the concurrent state format
         #  (aka stop calling self._connector_state_converter.convert_to_sequential_state`), we'll need to cast datetimes to string or

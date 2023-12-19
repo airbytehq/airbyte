@@ -15,13 +15,10 @@ class AbstractStreamStateConverter(ABC):
     START_KEY = "start"
     END_KEY = "end"
 
-    def __init__(self, cursor_field: str):
-        self._cursor_field = cursor_field
-
-    def get_concurrent_stream_state(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def get_concurrent_stream_state(self, cursor_field: str, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         if self.is_state_message_compatible(state):
             return self.deserialize(state)
-        return self.convert_from_sequential_state(state)
+        return self.convert_from_sequential_state(cursor_field, state)
 
     @abstractmethod
     def deserialize(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
@@ -35,7 +32,7 @@ class AbstractStreamStateConverter(ABC):
         return bool(state) and state.get("state_type") in [t.value for t in ConcurrencyCompatibleStateType]
 
     @abstractmethod
-    def convert_from_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def convert_from_sequential_state(self, cursor_field: str, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Convert the state message to the format required by the ConcurrentCursor.
 
@@ -50,7 +47,7 @@ class AbstractStreamStateConverter(ABC):
         ...
 
     @abstractmethod
-    def convert_to_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def convert_to_sequential_state(self, cursor_field: str, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Convert the state message from the concurrency-compatible format to the stream's original format.
 
