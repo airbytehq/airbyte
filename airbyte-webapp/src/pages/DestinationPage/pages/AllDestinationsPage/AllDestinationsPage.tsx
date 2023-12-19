@@ -117,10 +117,9 @@ const AllDestinationsPage: React.FC = () => {
   );
   const onCreateDestination = () => push(`${RoutePaths.SelectDestination}`);
 
-  // if (destinations.length === 0) {
-  //   onCreateDestination();
-  //   return null;
-  // }
+  if (destinations.length === 0) {
+    onCreateDestination();
+  }
 
   return (
     <NewMainPageWithScroll

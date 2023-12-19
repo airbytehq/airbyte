@@ -117,10 +117,9 @@ const AllSourcesPage: React.FC = () => {
   );
   const onCreateSource = () => push(`${RoutePaths.SelectSource}`);
 
-  // if (sources.length === 0) {
-  //   onCreateSource();
-  //   return null;
-  // }
+  if (sources?.length === 0) {
+    onCreateSource();
+  }
   return (
     <NewMainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}
