@@ -43,7 +43,7 @@ data:
         message: Google is deprecating v13 of the Google Ads API in January.
           This release upgrades the Google Ads API to the latest version (v15), which causes changes in several schemas.
           Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
-        upgradeDeadline: "2023-12-29"
+        upgradeDeadline: "2024-01-12"
   suggestedStreams:
     streams:
       - campaigns
