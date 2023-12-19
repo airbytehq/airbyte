@@ -31,7 +31,7 @@ export const ProductInformation = ({ products }) => {
       <Badge available={cloud}>Cloud {cloudTeams ? <span className={styles.withAddon}>with Teams add-on</span> : ""}</Badge>
       <Badge available={ossCommunity}>Self-Managed Community (OSS)</Badge>
       <Badge available={ossEnterprise}>Self-Managed Enterprise</Badge>
-      <a href="https://airbyte.com/product/features" target="_blank" className={styles.helpIcon}>
+      <a href="https://airbyte.com/product/features" target="_blank" className={styles.helpIcon} title="Feature comparison">
         <FontAwesomeIcon icon={faQuestionCircle} size="md" />
       </a>
     </div>
