@@ -288,4 +288,4 @@ class CampaignCreatives(IronsourceSubStream, ABC):
         if response.status_code == 400 and response.json()["errorMessage"] == "Invalid field campaignId - Supports UAP campaigns only":
             return []
         response.raise_for_status()
-        yield from super().parse_response(response, stream_state, stream_slice, next_page_token)
+        yield from (self.add_parent_id(b, "campaignId", stream_slice['parent']['id']) for b in response.json()[self.entity])
