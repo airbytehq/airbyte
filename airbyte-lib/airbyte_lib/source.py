@@ -55,6 +55,7 @@ class Source:
         self.name = name
         self.streams: Optional[List[str]] = None
         self.config: Optional[Dict[str, Any]] = None
+        self._last_log_messages: List[str] = []
         if config is not None:
             self.set_config(config)
         if streams is not None:
@@ -85,7 +86,7 @@ class Source:
             for msg in self._execute(["discover", "--config", config_file]):
                 if msg.type == Type.CATALOG and msg.catalog:
                     return msg.catalog
-            raise Exception("Connector did not return a catalog")
+            raise Exception(f"Connector did not return a catalog. Last logs: {self._last_log_messages}")
 
     def _validate_config(self, config: Dict[str, Any]) -> None:
         """
@@ -113,7 +114,7 @@ class Source:
         for msg in self._execute(["spec"]):
             if msg.type == Type.SPEC and msg.spec:
                 return msg.spec
-        raise Exception("Connector did not return a spec")
+        raise Exception(f"Connector did not return a spec. Last logs: {self._last_log_messages}")
 
     def peek(self, stream: str, max_n: int = 10) -> List[Dict[str, Any]]:
         """
@@ -161,7 +162,7 @@ class Source:
                         raise Exception(f"Connector returned failed status: {msg.connectionStatus.message}")
                     else:
                         return
-            raise Exception("Connector did not return check status")
+            raise Exception(f"Connector did not return check status. Last logs: {self._last_log_messages}")
 
     def install(self):
         self.executor.ensure_installation()
@@ -208,6 +209,10 @@ class Source:
                 if msg.type == Type.RECORD:
                     yield msg.record
 
+    def _add_to_logs(self, message: str):
+        self._last_log_messages.append(message)
+        self._last_log_messages = self._last_log_messages[-10:]
+
     def _execute(self, args: List[str]) -> Iterable[AirbyteMessage]:
         """
         Execute the connector with the given arguments.
@@ -220,18 +225,15 @@ class Source:
 
         self.executor.ensure_installation()
 
-        last_log_messages: List[str] = []
         try:
-            last_log_messages = []
+            self._last_log_messages = []
             for line in self.executor.execute(args):
                 try:
                     message = AirbyteMessage.parse_raw(line)
                     yield message
                     if message.type == Type.LOG:
-                        last_log_messages.append(message.log.message)
-                        last_log_messages = last_log_messages[-10:]
+                        self._add_to_logs(message.log.message)
                 except Exception:
-                    last_log_messages.append(line)
-                    last_log_messages = last_log_messages[-10:]
+                    self._add_to_logs(line)
         except Exception as e:
-            raise Exception(f"{str(e)}. Last logs: {last_log_messages}")
+            raise Exception(f"{str(e)}. Last logs: {self._last_log_messages}")
