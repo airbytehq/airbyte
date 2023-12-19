@@ -14,10 +14,12 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -35,8 +37,12 @@ def to_int(s):
     return s
 
 
-class SourceZendeskException(Exception):
-    """default exception of custom SourceZendesk logic"""
+class ZendeskConfigException(AirbyteTracedException):
+    """default config exception to custom SourceZendesk logic"""
+
+    def __init__(self, **kwargs):
+        failure_type: FailureType = FailureType.config_error
+        super(ZendeskConfigException, self).__init__(failure_type=failure_type, **kwargs)
 
 
 class BaseZendeskSupportStream(HttpStream, ABC):
@@ -48,6 +54,10 @@ class BaseZendeskSupportStream(HttpStream, ABC):
         self._start_date = start_date
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        return 10
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
@@ -119,10 +129,28 @@ class BaseZendeskSupportStream(HttpStream, ABC):
             except requests.exceptions.JSONDecodeError:
                 reason = response.reason
                 error = {"title": f"{reason}", "message": "Received empty JSON response"}
-            self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {error}.")
+            self.logger.error(
+                f"Skipping stream {self.name}, error message: {error}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+            )
             setattr(self, "raise_on_http_errors", False)
             return False
         return super().should_retry(response)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except requests.exceptions.JSONDecodeError:
+            self.logger.error(
+                f"Skipping stream {self.name}: Non-JSON response received. Please ensure that you have enough permissions for this stream."
+            )
 
 
 class SourceZendeskSupportStream(BaseZendeskSupportStream):
@@ -327,13 +355,14 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        next_page_token = next_page_token or {}
+        parsed_state = self.check_stream_state(stream_state)
+        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
         # check "start_time" is not in the future
         params["start_time"] = self.check_start_time_param(params["start_time"])
         if self.sideload_param:
             params["include"] = self.sideload_param
         if next_page_token:
-            params.pop("start_time", None)
             params.update(next_page_token)
         return params
 
@@ -373,23 +402,6 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
         """
         response_json = response.json()
         return None if response_json.get(END_OF_STREAM_KEY, True) else {"start_time": response_json.get("end_time")}
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        next_page_token = next_page_token or {}
-        parsed_state = self.check_stream_state(stream_state)
-        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        # check "start_time" is not in the future
-        params["start_time"] = self.check_start_time_param(params["start_time"])
-        if self.sideload_param:
-            params["include"] = self.sideload_param
-        if next_page_token:
-            params.update(next_page_token)
-        return params
 
     @property
     def update_event_from_record(self) -> bool:
@@ -431,45 +443,11 @@ class Users(SourceZendeskIncrementalExportStream):
     def path(self, **kwargs) -> str:
         return "incremental/users/cursor.json"
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        next_page_token = next_page_token or {}
-        parsed_state = self.check_stream_state(stream_state)
-        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        # check "start_time" is not in the future
-        params["start_time"] = self.check_start_time_param(params["start_time"])
-        if self.sideload_param:
-            params["include"] = self.sideload_param
-        if next_page_token:
-            params.update(next_page_token)
-        return params
-
 
 class Organizations(SourceZendeskIncrementalExportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
     response_list_name: str = "organizations"
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        next_page_token = next_page_token or {}
-        parsed_state = self.check_stream_state(stream_state)
-        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        # check "start_time" is not in the future
-        params["start_time"] = self.check_start_time_param(params["start_time"])
-        if self.sideload_param:
-            params["include"] = self.sideload_param
-        if next_page_token:
-            params.update(next_page_token)
-        return params
 
 
 class Posts(CursorPaginationZendeskSupportStream):
@@ -632,7 +610,7 @@ class TicketAudits(IncrementalZendeskSupportStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
     # can request a maximum of 1,000 results
-    page_size = 1000
+    page_size = 200
     # ticket audits doesn't have the 'updated_by' field
     cursor_field = "created_at"
 
@@ -778,7 +756,7 @@ class UserSettingsStream(FullRefreshZendeskSupportStream):
     def get_settings(self) -> Mapping[str, Any]:
         for resp in self.read_records(SyncMode.full_refresh):
             return resp
-        raise SourceZendeskException("not found settings")
+        raise ZendeskConfigException(message="Can not get access to settings endpoint; Please check provided credentials")
 
     def request_params(
         self,
@@ -870,16 +848,7 @@ class Articles(SourceZendeskIncrementalExportStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        next_page_token = next_page_token or {}
-        parsed_state = self.check_stream_state(stream_state)
-        params = {"sort_by": "updated_at", "sort_order": "asc", "start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        # check "start_time" is not in the future
-        params["start_time"] = self.check_start_time_param(params["start_time"])
-        if self.sideload_param:
-            params["include"] = self.sideload_param
-        if next_page_token:
-            params.update(next_page_token)
-        return params
+        return {"sort_by": "updated_at", "sort_order": "asc", **super().request_params(stream_state, stream_slice, next_page_token)}
 
 
 class ArticleVotes(AbstractVotes, HttpSubStream):

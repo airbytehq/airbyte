@@ -5,10 +5,10 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -58,7 +58,11 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   }
 
   @Override
-  public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+  public String getStagingPath(final UUID connectionId,
+                               final String namespace,
+                               final String streamName,
+                               final String outputTableName,
+                               final DateTime writeDatetime) {
     // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
     return nameTransformer.applyDefaultCase(String.format("%s/%02d/%02d/%02d/%s/",
         writeDatetime.year().get(),

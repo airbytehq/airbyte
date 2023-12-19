@@ -1,5 +1,7 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": { "type": "integer" },
     "name": { "type": ["null", "string"] },
@@ -13,6 +15,7 @@
     "created_at": { "type": ["null", "string"] },
     "is_fully_refunded": { "type": ["null", "boolean"] },
     "is_partially_refunded": { "type": ["null", "boolean"] },
-    "is_quote_status": { "type": ["null", "boolean"] }
+    "is_quote_status": { "type": ["null", "boolean"] },
+    "is_partially_shipped": { "type": ["null", "boolean"] }
   }
 }

@@ -231,7 +231,10 @@ class MarketoExportBase(IncrementalMarketoStream):
         schema = self.get_json_schema()["properties"]
         response.encoding = "utf-8"
 
-        reader = csv.DictReader(response.iter_lines(chunk_size=1024, decode_unicode=True))
+        response_lines = response.iter_lines(chunk_size=1024, decode_unicode=True)
+        filtered_response_lines = self.filter_null_bytes(response_lines)
+        reader = self.csv_rows(filtered_response_lines)
+
         for record in reader:
             new_record = {**record}
             attributes = json.loads(new_record.pop("attributes", "{}"))
@@ -256,6 +259,23 @@ class MarketoExportBase(IncrementalMarketoStream):
     ) -> Iterable[Mapping[str, Any]]:
         self.sleep_till_export_completed(stream_slice)
         return super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+
+    def filter_null_bytes(self, response_lines: Iterable[str]) -> Iterable[str]:
+        for line in response_lines:
+            res = line.replace("\x00", "")
+            if len(res) < len(line):
+                self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(line), len(res))
+            yield res
+
+    @staticmethod
+    def csv_rows(lines: Iterable[str]) -> Iterable[Mapping]:
+        reader = csv.reader(lines)
+        headers = None
+        for row in reader:
+            if headers is None:
+                headers = row
+            else:
+                yield dict(zip(headers, row))
 
 
 class MarketoExportCreate(MarketoStream):
@@ -342,7 +362,15 @@ class Leads(MarketoExportBase):
 
     @property
     def stream_fields(self):
-        return list(self.get_json_schema()["properties"].keys())
+        standard_properties = set(self.get_json_schema()["properties"])
+        resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self.authenticator.get_auth_header())
+        available_fields = set(x.get("rest").get("name") for x in resp.json().get("result"))
+        return list(standard_properties & available_fields)
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # TODO: make schema truly dynamic like in stream Activities
+        #  now blocked by https://github.com/airbytehq/airbyte/issues/30530 due to potentially > 500 fields in schema (can cause OOM)
+        return super().get_json_schema()
 
 
 class Activities(MarketoExportBase):

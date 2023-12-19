@@ -10,10 +10,11 @@ import jsonschema
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.utils import AirbyteTracedException
 from source_google_search_console.exceptions import (
     InvalidSiteURLValidationError,
     UnauthorizedOauthError,
@@ -67,7 +68,8 @@ class SourceGoogleSearchConsole(AbstractSource):
             try:
                 authorization["service_account_info"] = json.loads(authorization["service_account_info"])
             except ValueError:
-                raise Exception("authorization.service_account_info is not valid JSON")
+                message = "authorization.service_account_info is not valid JSON"
+                raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
 
         # custom report validation
         config = self._validate_custom_reports(config)
@@ -96,12 +98,14 @@ class SourceGoogleSearchConsole(AbstractSource):
                 elif isinstance(custom_reports, list):
                     pass  # allow the list structure only
             except ValueError:
-                raise Exception("Custom Reports provided is not valid List of Object (reports)")
+                message = "Custom Reports provided is not valid List of Object (reports)"
+                raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
             jsonschema.validate(config["custom_reports_array"], custom_reports_schema)
             for report in config["custom_reports_array"]:
                 for dimension in report["dimensions"]:
-                    if dimension not in SearchAnalyticsByCustomDimensions.dimension_to_property_schema_map:
-                        raise Exception(f"dimension: '{dimension}' not found")
+                    if dimension not in SearchAnalyticsByCustomDimensions.DIMENSION_TO_PROPERTY_SCHEMA_MAP:
+                        message = f"dimension: '{dimension}' not found"
+                        raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:

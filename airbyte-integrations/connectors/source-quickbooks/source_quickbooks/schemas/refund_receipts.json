@@ -78,7 +78,7 @@
                 "type": ["null", "object"]
               },
               "UnitPrice": {
-                "type": ["null", "integer"]
+                "type": ["null", "number"]
               }
             },
             "type": ["null", "object"]

@@ -18,6 +18,8 @@ The helpers can be used in the following way:
 * In the check implementation of the destination, initialize the indexer and the embedder and call `check` on them
 * In the write implementation of the destination, initialize the indexer, the embedder and pass them to a new instance of the writer. Then call the writers `write` method with the iterable for incoming messages
 
+If there are no connector-specific embedders, the `airbyte_cdk.destinations.vector_db_based.embedder.create_from_config` function can be used to get an embedder instance from the config.
+
 This is how the components interact:
 
 ```text
@@ -26,10 +28,10 @@ This is how the components interact:
 └┬────────────┘                        
 ┌▽───────────────────────────────┐                
 │Writer                          │                
-└┬─────────┬──────────┬────────┬─┘                
-┌▽───────┐┌▽────────┐┌▽──────┐┌▽────────────────┐
-│Embedder││MyIndexer││Batcher││DocumentProcessor│
-└────────┘└─────────┘└───────┘└─────────────────┘
+└┬─────────┬──────────┬──────────┘                
+┌▽───────┐┌▽────────┐┌▽────────────────┐
+│Embedder││MyIndexer││DocumentProcessor│
+└────────┘└─────────┘└─────────────────┘
 ```
 
 Normally, only the `MyDestination` class and the `MyIndexer` class has to be implemented specifically for the destination. The other classes are provided as is by the helpers.

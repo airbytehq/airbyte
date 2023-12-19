@@ -22,10 +22,10 @@ from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig, IgnoredFieldsConfiguration
 from connector_acceptance_test.tests import TestBasicRead
 from connector_acceptance_test.utils import (
-    ConnectorRunner,
     SecretDict,
     build_configured_catalog_from_custom_catalog,
     build_configured_catalog_from_discovered_catalog_and_empty_streams,
+    connector_runner,
     filter_output,
     load_config,
     load_yaml_or_json_path,
@@ -54,6 +54,11 @@ def test_strictness_level_fixture(acceptance_test_config: Config) -> Config.Test
 @pytest.fixture(name="custom_environment_variables", scope="session")
 def custom_environment_variables_fixture(acceptance_test_config: Config) -> Mapping:
     return acceptance_test_config.custom_environment_variables
+
+
+@pytest.fixture(name="deployment_mode")
+def deployment_mode_fixture(inputs) -> Optional[str]:
+    return getattr(inputs, "deployment_mode", None)
 
 
 @pytest.fixture(name="connector_config_path")
@@ -107,7 +112,7 @@ def configured_catalog_fixture(
         return build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, set())
 
 
-@pytest.fixture(name="image_tag")
+@pytest.fixture(name="image_tag", scope="session")
 def image_tag_fixture(acceptance_test_config) -> str:
     return acceptance_test_config.connector_image
 
@@ -161,16 +166,24 @@ async def dagger_client(anyio_backend):
         yield client
 
 
+@pytest.fixture(scope="session")
+async def connector_container(dagger_client, image_tag):
+    connector_container = await connector_runner.get_connector_container(dagger_client, image_tag)
+    if cachebuster := os.environ.get("CACHEBUSTER"):
+        connector_container = connector_container.with_env_variable("CACHEBUSTER", cachebuster)
+    return await connector_container
+
+
 @pytest.fixture(name="docker_runner", autouse=True)
-async def docker_runner_fixture(image_tag, connector_config_path, custom_environment_variables, dagger_client) -> ConnectorRunner:
-    runner = ConnectorRunner(
-        image_tag,
-        dagger_client,
+def docker_runner_fixture(
+    connector_container, connector_config_path, custom_environment_variables, deployment_mode
+) -> connector_runner.ConnectorRunner:
+    return connector_runner.ConnectorRunner(
+        connector_container,
         connector_configuration_path=connector_config_path,
         custom_environment_variables=custom_environment_variables,
+        deployment_mode=deployment_mode,
     )
-    await runner.load_container()
-    return runner
 
 
 @pytest.fixture(name="previous_connector_image_name")
@@ -179,15 +192,26 @@ def previous_connector_image_name_fixture(image_tag, inputs) -> str:
     return f"{image_tag.split(':')[0]}:{inputs.backward_compatibility_tests_config.previous_connector_version}"
 
 
+@pytest.fixture()
+async def previous_version_connector_container(
+    dagger_client,
+    previous_connector_image_name,
+):
+    connector_container = await connector_runner.get_connector_container(dagger_client, previous_connector_image_name)
+    if cachebuster := os.environ.get("CACHEBUSTER"):
+        connector_container = connector_container.with_env_variable("CACHEBUSTER", cachebuster)
+    return await connector_container
+
+
 @pytest.fixture(name="previous_connector_docker_runner")
-async def previous_connector_docker_runner_fixture(previous_connector_image_name, dagger_client) -> ConnectorRunner:
+async def previous_connector_docker_runner_fixture(
+    previous_version_connector_container, deployment_mode
+) -> connector_runner.ConnectorRunner:
     """Fixture to create a connector runner with the previous connector docker image.
     Returns None if the latest image was not found, to skip downstream tests if the current connector is not yet published to the docker registry.
     Raise not found error if the previous connector image is not latest and expected to be published.
     """
-    runner = ConnectorRunner(previous_connector_image_name, dagger_client)
-    await runner.load_container()
-    return runner
+    return connector_runner.ConnectorRunner(previous_version_connector_container, deployment_mode=deployment_mode)
 
 
 @pytest.fixture(name="empty_streams")
@@ -269,7 +293,7 @@ def find_not_seeded_streams(
 @pytest.fixture(name="discovered_catalog")
 async def discovered_catalog_fixture(
     connector_config,
-    docker_runner: ConnectorRunner,
+    docker_runner: connector_runner.ConnectorRunner,
 ) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
 
@@ -282,7 +306,7 @@ async def discovered_catalog_fixture(
 async def previous_discovered_catalog_fixture(
     connector_config,
     previous_connector_image_name,
-    previous_connector_docker_runner: ConnectorRunner,
+    previous_connector_docker_runner: connector_runner.ConnectorRunner,
 ) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
     if previous_connector_docker_runner is None:
@@ -323,7 +347,7 @@ def detailed_logger() -> Logger:
 
 
 @pytest.fixture(name="actual_connector_spec")
-async def actual_connector_spec_fixture(docker_runner: ConnectorRunner) -> ConnectorSpecification:
+async def actual_connector_spec_fixture(docker_runner: connector_runner.ConnectorRunner) -> ConnectorSpecification:
     output = await docker_runner.call_spec()
     spec_messages = filter_output(output, Type.SPEC)
     assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
@@ -332,7 +356,7 @@ async def actual_connector_spec_fixture(docker_runner: ConnectorRunner) -> Conne
 
 @pytest.fixture(name="previous_connector_spec")
 async def previous_connector_spec_fixture(
-    request: BaseTest, previous_connector_docker_runner: ConnectorRunner
+    request: BaseTest, previous_connector_docker_runner: connector_runner.ConnectorRunner
 ) -> Optional[ConnectorSpecification]:
     if previous_connector_docker_runner is None:
         logging.warning(

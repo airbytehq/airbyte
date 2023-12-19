@@ -1,0 +1,28 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.pagerduty.com
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2544ac39-02be-4bf5-82ad-f52bbb833bf5
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-pagerduty
+  githubIssueLabel: source-pagerduty
+  icon: pagerduty.svg
+  license: MIT
+  name: Pagerduty
+  releaseDate: 2023-10-10
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pagerduty
+  tags:
+    - language:lowcode
+  ab_internal:
+    sl: 100
+    ql: 100
+metadataSpecVersion: "1.0"

@@ -4,18 +4,18 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_PASS;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_URL;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_PASS;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_URL;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.debezium.internals.mysql.CustomMySQLTinyIntOneToBooleanConverter;
-import io.airbyte.integrations.debezium.internals.mysql.MySQLDateTimeConverter;
-import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.debezium.internals.mysql.CustomMySQLTinyIntOneToBooleanConverter;
+import io.airbyte.cdk.integrations.debezium.internals.mysql.MySQLDateTimeConverter;
+import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -26,7 +26,10 @@ import org.slf4j.LoggerFactory;
 public class MySqlCdcProperties {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlCdcProperties.class);
-  private static final Duration HEARTBEAT_FREQUENCY = Duration.ofSeconds(10);
+  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
+
+  // Test execution latency is lower when heartbeats are more frequent.
+  private static final Duration HEARTBEAT_INTERVAL_IN_TESTS = Duration.ofSeconds(1L);
 
   public static Properties getDebeziumProperties(final JdbcDatabase database) {
     final JsonNode sourceConfig = database.getSourceConfig();
@@ -61,7 +64,12 @@ public class MySqlCdcProperties {
     props.setProperty("converters", "boolean, datetime");
     props.setProperty("boolean.type", CustomMySQLTinyIntOneToBooleanConverter.class.getName());
     props.setProperty("datetime.type", MySQLDateTimeConverter.class.getName());
-    props.setProperty("heartbeat.interval.ms", Long.toString(HEARTBEAT_FREQUENCY.toMillis()));
+
+    final Duration heartbeatInterval =
+        (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
+            ? HEARTBEAT_INTERVAL_IN_TESTS
+            : HEARTBEAT_INTERVAL;
+    props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
 
     // For CDC mode, the user cannot provide timezone arguments as JDBC parameters - they are
     // specifically defined in the replication_method
@@ -69,7 +77,12 @@ public class MySqlCdcProperties {
     if (sourceConfig.get("replication_method").has("server_time_zone")) {
       final String serverTimeZone = sourceConfig.get("replication_method").get("server_time_zone").asText();
       if (!serverTimeZone.isEmpty()) {
-        props.setProperty("database.serverTimezone", serverTimeZone);
+        /**
+         * Per Debezium docs,
+         * https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-temporal-types
+         * this property is now connectionTimeZone {@link com.mysql.cj.conf.PropertyKey#connectionTimeZone}
+         **/
+        props.setProperty("database.connectionTimeZone", serverTimeZone);
       }
     }
 
@@ -112,12 +125,6 @@ public class MySqlCdcProperties {
     props.setProperty("binary.handling.mode", "base64");
     props.setProperty("database.include.list", sourceConfig.get("database").asText());
 
-    return props;
-  }
-
-  static Properties getSnapshotProperties(final JdbcDatabase database) {
-    final Properties props = commonProperties(database);
-    props.setProperty("snapshot.mode", "initial_only");
     return props;
   }
 

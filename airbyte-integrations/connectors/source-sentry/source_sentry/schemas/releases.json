@@ -83,6 +83,31 @@
     },
     "version": {
       "type": ["null", "string"]
+    },
+    "currentProjectMeta": {
+      "type": ["null", "object"]
+    },
+    "status": { "type": ["null", "string"] },
+    "userAgent": { "type": ["null", "string"] },
+    "versionInfo": {
+      "type": ["null", "object"],
+      "properties": {
+        "buildHash": { "type": ["null", "string"] },
+        "description": { "type": ["null", "string"] },
+        "package": { "type": ["null", "string"] },
+        "version": {
+          "type": ["null", "object"],
+          "properties": {
+            "buildCode": { "type": ["null", "string"] },
+            "components": { "type": ["null", "integer"] },
+            "major": { "type": ["null", "integer"] },
+            "minor": { "type": ["null", "integer"] },
+            "patch": { "type": ["null", "integer"] },
+            "pre": { "type": ["null", "string"] },
+            "raw": { "type": ["null", "string"] }
+          }
+        }
+      }
     }
   }
 }
