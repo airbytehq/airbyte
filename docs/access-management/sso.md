@@ -1,3 +1,7 @@
+---
+flavors: oss-enterprise, cloud-teams
+---
+
 # Single Sign-On (SSO)
 
 import Tabs from "@theme/Tabs";

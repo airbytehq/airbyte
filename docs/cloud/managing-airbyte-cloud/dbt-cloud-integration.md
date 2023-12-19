@@ -1,3 +1,7 @@
+---
+flavors: cloud
+---
+
 # Use the dbt Cloud integration 
 
 <AppliesTo cloud />

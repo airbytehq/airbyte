@@ -1,5 +1,6 @@
 ---
 sidebar_label: Okta
+flavors: oss-enterprise, cloud-teams
 ---
 
 import Tabs from "@theme/Tabs";

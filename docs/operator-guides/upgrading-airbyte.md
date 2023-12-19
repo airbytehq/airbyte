@@ -1,3 +1,7 @@
+---
+flavors: oss-*
+---
+
 # Upgrading Airbyte
 
 :::info

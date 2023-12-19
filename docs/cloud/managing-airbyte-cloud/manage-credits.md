@@ -1,3 +1,7 @@
+---
+flavors: cloud
+---
+
 # Manage credits
 
 <AppliesTo cloud />
