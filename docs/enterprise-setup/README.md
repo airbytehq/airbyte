@@ -1,12 +1,12 @@
-# Airbyte Enterprise
+# Airbyte Self-Managed Enterprise
 
-[Airbyte Enterprise](https://airbyte.com/product/airbyte-enterprise) is the best way to run Airbyte yourself. You get all 300+ pre-built connectors, data never leaves your environment, and Airbyte becomes self-serve in your organization with new tools to manage multiple users, and multiple teams using Airbyte all in one place.
+[Airbyte Self-Managed Enterprise](https://airbyte.com/product/airbyte-enterprise) is the best way to run Airbyte yourself. You get all 300+ pre-built connectors, data never leaves your environment, and Airbyte becomes self-serve in your organization with new tools to manage multiple users, and multiple teams using Airbyte all in one place.
 
-A valid license key is required to get started with Airbyte Enterprise. [Talk to sales](https://airbyte.com/company/talk-to-sales) to receive your license key. 
+A valid license key is required to get started with Airbyte Self-Managed Enterprise. [Talk to sales](https://airbyte.com/company/talk-to-sales) to receive your license key. 
 
 The following pages outline how to:
 1. [Deploy Airbyte Enterprise using Kubernetes](./implementation-guide.md)
-2. [Configure Okta for Single Sign-On (SSO) with Airbyte Enterprise](./sso.md)
+2. [Configure Okta for Single Sign-On (SSO) with Airbyte Self-Managed Enterprise](./sso.md)
 
 | Feature                   | Description                                                                                                  |
 |---------------------------|--------------------------------------------------------------------------------------------------------------|
