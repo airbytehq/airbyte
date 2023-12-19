@@ -75,7 +75,7 @@ Airbyte outputs each stream into its own raw table in `airbyte_internal` dataset
 ### Raw Table schema
 
 | Airbyte field          | Description                                                        | Column type |
-| ---------------------- | ------------------------------------------------------------------ | ----------- |
+|------------------------|--------------------------------------------------------------------|-------------|
 | \_airbyte_raw_id       | A UUID assigned to each processed event                            | STRING      |
 | \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP   |
 | \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP   |
@@ -102,19 +102,21 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 ## Data type map
 
 | Airbyte type                        | BigQuery type |
-| :---------------------------------- | :------------ |
-| DATE                                | DATE          |
-| STRING (BASE64)                     | STRING        |
-| NUMBER                              | FLOAT         |
-| OBJECT                              | STRING        |
+|:------------------------------------|:--------------|
 | STRING                              | STRING        |
-| BOOLEAN                             | BOOLEAN       |
-| INTEGER                             | INTEGER       |
+| STRING (BASE64)                     | STRING        |
 | STRING (BIG_NUMBER)                 | STRING        |
 | STRING (BIG_INTEGER)                | STRING        |
-| ARRAY                               | REPEATED      |
+| NUMBER                              | NUMERIC       |
+| INTEGER                             | INT64         |
+| BOOLEAN                             | BOOL          |
 | STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP     |
-| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP     |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | DATETIME      |
+| STRING (TIME_WITH_TIMEZONE)         | STRING        |
+| STRING (TIME_WITHOUT_TIMEZONE)      | TIME          |
+| DATE                                | DATE          |
+| OBJECT                              | JSON          |
+| ARRAY                               | JSON          |
 
 ## Troubleshooting permission issues
 
@@ -140,6 +142,8 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.22  | 2023-12-14 | [\#33451](https://github.com/airbytehq/airbyte/pull/33451) | Remove old spec option                                                                                                                                          |
+| 2.3.21  | 2023-12-13 | [\#33232](https://github.com/airbytehq/airbyte/pull/33232) | Only run typing+deduping for a stream if the stream had any records                                                                                             |
 | 2.3.20  | 2023-12-08 | [\#33263](https://github.com/airbytehq/airbyte/pull/33263) | Adopt java CDK version 0.7.0                                                                                                                                    |
 | 2.3.19  | 2023-12-07 | [\#32326](https://github.com/airbytehq/airbyte/pull/32326) | Update common T&D interfaces                                                                                                                                    |
 | 2.3.18  | 2023-12-04 | [\#33084](https://github.com/airbytehq/airbyte/pull/33084) | T&D SQL statements moved to debug log level                                                                                                                     |

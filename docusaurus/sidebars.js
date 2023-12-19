@@ -225,7 +225,6 @@ const buildAConnector = {
       },
       items: [
         "connector-development/testing-connectors/connector-acceptance-tests-reference",
-        "connector-development/testing-connectors/testing-a-local-catalog-in-development",
       ],
     },
     {
