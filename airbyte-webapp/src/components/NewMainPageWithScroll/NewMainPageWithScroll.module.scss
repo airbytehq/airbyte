@@ -16,18 +16,9 @@
 .content {
   overflow-y: auto;
   height: 100%;
-  width: 100%;
-  padding: 20px;
+  min-width: variables.$main-page-content-min-width;
 }
 
 .withPadding {
   padding: variables.$spacing-lg variables.$spacing-xl variables.$spacing-lg variables.$spacing-xl;
-}
-
-@media (max-width: 642px) {
-  .content {
-    overflow-y: auto;
-    height: 100%;
-    min-width: variables.$main-page-content-min-width;
-  }
 }

@@ -6,7 +6,7 @@ import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, LoadingPage, MainPageWithScroll, PageTitle, DropDown, DropDownRow } from "components";
+import { Button, LoadingPage, NewMainPageWithScroll, PageTitle, DropDown, DropDownRow } from "components";
 import MessageBox from "components/base/MessageBox";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
@@ -154,7 +154,7 @@ const AllConnectionsPage: React.FC = () => {
       {hasConnections() ? (
         <>
           <MessageBox message={messageId} onClose={() => setMessageId("")} type="info" position="center" />
-          <MainPageWithScroll
+          <NewMainPageWithScroll
             headTitle={<HeadTitle titles={[{ id: "connection.pageTitle" }]} />}
             pageTitle={
               <PageTitle
@@ -222,7 +222,7 @@ const AllConnectionsPage: React.FC = () => {
               </Box>
             </Footer>
             <Separator height="24px" />
-          </MainPageWithScroll>
+          </NewMainPageWithScroll>
         </>
       ) : (
         <EmptyResourceListView
