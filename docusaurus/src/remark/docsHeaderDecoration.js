@@ -54,6 +54,8 @@ const plugin = () => {
           supportLevel: registryEntry.supportLevel_oss,
           dockerImageTag: registryEntry.dockerImageTag_oss,
           iconUrl: registryEntry.iconUrl_oss,
+          github_url: registryEntry.github_url,
+          issue_url: registryEntry.issue_url,
           originalTitle,
           originalId,
         });

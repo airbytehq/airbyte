@@ -32,6 +32,7 @@ export const HeaderDecoration = ({
   iconUrl,
   originalTitle,
   originalId,
+  github_url,
 }) => {
   const isOss = isOssString.toUpperCase() === "TRUE";
   const isCloud = isCloudString.toUpperCase() === "TRUE";
@@ -60,12 +61,16 @@ export const HeaderDecoration = ({
         </div>
         <div>
           <dt>Latest Version</dt>
-          <dd>{dockerImageTag}</dd>
+          <dd>
+            <a href={github_url} target="_blank">
+              {dockerImageTag}
+            </a>
+          </dd>
         </div>
       </dl>
 
       <div className={styles.header}>
-        <img src={iconUrl} alt="" class={styles.connectorIcon} />
+        <img src={iconUrl} alt="" className={styles.connectorIcon} />
         <h1 id={originalId}>{originalTitle}</h1>
       </div>
     </>
