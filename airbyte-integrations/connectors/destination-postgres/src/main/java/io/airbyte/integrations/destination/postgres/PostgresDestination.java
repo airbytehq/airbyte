@@ -18,6 +18,7 @@ import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -91,6 +92,11 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator() {
+    throw new UnsupportedOperationException("PostgresDestination#getSqlGenerator is not implemented");
   }
 
   public static void main(final String[] args) throws Exception {
