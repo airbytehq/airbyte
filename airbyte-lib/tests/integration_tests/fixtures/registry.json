@@ -35,6 +35,41 @@
       "tags": ["language:python"],
       "githubIssueLabel": "source-test",
       "license": "MIT"
+    },
+    {
+      "sourceDefinitionId": "6371b14b-bc68-4236-bfbd-468e8df8e968",
+      "name": "PokeAPI",
+      "dockerRepository": "airbyte/source-pokeapi",
+      "dockerImageTag": "0.2.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/pokeapi",
+      "icon": "pokeapi.svg",
+      "iconUrl": "https://connectors.airbyte.com/files/metadata/airbyte/source-pokeapi/latest/icon.svg",
+      "sourceType": "api",
+      "spec": {
+        "documentationUrl": "https://docs.airbyte.com/integrations/sources/pokeapi",
+        "connectionSpecification": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "Pokeapi Spec",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      "tombstone": false,
+      "public": true,
+      "custom": false,
+      "releaseStage": "alpha",
+      "supportLevel": "community",
+      "releaseDate": "2020-05-04",
+      "allowedHosts": {
+        "hosts": ["*"]
+      },
+      "ab_internal": {
+        "sl": 100,
+        "ql": 100
+      },
+      "githubIssueLabel": "source-pokeapi",
+      "license": "MIT",
+      "tags": ["language:lowcode"]
     }
   ]
 }

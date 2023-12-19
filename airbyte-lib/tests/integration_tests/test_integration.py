@@ -97,9 +97,11 @@ def test_peek_nonexisting_stream():
     with pytest.raises(Exception):
         source.peek("non-existing")
 
+
 def test_failing_path_connector():
     with pytest.raises(Exception):
         ab.get_connector("source-test", config={"apiKey": "test"}, auto_install=False)
+
 
 def test_succeeding_path_connector():
     old_path = os.environ["PATH"]
@@ -110,3 +112,13 @@ def test_succeeding_path_connector():
     source.check()
 
     os.environ["PATH"] = old_path
+
+
+def test_failing_docker_connector():
+    with pytest.raises(Exception):
+        ab.get_connector("source-test", config={"apiKey": "test"}, use_docker=True)
+
+
+def test_succeeding_docker_connector():
+    source = ab.get_connector("source-pokeapi", version="0.2.0", config={"pokemon_name": "charmander"}, use_docker=True)
+    source.check()
