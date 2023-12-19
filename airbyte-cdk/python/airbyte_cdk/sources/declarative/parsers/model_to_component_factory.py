@@ -114,9 +114,7 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTra
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
-from airbyte_cdk.sources.utils.transform import TransformConfig
 from airbyte_cdk.sources.utils.transform import TypeTransformer
-from airbyte_cdk.sources.utils.transform import TypeTransformer as TypeTransformerModel
 from isodate import parse_duration
 from pydantic import BaseModel
 
@@ -187,7 +185,6 @@ class ModelToComponentFactory:
             ParentStreamConfigModel: self.create_parent_stream_config,
             RecordFilterModel: self.create_record_filter,
             RecordSelectorModel: self.create_record_selector,
-            TypeTransformerModel: self.create_schema_transformer,
             RemoveFieldsModel: self.create_remove_fields,
             RequestPathModel: self.create_request_path,
             RequestOptionModel: self.create_request_option,
@@ -893,6 +890,7 @@ class ModelToComponentFactory:
         transformations: List[RecordTransformation],
         **kwargs: Any,
     ) -> RecordSelector:
+        assert model.schema_normalization is not None  # for mypy
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
         schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
@@ -905,10 +903,6 @@ class ModelToComponentFactory:
             schema_normalization=schema_normalization,
             parameters=model.parameters or {},
         )
-
-    @staticmethod
-    def create_schema_transformer(config: TransformConfig) -> TypeTransformer:
-        return TypeTransformer(config)
 
     @staticmethod
     def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs: Any) -> RemoveFields:
