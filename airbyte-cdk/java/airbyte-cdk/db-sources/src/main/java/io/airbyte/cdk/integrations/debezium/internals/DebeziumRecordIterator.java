@@ -184,7 +184,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
    * snapshot, we throw an exception
    */
   @Override
-  public void closeSafely() throws Exception {
+  public void close() throws Exception {
     requestClose("Closing: Iterator closing");
   }
 

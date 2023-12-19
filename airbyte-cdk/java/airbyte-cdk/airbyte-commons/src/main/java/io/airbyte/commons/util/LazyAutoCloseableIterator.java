@@ -51,7 +51,7 @@ class LazyAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCl
   }
 
   @Override
-  public void closeSafely() throws Exception {
+  public void close() throws Exception {
     if (internalIterator != null) {
       internalIterator.close();
     }
