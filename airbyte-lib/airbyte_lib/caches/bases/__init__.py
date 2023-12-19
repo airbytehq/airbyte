@@ -1,10 +1,10 @@
 from .config import CacheConfigBase
 from .core import CacheBase
-from .sql import SQLCache, SQLCacheConfigBase
+from .sql import SQLCacheBase, SQLCacheConfigBase
 
 __all__ = [
     "CacheBase",
     "CacheConfigBase",
-    "SQLCache",
+    "SQLCacheBase",
     "SQLCacheConfigBase",
 ]
