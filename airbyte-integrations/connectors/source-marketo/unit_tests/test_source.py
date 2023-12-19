@@ -11,7 +11,7 @@ from unittest.mock import ANY, Mock, patch
 import pendulum
 import pytest
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, SourceMarketo
+from source_marketo.source import Activities, Campaigns, IncrementalMarketoStream, Leads, MarketoStream, Programs, SourceMarketo
 
 
 def test_create_export_job(mocker, send_email_stream, caplog):
@@ -349,3 +349,21 @@ def test_csv_rows(config):
     records = stream.csv_rows(test_lines)
     for expected_record, record in zip(expected_records, records):
         assert expected_record == record
+
+def test_availablity_strategy(config):
+    stream = Leads(config)
+    assert stream.availability_strategy == None
+
+def test_path(config):
+    stream = MarketoStream(config)
+    assert stream.path() == "rest/v1/marketo_stream.json"
+
+def test_get_state(config):
+    stream = IncrementalMarketoStream(config)
+    assert stream.state == {}
+
+def test_set_tate(config):
+    stream = IncrementalMarketoStream(config)
+    expected_state = {"id": 1}
+    stream.state = expected_state
+    assert stream._state == expected_state
