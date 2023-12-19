@@ -118,7 +118,7 @@
       "type": ["string", "null"]
     },
     "exchange_rate": {
-      "type": ["integer", "null"]
+      "type": ["number", "null"]
     },
     "is_digital": {
       "type": ["boolean", "null"]
