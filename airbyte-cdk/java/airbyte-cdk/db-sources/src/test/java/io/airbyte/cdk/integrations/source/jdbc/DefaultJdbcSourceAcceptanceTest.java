@@ -192,7 +192,7 @@ class DefaultJdbcSourceAcceptanceTest
   void testCustomParametersOverwriteDefaultParametersExpectException() {
     final String connectionPropertiesUrl = "ssl=false";
     final AirbyteSourceConfig config = getConfigWithConnectionProperties(PSQL_CONTAINER, testdb.getDatabaseName(), connectionPropertiesUrl);
-    final Map<String, String> customParameters = JdbcUtils.parseJdbcParameters(config, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&");
+    final Map<String, String> customParameters = config.getConnectionProperties();
     final Map<String, String> defaultParameters = Map.of(
         "ssl", "true",
         "sslmode", "require");
