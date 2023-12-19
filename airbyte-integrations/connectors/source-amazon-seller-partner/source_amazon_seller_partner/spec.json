@@ -125,6 +125,7 @@
           "required": ["stream_name", "options_list"],
           "properties": {
             "stream_name": {
+              "title": "Stream Name",
               "type": "string",
               "order": 0,
               "enum": [

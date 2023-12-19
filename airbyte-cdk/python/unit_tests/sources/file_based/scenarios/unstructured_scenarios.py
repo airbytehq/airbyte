@@ -112,6 +112,81 @@ simple_markdown_scenario = (
     )
 ).build()
 
+simple_txt_scenario = (
+    TestScenarioBuilder()
+    .set_name("simple_txt_scenario")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "format": {"filetype": "unstructured"},
+                    "globs": ["*"],
+                    "validation_policy": "Emit Record",
+                }
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.txt": {
+                    "contents": bytes(
+                        "Just some raw text", "UTF-8"
+                    ),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b": {
+                    "contents": bytes("Detected via mime type", "UTF-8"),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                    "mime_type": "text/plain",
+                },
+            }
+        )
+        .set_file_type("unstructured")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": json_schema,
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    'source_defined_primary_key': [["document_key"]],
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {
+                "data": {
+                    "document_key": "a.txt",
+                    "content": "Just some raw text",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.txt",
+                    "_ab_source_file_parse_error": None,
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "document_key": "b",
+                    "content": "Detected via mime type",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b",
+                    "_ab_source_file_parse_error": None,
+
+                },
+                "stream": "stream1",
+            },
+        ]
+    )
+).build()
+
 # If skip unprocessable file types is set to false, then discover will fail if it encounters a non-matching file type
 unstructured_invalid_file_type_discover_scenario_no_skip = (
     TestScenarioBuilder()
@@ -132,7 +207,7 @@ unstructured_invalid_file_type_discover_scenario_no_skip = (
         FileBasedSourceBuilder()
         .set_files(
             {
-                "a.txt": {
+                "a.csv": {
                     "contents": bytes("Just a humble text file", "UTF-8"),
                     "last_modified": "2023-06-05T03:54:07.000Z",
                 },
@@ -178,7 +253,7 @@ unstructured_invalid_file_type_discover_scenario_skip = (
         FileBasedSourceBuilder()
         .set_files(
             {
-                "a.txt": {
+                "a.csv": {
                     "contents": bytes("Just a humble text file", "UTF-8"),
                     "last_modified": "2023-06-05T03:54:07.000Z",
                 },
@@ -204,11 +279,11 @@ unstructured_invalid_file_type_discover_scenario_skip = (
         [
             {
                 "data": {
-                    "document_key": "a.txt",
+                    "document_key": "a.csv",
                     "content": None,
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.txt",
-                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=a.txt message=File type FileType.TXT is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX",
+                    "_ab_source_file_url": "a.csv",
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=a.csv message=File type FileType.CSV is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX, FileType.TXT",
                 },
                 "stream": "stream1",
             }
@@ -242,7 +317,7 @@ unstructured_invalid_file_type_read_scenario = (
                     "contents": bytes("A harmless markdown file", "UTF-8"),
                     "last_modified": "2023-06-05T03:54:07.000Z",
                 },
-                "b.txt": {
+                "b.csv": {
                     "contents": bytes("An evil text file", "UTF-8"),
                     "last_modified": "2023-06-05T03:54:07.000Z",
                 },
