@@ -1,35 +1,31 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-redshift:dev
+connector_image: airbyte/source-microsoft-onedrive:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "src/test-integration/resources/expected_spec.json"
-        timeout_seconds: "1200"
-        config_path: "secrets/config.json"
+      - spec_path: "source_microsoft_onedrive/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: "1200"
         status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: "1200"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: "1200"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
+        expect_trace_message_on_failure: false
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: "1200"
-  incremental:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog_inc.json"
-        timeout_seconds: "1200"

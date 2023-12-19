@@ -83,7 +83,7 @@ class SourceJira(AbstractSource):
         start_date = config.get("start_date")
         if start_date:
             config["start_date"] = pendulum.parse(start_date)
-
+        config["lookback_window_minutes"] = pendulum.duration(minutes=config.get("lookback_window_minutes", 0))
         config["projects"] = config.get("projects", [])
         return config
 
@@ -145,7 +145,11 @@ class SourceJira(AbstractSource):
         config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-        incremental_args = {**args, "start_date": config.get("start_date")}
+        incremental_args = {
+            **args,
+            "start_date": config.get("start_date"),
+            "lookback_window_minutes": config.get("lookback_window_minutes"),
+        }
         issues_stream = Issues(**incremental_args)
         issue_fields_stream = IssueFields(**args)
         experimental_streams = []
