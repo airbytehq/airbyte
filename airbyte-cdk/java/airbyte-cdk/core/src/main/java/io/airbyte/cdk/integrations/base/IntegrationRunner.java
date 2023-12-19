@@ -32,10 +32,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ThreadUtils;
@@ -168,11 +170,18 @@ public class IntegrationRunner {
           try {
             if (featureFlags.concurrentSourceStreamRead()) {
               LOGGER.info("Concurrent source stream read enabled.");
+              final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
               readConcurrent(config, catalog, stateOptional);
             } else {
-              readSerial(config, catalog, stateOptional);
+              AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
+              readSerial(messageIterator, outputRecordCollector);
             }
           } finally {
+            stopOrphanedThreads(EXIT_HOOK,
+                INTERRUPT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+                EXIT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES);
             if (source instanceof AutoCloseable) {
               ((AutoCloseable) source).close();
             }
@@ -231,7 +240,7 @@ public class IntegrationRunner {
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
   }
 
-  private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator, final Consumer<AirbyteMessage> recordCollector) {
+  private static void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator, final Consumer<AirbyteMessage> recordCollector) {
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Producing messages for stream {}...", s));
     messageIterator.forEachRemaining(recordCollector);
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
@@ -240,8 +249,8 @@ public class IntegrationRunner {
   private void readConcurrent(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional)
       throws Exception {
     final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
-
-    try (final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(this::consumeFromStream, streams.size())) {
+    final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(this::consumeFromStream, streams.size());
+    try {
       /*
        * Break the streams into partitions equal to the number of concurrent streams supported by the
        * stream consumer.
@@ -262,31 +271,17 @@ public class IntegrationRunner {
     } catch (final Exception e) {
       LOGGER.error("Unable to perform concurrent read.", e);
       throw e;
-    } finally {
-      stopOrphanedThreads(EXIT_HOOK,
-          INTERRUPT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES,
-          EXIT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES);
     }
   }
 
-  private void readSerial(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
-    final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
+  @VisibleForTesting
+  static private void readSerial(final AutoCloseableIterator<AirbyteMessage> iter, Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
+    produceMessages(iter, outputRecordCollector);
     try {
-      produceMessages(messageIterator, outputRecordCollector);
-      try {
-        messageIterator.close();
-      } catch (Exception e) {
-        LOGGER.warn("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ",
-            e.getMessage());
-      }
-    } finally {
-      stopOrphanedThreads(EXIT_HOOK,
-          INTERRUPT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES,
-          EXIT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES);
+      iter.close();
+    } catch (Exception e) {
+      LOGGER.error("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ",
+          e.getMessage());
     }
   }
 
@@ -356,7 +351,8 @@ public class IntegrationRunner {
   }
 
   @VisibleForTesting
-  static void swallowIteratorCloseErrors(AutoCloseableIterator<AirbyteMessage> iter, Consumer<AirbyteMessage> outputRecordCollector) {
+  static void swallowIteratorCloseErrors(AutoCloseableIterator<AirbyteMessage> iter, Callable runner) {
+    runner.call();
     try {
       iter.close();
     } catch (Exception e) {
