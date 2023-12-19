@@ -3,11 +3,10 @@
 #
 
 
-import pytest
 from datetime import datetime
 
-from source_marketo.utils import clean_string, format_value
-from source_marketo.utils import to_datetime_str
+import pytest
+from source_marketo.utils import clean_string, format_value, to_datetime_str
 
 test_data = [
     (1, {"type": "integer"}, int),
