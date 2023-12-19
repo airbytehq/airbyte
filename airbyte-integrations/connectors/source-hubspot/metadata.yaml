@@ -29,7 +29,7 @@ data:
         message: >-
           This version eliminates the Property History stream in favor of creating 3 different streams, Contacts, Companies, and Deals, which can now all fetch their property history.
           It will affect only users who use Property History stream, who will need to fix schema conflicts and sync Contacts Property History stream instead of Property History.
-        upgradeDeadline: 2023-12-21
+        upgradeDeadline: 2024-01-15
   suggestedStreams:
     streams:
       - contacts
