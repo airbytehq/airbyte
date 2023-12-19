@@ -70,16 +70,15 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 | `array`  | `array`  |      |
 | `object` | `object` |      |
 
-
 ## Changelog
 
-
-| Version | Date       | Pull Request | Subject                           |
-|:--------|:-----------| :-----       |:----------------------------------|
-| `0.1.9` | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes |
-| `0.1.8` | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references |
-| `0.1.7` | 2023-02-10 | [22815](https://github.com/airbytehq/airbyte/pull/22815) | Specified date formatting in specification                                                     |
-| `0.1.6` | 2023-01-27 | [22028](https://github.com/airbytehq/airbyte/pull/22028) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
-| `0.1.5` | 2022-09-29 | [17362](https://github.com/airbytehq/airbyte/pull/17362) | always use the latest CDK version |
-| `0.1.4` | 2022-08-19 | [15764](https://github.com/airbytehq/airbyte/pull/15764) | Support OAuth2.0                  |
-| `0.1.3` | 2021-11-11 | [7173](https://github.com/airbytehq/airbyte/pull/7173)   | Fix pagination and migrate to CDK |
+| Version | Date       | Pull Request                                             | Subject                                                                     |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
+| 0.1.10  | 2023-12-04 | [33030](https://github.com/airbytehq/airbyte/pull/33030) | Base image migration: remove Dockerfile and use python-connector-base image |
+| 0.1.9   | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes                                        |
+| 0.1.8   | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references                                    |
+| 0.1.7   | 2023-02-10 | [22815](https://github.com/airbytehq/airbyte/pull/22815) | Specified date formatting in specification                                  |
+| 0.1.6   | 2023-01-27 | [22028](https://github.com/airbytehq/airbyte/pull/22028) | Set `AvailabilityStrategy` for streams explicitly to `None`                 |
+| 0.1.5   | 2022-09-29 | [17362](https://github.com/airbytehq/airbyte/pull/17362) | always use the latest CDK version                                           |
+| 0.1.4   | 2022-08-19 | [15764](https://github.com/airbytehq/airbyte/pull/15764) | Support OAuth2.0                                                            |
+| 0.1.3   | 2021-11-11 | [7173](https://github.com/airbytehq/airbyte/pull/7173)   | Fix pagination and migrate to CDK                                           |

@@ -121,6 +121,8 @@ When modifying the CDK and a connector in the same PR or branch, please use the 
 
 After the above, you can build and test your connector as usual. Gradle will automatically use the local CDK code files while you are working on the connector.
 
+### Publishing the CDK and switching to a pinned CDK reference
+
 Once you are done developing and testing your CDK changes:
 
 1. Publish the CDK using the instructions here in this readme.
@@ -128,6 +130,12 @@ Once you are done developing and testing your CDK changes:
 3. You can optionally run `./gradlew :airbyte-integrations:connectors:<connector-name>:assertNotUsingLocalCdk` to ensure that the project is not using a local CDK reference.
 
 _Note: You can also use `./gradlew assertNotUsingLocalCdk` or `./gradlew disableLocalCdkRefs` to run these tasks on **all** connectors simultaneously._
+
+### Troubleshooting CDK Dependency Caches
+
+Note: after switching between a local and a pinned CDK reference, you may need to refresh dependency caches in Gradle and/or your IDE.
+
+In Gradle, you can use the CLI arg `--refresh-dependencies` the next time you build or test your connector, which will ensure that the correct version of the CDK is used after toggling the `useLocalCdk` value.
 
 ### Developing a connector against a pinned CDK version
 
