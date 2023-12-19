@@ -6,7 +6,7 @@ A valid license key is required to get started with Airbyte Self-Managed Enterpr
 
 The following pages outline how to:
 1. [Deploy Airbyte Enterprise using Kubernetes](./implementation-guide.md)
-2. [Configure Okta for Single Sign-On (SSO) with Airbyte Self-Managed Enterprise](/access-management/sso.md)
+2. [Configure Okta for Single Sign-On (SSO) with Airbyte Self-Managed Self-Managed Enterprise](/access-management/sso.md)
 
 | Feature                   | Description                                                                                                  |
 |---------------------------|--------------------------------------------------------------------------------------------------------------|
