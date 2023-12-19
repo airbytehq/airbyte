@@ -29,7 +29,6 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
