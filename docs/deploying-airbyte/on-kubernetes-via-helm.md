@@ -79,17 +79,21 @@ After adding the repo, perform the repo indexing process by running `helm repo u
 
 After this you can browse all charts uploaded to repository by running `helm search repo airbyte`
 
-It'll produce the output below:
+It'll produce output similar to below:
 
 ```text
-NAME                            CHART VERSION   APP VERSION     DESCRIPTION
-airbyte-oss/airbyte             0.30.23         0.39.37-alpha   Helm chart to deploy airbyte
-airbyte-oss/airbyte-bootloader  0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-bootloader
-airbyte-oss/pod-sweeper         0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-pod-sweeper
-airbyte-oss/server              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-server
-airbyte-oss/temporal            0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-temporal
-airbyte-oss/webapp              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-webapp
-airbyte-oss/worker              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-worker
+NAME                            	CHART VERSION	APP VERSION	DESCRIPTION
+airbyte/airbyte                 	0.49.9       	0.50.33    	Helm chart to deploy airbyte
+airbyte/airbyte-api-server      	0.49.9       	0.50.33    	Helm chart to deploy airbyte-api-server
+airbyte/airbyte-bootloader      	0.49.9       	0.50.33    	Helm chart to deploy airbyte-bootloader
+airbyte/connector-builder-server	0.49.9       	0.50.33    	Helm chart to deploy airbyte-connector-builder-...
+airbyte/cron                    	0.49.9       	0.50.33    	Helm chart to deploy airbyte-cron
+airbyte/metrics                 	0.49.9       	0.50.33    	Helm chart to deploy airbyte-metrics
+airbyte/pod-sweeper             	0.49.9       	0.50.33    	Helm chart to deploy airbyte-pod-sweeper
+airbyte/server                  	0.49.9       	0.50.33    	Helm chart to deploy airbyte-server
+airbyte/temporal                	0.49.9       	0.50.33    	Helm chart to deploy airbyte-temporal
+airbyte/webapp                  	0.49.9       	0.50.33    	Helm chart to deploy airbyte-webapp
+airbyte/worker                  	0.49.9       	0.50.33    	Helm chart to deploy airbyte-worker
 ```
 
 ## Deploy Airbyte
@@ -104,6 +108,8 @@ In order to do so, run the command:
 helm install %release_name% airbyte/airbyte
 ```
 
+**Note**: `release_name` should only contain lowercase letters and optionally dashes (`release_name` must start with a letter).
+
 ### Custom deployment
 
 In order to customize your deployment, you need to create `values.yaml` file in the local folder and populate it with default configuration override values.
@@ -115,41 +121,6 @@ After specifying your own configuration, run the following command:
 ```text
 helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 ```
-
-### (Early Access) Airbyte Enterprise deployment
-
-[Airbyte Enterprise](/airbyte-enterprise) is in an early access stage, so this section will likely evolve. That said, if you have an Airbyte Enterprise license key and wish to install Airbyte Enterprise via helm, follow these steps:
-
-1. Checkout the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
-
-2. Add your Airbyte Enterprise license key and [auth configuration details](/airbyte-enterprise#single-sign-on-sso) to a file called `airbyte.yml` in the `configs` directory of `airbyte-platform`. You can copy `airbyte.sample.yml` to use as a template:
-
-```sh
-cp configs/airbyte.sample.yml configs/airbyte.yml
-```
-
-Then, open up `airbyte.yml` in your text editor to fill in the indicated fields.
-
-:::caution
-
-For now, auth configurations aren't easy to modify once initially installed, so please double check them to make sure they're accurate before proceeding! This will be improved in the near future.
-
-:::
-
-3. Make sure your helm repository is up to date:
-
-```text
-helm repo update
-```
-
-4. Install Airbyte Enterprise on helm using the following command:
-
-```text
-./tools/bin/install_airbyte_pro_on_helm.sh
-```
-
-The default release name is `airbyte-pro`. You can change this via the `RELEASE_NAME` environment
-variable.
 
 ## Migrate from old charts to new ones
 

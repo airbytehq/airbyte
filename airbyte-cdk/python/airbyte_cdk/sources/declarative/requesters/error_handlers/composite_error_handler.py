@@ -40,7 +40,7 @@ class CompositeErrorHandler(ErrorHandler):
     error_handlers: List[ErrorHandler]
     parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not self.error_handlers:
             raise ValueError("CompositeErrorHandler expects at least 1 underlying error handler")
 
@@ -48,8 +48,12 @@ class CompositeErrorHandler(ErrorHandler):
     def max_retries(self) -> Union[int, None]:
         return self.error_handlers[0].max_retries
 
+    @property
+    def max_time(self) -> Union[int, None]:
+        return max([error_handler.max_time or 0 for error_handler in self.error_handlers])
+
     def interpret_response(self, response: requests.Response) -> ResponseStatus:
-        should_retry = None
+        should_retry = ResponseStatus(ResponseAction.FAIL)
         for retrier in self.error_handlers:
             should_retry = retrier.interpret_response(response)
             if should_retry.action == ResponseAction.SUCCESS:

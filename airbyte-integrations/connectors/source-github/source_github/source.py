@@ -3,7 +3,7 @@
 #
 
 from os import getenv
-from typing import Any, Dict, List, Mapping, MutableMapping, Set, Tuple
+from typing import Any, Dict, List, Mapping, MutableMapping, Tuple
 from urllib.parse import urlparse
 
 from airbyte_cdk import AirbyteLogger
@@ -62,26 +62,14 @@ from .utils import read_full_refresh
 
 class SourceGithub(AbstractSource):
     @staticmethod
-    def _get_and_prepare_repositories_config(config: Mapping[str, Any]) -> Set[str]:
-        """
-        _get_and_prepare_repositories_config gets set of repositories names from config and removes simple errors that user could provide
-        Args:
-            config: Dict representing connector's config
-        Returns:
-            set of provided repositories
-        """
-        config_repositories = set(filter(None, config["repository"].split(" ")))
-        return config_repositories
-
-    @staticmethod
     def _get_org_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
         """
-        Parse config.repository and produce two lists: organizations, repositories.
+        Parse config/repositories and produce two lists: organizations, repositories.
         Args:
             config (dict): Dict representing connector's config
             authenticator(MultipleTokenAuthenticator): authenticator object
         """
-        config_repositories = SourceGithub._get_and_prepare_repositories_config(config)
+        config_repositories = set(config.get("repositories"))
 
         repositories = set()
         organizations = set()
@@ -144,6 +132,12 @@ class SourceGithub(AbstractSource):
             )
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
+    def _validate_and_transform_config(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        config = self._ensure_default_values(config)
+        config = self._validate_repositories(config)
+        config = self._validate_branches(config)
+        return config
+
     def _ensure_default_values(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config.setdefault("api_url", "https://api.github.com")
         api_url_parsed = urlparse(config["api_url"])
@@ -159,13 +153,31 @@ class SourceGithub(AbstractSource):
 
         raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
+    def _validate_repositories(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        if config.get("repositories"):
+            pass
+        elif config.get("repository"):
+            config["repositories"] = set(filter(None, config["repository"].split(" ")))
+
+        return config
+
+    def _validate_branches(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        if config.get("branches"):
+            pass
+        elif config.get("branch"):
+            config["branches"] = set(filter(None, config["branch"].split(" ")))
+
+        return config
+
     @staticmethod
     def _is_http_allowed() -> bool:
         return getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD"
 
     @staticmethod
-    def _get_branches_data(selected_branches: str, full_refresh_args: Dict[str, Any] = None) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
-        selected_branches = set(filter(None, selected_branches.split(" ")))
+    def _get_branches_data(
+        selected_branches: List, full_refresh_args: Dict[str, Any] = None
+    ) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+        selected_branches = set(selected_branches)
 
         # Get the default branch for each repository
         default_branches = {}
@@ -218,7 +230,7 @@ class SourceGithub(AbstractSource):
         return user_message
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        config = self._ensure_default_values(config)
+        config = self._validate_and_transform_config(config)
         try:
             authenticator = self._get_authenticator(config)
             _, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
@@ -236,7 +248,7 @@ class SourceGithub(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
-        config = self._ensure_default_values(config)
+        config = self._validate_and_transform_config(config)
         try:
             organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
         except Exception as e:
@@ -271,7 +283,8 @@ class SourceGithub(AbstractSource):
             "api_url": config.get("api_url"),
             "access_token_type": access_token_type,
         }
-        organization_args_with_start_date = {**organization_args, "start_date": config["start_date"]}
+        start_date = config.get("start_date")
+        organization_args_with_start_date = {**organization_args, "start_date": start_date}
 
         repository_args = {
             "authenticator": authenticator,
@@ -280,9 +293,9 @@ class SourceGithub(AbstractSource):
             "page_size_for_large_streams": page_size,
             "access_token_type": access_token_type,
         }
-        repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
+        repository_args_with_start_date = {**repository_args, "start_date": start_date}
 
-        default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)
+        default_branches, branches_to_pull = self._get_branches_data(config.get("branch", []), repository_args)
         pull_requests_stream = PullRequests(**repository_args_with_start_date)
         projects_stream = Projects(**repository_args_with_start_date)
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)

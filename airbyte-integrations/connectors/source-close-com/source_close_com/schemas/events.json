@@ -9,6 +9,12 @@
     "api_key_id": {
       "type": ["null", "string"]
     },
+    "oauth_client_id": {
+      "type": ["null", "string"]
+    },
+    "oauth_scope": {
+      "type": ["null", "string"]
+    },
     "changed_fields": {
       "type": ["null", "array"]
     },

@@ -59,7 +59,7 @@ Prepare the Glue database that will be used as destination, see [this](https://d
    - **S3 Endpoint**
      - Leave empty if using AWS S3, fill in S3 URL if using Minio S3.
    - **S3 Filename pattern**
-     - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.
+     - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. Please, don't use empty space and not supportable placeholders, as they won't recognized.
    - **Glue database**
      - The Glue database name that was previously created through the management console or the cli.
    - **Glue serialization library**
@@ -96,7 +96,7 @@ Prepare the Glue database that will be used as destination, see [this](https://d
    - **S3 Endpoint**
      - Leave empty if using AWS S3, fill in S3 URL if using Minio S3.
    - **S3 Filename pattern**
-     - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.
+     - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. Please, don't use empty space and not supportable placeholders, as they won't recognized.
    - **Glue database**
      - The Glue database name that was previously created through the management console or the cli.
    - **Glue serialization library**
@@ -178,7 +178,7 @@ A data sync may create multiple files as the output files can be partitioned by 
 | Feature                        | Support | Notes                                                                                                                                                                                               |
 | :----------------------------- | :-----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                |
-| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/understanding-airbyte/connections/incremental-append#inclusive-cursors) |
+| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/using-airbyte/core-concepts/sync-modes/incremental-append#inclusive-cursors) |
 | Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                     |
 | Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                         |
 

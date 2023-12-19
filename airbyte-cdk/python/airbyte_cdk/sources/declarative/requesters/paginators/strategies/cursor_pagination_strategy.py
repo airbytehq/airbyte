@@ -40,6 +40,10 @@ class CursorPaginationStrategy(PaginationStrategy):
         if isinstance(self.stop_condition, str):
             self.stop_condition = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
 
+    @property
+    def initial_token(self) -> Optional[Any]:
+        return None
+
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
 

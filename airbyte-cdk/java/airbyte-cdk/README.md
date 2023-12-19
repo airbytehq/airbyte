@@ -99,7 +99,7 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.1.0'   // The CDK version to pin to.
     features = ['db-destinations'] // An array of CDK features to depend on.
-    useLocalCdk = false            // Use 'true' to use a live reference to the 
+    useLocalCdk = false            // Use 'true' to use a live reference to the
                                    // local cdk project.
 }
 
@@ -121,13 +121,21 @@ When modifying the CDK and a connector in the same PR or branch, please use the 
 
 After the above, you can build and test your connector as usual. Gradle will automatically use the local CDK code files while you are working on the connector.
 
+### Publishing the CDK and switching to a pinned CDK reference
+
 Once you are done developing and testing your CDK changes:
 
 1. Publish the CDK using the instructions here in this readme.
 2. After publishing the CDK, update the `useLocalCdk` setting by running `./gradlew :airbyte-integrations:connectors:<connector-name>:disableLocalCdkRefs`. to automatically revert `useLocalCdk` to `false`.
 3. You can optionally run `./gradlew :airbyte-integrations:connectors:<connector-name>:assertNotUsingLocalCdk` to ensure that the project is not using a local CDK reference.
 
-_Note: You can also use  `./gradlew assertNotUsingLocalCdk` or `./gradlew disableLocalCdkRefs` to run these tasks on **all** connectors simultaneously._
+_Note: You can also use `./gradlew assertNotUsingLocalCdk` or `./gradlew disableLocalCdkRefs` to run these tasks on **all** connectors simultaneously._
+
+### Troubleshooting CDK Dependency Caches
+
+Note: after switching between a local and a pinned CDK reference, you may need to refresh dependency caches in Gradle and/or your IDE.
+
+In Gradle, you can use the CLI arg `--refresh-dependencies` the next time you build or test your connector, which will ensure that the correct version of the CDK is used after toggling the `useLocalCdk` value.
 
 ### Developing a connector against a pinned CDK version
 
@@ -154,9 +162,49 @@ MavenLocal debugging steps:
 
 ### Java CDK
 
-| Version | Date       | Pull Request                                               | Subject                               |
-| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------ |
+| Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
+|:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.8.0   | 2023-12-18 | [\#33506](https://github.com/airbytehq/airbyte/pull/33506) | Improve async destination shutdown logic; more JDBC async migration work; improve DAT test schema handling                                                     |
+| 0.7.9   | 2023-12-18 | [\#33549](https://github.com/airbytehq/airbyte/pull/33549) | Improve MongoDB logging.                                                                                                                                       |
+| 0.7.8   | 2023-12-18 | [\#33365](https://github.com/airbytehq/airbyte/pull/33365) | Emit stream statuses more consistently                                                                                                                         |
+| 0.7.7   | 2023-12-18 | [\#33434](https://github.com/airbytehq/airbyte/pull/33307) | Remove LEGACY state                                                                                                                                            |
+| 0.7.6   | 2023-12-14 | [\#32328](https://github.com/airbytehq/airbyte/pull/33307) | Add schema less mode for mongodb CDC. Fixes for non standard mongodb id type.                                                                                  |
+| 0.7.4   | 2023-12-13 | [\#33232](https://github.com/airbytehq/airbyte/pull/33232) | Track stream record count during sync; only run T+D if a stream had nonzero records or the previous sync left unprocessed records.                             |
+| 0.7.3   | 2023-12-13 | [\#33369](https://github.com/airbytehq/airbyte/pull/33369) | Extract shared JDBC T+D code.                                                                                                                                  |
+| 0.7.2   | 2023-12-11 | [\#33307](https://github.com/airbytehq/airbyte/pull/33307) | Fix DV2 JDBC type mappings (code changes in [\#33307](https://github.com/airbytehq/airbyte/pull/33307)).                                                       |
+| 0.7.1   | 2023-12-01 | [\#33027](https://github.com/airbytehq/airbyte/pull/33027) | Add the abstract DB source debugger.                                                                                                                           |
+| 0.7.0   | 2023-12-07 | [\#32326](https://github.com/airbytehq/airbyte/pull/32326) | Destinations V2 changes for JDBC destinations                                                                                                                  |
+| 0.6.4   | 2023-12-06 | [\#33082](https://github.com/airbytehq/airbyte/pull/33082) | Improvements to schema snapshot error handling + schema snapshot history scope (scoped to configured DB).                                                      |
+| 0.6.2   | 2023-11-30 | [\#32573](https://github.com/airbytehq/airbyte/pull/32573) | Update MSSQLConverter to enforce 6-digit microsecond precision for timestamp fields                                                                            |
+| 0.6.1   | 2023-11-30 | [\#32610](https://github.com/airbytehq/airbyte/pull/32610) | Support DB initial sync using binary as primary key.                                                                                                           |
+| 0.6.0   | 2023-11-30 | [\#32888](https://github.com/airbytehq/airbyte/pull/32888) | JDBC destinations now use the async framework                                                                                                                  |
+| 0.5.3   | 2023-11-28 | [\#32686](https://github.com/airbytehq/airbyte/pull/32686) | Better attribution of debezium engine shutdown due to heartbeat.                                                                                               |
+| 0.5.1   | 2023-11-27 | [\#32662](https://github.com/airbytehq/airbyte/pull/32662) | Debezium initialization wait time will now read from initial setup time.                                                                                       |
+| 0.5.0   | 2023-11-22 | [\#32656](https://github.com/airbytehq/airbyte/pull/32656) | Introduce TestDatabase test fixture, refactor database source test base classes.                                                                               |
+| 0.4.11  | 2023-11-14 | [\#32526](https://github.com/airbytehq/airbyte/pull/32526) | Clean up memory manager logs.                                                                                                                                  |
+| 0.4.10  | 2023-11-13 | [\#32285](https://github.com/airbytehq/airbyte/pull/32285) | Fix UUID codec ordering for MongoDB connector                                                                                                                  |
+| 0.4.9   | 2023-11-13 | [\#32468](https://github.com/airbytehq/airbyte/pull/32468) | Further error grouping improvements for DV2 connectors                                                                                                         |
+| 0.4.8   | 2023-11-09 | [\#32377](https://github.com/airbytehq/airbyte/pull/32377) | source-postgres tests: skip dropping database                                                                                                                  |
+| 0.4.7   | 2023-11-08 | [\#31856](https://github.com/airbytehq/airbyte/pull/31856) | source-postgres: support for infinity date and timestamps                                                                                                      |
+| 0.4.5   | 2023-11-07 | [\#32112](https://github.com/airbytehq/airbyte/pull/32112) | Async destinations framework: Allow configuring the queue flush threshold                                                                                      |
+| 0.4.4   | 2023-11-06 | [\#32119](https://github.com/airbytehq/airbyte/pull/32119) | Add STANDARD UUID codec to MongoDB debezium handler                                                                                                            |
+| 0.4.2   | 2023-11-06 | [\#32190](https://github.com/airbytehq/airbyte/pull/32190) | Improve error deinterpolation                                                                                                                                  |
+| 0.4.1   | 2023-11-02 | [\#32192](https://github.com/airbytehq/airbyte/pull/32192) | Add 's3-destinations' CDK module.                                                                                                                              |
+| 0.4.0   | 2023-11-02 | [\#32050](https://github.com/airbytehq/airbyte/pull/32050) | Fix compiler warnings.                                                                                                                                         |
+| 0.3.0   | 2023-11-02 | [\#31983](https://github.com/airbytehq/airbyte/pull/31983) | Add deinterpolation feature to AirbyteExceptionHandler.                                                                                                        |
+| 0.2.4   | 2023-10-31 | [\#31807](https://github.com/airbytehq/airbyte/pull/31807) | Handle case of debezium update and delete of records in mongodb.                                                                                               |
+| 0.2.3   | 2023-10-31 | [\#32022](https://github.com/airbytehq/airbyte/pull/32022) | Update Debezium version from 2.20 -> 2.4.0.                                                                                                                    |
+| 0.2.2   | 2023-10-31 | [\#31976](https://github.com/airbytehq/airbyte/pull/31976) | Debezium tweaks to make tests run faster.                                                                                                                      |
+| 0.2.0   | 2023-10-30 | [\#31960](https://github.com/airbytehq/airbyte/pull/31960) | Hoist top-level gradle subprojects into CDK.                                                                                                                   |
+| 0.1.12  | 2023-10-24 | [\#31674](https://github.com/airbytehq/airbyte/pull/31674) | Fail sync when Debezium does not shut down properly.                                                                                                           |
+| 0.1.11  | 2023-10-18 | [\#31486](https://github.com/airbytehq/airbyte/pull/31486) | Update constants in AdaptiveSourceRunner.                                                                                                                      |
+| 0.1.9   | 2023-10-12 | [\#31309](https://github.com/airbytehq/airbyte/pull/31309) | Use toPlainString() when handling BigDecimals in PostgresConverter                                                                                             |
+| 0.1.8   | 2023-10-11 | [\#31322](https://github.com/airbytehq/airbyte/pull/31322) | Cap log line length to 32KB to prevent loss of records                                                                                                         |
+| 0.1.7   | 2023-10-10 | [\#31194](https://github.com/airbytehq/airbyte/pull/31194) | Deallocate unused per stream buffer memory when empty                                                                                                          |
+| 0.1.6   | 2023-10-10 | [\#31083](https://github.com/airbytehq/airbyte/pull/31083) | Fix precision of numeric values in async destinations                                                                                                          |
+| 0.1.5   | 2023-10-09 | [\#31196](https://github.com/airbytehq/airbyte/pull/31196) | Update typo in CDK (CDN_LSN -> CDC_LSN)                                                                                                                        |
+| 0.1.4   | 2023-10-06 | [\#31139](https://github.com/airbytehq/airbyte/pull/31139) | Reduce async buffer                                                                                                                                            |
 | 0.1.1   | 2023-09-28 | [\#30835](https://github.com/airbytehq/airbyte/pull/30835) | JDBC destinations now avoid staging area name collisions by using the raw table name as the stage name. (previously we used the stream name as the stage name) |
-| 0.1.0   | 2023-09-27 | [\#30445](https://github.com/airbytehq/airbyte/pull/30445) | First launch, including shared classes for all connectors. |
-| 0.0.2   | 2023-08-21 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Version bump only (no other changes). |
-| 0.0.1   | 2023-08-08 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Initial release for testing.          |
+| 0.1.0   | 2023-09-27 | [\#30445](https://github.com/airbytehq/airbyte/pull/30445) | First launch, including shared classes for all connectors.                                                                                                     |
+| 0.0.2   | 2023-08-21 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Version bump only (no other changes).                                                                                                                          |
+| 0.0.1   | 2023-08-08 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Initial release for testing.                                                                                                                                   |

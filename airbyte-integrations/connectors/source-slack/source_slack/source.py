@@ -209,8 +209,9 @@ class IncrementalMessageStream(ChanneledStream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         if not stream_slice:
+            # return an empty iterator
             # this is done to emit at least one state message when no slices are generated
-            return []
+            return iter([])
         return super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
 
@@ -294,18 +295,6 @@ class Threads(IncrementalMessageStream):
         if not slice_yielded:
             # yield an empty slice to checkpoint state later
             yield {}
-
-    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        """
-        Filtering already read records for incremental sync. Copied state value to X after the last sync
-        to really 100% make sure no one can edit the state during the run.
-        """
-
-        initial_state = copy.deepcopy(stream_state) or {}
-
-        for record in super().read_records(stream_state=stream_state, **kwargs):
-            if record.get(self.cursor_field, 0) >= initial_state.get(self.cursor_field, 0):
-                yield record
 
 
 class JoinChannelsStream(HttpStream):

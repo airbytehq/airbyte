@@ -1,17 +1,10 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
-  "required": [
-    "totals",
-    "payment_reference",
-    "payout_date",
-    "currency_code",
-    "merchant_settlement_type",
-    "merchant_id"
-  ],
   "properties": {
     "totals": {
-      "type": "object",
+      "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "commission_amount": {
@@ -130,6 +123,5 @@
       "example": "https://{settlements_api}/transactions?payment_reference=XISA93DJ",
       "type": "string"
     }
-  },
-  "$schema": "http://json-schema.org/schema#"
+  }
 }

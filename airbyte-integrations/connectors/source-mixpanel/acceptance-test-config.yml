@@ -1,6 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-mixpanel:dev
+# custom configuration is used for tests to speed up testing and avoid hitting rate limits
 custom_environment_variables:
   REQS_PER_HOUR_LIMIT: 0
   AVAILABLE_TESTING_RANGE_DAYS: 10
@@ -55,9 +56,9 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: "secrets/config_incremental.json"
-        # engage stream is not part of incremental catalog as it is semi incremental,
-        # so cursor filter is not inside request, but results are filtered based on cursor state
-        # also engage can produce records without cursor field, so abnormal state test will fail
+        # The `Engage` and `CohortMembers` streams are not part of incremental catalog as they are semi-incremental,
+        # so cursor filter is not inside request, but results are filtered based on the cursor value.
+        # Also, these streams can produce records without cursor field, so abnormal state test would fail.
         configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
