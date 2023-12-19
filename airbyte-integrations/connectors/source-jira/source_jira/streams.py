@@ -48,10 +48,14 @@ class JiraStream(HttpStream, ABC):
     extract_field: Optional[str] = None
     api_v1 = False
     # Defines the HTTP status codes for which the slice should be skipped.
-    # Refernce issue: https://github.com/airbytehq/oncall/issues/2133
-    # we should skip the slice with `board id` which doesn't support `sprints`
+    # we should skip the slice / stream if the user does not have permission to view it.
     # it's generally applied to all streams that might have the same error hit in the future.
-    skip_http_status_codes = [requests.codes.BAD_REQUEST]
+    skip_http_status_codes = [
+        requests.codes.NOT_FOUND,
+        requests.codes.UNAUTHORIZED,
+        requests.codes.FORBIDDEN,
+        requests.codes.BAD_REQUEST,
+    ]
     raise_on_http_errors = True
     transformer: TypeTransformer = DateTimeTransformer(TransformConfig.DefaultSchemaNormalization)
 
@@ -378,9 +382,6 @@ class Issues(IncrementalJiraStream):
     use_cache = True
     _expand_fields_list = ["renderedFields", "transitions", "changelog"]
 
-    # Issue: https://github.com/airbytehq/airbyte/issues/26712
-    # we should skip the slice with wrong permissions on project level
-    skip_http_status_codes = [requests.codes.FORBIDDEN, requests.codes.BAD_REQUEST]
     state_checkpoint_interval = 50  # default page size is 50
 
     def __init__(self, **kwargs):
@@ -511,14 +512,6 @@ class IssueCustomFieldContexts(JiraStream):
 
     use_cache = True
     extract_field = "values"
-    skip_http_status_codes = [
-        # https://community.developer.atlassian.com/t/get-custom-field-contexts-not-found-returned/48408/2
-        # /rest/api/3/field/{fieldId}/context - can return 404 if project style is not "classic"
-        requests.codes.NOT_FOUND,
-        # Only Jira administrators can access custom field contexts.
-        requests.codes.FORBIDDEN,
-        requests.codes.BAD_REQUEST,
-    ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -544,13 +537,6 @@ class IssueCustomFieldOptions(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get
     """
-
-    skip_http_status_codes = [
-        requests.codes.NOT_FOUND,
-        # Only Jira administrators can access custom field options.
-        requests.codes.FORBIDDEN,
-        requests.codes.BAD_REQUEST,
-    ]
 
     extract_field = "values"
 
@@ -625,11 +611,6 @@ class IssuePropertyKeys(JiraStream):
 
     extract_field = "keys"
     use_cache = True
-    skip_http_status_codes = [
-        # Issue does not exist or you do not have permission to see it.
-        requests.codes.NOT_FOUND,
-        requests.codes.BAD_REQUEST,
-    ]
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
@@ -827,11 +808,6 @@ class IssueWatchers(StartDateJiraStream):
 
     # extract_field = "watchers"
     primary_key = None
-    skip_http_status_codes = [
-        # Issue is not found or the user does not have permission to view it.
-        requests.codes.NOT_FOUND,
-        requests.codes.BAD_REQUEST,
-    ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -962,12 +938,6 @@ class ProjectAvatars(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
     """
 
-    skip_http_status_codes = [
-        # Project is not found or the user does not have permission to view the project.
-        requests.codes.UNAUTHORIZED,
-        requests.codes.NOT_FOUND,
-    ]
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -992,12 +962,6 @@ class ProjectCategories(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-rest-api-3-projectcategory-get
     """
-
-    skip_http_status_codes = [
-        # Project is not found or the user does not have permission to view the project.
-        requests.codes.UNAUTHORIZED,
-        requests.codes.NOT_FOUND,
-    ]
 
     def path(self, **kwargs) -> str:
         return "projectCategory"
@@ -1028,11 +992,6 @@ class ProjectEmail(JiraStream):
     """
 
     primary_key = "projectId"
-    skip_http_status_codes = [
-        # You cannot edit the configuration of this project.
-        requests.codes.FORBIDDEN,
-        requests.codes.BAD_REQUEST,
-    ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
