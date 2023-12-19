@@ -19,6 +19,17 @@ public class AirbyteSourceConfig {
 
   private final JsonNode jsonConfig;
 
+  public static enum AirbyteSourceConfigKey {
+    ;
+
+    private final String jsonName;
+
+    private AirbyteSourceConfigKey(String jsonName) {
+      this.jsonName = jsonName;
+    }
+
+  }
+
   AirbyteSourceConfig(JsonNode jsonConfig) {
     this.jsonConfig = jsonConfig;
   }
@@ -81,6 +92,14 @@ public class AirbyteSourceConfig {
 
   public final Set<String> validateWith(JsonSchemaValidator validator, JsonNode schemaJson) {
     return validator.validate(schemaJson, this.jsonConfig);
+  }
+
+  public final boolean has(String key) {
+    return jsonConfig.has(key);
+  }
+
+  public final JsonNode get(String key) {
+    return jsonConfig.get(key);
   }
 
 }
