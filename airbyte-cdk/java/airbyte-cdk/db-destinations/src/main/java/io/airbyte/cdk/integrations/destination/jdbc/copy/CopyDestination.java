@@ -22,7 +22,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class CopyDestination extends BaseConnector implements Destination {
+public abstract class CopyDestination extends BaseConnector<JsonNode> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyDestination.class);
 

@@ -9,10 +9,11 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class DestinationRunner extends IntegrationRunner {
+public class DestinationRunner extends IntegrationRunner<JsonNode> {
 
   private final Destination destination;
 
@@ -76,6 +77,11 @@ public class DestinationRunner extends IntegrationRunner {
           EXIT_THREAD_DELAY_MINUTES,
           TimeUnit.MINUTES);
     }
+  }
+
+  @Override
+  protected Set<String> runValidator(final JsonNode schemaJson, final JsonNode objectJson) {
+    return validator.validate(schemaJson, objectJson);
   }
 
 }

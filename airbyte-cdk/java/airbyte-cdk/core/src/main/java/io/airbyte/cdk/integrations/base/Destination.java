@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 
-public interface Destination extends Integration {
+public interface Destination extends Integration<JsonNode> {
 
   /**
    * Return a consumer that writes messages to the destination.

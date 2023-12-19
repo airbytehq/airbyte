@@ -9,7 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 
-public abstract class BaseConnector implements Integration {
+public abstract class BaseConnector<T> implements Integration<T> {
 
   /**
    * By convention the spec is stored as a resource for java connectors. That resource is called

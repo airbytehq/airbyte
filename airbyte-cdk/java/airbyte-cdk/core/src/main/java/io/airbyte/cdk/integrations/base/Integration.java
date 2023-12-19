@@ -4,11 +4,10 @@
 
 package io.airbyte.cdk.integrations.base;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 
-public interface Integration {
+public interface Integration<T> {
 
   /**
    * Fetch the specification for the integration.
@@ -26,6 +25,6 @@ public interface Integration {
    * @return Whether or not the connection was successful. Optional message if it was not.
    * @throws Exception - any exception.
    */
-  AirbyteConnectionStatus check(JsonNode config) throws Exception;
+  AirbyteConnectionStatus check(T config) throws Exception;
 
 }
