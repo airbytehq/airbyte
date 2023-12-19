@@ -273,15 +273,8 @@ public class IntegrationRunner {
   }
 
   private void readSerial(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
-    final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
-    try {
+    try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
       produceMessages(messageIterator, outputRecordCollector);
-      try {
-        messageIterator.close();
-      } catch (Exception e) {
-        LOGGER.warn("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ",
-            e.getMessage());
-      }
     } finally {
       stopOrphanedThreads(EXIT_HOOK,
           INTERRUPT_THREAD_DELAY_MINUTES,
@@ -355,18 +348,7 @@ public class IntegrationRunner {
     final String[] tokens = connectorImage.split(":");
     return tokens[tokens.length - 1];
   }
-
-  @VisibleForTesting
-  static void swallowIteratorCloseErrors(AutoCloseableIterator<AirbyteMessage> iter, Consumer<AirbyteMessage> outputRecordCollector) {
-    try {
-      iter.close();
-    } catch (Exception e) {
-      LOGGER.warn("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ",
-          e.getMessage());
-    }
-
-  }
-
+  
   /**
    * Stops any non-daemon threads that could block the JVM from exiting when the main thread is done.
    * <p>
