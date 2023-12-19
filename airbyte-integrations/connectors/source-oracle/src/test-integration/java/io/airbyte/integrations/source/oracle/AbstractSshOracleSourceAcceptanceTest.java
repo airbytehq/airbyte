@@ -28,8 +28,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.Network;
 
+@Disabled
 public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";

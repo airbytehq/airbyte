@@ -222,13 +222,17 @@ public class FlushWorkers implements AutoCloseable {
     // before shutting down the supervisor, flush all state.
     emitStateMessages(stateManager.flushStates());
     supervisorThread.shutdown();
-    final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
-    log.info("Closing flush workers -- Supervisor shutdown status: {}", supervisorShut);
+    while (!supervisorThread.awaitTermination(5L, TimeUnit.MINUTES)) {
+      log.info("Waiting for flush worker supervisor to shut down");
+    }
+    log.info("Closing flush workers -- supervisor shut down");
 
     log.info("Closing flush workers -- Starting worker pool shutdown..");
     workerPool.shutdown();
-    final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
-    log.info("Closing flush workers -- Workers shutdown status: {}", workersShut);
+    while (!workerPool.awaitTermination(5L, TimeUnit.MINUTES)) {
+      log.info("Waiting for flush workers to shut down");
+    }
+    log.info("Closing flush workers  -- workers shut down");
 
     debugLoop.shutdownNow();
   }
