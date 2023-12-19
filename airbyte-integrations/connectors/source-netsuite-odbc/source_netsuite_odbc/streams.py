@@ -152,6 +152,13 @@ class NetsuiteODBCStream(Stream):
       else:
         raise Exception(f'Unsupported Sync Mode: {sync_mode}.  Please use either "full_refresh" or "incremental"')
 
+    # How does full refresh work?
+    # We first split things into stream slices.  Then, we start with filtering our SQL query by > the start date of the stream slice
+    # and <= the end date of the stream slice.  We then sort by the primary key column (s).
+    #  As we fetch records, we start filtering by > the most recent primary key value we've seen.  Because primary keys 
+    # can be composite, we need to handle the cases where the first column might have multiple rows for a single value (since the second
+    # or third row might have different values)
+    # Note:  Outside of the stream slice dates, we don't filter by dates in full refresh.  We instead rely on Netsuite's ids being incremental.
     def generate_full_refresh_query(self, stream_slice):
       values = ', '.join(self.properties) # we use values instead of '*' because we want to preserve the order of the columns
       incremental_column_sorter = f", {self.incremental_column} ASC" if self.incremental_column else ""
@@ -198,7 +205,12 @@ class NetsuiteODBCStream(Stream):
         primary_key_sorter = primary_key_sorter + f"{key} ASC"
       return primary_key_sorter
     
-
+    # How does Incremental Refresh work?
+    # We first split things into stream slices.  Then, we start with filtering our SQL query by > the start date of the stream slice
+    # and <= the end date of the stream slice.  We then sort by the incremental column, and then by the primary key column (s).
+    #  As we fetch records, we start filtering by > the most recent incremental time we've seen. We also add on a filter for 
+    # = the most recent incremental time but with a primary key > the last one we've seen.  This ensures that we don't miss any records
+    # in the case where page size = N and there are N + 1 records with the same incremental time. 
     def generate_incremental_query(self, stream_slice):
       if self.incremental_column is None:
         raise AirbyteTracedException.from_exception(message=GENERATING_INCREMENTAL_QUERY_WITH_NO_INCREMENTAL_COLUMN_ERROR, failure_type=FailureType.system_error)
