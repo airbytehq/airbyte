@@ -1,14 +1,19 @@
 # Instagram
 
+<HideInUI>
+
 This page contains the setup guide and reference information for the Instagram source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
 - [Meta for Developers account](https://developers.facebook.com)
 - [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your Facebook page
+- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte <!-- env:oss -->
 - [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
-- [Facebook OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
-- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte)
+- [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
+<!-- /env:oss -->
 
 ## Setup Guide
 
@@ -24,7 +29,7 @@ This page contains the setup guide and reference information for the Instagram s
 4. Enter a name for your source.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
 8. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -36,11 +41,12 @@ This page contains the setup guide and reference information for the Instagram s
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
 4. Enter a name for your source.
-5. Click **Authenticate your Instagram account**.
-6. Log in and authorize the Instagram account.
-7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+5. Enter **Access Token** generated using [Graph API Explorer](https://developers.facebook.com/tools/explorer/) or [by using an app you can create on Facebook](https://developers.facebook.com/docs/instagram-api/getting-started) with the required permissions: instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement.
+7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
 8. Click **Set up source**.
 <!-- /env:oss -->
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -86,7 +92,13 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 2.0.0   | 2023-11-17 | [32500](https://github.com/airbytehq/airbyte/pull/32500) | Add primary keys for UserLifetimeInsights and UserInsights; add airbyte_type to timestamp fields                          |
+| 1.0.16  | 2023-11-17 | [32627](https://github.com/airbytehq/airbyte/pull/32627) | Fix start_date type; fix docs                                                                                             |
+| 1.0.15  | 2023-11-14 | [32494](https://github.com/airbytehq/airbyte/pull/32494) | Marked start_date as optional; set max retry time to 10 minutes; add suggested streams                                    |
+| 1.0.14  | 2023-11-13 | [32423](https://github.com/airbytehq/airbyte/pull/32423) | Capture media_product_type column in media and stories stream                                                             |
+| 1.0.13  | 2023-11-10 | [32245](https://github.com/airbytehq/airbyte/pull/32245) | Add skipping reading MediaInsights stream if an error code 10 is received                                                 |
+| 1.0.12  | 2023-11-07 | [32200](https://github.com/airbytehq/airbyte/pull/32200) | The backoff strategy has been updated to make some errors retriable                                                       |
 | 1.0.11  | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes                                                                                      |
 | 1.0.10  | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references                                                                                  |
 | 1.0.9   | 2023-07-01 | [27908](https://github.com/airbytehq/airbyte/pull/27908) | Fix bug when `user_lifetime_insights` stream returns `Key Error (end_time)`, refactored `state` to use `IncrementalMixin` |
@@ -101,7 +113,9 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 | 1.0.0   | 2022-09-23 | [17110](https://github.com/airbytehq/airbyte/pull/17110) | Remove custom read function and migrate to per-stream state                                                               |
 | 0.1.11  | 2022-09-08 | [16428](https://github.com/airbytehq/airbyte/pull/16428) | Fix requests metrics for Reels media product type                                                                         |
 | 0.1.10  | 2022-09-05 | [16340](https://github.com/airbytehq/airbyte/pull/16340) | Update to latest version of the CDK (v0.1.81)                                                                             |
-| 0.1.9   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)   | Annotate Oauth2 flow initialization parameters in connector specification                                                 |
-| 0.1.8   | 2021-08-11 | [5354](https://github.com/airbytehq/airbyte/pull/5354)   | Added check for empty state and fixed tests                                                                               |
-| 0.1.7   | 2021-07-19 | [4805](https://github.com/airbytehq/airbyte/pull/4805)   | Add support for previous `STATE` format                                                                                   |
-| 0.1.6   | 2021-07-07 | [4210](https://github.com/airbytehq/airbyte/pull/4210)   | Refactor connector to use CDK: - improve error handling - fix sync fail with HTTP status 400 - integrate SAT              |
+| 0.1.9   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)  | Annotate Oauth2 flow initialization parameters in connector specification                                                 |
+| 0.1.8   | 2021-08-11 | [5354](https://github.com/airbytehq/airbyte/pull/5354)  | Added check for empty state and fixed tests                                                                               |
+| 0.1.7   | 2021-07-19 | [4805](https://github.com/airbytehq/airbyte/pull/4805)  | Add support for previous `STATE` format                                                                                   |
+| 0.1.6   | 2021-07-07 | [4210](https://github.com/airbytehq/airbyte/pull/4210)  | Refactor connector to use CDK: - improve error handling - fix sync fail with HTTP status 400 - integrate SAT              |
+
+</HideInUI>

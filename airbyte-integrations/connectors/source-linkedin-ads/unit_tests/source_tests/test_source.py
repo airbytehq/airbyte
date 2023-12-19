@@ -3,6 +3,8 @@
 #
 
 
+from unittest.mock import Mock, patch
+
 import pytest
 import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
@@ -101,6 +103,25 @@ class TestAllStreams:
             if stream_cls in streams:
                 assert isinstance(stream, stream_cls)
 
+    def test_custom_streams(self):
+        config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
+        for stream in self._instance.get_custom_ad_analytics_reports(config=config):
+            assert isinstance(stream, AdCampaignAnalytics)
+
+    @patch("source_linkedin_ads.source.Accounts.check_availability")
+    def test_check_connection(self, check_availability_mock):
+        check_availability_mock.return_value = (True, None)
+        is_available, error = self._instance.check_connection(logger=Mock(), config=TEST_CONFIG)
+        assert is_available
+        assert not error
+
+    @patch("source_linkedin_ads.source.Accounts.check_availability")
+    def test_check_connection_failure(self, check_availability_mock):
+        check_availability_mock.side_effect = Exception("Not available")
+        is_available, error = self._instance.check_connection(logger=Mock(), config=TEST_CONFIG)
+        assert not is_available
+        assert str(error) == "Not available"
+
     @pytest.mark.parametrize(
         "stream_cls, stream_slice, expected",
         [
@@ -136,11 +157,17 @@ class TestLinkedinAdsStream:
         result = self.stream.accounts
         assert result == ",".join(map(str, TEST_CONFIG["account_ids"]))
 
-    def test_next_page_token(self, requests_mock):
-        requests_mock.get(self.url, json={"elements": []})
+    @pytest.mark.parametrize(
+        "response_json, expected",
+        (
+            ({"elements": []}, None),
+            ({"elements": [{"data": []}] * 500, "paging": {"start": 0}}, {"start": 500}),
+        ),
+    )
+    def test_next_page_token(self, requests_mock, response_json, expected):
+        requests_mock.get(self.url, json=response_json)
         test_response = requests.get(self.url)
 
-        expected = None
         result = self.stream.next_page_token(test_response)
         assert expected == result
 

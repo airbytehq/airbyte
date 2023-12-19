@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 # Source: https://click.palletsprojects.com/en/8.1.x/complex/
 
 import importlib

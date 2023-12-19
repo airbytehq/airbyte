@@ -5,10 +5,11 @@
 from unittest.mock import ANY, MagicMock, Mock, call, patch
 
 import pytest
+import urllib3
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_pinecone.config import PineconeIndexingModel
 from destination_pinecone.indexer import PineconeIndexer
-from pinecone import IndexDescription
+from pinecone import IndexDescription, exceptions
 
 
 def create_pinecone_indexer():
@@ -202,26 +203,38 @@ def test_pinecone_pre_sync_starter(mock_describe_index):
 
 
 @pytest.mark.parametrize(
-    "describe_throws,reported_dimensions,check_succeeds",
+    "index_list, describe_throws,reported_dimensions,check_succeeds, error_message",
     [
-        (False, 3, True),
-        (False, 4, False),
-        (True, 3, False),
-        (True, 4, False),
+        (["myindex"], None, 3, True, None),
+        (["other_index"], None, 3, False, "Index myindex does not exist in environment"),
+        (
+            ["myindex"],
+            urllib3.exceptions.MaxRetryError(None, "", reason=Exception("Failed to resolve 'controller.myenv.pinecone.io'")),
+            3,
+            False,
+            "Failed to resolve environment",
+        ),
+        (["myindex"], exceptions.UnauthorizedException(http_resp=urllib3.HTTPResponse(body="No entry!")), 3, False, "No entry!"),
+        (["myindex"], None, 4, False, "Make sure embedding and indexing configurations match."),
+        (["myindex"], Exception("describe failed"), 3, False, "describe failed"),
+        (["myindex"], Exception("describe failed"), 4, False, "describe failed"),
     ],
 )
 @patch("pinecone.describe_index")
-def test_pinecone_check(describe_mock, describe_throws, reported_dimensions, check_succeeds):
+@patch("pinecone.list_indexes")
+def test_pinecone_check(list_mock, describe_mock, index_list, describe_throws, reported_dimensions, check_succeeds, error_message):
     indexer = create_pinecone_indexer()
     indexer.embedding_dimensions = 3
     if describe_throws:
-        describe_mock.side_effect = Exception("describe failed")
-    describe_mock.return_value = create_index_description(dimensions=reported_dimensions)
+        describe_mock.side_effect = describe_throws
+    else:
+        describe_mock.return_value = create_index_description(dimensions=reported_dimensions)
+    list_mock.return_value = index_list
     result = indexer.check()
     if check_succeeds:
         assert result is None
     else:
-        assert result is not None
+        assert error_message in result
 
 
 def test_metadata_normalization():

@@ -18,9 +18,12 @@ pluginManagement {
 // Configure the gradle enterprise plugin to enable build scans. Enabling the plugin at the top of the settings file allows the build scan to record
 // as much information as possible.
 plugins {
-    id "com.gradle.enterprise" version "3.13.1"
+    id "com.gradle.enterprise" version "3.15.1"
     id 'com.github.burrunan.s3-build-cache' version "1.5"
 }
+
+ext.isCiServer = System.getenv().containsKey("CI")
+ext.isAirbyteCI = System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
 
 dependencyResolutionManagement {
     // Set FAIL_ON_PROJECT_REPOS to ensure there are no more `repositories { ... }` blocks than necessary.
@@ -129,14 +132,12 @@ gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
+        uploadInBackground = (!isCiServer && !isAirbyteCI) // Disable in CI or scan URLs may not work.
         buildScanPublished { PublishedBuildScan scan ->
             file("scan-journal.log") << "${new Date()} - ${scan.buildScanId} - ${scan.buildScanUri}\n"
         }
     }
 }
-
-ext.isCiServer = System.getenv().containsKey("CI")
-ext.isAirbyteCI = System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
 
 if (isCiServer || isAirbyteCI) {
     buildCache {
@@ -158,40 +159,28 @@ if (isCiServer || isAirbyteCI) {
 
 rootProject.name = 'airbyte'
 
-include ':airbyte-commons'
-include ':airbyte-api'
-include ':airbyte-commons-cli'
-include ':airbyte-commons-protocol'
-include ':airbyte-config-oss:init-oss'
-include ':airbyte-config-oss:config-models-oss' // reused by acceptance tests in connector base.
-include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
-include ':airbyte-json-validation'
-include ':airbyte-test-utils'
-
-include ':airbyte-connector-test-harnesses:acceptance-test-harness'
-
 include ':tools:code-generator'
-include ':octavia-cli'
 
 include ':airbyte-cdk:python'
 include ':airbyte-cdk:java:airbyte-cdk'
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-commons'
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation'
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli'
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-commons-protocol'
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-api'
+include ':airbyte-cdk:java:airbyte-cdk:config-models-oss'
+include ':airbyte-cdk:java:airbyte-cdk:init-oss'
+include ':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness'
 include ':airbyte-cdk:java:airbyte-cdk:core'
 include ':airbyte-cdk:java:airbyte-cdk:db-destinations'
 include ':airbyte-cdk:java:airbyte-cdk:db-sources'
+include ':airbyte-cdk:java:airbyte-cdk:s3-destinations'
+include ':airbyte-cdk:java:airbyte-cdk:typing-deduping'
+
 include ':airbyte-integrations:bases:base'
 include ':airbyte-integrations:bases:base-java'
-include ':airbyte-integrations:bases:base-java-s3'
 include ':airbyte-integrations:bases:base-normalization'
-include ':airbyte-integrations:bases:base-typing-deduping'
-include ':airbyte-integrations:bases:base-typing-deduping-test'
-include ':airbyte-integrations:bases:bases-destination-jdbc' // needs to be lexicographically after base-java and base-normalization to avoid race condition
-include ':airbyte-integrations:bases:base-standard-source-test-file'
-include ':airbyte-integrations:bases:connector-acceptance-test'
-include ':airbyte-integrations:bases:standard-destination-test'
-include ':airbyte-integrations:bases:s3-destination-base-integration-test'
-include ':airbyte-integrations:bases:standard-source-test'
 include ':airbyte-integrations:connector-templates:generator'
-include ':airbyte-integrations:bases:debezium'
 include ':airbyte-integrations:connectors-performance:source-harness'
 include ':airbyte-integrations:connectors-performance:destination-harness'
 

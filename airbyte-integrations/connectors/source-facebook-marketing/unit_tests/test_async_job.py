@@ -6,6 +6,7 @@ import copy
 import time
 from typing import Iterator
 
+import freezegun
 import pendulum
 import pytest
 from facebook_business.adobjects.ad import Ad
@@ -328,6 +329,7 @@ class TestInsightAsyncJob:
             (AdSet, Ad, "ad_id"),
         ],
     )
+    @freezegun.freeze_time("2023-10-29")
     def test_split_job(self, mocker, api, edge_class, next_edge_class, id_field):
         """Test that split will correctly downsize edge_object"""
         today = pendulum.today().date()
@@ -344,6 +346,10 @@ class TestInsightAsyncJob:
                 "fields": [id_field],
                 "level": next_edge_class.__name__.lower(),
                 "time_range": {
+                    # This time range is valid for dates that share the same day of the month
+                    # with the one 37 months ago, that's why current date is frozen.
+                    # For a different date the since date would be also different.
+                    # See facebook_marketing.utils.validate_start_date for reference
                     "since": (today - pendulum.duration(months=37) + pendulum.duration(days=1)).to_date_string(),
                     "until": end.to_date_string(),
                 },

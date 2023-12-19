@@ -1,8 +1,14 @@
 # Slack
 
-This page contains the setup guide and reference information for the Slack source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Slack](https://www.slack.com) source connector.
+
+</HideInUI>
 
 ## Prerequisites
+
+OAuth or API Token (via Slack App or Legacy API Key) is required for access to Slack.
 
 You can no longer create "Legacy" API Keys, but if you already have one, you can use it with this source. Fill it into the API key section.
 
@@ -11,6 +17,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 Note that refresh token are entirely optional for Slack and are not required to use Airbyte. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
 
 ## Setup guide
+
 ### Step 1: Set up Slack
 
 :::info
@@ -97,6 +104,8 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 8. Click **Set up source**.
 <!-- /env:oss -->
 
+<HideInUI>
+
 ## Supported sync modes
 
 The Slack source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -109,14 +118,13 @@ The Slack source connector supports the following [sync modes](https://docs.airb
 
 ## Supported Streams
 
+For most of the streams, the Slack source connector uses the [Conversations API](https://api.slack.com/docs/conversations-api) under the hood.
+
 * [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
 * [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
 * [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public channels that the Slack App is a member of.
 * [Users](https://api.slack.com/methods/users.list)
 * [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
-* [User Groups](https://api.slack.com/methods/usergroups.list)
-* [Files](https://api.slack.com/methods/files.list)
-* [Remote Files](https://api.slack.com/methods/files.remote.list)
 
 ## Performance considerations
 
@@ -133,13 +141,32 @@ It is recommended to sync required channels only, this can be done by specifying
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Slack connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
+
+### Troubleshooting
+
+* Check out common troubleshooting issues for the Slack source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
-| 0.3.5 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.3.6   | 2023-11-21 | [32707](https://github.com/airbytehq/airbyte/pull/32707) | Threads: do not use client-side record filtering                                    |
+| 0.3.5   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image     |
 | 0.3.4   | 2023-10-06 | [31134](https://github.com/airbytehq/airbyte/pull/31134) | Update CDK and remove non iterable return from records                              |
-| 0.3.3   | 2023-09-28 | [30580](https://github.com/airbytehq/airbyte/pull/30580) | Add `bot_id` field to threads schema                               |
+| 0.3.3   | 2023-09-28 | [30580](https://github.com/airbytehq/airbyte/pull/30580) | Add `bot_id` field to threads schema                                                |
 | 0.3.2   | 2023-09-20 | [30613](https://github.com/airbytehq/airbyte/pull/30613) | Set default value for channel_filters during discover                               |
 | 0.3.1   | 2023-09-19 | [30570](https://github.com/airbytehq/airbyte/pull/30570) | Use default availability strategy                                                   |
 | 0.3.0   | 2023-09-18 | [30521](https://github.com/airbytehq/airbyte/pull/30521) | Add unexpected fields to streams `channel_messages`, `channels`, `threads`, `users` |
@@ -164,3 +191,5 @@ It is recommended to sync required channels only, this can be done by specifying
 | 0.1.9   | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860)   | Fix reading threads issue                                                           |
 | 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683)   | Add float\_ts primary key                                                           |
 | 0.1.7   | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978)   | Release Slack CDK Connector                                                         |
+
+</HideInUI>
