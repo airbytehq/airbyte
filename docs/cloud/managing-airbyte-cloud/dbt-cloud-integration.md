@@ -1,5 +1,5 @@
 ---
-flavors: cloud
+products: cloud
 ---
 
 # Use the dbt Cloud integration 

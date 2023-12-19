@@ -1,5 +1,5 @@
 ---
-flavors: oss-enterprise, cloud-teams
+products: oss-enterprise, cloud-teams
 ---
 
 # Single Sign-On (SSO)

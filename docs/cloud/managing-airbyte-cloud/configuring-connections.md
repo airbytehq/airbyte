@@ -1,5 +1,5 @@
 ---
-flavors: all
+products: all
 ---
 
 # Configuring connections

@@ -1,5 +1,5 @@
 ---
-flavors: cloud
+products: cloud
 ---
 
 # Manage credits

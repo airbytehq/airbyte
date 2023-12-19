@@ -1,7 +1,7 @@
 import React from "react";
 import classNames from "classnames";
 
-import styles from "./FlavorInformation.module.css";
+import styles from "./ProductInformation.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faQuestionCircle, faXmarkCircle } from "@fortawesome/free-regular-svg-icons";
 
@@ -15,16 +15,16 @@ const Badge = ({ available, children }) => {
 };
 
 /**
- * @type {React.FC<{ flavors: string }}
+ * @type {React.FC<{ products: string }}
  */
-export const FlavorInformation = ({ flavors }) => {
-  flavors = Object.fromEntries(flavors.split(",").map(f => [f.trim(), true]));
+export const ProductInformation = ({ products }) => {
+  products = Object.fromEntries(products.split(",").map(f => [f.trim(), true]));
 
-  const ossCommunity = flavors["oss-community"] || flavors["oss-*"] || flavors["all"];
-  const ossEnterprise = flavors["oss-enterprise"] || flavors["oss-*"] || flavors["all"];
-  const cloud = flavors["cloud"] || flavors["cloud-teams"] || flavors["all"];
+  const ossCommunity = products["oss-community"] || products["oss-*"] || products["all"];
+  const ossEnterprise = products["oss-enterprise"] || products["oss-*"] || products["all"];
+  const cloud = products["cloud"] || products["cloud-teams"] || products["all"];
     // cloud add-ons need to be specifically marked and are not part of the "all" shorthand
-  const cloudTeams = flavors["cloud-teams"];
+  const cloudTeams = products["cloud-teams"];
 
   return (
     <div className={styles.badges}>

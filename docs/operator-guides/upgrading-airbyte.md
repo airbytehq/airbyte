@@ -1,5 +1,5 @@
 ---
-flavors: oss-*
+products: oss-*
 ---
 
 # Upgrading Airbyte

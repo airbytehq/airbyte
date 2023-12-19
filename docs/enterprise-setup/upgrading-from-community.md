@@ -1,5 +1,5 @@
 ---
-flavors: oss-enterprise
+products: oss-enterprise
 ---
 
 # Existing Instance Upgrades
