@@ -45,7 +45,7 @@ export const HeaderDecoration = ({
     </dl>
 
     <div className={styles.header}>
-      <img src={iconUrl} alt="" class={styles.connectorIcon} />
+      <img src={iconUrl} alt="" className={styles.connectorIcon} />
       <h1 id={originalId}>{originalTitle}</h1>
     </div>
   </>;
