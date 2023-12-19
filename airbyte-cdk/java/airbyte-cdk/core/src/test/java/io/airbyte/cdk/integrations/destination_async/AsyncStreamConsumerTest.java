@@ -186,7 +186,7 @@ class AsyncStreamConsumerTest {
     consumer = new AsyncStreamConsumer(
         m -> {},
         () -> {},
-        (hasFailed) -> {},
+        (hasFailed, recordCounts) -> {},
         flushFunction,
         CATALOG,
         new BufferManager(1024 * 10),
@@ -365,7 +365,7 @@ class AsyncStreamConsumerTest {
 
   private void verifyStartAndClose() throws Exception {
     verify(onStart).call();
-    verify(onClose).accept(any());
+    verify(onClose).accept(any(), any());
   }
 
   @SuppressWarnings({"unchecked", "SameParameterValue"})

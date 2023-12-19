@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BinaryNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+import org.bouncycastle.util.encoders.Base64;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -376,6 +378,8 @@ class TestJdbcUtils {
     arrayNode2.add("3");
     expected.set("int_array", arrayNode2);
 
+    expected.set("binary1", new BinaryNode("aaaa".getBytes(Charsets.UTF_8)));
+
     return expected;
   }
 
@@ -396,7 +400,7 @@ class TestJdbcUtils {
     expected.put("date", "2020-11-01");
     expected.put("time", "05:00:00.000000");
     expected.put("timestamp", "2001-09-29T03:00:00.000000");
-    expected.put("binary1", "aaaa".getBytes(Charsets.UTF_8));
+    expected.put("binary1", Base64.decode("61616161".getBytes(Charsets.UTF_8)));
     return expected;
   }
 

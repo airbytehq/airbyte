@@ -1,38 +1,139 @@
-{
-  "companies": {
-    "updatedAt": "2021-02-23T00:00:00Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2050-05-01" },
+      "stream_descriptor": { "name": "companies" }
+    }
   },
-  "contact_lists": {
-    "timestamp": "2021-02-23T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "contact_lists" }
+    }
   },
-  "contacts": {
-    "updatedAt": "2021-02-23T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "contacts" }
+    }
   },
-  "deals": {
-    "updatedAt": "2021-02-23T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "deals" }
+    }
   },
-  "email_events": {
-    "timestamp": "2021-02-23T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "email_events" }
+    }
   },
-  "engagements": {
-    "lastUpdated": 1614038400000
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastUpdated": 1614038400000 },
+      "stream_descriptor": { "name": "engagements" }
+    }
   },
-  "goals": {
-    "updatedAt": "2021-02-23T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "goals" }
+    }
   },
-  "line_items": {
-    "updatedAt": "2021-02-23T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "line_items" }
+    }
   },
-  "products": {
-    "updatedAt": "2021-02-23T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "products" }
+    }
   },
-  "subscription_changes": {
-    "timestamp": "2021-02-23T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "subscription_changes" }
+    }
   },
-  "tickets": {
-    "updatedAt": "2021-02-23T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "tickets" }
+    }
   },
-  "forms": {
-    "updatedAt": ""
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "" },
+      "stream_descriptor": { "name": "forms" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": 1700681340514 },
+      "stream_descriptor": { "name": "contacts_property_history" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": 1700681340514 },
+      "stream_descriptor": { "name": "companies_property_history" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": 1700681340514 },
+      "stream_descriptor": { "name": "deals_property_history" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "contacts_web_analytics" },
+      "stream_state": {
+        "601": {
+          "occurredAt": "2023-12-01T22:09:29.626Z"
+        },
+        "2601": {
+          "occurredAt": "2023-12-01T22:11:15.870Z"
+        },
+        "251": {
+          "occurredAt": "2023-12-01T22:08:24.346Z"
+        },
+        "2501": {
+          "occurredAt": "2023-12-01T22:10:02.613Z"
+        },
+        "401": {
+          "occurredAt": "2023-12-01T22:08:57.083Z"
+        },
+        "151": {
+          "occurredAt": "2023-12-01T22:07:17.836Z"
+        },
+        "2551": {
+          "occurredAt": "2023-12-01T22:10:43.512Z"
+        },
+        "651": {
+          "occurredAt": "2023-12-01T22:07:51.996Z"
+        }
+      }
+    }
   }
-}
+]

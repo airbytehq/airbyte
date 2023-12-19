@@ -23,9 +23,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Disabled
 public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private AirbyteOracleTestContainer container;

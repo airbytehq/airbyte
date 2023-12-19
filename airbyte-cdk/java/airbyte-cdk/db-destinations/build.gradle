@@ -58,7 +58,12 @@ dependencies {
 
     // testImplementation libs.junit.jupiter.api
     implementation libs.hikaricp
-    implementation libs.bundles.debezium.bundle
+    implementation libs.debezium.api
+    implementation libs.debezium.embedded
+    implementation libs.debezium.sqlserver
+    implementation libs.debezium.mysql
+    implementation libs.debezium.postgres
+    implementation libs.debezium.mongodb
 
     implementation libs.bundles.datadog
     // implementation 'com.datadoghq:dd-trace-api'
@@ -79,7 +84,7 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
     testFixturesImplementation 'org.projectlombok:lombok:1.18.20'
-    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20' 
+    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
 
     implementation ('org.apache.hadoop:hadoop-common:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
     implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
