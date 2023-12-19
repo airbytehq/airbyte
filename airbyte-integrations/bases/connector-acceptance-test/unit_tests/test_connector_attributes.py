@@ -58,7 +58,7 @@ async def test_streams_define_primary_key(mocker, stream_configs, excluded_strea
     if expected_error_streams:
         with pytest.raises(AssertionError) as e:
             await t.test_streams_define_primary_key(
-                silver_certification_test=True,
+                operational_certification_test=True,
                 streams_without_primary_key=excluded_streams,
                 connector_config={},
                 docker_runner=docker_runner_mock
@@ -67,7 +67,7 @@ async def test_streams_define_primary_key(mocker, stream_configs, excluded_strea
         assert streams_in_error_message == expected_error_streams
     else:
         await t.test_streams_define_primary_key(
-            silver_certification_test=True,
+            operational_certification_test=True,
             streams_without_primary_key=excluded_streams,
             connector_config={},
             docker_runner=docker_runner_mock

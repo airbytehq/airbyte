@@ -1146,15 +1146,15 @@ class TestBasicRead(BaseTest):
 
 @pytest.mark.default_timeout(TEN_MINUTES)
 class TestConnectorAttributes(BaseTest):
-    @pytest.fixture(name="silver_certification_test")
-    async def silver_certification_test_fixture(self, connector_metadata: dict) -> bool:
+    @pytest.fixture(name="operational_certification_test")
+    async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
         """
         Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
-        against silver certification criteria
+        against operational certification criteria
         """
 
         if connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
-            pytest.skip("Skipping silver connector certification test for uncertified connector")
+            pytest.skip("Skipping operational connector certification test for uncertified connector")
         return True
 
     @pytest.fixture(name="streams_without_primary_key")
@@ -1162,7 +1162,7 @@ class TestConnectorAttributes(BaseTest):
         return inputs.streams_without_primary_key or []
 
     async def test_streams_define_primary_key(
-        self, silver_certification_test, streams_without_primary_key, connector_config, docker_runner: ConnectorRunner
+        self, operational_certification_test, streams_without_primary_key, connector_config, docker_runner: ConnectorRunner
     ):
         output = await docker_runner.call_discover(config=connector_config)
         catalog_messages = filter_output(output, Type.CATALOG)
