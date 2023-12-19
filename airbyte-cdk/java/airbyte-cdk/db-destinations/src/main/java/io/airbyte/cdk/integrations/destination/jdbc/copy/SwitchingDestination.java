@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * This class exists to make it easy to define a destination in terms of multiple other destination
  * implementations, switching between them based on the config provided.
  */
-public class SwitchingDestination<T extends Enum<T>> extends BaseConnector implements Destination {
+public class SwitchingDestination<T extends Enum<T>> extends BaseConnector<JsonNode> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SwitchingDestination.class);
 

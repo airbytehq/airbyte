@@ -12,7 +12,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Collection;
 import java.util.List;
 
-public interface Source extends Integration {
+public interface Source extends Integration<JsonNode> {
 
   /**
    * Discover the current schema in the source.

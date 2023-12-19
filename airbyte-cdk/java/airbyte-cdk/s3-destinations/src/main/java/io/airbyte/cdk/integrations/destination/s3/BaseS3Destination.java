@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseS3Destination extends BaseConnector implements Destination {
+public abstract class BaseS3Destination extends BaseConnector<JsonNode> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseS3Destination.class);
 

@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * methods on the integration. Keeps itself DRY for methods that are common between source and
  * destination.
  */
-public abstract class IntegrationRunner {
+public abstract class IntegrationRunner<CONFIG_TYPE> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunner.class);
 
@@ -69,7 +69,7 @@ public abstract class IntegrationRunner {
   private final IntegrationCliParser cliParser;
   protected final Consumer<AirbyteMessage> outputRecordCollector;
   protected final FeatureFlags featureFlags;
-  private static JsonSchemaValidator validator;
+  protected static JsonSchemaValidator validator;
 
   protected IntegrationRunner(final IntegrationCliParser cliParser,
                               final Consumer<AirbyteMessage> outputRecordCollector) {
@@ -103,7 +103,7 @@ public abstract class IntegrationRunner {
 
   protected abstract void check(final IntegrationConfig parsed) throws Exception;
 
-  protected final void check(JsonNode config) throws Exception {
+  protected final void check(CONFIG_TYPE config) throws Exception {
     try {
       validateConfig(getIntegration().spec().getConnectionSpecification(), config, "CHECK");
     } catch (final Exception e) {
@@ -275,8 +275,10 @@ public abstract class IntegrationRunner {
         Strings.join(List.of(thread.getStackTrace()), "\n        at "));
   }
 
-  protected static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
-    final Set<String> validationResult = validator.validate(schemaJson, objectJson);
+  protected abstract Set<String> runValidator(final JsonNode schemaJson, final CONFIG_TYPE config);
+
+  protected void validateConfig(final JsonNode schemaJson, final CONFIG_TYPE objectJson, final String operationType) throws Exception {
+    final Set<String> validationResult = runValidator(schemaJson, objectJson);
     if (!validationResult.isEmpty()) {
       throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ",
           operationType, validationResult));

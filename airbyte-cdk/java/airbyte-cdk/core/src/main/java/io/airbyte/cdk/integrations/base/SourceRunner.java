@@ -17,12 +17,13 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SourceRunner extends IntegrationRunner {
+public class SourceRunner extends IntegrationRunner<JsonNode> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceRunner.class);
 
@@ -153,6 +154,11 @@ public class SourceRunner extends IntegrationRunner {
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Producing messages for stream {}...", s));
     messageIterator.forEachRemaining(recordCollector);
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
+  }
+
+  @Override
+  protected Set<String> runValidator(final JsonNode schemaJson, final JsonNode objectJson) {
+    return validator.validate(schemaJson, objectJson);
   }
 
 }
