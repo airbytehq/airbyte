@@ -122,7 +122,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
-        account_id = job._edge_object.get("account_id")
+        account_id = job.edge_object.get("account_id")
         try:
             for obj in job.get_result():
                 data = obj.export_all_data()
