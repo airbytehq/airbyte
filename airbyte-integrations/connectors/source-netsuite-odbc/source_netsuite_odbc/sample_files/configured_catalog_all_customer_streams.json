@@ -392,71 +392,6 @@
     },
     {
       "stream": {
-        "name": "Partner",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "altemail": { "type": ["string", "null"] },
-            "altname": { "type": ["string", "null"] },
-            "category": { "type": ["string", "null"] },
-            "class": { "type": ["integer", "null"] },
-            "comments": { "type": ["string", "null"] },
-            "companyname": { "type": ["string", "null"] },
-            "contact": { "type": ["integer", "null"] },
-            "contactlist": { "type": ["string", "null"] },
-            "datecreated": {
-              "type": ["string", "null"],
-              "format": "date-time"
-            },
-            "defaultbillingaddress": { "type": ["integer", "null"] },
-            "defaultshippingaddress": { "type": ["integer", "null"] },
-            "defaulttaxreg": { "type": ["integer", "null"] },
-            "department": { "type": ["integer", "null"] },
-            "duplicate": { "type": ["string", "null"] },
-            "email": { "type": ["string", "null"] },
-            "emailpreference": { "type": ["string", "null"] },
-            "entityid": { "type": ["string", "null"] },
-            "entitynumber": { "type": ["integer", "null"] },
-            "entitytitle": { "type": ["string", "null"] },
-            "externalid": { "type": ["string", "null"] },
-            "fax": { "type": ["string", "null"] },
-            "firstname": { "type": ["string", "null"] },
-            "giveaccess": { "type": ["string", "null"] },
-            "globalsubscriptionstatus": { "type": ["integer", "null"] },
-            "homephone": { "type": ["string", "null"] },
-            "id": { "type": ["integer", "null"] },
-            "isinactive": { "type": ["string", "null"] },
-            "isperson": { "type": ["string", "null"] },
-            "lastmodifieddate": {
-              "type": ["string", "null"],
-              "format": "date-time"
-            },
-            "lastname": { "type": ["string", "null"] },
-            "location": { "type": ["integer", "null"] },
-            "middlename": { "type": ["string", "null"] },
-            "mobilephone": { "type": ["string", "null"] },
-            "parent": { "type": ["integer", "null"] },
-            "partnercode": { "type": ["string", "null"] },
-            "phone": { "type": ["string", "null"] },
-            "phoneticname": { "type": ["string", "null"] },
-            "printoncheckas": { "type": ["string", "null"] },
-            "salutation": { "type": ["string", "null"] },
-            "subpartnerlogin": { "type": ["string", "null"] },
-            "title": { "type": ["string", "null"] },
-            "url": { "type": ["string", "null"] }
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["lastmodifieddate"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append_dedup"
-    },
-    {
-      "stream": {
         "name": "consolidatedExchangeRate",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
@@ -544,7 +479,7 @@
         "default_cursor_field": ["lastmodifieddate"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"
     },
     {
@@ -688,7 +623,7 @@
         "default_cursor_field": ["lastmodifieddate"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"
     },
     {
@@ -862,7 +797,7 @@
         "default_cursor_field": ["lastmodifieddate"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"
     },
     {
@@ -927,7 +862,7 @@
         "default_cursor_field": ["lastmodifieddate"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"
     },
     {
@@ -993,7 +928,7 @@
         "default_cursor_field": ["lastmodifieddate"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"
     },
     {
@@ -1167,7 +1102,7 @@
         "default_cursor_field": ["lastmodifieddate"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"
     }
   ]

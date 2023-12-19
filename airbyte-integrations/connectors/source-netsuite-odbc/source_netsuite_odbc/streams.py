@@ -10,21 +10,25 @@ from airbyte_cdk.models import (
     AirbyteStateType,
     AirbyteStreamState,
     StreamDescriptor,
+    FailureType,
 )
 import pyodbc
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from dateutil import parser
 
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
 # AirbyteMessage: An AirbyteMessage. Could be of any type
 StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
-NETSUITE_PAGINATION_INTERVAL: Final[int] = 10000
+NETSUITE_PAGINATION_INTERVAL: Final[int] = 10
 EARLIEST_DATE: Final[str] = date(2020, 1, 1)
 YEARS_FORWARD_LOOKING: Final[int] = 1
 # Sometimes, system created accounts can have primary key values < 0.  To be safe, we choose
 # an arbitrary value of -10000 as the starting value for our primary key
 STARTING_PRIMARY_KEY_VALUE: Final[int] = -10000
 
+GENERATING_INCREMENTAL_QUERY_WITH_NO_INCREMENTAL_COLUMN_ERROR: Final[str] = "We should not be generating an incremental query unless an incremental column exists."
 
 
 class NetsuiteODBCStream(Stream):
@@ -92,7 +96,7 @@ class NetsuiteODBCStream(Stream):
       stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
       self.process_stream_state(stream_state)
-      self.db_connection.execute(self.generate_ordered_query(stream_slice))
+      self.db_connection.execute(self.generate_query(sync_mode, stream_slice))
       number_records = 0
       while True:
         row = self.db_connection.fetchone()
@@ -100,14 +104,14 @@ class NetsuiteODBCStream(Stream):
           break
         # if number of rows >= page limit, we need to fetch another page
         elif not row:
-          self.logger.info(f"Fetching another page for the stream {self.table_name}.  Current primary key is {str(self.primary_key_last_value_seen)}")
+          self.logger.info(f"Fetching another page for the stream {self.table_name}.  Current state is (primary key: {str(self.primary_key_last_value_seen)}, date: {self.incremental_most_recent_value_seen}")
           number_records = 0
-          self.db_connection.execute(self.generate_ordered_query(stream_slice))
+          self.db_connection.execute(self.generate_query(sync_mode, stream_slice))
           continue
         # data from netsuite does not include columns, so we need to assign each value to the correct column name
         serialized_data = self.serialize_row_to_response(row)
         # before we yield record, update state
-        self.update_last_values_seen(serialized_data)
+        self.update_last_values_seen(serialized_data, sync_mode)
         self.find_most_recent_date(serialized_data)
         number_records = number_records + 1
         #yield response
@@ -126,7 +130,7 @@ class NetsuiteODBCStream(Stream):
         else:
           self.incremental_most_recent_value_seen = max(self.incremental_most_recent_value_seen, date_value_received)
 
-    def update_last_values_seen(self, result):
+    def update_last_values_seen(self, result, sync_mode: SyncMode):
       if self.primary_key_column is None:
         return
       for key in self.primary_key_column:
@@ -139,7 +143,31 @@ class NetsuiteODBCStream(Stream):
 
     def has_composite_primary_key(self):
       return len(self.primary_key_column) > 1
+    
+    def generate_query(self, sync_mode, stream_slice):
+      if sync_mode == SyncMode.full_refresh:
+        return self.generate_full_refresh_query(stream_slice)
+      elif sync_mode == SyncMode.incremental:
+        return self.generate_incremental_query(stream_slice)
+      else:
+        raise Exception(f'Unsupported Sync Mode: {sync_mode}.  Please use either "full_refresh" or "incremental"')
 
+    def generate_full_refresh_query(self, stream_slice):
+      values = ', '.join(self.properties) # we use values instead of '*' because we want to preserve the order of the columns
+      incremental_column_sorter = f", {self.incremental_column} ASC" if self.incremental_column else ""
+      # per https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_156257805177.html#subsect_156330163819
+      # date literals need to be wrapped in a to_date function
+      incremental_column_filter = f"{self.incremental_column} >= to_timestamp('{stream_slice['first_day']}', 'YYYY-MM-DD') AND {self.incremental_column} <= to_timestamp('{stream_slice['last_day']}', 'YYYY-MM-DD')" if self.incremental_column else ""
+      primary_key_filter = self.generate_primary_key_filter()
+      primary_key_sorter = self.generate_primary_key_sorter()
+      and_connector = " AND " if primary_key_filter != "" and incremental_column_filter != "" else ""
+      where_clause = "WHERE " if primary_key_filter != "" or incremental_column_filter != "" else ""
+      query = f"""
+        SELECT TOP {NETSUITE_PAGINATION_INTERVAL} {values} FROM {self.table_name} 
+        {where_clause}{primary_key_filter}{and_connector}{incremental_column_filter}
+        ORDER BY {primary_key_sorter}""" + incremental_column_sorter
+      return query
+    
     def generate_primary_key_filter(self):
       primary_key_filter = ""
       # primary keys can be composite!  To deal with this, we add filters for each column
@@ -169,22 +197,40 @@ class NetsuiteODBCStream(Stream):
           primary_key_sorter = primary_key_sorter + ", "
         primary_key_sorter = primary_key_sorter + f"{key} ASC"
       return primary_key_sorter
+    
 
-    def generate_ordered_query(self, stream_slice):
+    def generate_incremental_query(self, stream_slice):
+      if self.incremental_column is None:
+        raise AirbyteTracedException.from_exception(message=GENERATING_INCREMENTAL_QUERY_WITH_NO_INCREMENTAL_COLUMN_ERROR, failure_type=FailureType.system_error)
       values = ', '.join(self.properties) # we use values instead of '*' because we want to preserve the order of the columns
-      incremental_column_sorter = f", {self.incremental_column} ASC" if self.incremental_column else ""
+      incremental_column_sorter = f"{self.incremental_column} ASC" if self.incremental_column else ""
+      incremental_filter = self.generate_incremental_filter_for_incremental_refresh(stream_slice)
+      primary_key_filter = self.generate_primary_key_filter_for_incremental_refresh(stream_slice)
+      primary_key_sorter = self.generate_primary_key_sorter()
+      query = f"""
+        SELECT TOP {NETSUITE_PAGINATION_INTERVAL} {values} FROM {self.table_name}
+        WHERE {incremental_filter} OR {primary_key_filter}
+        ORDER BY {incremental_column_sorter}, {primary_key_sorter}
+      """
+      print(query)
+      return query
+    
+    def generate_primary_key_filter_for_incremental_refresh(self, stream_slice):
+      primary_key_filter = self.generate_primary_key_filter()
+      starting_timestamp = self.incremental_most_recent_value_seen if self.incremental_most_recent_value_seen is not None else stream_slice['first_day']
+      starting_timestamp = parser.parse(str(starting_timestamp)).strftime('%Y-%m-%d %H:%M:%S.%f')
+      return f"({self.incremental_column} = to_timestamp('{starting_timestamp}', 'YYYY-MM-DD HH24:MI:SS.FF') AND {primary_key_filter})"
+    
+    def generate_incremental_filter_for_incremental_refresh(self, stream_slice):
       # per https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_156257805177.html#subsect_156330163819
       # date literals need to be wrapped in a to_date function
-      incremental_column_filter = f"{self.incremental_column} >= to_timestamp('{stream_slice['first_day']}', 'YYYY-MM-DD') AND {self.incremental_column} <= to_timestamp('{stream_slice['last_day']}', 'YYYY-MM-DD')" if self.incremental_column else ""
-      primary_key_filter = self.generate_primary_key_filter()
-      primary_key_sorter = self.generate_primary_key_sorter()
-      and_connector = " AND " if primary_key_filter != "" and incremental_column_filter != "" else ""
-      where_clause = "WHERE " if primary_key_filter != "" or incremental_column_filter != "" else ""
-      query = f"""
-        SELECT TOP {NETSUITE_PAGINATION_INTERVAL} {values} FROM {self.table_name} 
-        {where_clause}{primary_key_filter}{and_connector}{incremental_column_filter}
-        ORDER BY {primary_key_sorter}""" + incremental_column_sorter
-      return query
+      if self.incremental_column is None:
+        raise AirbyteTracedException.from_exception(message=GENERATING_INCREMENTAL_QUERY_WITH_NO_INCREMENTAL_COLUMN_ERROR, failure_type=FailureType.system_error)
+      starting_timestamp = self.incremental_most_recent_value_seen if self.incremental_most_recent_value_seen is not None else stream_slice['first_day']
+      starting_timestamp = parser.parse(str(starting_timestamp)).strftime('%Y-%m-%d %H:%M:%S.%f')
+      ending_timestamp = parser.parse(str(stream_slice['last_day'])).strftime('%Y-%m-%d %H:%M:%S.%f')
+      return f"({self.incremental_column} > to_timestamp('{starting_timestamp}', 'YYYY-MM-DD HH24:MI:SS.FF') AND {self.incremental_column} <= to_timestamp('{ending_timestamp}', 'YYYY-MM-DD HH24:MI:SS.FF'))"
+    
   
     def serialize_row_to_response(self, row):
       response = {}

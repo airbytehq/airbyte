@@ -19,14 +19,14 @@ class SourceNetsuiteOdbc(AbstractSource):
     
     def streams(self, config: Mapping[str, Any]) -> Iterable[Stream]:
         cursor_constructor = NetsuiteODBCCursorConstructor()
-        cursor = cursor_constructor.create_database_connection(config)
-        discoverer = NetsuiteODBCTableDiscoverer(cursor)
+        db_connection = cursor_constructor.create_database_connection(config)
+        discoverer = NetsuiteODBCTableDiscoverer(db_connection)
         streams = discoverer.get_streams()
         number_streams = 0
         for stream in streams:
             stream_name = stream.name
             number_streams = number_streams + 1
-            netsuite_stream = NetsuiteODBCStream(cursor=cursor, table_name=stream_name, stream=stream)
+            netsuite_stream = NetsuiteODBCStream(db_connection=db_connection, table_name=stream_name, stream=stream)
             yield netsuite_stream
         self.logger.info(f"Finished generating streams.  Discovered {number_streams} streams.")
     
@@ -43,10 +43,10 @@ class SourceNetsuiteOdbc(AbstractSource):
         """
         try:
             cursor_constructor = NetsuiteODBCCursorConstructor()
-            cursor = cursor_constructor.create_database_connection(config)
+            db_connection = cursor_constructor.create_database_connection(config)
 
-            cursor.execute("SELECT * FROM OA_TABLES")
-            cursor.fetchone()
+            db_connection.execute("SELECT * FROM OA_TABLES")
+            db_connection.fetchone()
             return True, None
         except Exception as e:
             logger.error(e)
