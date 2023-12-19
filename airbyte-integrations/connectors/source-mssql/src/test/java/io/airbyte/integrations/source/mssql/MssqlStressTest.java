@@ -14,8 +14,6 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcStressTest;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import java.sql.JDBCType;
@@ -93,7 +91,6 @@ public class MssqlStressTest extends JdbcStressTest {
   @Override
   public AbstractJdbcSource<JDBCType> getSource() {
     final MssqlSource source = new MssqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
     return source;
   }
 

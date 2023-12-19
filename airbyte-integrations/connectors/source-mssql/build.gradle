@@ -4,8 +4,8 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.7.5'
-    features = ['db-sources']
+    cdkVersionRequired = '0.8.0'
+    features = ['core', 'db-sources']
     useLocalCdk = false
 }
 
@@ -35,5 +35,6 @@ dependencies {
     testImplementation 'org.awaitility:awaitility:4.2.0'
 
     testImplementation libs.testcontainers.mssqlserver
+    testImplementation project(path: ':airbyte-cdk:java:airbyte-cdk:core')
     testFixturesImplementation libs.testcontainers.mssqlserver
 }
