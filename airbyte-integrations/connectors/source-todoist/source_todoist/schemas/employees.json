@@ -51,9 +51,6 @@
     "id": {
       "type": ["null", "string"]
     },
-    "duration": {
-      "type": ["null", "string"]
-    },
     "is_completed": {
       "type": ["null", "boolean"]
     },
