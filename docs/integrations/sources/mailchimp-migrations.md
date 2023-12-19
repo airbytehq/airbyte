@@ -4,9 +4,27 @@
 
 Version 1.0.0 of the Source Mailchimp connector introduces a number of breaking changes to the schemas of all incremental streams. A full schema refresh and data reset are required when upgrading to this version.
 
-### Changes
+### Upgrade steps
 
-- The `._links` field, which contained non-user relevant Mailchimp metadata, has been removed from all streams.
+1. Select **Connections** in the main navbar. 
+2. From the list of your existing connections, select the connection(s) affected by the update.
+3. Select the **Replication** tab, then select **Refresh source schema**.
+
+:::note
+Any detected schema changes will be listed for your review. Select **OK** when you are ready to proceed.
+:::
+
+4. At the bottom of the page, select **Save changes**. Ensure the **Reset all streams** option is checked.
+
+:::note
+Depending on the destination type, you may not be prompted to reset your data
+:::
+
+5. Select **Save connection**. This will reset the data in your destination (if applicable) and initiate a fresh sync.
+
+## Changes
+
+- The `._links` field, which contained non-user-relevant Mailchimp metadata, has been removed from all streams.
 - All instances of datetime fields have had their type changed from `string` to airbyte-type `timestamp-with-timezone`. This change should ensure greater precision and consistency in how datetime information is represented and processed by destinations.
 - The Mailchimp API returns many fields without data as empty strings. To accomodate the above changes, empty strings are now converted to null values:
 
