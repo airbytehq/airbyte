@@ -13,10 +13,11 @@ const fetchCatalog = async () => {
 
 const catalog = fetchCatalog();
 
-const toAttributes = (props) => Object.entries(props).map(([key, value]) => ({
-      type: "mdxJsxAttribute",
-      name: key,
-      value: value
+const toAttributes = (props) =>
+  Object.entries(props).map(([key, value]) => ({
+    type: "mdxJsxAttribute",
+    name: key,
+    value: value,
   }));
 
 const plugin = () => {
@@ -50,14 +51,16 @@ const plugin = () => {
         node.children = [];
         node.type = "mdxJsxFlowElement";
         node.name = "HeaderDecoration";
-        node.attributes =  toAttributes({
+        node.attributes = toAttributes({
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
           supportLevel: registryEntry.supportLevel_oss,
           dockerImageTag: registryEntry.dockerImageTag_oss,
           iconUrl: registryEntry.iconUrl_oss,
+          github_url: registryEntry.github_url,
+          issue_url: registryEntry.issue_url,
           originalTitle,
-          originalId
+          originalId,
         });
       }
     });
