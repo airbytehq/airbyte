@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 public class PostgresDestinationSSLFullCertificateAcceptanceTest extends AbstractPostgresDestinationAcceptanceTest {
 
   private PostgresTestDatabase testDb;
-  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -30,10 +29,8 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends Abstrac
         .withResolvedHostAndPort()
         .withCredentials()
         .withSsl(ImmutableMap.builder()
-            .put("mode", "verify-ca")
+            .put("mode", "verify-ca") //verify-full will not work since the spawned container is only allowed for 127.0.0.1/32 CIDRs
             .put("ca_certificate", testDb.getCertificates().caCertificate())
-            // .put("client_certificate", testDb.getCertificates().clientCertificate())
-            // .put("client_key", testDb.getCertificates().clientKey())
             .build())
         .build();
   }
@@ -53,11 +50,9 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends Abstrac
     testDb.close();
   }
 
-  @Test
-  @Disabled
-  @Override
-  public void testCustomDbtTransformations() {
-
+  @Disabled("Custom DBT does not have root certificate created in the Postgres container.")
+  public void testCustomDbtTransformations() throws Exception {
+    super.testCustomDbtTransformations();
   }
 
 }
