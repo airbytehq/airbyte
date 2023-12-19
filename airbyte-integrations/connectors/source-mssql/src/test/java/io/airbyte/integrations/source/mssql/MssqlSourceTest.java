@@ -42,9 +42,7 @@ class MssqlSourceTest {
   private MsSQLTestDatabase testdb;
 
   private MssqlSource source() {
-    final MssqlSource source = new MssqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new MssqlSource();
   }
 
   // how to interact with the mssql test container manaully.

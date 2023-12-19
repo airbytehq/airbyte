@@ -128,7 +128,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
                 {
                     "content": None,
                     "document_key": FILE_URI,
-                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=path/to/file.xyz message=File type FileType.CSV is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX",
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=path/to/file.xyz message=File type FileType.CSV is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX, FileType.TXT",
                 }
             ],
             False,

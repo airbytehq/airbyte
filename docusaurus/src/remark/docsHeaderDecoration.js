@@ -39,11 +39,14 @@ const plugin = () => {
 
     if (!registryEntry) return;
 
+    let firstHeading = true;
+
     visit(ast, "heading", (node) => {
-      if (node.depth === 1 && node.children.length === 1) {
+      if (firstHeading && node.depth === 1 && node.children.length === 1) {
         const originalTitle = node.children[0].value;
         const originalId = node.data.hProperties.id;
 
+        firstHeading = false;
         node.children = [];
         node.type = "mdxJsxFlowElement";
         node.name = "HeaderDecoration";
