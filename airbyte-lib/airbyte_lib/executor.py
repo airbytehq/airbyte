@@ -131,4 +131,3 @@ class PathExecutor(Executor):
     @contextmanager
     def execute(self, args: List[str]) -> IO[str]:
         return _stream_from_subprocess([self.metadata.name] + args)
-
