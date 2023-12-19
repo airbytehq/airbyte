@@ -205,4 +205,5 @@ public class PostgresUtils {
       LOGGER.info("Failed to force LSN advancement by creating & dropping an ephemeral heartbeat aggregate.");
     }
   }
+
 }
