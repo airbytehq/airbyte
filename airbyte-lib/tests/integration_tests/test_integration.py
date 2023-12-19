@@ -96,3 +96,17 @@ def test_peek_nonexisting_stream():
 
     with pytest.raises(Exception):
         source.peek("non-existing")
+
+def test_failing_path_connector():
+    with pytest.raises(Exception):
+        ab.get_connector("source-test", config={"apiKey": "test"}, auto_install=False)
+
+def test_succeeding_path_connector():
+    old_path = os.environ["PATH"]
+
+    # set path to include the test venv bin folder
+    os.environ["PATH"] = f"{os.path.abspath('.venv-source-test/bin')}:{os.environ['PATH']}"
+    source = ab.get_connector("source-test", config={"apiKey": "test"}, auto_install=False)
+    source.check()
+
+    os.environ["PATH"] = old_path

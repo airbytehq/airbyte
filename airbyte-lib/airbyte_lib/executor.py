@@ -26,6 +26,39 @@ class Executor(ABC):
         pass
 
 
+def _stream_from_subprocess(args: List[str]) -> IO[str]:
+    process = subprocess.Popen(
+        args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+    )
+
+    try:
+        yield process.stdout
+    finally:
+        # Close the stdout stream
+        if process.stdout:
+            process.stdout.close()
+
+        # Terminate the process if it is still running
+        if process.poll() is None:  # Check if the process is still running
+            process.terminate()
+            try:
+                # Wait for a short period to allow process to terminate gracefully
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                # If the process does not terminate within the timeout, force kill it
+                process.kill()
+
+        # Now, the process is either terminated or killed. Check the exit code.
+        exit_code = process.wait()
+
+        # If the exit code is not 0 or -15 (SIGTERM), raise an exception
+        if exit_code != 0 and exit_code != -15:
+            raise Exception(f"Process exited with code {exit_code}")
+
+
 class VenvExecutor(Executor):
     def _get_venv_name(self):
         return f".venv-{self.metadata.name}"
@@ -85,33 +118,16 @@ class VenvExecutor(Executor):
     def execute(self, args: List[str]) -> IO[str]:
         connector_path = self._get_connector_path()
 
-        process = subprocess.Popen(
-            [str(connector_path)] + args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
-        )
+        return _stream_from_subprocess([str(connector_path)] + args)
 
+
+class PathExecutor(Executor):
+    def ensure_installation(self):
         try:
-            yield process.stdout
-        finally:
-            # Close the stdout stream
-            if process.stdout:
-                process.stdout.close()
+            self.execute(["spec"])
+        except Exception as e:
+            raise Exception(f"Connector {self.metadata.name} is not available - executing it failed: {e}")
 
-            # Terminate the process if it is still running
-            if process.poll() is None:  # Check if the process is still running
-                process.terminate()
-                try:
-                    # Wait for a short period to allow process to terminate gracefully
-                    process.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    # If the process does not terminate within the timeout, force kill it
-                    process.kill()
-
-            # Now, the process is either terminated or killed. Check the exit code.
-            exit_code = process.wait()
-
-            # If the exit code is not 0 or -15 (SIGTERM), raise an exception
-            if exit_code != 0 and exit_code != -15:
-                raise Exception(f"Process exited with code {exit_code}")
+    @contextmanager
+    def execute(self, args: List[str]) -> IO[str]:
+        return _stream_from_subprocess([self.metadata.name] + args)
