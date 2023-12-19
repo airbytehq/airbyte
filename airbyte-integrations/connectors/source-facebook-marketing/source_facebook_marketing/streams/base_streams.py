@@ -224,10 +224,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
     def state(self) -> Mapping[str, Any]:
         """State getter, get current state and serialize it to emmit Airbyte STATE message"""
         if self._cursor_value:
-            return {
-                self.cursor_field: self._cursor_value,
-                "include_deleted": self._include_deleted,
-            }
+            return self._cursor_value
 
         return {}
 
@@ -254,30 +251,22 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """Main read method used by CDK
-        - save initial state
-        - save maximum value (it is the first one)
-        - update state only when we reach the end
-        - stop reading when we reached the end
-        """
+        """Main read method used by CDK"""
         try:
             account_id = stream_slice.get("account").get("account_id")
-            records_iter = self.list_objects(params=self.request_params(stream_state=stream_state, stream_slice=stream_slice), stream_slice=stream_slice)
-            for record in records_iter:
-                record_cursor_value = pendulum.parse(record[self.cursor_field])
-                cursor_value = None
-                if self._cursor_value:
-                    cursor_value = pendulum.parse(self._cursor_value.get(account_id).get(self.cursor_field))
-                if cursor_value and record_cursor_value < cursor_value:
-                    break
-                if not self._include_deleted and self.get_record_deleted_status(record):
-                    continue
-
-                self._max_cursor_value = max(self._max_cursor_value, record_cursor_value) if self._max_cursor_value else record_cursor_value
-                record = record.export_all_data()
-                self.fix_date_time(record)
-                yield record
-
-            self._cursor_value[account_id][cursor_field] = self._max_cursor_value
+            stream_cursor_value = pendulum.datetime(1970, 1, 1)
+            try:
+                stream_cursor_value = pendulum.parse(self._cursor_value.get(account_id, {}).get(self.cursor_field, {}))
+            except Exception as e:
+                print(e)
+            for record in self.list_objects(stream_slice=stream_slice,
+                                            params=self.request_params(stream_slice=stream_slice,
+                                                                       stream_state=stream_state)):
+                record_cursor_value = pendulum.parse(record.get(self.cursor_field))
+                if record_cursor_value > stream_cursor_value:
+                    if isinstance(record, AbstractObject):
+                        record = record.export_all_data()  # convert FB object to dict
+                    self.fix_date_time(record)
+                    yield record
         except FacebookRequestError as exc:
             raise traced_exception(exc)
