@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Add a Source
 
 Setting up a new source in Airbyte is a quick and simple process! When viewing the Airbyte UI, you'll see the main navigation bar on the left side of your screen. Click the **Sources** tab to bring up a list of all available sources.
