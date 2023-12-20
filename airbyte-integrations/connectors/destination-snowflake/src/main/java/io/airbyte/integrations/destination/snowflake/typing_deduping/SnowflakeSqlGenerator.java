@@ -104,6 +104,11 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     };
   }
 
+  public String createSchema(final String schema) {
+    return new StringSubstitutor(Map.of("schema", StringUtils.wrap(schema, QUOTE)))
+        .replace("CREATE SCHEMA IF NOT EXISTS ${schema};");
+  }
+
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
     final String columnDeclarations = stream.columns().entrySet().stream()
@@ -112,13 +117,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final String forceCreateTable = force ? "OR REPLACE" : "";
 
     return new StringSubstitutor(Map.of(
-        "final_namespace", stream.id().finalNamespace(QUOTE),
         "final_table_id", stream.id().finalTableId(QUOTE, suffix.toUpperCase()),
         "force_create_table", forceCreateTable,
         "column_declarations", columnDeclarations)).replace(
             """
-            CREATE SCHEMA IF NOT EXISTS ${final_namespace};
-
             CREATE ${force_create_table} TABLE ${final_table_id} (
               "_AIRBYTE_RAW_ID" TEXT NOT NULL,
               "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
@@ -491,7 +493,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     // In the SQL below, the v2 values are quoted to preserve their case while the v1 values are
     // intentionally _not_ quoted. This is to preserve the implicit upper-casing behavior in v1.
     return new StringSubstitutor(Map.of(
-        "raw_namespace", StringUtils.wrap(streamId.rawNamespace(), QUOTE),
         "raw_table_name", streamId.rawTableId(QUOTE),
         "raw_id", JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
         "extracted_at", JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
@@ -502,8 +503,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "v1_raw_table", String.join(".", namespace, tableName)))
             .replace(
                 """
-                CREATE SCHEMA IF NOT EXISTS ${raw_namespace};
-
                 CREATE OR REPLACE TABLE ${raw_table_name} (
                   "${raw_id}" VARCHAR PRIMARY KEY,
                   "${extracted_at}" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
