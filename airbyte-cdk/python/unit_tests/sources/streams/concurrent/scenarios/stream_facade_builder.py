@@ -14,11 +14,12 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageReposi
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
-from airbyte_cdk.sources.streams.concurrent.state_converter import EpochValueConcurrentStreamStateConverter
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import NeverLogSliceLogger
 
+_CURSOR_FIELD = "cursor_field"
 _NO_STATE = None
 
 
@@ -50,17 +51,19 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in self._streams}, state=self._state)
-        state_converter = StreamFacadeConcurrentConnectorStateConverter("created")
+        state_converter = StreamFacadeConcurrentConnectorStateConverter()
+        stream_states = [state_converter.get_concurrent_stream_state(self._cursor_field, state_manager.get_stream_state(stream.name, stream.namespace))
+                         for stream in self._streams]
         return [
             StreamFacade.create_from_stream(
                 stream,
                 self,
                 stream.logger,
-                state_converter.get_concurrent_stream_state(state_manager.get_stream_state(stream.name, stream.namespace)),
+                state,
                 ConcurrentCursor(
                     stream.name,
                     stream.namespace,
-                    state_converter.get_concurrent_stream_state(state_manager.get_stream_state(stream.name, stream.namespace)),
+                    state,
                     self.message_repository,  # type: ignore  # for this source specifically, we always return `InMemoryMessageRepository`
                     state_manager,
                     state_converter,
@@ -70,7 +73,7 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
                 if self._cursor_field
                 else NoopCursor(),
             )
-            for stream in self._streams
+            for stream, state in zip(self._streams, stream_states)
         ]
 
     @property
