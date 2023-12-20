@@ -1,0 +1,26 @@
+name: Connector Code freeze
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+
+jobs:
+  code-freeze-check:
+    name: Connector code freeze check
+
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Get changed files
+        uses: tj-actions/changed-files@v39
+        with:
+          files_yaml: |
+            connectors:
+              - 'airbyte-integration/connectors/**'
+              - '!**/*.md'
+      - name: Fail workflow if connector files was changed
+        if: steps.changes.outputs.connectors_any_changed == 'true'
+        run: echo "Connector code freeze is in effect. Please contact the current OC engineers if you want to merge this change." && exit 1
