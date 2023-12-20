@@ -36,17 +36,9 @@ class ThreadPoolManager:
 
     def submit(self, function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
-        self._wait_while_too_many_pending_futures(self._futures)
+        self._prune_futures(self._futures)
         self._futures.append(self._threadpool.submit(function, *args))
 
-    def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
-        # Wait until the number of pending tasks is < self._max_concurrent_tasks
-        while True:
-            self._prune_futures(futures)
-            if len(futures) < self._max_concurrent_tasks:
-                break
-            self._logger.info("Main thread is sleeping because the task queue is full...")
-            time.sleep(self._sleep_time)
 
     def _prune_futures(self, futures: List[Future[Any]]) -> None:
         """
@@ -60,12 +52,12 @@ class ThreadPoolManager:
 
         for index in reversed(range(len(futures))):
             future = futures[index]
-            optional_exception = future.exception()
-            if optional_exception:
-                exception = RuntimeError(f"Failed reading with error: {optional_exception}")
-                self._stop_and_raise_exception(exception)
 
             if future.done():
+                optional_exception = future.exception()
+                if optional_exception:
+                    exception = RuntimeError(f"Failed reading with error: {optional_exception}")
+                    self._stop_and_raise_exception(exception)
                 futures.pop(index)
 
     def shutdown(self) -> None:

@@ -3,6 +3,7 @@
 #
 
 from queue import Queue
+import time
 
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
@@ -13,11 +14,13 @@ class PartitionReader:
     Generates records from a partition and puts them in a queue.
     """
 
-    def __init__(self, queue: Queue[QueueItem]) -> None:
+    def __init__(self, queue: Queue[QueueItem], max_size: int, wait_time: float) -> None:
         """
         :param queue: The queue to put the records in.
         """
         self._queue = queue
+        self._max_size = max_size
+        self._wait_time = wait_time
 
     def process_partition(self, partition: Partition) -> None:
         """
@@ -32,6 +35,8 @@ class PartitionReader:
         """
         try:
             for record in partition.read():
+                while self._queue.qsize() > self._max_size:
+                    time.sleep(self._wait_time)
                 self._queue.put(record)
             self._queue.put(PartitionCompleteSentinel(partition))
         except Exception as e:
