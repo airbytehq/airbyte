@@ -340,7 +340,7 @@ class SessionTokenRequestBearerAuthenticator(BaseModel):
     type: Literal['Bearer']
 
 
-class HttpMethodEnum(Enum):
+class HttpMethod(Enum):
     GET = 'GET'
     POST = 'POST'
 
@@ -1198,8 +1198,8 @@ class HttpRequester(BaseModel):
         description='Error handler component that defines how to handle errors.',
         title='Error Handler',
     )
-    http_method: Optional[Union[str, HttpMethodEnum]] = Field(
-        HttpMethodEnum.GET,
+    http_method: Optional[HttpMethod] = Field(
+        HttpMethod.GET,
         description='The HTTP method used to fetch data from the source (can be GET or POST).',
         examples=['GET', 'POST'],
         title='HTTP Method',
