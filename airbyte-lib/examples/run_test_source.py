@@ -22,4 +22,5 @@ print(source.get_available_streams())
 
 result = source.read_all(cache)
 
-print(result.cache.streams)
+print(result.processed_records)
+print(list(result["stream1"]))

@@ -245,7 +245,7 @@ class Source:
             self._processed_records += 1
             yield message
 
-    def read_all(self, cache: Optional[Cache]) -> SyncResult:
+    def read_all(self, cache: Optional[Cache] = None) -> SyncResult:
         if cache is None:
             cache = InMemoryCache()
         cache.write(self._process(self._read()))

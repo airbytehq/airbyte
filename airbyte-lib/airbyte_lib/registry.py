@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import importlib.metadata
 import json
 import os
 from dataclasses import dataclass
@@ -15,6 +16,7 @@ class ConnectorMetadata:
 
 
 _cache: Optional[Dict[str, ConnectorMetadata]] = None
+airbyte_lib_version = importlib.metadata.version("airbyte-lib")
 
 REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 
@@ -25,7 +27,7 @@ def _update_cache() -> None:
         with open(str(os.environ.get("AIRBYTE_LOCAL_REGISTRY")), "r") as f:
             data = json.load(f)
     else:
-        response = requests.get(REGISTRY_URL)
+        response = requests.get(REGISTRY_URL, headers={"User-Agent": f"airbyte-lib-{airbyte_lib_version}"})
         response.raise_for_status()
         data = response.json()
     _cache = {}
