@@ -135,12 +135,16 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  protected List<Field<?>> extractRawDataFields(LinkedHashMap<ColumnId, AirbyteType> columns) {
+  protected List<Field<?>> extractRawDataFields(final LinkedHashMap<ColumnId, AirbyteType> columns) {
+    throw new IllegalStateException("THIS IS A TEST of internal tooling. You should NOT see this in production. If you do, contact Cynthia/Destinations immediately.");
+
+    /*
     return columns
         .entrySet()
         .stream()
         .map(column -> castedField(field(quotedName(COLUMN_NAME_DATA, column.getKey().originalName())), column.getValue(), column.getKey().name()))
         .collect(Collectors.toList());
+     */
   }
 
   private Field<String> jsonTypeOf(final Field<?> field) {
@@ -157,7 +161,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * @param arrays
    * @return
    */
-  Field<?> arrayConcatStmt(List<Field<?>> arrays) {
+  Field<?> arrayConcatStmt(final List<Field<?>> arrays) {
     if (arrays.isEmpty()) {
       return field("ARRAY()"); // Return an empty string if the list is empty
     }
@@ -168,8 +172,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     }
 
     // Recursive case: construct ARRAY_CONCAT function call
-    Field<?> lastValue = arrays.get(arrays.size() - 1);
-    Field<?> recursiveCall = arrayConcatStmt(arrays.subList(0, arrays.size() - 1));
+    final Field<?> lastValue = arrays.get(arrays.size() - 1);
+    final Field<?> recursiveCall = arrayConcatStmt(arrays.subList(0, arrays.size() - 1));
 
     return function("ARRAY_CONCAT", getSuperType(), recursiveCall, lastValue);
   }
@@ -227,7 +231,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * @return
    */
   @Override
-  protected Field<Integer> getRowNumber(List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
+  protected Field<Integer> getRowNumber(final List<ColumnId> primaryKeys, final Optional<ColumnId> cursor) {
     final List<Field<?>> primaryKeyFields =
         primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList())
             : new ArrayList<>();
@@ -255,7 +259,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  public boolean shouldRetry(Exception e) {
+  public boolean shouldRetry(final Exception e) {
     return false;
   }
 
