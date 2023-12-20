@@ -362,7 +362,7 @@ class HttpResponseFilter(BaseModel):
     )
     error_message: Optional[str] = Field(
         None,
-        description=' Error Message to display if the response matches the filter.',
+        description='Error Message to display if the response matches the filter.',
         title='Error Message',
     )
     error_message_contains: Optional[str] = Field(
