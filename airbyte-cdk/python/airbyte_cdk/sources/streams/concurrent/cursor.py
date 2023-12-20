@@ -84,7 +84,7 @@ class ConcurrentCursor(Cursor):
         self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
         self._most_recent_record: Optional[Record] = None
         self._has_closed_at_least_one_slice = False
-        self._state = stream_state
+        self.state = stream_state
 
     def observe(self, record: Record) -> None:
         if self._slice_boundary_fields:
@@ -100,18 +100,18 @@ class ConcurrentCursor(Cursor):
         return self._connector_state_converter.parse_value(self._cursor_field.extract_value(record))
 
     def close_partition(self, partition: Partition) -> None:
-        slice_count_before = len(self._state.get("slices", []))
+        slice_count_before = len(self.state.get("slices", []))
         self._add_slice_to_state(partition)
-        if slice_count_before < len(self._state["slices"]):
+        if slice_count_before < len(self.state["slices"]):
             self._merge_partitions()
             self._emit_state_message()
         self._has_closed_at_least_one_slice = True
 
     def _add_slice_to_state(self, partition: Partition) -> None:
         if self._slice_boundary_fields:
-            if "slices" not in self._state:
-                self._state["slices"] = []
-            self._state["slices"].append(
+            if "slices" not in self.state:
+                self.state["slices"] = []
+            self.state["slices"].append(
                 {
                     "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
                     "end": self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
@@ -124,7 +124,7 @@ class ConcurrentCursor(Cursor):
                     "expected."
                 )
 
-            self._state["slices"].append(
+            self.state["slices"].append(
                 {
                     # TODO: if we migrate stored state to the concurrent state format, we may want this to be the config start date
                     #  instead of zero_value.
@@ -137,7 +137,7 @@ class ConcurrentCursor(Cursor):
         self._connector_state_manager.update_state_for_stream(
             self._stream_name,
             self._stream_namespace,
-            self._connector_state_converter.convert_to_sequential_state(self._cursor_field, self._state),
+            self._connector_state_converter.convert_to_sequential_state(self._cursor_field, self.state),
         )
         # TODO: if we migrate stored state to the concurrent state format
         #  (aka stop calling self._connector_state_converter.convert_to_sequential_state`), we'll need to cast datetimes to string or
@@ -148,7 +148,7 @@ class ConcurrentCursor(Cursor):
         self._message_repository.emit_message(state_message)
 
     def _merge_partitions(self) -> None:
-        self._state["slices"] = self._connector_state_converter.merge_intervals(self._state["slices"])
+        self.state["slices"] = self._connector_state_converter.merge_intervals(self.state["slices"])
 
     def _extract_from_slice(self, partition: Partition, key: str) -> Comparable:
         try:

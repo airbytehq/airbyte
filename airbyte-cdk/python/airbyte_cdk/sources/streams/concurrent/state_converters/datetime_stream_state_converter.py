@@ -148,7 +148,7 @@ class EpochValueConcurrentStreamStateConverter(DateTimeStreamStateConverter):
 
     _zero_value = 0
 
-    def increment(self, timestamp: datetime) -> Any:
+    def increment(self, timestamp: datetime) -> datetime:
         return timestamp + timedelta(seconds=1)
 
     def output_format(self, timestamp: datetime) -> int:
@@ -177,7 +177,7 @@ class IsoMillisConcurrentStreamStateConverter(DateTimeStreamStateConverter):
 
     _zero_value = "0001-01-01T00:00:00.000Z"
 
-    def increment(self, timestamp: datetime) -> Any:
+    def increment(self, timestamp: datetime) -> datetime:
         return timestamp + timedelta(milliseconds=1)
 
     def output_format(self, timestamp: datetime) -> Any:

@@ -177,11 +177,11 @@ class StreamFacade(Stream):
         try:
             yield from self._read_records()
         except Exception as exc:
-            if hasattr(self._cursor, "_state"):
-                state = self._cursor._state
+            if hasattr(self._cursor, "state"):
+                state = self._cursor.state
             else:
                 # This shouldn't happen if the ConcurrentCursor was used
-                state = "unknown; no _state attribute was available on the cursor"
+                state = "unknown; no state attribute was available on the cursor"
             yield AirbyteMessage(
                 type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=f"Cursor State at time of exception: {state}")
             )
