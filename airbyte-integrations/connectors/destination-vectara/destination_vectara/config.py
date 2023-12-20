@@ -27,6 +27,14 @@ class VectaraConfig(BaseModel):
     )
     corpus_name: str = Field(..., title="Corpus Name", description="The Name of Corpus to load data into", order=3, group="account")
 
+    parallelize: Optional[bool] = Field(
+        default=False,
+        title="Parallelize", 
+        description="Parallelize indexing into Vectara with multiple threads", 
+        always_show=True,
+        group="account"
+    )
+
     text_fields: Optional[List[str]] = Field(
         default=[],
         title="Text fields to index with Vectara",
@@ -42,7 +50,6 @@ class VectaraConfig(BaseModel):
         examples=["age", "user"],
     )
 
-    parallelize: bool = Field(..., title="Parallelize", description="Parallelize Ingest with multiple threads", airbyte_secret=False, order=4)
 
     class Config:
         title = "Vectara Config"

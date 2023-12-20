@@ -27,7 +27,7 @@ Note that there are no restrictions in naming the Vectara corpus and if a corpus
 ## Getting started
 
 You will need a Vectara account to use Vectara with Airbyte. To get started, use the following steps:
-1. [Sign up](https://console.vectara.com/signup) for a Vectara account if you don't already have one. Once you have completed your sign up you will have a Vectara customer ID. You can find your customer ID by clicking on your name, on the top-right of the Vectara console window.
+1. [Sign up](https://vectara.com/integrations/airbyte) for a Vectara account if you don't already have one. Once you have completed your sign up you will have a Vectara customer ID. You can find your customer ID by clicking on your name, on the top-right of the Vectara console window.
 2. Within your account you can create your corpus, which represents an area that stores text data you want to ingest into Vectara. 
    * To create a corpus, use the **"Create Corpus"** button in the console. You then provide a name to your corpus as well as a description. If you click on your created corpus, you can see its name and corpus ID right on the top. You can see more details in this [guide](https://docs.vectara.com/docs/console-ui/creating-a-corpus).
    * Optionally you can define filtering attributes and apply some advanced options. 
