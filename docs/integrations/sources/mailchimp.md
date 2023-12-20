@@ -54,7 +54,7 @@ For more information on Mailchimp API Keys, please refer to the [official Mailch
 
 <!-- /env:oss -->
 
-6. (Optional) You may optionally provide an **Incremental Sync Start Date** using the provided datepicker, or by programmatically entering a UTC date-time in the format `YYYY-MM-DDThh:mm:ss.sssZ`. If set, only data generated on or after the configured date-time will be synced for Incremental streams. Leaving this field blank will sync all data returned from the API. Please note that this option has no effect on streams using Full Refresh sync mode.
+6. (Optional) You may optionally provide an **Incremental Sync Start Date** using the provided datepicker, or by programmatically entering a UTC date-time in the format `YYYY-MM-DDThh:mm:ss.sssZ`. If set, only data generated on or after the configured date-time will be synced. Leaving this field blank will sync all data returned from the API.
 7. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>

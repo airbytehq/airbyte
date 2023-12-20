@@ -154,7 +154,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         # Return the max of the two dates if both are present. Otherwise return whichever is present, or None.
         if start_date_parsed or state_date_parsed:
             return max(filter(None, [start_date_parsed, state_date_parsed]), default=None)
-        
+
     def filter_old_records(self, records: Iterable, filter_date) -> Iterable:
         """
         Filters out records with older cursor_values than the filter_date.
