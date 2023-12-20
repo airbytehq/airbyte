@@ -4,15 +4,13 @@
 
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
+from pydantic import BaseModel, Field
 
 
 class OAuth2(BaseModel):
     client_id: str = Field(..., title="OAuth Client ID", description="OAuth2.0 client id", order=0)
-    client_secret: str = Field(
-        ..., title="OAuth Client Secret", description="OAuth2.0 client secret", airbyte_secret=True, order=1
-    )
+    client_secret: str = Field(..., title="OAuth Client Secret", description="OAuth2.0 client secret", airbyte_secret=True, order=1)
 
     class Config:
         title = "OAuth2.0 Credentials"
@@ -21,9 +19,12 @@ class OAuth2(BaseModel):
             "group": "auth",
         }
 
+
 class VectaraConfig(BaseModel):
     oauth2: OAuth2
-    customer_id: str = Field(..., title="Customer ID", description="Your customer id as it is in the authenticaion url", order=2, group="account")
+    customer_id: str = Field(
+        ..., title="Customer ID", description="Your customer id as it is in the authenticaion url", order=2, group="account"
+    )
     corpus_name: str = Field(..., title="Corpus Name", description="The Name of Corpus to load data into", order=3, group="account")
 
     text_fields: Optional[List[str]] = Field(
@@ -48,7 +49,7 @@ class VectaraConfig(BaseModel):
             "groups": [
                 {"id": "account", "title": "Account"},
                 {"id": "auth", "title": "Authentication"},
-            ]
+            ],
         }
 
     @classmethod
@@ -57,4 +58,3 @@ class VectaraConfig(BaseModel):
         schema = super().schema()
         schema = resolve_refs(schema)
         return schema
-    

@@ -15,14 +15,12 @@ from airbyte_cdk.models import (
     Status,
     Type,
 )
-from destination_vectara.config import VectaraConfig
 from destination_vectara.client import VectaraClient
+from destination_vectara.config import VectaraConfig
 from destination_vectara.writer import VectaraWriter
 
 
-
 class DestinationVectara(Destination):
-
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
@@ -43,10 +41,13 @@ class DestinationVectara(Destination):
         """
 
         config_model = VectaraConfig.parse_obj(config)
-        writer = VectaraWriter(client=VectaraClient(config_model), 
-                               text_fields=config_model.text_fields, metadata_fields=config_model.metadata_fields,
-                               catalog=configured_catalog)
-                
+        writer = VectaraWriter(
+            client=VectaraClient(config_model),
+            text_fields=config_model.text_fields,
+            metadata_fields=config_model.metadata_fields,
+            catalog=configured_catalog,
+        )
+
         writer.delete_streams_to_overwrite(catalog=configured_catalog)
 
         for message in input_messages:

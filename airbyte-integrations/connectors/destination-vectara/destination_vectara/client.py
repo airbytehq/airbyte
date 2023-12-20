@@ -4,16 +4,16 @@
 
 import datetime
 import json
-import requests
 import traceback
-import backoff
-
-from typing import Any, Mapping
 from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Mapping
 
+import backoff
+import requests
 from destination_vectara.config import VectaraConfig
 
 METADATA_STREAM_FIELD = "_ab_stream"
+
 
 def user_error(e: Exception) -> bool:
     """
@@ -40,7 +40,7 @@ class VectaraClient:
     def check(self):
         """
         Check for an existing corpus in Vectara.
-        If more than one exists - then return a message 
+        If more than one exists - then return a message
         If exactly one exists with this name - ensure that the corpus has the correct metadata fields, and use it.
         If not, create it.
         """
@@ -49,14 +49,12 @@ class VectaraClient:
             if not jwt_token:
                 return "Unable to get JWT Token. Confirm your Client ID and Client Secret."
 
-            list_corpora_response = self._request(
-                endpoint="list-corpora",
-                data={
-                    "numResults": 100, 
-                    "filter": self.corpus_name
-                    }
-                )
-            possible_corpora_ids_names_map = {corpus.get("id"): corpus.get("name") for corpus in list_corpora_response.get("corpus") if corpus.get("name") == self.corpus_name}
+            list_corpora_response = self._request(endpoint="list-corpora", data={"numResults": 100, "filter": self.corpus_name})
+            possible_corpora_ids_names_map = {
+                corpus.get("id"): corpus.get("name")
+                for corpus in list_corpora_response.get("corpus")
+                if corpus.get("name") == self.corpus_name
+            }
             if len(possible_corpora_ids_names_map) > 1:
                 return f"Multiple Corpora exist with name {self.corpus_name}"
             if len(possible_corpora_ids_names_map) == 1:
@@ -70,32 +68,25 @@ class VectaraClient:
                                 "name": METADATA_STREAM_FIELD,
                                 "indexed": True,
                                 "type": "FILTER_ATTRIBUTE_TYPE__TEXT",
-                                "level": "FILTER_ATTRIBUTE_LEVEL__DOCUMENT"
+                                "level": "FILTER_ATTRIBUTE_LEVEL__DOCUMENT",
                             },
-                        ]
+                        ],
                     }
                 }
 
-                create_corpus_response = self._request(
-                    endpoint="create-corpus",
-                    data=data
-                )
+                create_corpus_response = self._request(endpoint="create-corpus", data=data)
                 self.corpus_id = create_corpus_response.get("corpusId")
 
         except Exception as e:
             return str(e) + "\n" + "".join(traceback.TracebackException.from_exception(e).format())
-        
+
     def _get_jwt_token(self):
         """Connect to the server and get a JWT token."""
         token_endpoint = f"https://vectara-prod-{self.customer_id}.auth.us-west-2.amazoncognito.com/oauth2/token"
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
-            }
-        data = {
-            "grant_type": "client_credentials",
-            "client_id": self.client_id,
-            "client_secret": self.client_secret
         }
+        data = {"grant_type": "client_credentials", "client_id": self.client_id, "client_secret": self.client_secret}
 
         request_time = datetime.datetime.now().timestamp()
         response = requests.request(method="POST", url=token_endpoint, headers=headers, data=data)
@@ -104,15 +95,10 @@ class VectaraClient:
         self.jwt_token = response_json.get("access_token")
         self.jwt_token_expires_ts = request_time + response_json.get("expires_in")
         return self.jwt_token
-    
+
     @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=5, giveup=user_error)
-    def _request(
-            self, endpoint: str, 
-            http_method: str = "POST", 
-            params: Mapping[str, Any] = None, 
-            data: Mapping[str, Any] = None
-        ):
-        
+    def _request(self, endpoint: str, http_method: str = "POST", params: Mapping[str, Any] = None, data: Mapping[str, Any] = None):
+
         url = f"{self.BASE_URL}/{endpoint}"
 
         current_ts = datetime.datetime.now().timestamp()
@@ -121,11 +107,11 @@ class VectaraClient:
 
         headers = {
             "Content-Type": "application/json",
-            "Accept": "application/json", 
+            "Accept": "application/json",
             "Authorization": f"Bearer {self.jwt_token}",
             "customer-id": self.customer_id,
-            "X-source": "airbyte"
-            }
+            "X-source": "airbyte",
+        }
 
         response = requests.request(method=http_method, url=url, headers=headers, params=params, data=json.dumps(data))
         response.raise_for_status()
@@ -137,75 +123,65 @@ class VectaraClient:
             data = {
                 "query": [
                     {
-                        "query": "", 
+                        "query": "",
                         "numResults": 100,
                         "corpusKey": [
                             {
                                 "customerId": self.customer_id,
                                 "corpusId": self.corpus_id,
-                                "metadataFilter": f"doc.{metadata_field_name} = '{value}'"
+                                "metadataFilter": f"doc.{metadata_field_name} = '{value}'",
                             }
-                        ]
+                        ],
                     }
                 ]
             }
-            query_documents_response = self._request(
-                endpoint="query",
-                data = data
-            )
+            query_documents_response = self._request(endpoint="query", data=data)
             document_ids.extend([document.get("id") for document in query_documents_response.get("responseSet")[0].get("document")])
         self.delete_docs_by_id(document_ids=document_ids)
-    
+
     def delete_docs_by_id(self, document_ids):
         for document_id in document_ids:
             self._request(
-                endpoint="delete-doc",
-                data={
-                    "customerId": self.customer_id, 
-                    "corpusId": self.corpus_id,
-                    "documentId": document_id
-                    }
-                )
+                endpoint="delete-doc", data={"customerId": self.customer_id, "corpusId": self.corpus_id, "documentId": document_id}
+            )
 
     def index_document(self, document):
         document_section, document_metadata, document_id = document
         if len(document_section) == 0:
-            return None            # Document is empty, so skip it
+            return None  # Document is empty, so skip it
         document_metadata = self._normalize(document_metadata)
         data = {
-            "customerId": self.customer_id, 
+            "customerId": self.customer_id,
             "corpusId": self.corpus_id,
             "document": {
                 "documentId": document_id,
                 "metadataJson": json.dumps(document_metadata),
                 "section": [
-                    {
-                        "text": f"{section_key}: {section_value}"
-                    } 
+                    {"text": f"{section_key}: {section_value}"}
                     for section_key, section_value in document_section.items()
                     if section_key != METADATA_STREAM_FIELD
-                ]
-            }
+                ],
+            },
         }
         index_document_response = self._request(endpoint="index", data=data)
         return index_document_response
 
     def index_documents(self, documents):
-        print(f"Indexing {len(documents)} documents")
         with ThreadPoolExecutor() as executor:  ### DEBUG remove max_workers limit
             futures = [executor.submit(self.index_document, doc) for doc in documents]
             for future in futures:
                 try:
                     response = future.result()
                     if response is None:
-                        print("Response is None, skipping")
                         continue
-                    assert (response.get("status").get("code") == "OK" or 
-                            response.get("status").get("statusDetail") == 'Document should have at least one part.')
+                    assert (
+                        response.get("status").get("code") == "OK"
+                        or response.get("status").get("statusDetail") == "Document should have at least one part."
+                    )
                 except AssertionError as e:
                     # Handle the assertion error
                     pass
-    
+
     def _normalize(self, metadata: dict) -> dict:
         result = {}
         for key, value in metadata.items():

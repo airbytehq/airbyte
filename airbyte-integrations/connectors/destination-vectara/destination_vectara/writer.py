@@ -2,27 +2,30 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import dpath.util
 import uuid
-
 from typing import Any, Dict, List, Mapping, Optional
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, AirbyteRecordMessage, ConfiguredAirbyteStream, DestinationSyncMode
+import dpath.util
+from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
-
 from destination_vectara.client import VectaraClient
 
-
-
 METADATA_STREAM_FIELD = "_ab_stream"
+
 
 class VectaraWriter:
 
     write_buffer: List[Mapping[str, Any]] = []
     flush_interval = 1000
 
-    def __init__(self, client: VectaraClient, text_fields: Optional[List[str]], metadata_fields: Optional[List[str]], catalog: ConfiguredAirbyteCatalog):
+    def __init__(
+        self,
+        client: VectaraClient,
+        text_fields: Optional[List[str]],
+        metadata_fields: Optional[List[str]],
+        catalog: ConfiguredAirbyteCatalog,
+    ):
         self.client = client
         self.text_fields = text_fields
         self.metadata_fields = metadata_fields
@@ -31,8 +34,9 @@ class VectaraWriter:
 
     def delete_streams_to_overwrite(self, catalog: ConfiguredAirbyteCatalog) -> None:
         streams_to_overwrite = [
-            f"{stream.stream.namespace}_{stream.stream.name}" 
-            for stream in catalog.streams if stream.destination_sync_mode == DestinationSyncMode.overwrite
+            f"{stream.stream.namespace}_{stream.stream.name}"
+            for stream in catalog.streams
+            if stream.destination_sync_mode == DestinationSyncMode.overwrite
         ]
         if len(streams_to_overwrite):
             self.client.delete_doc_by_metadata(metadata_field_name=METADATA_STREAM_FIELD, metadata_field_values=streams_to_overwrite)
@@ -51,7 +55,7 @@ class VectaraWriter:
 
         if primary_key:
             document_id = f"Stream_{stream_identifier}_Key_{primary_key}"
-            if record.stream.destination_sync_mode == DestinationSyncMode.append_dedup:
+            if self.streams[stream_identifier].destination_sync_mode == DestinationSyncMode.append_dedup:
                 self.ids_to_delete.append(document_id)
         else:
             document_id = str(uuid.uuid4().int)
@@ -78,8 +82,8 @@ class VectaraWriter:
             )
         document_section = relevant_fields
         return document_section
-    
-    def _extract_relevant_fields(self, record: AirbyteRecordMessage, fields: Optional[List[str]]) -> Dict[str, Any]:        
+
+    def _extract_relevant_fields(self, record: AirbyteRecordMessage, fields: Optional[List[str]]) -> Dict[str, Any]:
         relevant_fields = {}
         if fields and len(fields) > 0:
             for field in fields:
@@ -89,13 +93,12 @@ class VectaraWriter:
         else:
             relevant_fields = record.data
         return relevant_fields
-    
 
-    def _get_document_metadata(self, record: AirbyteRecordMessage) -> Dict[str, Any]:        
+    def _get_document_metadata(self, record: AirbyteRecordMessage) -> Dict[str, Any]:
         document_metadata = self._extract_relevant_fields(record, self.metadata_fields)
         document_metadata[METADATA_STREAM_FIELD] = self._get_stream_id(record)
         return document_metadata
-    
+
     def _get_stream_id(self, record: AirbyteRecordMessage) -> str:
         return f"{record.namespace}_{record.stream}"
 
@@ -114,4 +117,3 @@ class VectaraWriter:
                 primary_key.append("__not_found__")
         stringified_primary_key = "_".join(primary_key)
         return f"{stream_identifier}_{stringified_primary_key}"
-
