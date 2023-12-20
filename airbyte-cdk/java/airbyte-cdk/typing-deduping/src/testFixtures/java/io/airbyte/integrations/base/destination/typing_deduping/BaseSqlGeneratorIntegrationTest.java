@@ -427,7 +427,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * timestamp.
    */
   @Test
-  @Disabled
   public void minTimestampBehavesCorrectly() throws Exception {
     // When the raw table doesn't exist, there are no unprocessed records and no timestamp
     assertEquals(new DestinationHandler.InitialRawTableState(false, Optional.empty()), destinationHandler.getInitialRawTableState(streamId));
@@ -525,10 +524,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(streamId);
     assertAll(
         () -> assertTrue(tableState.hasUnprocessedRecords(),
-            "After writing some raw records, we should recognize that there are unprocessed records")
-    // Needs to be implemented in JDBC
-    // () -> assertTrue(tableState.maxProcessedTimestamp().isPresent(), "After writing some raw records,
-    // the min timestamp should be present.")
+            "After writing some raw records, we should recognize that there are unprocessed records"),
+        () -> assertTrue(tableState.maxProcessedTimestamp().isPresent(), "After writing some raw records, the min timestamp should be present.")
     );
 
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, tableState.maxProcessedTimestamp(), "");
@@ -549,9 +546,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     createRawTable(streamId);
     final DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(streamId);
     assertAll(
-        // Commenting out because this needs to be implemented in JDBC
-        // () -> assertFalse(tableState.hasUnprocessedRecords(), "With an empty raw table, we should
-        // recognize that there are no unprocessed records"),
+        () -> assertFalse(tableState.hasUnprocessedRecords(), "With an empty raw table, we should recognize that there are no unprocessed records"),
         () -> assertEquals(Optional.empty(), tableState.maxProcessedTimestamp(), "With an empty raw table, the min timestamp should be empty"));
 
     createFinalTable(incrementalDedupStream, "");
