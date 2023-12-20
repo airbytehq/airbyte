@@ -24,7 +24,7 @@ To purchase credits directly through the UI,
 
     :::
 
-To buy more credits or discuss a custom plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
+  To buy more credits or discuss a custom plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
 
 5. You'll be renavigated to a Stripe payment page. If this is your first time purchasing, you'll be asked for payment details. After you enter your billing address, sales tax (if applicable) is calculated and added to the total.
 

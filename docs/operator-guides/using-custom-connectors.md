@@ -1,3 +1,7 @@
+---  
+sidebar_label: Uploading custom connectors 
+--- 
+ 
 # Uploading Docker-based custom connectors
 
 :::info
