@@ -39,13 +39,13 @@ class ConcurrentCursorTest(TestCase):
     def setUp(self) -> None:
         self._message_repository = Mock(spec=MessageRepository)
         self._state_manager = Mock(spec=ConnectorStateManager)
-        self._state_converter = EpochValueConcurrentStreamStateConverter(_A_CURSOR_FIELD_KEY)
+        self._state_converter = EpochValueConcurrentStreamStateConverter()
 
     def _cursor_with_slice_boundary_fields(self) -> ConcurrentCursor:
         return ConcurrentCursor(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
-            self._state_converter.get_concurrent_stream_state({}),
+            self._state_converter.get_concurrent_stream_state(CursorField(_A_CURSOR_FIELD_KEY), {}),
             self._message_repository,
             self._state_manager,
             self._state_converter,
@@ -57,7 +57,7 @@ class ConcurrentCursorTest(TestCase):
         return ConcurrentCursor(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
-            self._state_converter.get_concurrent_stream_state({}),
+            self._state_converter.get_concurrent_stream_state(CursorField(_A_CURSOR_FIELD_KEY), {}),
             self._message_repository,
             self._state_manager,
             self._state_converter,

@@ -141,7 +141,7 @@ test_incremental_stream_with_slice_boundaries_with_legacy_state = (
                 )
             ]
         )
-        .set_incremental(CursorField(["cursor_field"]), ("from", "to"))
+        .set_incremental(CursorField("cursor_field"), ("from", "to"))
         .set_input_state(LEGACY_STATE)
     )
     .set_expected_records(
@@ -228,7 +228,7 @@ test_incremental_stream_with_slice_boundaries_with_concurrent_state = (
                 )
             ]
         )
-        .set_incremental(CursorField(["cursor_field"]), ("from", "to"))
+        .set_incremental(CursorField("cursor_field"), ("from", "to"))
         .set_input_state(CONCURRENT_STATE)
     )
     .set_expected_records(

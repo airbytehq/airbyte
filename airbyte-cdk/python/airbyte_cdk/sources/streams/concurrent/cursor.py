@@ -26,12 +26,12 @@ class Comparable(Protocol):
 
 class CursorField:
     def __init__(self, cursor_field_key: str) -> None:
-        self._cursor_field_key = cursor_field_key
+        self.cursor_field_key = cursor_field_key
 
     def extract_value(self, record: Record) -> Comparable:
-        cursor_value = record.data.get(self._cursor_field_key)
+        cursor_value = record.data.get(self.cursor_field_key)
         if cursor_value is None:
-            raise ValueError(f"Could not find cursor field {self._cursor_field_key} in record")
+            raise ValueError(f"Could not find cursor field {self.cursor_field_key} in record")
         return cursor_value  # type: ignore  # we assume that the value the path points at is a comparable
 
 
@@ -135,7 +135,9 @@ class ConcurrentCursor(Cursor):
 
     def _emit_state_message(self) -> None:
         self._connector_state_manager.update_state_for_stream(
-            self._stream_name, self._stream_namespace, self._connector_state_converter.convert_to_sequential_state(self._cursor_field, self._state)
+            self._stream_name,
+            self._stream_namespace,
+            self._connector_state_converter.convert_to_sequential_state(self._cursor_field, self._state),
         )
         # TODO: if we migrate stored state to the concurrent state format
         #  (aka stop calling self._connector_state_converter.convert_to_sequential_state`), we'll need to cast datetimes to string or

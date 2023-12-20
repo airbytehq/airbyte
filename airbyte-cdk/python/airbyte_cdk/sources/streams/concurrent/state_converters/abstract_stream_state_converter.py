@@ -4,7 +4,10 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, List, MutableMapping
+from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 
 
 class ConcurrencyCompatibleStateType(Enum):
@@ -15,7 +18,11 @@ class AbstractStreamStateConverter(ABC):
     START_KEY = "start"
     END_KEY = "end"
 
-    def get_concurrent_stream_state(self, cursor_field: str, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def get_concurrent_stream_state(
+        self, cursor_field: Optional["CursorField"], state: MutableMapping[str, Any]
+    ) -> Optional[MutableMapping[str, Any]]:
+        if not cursor_field:
+            return None
         if self.is_state_message_compatible(state):
             return self.deserialize(state)
         return self.convert_from_sequential_state(cursor_field, state)
@@ -32,7 +39,9 @@ class AbstractStreamStateConverter(ABC):
         return bool(state) and state.get("state_type") in [t.value for t in ConcurrencyCompatibleStateType]
 
     @abstractmethod
-    def convert_from_sequential_state(self, cursor_field: str, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def convert_from_sequential_state(
+        self, cursor_field: "CursorField", stream_state: MutableMapping[str, Any]
+    ) -> MutableMapping[str, Any]:
         """
         Convert the state message to the format required by the ConcurrentCursor.
 
@@ -47,7 +56,7 @@ class AbstractStreamStateConverter(ABC):
         ...
 
     @abstractmethod
-    def convert_to_sequential_state(self, cursor_field: str, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def convert_to_sequential_state(self, cursor_field: "CursorField", stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Convert the state message from the concurrency-compatible format to the stream's original format.
 

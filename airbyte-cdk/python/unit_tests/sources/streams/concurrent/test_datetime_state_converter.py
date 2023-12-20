@@ -15,6 +15,7 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import ConcurrencyCompatibleStateType
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
     EpochValueConcurrentStreamStateConverter,
@@ -73,14 +74,14 @@ from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_sta
             id="compatible-input-state-epoch",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             [],
             {'legacy': {}, 'slices': [], 'state_type': 'date-range'},
             id="no-input-state-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             [
                 AirbyteStateMessage(
@@ -99,7 +100,7 @@ from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_sta
             id="incompatible-input-state-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             [
                 AirbyteStateMessage(
@@ -122,7 +123,7 @@ from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_sta
 )
 def test_concurrent_connector_state_manager_get_stream_state(converter, stream, input_state, expected_output_state):
     state_manager = ConnectorStateManager({"stream1": stream}, input_state)
-    assert converter.get_concurrent_stream_state("created_at", state_manager.get_stream_state("stream1", None)) == expected_output_state
+    assert converter.get_concurrent_stream_state(CursorField("created_at"), state_manager.get_stream_state("stream1", None)) == expected_output_state
 
 
 @pytest.mark.parametrize(
@@ -161,13 +162,13 @@ def test_concurrent_connector_state_manager_get_stream_state(converter, stream, 
             id="input-state-without-state_type-is-not-compatible-epoch",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             {'state_type': 'date-range'},
             True,
             id="no-input-state-is-compatible-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             {
                 "created_at": "2022_05_22",
                 "state_type": ConcurrencyCompatibleStateType.date_range.value,
@@ -176,7 +177,7 @@ def test_concurrent_connector_state_manager_get_stream_state(converter, stream, 
             id="input-state-with-date_range-is-compatible-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             {
                 "created_at": "2022_05_22",
                 "state_type": "fake",
@@ -185,7 +186,7 @@ def test_concurrent_connector_state_manager_get_stream_state(converter, stream, 
             id="input-state-with-fake-state-type-is-not-compatible-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             {
                 "created_at": "2022_05_22",
             },
@@ -221,14 +222,14 @@ def test_concurrent_stream_state_converter_is_state_message_compatible(converter
             id="with-input-state-epoch",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             {},
             {'legacy': {}, 'slices': [], 'state_type': 'date-range'},
             id="empty-input-state-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             {"created": "2021-08-22T05:03:27.000Z"},
             {
@@ -244,14 +245,14 @@ def test_concurrent_stream_state_converter_is_state_message_compatible(converter
 def test_convert_from_sequential_state(converter, stream, sequential_state, expected_output_state):
     comparison_format = "%Y-%m-%dT%H:%M:%S.%f"
     if expected_output_state["slices"]:
-        conversion = converter.convert_from_sequential_state("created", sequential_state)
+        conversion = converter.convert_from_sequential_state(CursorField("created"), sequential_state)
         assert conversion["state_type"] == expected_output_state["state_type"]
         assert conversion["legacy"] == expected_output_state["legacy"]
         for actual, expected in zip(conversion["slices"], expected_output_state["slices"]):
             assert actual["start"].strftime(comparison_format) == expected["start"].strftime(comparison_format)
             assert actual["end"].strftime(comparison_format) == expected["end"].strftime(comparison_format)
     else:
-        assert converter.convert_from_sequential_state("created", sequential_state) == expected_output_state
+        assert converter.convert_from_sequential_state(CursorField("created"), sequential_state) == expected_output_state
 
 
 @pytest.mark.parametrize(
@@ -275,14 +276,14 @@ def test_convert_from_sequential_state(converter, stream, sequential_state, expe
             id="with-input-state-epoch",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             {"state_type": ConcurrencyCompatibleStateType.date_range.value},
             {},
             id="empty-input-state-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             {
                 "state_type": "date-range",
@@ -294,7 +295,7 @@ def test_convert_from_sequential_state(converter, stream, sequential_state, expe
     ],
 )
 def test_convert_to_sequential_state(converter, stream, concurrent_state, expected_output_state):
-    assert converter.convert_to_sequential_state("created", concurrent_state) == expected_output_state
+    assert converter.convert_to_sequential_state(CursorField("created"), concurrent_state) == expected_output_state
 
 
 @pytest.mark.parametrize(
@@ -355,54 +356,54 @@ def test_convert_to_sequential_state(converter, stream, concurrent_state, expect
             id="overlapping-and-nonoverlapping-intervals-epoch",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             [],
             [],
             id="no-intervals-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2022-08-22T05:03:27.000Z"}],
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2022-08-22T05:03:27.000Z"}],
             id="single-interval-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2022-08-22T05:03:27.000Z"},
              {"start": "2021-08-22T05:03:27.000Z", "end": "2022-08-22T05:03:27.000Z"}],
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2022-08-22T05:03:27.000Z"}],
             id="duplicate-intervals-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2023-08-22T05:03:27.000Z"},
              {"start": "2021-08-22T05:03:27.000Z", "end": "2022-08-22T05:03:27.000Z"}],
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2023-08-22T05:03:27.000Z"}],
             id="overlapping-intervals-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2024-08-22T05:03:27.000Z"},
              {"start": "2022-08-22T05:03:27.000Z", "end": "2023-08-22T05:03:27.000Z"}],
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2024-08-22T05:03:27.000Z"}],
             id="enclosed-intervals-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             [{"start": "2023-08-22T05:03:27.000Z", "end": "2024-08-22T05:03:27.000Z"},
              {"start": "2021-08-22T05:03:27.000Z", "end": "2022-08-22T05:03:27.000Z"}],
             [{"start": 0, "end": 2}],
             id="unordered-intervals-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2022-08-22T05:03:27.000Z"},
              {"start": "2022-08-22T05:03:27.001Z", "end": "2023-08-22T05:03:27.000Z"}],
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2023-08-22T05:03:27.000Z"}],
             id="adjacent-intervals-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             [{"start": "2023-08-22T05:03:27.000Z", "end": "2024-08-22T05:03:27.000Z"},
              {"start": "2021-08-22T05:03:27.000Z", "end": "2022-08-22T05:03:27.000Z"}],
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2022-08-22T05:03:27.000Z"},
@@ -410,7 +411,7 @@ def test_convert_to_sequential_state(converter, stream, concurrent_state, expect
             id="nonoverlapping-intervals-isomillis",
         ),
         pytest.param(
-            IsoMillisConcurrentStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
+            IsoMillisConcurrentStreamStateConverter(),
             [{"start": "2021-08-22T05:03:27.000Z", "end": "2022-08-22T05:03:27.000Z"},
              {"start": "2022-08-22T05:03:27.001Z", "end": "2023-08-22T05:03:27.000Z"},
              {"start": "2027-08-22T05:03:27.000Z", "end": "2028-08-22T05:03:27.000Z"},
