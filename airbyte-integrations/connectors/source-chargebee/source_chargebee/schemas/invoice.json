@@ -112,6 +112,9 @@
       "type": ["integer", "null"],
       "minimum": 0
     },
+    "local_currency_exchange_rate": {
+      "type": ["number", "null"]
+    },
     "first_invoice": {
       "type": ["boolean", "null"]
     },
@@ -365,7 +368,7 @@
             "type": ["integer", "null"],
             "minimum": 0
           },
-          "local_currency-code": {
+          "local_currency_code": {
             "type": ["string", "null"]
           }
         }
