@@ -5,6 +5,7 @@ import tempfile
 from contextlib import contextmanager
 from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Optional
+from airbyte_lib.telemetry import track
 
 import jsonschema
 from airbyte_lib.cache import Cache, InMemoryCache
@@ -191,7 +192,14 @@ class Source:
                 if self.streams is None or s.name in self.streams
             ]
         )
-        yield from self._read_catalog(configured_catalog)
+        track(self.name, "started")
+        try:
+            yield from self._read_catalog(configured_catalog)
+        except Exception as e:
+            track(self.name, "failed")
+            raise e
+        finally:
+            track(self.name, "started")
 
     def _read_catalog(self, catalog: ConfiguredAirbyteCatalog) -> Iterable[AirbyteRecordMessage]:
         """
