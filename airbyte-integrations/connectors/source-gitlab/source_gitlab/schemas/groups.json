@@ -74,6 +74,9 @@
     "emails_disabled": {
       "type": ["null", "boolean"]
     },
+    "emails_enabled": {
+      "type": ["null", "boolean"]
+    },
     "mentions_disabled": {
       "type": ["null", "boolean"]
     },
@@ -144,6 +147,9 @@
     },
     "shared_runners_setting": {
       "type": ["null", "string"]
+    },
+    "service_access_tokens_expiration_enforced": {
+      "type": ["null", "boolean"]
     }
   }
 }

@@ -483,6 +483,12 @@
     },
     "merge_trains_skip_train_allowed": {
       "type": ["null", "boolean"]
+    },
+    "code_suggestions": {
+      "type": ["null", "boolean"]
+    },
+    "model_registry_access_level": {
+      "type": ["null", "string"]
     }
   }
 }
