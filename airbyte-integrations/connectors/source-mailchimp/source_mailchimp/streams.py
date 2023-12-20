@@ -151,12 +151,19 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         start_date_parsed = pendulum.parse(start_date).to_iso8601_string() if start_date else None
         state_date_parsed = pendulum.parse(state_date).to_iso8601_string() if state_date else None
 
-        if start_date_parsed and state_date_parsed:
-            return max(start_date_parsed, state_date_parsed)
-        elif state_date_parsed or start_date_parsed:
-            return state_date_parsed or start_date_parsed
-        else:
-            return None
+        # Return the max of the two dates if both are present. Otherwise return whichever is present, or None.
+        if start_date_parsed or state_date_parsed:
+            return max(filter(None, [start_date_parsed, state_date_parsed]), default=None)
+        
+    def filter_old_records(self, records: Iterable, filter_date) -> Iterable:
+        """
+        Filters out records with older cursor_values than the filter_date.
+        This can be used to enforce the filter for incremental streams that do not support sorting/filtering via query params.
+        """
+        for record in records:
+            record_cursor_value = record.get(self.cursor_field)
+            if not filter_date or record_cursor_value >= filter_date:
+                yield record
 
     def request_params(self, stream_state=None, stream_slice=None, **kwargs):
         stream_state = stream_state or {}
@@ -180,12 +187,12 @@ class MailChimpListSubStream(IncrementalMailChimpStream):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         parent = Lists(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
-        for slice in parent:
-            slice_ = {"list_id": slice["id"]}
-            cursor_value = self.get_filter_date(self.start_date, stream_state.get(slice["id"], {}).get(self.cursor_field))
+        for parent_record in parent:
+            slice = {"list_id": parent_record["id"]}
+            cursor_value = self.get_filter_date(self.start_date, stream_state.get(parent_record["id"], {}).get(self.cursor_field))
             if cursor_value:
-                slice_[self.filter_field] = cursor_value
-            yield slice_
+                slice[self.filter_field] = cursor_value
+            yield slice
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         list_id = stream_slice.get("list_id")
@@ -390,6 +397,7 @@ class SegmentMembers(MailChimpListSubStream):
         """
         The SegmentMembers endpoint does not support sorting or filtering,
         so we need to apply our own filtering logic before reading.
+        The foreign key "segment_id" is also added to each record before being read.
         """
         response = super().parse_response(response, **kwargs)
 
@@ -397,15 +405,10 @@ class SegmentMembers(MailChimpListSubStream):
         slice_cursor_value = stream_state.get(str(stream_slice.get("segment_id")), {}).get(self.cursor_field)
         filter_date = self.get_filter_date(self.start_date, slice_cursor_value)
 
-        for record in response:
+        for record in self.filter_old_records(response, filter_date):
             # Add the segment_id foreign_key to each record
             record["segment_id"] = stream_slice.get("segment_id")
-
-            record_cursor_value = record.get(self.cursor_field)
-            if filter_date is None or record_cursor_value >= filter_date:
-                # Add the segment_id foreign_key to each record
-                record["segment_id"] = stream_slice.get("segment_id")
-                yield record
+            yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
@@ -498,11 +501,7 @@ class Unsubscribes(IncrementalMailChimpStream):
 
         slice_cursor_value = stream_state.get(stream_slice.get("campaign_id", {}), {}).get(self.cursor_field)
         filter_date = self.get_filter_date(self.start_date, slice_cursor_value)
-
-        for record in response:
-            record_cursor_value = record.get(self.cursor_field)
-            if filter_date is None or record_cursor_value >= filter_date:
-                yield record
+        yield from self.filter_old_records(response, filter_date)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}

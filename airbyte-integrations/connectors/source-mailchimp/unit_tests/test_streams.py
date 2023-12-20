@@ -646,3 +646,51 @@ def test_get_filter_date(auth, start_date, state_date, expected_return_value):
     stream = Campaigns(authenticator=auth, start_date=start_date)
     result = stream.get_filter_date(start_date, state_date)
     assert result == expected_return_value, f"Expected: {expected_return_value}, Actual: {result}"
+
+
+@pytest.mark.parametrize(
+    "stream_class, records, filter_date, expected_return_value",
+    [
+        (
+            Unsubscribes,
+            [
+                {"campaign_id": "campaign_1", "email_id": "email_1", "timestamp": "2022-01-02T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_2", "timestamp": "2022-01-04T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_3", "timestamp": "2022-01-03T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-01T00:00:00Z"},
+            ],
+            "2022-01-02T12:00:00+00:00",
+            [
+                {"campaign_id": "campaign_1", "email_id": "email_2", "timestamp": "2022-01-04T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_3", "timestamp": "2022-01-03T00:00:00Z"},
+            ],
+        ),
+        (
+            SegmentMembers,
+            [
+                {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-04T00:00:00Z"},
+                {"id": 2, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+                {"id": 3, "segment_id": "segment_1", "last_changed": "2021-01-03T00:00:00Z"},
+                {"id": 4, "segment_id": "segment_1", "last_changed": "2021-01-02T00:00:00Z"},
+            ],
+            None,
+            [
+                {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-04T00:00:00Z"},
+                {"id": 2, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+                {"id": 3, "segment_id": "segment_1", "last_changed": "2021-01-03T00:00:00Z"},
+                {"id": 4, "segment_id": "segment_1", "last_changed": "2021-01-02T00:00:00Z"},
+            ],
+        )
+    ],
+    ids=[
+        "Unsubscribes: filter_date is set, records filtered",
+        "SegmentMembers: filter_date is None, all records returned"
+    ]
+)
+def test_filter_old_records(auth, stream_class, records, filter_date, expected_return_value):
+    """
+    Tests the logic for filtering old records in streams that do not support query_param filtering.
+    """
+    stream = stream_class(authenticator=auth)
+    filtered_records = list(stream.filter_old_records(records, filter_date))
+    assert filtered_records == expected_return_value
