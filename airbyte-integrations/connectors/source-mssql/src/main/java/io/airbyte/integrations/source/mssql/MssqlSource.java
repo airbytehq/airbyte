@@ -106,10 +106,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return AirbyteStateType.LEGACY;
-    }
-
     return MssqlCdcHelper.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
@@ -637,6 +633,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   private boolean cloudDeploymentMode() {
     return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
+  }
+
+  public Duration getConnectionTimeoutMssql(final Map<String, String> connectionProperties) {
+    return getConnectionTimeout(connectionProperties);
   }
 
   public static void main(final String[] args) throws Exception {
