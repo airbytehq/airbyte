@@ -88,7 +88,7 @@ class JinjaInterpolation(Interpolation):
         except UndefinedError:
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string
-        return self._literal_eval(self._eval(default, context), valid_types)
+        return self._literal_eval(self._eval(default, context), valid_types)  # type: ignore[arg-type]
 
     def _literal_eval(self, result: str, valid_types: Optional[Tuple[Type[Any]]]) -> Any:
         try:
@@ -99,7 +99,7 @@ class JinjaInterpolation(Interpolation):
             return evaluated
         return result
 
-    def _eval(self, s: Any, context: Mapping[str, Any]) -> Any:
+    def _eval(self, s: str, context: Mapping[str, Any]) -> Any:
         try:
             ast = self._environment.parse(s)
             undeclared = meta.find_undeclared_variables(ast)
