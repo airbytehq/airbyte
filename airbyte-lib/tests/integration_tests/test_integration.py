@@ -18,6 +18,7 @@ def prepare_test_env():
     os.system("python -m venv .venv-source-test")
     os.system("source .venv-source-test/bin/activate && pip install -e ./tests/integration_tests/fixtures/source-test")
     os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/integration_tests/fixtures/registry.json"
+    os.environ["DO_NOT_TRACK"] = "true"
 
     yield
 

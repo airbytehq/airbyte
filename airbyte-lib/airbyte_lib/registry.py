@@ -4,9 +4,9 @@ import json
 import os
 from dataclasses import dataclass
 from typing import Dict, Optional
-from airbyte_lib.version import get_version
 
 import requests
+from airbyte_lib.version import get_version
 
 
 @dataclass

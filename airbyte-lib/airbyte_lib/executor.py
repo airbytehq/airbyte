@@ -6,7 +6,7 @@ import sys
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Generator, Iterable, List
+from typing import IO, Dict, Generator, Iterable, List
 
 from airbyte_lib.registry import ConnectorMetadata
 
@@ -26,6 +26,10 @@ class Executor(ABC):
 
     @abstractmethod
     def install(self):
+        pass
+
+    @abstractmethod
+    def get_tracking_information(self) -> Dict[str, str]:
         pass
 
 
@@ -139,6 +143,13 @@ class VenvExecutor(Executor):
         with _stream_from_subprocess([str(connector_path)] + args) as stream:
             yield from stream
 
+    def get_tracking_information(self) -> Dict[str, str]:
+        return {
+            "name": self.metadata.name,
+            "version": self.target_version,
+            "type": "venv",
+        }
+
 
 class PathExecutor(Executor):
     def ensure_installation(self):
@@ -153,3 +164,9 @@ class PathExecutor(Executor):
     def execute(self, args: List[str]) -> Iterable[str]:
         with _stream_from_subprocess([self.metadata.name] + args) as stream:
             yield from stream
+
+    def get_tracking_information(self) -> Dict[str, str]:
+        return {
+            "name": self.metadata.name,
+            "type": "local_install",
+        }
