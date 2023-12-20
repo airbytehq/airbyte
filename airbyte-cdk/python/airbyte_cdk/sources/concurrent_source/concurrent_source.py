@@ -28,7 +28,7 @@ class ConcurrentSource:
     The read is done when all partitions for all streams were generated and read.
     """
 
-    DEFAULT_TIMEOUT_SECONDS = 900
+    DEFAULT_TIMEOUT_SECONDS = 60
 
     @staticmethod
     def create(
@@ -38,13 +38,17 @@ class ConcurrentSource:
         slice_logger: SliceLogger,
         message_repository: MessageRepository,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+        max_queue_size: int = 10_000,
+        sleep_time: int = 0.1,
     ) -> "ConcurrentSource":
         threadpool = ThreadPoolManager(
             concurrent.futures.ThreadPoolExecutor(max_workers=num_workers, thread_name_prefix="workerpool"),
             logger,
+            max_queue_size,
+            sleep_time
         )
         return ConcurrentSource(
-            threadpool, logger, slice_logger, message_repository, initial_number_of_partitions_to_generate, timeout_seconds
+            threadpool, logger, slice_logger, message_repository, initial_number_of_partitions_to_generate, timeout_seconds, max_queue_size, sleep_time
         )
 
     def __init__(
@@ -55,6 +59,8 @@ class ConcurrentSource:
         message_repository: MessageRepository = InMemoryMessageRepository(),
         initial_number_partitions_to_generate: int = 1,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+        max_queue_size: int = 10_000,
+        sleep_time: int = 0.1,
     ) -> None:
         """
         :param threadpool: The threadpool to submit tasks to
@@ -70,6 +76,8 @@ class ConcurrentSource:
         self._message_repository = message_repository
         self._initial_number_partitions_to_generate = initial_number_partitions_to_generate
         self._timeout_seconds = timeout_seconds
+        self._max_queue_size = max_queue_size
+        self._sleep_time = sleep_time
 
     def read(
         self,
@@ -85,12 +93,12 @@ class ConcurrentSource:
         queue: Queue[QueueItem] = Queue()
         concurrent_stream_processor = ConcurrentReadProcessor(
             stream_instances_to_read_from,
-            PartitionEnqueuer(queue),
+            PartitionEnqueuer(queue, self._max_queue_size, self._sleep_time),
             self._threadpool,
             self._logger,
             self._slice_logger,
             self._message_repository,
-            PartitionReader(queue),
+            PartitionReader(queue, self._timeout_seconds, self._sleep_time),
         )
 
         # Enqueue initial partition generation tasks

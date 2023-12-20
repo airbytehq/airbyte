@@ -13,7 +13,7 @@ class ThreadPoolManager:
     """
 
     DEFAULT_SLEEP_TIME = 0.1
-    DEFAULT_MAX_QUEUE_SIZE = 2000
+    DEFAULT_MAX_QUEUE_SIZE = 10000
 
     def __init__(
         self,
@@ -36,17 +36,9 @@ class ThreadPoolManager:
 
     def submit(self, function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
-        self._wait_while_too_many_pending_futures(self._futures)
+        self._prune_futures(self._futures)
         self._futures.append(self._threadpool.submit(function, *args))
 
-    def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
-        # Wait until the number of pending tasks is < self._max_concurrent_tasks
-        while True:
-            self._prune_futures(futures)
-            if len(futures) < self._max_concurrent_tasks:
-                break
-            self._logger.info("Main thread is sleeping because the task queue is full...")
-            time.sleep(self._sleep_time)
 
     def _prune_futures(self, futures: List[Future[Any]]) -> None:
         """
