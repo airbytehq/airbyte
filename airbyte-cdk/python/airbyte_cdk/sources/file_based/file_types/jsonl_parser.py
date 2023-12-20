@@ -4,7 +4,7 @@
 
 import json
 import logging
-from typing import Any, Dict, Iterable, Mapping, Optional, Union
+from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
@@ -18,6 +18,12 @@ class JsonlParser(FileTypeParser):
 
     MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE = 1_000_000
     ENCODING = "utf8"
+
+    def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
+        """
+        JsonlParser does not require config checks, implicit pydantic validation is enough.
+        """
+        return True, None
 
     async def infer_schema(
         self,

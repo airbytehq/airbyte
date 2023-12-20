@@ -139,7 +139,7 @@ public class S3ConsumerFactory {
 
   private OnCloseFunction onCloseFunction(final BlobStorageOperations storageOperations,
                                           final List<WriteConfig> writeConfigs) {
-    return (hasFailed) -> {
+    return (hasFailed, streamSyncSummaries) -> {
       if (hasFailed) {
         LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
         for (final WriteConfig writeConfig : writeConfigs) {

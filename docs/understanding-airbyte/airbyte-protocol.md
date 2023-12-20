@@ -171,7 +171,7 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 #### Input:
 
 1. `config` - A configuration JSON object that has been validated using the `ConnectorSpecification`.
-2. `catalog` - An `AirbyteCatalog`. This `catalog` should be a subset of the `catalog` returned by the `discover` command. Any `AirbyteRecordMessages`s that the destination receives that do _not_ match the structure described in the `catalog` will fail.
+2. `configured catalog` - A [`ConfiguredAirbyteCatalog`](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog#configuredairbytecatalog). This is a modified version of the `catalog` returned by the `discover` command. Any `AirbyteRecordMessages`s that the destination receives that do _not_ match the structure described in the `catalog` will fail.
 3. `message stream` - \(this stream is consumed on stdin--it is not passed as an arg\). It will receive a stream of JSON-serialized `AirbyteMesssage`.
 
 #### Output:
@@ -333,7 +333,7 @@ Technical systems often group their underlying data into namespaces with each na
 
 An example of a namespace is the RDBMS's `schema` concept. An API namespace might be used for multiple accounts (e.g. `company_a` vs `company_b`, each having a "users" and "purchases" stream). Some common use cases for schemas are enforcing permissions, segregating test and production data and general data organization.
 
-The `AirbyteStream` represents this concept through an optional field called `namespace`. Additional documentation on Namespaces can be found [here](namespaces.md).
+The `AirbyteStream` represents this concept through an optional field called `namespace`. Additional documentation on Namespaces can be found [here](/using-airbyte/core-concepts/namespaces.md).
 
 ### Cursor
 

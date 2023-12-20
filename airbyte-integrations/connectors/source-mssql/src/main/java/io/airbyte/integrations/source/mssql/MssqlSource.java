@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -27,23 +28,27 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
 import java.io.File;
@@ -56,14 +61,12 @@ import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,19 +84,52 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
+  public static final String IS_COMPRESSED = "is_compressed";
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_EVENT_SERIAL_NO = "_ab_cdc_event_serial_no";
   private static final String HIERARCHYID = "hierarchyid";
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
+  public static final String TUNNEL_METHOD = "tunnel_method";
+  public static final String NO_TUNNEL = "NO_TUNNEL";
+  public static final String SSL_METHOD = "ssl_method";
+  public static final String SSL_METHOD_UNENCRYPTED = "unencrypted";
   private List<String> schemas;
 
-  public static Source sshWrappedSource() {
-    return new SshWrappedSource(new MssqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  public static Source sshWrappedSource(MssqlSource source) {
+    return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public MssqlSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
+  }
+
+  @Override
+  protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+    return MssqlCdcHelper.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
+    // and not over SSH tunnel
+    if (cloudDeploymentMode()) {
+      if (config.has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
+        // If no SSH tunnel.
+        if (config.has(SSL_METHOD) && config.get(SSL_METHOD).has(SSL_METHOD) &&
+            SSL_METHOD_UNENCRYPTED.equalsIgnoreCase(config.get(SSL_METHOD).get(SSL_METHOD).asText())) {
+          // Fail in case SSL method is unencrypted.
+          return new AirbyteConnectionStatus()
+              .withStatus(AirbyteConnectionStatus.Status.FAILED)
+              .withMessage("Unsecured connection not allowed. " +
+                  "If no SSH Tunnel set up, please use one of the following SSL methods: " +
+                  "encrypted_trust_server_certificate, encrypted_verify_certificate.");
+        }
+      }
+    }
+    return super.check(config);
   }
 
   @Override
@@ -442,8 +478,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-                                                                             final JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
@@ -451,23 +486,55 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using CDC: {}", true);
-      final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
-      final AirbyteDebeziumHandler<Lsn> handler =
-          new AirbyteDebeziumHandler<>(sourceConfig,
-              MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), true, firstRecordWaitTime,
-              OptionalInt.empty());
-
+      final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
+      final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
+      final var targetPosition = MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
+      final AirbyteDebeziumHandler<Lsn> handler = new AirbyteDebeziumHandler<>(
+          sourceConfig,
+          targetPosition,
+          true,
+          firstRecordWaitTime,
+          subsequentRecordWaitTime,
+          OptionalInt.empty());
       final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
+      // Determine if new stream(s) have been added to the catalog after initial sync of existing streams
+      final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
+      final ConfiguredAirbyteCatalog streamsToSnapshotCatalog = new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot);
+
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(
+          catalog,
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new MssqlCdcStateHandler(stateManager),
           mssqlCdcConnectorMetadataInjector,
-          MssqlCdcHelper.getDebeziumProperties(database, catalog),
+          MssqlCdcHelper.getDebeziumProperties(database, catalog, false),
           DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
-          emittedAt, true);
+          emittedAt,
+          true);
 
-      return Collections.singletonList(incrementalIteratorSupplier.get());
+      /*
+       * If the CDC state is null or there is no streams to snapshot, that means no stream has gone
+       * through the initial sync, so we return the list of incremental iterators
+       */
+      if ((stateManager.getCdcStateManager().getCdcState() == null ||
+          stateManager.getCdcStateManager().getCdcState().getState() == null ||
+          streamsToSnapshot.isEmpty())) {
+        return List.of(incrementalIteratorsSupplier.get());
+      }
+
+      // Otherwise, we build the snapshot iterators for the newly added streams(s)
+      final AutoCloseableIterator<AirbyteMessage> snapshotIterators =
+          handler.getSnapshotIterators(streamsToSnapshotCatalog,
+              mssqlCdcConnectorMetadataInjector,
+              MssqlCdcHelper.getDebeziumProperties(database, catalog, true),
+              new MssqlCdcStateHandler(stateManager),
+              DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
+              emittedAt);
+      /*
+       * The incremental iterators needs to be wrapped in a lazy iterator since only 1 Debezium engine for
+       * the DB can be running at a time
+       */
+      return List.of(snapshotIterators, AutoCloseableIterators.lazyIterator(incrementalIteratorsSupplier, null));
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
@@ -564,8 +631,16 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
   }
 
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
+  }
+
+  public Duration getConnectionTimeoutMssql(final Map<String, String> connectionProperties) {
+    return getConnectionTimeout(connectionProperties);
+  }
+
   public static void main(final String[] args) throws Exception {
-    final Source source = MssqlSource.sshWrappedSource();
+    final Source source = MssqlSource.sshWrappedSource(new MssqlSource());
     LOGGER.info("starting source: {}", MssqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MssqlSource.class);

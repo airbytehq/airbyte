@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   dockerRepository: airbyte/source-cart
   githubIssueLabel: source-cart
   icon: cart.svg
