@@ -52,7 +52,7 @@ public class MySqlInitialLoadStreamStateManager implements MySqlInitialLoadState
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
-        .withStream(getAirbyteStreamState(pair, (streamStateForIncrementalRun)));
+        .withStream(getAirbyteStreamState(pair, streamStateForIncrementalRun));
   }
 
   @Override
