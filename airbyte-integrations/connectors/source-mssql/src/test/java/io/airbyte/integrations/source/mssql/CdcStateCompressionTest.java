@@ -16,8 +16,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.Field;
@@ -148,9 +146,7 @@ public class CdcStateCompressionTest {
   }
 
   private MssqlSource source() {
-    final var source = new MssqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new MssqlSource();
   }
 
   private JsonNode config() {
