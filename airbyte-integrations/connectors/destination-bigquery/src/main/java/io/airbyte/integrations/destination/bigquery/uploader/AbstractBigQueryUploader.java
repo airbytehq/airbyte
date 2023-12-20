@@ -242,7 +242,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
   public String toString() {
     return "AbstractBigQueryUploader{" +
         "table=" + table.getTable() +
-        ", tmpTable=" + tmpTable.getTable() +
         ", syncMode=" + syncMode +
         ", writer=" + writer.getClass() +
         ", recordFormatter=" + recordFormatter.getClass() +
