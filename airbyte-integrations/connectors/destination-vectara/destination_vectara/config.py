@@ -42,6 +42,8 @@ class VectaraConfig(BaseModel):
         examples=["age", "user"],
     )
 
+    parallelize: bool = Field(..., title="Parallelize", description="Parallelize Ingest with multiple threads", airbyte_secret=False, order=4)
+
     class Config:
         title = "Vectara Config"
         schema_extra = {

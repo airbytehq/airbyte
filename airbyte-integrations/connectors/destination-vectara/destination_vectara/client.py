@@ -35,6 +35,7 @@ class VectaraClient:
         self.corpus_name = config.corpus_name
         self.client_id = config.oauth2.client_id
         self.client_secret = config.oauth2.client_secret
+        self.parallelize = config.parallelize
         self.check()
 
     def check(self):
@@ -167,20 +168,24 @@ class VectaraClient:
         return index_document_response
 
     def index_documents(self, documents):
-        with ThreadPoolExecutor() as executor:  ### DEBUG remove max_workers limit
-            futures = [executor.submit(self.index_document, doc) for doc in documents]
-            for future in futures:
-                try:
-                    response = future.result()
-                    if response is None:
-                        continue
-                    assert (
-                        response.get("status").get("code") == "OK"
-                        or response.get("status").get("statusDetail") == "Document should have at least one part."
-                    )
-                except AssertionError as e:
-                    # Handle the assertion error
-                    pass
+        if self.parallelize:
+            with ThreadPoolExecutor() as executor:  ### DEBUG remove max_workers limit
+                futures = [executor.submit(self.index_document, doc) for doc in documents]
+                for future in futures:
+                    try:
+                        response = future.result()
+                        if response is None:
+                            continue
+                        assert (
+                            response.get("status").get("code") == "OK"
+                            or response.get("status").get("statusDetail") == "Document should have at least one part."
+                        )
+                    except AssertionError as e:
+                        # Handle the assertion error
+                        pass
+        else:
+            for doc in documents:
+                self.index_document(doc)            
 
     def _normalize(self, metadata: dict) -> dict:
         result = {}
