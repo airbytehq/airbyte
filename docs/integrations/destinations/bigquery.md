@@ -142,6 +142,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.23  | 2023-12-18 | [\#33124](https://github.com/airbytehq/airbyte/pull/33124) | Make Schema Creation Separate from Table Creation                                                                                                               |
 | 2.3.22  | 2023-12-14 | [\#33451](https://github.com/airbytehq/airbyte/pull/33451) | Remove old spec option                                                                                                                                          |
 | 2.3.21  | 2023-12-13 | [\#33232](https://github.com/airbytehq/airbyte/pull/33232) | Only run typing+deduping for a stream if the stream had any records                                                                                             |
 | 2.3.20  | 2023-12-08 | [\#33263](https://github.com/airbytehq/airbyte/pull/33263) | Adopt java CDK version 0.7.0                                                                                                                                    |
