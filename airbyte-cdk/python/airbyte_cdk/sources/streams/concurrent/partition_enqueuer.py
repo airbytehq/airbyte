@@ -19,6 +19,8 @@ class PartitionEnqueuer:
         """
         :param queue:  The queue to put the partitions in.
         :param sentinel: The sentinel to put in the queue when all the partitions have been generated.
+        :param max_size: The maximum size of the queue.
+        :param wait_time: The time to wait between checking the queue size.
         """
         self._queue = queue
         self._max_size = max_size

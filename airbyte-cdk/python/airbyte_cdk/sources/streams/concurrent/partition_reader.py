@@ -17,6 +17,8 @@ class PartitionReader:
     def __init__(self, queue: Queue[QueueItem], max_size: int, wait_time: float) -> None:
         """
         :param queue: The queue to put the records in.
+        :param max_size: The maximum size of the queue. If the queue is full, the thread will wait for the specified amount of time before trying again.
+        :param wait_time: The amount of time to wait before trying to put a record in the queue again.
         """
         self._queue = queue
         self._max_size = max_size
