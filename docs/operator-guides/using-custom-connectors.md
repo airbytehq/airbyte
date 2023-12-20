@@ -1,4 +1,5 @@
----  
+---
+products: oss-*
 sidebar_label: Uploading custom connectors 
 --- 
  

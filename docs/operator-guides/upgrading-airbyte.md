@@ -1,3 +1,7 @@
+---
+products: oss-*
+---
+
 # Upgrading Airbyte
 
 :::info
