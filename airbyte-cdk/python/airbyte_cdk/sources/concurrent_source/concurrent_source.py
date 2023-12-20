@@ -28,7 +28,7 @@ class ConcurrentSource:
     The read is done when all partitions for all streams were generated and read.
     """
 
-    DEFAULT_TIMEOUT_SECONDS = 60
+    DEFAULT_TIMEOUT_SECONDS = 900
 
     @staticmethod
     def create(
@@ -125,8 +125,6 @@ class ConcurrentSource:
     ) -> Iterable[AirbyteMessage]:
         try:
             while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
-                #self._logger.info(f"Handling queue item: {airbyte_message_or_record_or_exception}")
-                #self._logger.info(f"Queue size: {queue.qsize()}")
                 yield from self._handle_item(
                     airbyte_message_or_record_or_exception,
                     concurrent_stream_processor,
