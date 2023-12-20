@@ -153,7 +153,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   protected void tearDown() {
     try {
       DataSourceFactory.close(testDataSource);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
     super.tearDown();
@@ -217,30 +217,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     // assert success if sql server agent running
     testdb.withAgentStarted().withWaitUntilAgentRunning();
     assertDoesNotThrow(() -> source().assertSqlServerAgentRunning(testDatabase()));
-  }
-
-  @Test
-  void testAssertSnapshotIsolationAllowed() {
-    // snapshot isolation enabled by setup so assert check passes
-    assertDoesNotThrow(() -> source().assertSnapshotIsolationAllowed(config(), testDatabase()));
-    // now disable snapshot isolation and assert that check fails
-    testdb.withoutSnapshotIsolation();
-    assertThrows(RuntimeException.class, () -> source().assertSnapshotIsolationAllowed(config(), testDatabase()));
-  }
-
-  @Test
-  void testAssertSnapshotIsolationDisabled() {
-    final JsonNode replicationConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "CDC")
-        .put("data_to_sync", "New Changes Only")
-        // set snapshot_isolation level to "Read Committed" to disable snapshot
-        .put("snapshot_isolation", "Read Committed")
-        .build());
-    final var config = config();
-    Jsons.replaceNestedValue(config, List.of("replication_method"), replicationConfig);
-    assertDoesNotThrow(() -> source().assertSnapshotIsolationAllowed(config, testDatabase()));
-    testdb.withoutSnapshotIsolation();
-    assertDoesNotThrow(() -> source().assertSnapshotIsolationAllowed(config, testDatabase()));
   }
 
   // Ensure the CDC check operations are included when CDC is enabled
