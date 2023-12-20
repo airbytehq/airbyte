@@ -1,4 +1,8 @@
-# Using custom connectors
+---  
+sidebar_label: Uploading custom connectors 
+--- 
+ 
+# Uploading Docker-based custom connectors
 
 :::info
 This guide walks through the setup of a Docker-based custom connector. To understand how to use our low-code connector builder, read our guide [here](/connector-development/connector-builder-ui/overview.md).
