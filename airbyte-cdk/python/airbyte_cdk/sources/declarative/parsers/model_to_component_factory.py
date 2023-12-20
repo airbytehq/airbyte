@@ -709,10 +709,6 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-        model_http_method = (
-            model.http_method if isinstance(model.http_method, str) else model.http_method.value if model.http_method is not None else "GET"
-        )
-
         assert model.use_cache is not None  # for mypy
 
         return HttpRequester(
@@ -721,7 +717,7 @@ class ModelToComponentFactory:
             path=model.path,
             authenticator=authenticator,
             error_handler=error_handler,
-            http_method=model_http_method,
+            http_method=model.http_method,
             request_options_provider=request_options_provider,
             config=config,
             disable_retries=self._disable_retries,
