@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.58.0
+Concurrent CDK: add state converter for ISO timestamps with millisecond granularity
+
 ## 0.57.8
 add SelectiveAuthenticator
 
