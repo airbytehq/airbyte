@@ -1,15 +1,12 @@
-import org.jsonschema2pojo.SourceType
-
 plugins {
     id 'application'
     id 'airbyte-java-connector'
-    id 'org.jsonschema2pojo' version '1.2.1'
 }
 
 airbyteJavaConnector {
     cdkVersionRequired = '0.7.7'
     features = ['db-sources']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 configurations.all {
@@ -38,18 +35,4 @@ dependencies {
 
     testImplementation libs.testcontainers.mssqlserver
     testFixturesImplementation libs.testcontainers.mssqlserver
-}
-
-jsonSchema2Pojo {
-    sourceType = SourceType.YAMLSCHEMA
-    source = files("${sourceSets.main.output.resourcesDir}/internal_models")
-    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
-    removeOldOutput = true
-
-    targetPackage = 'io.airbyte.integrations.source.mssql.internal.models'
-
-    useLongIntegers = true
-    generateBuilders = true
-    includeConstructors = false
-    includeSetters = true
 }

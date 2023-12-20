@@ -1,13 +1,13 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-title: Mssql Models
+title: DbSource Models
 type: object
-description: Mssql Models
+description: DbSource Models
 properties:
   state_type:
     "$ref": "#/definitions/StateType"
-  primary_key_state:
-    "$ref": "#/definitions/PrimaryKeyLoadStatus"
+  ordered_column_state:
+    "$ref": "#/definitions/OrderedColumnLoadStatus"
   cursor_based_state:
     "$ref": "#/definitions/CursorBasedStatus"
 definitions:
@@ -16,7 +16,7 @@ definitions:
     type: string
     enum:
       - cursor_based
-      - primary_key
+      - ordered_column
   CursorBasedStatus:
     type: object
     extends:
@@ -28,7 +28,7 @@ definitions:
       version:
         description: Version of state.
         type: integer
-  PrimaryKeyLoadStatus:
+  OrderedColumnLoadStatus:
     type: object
     properties:
       version:
@@ -36,13 +36,13 @@ definitions:
         type: integer
       state_type:
         "$ref": "#/definitions/StateType"
-      pk_name:
-        description: primary key name
+      ordered_col:
+        description: ordered column name
         type: string
-      pk_val:
-        description: primary key watermark
+      ordered_col_val:
+        description: ordered column high watermark
         type: string
       incremental_state:
-        description: State to switch to after completion of primary key initial sync
+        description: State to switch to after completion of the ordered column initial sync
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
