@@ -15,7 +15,7 @@ class PartitionEnqueuer:
     Generates partitions from a partition generator and puts them in a queue.
     """
 
-    def __init__(self, queue: Queue[QueueItem], max_size: int, wait_time: int) -> None:
+    def __init__(self, queue: Queue[QueueItem], max_size: int, wait_time: float) -> None:
         """
         :param queue:  The queue to put the partitions in.
         :param sentinel: The sentinel to put in the queue when all the partitions have been generated.
@@ -37,7 +37,7 @@ class PartitionEnqueuer:
         """
         try:
             for partition in stream.generate_partitions():
-                while self._queue.qsize() > self._max_size:
+                while self._queue.qsize() >= self._max_size:
                     time.sleep(self._wait_time)
                 self._queue.put(partition)
             self._queue.put(PartitionGenerationCompletedSentinel(stream))

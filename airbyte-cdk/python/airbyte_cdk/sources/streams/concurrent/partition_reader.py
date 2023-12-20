@@ -14,7 +14,7 @@ class PartitionReader:
     Generates records from a partition and puts them in a queue.
     """
 
-    def __init__(self, queue: Queue[QueueItem], max_size: int, wait_time: int) -> None:
+    def __init__(self, queue: Queue[QueueItem], max_size: int, wait_time: float) -> None:
         """
         :param queue: The queue to put the records in.
         """

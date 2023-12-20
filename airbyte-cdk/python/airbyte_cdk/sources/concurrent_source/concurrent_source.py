@@ -39,7 +39,7 @@ class ConcurrentSource:
         message_repository: MessageRepository,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
         max_queue_size: int = 10_000,
-        sleep_time: int = 0.1,
+        sleep_time: float = 0.1,
     ) -> "ConcurrentSource":
         threadpool = ThreadPoolManager(
             concurrent.futures.ThreadPoolExecutor(max_workers=num_workers, thread_name_prefix="workerpool"),
@@ -60,7 +60,7 @@ class ConcurrentSource:
         initial_number_partitions_to_generate: int = 1,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
         max_queue_size: int = 10_000,
-        sleep_time: int = 0.1,
+        sleep_time: float = 0.1,
     ) -> None:
         """
         :param threadpool: The threadpool to submit tasks to
