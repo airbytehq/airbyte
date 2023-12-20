@@ -16,6 +16,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLType;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
@@ -73,14 +75,13 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
       // should not filter raw records by timestamp.
       return new InitialRawTableState(false, Optional.empty());
     }
-    // Decrement by 1 second since timestamp precision varies between databases.
     // And use two explicit queries because COALESCE might not short-circuit evaluation.
     // This first query tries to find the oldest raw record with loaded_at = NULL.
     // Unsafe query requires us to explicitly close the Stream, which is inconvenient,
     // but it's also the only method in the JdbcDatabase interface to return non-string/int types
     try (final Stream<Timestamp> timestampStream = jdbcDatabase.unsafeQuery(
         conn -> conn.prepareStatement(
-            DSL.select(DSL.field("MIN(_airbyte_extracted_at) - INTERVAL '1 second'").as("min_timestamp"))
+            DSL.select(DSL.field("MIN(_airbyte_extracted_at)").as("min_timestamp"))
                 .from(DSL.name(id.rawNamespace(), id.rawName()))
                 .where(DSL.condition("_airbyte_loaded_at IS NULL"))
                 .getSQL()),
@@ -88,7 +89,11 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
       // Filter for nonNull values in case the query returned NULL (i.e. no unloaded records).
       final Optional<Timestamp> minUnloadedTimestamp = timestampStream.filter(Objects::nonNull).findFirst();
       if (minUnloadedTimestamp.isPresent()) {
-        return new InitialRawTableState(true, minUnloadedTimestamp.map(Timestamp::toInstant));
+        // Decrement by 1 second since timestamp precision varies between databases.
+        final Optional<Instant> ts = minUnloadedTimestamp
+            .map(Timestamp::toInstant)
+            .map(i -> i.minus(1, ChronoUnit.SECONDS));
+        return new InitialRawTableState(true, ts);
       }
     }
     // If there are no unloaded raw records, then we can safely skip all existing raw records.
