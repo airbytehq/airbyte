@@ -7,8 +7,6 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
@@ -38,11 +36,6 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
         .withoutSsl()
         .withXminReplication()
         .build();
-  }
-
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
   }
 
   @Override
@@ -98,11 +91,6 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
   @Override
   protected JsonNode getState() throws Exception {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }

@@ -31,8 +31,6 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -62,6 +60,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   // state.
   static private final MSSQLServerContainer<?> UNSHARED_CONTAINER = new MsSQLContainerFactory()
       .createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
+  private static final Duration CONNECTION_TIME = Duration.ofSeconds(60);
 
   private DataSource testDataSource;
 
@@ -94,9 +93,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   @Override
   protected MssqlSource source() {
-    final var source = new MssqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new MssqlSource();
   }
 
   @Override
@@ -147,7 +144,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         testdb.getPassword(),
         testdb.getDatabaseDriver().getDriverClassName(),
         testdb.getJdbcUrl(),
-        Map.of("encrypt", "false"));
+        Map.of("encrypt", "false"),
+        CONNECTION_TIME);
   }
 
   @Override

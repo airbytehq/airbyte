@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.57.8
+add SelectiveAuthenticator
+
 ## 0.57.7
 File CDK: Support raw txt file
 
