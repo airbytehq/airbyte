@@ -710,6 +710,7 @@ class ModelToComponentFactory:
         )
 
         assert model.use_cache is not None  # for mypy
+        assert model.http_method is not None  # for mypy
 
         return HttpRequester(
             name=name,
