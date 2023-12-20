@@ -1147,6 +1147,8 @@ class TestBasicRead(BaseTest):
 
 @pytest.mark.default_timeout(TEN_MINUTES)
 class TestConnectorAttributes(BaseTest):
+    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []  # Used so that this is not part of the mandatory high strictness test suite yet
+
     @pytest.fixture(name="operational_certification_test")
     async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
         """
@@ -1167,7 +1169,6 @@ class TestConnectorAttributes(BaseTest):
     ):
         output = await docker_runner.call_discover(config=connector_config)
         catalog_messages = filter_output(output, Type.CATALOG)
-
         streams = catalog_messages[0].catalog.streams
         discovered_streams_without_primary_key = {stream.name for stream in streams if not stream.source_defined_primary_key}
         missing_primary_keys = discovered_streams_without_primary_key - {stream.name for stream in streams_without_primary_key}
