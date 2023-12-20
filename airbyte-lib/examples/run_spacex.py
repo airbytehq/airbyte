@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import airbyte_lib as ab
+from itertools import islice
 
 # preparation (from airbyte-lib main folder):
 #   python -m venv .venv-source-spacex-api
@@ -18,7 +19,7 @@ source.set_streams(["launches", "rockets", "capsules"])
 
 result = ab.sync(source, cache)
 
-print(source.peek("capsules"))
+print(islice(source.read_stream("capsules"), 10))
 
 for name, records in result.cache.streams.items():
     print(f"Stream {name}: {len(records)} records")

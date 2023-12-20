@@ -4,7 +4,6 @@ import json
 import tempfile
 from contextlib import contextmanager
 from functools import lru_cache
-from itertools import islice
 from typing import Any, Dict, Iterable, List, Optional
 
 import jsonschema
@@ -116,9 +115,9 @@ class Source:
                 return msg.spec
         raise Exception(f"Connector did not return a spec. Last logs: {self._last_log_messages}")
 
-    def peek(self, stream: str, max_n: int = 10) -> List[Dict[str, Any]]:
+    def read_stream(self, stream: str) -> Iterable[Dict[str, Any]]:
         """
-        Peek at a stream.
+        Read a stream from the connector.
 
         This involves the following steps:
         * Call discover to get the catalog
@@ -142,8 +141,8 @@ class Source:
         )
         if len(configured_catalog.streams) == 0:
             raise Exception(f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}")
-        messages = islice(self._read(configured_catalog), max_n)
-        return [m.data for m in messages]
+        for message in self._read(configured_catalog):
+            yield message.data
 
     def check(self):
         """
