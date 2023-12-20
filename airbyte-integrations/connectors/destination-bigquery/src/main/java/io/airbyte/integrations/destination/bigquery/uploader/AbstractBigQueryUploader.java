@@ -132,7 +132,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     }
   }
 
-
   /**
    * Creates a partitioned table if the table previously was not partitioned
    *
