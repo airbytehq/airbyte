@@ -46,11 +46,6 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
-
-  @Override
   protected ConnectorSpecification getSpec() throws Exception {
     return SshHelpers.getSpecAndInjectSsh();
   }

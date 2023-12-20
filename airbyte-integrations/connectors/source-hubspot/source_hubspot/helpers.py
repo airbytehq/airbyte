@@ -72,11 +72,6 @@ class IURLPropertyRepresentation(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def as_url_param_with_history(self) -> str:
-        """"""
-
-    @property
-    @abc.abstractmethod
     def _term_representation(self):
         """"""
 
@@ -109,19 +104,6 @@ class APIv1Property(IURLPropertyRepresentation):
 
     def as_url_param(self):
         return {"property": self.properties}
-
-    def as_url_param_with_history(self) -> str:
-        return "&".join(map(lambda prop: f"propertiesWithHistory={prop}", self.properties))
-
-
-class APIv2Property(IURLPropertyRepresentation):
-    _term_representation = "property={property}&"
-
-    def as_url_param(self):
-        return {"property": self.properties}
-
-    def as_url_param_with_history(self) -> str:
-        return "&".join(map(lambda prop: f"propertiesWithHistory={prop}", self.properties))
 
 
 class APIv2Property(IURLPropertyRepresentation):
