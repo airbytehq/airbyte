@@ -119,8 +119,7 @@ class SourceFacebookMarketing(AbstractSource):
                 yield message
                 if message.type == MessageType.RECORD:
                     record = message.record
-                    account_id = _slice.get("account").get('account_id')
-                    stream_state = stream_instance.get_updated_state(stream_state, record.data, account_id=account_id)
+                    stream_state = stream_instance.get_updated_state(stream_state, record.data, _slice)
                     checkpoint_interval = stream_instance.state_checkpoint_interval
                     record_counter += 1
                     if checkpoint_interval and record_counter % checkpoint_interval == 0:

@@ -175,10 +175,11 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     def get_updated_state(self,
                           current_stream_state: MutableMapping[str, Any],
                           latest_record: Mapping[str, Any],
-                          account_id: str):
+                          stream_slice: dict):
         """Update stream state from latest record"""
         potentially_new_records_in_the_past = self._include_deleted and not current_stream_state.get("include_deleted", False)
         record_value = latest_record[self.cursor_field]
+        account_id = stream_slice.get("account").get("account_id")
         state_value = current_stream_state.get(account_id, {}).get(self.cursor_field) or record_value
         max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
         if potentially_new_records_in_the_past:
