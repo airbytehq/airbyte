@@ -718,3 +718,5 @@ and when in doubt, you can reinstall the CLI with the `--force` option:
 ```bash
 $ pipx reinstall pipelines --force
 ```
+
+REVERT ME!
