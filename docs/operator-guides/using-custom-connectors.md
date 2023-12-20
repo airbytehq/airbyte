@@ -1,3 +1,7 @@
+---
+products: oss-*
+---
+
 # Using custom connectors
 
 :::info

@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Typing and Deduping
 
 This page refers to new functionality added by [Destinations V2](/release_notes/upgrading_to_destinations_v2/). Typing and deduping is the default method of transforming datasets within data warehouse and database destinations after they've been replicated. Please check each destination to learn if Typing and Deduping is supported.

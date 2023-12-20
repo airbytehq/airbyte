@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Manage notifications
 
 This page provides guidance on how to manage notifications for Airbyte, allowing you to stay up-to-date on the activities in your workspace. 
