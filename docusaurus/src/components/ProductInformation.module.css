@@ -3,6 +3,8 @@
   display: inline-flex;
   gap: 8px;
   align-items: center;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .badge {
@@ -15,6 +17,7 @@
   align-items: center;
   gap: 4px;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .badge:hover {
