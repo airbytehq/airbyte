@@ -171,12 +171,29 @@ def validate_metadata_base_images_in_dockerhub(
     return True, None
 
 
+def validate_pypi_only_for_python(
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+) -> ValidationResult:
+    """Ensure that if pypi publishing is enabled for a connector, it has a python language tag."""
+
+    pypi_enabled = get(metadata_definition, "data.remoteRegistries.pypi.enabled", False)
+    if not pypi_enabled:
+        return True, None
+
+    tags = get(metadata_definition, "data.tags", [])
+    if "language:python" not in tags and "language:low-code" not in tags:
+        return False, "If pypi publishing is enabled, the connector must have a python language tag."
+
+    return True, None
+
+
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
     validate_major_version_bump_has_breaking_change_entry,
     validate_docs_path_exists,
     validate_metadata_base_images_in_dockerhub,
+    validate_pypi_only_for_python,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
