@@ -444,7 +444,7 @@ class Users(SourceZendeskIncrementalExportStream):
         return "incremental/users/cursor.json"
 
 
-class Organizations(SourceZendeskIncrementalExportStream):
+class Organizations(CursorPaginationZendeskSupportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
     response_list_name: str = "organizations"
