@@ -29,7 +29,7 @@ config = {"option": "OPTION"}
         ("test_boolean_false_value", {"boolean_false": "{{ False }}"}, {"boolean_false": "False"}),
         ("test_integer_falsy_value", {"integer_falsy": "{{ 0 }}"}, {"integer_falsy": "0"}),
         ("test_number_falsy_value", {"number_falsy": "{{ 0.0 }}"}, {"number_falsy": "0.0"}),
-        ("test_string_falsy_value", {"string_falsy": "{{ '' }}"}, {}),
+        ("test_string_empty_value", {"string_empty": "{{ '' }}"}, {"string_empty": ""}),
         ("test_none_value", {"none_value": "{{ None }}"}, {"none_value": "None"}),
     ],
 )
@@ -57,7 +57,7 @@ def test_interpolated_request_params(test_name, input_request_params, expected_r
         ("test_boolean_false_value", {"boolean_false": "{{ False }}"}, {"boolean_false": False}),
         ("test_integer_falsy_value", {"integer_falsy": "{{ 0 }}"}, {"integer_falsy": 0}),
         ("test_number_falsy_value", {"number_falsy": "{{ 0.0 }}"}, {"number_falsy": 0.0}),
-        ("test_string_falsy_value", {"string_falsy": "{{ '' }}"}, {}),
+        ("test_string_empty_value", {"string_empty": "{{ '' }}"}, {"string_empty": ""}),
         ("test_none_value", {"none_value": "{{ None }}"}, {}),
         ("test_string", """{"nested": { "key": "{{ config['option'] }}" }}""", {"nested": {"key": "OPTION"}}),
         ("test_nested_objects", {"nested": {"key": "{{ config['option'] }}"}}, {"nested": {"key": "OPTION"}}),

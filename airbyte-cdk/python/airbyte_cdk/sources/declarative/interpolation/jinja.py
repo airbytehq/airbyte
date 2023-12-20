@@ -80,7 +80,7 @@ class JinjaInterpolation(Interpolation):
         try:
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)
-                if result:
+                if result is not None:
                     return self._literal_eval(result, valid_types)
             else:
                 # If input is not a string, return it as is

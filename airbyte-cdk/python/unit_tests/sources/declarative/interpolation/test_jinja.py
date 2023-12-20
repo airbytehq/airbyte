@@ -3,6 +3,7 @@
 #
 
 import datetime
+from typing import Any, Mapping
 
 import pytest
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
@@ -17,6 +18,18 @@ def test_get_value_from_config():
     config = {"date": "2022-01-01"}
     val = interpolation.eval(s, config)
     assert val == "2022-01-01"
+
+
+@pytest.mark.parametrize(
+    "interpolated_string, config",
+    [
+        pytest.param('{{ "" }}', {}, id="test_value_is_a_empty_string"),
+        pytest.param("{{ config['test_input'] }}", {"test_input": ""}, id="test_value_is_empty_string_from_config"),
+    ],
+)
+def test_get_empty_string_from_config(interpolated_string: str, config: Mapping[str, Any]):
+    val = interpolation.eval(interpolated_string, config)
+    assert val == ""
 
 
 @pytest.mark.parametrize(
