@@ -6,15 +6,15 @@
     "type": "object",
     "properties": {
       "account_ids": {
-        "title" : "Ad Account ID(s)",
-        "description" : "The Ad account ID number is in the account dropdown menu or in your browser's address bar of your <a href=\"https://adsmanager.facebook.com/adsmanager/\">Meta Ads Manager</a>. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\">docs</a> for more information.",
-        "order" : 0,
-        "pattern" : "^[0-9]+$",
-        "pattern_descriptor" : "The Ad Account ID must be a number.",
-        "examples" : ["111111111111111"],
-        "type" : "array",
-        "items" : {
-          "type" : "string"
+        "title": "Ad Account ID(s)",
+        "description": "The Ad account ID number is in the account dropdown menu or in your browser's address bar of your <a href=\"https://adsmanager.facebook.com/adsmanager/\">Meta Ads Manager</a>. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\">docs</a> for more information.",
+        "order": 0,
+        "pattern": "^[0-9]+$",
+        "pattern_descriptor": "The Ad Account ID must be a number.",
+        "examples": ["111111111111111"],
+        "type": "array",
+        "items": {
+          "type": "string"
         }
       },
       "access_token": {
