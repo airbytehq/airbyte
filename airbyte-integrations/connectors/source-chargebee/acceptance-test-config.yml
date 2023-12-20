@@ -44,8 +44,8 @@ acceptance_tests:
             bypass_reason: "Empty stream. Unstable data"
         ignored_fields:
           subscription:
-            -name: "current_term_start"
-            -bypass_reason: "Field updated daily."
+            - name: "current_term_start"
+              bypass_reason: "Field updated daily."
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no
