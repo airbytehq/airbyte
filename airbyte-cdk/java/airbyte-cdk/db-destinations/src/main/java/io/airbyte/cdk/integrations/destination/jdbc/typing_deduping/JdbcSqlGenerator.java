@@ -240,19 +240,22 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   }
 
   @Override
+  public String createSchema(final String schema) {
+    return createSchemaSql(schema) + ";";
+  }
+
+  @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
     String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
     if (!force) {
       return Strings.join(
           List.of(
-              createSchemaSql(stream.id().finalNamespace()),
               createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
           ";" + System.lineSeparator());
     }
     return Strings.join(
         List.of(
-            createSchemaSql(stream.id().finalNamespace()),
             beginTransaction(),
             dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)),
             createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()),
