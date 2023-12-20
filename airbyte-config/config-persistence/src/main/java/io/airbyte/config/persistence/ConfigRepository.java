@@ -15,6 +15,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OP
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.lower;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
@@ -462,6 +463,7 @@ public class ConfigRepository {
     final Result<Record> records = database.query(ctx -> ctx.select(asterisk()).from(ACTOR_DEFINITION)
         .where(conditions)
         .and(ACTOR_DEFINITION.ACTOR_TYPE.eq(actorType))
+        .orderBy(lower(ACTOR_DEFINITION.NAME).asc())
         .fetch());
 
     return records.stream()
@@ -503,6 +505,7 @@ public class ConfigRepository {
         .on(ACTOR_DEFINITION.ID.eq(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID),
             ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID.eq(workspaceId))
         .where(conditions)
+        .orderBy(lower(ACTOR_DEFINITION.NAME).asc())
         .fetch());
   }
 
@@ -1205,11 +1208,12 @@ public class ConfigRepository {
   }
 
   public List<Map<String, String>> listFilterParam(ActorType actorType, UUID workspaceId) throws IOException {
-    return database.query(ctx -> ctx.selectDistinct(ACTOR_DEFINITION.ID, ACTOR_DEFINITION.NAME)
+    return database.query(ctx -> ctx.selectDistinct(ACTOR_DEFINITION.ID, ACTOR_DEFINITION.NAME, lower(ACTOR_DEFINITION.NAME).as("lower_name"))
         .from(ACTOR)
         .join(ACTOR_DEFINITION)
         .on(ACTOR_DEFINITION.ID.eq(ACTOR.ACTOR_DEFINITION_ID))
-        .where(ACTOR.WORKSPACE_ID.eq(workspaceId).and(ACTOR.ACTOR_TYPE.eq(actorType))).fetch()).stream()
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId).and(ACTOR.ACTOR_TYPE.eq(actorType)))
+        .orderBy(lower(ACTOR_DEFINITION.NAME).asc()).fetch()).stream()
         .map(record -> {
           UUID uuid = record.get(ACTOR_DEFINITION.ID);
           return Map.of("key", record.get(ACTOR_DEFINITION.NAME), "value", uuid.toString());
@@ -1247,14 +1251,22 @@ public class ConfigRepository {
   public List<SourceConnection> getSourceConnectionByWorkspaceId(final UUID workspaceId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(ACTOR)
-        .where(ACTOR.WORKSPACE_ID.eq(workspaceId).and(ACTOR.ACTOR_TYPE.eq(ActorType.source)).and(ACTOR.TOMBSTONE.eq(Boolean.FALSE))).fetch());
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId)
+        .and(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .and(ACTOR.TOMBSTONE.eq(Boolean.FALSE)))
+        .orderBy(lower(ACTOR.NAME).asc())
+        .fetch());
     return result.stream().map(data -> DbConverter.buildSourceConnection(data)).collect(Collectors.toList());
   }
 
   public List<DestinationConnection> getDestinationConnectionByWorkspaceId(final UUID workspaceId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(ACTOR)
-        .where(ACTOR.WORKSPACE_ID.eq(workspaceId).and(ACTOR.ACTOR_TYPE.eq(ActorType.destination)).and(ACTOR.TOMBSTONE.eq(Boolean.FALSE))).fetch());
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId)
+        .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .and(ACTOR.TOMBSTONE.eq(Boolean.FALSE)))
+        .orderBy(lower(ACTOR.NAME).asc())
+        .fetch());
     return result.stream().map(data -> DbConverter.buildDestinationConnection(data)).collect(Collectors.toList());
   }
 

@@ -94,3 +94,84 @@
     transition: variables.$transition-out;
   }
 }
+@media (max-width: 768px) {
+  .menuItem {
+    padding-left: 30px !important;
+
+    // &.inActive {
+    //   width: 100%;
+    //   border: none;
+    //   border-radius: 8px;
+    //   display: flex;
+    //   flex-direction: row;
+    //   box-sizing: border-box;
+    //   padding-left: 30px !important;
+    //   color: colors.$black;
+    //   transition: variables.$transition-out;
+
+    //   &:hover,
+    //   &:focus-visible {
+    //     color: colors.$black;
+    //     background: #eae9ff;
+    //     transition: variables.$transition-out;
+    //     border-radius: 0;
+    //   }
+    // }
+    // &.active {
+    //   color: #4f46e5;
+    //   width: 100%;
+    //   background: #eae9ff;
+    //   border-right: 6px solid;
+    //   border-right-color: #4f46e5;
+    //   transition: variables.$transition-out;
+    //   padding-left: 30px !important;
+
+    //   &:hover,
+    //   &:focus-visible {
+    //     color: #4f46e5;
+    //     background: #eae9ff;
+    //     transition: variables.$transition-out;
+    //   }
+    // }
+  }
+}
+@media (max-width: 468px) {
+  .menuItem {
+    padding-left: 24px !important;
+
+    // &.inActive {
+    //   width: 100%;
+    //   border: none;
+    //   border-radius: 8px;
+    //   display: flex;
+    //   flex-direction: row;
+    //   box-sizing: border-box;
+    //   padding-left: 24px !important;
+    //   color: colors.$black;
+    //   transition: variables.$transition-out;
+
+    //   &:hover,
+    //   &:focus-visible {
+    //     color: colors.$black;
+    //     background: #eae9ff;
+    //     transition: variables.$transition-out;
+    //     border-radius: 0;
+    //   }
+    // }
+    // &.active {
+    //   color: #4f46e5;
+    //   width: 100%;
+    //   background: #eae9ff;
+    //   border-right: 6px solid;
+    //   border-right-color: #4f46e5;
+    //   transition: variables.$transition-out;
+    //   padding-left: 24px !important;
+
+    //   &:hover,
+    //   &:focus-visible {
+    //     color: #4f46e5;
+    //     background: #eae9ff;
+    //     transition: variables.$transition-out;
+    //   }
+  }
+}

@@ -72,6 +72,9 @@ const UserDetail = styled.div`
 const DocumentationArrowIconContainer = styled.div`
   display: block;
   margin-left: 8px;
+  @media (max-width: 568px) {
+    margin-left: 3px;
+  }
 `;
 
 export const useCalculateSidebarStyles = () => {
@@ -165,7 +168,7 @@ const SideBar: React.FC = () => {
             <FormattedMessage id="sidebar.documentation" />
           </Text>
           <DocumentationArrowIconContainer>
-            <NewTabSecondIcon width={13} height={14} />
+            <NewTabSecondIcon />
           </DocumentationArrowIconContainer>
         </a>
         <UserDetail>

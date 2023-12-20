@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
-import MainPageWithScroll from "components/MainPageWithScroll";
+import NewMainPageWithScroll from "components/NewMainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import { TabMenu, CategoryItem } from "components/TabMenu";
 
@@ -132,7 +132,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     <PageContainer>
       <Seperator />
       <ContentContainer>
-        <MainPageWithScroll
+        <NewMainPageWithScroll
           withPadding
           headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
           pageTitle={
@@ -161,7 +161,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               </Suspense>
             </MainView>
           </Content>
-        </MainPageWithScroll>
+        </NewMainPageWithScroll>
       </ContentContainer>
     </PageContainer>
   );
