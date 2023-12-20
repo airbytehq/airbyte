@@ -325,3 +325,4 @@ class ConnectorRunner:
                 json.dump(new_configuration, new_configuration_file)
             logging.info(f"Stored most recent configuration value to {new_configuration_file_path}")
             return new_configuration_file_path
+# test
