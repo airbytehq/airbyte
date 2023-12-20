@@ -241,7 +241,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
 
   @Override
   public String createSchema(final String schema) {
-    return createSchemaSql(schema);
+    return createSchemaSql(schema) + ";";
   }
 
   @Override
