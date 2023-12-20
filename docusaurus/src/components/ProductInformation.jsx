@@ -8,7 +8,7 @@ import { faCheckCircle, faQuestionCircle, faXmarkCircle } from "@fortawesome/fre
 const Badge = ({ available, children }) => {
   return (
     <span className={classNames(styles.badge, { [styles.available]: available })}>
-      <FontAwesomeIcon size="md" icon={available ? faCheckCircle : faXmarkCircle} title={available ? "Available" : "Not available"} />
+      <FontAwesomeIcon icon={available ? faCheckCircle : faXmarkCircle} title={available ? "Available" : "Not available"} />
       <span>{children}</span>
     </span>
   );
@@ -32,7 +32,7 @@ export const ProductInformation = ({ products }) => {
       <Badge available={ossCommunity}>Self-Managed Community (OSS)</Badge>
       <Badge available={ossEnterprise}>Self-Managed Enterprise</Badge>
       <a href="https://airbyte.com/product/features" target="_blank" className={styles.helpIcon} title="Feature comparison">
-        <FontAwesomeIcon icon={faQuestionCircle} size="md" />
+        <FontAwesomeIcon icon={faQuestionCircle} />
       </a>
     </div>
   );
