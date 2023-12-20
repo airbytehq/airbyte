@@ -77,7 +77,6 @@ class SourceFacebookMarketing(AbstractSource):
         if config.end_date:
             config.end_date = pendulum.instance(config.end_date)
 
-        config.account_id = config.account_id.split(",")
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -95,9 +94,9 @@ class SourceFacebookMarketing(AbstractSource):
             if config.start_date and config.end_date < config.start_date:
                 return False, "End date must be equal or after start date."
 
-            api = API(account_ids=config.account_id, access_token=config.access_token, page_size=config.page_size)
+            api = API(account_ids=config.account_ids, access_token=config.access_token, page_size=config.page_size)
 
-            for account_id in config.account_id:
+            for account_id in config.account_ids:
                 # Get Ad Account to check creds
                 ad_account = api.account(account_id=account_id)
                 logger.info(f"Select account {ad_account}")
@@ -128,24 +127,24 @@ class SourceFacebookMarketing(AbstractSource):
             config.start_date = validate_start_date(config.start_date)
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_ids=config.account_id, access_token=config.access_token, page_size=config.page_size)
+        api = API(account_ids=config.account_ids, access_token=config.access_token, page_size=config.page_size)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)
 
         insights_args = dict(
             api=api,
-            account_ids=config.account_id,
+            account_ids=config.account_ids,
             start_date=report_start_date,
             end_date=config.end_date,
             insights_lookback_window=config.insights_lookback_window,
             insights_job_timeout=config.insights_job_timeout,
         )
         streams = [
-            AdAccount(api=api, account_ids=config.account_id),
+            AdAccount(api=api, account_ids=config.account_ids),
             AdSets(
                 api=api,
-                account_ids=config.account_id,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -153,7 +152,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             Ads(
                 api=api,
-                account_ids=config.account_id,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -161,7 +160,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             AdCreatives(
                 api=api,
-                account_ids=config.account_id,
+                account_ids=config.account_ids,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
             ),
@@ -187,7 +186,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDemographicsGender(page_size=config.page_size, **insights_args),
             Campaigns(
                 api=api,
-                account_ids=config.account_id,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -195,19 +194,19 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             CustomConversions(
                 api=api,
-                account_ids=config.account_id,
+                account_ids=config.account_ids,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             CustomAudiences(
                 api=api,
-                account_ids=config.account_id,
+                account_ids=config.account_ids,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             Images(
                 api=api,
-                account_ids=config.account_id,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -215,7 +214,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             Videos(
                 api=api,
-                account_ids=config.account_id,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -223,7 +222,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             Activities(
                 api=api,
-                account_ids=config.account_id,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -289,7 +288,7 @@ class SourceFacebookMarketing(AbstractSource):
                 )
             stream = AdsInsights(
                 api=api,
-                account_ids=config.account_id,
+                account_ids=config.account_ids,
                 name=f"Custom{insight.name}",
                 fields=list(insight_fields),
                 breakdowns=list(set(insight.breakdowns)),

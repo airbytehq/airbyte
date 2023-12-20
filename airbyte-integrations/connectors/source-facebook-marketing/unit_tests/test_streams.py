@@ -45,7 +45,7 @@ def test_filter_all_statuses(api, mocker, some_config):
             }
         ]
     }
-    assert FBMarketingStream(api=api, account_ids=some_config["account_id"])._filter_all_statuses() == expected
+    assert FBMarketingStream(api=api, account_ids=some_config["account_ids"])._filter_all_statuses() == expected
 
 
 @pytest.mark.parametrize(
@@ -79,7 +79,7 @@ def test_parse_call_rate_header():
 def test_ads_insights_breakdowns(class_name, breakdowns, action_breakdowns, some_config):
     kwargs = {
         "api": None,
-        "account_ids": some_config["account_id"],
+        "account_ids": some_config["account_ids"],
         "start_date": pendulum.now(),
         "end_date": pendulum.now(),
         "insights_lookback_window": 1,
@@ -92,7 +92,7 @@ def test_ads_insights_breakdowns(class_name, breakdowns, action_breakdowns, some
 def test_custom_ads_insights_breakdowns(some_config):
     kwargs = {
         "api": None,
-        "account_ids": some_config["account_id"],
+        "account_ids": some_config["account_ids"],
         "start_date": pendulum.now(),
         "end_date": pendulum.now(),
         "insights_lookback_window": 1,
@@ -113,7 +113,7 @@ def test_custom_ads_insights_breakdowns(some_config):
 def test_custom_ads_insights_action_report_times(some_config):
     kwargs = {
         "api": None,
-        "account_ids": some_config["account_id"],
+        "account_ids": some_config["account_ids"],
         "start_date": pendulum.now(),
         "end_date": pendulum.now(),
         "insights_lookback_window": 1,

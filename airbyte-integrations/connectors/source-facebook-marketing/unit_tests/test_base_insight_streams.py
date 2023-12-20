@@ -51,7 +51,7 @@ class TestBaseInsightsStream:
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,
-            account_ids=some_config["account_id"],
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             insights_lookback_window=28,
@@ -66,7 +66,7 @@ class TestBaseInsightsStream:
     def test_init_override(self, api, some_config):
         stream = AdsInsights(
             api=api,
-            account_ids=some_config["account_id"],
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             name="CustomName",
@@ -90,7 +90,7 @@ class TestBaseInsightsStream:
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
-            account_ids=some_config["account_id"],
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             insights_lookback_window=28,
@@ -99,7 +99,7 @@ class TestBaseInsightsStream:
         records = list(
             stream.read_records(
                 sync_mode=SyncMode.incremental,
-                stream_slice={"insight_job": job, "account_id": some_config["account_id"][0]},
+                stream_slice={"insight_job": job, "account_id": some_config["account_ids"][0]},
             )
         )
 
@@ -115,7 +115,7 @@ class TestBaseInsightsStream:
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
-            account_ids=some_config["account_id"],
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             insights_lookback_window=28,
@@ -124,7 +124,7 @@ class TestBaseInsightsStream:
         records = list(
             stream.read_records(
                 sync_mode=SyncMode.incremental,
-                stream_slice={"insight_job": job, "account_id": some_config["account_id"][0]},
+                stream_slice={"insight_job": job, "account_id": some_config["account_ids"][0]},
             )
         )
 
@@ -219,7 +219,7 @@ class TestBaseInsightsStream:
         """State setter/getter should work with all combinations"""
         stream = AdsInsights(
             api=api,
-            account_ids=some_config["account_id"],
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             insights_lookback_window=28,
@@ -231,7 +231,7 @@ class TestBaseInsightsStream:
         actual_state = stream.state
 
         result_state = state if not result_state else result_state
-        result_state[some_config["account_id"][0]]["slices"] = result_state[some_config["account_id"][0]].get("slices", set())
+        result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", set())
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
@@ -240,7 +240,7 @@ class TestBaseInsightsStream:
         """Stream will use start_date when there is not state"""
         end_date = start_date + duration(weeks=2)
         stream = AdsInsights(
-            api=api, account_ids=some_config["account_id"], start_date=start_date, end_date=end_date, insights_lookback_window=28
+            api=api, account_ids=some_config["account_ids"], start_date=start_date, end_date=end_date, insights_lookback_window=28
         )
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
@@ -263,7 +263,7 @@ class TestBaseInsightsStream:
         start_date = recent_start_date
         end_date = pendulum.now()
         stream = AdsInsights(
-            api=api, account_ids=some_config["account_id"], start_date=start_date, end_date=end_date, insights_lookback_window=28
+            api=api, account_ids=some_config["account_ids"], start_date=start_date, end_date=end_date, insights_lookback_window=28
         )
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
@@ -287,7 +287,7 @@ class TestBaseInsightsStream:
         cursor_value = start_date + duration(days=5)
         state = {AdsInsights.cursor_field: cursor_value.date().isoformat()}
         stream = AdsInsights(
-            api=api, account_ids=some_config["account_id"], start_date=start_date, end_date=end_date, insights_lookback_window=28
+            api=api, account_ids=some_config["account_ids"], start_date=start_date, end_date=end_date, insights_lookback_window=28
         )
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
@@ -312,7 +312,7 @@ class TestBaseInsightsStream:
         cursor_value = end_date - duration(days=1)
         state = {AdsInsights.cursor_field: cursor_value.date().isoformat()}
         stream = AdsInsights(
-            api=api, account_ids=some_config["account_id"], start_date=start_date, end_date=end_date, insights_lookback_window=28
+            api=api, account_ids=some_config["account_ids"], start_date=start_date, end_date=end_date, insights_lookback_window=28
         )
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
@@ -349,7 +349,7 @@ class TestBaseInsightsStream:
                 }
             }
         stream = AdsInsights(
-            api=api, account_ids=some_config["account_id"], start_date=start_date, end_date=end_date, insights_lookback_window=28
+            api=api, account_ids=some_config["account_ids"], start_date=start_date, end_date=end_date, insights_lookback_window=28
         )
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
@@ -370,7 +370,7 @@ class TestBaseInsightsStream:
     def test_get_json_schema(self, api, some_config):
         stream = AdsInsights(
             api=api,
-            account_ids=some_config["account_id"],
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             insights_lookback_window=28,
@@ -385,7 +385,7 @@ class TestBaseInsightsStream:
     def test_get_json_schema_custom(self, api, some_config):
         stream = AdsInsights(
             api=api,
-            account_ids=some_config["account_id"],
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             breakdowns=["device_platform", "country"],
@@ -401,7 +401,7 @@ class TestBaseInsightsStream:
     def test_fields(self, api, some_config):
         stream = AdsInsights(
             api=api,
-            account_ids=some_config["account_id"],
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             insights_lookback_window=28,
@@ -416,7 +416,7 @@ class TestBaseInsightsStream:
     def test_fields_custom(self, api, some_config):
         stream = AdsInsights(
             api=api,
-            account_ids=some_config["account_id"],
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             fields=["account_id", "account_currency"],
@@ -430,7 +430,7 @@ class TestBaseInsightsStream:
     def test_level_custom(self, api, some_config):
         stream = AdsInsights(
             api=api,
-            account_ids=some_config["account_id"],
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             fields=["account_id", "account_currency"],
@@ -443,7 +443,7 @@ class TestBaseInsightsStream:
     def test_breackdowns_fields_present_in_response_data(self, api, some_config):
         stream = AdsInsights(
             api=api,
-            account_ids=some_config["account_id"],
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             breakdowns=["age", "gender"],

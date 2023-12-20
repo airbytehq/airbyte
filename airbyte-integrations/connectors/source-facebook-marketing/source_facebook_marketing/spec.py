@@ -112,18 +112,17 @@ class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
-    account_id: str = Field(
+    account_ids: List[str] = Field(
         title="Ad Account ID(s)",
         order=0,
         description=(
-            "Comma-separated list of the Facebook Ad account IDs. "
             "The Ad account ID number is in the account dropdown menu or in your browser's address "
             'bar of your <a href="https://adsmanager.facebook.com/adsmanager/">Meta Ads Manager</a>. '
             'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
         ),
-        pattern="^[0-9]+(,[0-9]+)*$",
-        pattern_descriptor="The Ad Account ID must be a number. Separate multiple Ad Account IDs using commas.",
-        examples=["111111111111111,22222222222"],
+        pattern="^[0-9]+$",
+        pattern_descriptor="The Ad Account ID must be a number.",
+        examples=["111111111111111"],
     )
 
     access_token: str = Field(

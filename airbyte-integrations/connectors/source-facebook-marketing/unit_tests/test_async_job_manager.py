@@ -31,7 +31,7 @@ def update_job_mock_fixture(mocker):
 class TestInsightAsyncManager:
     def test_jobs_empty(self, api, some_config):
         """Should work event without jobs"""
-        manager = InsightAsyncJobManager(api=api, jobs=[], account_id=some_config["account_id"][0])
+        manager = InsightAsyncJobManager(api=api, jobs=[], account_id=some_config["account_ids"][0])
         jobs = list(manager.completed_jobs())
         assert not jobs
 
@@ -41,7 +41,7 @@ class TestInsightAsyncManager:
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False),
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False),
         ]
-        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_id"][0])
+        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_ids"][0])
         completed_jobs = list(manager.completed_jobs())
         assert jobs == completed_jobs
         time_mock.sleep.assert_not_called()
@@ -61,7 +61,7 @@ class TestInsightAsyncManager:
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=False),
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=False),
         ]
-        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_id"][0])
+        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_ids"][0])
 
         job = next(manager.completed_jobs(), None)
         assert job == jobs[1]
@@ -89,7 +89,7 @@ class TestInsightAsyncManager:
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=True),
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=False),
         ]
-        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_id"][0])
+        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_ids"][0])
 
         job = next(manager.completed_jobs(), None)
         assert job == jobs[0]
@@ -121,7 +121,7 @@ class TestInsightAsyncManager:
         sub_jobs[0].get_result.return_value = [1, 2]
         sub_jobs[1].get_result.return_value = [3, 4]
         jobs[1].split_job.return_value = sub_jobs
-        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_id"][0])
+        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_ids"][0])
 
         job = next(manager.completed_jobs(), None)
         assert job == jobs[0]
@@ -147,7 +147,7 @@ class TestInsightAsyncManager:
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=True),
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=False),
         ]
-        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_id"][0])
+        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_ids"][0])
 
         with pytest.raises(JobException, match=f"{jobs[1]}: failed more than {InsightAsyncJobManager.MAX_NUMBER_OF_ATTEMPTS} times."):
             next(manager.completed_jobs(), None)
@@ -170,7 +170,7 @@ class TestInsightAsyncManager:
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=True),
             mocker.Mock(spec=ParentAsyncJob, _jobs=sub_jobs, attempt_number=1, failed=False, completed=False),
         ]
-        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_id"][0])
+        manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_ids"][0])
 
         with pytest.raises(JobException):
             next(manager.completed_jobs(), None)

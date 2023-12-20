@@ -5,14 +5,17 @@
     "title": "Source Facebook Marketing",
     "type": "object",
     "properties": {
-      "account_id": {
-        "title": "Ad Account ID(s)",
-        "description": "Comma-separated list of the Facebook Ad account IDs. The Ad account ID number is in the account dropdown menu or in your browser's address bar of your <a href=\"https://adsmanager.facebook.com/adsmanager/\">Meta Ads Manager</a>. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\">docs</a> for more information.",
-        "order": 0,
-        "pattern": "^[0-9]+(,[0-9]+)*$",
-        "pattern_descriptor": "The Ad Account ID must be a number. Separate multiple Ad Account IDs using commas.",
-        "examples": ["111111111111111,22222222222"],
-        "type": "string"
+      "account_ids": {
+        "title" : "Ad Account ID(s)",
+        "description" : "The Ad account ID number is in the account dropdown menu or in your browser's address bar of your <a href=\"https://adsmanager.facebook.com/adsmanager/\">Meta Ads Manager</a>. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\">docs</a> for more information.",
+        "order" : 0,
+        "pattern" : "^[0-9]+$",
+        "pattern_descriptor" : "The Ad Account ID must be a number.",
+        "examples" : ["111111111111111"],
+        "type" : "array",
+        "items" : {
+          "type" : "string"
+        }
       },
       "access_token": {
         "title": "Access Token",
@@ -388,7 +391,7 @@
         "type": "string"
       }
     },
-    "required": ["account_id", "access_token"]
+    "required": ["account_ids", "access_token"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],

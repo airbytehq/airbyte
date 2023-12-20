@@ -26,7 +26,7 @@ from .utils import command_check
 @pytest.fixture(name="config")
 def config_fixture(requests_mock):
     config = {
-        "account_id": "123",
+        "account_ids": ["123"],
         "access_token": "TOKEN",
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",
@@ -82,7 +82,7 @@ class TestSourceFacebookMarketing:
         """Check if _find_account was called to validate credentials"""
         ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
 
-        api_find_account.assert_called_once_with(config["account_id"])
+        api_find_account.assert_called_once_with(config["account_ids"][0])
         logger_mock.info.assert_called_once_with("Select account 1234")
         assert ok
         assert not error_msg
