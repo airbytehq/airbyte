@@ -69,18 +69,18 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-      final Map<String, String> additionalParameters = new HashMap<>();
-      if (config.has(PARAM_SSL) && config.get(PARAM_SSL).asBoolean()) {
-          LOGGER.debug("SSL Enabled");
-          if (config.has(PARAM_SSL_MODE)) {
-              LOGGER.debug("Selected SSL Mode : " + config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText());
-              additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
-          } else {
-              additionalParameters.put(PARAM_SSLMODE, REQUIRE);
-          }
-      } 
-      additionalParameters.put(ENCRYPTDATA, ENCRYPTDATA_ON);
-      return additionalParameters;
+    final Map<String, String> additionalParameters = new HashMap<>();
+    if (config.has(PARAM_SSL) && config.get(PARAM_SSL).asBoolean()) {
+      LOGGER.debug("SSL Enabled");
+      if (config.has(PARAM_SSL_MODE)) {
+        LOGGER.debug("Selected SSL Mode : " + config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText());
+        additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
+      } else {
+        additionalParameters.put(PARAM_SSLMODE, REQUIRE);
+      }
+    }
+    additionalParameters.put(ENCRYPTDATA, ENCRYPTDATA_ON);
+    return additionalParameters;
   }
 
   private Map<String, String> obtainConnectionOptions(final JsonNode encryption) {
