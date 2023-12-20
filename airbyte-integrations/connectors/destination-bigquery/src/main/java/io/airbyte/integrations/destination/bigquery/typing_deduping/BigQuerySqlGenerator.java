@@ -400,10 +400,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                             final String finalSuffix,
                             final Optional<Instant> minRawTimestamp,
                             final boolean useExpensiveSaferCasting) {
-
-    throw new IllegalStateException("THIS IS A TEST of internal tooling. You should NOT see this in production. If you do, contact Cynthia/Destinations immediately.");
-
-    /*
     final String handleNewRecords;
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       handleNewRecords = upsertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp);
@@ -421,7 +417,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ${commit_raw_table}
             COMMIT TRANSACTION;
             """);
-     */
   }
 
   private String insertNewRecords(final StreamConfig stream,
@@ -696,6 +691,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public String overwriteFinalTable(final StreamId streamId, final String finalSuffix) {
+    throw new IllegalStateException("THIS IS A TEST of internal tooling. You should NOT see this in production. If you do, contact Cynthia/Destinations immediately.");
+
+    /*
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
         "final_table_id", streamId.finalTableId(QUOTE),
@@ -705,6 +703,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             DROP TABLE IF EXISTS ${project_id}.${final_table_id};
             ALTER TABLE ${project_id}.${tmp_final_table} RENAME TO ${real_final_table};
             """);
+     */
   }
 
   private String wrapAndQuote(final String namespace, final String tableName) {
