@@ -30,5 +30,5 @@ def get_connector(
     """
     metadata = get_connector_metadata(name)
     return Source(
-        PathExecutor(metadata, version) if use_local_install else VenvExecutor(metadata, version, use_local_install), name, config
+        PathExecutor(metadata, version) if use_local_install else VenvExecutor(metadata, version, install_if_missing), name, config
     )
