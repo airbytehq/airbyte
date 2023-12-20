@@ -166,7 +166,7 @@ class Source:
             raise Exception(f"Connector did not return check status. Last logs: {self._last_log_messages}")
 
     def install(self):
-        self.executor.ensure_installation()
+        self.executor.install()
 
     def _read(self) -> Iterable[AirbyteRecordMessage]:
         """

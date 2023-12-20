@@ -1,5 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from typing import Any
+
 from airbyte_lib.cache import Cache
 
 
@@ -25,3 +27,6 @@ class SyncResult:
 
     def __getitem__(self, stream: str) -> Dataset:
         return Dataset(self._cache, stream)
+
+    def get_sql_engine(self) -> Any:
+        return self._cache.get_sql_engine()

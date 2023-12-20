@@ -24,6 +24,10 @@ class Executor(ABC):
     def ensure_installation(self):
         pass
 
+    @abstractmethod
+    def install(self):
+        pass
+
 
 @contextmanager
 def _stream_from_subprocess(args: List[str]) -> Generator[Iterable[str], None, None]:
@@ -69,6 +73,10 @@ def _stream_from_subprocess(args: List[str]) -> Generator[Iterable[str], None, N
 
 
 class VenvExecutor(Executor):
+    def __init__(self, metadata: ConnectorMetadata, target_version: str = "latest", install_if_missing: bool = False):
+        super().__init__(metadata, target_version)
+        self.install_if_missing = install_if_missing
+
     def _get_venv_name(self):
         return f".venv-{self.metadata.name}"
 
@@ -80,7 +88,7 @@ class VenvExecutor(Executor):
         if result.returncode != 0:
             raise Exception(f"Install process exited with code {result.returncode}")
 
-    def _install(self):
+    def install(self):
         venv_name = self._get_venv_name()
         self._run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", venv_name])
 
@@ -105,7 +113,9 @@ class VenvExecutor(Executor):
         venv_name = f".venv-{self.metadata.name}"
         venv_path = Path(venv_name)
         if not venv_path.exists():
-            self._install()
+            if not self.install_if_missing:
+                raise Exception(f"Connector {self.metadata.name} is not available - venv {venv_name} does not exist")
+            self.install()
 
         connector_path = self._get_connector_path()
         if not connector_path.exists():
@@ -114,7 +124,7 @@ class VenvExecutor(Executor):
         installed_version = self._get_installed_version()
         if installed_version != self.target_version:
             # If the version doesn't match, reinstall
-            self._install()
+            self.install()
 
             # Check the version again
             version_after_install = self._get_installed_version()
@@ -136,6 +146,9 @@ class PathExecutor(Executor):
             self.execute(["spec"])
         except Exception as e:
             raise Exception(f"Connector {self.metadata.name} is not available - executing it failed: {e}")
+
+    def install(self):
+        raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")
 
     def execute(self, args: List[str]) -> Iterable[str]:
         with _stream_from_subprocess([self.metadata.name] + args) as stream:

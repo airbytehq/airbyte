@@ -95,14 +95,14 @@ def test_read_stream_nonexisting():
 
 def test_failing_path_connector():
     with pytest.raises(Exception):
-        ab.get_connector("source-test", config={"apiKey": "test"}, auto_install=False)
+        ab.get_connector("source-test", config={"apiKey": "test"}, use_local_install=True)
 
 def test_succeeding_path_connector():
     old_path = os.environ["PATH"]
 
     # set path to include the test venv bin folder
     os.environ["PATH"] = f"{os.path.abspath('.venv-source-test/bin')}:{os.environ['PATH']}"
-    source = ab.get_connector("source-test", config={"apiKey": "test"}, auto_install=False)
+    source = ab.get_connector("source-test", config={"apiKey": "test"}, use_local_install=True)
     source.check()
 
     os.environ["PATH"] = old_path

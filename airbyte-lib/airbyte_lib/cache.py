@@ -25,7 +25,7 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    def get_sql_engine(self, stream: str) -> Any:
+    def get_sql_engine(self) -> Any:
         pass
 
 
@@ -50,5 +50,5 @@ class InMemoryCache(Cache):
     def get_sql_table(self, stream: str) -> Any:
         raise NotImplementedError()
 
-    def get_sql_engine(self, stream: str) -> Any:
+    def get_sql_engine(self) -> Any:
         raise NotImplementedError()
