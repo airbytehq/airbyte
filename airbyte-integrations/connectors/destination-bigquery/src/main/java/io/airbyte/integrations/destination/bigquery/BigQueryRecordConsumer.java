@@ -121,10 +121,6 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
   @Override
   public void close(final boolean hasFailed) throws Exception {
     LOGGER.info("Started closing all connections");
-
-    throw new IllegalStateException("THIS IS A TEST of internal tooling. You should NOT see this in production. If you do, contact Cynthia/Destinations immediately.");
-
-    /*
     final List<Exception> exceptionsThrown = new ArrayList<>();
     uploaderMap.forEach((streamId, uploader) -> {
       try {
@@ -139,7 +135,6 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
     typerDeduper.cleanup();
 
     ConnectorExceptionUtil.logAllAndThrowFirst("Exceptions thrown while closing consumer: ", exceptionsThrown);
-     */
   }
 
 }

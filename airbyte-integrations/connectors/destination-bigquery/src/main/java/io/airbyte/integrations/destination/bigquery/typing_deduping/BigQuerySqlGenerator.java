@@ -400,6 +400,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                             final String finalSuffix,
                             final Optional<Instant> minRawTimestamp,
                             final boolean useExpensiveSaferCasting) {
+
+    throw new IllegalStateException("THIS IS A TEST of internal tooling. You should NOT see this in production. If you do, contact Cynthia/Destinations immediately.");
+
+    /*
     final String handleNewRecords;
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       handleNewRecords = upsertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp);
@@ -417,6 +421,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ${commit_raw_table}
             COMMIT TRANSACTION;
             """);
+     */
   }
 
   private String insertNewRecords(final StreamConfig stream,
