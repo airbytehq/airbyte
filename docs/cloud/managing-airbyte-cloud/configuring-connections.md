@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Configuring connections
 
 A connection links a source to a destination and defines how your data will sync. After you have created a connection, you can modify any of the configuration settings or stream settings.

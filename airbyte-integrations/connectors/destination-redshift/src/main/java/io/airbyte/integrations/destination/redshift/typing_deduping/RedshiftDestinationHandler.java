@@ -54,7 +54,6 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler {
     return query.isEmpty();
   }
 
-  @Override
   public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
     final ResultSet tables = jdbcDatabase.getMetaData().getTables(
         databaseName,
