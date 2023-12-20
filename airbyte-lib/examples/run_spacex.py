@@ -1,7 +1,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import airbyte_lib as ab
 from itertools import islice
+
+import airbyte_lib as ab
 
 # preparation (from airbyte-lib main folder):
 #   python -m venv .venv-source-spacex-api
@@ -17,7 +18,7 @@ source.check()
 
 source.set_streams(["launches", "rockets", "capsules"])
 
-result = ab.sync(source, cache)
+result = source.read_all(cache)
 
 print(islice(source.read_stream("capsules"), 10))
 

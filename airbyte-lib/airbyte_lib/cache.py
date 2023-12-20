@@ -12,6 +12,22 @@ class Cache(ABC):
     def write(self, messages: Iterable[AirbyteRecordMessage]):
         pass
 
+    @abstractmethod
+    def get_iterable(self, stream: str) -> Iterable[Dict[str, Any]]:
+        pass
+
+    @abstractmethod
+    def get_pandas(self, stream: str) -> Any:
+        pass
+
+    @abstractmethod
+    def get_sql_table(self, stream: str) -> Any:
+        pass
+
+    @abstractmethod
+    def get_sql_engine(self, stream: str) -> Any:
+        pass
+
 
 class InMemoryCache(Cache):
     """The in-memory cache is accepting airbyte messages and stores them in a dictionary for streams (one list of dicts per stream)."""
@@ -24,3 +40,15 @@ class InMemoryCache(Cache):
             if message.stream not in self.streams:
                 self.streams[message.stream] = []
             self.streams[message.stream].append(message.data)
+
+    def get_iterable(self, stream: str) -> Iterable[Dict[str, Any]]:
+        return iter(self.streams[stream])
+
+    def get_pandas(self, stream: str) -> Any:
+        raise NotImplementedError()
+
+    def get_sql_table(self, stream: str) -> Any:
+        raise NotImplementedError()
+
+    def get_sql_engine(self, stream: str) -> Any:
+        raise NotImplementedError()

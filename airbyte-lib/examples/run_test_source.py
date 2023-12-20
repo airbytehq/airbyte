@@ -20,6 +20,6 @@ source.check()
 
 print(source.get_available_streams())
 
-result = ab.sync(source, cache)
+result = source.read_all(cache)
 
 print(result.cache.streams)

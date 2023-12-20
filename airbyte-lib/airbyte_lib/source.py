@@ -7,7 +7,9 @@ from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Optional
 
 import jsonschema
+from airbyte_lib.cache import Cache, InMemoryCache
 from airbyte_lib.executor import Executor
+from airbyte_lib.sync_result import SyncResult
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -71,7 +73,7 @@ class Source:
         self._validate_config(config)
         self.config = config
 
-    def discover(self) -> AirbyteCatalog:
+    def _discover(self) -> AirbyteCatalog:
         """
         Call discover on the connector.
 
@@ -98,7 +100,7 @@ class Source:
         """
         Get the available streams from the spec.
         """
-        return [s.name for s in self.discover().streams]
+        return [s.name for s in self._discover().streams]
 
     @lru_cache(maxsize=1)
     def _spec(self) -> ConnectorSpecification:
@@ -127,7 +129,7 @@ class Source:
         * Listen to the messages and return the first AirbyteRecordMessages that come along.
         * Make sure the subprocess is killed when the function returns.
         """
-        catalog = self.discover()
+        catalog = self._discover()
         configured_catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
@@ -141,7 +143,7 @@ class Source:
         )
         if len(configured_catalog.streams) == 0:
             raise Exception(f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}")
-        for message in self._read(configured_catalog):
+        for message in self._read_catalog(configured_catalog):
             yield message.data
 
     def check(self):
@@ -166,7 +168,7 @@ class Source:
     def install(self):
         self.executor.ensure_installation()
 
-    def read(self) -> Iterable[AirbyteRecordMessage]:
+    def _read(self) -> Iterable[AirbyteRecordMessage]:
         """
         Call read on the connector.
 
@@ -177,7 +179,7 @@ class Source:
         * execute the connector with read --config <config_file> --catalog <catalog_file>
         * Listen to the messages and return the AirbyteRecordMessages that come along.
         """
-        catalog = self.discover()
+        catalog = self._discover()
         configured_catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
@@ -189,9 +191,9 @@ class Source:
                 if self.streams is None or s.name in self.streams
             ]
         )
-        yield from self._read(configured_catalog)
+        yield from self._read_catalog(configured_catalog)
 
-    def _read(self, catalog: ConfiguredAirbyteCatalog) -> Iterable[AirbyteRecordMessage]:
+    def _read_catalog(self, catalog: ConfiguredAirbyteCatalog) -> Iterable[AirbyteRecordMessage]:
         """
         Call read on the connector.
 
@@ -236,3 +238,19 @@ class Source:
                     self._add_to_logs(line)
         except Exception as e:
             raise Exception(f"{str(e)}. Last logs: {self._last_log_messages}")
+
+    def _process(self, messages: Iterable[AirbyteRecordMessage]):
+        self._processed_records = 0
+        for message in messages:
+            self._processed_records += 1
+            yield message
+
+    def read_all(self, cache: Optional[Cache]) -> SyncResult:
+        if cache is None:
+            cache = InMemoryCache()
+        cache.write(self._process(self._read()))
+
+        return SyncResult(
+            processed_records=self._processed_records,
+            cache=cache,
+        )
