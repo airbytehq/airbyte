@@ -45,7 +45,8 @@ class MailChimpStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
-        params = {"count": self.page_size}
+        # The ._links field is returned by most Mailchimp endpoints and contains non-relevant schema metadata.
+        params = {"count": self.page_size, "exclude_fields": f"{self.data_field}._links"}
 
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
@@ -97,6 +98,23 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     def sort_field(self):
         return self.cursor_field
 
+    def filter_empty_fields(self, element: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Many Mailchimp endpoints return empty strings instead of null values.
+        This causes validation errors on datetime columns, so for safety, we need to check for empty strings and set their value to None/null.
+        This method recursively traverses each element in a record and replaces any "" values with None, based on three conditions:
+
+        1. If the element is a dictionary, apply the method recursively to each value in the dictionary.
+        2. If the element is a list, apply the method recursively to each item in the list.
+        3. If the element is a string, check if it is an empty string. If so, replace it with None.
+        """
+
+        if isinstance(element, dict):
+            element = {k: self.filter_empty_fields(v) if v != "" else None for k, v in element.items()}
+        elif isinstance(element, list):
+            element = [self.filter_empty_fields(v) for v in element]
+        return element
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
@@ -124,6 +142,11 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         params.update(default_params)
         return params
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response = super().parse_response(response, **kwargs)
+        for record in response:
+            yield self.filter_empty_fields(record)
+
 
 class MailChimpListSubStream(IncrementalMailChimpStream):
     """
@@ -142,9 +165,6 @@ class MailChimpListSubStream(IncrementalMailChimpStream):
 
     def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-
-        # Exclude the _links field, as it is not user-relevant data
-        params["exclude_fields"] = f"{self.data_field}._links"
 
         # Get the current state value for this list_id, if it exists
         # Then, use the value in state to filter the request
@@ -275,13 +295,6 @@ class InterestCategories(MailChimpStream, HttpSubStream):
         list_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories"
 
-    def request_params(self, **kwargs):
-
-        # Exclude the _links field, as it is not user-relevant data
-        params = super().request_params(**kwargs)
-        params["exclude_fields"] = "categories._links"
-        return params
-
 
 class Interests(MailChimpStream, HttpSubStream):
     """
@@ -299,13 +312,6 @@ class Interests(MailChimpStream, HttpSubStream):
         category_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories/{category_id}/interests"
 
-    def request_params(self, **kwargs):
-
-        # Exclude the _links field, as it is not user-relevant data
-        params = super().request_params(**kwargs)
-        params["exclude_fields"] = "interests._links"
-        return params
-
 
 class ListMembers(MailChimpListSubStream):
     """
@@ -321,28 +327,8 @@ class Reports(IncrementalMailChimpStream):
     cursor_field = "send_time"
     data_field = "reports"
 
-    @staticmethod
-    def remove_empty_datetime_fields(record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        In some cases, the 'clicks.last_click' and 'opens.last_open' fields are returned as an empty string,
-        which causes validation errors on the `date-time` format.
-        To avoid this, we remove the fields if they are empty.
-        """
-        clicks = record.get("clicks", {})
-        opens = record.get("opens", {})
-        if not clicks.get("last_click"):
-            clicks.pop("last_click", None)
-        if not opens.get("last_open"):
-            opens.pop("last_open", None)
-        return record
-
     def path(self, **kwargs) -> str:
         return "reports"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response = super().parse_response(response, **kwargs)
-        for record in response:
-            yield self.remove_empty_datetime_fields(record)
 
 
 class SegmentMembers(MailChimpListSubStream):
@@ -353,24 +339,6 @@ class SegmentMembers(MailChimpListSubStream):
 
     cursor_field = "last_changed"
     data_field = "members"
-
-    def nullify_empty_string_fields(self, element: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        SegmentMember records may contain multiple fields that are returned as empty strings, which causes validation issues for fields with declared "datetime" formats.
-        Since all fields are nullable, replacing any string value of "" with None is a safe way to handle these edge cases.
-
-        :param element: A SegmentMember record, dictionary or list
-        """
-
-        if isinstance(element, dict):
-            # If the element is a dictionary, apply the method recursively to each value,
-            # replacing the empty string value with None.
-            element = {k: self.nullify_empty_string_fields(v) if v != "" else None for k, v in element.items()}
-        elif isinstance(element, list):
-            # If the element is a list, apply the method recursively to each item in the list.
-            element = [self.nullify_empty_string_fields(v) for v in element]
-
-        return element
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
@@ -402,7 +370,7 @@ class SegmentMembers(MailChimpListSubStream):
             current_cursor_value = stream_state.get(str(record.get("segment_id")), {}).get(self.cursor_field)
             record_cursor_value = record.get(self.cursor_field)
             if current_cursor_value is None or record_cursor_value >= current_cursor_value:
-                yield self.nullify_empty_string_fields(record)
+                yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
@@ -484,12 +452,6 @@ class Unsubscribes(IncrementalMailChimpStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice.get("campaign_id")
         return f"reports/{campaign_id}/unsubscribed"
-
-    def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        # Exclude the _links field, as it is not user-relevant data
-        params["exclude_fields"] = "unsubscribes._links"
-        return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
 
