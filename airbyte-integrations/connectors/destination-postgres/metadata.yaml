@@ -18,9 +18,11 @@ data:
     normalizationTag: 0.4.3
   registries:
     cloud:
+      dockerImageTag: 0.4.0
       dockerRepository: airbyte/destination-postgres-strict-encrypt
       enabled: true
     oss:
+      dockerImageTag: 0.4.0
       enabled: true
   releaseStage: alpha
   supportLevel: community

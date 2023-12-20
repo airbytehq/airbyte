@@ -411,6 +411,7 @@ module.exports = {
         id: "using-airbyte/getting-started/readme",
       },
       items: [
+        "using-airbyte/core-concepts/readme",
         "using-airbyte/getting-started/add-a-source",
         "using-airbyte/getting-started/add-a-destination",
         "using-airbyte/getting-started/set-up-a-connection",
@@ -418,10 +419,10 @@ module.exports = {
     },
     {
       type: "category",
-      label: "Core Concepts",
+      label: "Configuring Connections",
       link: {
         type: "doc",
-        id: "using-airbyte/core-concepts/readme"
+        id: "cloud/managing-airbyte-cloud/configuring-connections"
       },
       items: [
         "using-airbyte/core-concepts/sync-schedules",
@@ -442,16 +443,6 @@ module.exports = {
         },
         "using-airbyte/core-concepts/typing-deduping",
         "using-airbyte/core-concepts/basic-normalization",
-      ],
-    },
-    {
-      type: "category",
-      label: "Configuring Connections",
-      link: {
-        type: "doc",
-        id: "cloud/managing-airbyte-cloud/configuring-connections"
-      },
-      items: [
         "cloud/managing-airbyte-cloud/manage-schema-changes",
         "cloud/managing-airbyte-cloud/manage-data-residency",
         "cloud/managing-airbyte-cloud/manage-connection-state",
@@ -487,7 +478,7 @@ module.exports = {
         "operator-guides/using-custom-connectors",
       ]
     },
-    sectionHeader("Operating Airbyte"),
+    sectionHeader("Managing Airbyte"),
     deployAirbyte,
     {
       type: "category",
