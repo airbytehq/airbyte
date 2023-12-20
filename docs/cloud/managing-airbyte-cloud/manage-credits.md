@@ -1,6 +1,8 @@
-# Manage credits
+---
+products: cloud
+---
 
-<AppliesTo cloud />
+# Manage credits
 
 Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resources when you run a sync. You can purchase credits on Airbyte Cloud to keep your data flowing without interruption. 
 
