@@ -843,5 +843,7 @@
   "permission.admin": "Administrator:",
   "permission.admin.role": "This role has the same permissions as the account owner. However, the account can be removed by another administrator.",
   "permission.user": "User:",
-  "permission.user.role": "This role has access to all sections of the space, except for billing and payment, as well as user management."
+  "permission.user.role": "This role has access to all sections of the space, except for billing and payment, as well as user management.",
+  "form.openDatepicker": "Open datepicker",
+  "form.datepickerTimeCaption": "Time (UTC)"
 }

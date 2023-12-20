@@ -2,8 +2,10 @@ import { FieldArray, useField } from "formik";
 import React from "react";
 
 import { DropDown, Input, Multiselect, TextArea, TagInput } from "components";
+import { DatePicker } from "components/DatePicker";
 
 import { FormBaseItem } from "core/form/types";
+import { useExperiment } from "hooks/services/Experiment";
 import { isDefined } from "utils/common";
 
 import ConfirmationControl from "./ConfirmationControl";
@@ -26,7 +28,7 @@ export const Control: React.FC<ControlProps> = ({
   disabled,
 }) => {
   const [field, meta, form] = useField(name);
-
+  const useDatepickerExperiment = useExperiment("connector.form.useDatepicker", true);
   // TODO: think what to do with other cases
   let placeholder: string | undefined;
 
@@ -82,7 +84,25 @@ export const Control: React.FC<ControlProps> = ({
       />
     );
   }
-
+  if (
+    property.type === "string" &&
+    (property.format === "date-time" || property.format === "date") &&
+    useDatepickerExperiment
+  ) {
+    return (
+      <DatePicker
+        error={!!meta.error}
+        withTime={property.format === "date-time"}
+        onChange={(value) => {
+          form.setTouched(true);
+          form.setValue(value);
+        }}
+        value={field.value}
+        disabled={disabled}
+        onBlur={() => form.setTouched(true)}
+      />
+    );
+  }
   const value = field.value ?? property.default;
   if (property.enum) {
     return (

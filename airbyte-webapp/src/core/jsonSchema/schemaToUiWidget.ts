@@ -95,6 +95,7 @@ export const jsonSchemaToUiWidget = (
     isRequired,
     isSecret: !!jsonSchema.airbyte_secret,
     multiline: !!jsonSchema.multiline,
+    format: jsonSchema.format,
     type: (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ?? "null",
   };
 };
