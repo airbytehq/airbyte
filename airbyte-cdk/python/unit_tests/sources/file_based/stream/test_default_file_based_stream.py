@@ -220,4 +220,5 @@ class TestFileBasedErrorCollector:
         # we expect the following method will raise the AirbyteTracedException
         with pytest.raises(AirbyteTracedException) as parse_error:
             list(self.test_error_collector.yield_and_raise_collected())
-        assert parse_error.value.message == "Please check the logged errors for more information."
+        assert parse_error.value.message == "Some errors occured while reading from the source."
+        assert parse_error.value.internal_message == "Please check the logged errors for more information."

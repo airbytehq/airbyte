@@ -50,24 +50,19 @@ class FileBasedErrorsCollector:
 
     def yield_and_raise_collected(self) -> Any:
         if self.errors:
-            # emit the collected messages
-            yield from self._yield_and_clean()
+            # emit collected logged messages
+            yield from self.errors
+            # clean the collector
+            self.errors.clear()
             # raising the single exception
             raise AirbyteTracedException(
-                internal_message="Some errors occured while reading from the source.",
-                message="Please check the logged errors for more information.",
+                internal_message="Please check the logged errors for more information.",
+                message="Some errors occured while reading from the source.",
                 failure_type=FailureType.config_error,
             )
 
     def collect(self, logged_error: AirbyteMessage) -> None:
         self.errors.append(logged_error)
-
-    def _yield_and_clean(self) -> AirbyteMessage:
-        for error in range(len(self.errors)):
-            # emit the logged message first
-            yield self.errors[error]
-            # clean the emitted logged message using index
-            self.errors.pop(error)
 
 
 class BaseFileBasedSourceError(Exception):
