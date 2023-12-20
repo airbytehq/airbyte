@@ -57,3 +57,4 @@ class VectaraConfig(BaseModel):
         schema = super().schema()
         schema = resolve_refs(schema)
         return schema
+    

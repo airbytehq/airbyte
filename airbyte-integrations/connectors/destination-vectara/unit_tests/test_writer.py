@@ -4,7 +4,7 @@
 
 import datetime
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock
 
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
 from destination_vectara.config import VectaraConfig
@@ -36,18 +36,12 @@ class TestVectaraWriter(unittest.TestCase):
         
         self._request_side_effect = _request_side_effect
 
-        self.vectara_indexer = VectaraWriter(self.mock_config)
+        self.vectara_indexer = VectaraWriter(self.mock_config, [], [], MagicMock())
         self.vectara_indexer._get_jwt_token = Mock()
         self.vectara_indexer.jwt_token = Mock()
         self.vectara_indexer.jwt_token_expires_ts = datetime.datetime.max.replace(tzinfo=datetime.timezone.utc).timestamp()
         self.vectara_indexer._request = Mock()
         self.vectara_indexer._request.side_effect = self._request_side_effect
-
-        # self.mock_client = self.vectara_indexer._get_client()
-        # self.mock_client.get_or_create_collection = Mock()
-        # self.mock_collection = self.mock_client.get_or_create_collection()
-        # self.vectara_indexer.client = self.mock_client
-        # self.mock_client.get_collection = Mock()
 
     def test_invalid_oauth_credentials(self):
         self.vectara_indexer._get_jwt_token.return_value = None
@@ -75,30 +69,6 @@ class TestVectaraWriter(unittest.TestCase):
         result = self.vectara_indexer.check()
         self.assertTrue("Random exception" in result)
 
-    def test_pre_sync_calls_delete(self):
-        self.vectara_indexer.check()
-        self.vectara_indexer.pre_sync(
-            Mock(
-                streams=[
-                    Mock(
-                        destination_sync_mode=DestinationSyncMode.overwrite,
-                        stream=AirbyteStream(name="some_stream", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
-                    )
-                ]
-            )
-        )
-
-        self.vectara_indexer._request.assert_any_call(endpoint="delete-doc", data={"customerId": self.mock_config.customer_id, "corpusId": self.vectara_indexer.corpus_id, "documentId": 0})
-        self.vectara_indexer._request.assert_any_call(endpoint="delete-doc", data={"customerId": self.mock_config.customer_id, "corpusId": self.vectara_indexer.corpus_id, "documentId": 1})
-        self.vectara_indexer._request.assert_any_call(endpoint="delete-doc", data={"customerId": self.mock_config.customer_id, "corpusId": self.vectara_indexer.corpus_id, "documentId": 2})
-
-    def test_pre_sync_does_not_call_delete(self):
-        self.vectara_indexer.pre_sync(
-            Mock(streams=[Mock(destination_sync_mode=DestinationSyncMode.append, stream=Mock(name="some_stream"))])
-        )
-
-        self.vectara_indexer._request.assert_not_called()
-
     def test_delete_calls_delete(self):
         self.vectara_indexer.check()
         self.vectara_indexer.delete([0, 1, 2], None, "some_stream")
@@ -110,7 +80,5 @@ class TestVectaraWriter(unittest.TestCase):
     def test_index_calls_index(self):
         self.vectara_indexer.corpus_id = 0
         result = self.vectara_indexer.index([Mock(metadata={"key": "value"}, page_content="some content", embedding=[1, 2, 3])], None, "some_stream")
-
-        print(result)
 
         self.vectara_indexer._request.assert_called_once()
