@@ -37,6 +37,7 @@ from connector_acceptance_test.config import (
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
     IgnoredFieldsConfiguration,
+    NoPrimaryKeyConfiguration,
     SpecTestConfig,
 )
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
@@ -1158,7 +1159,7 @@ class TestConnectorAttributes(BaseTest):
         return True
 
     @pytest.fixture(name="streams_without_primary_key")
-    def streams_without_primary_key_fixture(self, inputs: ConnectorAttributesConfig) -> List[str]:
+    def streams_without_primary_key_fixture(self, inputs: ConnectorAttributesConfig) -> List[NoPrimaryKeyConfiguration]:
         return inputs.streams_without_primary_key or []
 
     async def test_streams_define_primary_key(
@@ -1169,7 +1170,7 @@ class TestConnectorAttributes(BaseTest):
 
         streams = catalog_messages[0].catalog.streams
         discovered_streams_without_primary_key = {stream.name for stream in streams if not stream.source_defined_primary_key}
-        missing_primary_keys = discovered_streams_without_primary_key - {stream for stream in streams_without_primary_key}
+        missing_primary_keys = discovered_streams_without_primary_key - {stream.name for stream in streams_without_primary_key}
 
         quoted_missing_primary_keys = {f"'{primary_key}'" for primary_key in missing_primary_keys}
         assert not missing_primary_keys, f"The following streams {', '.join(quoted_missing_primary_keys)} do not define a primary_key"

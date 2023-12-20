@@ -4,6 +4,7 @@
 
 import pytest
 from airbyte_protocol.models import AirbyteCatalog, AirbyteMessage, AirbyteStream, Type
+from connector_acceptance_test.config import NoPrimaryKeyConfiguration
 from connector_acceptance_test.tests import test_core
 
 pytestmark = pytest.mark.anyio
@@ -49,6 +50,8 @@ async def test_streams_define_primary_key(mocker, stream_configs, excluded_strea
         "source_defined_primary_key": stream_config.get("primary_key"),
     }) for stream_config in stream_configs]
 
+    streams_without_primary_key = [NoPrimaryKeyConfiguration(name=stream, bypass_reason="") for stream in excluded_streams]
+
     docker_runner_mock = mocker.MagicMock(
         call_discover=mocker.AsyncMock(
             return_value=[AirbyteMessage(type=Type.CATALOG, catalog=AirbyteCatalog(streams=streams))]
@@ -59,7 +62,7 @@ async def test_streams_define_primary_key(mocker, stream_configs, excluded_strea
         with pytest.raises(AssertionError) as e:
             await t.test_streams_define_primary_key(
                 operational_certification_test=True,
-                streams_without_primary_key=excluded_streams,
+                streams_without_primary_key=streams_without_primary_key,
                 connector_config={},
                 docker_runner=docker_runner_mock
             )
@@ -68,7 +71,7 @@ async def test_streams_define_primary_key(mocker, stream_configs, excluded_strea
     else:
         await t.test_streams_define_primary_key(
             operational_certification_test=True,
-            streams_without_primary_key=excluded_streams,
+            streams_without_primary_key=streams_without_primary_key,
             connector_config={},
             docker_runner=docker_runner_mock
         )

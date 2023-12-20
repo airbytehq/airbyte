@@ -124,6 +124,11 @@ ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field
 )
 
 
+class NoPrimaryKeyConfiguration(BaseConfig):
+    name: str
+    bypass_reason: Optional[str] = Field(default=None, description="Reason why this stream does not support a primary key")
+
+
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     deployment_mode: Optional[str] = deployment_mode
@@ -189,7 +194,7 @@ class ConnectorAttributesConfig(BaseConfig):
     timeout_seconds: int = timeout_seconds
     config_path: str = config_path
 
-    streams_without_primary_key: Optional[List[str]] = Field(
+    streams_without_primary_key: Optional[List[NoPrimaryKeyConfiguration]] = Field(
         description="Streams that do not support a primary key such as reports streams"
     )
 
