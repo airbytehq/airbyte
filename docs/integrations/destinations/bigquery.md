@@ -142,6 +142,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.25  | 2023-12-20 | [\#33704](https://github.com/airbytehq/airbyte/pull/33704) | Update to java CDK 0.10.0 (no changes)                                                                                                                          |
 | 2.3.24  | 2023-12-20 | [\#33697](https://github.com/airbytehq/airbyte/pull/33697) | Stop creating unnecessary tmp tables                                                                                                                            |
 | 2.3.23  | 2023-12-18 | [\#33124](https://github.com/airbytehq/airbyte/pull/33124) | Make Schema Creation Separate from Table Creation                                                                                                               |
 | 2.3.22  | 2023-12-14 | [\#33451](https://github.com/airbytehq/airbyte/pull/33451) | Remove old spec option                                                                                                                                          |
