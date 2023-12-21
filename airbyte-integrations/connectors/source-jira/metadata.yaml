@@ -24,6 +24,11 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "Stream State will be saved for every board in stream `Boards Issues`. Customers who use stream `Board Issues` in Incremental sync mode must take action with their connections."
+        upgradeDeadline: "2024-01-01"
   suggestedStreams:
     streams:
       - issues
