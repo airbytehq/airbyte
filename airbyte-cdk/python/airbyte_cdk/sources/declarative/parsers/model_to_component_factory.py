@@ -26,6 +26,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
 from airbyte_cdk.sources.declarative.incremental import Cursor, CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
@@ -107,6 +108,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
+from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
@@ -115,6 +117,7 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTra
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
+from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
 from pydantic import BaseModel
 
@@ -710,9 +713,8 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-        model_http_method = (
-            model.http_method if isinstance(model.http_method, str) else model.http_method.value if model.http_method is not None else "GET"
-        )
+        assert model.use_cache is not None  # for mypy
+        assert model.http_method is not None  # for mypy
 
         assert model.use_cache is not None  # for mypy
 
@@ -722,7 +724,7 @@ class ModelToComponentFactory:
             path=model.path,
             authenticator=authenticator,
             error_handler=error_handler,
-            http_method=model_http_method,
+            http_method=HttpMethod[model.http_method.value],
             request_options_provider=request_options_provider,
             config=config,
             disable_retries=self._disable_retries,
@@ -884,16 +886,24 @@ class ModelToComponentFactory:
         return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
 
     def create_record_selector(
-        self, model: RecordSelectorModel, config: Config, *, transformations: List[RecordTransformation], **kwargs: Any
+        self,
+        model: RecordSelectorModel,
+        config: Config,
+        *,
+        transformations: List[RecordTransformation],
+        **kwargs: Any,
     ) -> RecordSelector:
+        assert model.schema_normalization is not None  # for mypy
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
+        schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
 
         return RecordSelector(
             extractor=extractor,
             config=config,
             record_filter=record_filter,
             transformations=transformations,
+            schema_normalization=schema_normalization,
             parameters=model.parameters or {},
         )
 

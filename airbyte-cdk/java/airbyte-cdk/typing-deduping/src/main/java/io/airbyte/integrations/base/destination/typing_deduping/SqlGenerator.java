@@ -36,6 +36,14 @@ public interface SqlGenerator<DialectTableDefinition> {
   String createTable(final StreamConfig stream, final String suffix, boolean force);
 
   /**
+   * Used to create either the airbyte_internal or final schemas if they don't exist
+   *
+   * @param schema the schema to create
+   * @return SQL to create the schema if it does not exist
+   */
+  String createSchema(final String schema);
+
+  /**
    * Check the final table's schema and compare it to what the stream config would generate.
    *
    * @param stream the stream/stable in question

@@ -1,7 +1,10 @@
 # Changelog
 
-## 0.58.1
+## 0.58.2
 File CDK: Added logic to emit logged `RecordParseError` errors and raise the single `AirbyteTracebackException` in the end of the sync, instead of silent skipping the parsing errors. PR: https://github.com/airbytehq/airbyte/pull/32589
+
+## 0.58.1
+Add schema normalization to declarative stream
 
 ## 0.58.0
 Concurrent CDK: add state converter for ISO timestamps with millisecond granularity

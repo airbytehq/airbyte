@@ -10,7 +10,7 @@ RUN apk --no-cache upgrade \
     && apk --no-cache add tzdata build-base
 
 # install airbyte-cdk
-RUN pip install --prefix=/install airbyte-cdk==0.58.0
+RUN pip install --prefix=/install airbyte-cdk==0.58.1
 
 # build a clean environment
 FROM base
