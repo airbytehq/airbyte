@@ -31,6 +31,13 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
 
   protected abstract DataType<?> getStructType();
 
+  // TODO - can we move this class into db_destinations/testFixtures?
+  // then we could redefine getSqlGenerator() to return a JdbcSqlGenerator
+  // and this could be a private method getSqlGenerator().getTimestampWithTimeZoneType()
+  protected DataType<?> getTimestampWithTimeZoneType() {
+    return SQLDataType.TIMESTAMPWITHTIMEZONE;
+  }
+
   protected abstract SQLDialect getSqlDialect();
 
   private DSLContext getDslContext() {
@@ -52,8 +59,8 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
   protected void createRawTable(final StreamId streamId) throws Exception {
     getDatabase().execute(getDslContext().createTable(DSL.name(streamId.rawNamespace(), streamId.rawName()))
         .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
-        .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
-        .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE)
+        .column(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false))
+        .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType())
         .column(COLUMN_NAME_DATA, getStructType().nullable(false))
         .getSQL(ParamType.INLINED));
   }
@@ -62,7 +69,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
   protected void createV1RawTable(final StreamId v1RawTable) throws Exception {
     getDatabase().execute(getDslContext().createTable(DSL.name(v1RawTable.rawNamespace(), v1RawTable.rawName()))
         .column(COLUMN_NAME_AB_ID, SQLDataType.VARCHAR(36).nullable(false))
-        .column(COLUMN_NAME_EMITTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
+        .column(COLUMN_NAME_EMITTED_AT, getTimestampWithTimeZoneType().nullable(false))
         .column(COLUMN_NAME_DATA, getStructType().nullable(false))
         .getSQL(ParamType.INLINED));
   }
