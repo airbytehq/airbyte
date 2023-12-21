@@ -11,8 +11,9 @@ from typing import Any, Callable, List, Mapping, Optional, Type, Union, get_args
 
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
@@ -77,6 +78,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RemoveFields as RemoveFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestPath as RequestPathModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SelectiveAuthenticator as SelectiveAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
@@ -190,6 +192,7 @@ class ModelToComponentFactory:
             RequestPathModel: self.create_request_path,
             RequestOptionModel: self.create_request_option,
             LegacySessionTokenAuthenticatorModel: self.create_legacy_session_token_authenticator,
+            SelectiveAuthenticatorModel: self.create_selective_authenticator,
             SimpleRetrieverModel: self.create_simple_retriever,
             SpecModel: self.create_spec,
             SubstreamPartitionRouterModel: self.create_substream_partition_router,
@@ -713,6 +716,8 @@ class ModelToComponentFactory:
         assert model.use_cache is not None  # for mypy
         assert model.http_method is not None  # for mypy
 
+        assert model.use_cache is not None  # for mypy
+
         return HttpRequester(
             name=name,
             url_base=model.url_base,
@@ -905,6 +910,16 @@ class ModelToComponentFactory:
     @staticmethod
     def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs: Any) -> RemoveFields:
         return RemoveFields(field_pointers=model.field_pointers, parameters={})
+
+    def create_selective_authenticator(self, model: SelectiveAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeAuthenticator:
+        authenticators = {name: self._create_component_from_model(model=auth, config=config) for name, auth in model.authenticators.items()}
+        # SelectiveAuthenticator will return instance of DeclarativeAuthenticator or raise ValueError error
+        return SelectiveAuthenticator(  # type: ignore[abstract]
+            config=config,
+            authenticators=authenticators,
+            authenticator_selection_path=model.authenticator_selection_path,
+            **kwargs,
+        )
 
     @staticmethod
     def create_legacy_session_token_authenticator(

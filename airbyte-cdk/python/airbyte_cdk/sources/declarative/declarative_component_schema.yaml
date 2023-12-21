@@ -224,6 +224,49 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  SelectiveAuthenticator:
+    title: Selective Authenticator
+    description: Authenticator that selects concrete authenticator based on config property.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - authenticators
+      - authenticator_selection_path
+    properties:
+      type:
+        type: string
+        enum: [SelectiveAuthenticator]
+      authenticator_selection_path:
+        title: Authenticator Selection Path
+        description: Path of the field in config with selected authenticator name
+        type: array
+        items:
+          type: string
+        examples:
+          - ["auth"]
+          - ["auth", "type"]
+      authenticators:
+        title: Authenticators
+        description: Authenticators to select from.
+        type: object
+        additionalProperties:
+          anyOf:
+            - "$ref": "#/definitions/ApiKeyAuthenticator"
+            - "$ref": "#/definitions/BasicHttpAuthenticator"
+            - "$ref": "#/definitions/BearerAuthenticator"
+            - "$ref": "#/definitions/CustomAuthenticator"
+            - "$ref": "#/definitions/OAuthAuthenticator"
+            - "$ref": "#/definitions/NoAuth"
+            - "$ref": "#/definitions/SessionTokenAuthenticator"
+            - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
+        examples:
+          - authenticators:
+              token: "#/definitions/ApiKeyAuthenticator"
+              oauth: "#/definitions/OAuthAuthenticator"
+      $parameters:
+        type: object
+        additionalProperties: true
   CheckStream:
     title: Streams to Check
     description: Defines the streams to try reading when running a check operation.
@@ -1149,6 +1192,7 @@ definitions:
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
           - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
+          - "$ref": "#/definitions/SelectiveAuthenticator"
       error_handler:
         title: Error Handler
         description: Error handler component that defines how to handle errors.

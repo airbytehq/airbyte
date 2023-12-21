@@ -151,3 +151,19 @@ The supported scope types are listed below.
 | Scope Type | Value Type | Value Description |
 |------------|------------|------------------|
 | stream     | `list[str]`  | List of stream names |
+
+#### `remoteRegistries`
+The optional `remoteRegistries` property allows you to configure how a connector should be published to registries like Pypi.
+
+**Important note**: Currently no automated publishing will occur.
+
+```yaml
+remoteRegistries:
+  pypi:
+    enabled: true
+    packageName: airbyte-source-connector-name
+```
+
+The `packageName` property of the `pypi` section is the name of the installable package in the PyPi registry.
+
+If not specified, all remote registry configurations are disabled by default.

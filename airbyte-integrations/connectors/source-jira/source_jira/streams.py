@@ -33,6 +33,7 @@ class JiraAvailabilityStrategy(HttpAvailabilityStrategy):
         reasons_for_codes: Dict[int, str] = {
             requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
             requests.codes.UNAUTHORIZED: "Invalid creds were provided, please check your api token, domain and/or email.",
+            requests.codes.NOT_FOUND: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
         }
         return reasons_for_codes
 
@@ -961,6 +962,12 @@ class ProjectAvatars(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
     """
 
+    skip_http_status_codes = [
+        # Project is not found or the user does not have permission to view the project.
+        requests.codes.UNAUTHORIZED,
+        requests.codes.NOT_FOUND,
+    ]
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -985,6 +992,12 @@ class ProjectCategories(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-rest-api-3-projectcategory-get
     """
+
+    skip_http_status_codes = [
+        # Project is not found or the user does not have permission to view the project.
+        requests.codes.UNAUTHORIZED,
+        requests.codes.NOT_FOUND,
+    ]
 
     def path(self, **kwargs) -> str:
         return "projectCategory"
