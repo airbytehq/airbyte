@@ -24,8 +24,8 @@ class AirbyteMessageParsingError(Exception):
     """Raised when an Airbyte message is invalid or cannot be parsed."""
 
 
-class CacheBase(abc.ABC, EnforceOverrides):
-    """Abstract base class for Caches, which write and read from durable storage."""
+class RecordProcessor(abc.ABC, EnforceOverrides):
+    """Abstract base class for classes which can process input records."""
 
     config_class: type[CacheConfigBase]
     skip_finalize_step: bool = False

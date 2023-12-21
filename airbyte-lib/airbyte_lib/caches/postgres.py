@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from overrides import overrides
 
-from airbyte_lib.caches.sql_base import SQLCacheBase, SQLCacheConfigBase
+from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.file_writers import ParquetWriter, ParquetWriterConfig
 
 
@@ -22,12 +22,12 @@ class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     database: str
 
     # Already defined in base class:
-    # schema: str
+    # schema_name: str
 
     @overrides
     def get_sql_alchemy_url(self) -> str:
         """Return the SQLAlchemy URL to use."""
-        return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?schema={self.schema}"
+        return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?schema={self.schema_name}"
 
 
 class PostgresSQLCache(SQLCacheBase):

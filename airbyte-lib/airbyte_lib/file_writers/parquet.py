@@ -5,12 +5,11 @@ from typing import cast
 import pyarrow as pa
 import ulid
 
-from .base import FileWriterBase
-
-from airbyte_lib.config import CacheConfigBase
+from .base import FileWriterBase, FileWriterConfigBase
 
 
-class ParquetWriterConfig(CacheConfigBase):
+
+class ParquetWriterConfig(FileWriterConfigBase):
     """Configuration for the Snowflake cache."""
 
     type: str = "parquet"
@@ -29,7 +28,8 @@ class ParquetWriter(FileWriterBase):
     ) -> Path:
         """Return a new cache file path for the given stream."""
         batch_id = batch_id or str(ulid.ULID())
-        return self.cache_path / f"{stream_name}_{batch_id}.parquet"
+        config: ParquetWriterConfig = cast(ParquetWriterConfig, self.config)
+        return Path(config.cache_path) / f"{stream_name}_{batch_id}.parquet"
 
     def write_batch_to_file(
         self,

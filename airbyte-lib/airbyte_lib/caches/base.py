@@ -13,9 +13,8 @@ import sqlalchemy
 from sqlalchemy import text
 from overrides import overrides
 
-from airbyte_lib.caches import BatchHandle
 from airbyte_lib.config import CacheConfigBase
-from airbyte_lib.caches.core import CacheBase
+from airbyte_lib.processors import RecordProcessor, BatchHandle
 
 from airbyte_lib.types import SQLTypeConverter
 from airbyte_lib.file_writers import FileWriterBase
@@ -29,7 +28,7 @@ class SQLCacheConfigBase(CacheConfigBase):
     """Same as a regular config except it exposes the 'get_sql_alchemy_url()' method."""
 
     dedupe_mode = RecordDedupeMode.APPEND
-    schema: str
+    schema_name: str
     table_prefix: str
     table_suffix: str
 
@@ -49,14 +48,14 @@ class GenericSQLCacheConfig(SQLCacheConfigBase):
         return self.sql_alchemy_url
 
 
-class SQLCacheBase(CacheBase, abc.ABCMeta):
+class SQLCacheBase(RecordProcessor, abc.ABCMeta):
     """A base class to be used for SQL Caches.
 
     Optionally we can use a file cache to store the data in parquet files.
     """
 
     type_converter_class = SQLTypeConverter
-    config_class: type[SQLCacheConfigBase] = SQLCacheConfigBase  # TODO: Fix this type error
+    config_class: type[SQLCacheConfigBase]
     file_writer_class: type[FileWriterBase]
 
     supports_merge_insert = False
@@ -106,7 +105,7 @@ class SQLCacheBase(CacheBase, abc.ABCMeta):
         table_name = self.get_sql_table_name(stream_name)
         return sqlalchemy.Table(
             table_name,
-            sqlalchemy.MetaData(schema=self.config.schema),
+            sqlalchemy.MetaData(schema=self.config.schema_name),
             autoload=True,  # Retrieve the table definition from the database
             autoload_with=self.get_sql_engine(),
         )
@@ -116,11 +115,11 @@ class SQLCacheBase(CacheBase, abc.ABCMeta):
     def read_all(
         self,
         stream_name: str,
-    ) -> Iterable[sqlalchemy.Row]:
+    ) -> Iterable[dict[str, Any]]:
         """Uses SQLAlchemy to select all rows from the table."""
         table_ref = self.get_sql_table(stream_name)
         engine = self.get_sql_engine()
-        stmt = sqlalchemy.select(table_ref)
+        stmt = table_ref.select()
         with engine.connect() as conn:
             yield from conn.execute(stmt)
 
@@ -167,7 +166,7 @@ class SQLCacheBase(CacheBase, abc.ABCMeta):
     def _ensure_final_table_exists(
         self,
         stream_name: str,
-        create_if_missing: True,
+        create_if_missing: bool = True,
     ) -> str:
         """
         Create the final table if it doesn't already exist.

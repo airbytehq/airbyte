@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from overrides import overrides
 
-from airbyte_lib.caches.sql_base import SQLCacheBase, SQLCacheConfigBase
+from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.file_writers import ParquetWriter, ParquetWriterConfig
 
 
@@ -18,12 +18,12 @@ class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     db_path: str
 
     # Already defined in base class:
-    # schema: str
+    # schema_name: str
 
     @overrides
     def get_sql_alchemy_url(self) -> str:
         """Return the SQLAlchemy URL to use."""
-        return f"duckdb://{self.db_path}?schema={self.schema}"
+        return f"duckdb://{self.db_path}?schema={self.schema_name}"
 
 
 class DuckDBSQLCache(SQLCacheBase):

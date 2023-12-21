@@ -6,14 +6,21 @@ import abc
 from pathlib import Path
 
 import pyarrow as pa
-from overrides import overrides
-
-from airbyte_lib.caches.bases.core import CacheBase, BatchHandle
+from overrides import overrides  # noqa: F401  # Ignore unused import warning
+from airbyte_lib.config import CacheConfigBase  # noqa: F401  # Ignore unused import warning
+from airbyte_lib.processors import RecordProcessor, BatchHandle  # noqa: F401  # Ignore unused import warning
 
 DEFAULT_BATCH_SIZE = 10000
 
 
-class FileWriterBase(CacheBase, abc.ABCMeta):
+class FileWriterConfigBase(CacheConfigBase):
+    """Configuration for the Snowflake cache."""
+
+    type: str = "files"
+    cache_path: str
+
+
+class FileWriterBase(RecordProcessor, abc.ABCMeta):
     """A generic base implementation for a file-based cache."""
 
     @abc.abstractmethod
@@ -41,17 +48,8 @@ class FileWriterBase(CacheBase, abc.ABCMeta):
     def process_batch(
         self,
         stream_name: str,
+        batch_id: str,
         record_batch: pa.Table,
     ) -> None:
         """Process a single batch."""
         self.write_batch_to_file(stream_name, record_batch)
-
-    @overrides
-    def finalize_batches(
-        self, stream_name: str, batches: dict[str, BatchHandle]
-    ) -> bool:
-        """Finalize all uncommitted batches.
-
-        If a stream name is provided, only process uncommitted batches for that stream.
-        """
-        pass  # Nothing to finalize
