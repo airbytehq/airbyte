@@ -11,6 +11,7 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+import static java.util.stream.Collectors.toList;
 import static org.jooq.impl.DSL.alterTable;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.cast;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jooq.CommonTableExpression;
 import org.jooq.Condition;
 import org.jooq.CreateSchemaFinalStep;
@@ -190,10 +192,10 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   @VisibleForTesting
   List<Field<?>> buildFinalTableFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final Map<String, DataType<?>> metaColumns) {
     final List<Field<?>> fields =
-        metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(Collectors.toList());
+        metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(toList());
     final List<Field<?>> dataFields =
         columns.entrySet().stream().map(column -> field(quotedName(column.getKey().name()), toDialectType(column.getValue()))).collect(
-            Collectors.toList());
+            toList());
     dataFields.addAll(fields);
     return dataFields;
   }
@@ -224,7 +226,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   @VisibleForTesting
   List<Field<?>> buildRawTableSelectFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final Map<String, DataType<?>> metaColumns) {
     final List<Field<?>> fields =
-        metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(Collectors.toList());
+        metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(toList());
     // Use originalName with non-sanitized characters when extracting data from _airbyte_data
     final List<Field<?>> dataFields = extractRawDataFields(columns);
     dataFields.addAll(fields);
@@ -374,7 +376,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
                 .with(filteredRows)
                 .select(finalTableFields)
                 .from(filteredRows)
-                .where(field(ROW_NUMBER_COLUMN_NAME, Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
+                .where(field(name(ROW_NUMBER_COLUMN_NAME), Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
             )
             .getSQL(ParamType.INLINED);
 
@@ -392,23 +394,25 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
 
     if (streamConfig.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return Strings.join(
-          List.of(
+          Stream.of(
               beginTransaction(),
               insertStmt,
               checkpointStmt,
-              commitTransactionInternal()),
+              commitTransactionInternal()
+          ).filter(s -> !s.isEmpty()).collect(toList()),
           ";" + System.lineSeparator());
     }
 
     // For append-dedupe
     return Strings.join(
-        List.of(
+        Stream.of(
             beginTransaction(),
             insertStmtWithDedupe,
             deleteStmt,
             deleteCdcDeletesStmt,
             checkpointStmt,
-            commitTransactionInternal()),
+            commitTransactionInternal()
+        ).filter(s -> !s.isEmpty()).collect(toList()),
         ";" + System.lineSeparator());
   }
 
@@ -457,7 +461,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
             select(airbyteRawId)
                 .from(select(airbyteRawId, rowNumber)
                     .from(table(quotedName(schemaName, tableName))).asTable("airbyte_ids"))
-                .where(field("row_number").ne(1))))
+                .where(field(name(ROW_NUMBER_COLUMN_NAME)).ne(1))))
         .getSQL(ParamType.INLINED);
   }
 
