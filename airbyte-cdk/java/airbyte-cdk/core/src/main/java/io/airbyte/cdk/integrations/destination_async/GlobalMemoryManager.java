@@ -90,7 +90,7 @@ public class GlobalMemoryManager {
 
     final long currentMemory = currentMemoryBytes.get();
     if (currentMemory < 0) {
-      log.warn("Freed more memory than allocated ({})", currentMemory);
+      log.info("Freed more memory than allocated ({} of {})", bytes, currentMemory + bytes);
     }
   }
 
