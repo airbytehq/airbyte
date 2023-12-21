@@ -124,7 +124,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
       case NUMBER -> SQLDataType.DECIMAL(38, 9);
       case INTEGER -> SQLDataType.BIGINT;
       case BOOLEAN -> SQLDataType.BOOLEAN;
-      case TIMESTAMP_WITH_TIMEZONE -> getTimestampWithTimeZoneType();
+      case TIMESTAMP_WITH_TIMEZONE -> SQLDataType.TIMESTAMPWITHTIMEZONE;
       case TIMESTAMP_WITHOUT_TIMEZONE -> SQLDataType.TIMESTAMP;
       case TIME_WITH_TIMEZONE -> SQLDataType.TIMEWITHTIMEZONE;
       case TIME_WITHOUT_TIMEZONE -> SQLDataType.TIME;
