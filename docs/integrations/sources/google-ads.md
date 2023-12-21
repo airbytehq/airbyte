@@ -62,13 +62,14 @@ To set up Google Ads as a source in Airbyte Cloud:
 3. Find and select **Google Ads** from the list of available sources.
 4. Enter a **Source name** of your choosing.
 5. Click **Sign in with Google** to authenticate your Google Ads account. In the pop-up, select the appropriate Google account and click **Continue** to proceed.
-6. Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344).
-7. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
-8. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
-9. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
-10. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
-11. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
-12. Click **Set up source** and wait for the tests to complete.
+6. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts. 
+7. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v15/CustomerStatusEnum.CustomerStatus) for more info.
+8. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
+9. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
+10. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
+11. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
+12. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
+13. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -83,13 +84,14 @@ To set up Google Ads as a source in Airbyte Open Source:
 4. Enter a **Source name** of your choosing.
 5. Enter the **Developer Token** you obtained from Google.
 6. To authenticate your Google account, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**.
-7. Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344).
-8. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
-9. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
-10. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
-11. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, see the section on [Conversion Windows](#note-on-conversion-windows) below, or refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
-12. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
-13. Click **Set up source** and wait for the tests to complete.
+7. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts. 
+8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v15/CustomerStatusEnum.CustomerStatus) for more info.
+9. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
+10. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
+11. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
+12. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, see the section on [Conversion Windows](#note-on-conversion-windows) below, or refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
+13. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
+14. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 

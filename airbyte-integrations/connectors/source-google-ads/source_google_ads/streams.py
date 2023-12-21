@@ -238,11 +238,18 @@ class CustomerClient(GoogleAdsStream):
 
     primary_key = ["customer_client.id"]
 
+    def __init__(self, customer_status_filter: List[str], **kwargs):
+        self.customer_status_filter = customer_status_filter
+        super().__init__(**kwargs)
+
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
         table_name = get_resource_name(self.name)
 
-        active_customers_condition = ["customer_client.status = 'ENABLED'"]
+        active_customers_condition = []
+        if self.customer_status_filter:
+            customer_status_filter = ", ".join([f"'{status}'" for status in self.customer_status_filter])
+            active_customers_condition = [f"customer_client.status in ({customer_status_filter})"]
 
         query = GoogleAds.convert_schema_into_query(fields=fields, table_name=table_name, conditions=active_customers_condition)
         return query
@@ -273,11 +280,10 @@ class CustomerClient(GoogleAdsStream):
         records = [record for record in super().parse_response(response)]
 
         # read_records get all customers connected to customer_id from stream_slice
-        # if the result is more than one cusotmer, it's a manager, otherwise it is client account for which we don't need login_customer_id
-        is_manager = len(records) > 1
+        # if the result is more than one customer, it's a manager, otherwise it is client account for which we don't need login_customer_id
+        root_is_manager = len(records) > 1
         for record in records:
-            if is_manager:
-                record["login_customer_id"] = stream_slice["login_customer_id"]
+            record["login_customer_id"] = stream_slice["login_customer_id"] if root_is_manager else "none"
             yield record
 
 
