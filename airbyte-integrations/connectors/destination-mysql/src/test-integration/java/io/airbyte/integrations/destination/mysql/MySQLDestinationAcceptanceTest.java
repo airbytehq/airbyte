@@ -81,6 +81,10 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Override
   protected JsonNode getConfig() {
+    return getConfigFromTestContainer(db);
+  }
+
+  public static JsonNode getConfigFromTestContainer(final MySQLContainer<?> db) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
@@ -161,24 +165,28 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
-    setLocalInFileToTrue();
-    revokeAllPermissions();
-    grantCorrectPermissions();
+    configureTestContainer(db);
   }
 
-  private void setLocalInFileToTrue() {
-    executeQuery("set global local_infile=true");
+  public static void configureTestContainer(final MySQLContainer<?> db) {
+    setLocalInFileToTrue(db);
+    revokeAllPermissions(db);
+    grantCorrectPermissions(db);
   }
 
-  private void revokeAllPermissions() {
-    executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + db.getUsername() + "@'%';");
+  private static void setLocalInFileToTrue(final MySQLContainer<?> db) {
+    executeQuery(db, "set global local_infile=true");
   }
 
-  private void grantCorrectPermissions() {
-    executeQuery("GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+  private static void revokeAllPermissions(final MySQLContainer<?> db) {
+    executeQuery(db, "REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + db.getUsername() + "@'%';");
   }
 
-  private void executeQuery(final String query) {
+  private static void grantCorrectPermissions(final MySQLContainer<?> db) {
+    executeQuery(db, "GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+  }
+
+  private static void executeQuery(final MySQLContainer<?> db, final String query) {
     try (final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
@@ -206,7 +214,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   @Test
   public void testCustomDbtTransformations() throws Exception {
     // We need to create view for testing custom dbt transformations
-    executeQuery("GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
+    executeQuery(db, "GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
     super.testCustomDbtTransformations();
   }
 
@@ -314,7 +322,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   public void testUserHasNoPermissionToDataBase() {
-    executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
+    executeQuery(db, "create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
     final MySQLDestination destination = new MySQLDestination();
