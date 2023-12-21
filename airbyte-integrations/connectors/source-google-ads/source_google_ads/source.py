@@ -47,6 +47,8 @@ from .streams import (
 )
 from .utils import GAQL
 
+logger = logging.getLogger("airbyte")
+
 
 class SourceGoogleAds(AbstractSource):
     # Skip exceptions on missing streams
@@ -65,6 +67,17 @@ class SourceGoogleAds(AbstractSource):
                     "https://developers.google.com/google-ads/api/fields/v15/query_validator"
                 )
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+
+        if "login_customer_id" in config and not config["login_customer_id"].strip():
+            config.pop("login_customer_id")
+
+        if config.get("login_customer_id") and not config.get("credentials"):
+            message = (
+                f"The `login_customer_id` property should be used only with `customer_id`. "
+                f"Please delete it to sync all connected customers. Or add `customer_id` to sync only specific customers."
+            )
+            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+
         return config
 
     @staticmethod
@@ -75,7 +88,7 @@ class SourceGoogleAds(AbstractSource):
         credentials.update(use_proto_plus=True)
 
         # https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid
-        if "login_customer_id" in config and config["login_customer_id"].strip():
+        if config.get("login_customer_id"):
             credentials["login_customer_id"] = config["login_customer_id"]
         return credentials
 
@@ -98,12 +111,38 @@ class SourceGoogleAds(AbstractSource):
         )
         return incremental_stream_config
 
-    @staticmethod
-    def get_account_info(google_api: GoogleAds, config: Mapping[str, Any]) -> Iterable[Iterable[Mapping[str, Any]]]:
-        dummy_customers = [CustomerModel(id=_id) for _id in config["customer_id"].split(",")]
+    def get_all_accounts(self, google_api: GoogleAds, customers: List[CustomerModel]) -> List[str]:
+        customer_clients_stream = CustomerClient(google_api, customers=customers)
+        for slice in customer_clients_stream.stream_slices():
+            n = 0
+            for record in customer_clients_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
+                n += 1
+                if n == 50:
+                    break
+                yield record
+
+    def _get_all_accessible_accounts(self, google_api: GoogleAds, config: Mapping[str, Any]) -> Iterable[Iterable[Mapping[str, Any]]]:
+        customer_ids = [customer_id for customer_id in google_api.get_accessible_accounts()]
+        dummy_customers = [CustomerModel(id=_id, login_customer_id=_id) for _id in customer_ids]
+
+        yield from self.get_all_accounts(google_api, dummy_customers)
+
+    def _get_accounts_by_id(self, google_api, config):
+        customer_ids = config["customer_id"].split(",")
+
+        dummy_customers = [CustomerModel(id=_id) for _id in customer_ids]
         accounts_stream = ServiceAccounts(google_api, customers=dummy_customers)
         for slice_ in accounts_stream.stream_slices():
-            yield accounts_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_)
+            yield from accounts_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_)
+
+    def get_customers(self, google_api, config):
+        if config.get("customer_id"):
+            accounts = self._get_accounts_by_id(google_api, config)
+            accounts = [a for a in accounts]
+            return CustomerModel.from_accounts(accounts)
+        else:
+            accounts = self._get_all_accessible_accounts(google_api, config)
+            return CustomerModel.from_accounts(accounts, "customer_client")
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:
@@ -149,8 +188,9 @@ class SourceGoogleAds(AbstractSource):
         logger.info("Checking the config")
         google_api = GoogleAds(credentials=self.get_credentials(config))
 
-        accounts = self.get_account_info(google_api, config)
-        customers = CustomerModel.from_accounts(accounts)
+        customers = self.get_customers(google_api, config)
+        logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
+
         # Check custom query request validity by sending metric request with non-existent time window
         for customer in customers:
             for query in config.get("custom_queries_array", []):
@@ -177,8 +217,10 @@ class SourceGoogleAds(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform(config)
         google_api = GoogleAds(credentials=self.get_credentials(config))
-        accounts = self.get_account_info(google_api, config)
-        customers = CustomerModel.from_accounts(accounts)
+
+        customers = self.get_customers(google_api, config)
+        logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
+
         non_manager_accounts = [customer for customer in customers if not customer.is_manager_account]
         default_config = dict(api=google_api, customers=customers)
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
