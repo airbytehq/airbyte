@@ -15,7 +15,7 @@ from cached_property import cached_property
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob, ParentAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
-from source_facebook_marketing.streams.common import traced_exception, deep_merge
+from source_facebook_marketing.streams.common import traced_exception
 
 from .base_streams import FBMarketingIncrementalStream
 
@@ -122,7 +122,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
-        account_id = job._edge_object.get("account_id")
+        account_id = job.edge_object.get("account_id")
         try:
             for obj in job.get_result():
                 data = obj.export_all_data()
@@ -184,6 +184,19 @@ class AdsInsights(FBMarketingIncrementalStream):
                                   k: pendulum.parse(v[self.cursor_field]).date() if v.get(self.cursor_field) else None}
             self._completed_slices = {**self._completed_slices, k: set(pendulum.parse(_v).date() for _v in v.get("slices", []))}
             self._next_cursor_value = {**self._next_cursor_value, **self._get_start_date(k)}
+
+    def get_updated_state(self,
+                          current_stream_state: MutableMapping[str, Any],
+                          latest_record: Mapping[str, Any],
+                          account_id: str):
+        """Update stream state from latest record
+
+        :param current_stream_state: latest state returned
+        :param latest_record: latest record that we read
+        :param account_id
+
+        """
+        return self.state
 
     def _date_intervals(self, account_id: str = None) -> Iterator[pendulum.Date]:
         """Get date period to sync"""

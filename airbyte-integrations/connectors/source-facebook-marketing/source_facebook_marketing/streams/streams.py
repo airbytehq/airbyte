@@ -4,7 +4,7 @@
 
 import base64
 import logging
-from typing import Any, Iterable, List, Mapping, Optional, Set
+from typing import Any, Iterable, List, Mapping, Optional, Set, MutableMapping
 
 import pendulum
 import requests
@@ -104,6 +104,7 @@ class Ads(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup"""
 
     entity_prefix = "ad"
+    enable_deleted = True
 
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
         yield from stream_slice.get("account").get_ads(params=params, fields=self.fields)
@@ -162,9 +163,10 @@ class Activities(FBMarketingIncrementalStream):
     def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
 
+        account_id = stream_slice.get("account", {}).get("account_id")
         logger.info("stream_state : {}".format(stream_state))
 
-        state_value = stream_state.get(self.cursor_field)
+        state_value = stream_state.get(account_id, {}).get(self.cursor_field)
         since = self._start_date if not state_value else pendulum.parse(state_value)
 
         potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)

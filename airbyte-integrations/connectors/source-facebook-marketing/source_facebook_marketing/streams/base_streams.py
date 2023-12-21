@@ -149,34 +149,50 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     """Base class for incremental streams"""
 
     cursor_field = "updated_time"
-    partition_field = "account_id"
 
     def __init__(self, start_date: Optional[datetime], end_date: Optional[datetime], **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.instance(start_date) if start_date else None
         self._end_date = pendulum.instance(end_date) if end_date else None
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    @property
+    def state(self) -> Mapping[str, Any]:
+        """State getter, get current state and serialize it to emmit Airbyte STATE message"""
+        if self._cursor_value:
+            return self._cursor_value
+
+        return {}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        """State setter, ignore state if current settings mismatch saved state"""
+        if self._include_deleted and not value.get("include_deleted"):
+            logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
+            return
+
+        self._cursor_value = value
+
+    def get_updated_state(self,
+                          current_stream_state: MutableMapping[str, Any],
+                          latest_record: Mapping[str, Any],
+                          stream_slice: dict):
         """Update stream state from latest record"""
         potentially_new_records_in_the_past = self._include_deleted and not current_stream_state.get("include_deleted", False)
         record_value = latest_record[self.cursor_field]
-        partition_value = latest_record[self.partition_field] if self.partition_field in latest_record else None
-
-        _current_stream_state = current_stream_state.get(partition_value, current_stream_state)
-
-        state_value = _current_stream_state.get(self.cursor_field) or record_value
+        account_id = stream_slice.get("account").get("account_id")
+        state_value = current_stream_state.get(account_id, {}).get(self.cursor_field) or record_value
         max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
         if potentially_new_records_in_the_past:
             max_cursor = record_value
 
-        updated_state = {
-            self.cursor_field: str(max_cursor),
-            "include_deleted": self._include_deleted,
-        }
-        partitionned_current_stream_state = {partition_value: updated_state} if partition_value else updated_state
-        result = deep_merge(current_stream_state, partitionned_current_stream_state)
+        updated_state = deep_merge(current_stream_state, {
+            account_id: {
+                self.cursor_field: str(max_cursor),
+                "include_deleted": self._include_deleted,
+            }
+        })
 
-        return result
+        return updated_state
 
     def request_params(self, stream_slice: dict, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         """Include state filter"""
@@ -215,6 +231,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
     """The base class for streams that don't support filtering and return records sorted desc by cursor_value"""
 
     enable_deleted = False  # API don't have any filtering, so implement include_deleted in code
+    cursor_field = "updated_time"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -225,17 +242,18 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
     def state(self) -> Mapping[str, Any]:
         """State getter, get current state and serialize it to emmit Airbyte STATE message"""
         if self._cursor_value:
-            return {
-                self.cursor_field: self._cursor_value,
-                "include_deleted": self._include_deleted,
-            }
+            return self._cursor_value
 
         return {}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
         """State setter, ignore state if current settings mismatch saved state"""
-        return self._cursor_value
+        if self._include_deleted and not value.get("include_deleted"):
+            logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
+            return
+
+        self._cursor_value = value
 
     def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Don't have classic cursor filtering"""
@@ -243,3 +261,30 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
 
     def get_record_deleted_status(self, record) -> bool:
         return False
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Main read method used by CDK"""
+        try:
+            account_id = stream_slice.get("account").get("account_id")
+            stream_cursor_value = pendulum.datetime(1970, 1, 1)
+            try:
+                stream_cursor_value = pendulum.parse(self._cursor_value.get(account_id, {}).get(self.cursor_field, {}))
+            except Exception as e:
+                print(e)
+            for record in self.list_objects(stream_slice=stream_slice,
+                                            params=self.request_params(stream_slice=stream_slice,
+                                                                       stream_state=stream_state)):
+                record_cursor_value = pendulum.parse(record.get(self.cursor_field))
+                if record_cursor_value > stream_cursor_value:
+                    if isinstance(record, AbstractObject):
+                        record = record.export_all_data()  # convert FB object to dict
+                    self.fix_date_time(record)
+                    yield record
+        except FacebookRequestError as exc:
+            raise traced_exception(exc)
