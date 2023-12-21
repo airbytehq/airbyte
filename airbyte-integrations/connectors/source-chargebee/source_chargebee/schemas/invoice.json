@@ -155,6 +155,10 @@
     "deleted": {
       "type": ["boolean", "null"]
     },
+    "tax_category": {
+      "type": ["string", "null"],
+      "$comment": "This field is returned only if account configured GST for the India region."
+    },
     "base_currency_code": {
       "type": ["string", "null"],
       "maxLength": 3
@@ -214,15 +218,15 @@
           },
           "unit_amount_in_decimal": {
             "type": ["string", "null"],
-            "maxLength": 33
+            "maxLength": 39
           },
           "quantity_in_decimal": {
             "type": ["string", "null"],
-            "maxLength": 33
+            "maxLength": 39
           },
           "amount_in_decimal": {
             "type": ["string", "null"],
-            "maxLength": 33
+            "maxLength": 39
           },
           "discount_amount": {
             "type": ["integer", "null"],
@@ -276,6 +280,10 @@
           "entity_id": {
             "type": ["string", "null"],
             "maxLength": 100
+          },
+          "coupon_set_code": {
+            "type": ["string", "null"],
+            "maxLength": 50
           }
         }
       }
@@ -337,6 +345,15 @@
             "maxLength": 100
           },
           "tax_rate": {
+            "type": ["number", "null"]
+          },
+          "date_to": {
+            "type": ["integer", "null"]
+          },
+          "date_from": {
+            "type": ["integer", "null"]
+          },
+          "prorated_taxable_amount": {
             "type": ["number", "null"]
           },
           "is_partial_tax_applied": {
