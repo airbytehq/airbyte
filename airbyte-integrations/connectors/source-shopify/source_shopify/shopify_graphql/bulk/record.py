@@ -26,7 +26,7 @@ class ShopifyBulkRecord:
     @staticmethod
     def check_type(record: Optional[Mapping[str, Any]] = None, type: Optional[str] = None) -> bool:
         if record:
-            return True if record["__typename"] == type else False
+            return True if record.get("__typename") == type else False
         else:
             return False
 
@@ -50,7 +50,7 @@ class ShopifyBulkRecord:
         # while resolving the `id` in `record_resolve_id`,
         # we re-assign the original id like `"gid://shopify/Order/19435458986123"`,
         # into `admin_graphql_api_id` have the ability to identify the record oigin correctly in subsequent actions.
-        record["admin_graphql_api_id"] = record["id"]
+        record["admin_graphql_api_id"] = record.get("id")
         # extracting the int(id) and reassign
         record["id"] = self.tools.resolve_str_id(record.get("id"))
         return record
