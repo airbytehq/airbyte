@@ -340,7 +340,7 @@ class SessionTokenRequestBearerAuthenticator(BaseModel):
     type: Literal['Bearer']
 
 
-class HttpMethodEnum(Enum):
+class HttpMethod(Enum):
     GET = 'GET'
     POST = 'POST'
 
@@ -570,6 +570,11 @@ class RecordFilter(BaseModel):
         ],
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class SchemaNormalization(Enum):
+    None_ = 'None'
+    Default = 'Default'
 
 
 class RemoveFields(BaseModel):
@@ -1019,6 +1024,7 @@ class RecordSelector(BaseModel):
         description='Responsible for filtering records to be emitted by the Source.',
         title='Record Filter',
     )
+    schema_normalization: Optional[SchemaNormalization] = SchemaNormalization.None_
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -1232,8 +1238,8 @@ class HttpRequester(BaseModel):
         description='Error handler component that defines how to handle errors.',
         title='Error Handler',
     )
-    http_method: Optional[Union[str, HttpMethodEnum]] = Field(
-        'GET',
+    http_method: Optional[HttpMethod] = Field(
+        HttpMethod.GET,
         description='The HTTP method used to fetch data from the source (can be GET or POST).',
         examples=['GET', 'POST'],
         title='HTTP Method',
