@@ -14,6 +14,20 @@ class StripeRequestBuilder:
         return cls("application_fees", account_id, client_secret)
 
     @classmethod
+    def application_fees_refunds_endpoint(cls, application_fee_id: str, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls(f"application_fees/{application_fee_id}/refunds", account_id, client_secret)
+
+    @classmethod
+    def customers_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("customers", account_id, client_secret)
+
+    @classmethod
+    def customers_sources_endpoint(cls, customer_id: str, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        # FIXME this endpoint is not available in the documentation and stripe mentions explicitly that the sources API is deprecated
+        #  (see https://stripe.com/docs/sources/customers and https://github.com/airbytehq/airbyte/issues/33714)
+        return cls(f"customers/{customer_id}/sources", account_id, client_secret)
+
+    @classmethod
     def events_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
         return cls("events", account_id, client_secret)
 
@@ -60,6 +74,7 @@ class StripeRequestBuilder:
         self._object: Optional[str] = None
         self._starting_after_id: Optional[str] = None
         self._types: List[str] = []
+        self._expands: List[str] = []
 
     def with_created_gte(self, created_gte: datetime) -> "StripeRequestBuilder":
         self._created_gte = created_gte
@@ -89,6 +104,10 @@ class StripeRequestBuilder:
         self._types = types
         return self
 
+    def with_expands(self, expands: List[str]) -> "StripeRequestBuilder":
+        self._expands = expands
+        return self
+
     def build(self) -> HttpRequest:
         query_params = {}
         if self._created_gte:
@@ -103,6 +122,8 @@ class StripeRequestBuilder:
             query_params["types[]"] = self._types
         if self._object:
             query_params["object"] = self._object
+        if self._expands:
+            query_params["expand[]"] = self._expands
 
         if self._any_query_params:
             if query_params:
