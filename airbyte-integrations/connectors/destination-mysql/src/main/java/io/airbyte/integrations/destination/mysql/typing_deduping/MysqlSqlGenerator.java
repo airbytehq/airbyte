@@ -39,7 +39,8 @@ public class MysqlSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   public DataType<?> toDialectType(final AirbyteProtocolType airbyteProtocolType) {
-    return switch (airbyteProtocolType) {// jooq's TIMESTMAPWITHTIMEZONE type renders to `timestamp with timezone`...
+    return switch (airbyteProtocolType) {
+      // jooq's TIMESTMAPWITHTIMEZONE type renders to `timestamp with timezone`...
       // which isn't valid mysql syntax.
       // Legacy normalization used char(1024) https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-normalization/dbt-project-template/macros/cross_db_utils/datatypes.sql#L233-L234
       // so match that behavior I guess.
