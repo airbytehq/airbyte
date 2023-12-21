@@ -77,6 +77,8 @@ class SourceFacebookMarketing(AbstractSource):
         if config.end_date:
             config.end_date = pendulum.instance(config.end_date)
 
+        config.account_ids = list(config.account_ids)
+
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
