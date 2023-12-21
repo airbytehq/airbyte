@@ -63,6 +63,12 @@ def update_secrets(ctx):
     updated_secrets_count = len(new_remote_secrets)
     click.echo(f"Updated {updated_secrets_count} secrets: {','.join(updated_secret_names)}")
 
+@ci_credentials.command(help="Add GSM secrets by file path.")
+@click.argument("file_path")
+@click.pass_context
+def add_secret(ctx, file_path: str):
+    new_remote_secret = ctx.obj["secret_manager"].add_secret(file_path, ctx.obj["connector_secrets"])
+    click.echo(f"Added secret: {new_remote_secret.name}")
 
 if __name__ == "__main__":
     sys.exit(ci_credentials(obj={}))

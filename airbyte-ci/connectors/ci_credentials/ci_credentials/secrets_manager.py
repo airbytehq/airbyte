@@ -295,3 +295,32 @@ class SecretsManager:
         except Exception as e:
             self.logger.error(f"Failed to parse spec mask: {e}")
             return []
+
+    def add_secret(self, file_path: str, existing_secrets: List[RemoteSecret]) -> RemoteSecret:
+        """Add a new secret to GSM
+
+        Args:
+            file_path (str): Path to the secret file
+
+        Returns:
+            RemoteSecret: The newly created remote secret instance
+        """
+        self.logger.info(f"Adding secret from {file_path}")
+        with open(file_path, "r") as file:
+            secret_value = file.read()
+
+        secret_name = Secret.generate_secret_name(self.connector_name, Path(file_path).name)
+        if secret_name in [secret.name for secret in existing_secrets]:
+            self.logger.error(f"Secret {secret_name} already exists!")
+            return
+
+        file_name_wo_ext = Path(file_path).stem
+        secret_url = f"https://secretmanager.googleapis.com/v1/projects/{self.api.project_id}/secrets?secretId={secret_name}"
+        body = {"replication": {"automatic": {}}, "labels": {"connector": self.connector_name, "filename": file_name_wo_ext}}
+        self.api.post(secret_url, json=body)
+
+        secret_url = f"https://secretmanager.googleapis.com/v1/projects/{self.api.project_id}/secrets/{secret_name}:addVersion"
+        body = {"payload": {"data": base64.b64encode(secret_value.encode()).decode("utf-8")}}
+        new_version_response = self.api.post(secret_url, json=body)
+
+        return RemoteSecret(self.connector_name, Path(file_path).name, secret_value, new_version_response["name"])
