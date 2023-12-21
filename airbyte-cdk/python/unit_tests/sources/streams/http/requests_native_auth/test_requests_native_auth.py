@@ -4,7 +4,7 @@
 
 import json
 import logging
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 from unittest.mock import Mock
 
 import freezegun
@@ -417,17 +417,31 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         assert authenticator.refresh_access_token() == ("new_access_token", "42", "new_refresh_token")
 
     @pytest.mark.parametrize(
-        "refresh_request_type, expected_request_type",
+        "refresh_request_type, expected_request_type, expected_request_criteria",
         [
-            ("request_parameter", "params"),
-            ("body_data", "data"),
-            ("body_json", "json"),
+            pytest.param(
+                "request_parameter",
+                "params",
+                lambda x: x.qs and "client_id" in x.qs,
+                id="request_type_as_parameters"
+            ),
+            pytest.param(
+                "body_data",
+                "data",
+                lambda x: x.text and "client_id" in x.text and not x.text.startswith("{"),
+                id="request_type_as_body_data"
+            ),
+            pytest.param(
+                "body_json",
+                "json",
+                lambda x: x.text and "client_id" in x.text and x.text.startswith("{"),
+                id="request_type_as_body_json"
+            ),
         ],
-        ids=["request_type_as_parameters", "request_type_as_body_data", "request_type_as_body_json"],
     )
-    def test_get_refresh_request_data(self, refresh_request_type: str, expected_request_type: str):
+    def test_get_refresh_request_data(self, refresh_request_type: str, expected_request_type: str, expected_request_criteria: Callable, requests_mock):
         oauth = Oauth2Authenticator(
-            token_refresh_endpoint=TestOauth2Authenticator.refresh_endpoint,
+            token_refresh_endpoint=f"https://{TestOauth2Authenticator.refresh_endpoint}",
             client_id=TestOauth2Authenticator.client_id,
             client_secret=TestOauth2Authenticator.client_secret,
             refresh_token=TestOauth2Authenticator.refresh_token,
@@ -435,7 +449,21 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         )
         request_data = oauth.get_refresh_request_data()
 
+        def match_request_additional_matchers(request):
+            return expected_request_criteria(request)
+
+        requests_mock.register_uri(
+            'POST',
+            f"https://{TestOauth2Authenticator.refresh_endpoint}",
+            additional_matcher=match_request_additional_matchers,
+            json={"access_token": "token", "expires_in": 3600}
+        )
+
+        token, expires_in = oauth.refresh_access_token()
+
         assert list(request_data.keys())[0] == expected_request_type
+        assert token == "token"
+        assert expires_in == 3600
 
 
 def mock_request(method, url, data):
