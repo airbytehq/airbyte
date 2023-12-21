@@ -176,10 +176,6 @@ class Activities(FBMarketingIncrementalStream):
 
         return {"since": since.int_timestamp}
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any], stream_slice: dict):
-        account_id = stream_slice.get("account").get("account_id")
-        updated_state = super().get_updated_state(current_stream_state, latest_record, account_id)
-        return updated_state
 
 class Videos(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/video"""
