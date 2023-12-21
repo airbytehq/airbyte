@@ -117,6 +117,35 @@ class Source:
                 return msg.spec
         raise Exception(f"Connector did not return a spec. Last logs: {self._last_log_messages}")
 
+    @property
+    @lru_cache(maxsize=1)
+    def raw_catalog(self) -> AirbyteCatalog:
+        """
+        Get the raw catalog for the given streams.
+        """
+        catalog = self._discover()
+        return catalog
+
+    @property
+    @lru_cache(maxsize=1)
+    def configured_catalog(self) -> ConfiguredAirbyteCatalog:
+        """
+        Get the configured catalog for the given streams.
+        """
+        catalog = self._discover()
+        configured_catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=s,
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
+                )
+                for s in catalog.streams
+                if self.streams is None or s.name in self.streams
+            ]
+        )
+        return configured_catalog
+
     def read_stream(self, stream: str) -> Iterable[Dict[str, Any]]:
         """
         Read a stream from the connector.

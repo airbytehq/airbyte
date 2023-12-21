@@ -38,11 +38,10 @@ types-requests = "^2.31.0.10"
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = "airbyte_protocol.models"
-ignore_missing_imports = true  # No stubs yet (😢)
-
-[[tool.mypy.overrides]]
-module = "airbyte_protocol"
+module = [
+    "airbyte_protocol",
+    "airbyte_protocol.models"
+]
 ignore_missing_imports = true  # No stubs yet (😢)
 
 [build-system]

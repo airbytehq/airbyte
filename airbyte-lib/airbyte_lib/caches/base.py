@@ -28,9 +28,9 @@ class SQLCacheConfigBase(CacheConfigBase):
     """Same as a regular config except it exposes the 'get_sql_alchemy_url()' method."""
 
     dedupe_mode = RecordDedupeMode.APPEND
-    schema_name: str
-    table_prefix: str
-    table_suffix: str
+    schema_name: str = "airbyte_raw"
+    table_prefix: str = ""
+    table_suffix: str = ""
 
     @abc.abstractmethod
     def get_sql_alchemy_url(self):
@@ -48,7 +48,7 @@ class GenericSQLCacheConfig(SQLCacheConfigBase):
         return self.sql_alchemy_url
 
 
-class SQLCacheBase(RecordProcessor, abc.ABCMeta):
+class SQLCacheBase(RecordProcessor):
     """A base class to be used for SQL Caches.
 
     Optionally we can use a file cache to store the data in parquet files.
@@ -67,13 +67,16 @@ class SQLCacheBase(RecordProcessor, abc.ABCMeta):
         self,
         config: SQLCacheConfigBase,
         source_catalog: dict[str, Any],  # TODO: Better typing for ConfiguredAirbyteCatalog
-        file_cache: FileWriterBase | None = None,
+        file_writer: FileWriterBase | None = None,
         **kwargs,  # Added for future proofing purposes.
     ):
         self.config: SQLCacheConfigBase
         super().__init__(config, source_catalog, **kwargs)
 
-        self.file_cache = file_cache
+        self.file_writer = file_writer or self.file_writer_class(
+            config,
+            source_catalog=source_catalog
+        )
         self.type_converter = self.type_converter_class()
 
     # Public interface:
@@ -237,6 +240,20 @@ class SQLCacheBase(RecordProcessor, abc.ABCMeta):
     ) -> dict[str, str | dict[str, str | dict]]:
         """Return the column definitions for the given stream."""
         return self.source_catalog["streams"][stream_name]["json_schema"]
+
+    @overrides
+    def _write_batch(
+        self,
+        stream_name: str,
+        batch_id: str,
+        record_batch: pa.Table | pa.RecordBatch,
+    ) -> Path:
+        """
+        Process a record batch.
+
+        Return the path to the cache file.
+        """
+        return self.file_writer._write_batch(stream_name, batch_id, record_batch)
 
     @final
     @overrides

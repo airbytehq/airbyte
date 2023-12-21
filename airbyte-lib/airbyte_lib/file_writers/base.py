@@ -17,39 +17,18 @@ class FileWriterConfigBase(CacheConfigBase):
     """Configuration for the Snowflake cache."""
 
     type: str = "files"
-    cache_path: str
+    cache_path: str = "./.cache/files/"
 
 
-class FileWriterBase(RecordProcessor, abc.ABCMeta):
+class FileWriterBase(RecordProcessor, abc.ABC):
     """A generic base implementation for a file-based cache."""
 
-    @abc.abstractmethod
-    def create_file_path(
-        self,
-        stream_name: str,
-        batch_id: str | None = None,  # ULID of the batch
-    ) -> Path:
-        """Create and return a new cache file path for the given stream."""
-        ...
-
-    @abc.abstractmethod
-    def write_batch_to_file(
-        self,
-        stream_name: str,
-        record_batch: pa.Table | pa.RecordBatch,
-    ) -> Path:
-        """Write the provided batch to a cache file.
-
-        Return the path to the written cache file.
-        """
-        ...
-
-    @abc.abstractmethod
-    def process_batch(
-        self,
-        stream_name: str,
-        batch_id: str,
-        record_batch: pa.Table,
-    ) -> None:
-        """Process a single batch."""
-        self.write_batch_to_file(stream_name, record_batch)
+    # TODO: delete if not needed
+    # @abc.abstractmethod
+    # def create_file_path(
+    #     self,
+    #     stream_name: str,
+    #     batch_id: str | None = None,  # ULID of the batch
+    # ) -> Path:
+    #     """Create and return a new cache file path for the given stream."""
+    #     ...

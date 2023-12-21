@@ -26,7 +26,7 @@ class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
         return f"duckdb://{self.db_path}?schema={self.schema_name}"
 
 
-class DuckDBSQLCache(SQLCacheBase):
+class DuckDBCache(SQLCacheBase):
     """A DuckDB implementation of the cache.
 
     Parquet is used for local file storage before bulk loading.

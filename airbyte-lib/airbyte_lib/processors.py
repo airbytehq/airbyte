@@ -114,10 +114,10 @@ class RecordProcessor(abc.ABC, EnforceOverrides):
 
         Returns a tuple of the batch ID, batch handle, and an exception if one occurred.
         """
-        batch_id = self.new_batch_id()
-        batch_handle = self.process_batch(
+        batch_id = self._new_batch_id()
+        batch_handle = self._write_batch(
             stream_name, batch_id, record_batch
-        ) or self.get_batch_handle(stream_name, batch_id)
+        ) or self._get_batch_handle(stream_name, batch_id)
 
         if stream_name not in self._pending_batches:
             self._pending_batches[stream_name] = {}
@@ -130,23 +130,23 @@ class RecordProcessor(abc.ABC, EnforceOverrides):
         return batch_id, batch_handle, None
 
     @abc.abstractmethod
-    def process_batch(
+    def _write_batch(
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table,
+        record_batch: pa.Table | pa.RecordBatch,
     ) -> BatchHandle:
         """Process a single batch.
 
         Returns a batch handle, such as a path or any other custom reference.
         """
-        raise NotImplementedError()
+        pass
 
-    def new_batch_id(self) -> str:
+    def _new_batch_id(self) -> str:
         """Return a new batch handle."""
         return str(ulid.ULID())
 
-    def get_batch_handle(
+    def _get_batch_handle(
         self,
         stream_name: str,
         batch_id: str | None = None,  # ULID of the batch
@@ -156,7 +156,7 @@ class RecordProcessor(abc.ABC, EnforceOverrides):
         By default this is a concatenation of the stream name and batch ID.
         However, any Python object can be returned, such as a Path object.
         """
-        batch_id = batch_id or self.new_batch_id()
+        batch_id = batch_id or self._new_batch_id()
         return f"{stream_name}_{batch_id}"
 
     def _finalize_batches(self, stream_name: str) -> dict[str, BatchHandle]:

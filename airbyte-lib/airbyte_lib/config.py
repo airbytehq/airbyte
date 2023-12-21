@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
-from overrides import EnforceOverrides
+# from overrides import EnforceOverrides
 
 
-class CacheConfigBase(BaseModel, meta=EnforceOverrides):
+class CacheConfigBase(BaseModel):  # TODO: meta=EnforceOverrides (Pydantic doesn't like it currently)
     pass

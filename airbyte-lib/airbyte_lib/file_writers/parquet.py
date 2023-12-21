@@ -6,15 +6,16 @@ import pyarrow as pa
 import ulid
 
 from .base import FileWriterBase, FileWriterConfigBase
-
+from overrides import overrides
 
 
 class ParquetWriterConfig(FileWriterConfigBase):
     """Configuration for the Snowflake cache."""
 
     type: str = "parquet"
-    cache_path: str
 
+    # Inherits from base class:
+    # cache_path: str
 
 class ParquetWriter(FileWriterBase):
     """A Parquet cache implementation."""
@@ -31,9 +32,11 @@ class ParquetWriter(FileWriterBase):
         config: ParquetWriterConfig = cast(ParquetWriterConfig, self.config)
         return Path(config.cache_path) / f"{stream_name}_{batch_id}.parquet"
 
-    def write_batch_to_file(
+    @overrides
+    def _write_batch(
         self,
         stream_name: str,
+        batch_id: str,
         record_batch: pa.Table | pa.RecordBatch,
     ) -> Path:
         """

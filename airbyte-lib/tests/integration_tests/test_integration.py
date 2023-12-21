@@ -6,6 +6,8 @@ import shutil
 import airbyte_lib as ab
 import pytest
 
+from airbyte_lib.caches import DuckDBCache, DuckDBCacheConfig
+
 
 @pytest.fixture(scope="module", autouse=True)
 def prepare_test_env():
@@ -61,6 +63,25 @@ def test_check_fail():
 def test_sync():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = ab.get_in_memory_cache()
+
+    result = source.read_all(cache)
+
+    assert result.processed_records == 3
+    assert list(result["stream1"]) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
+    assert list(result["stream2"]) == [{"column1": "value1", "column2": 1}]
+
+
+def test_sync_to_duckdb():
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source_catalog = source.configured_catalog
+    config = DuckDBCacheConfig(
+        db_path=":memory:",
+        schema_name="test",
+    )
+    cache = DuckDBCache(
+        config=config,
+        source_catalog=source_catalog,
+    )
 
     result = source.read_all(cache)
 
