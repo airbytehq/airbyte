@@ -43,6 +43,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest extends BaseSqlGeneratorIn
     return getSqlGenerator().toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
   }
 
+  @Override
   protected abstract JdbcSqlGenerator getSqlGenerator();
 
   protected abstract SQLDialect getSqlDialect();
