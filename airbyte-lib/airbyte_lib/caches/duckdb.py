@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from overrides import overrides
 
-from airbyte_lib.caches.bases import SQLCache, SQLCacheConfigBase
+from airbyte_lib.caches.sql_base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.file_writers import ParquetWriter, ParquetWriterConfig
 
 
@@ -26,7 +26,7 @@ class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
         return f"duckdb://{self.db_path}?schema={self.schema}"
 
 
-class DuckDBSQLCache(SQLCache):
+class DuckDBSQLCache(SQLCacheBase):
     """A DuckDB implementation of the cache.
 
     Parquet is used for local file storage before bulk loading.

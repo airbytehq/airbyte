@@ -6,14 +6,14 @@ import abc
 import io
 import sys
 from collections import defaultdict
-from typing import final, Any, cast
+from typing import final, Any
 
 import orjson
 import pyarrow as pa
 import ulid
 from overrides import EnforceOverrides
 
-from airbyte_lib.caches.bases.config import CacheConfigBase
+from airbyte_lib.config import CacheConfigBase
 
 DEFAULT_BATCH_SIZE = 10000
 

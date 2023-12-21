@@ -13,10 +13,11 @@ import sqlalchemy
 from sqlalchemy import text
 from overrides import overrides
 
-from airbyte_lib.caches.bases.core import CacheBase, BatchHandle
-from airbyte_lib.caches.bases.config import CacheConfigBase
+from airbyte_lib.caches import BatchHandle
+from airbyte_lib.config import CacheConfigBase
+from airbyte_lib.caches.core import CacheBase
 
-from airbyte_lib.caches.sql.types import SQLTypeConverter
+from airbyte_lib.types import SQLTypeConverter
 from airbyte_lib.file_writers import FileWriterBase
 
 class RecordDedupeMode(enum.Enum):

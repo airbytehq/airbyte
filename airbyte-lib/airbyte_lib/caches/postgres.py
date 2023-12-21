@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from overrides import overrides
 
-from airbyte_lib.caches.bases import SQLCache, SQLCacheConfigBase
+from airbyte_lib.caches.sql_base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.file_writers import ParquetWriter, ParquetWriterConfig
 
 
@@ -30,7 +30,7 @@ class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
         return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?schema={self.schema}"
 
 
-class PostgresSQLCache(SQLCache):
+class PostgresSQLCache(SQLCacheBase):
     """A Postgres implementation of the cache.
 
     Parquet is used for local file storage before bulk loading.
