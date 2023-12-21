@@ -1,12 +1,13 @@
 """A Parquet cache implementation."""
 
 from pathlib import Path
+from typing import cast
 import pyarrow as pa
 import ulid
 
 from .base import FileWriterBase
 
-from airbyte_lib.caches.bases import CacheConfigBase
+from airbyte_lib.config import CacheConfigBase
 
 
 class ParquetWriterConfig(CacheConfigBase):
@@ -42,6 +43,6 @@ class ParquetWriter(FileWriterBase):
         """
         output_file_path = self.get_new_cache_file_path(stream_name)
         with pa.parquet.ParquetWriter(output_file_path, record_batch.schema) as writer:
-            writer.write_table(record_batch)
+            writer.write_table(cast(pa.Table, record_batch))
 
         return output_file_path

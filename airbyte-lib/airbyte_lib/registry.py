@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import requests
 
-_cache = None
+_cache: dict | None = None
 
 REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 
