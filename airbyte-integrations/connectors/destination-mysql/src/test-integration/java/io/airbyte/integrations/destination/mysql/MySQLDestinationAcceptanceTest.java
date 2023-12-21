@@ -183,7 +183,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   private static void grantCorrectPermissions(final MySQLContainer<?> db) {
-    executeQuery(db, "GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+    executeQuery(db, "GRANT ALTER, CREATE, INSERT, UPDATE, DELETE, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
   }
 
   private static void executeQuery(final MySQLContainer<?> db, final String query) {
