@@ -33,7 +33,7 @@ public class TypeAndDedupeTransaction {
                                                             final String suffix)
       throws Exception {
     try {
-      LOGGER.info("Attempting typing and deduping for {}.{} with suffix", streamConfig.id().originalNamespace(), streamConfig.id().originalName(),
+      LOGGER.info("Attempting typing and deduping for {}.{} with suffix {}", streamConfig.id().originalNamespace(), streamConfig.id().originalName(),
           suffix);
       final String unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, false);
       destinationHandler.execute(unsafeSql);
