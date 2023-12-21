@@ -204,8 +204,16 @@ class API:
             ad_accounts = []
 
             business = facebook_business.adobjects.business.Business(fbid="1605818716400473")
-            accounts = business.get_owned_ad_accounts(fields=["name", "account_id"])
+            accounts = business.get_owned_ad_accounts(
+                fields=["name", "account_id", "amount_spent", "account_status"])
             for account in accounts:
+                account_id = account.get("account_id")
+                if account.get("amount_spent") == "0":
+                    logger.info("Not syncing account ID {} because the amount_spent is 0".format(account_id))
+                    continue
+                if account.get("account_status") == "101":
+                    logger.info("Not syncing account ID {} because the account_status is 101 (deleted)".format(account_id))
+                    continue
                 account_name = account["name"]
                 if "geoloc" in str.lower(account_name):
                     account["dolead_type"] = "GEOLOC"
