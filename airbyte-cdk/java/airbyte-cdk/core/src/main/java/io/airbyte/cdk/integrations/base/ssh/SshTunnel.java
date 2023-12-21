@@ -27,6 +27,7 @@ import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.SshException;
+import org.apache.sshd.common.session.SessionHeartbeatController;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
 import org.apache.sshd.common.util.security.SecurityUtils;
 import org.apache.sshd.core.CoreModuleProperties;
@@ -332,7 +333,28 @@ public class SshTunnel implements AutoCloseable {
     final SshClient client = SshClient.setUpDefaultClient();
     client.setForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
     client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
+
+    // Session level heartbeat using SSH_MSG_IGNORE every second.
+    client.setSessionHeartbeat(SessionHeartbeatController.HeartbeatType.IGNORE, Duration.ofMillis(1000));
+    // idle-timeout zero indicates NoTimeout.
     CoreModuleProperties.IDLE_TIMEOUT.set(client, Duration.ZERO);
+    // Use tcp keep-alive mechanism.
+    CoreModuleProperties.SOCKET_KEEPALIVE.set(client, true);
+    // Additional delay used for ChannelOutputStream to wait for space in the remote socket send buffer.
+    CoreModuleProperties.WAIT_FOR_SPACE_TIMEOUT.set(client, Duration.ofMinutes(2));
+    // No timeout so no point having a disconnect handler. Intentionally commented for future testing.
+    /*client.setSessionDisconnectHandler(new SessionDisconnectHandler() {
+      @Override
+      public boolean handleTimeoutDisconnectReason(Session session, TimeoutIndicator timeoutStatus) throws IOException {
+        LOGGER.info("Handling session timeout. {}", timeoutStatus.getStatus());
+        if (timeoutStatus.getStatus() == TimeoutStatus.IdleTimeout) {
+          return true;
+        }
+        return SessionDisconnectHandler.super.handleTimeoutDisconnectReason(session, timeoutStatus);
+      }
+    });*/
+    // Global keepalive message sent every 2 seconds. This precedes the session level heartbeat.
+    CoreModuleProperties.HEARTBEAT_INTERVAL.set(client, Duration.ofMillis(2000));
     return client;
   }
 
