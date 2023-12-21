@@ -17,9 +17,10 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
-import io.airbyte.integrations.base.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
@@ -48,7 +49,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest<TableDefinition> {
+public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest {
 
   /**
    * Redshift's JDBC driver doesn't map certain data types onto {@link java.sql.JDBCType} usefully.
@@ -139,7 +140,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   }
 
   @Override
-  protected SqlGenerator<TableDefinition> getSqlGenerator() {
+  protected JdbcSqlGenerator getSqlGenerator() {
     return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
 
       // Override only for tests to print formatted SQL. The actual implementation should use unformatted

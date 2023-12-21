@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.base.destination.typing_deduping;
+package io.airbyte.cdk.integrations.standardtest.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID;
@@ -16,6 +16,11 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABL
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
+import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
@@ -25,7 +30,7 @@ import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
-public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGeneratorIntegrationTest<T> {
+public abstract class JdbcSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<TableDefinition> {
 
   protected abstract JdbcDatabase getDatabase();
 
@@ -34,9 +39,11 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
   // TODO - can we move this class into db_destinations/testFixtures?
   // then we could redefine getSqlGenerator() to return a JdbcSqlGenerator
   // and this could be a private method getSqlGenerator().getTimestampWithTimeZoneType()
-  protected DataType<?> getTimestampWithTimeZoneType() {
-    return SQLDataType.TIMESTAMPWITHTIMEZONE;
+  private DataType<?> getTimestampWithTimeZoneType() {
+    return getSqlGenerator().toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
   }
+
+  protected abstract JdbcSqlGenerator getSqlGenerator();
 
   protected abstract SQLDialect getSqlDialect();
 
@@ -94,7 +101,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
 
   @Override
   protected void insertFinalTableRecords(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix, final List<JsonNode> records) throws Exception {
-    final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
+    final List<String> columnNames = includeCdcDeletedAt ? BaseSqlGeneratorIntegrationTest.FINAL_TABLE_COLUMN_NAMES_CDC : BaseSqlGeneratorIntegrationTest.FINAL_TABLE_COLUMN_NAMES;
     insertRecords(
         DSL.name(streamId.finalNamespace(), streamId.finalName() + suffix),
         columnNames,

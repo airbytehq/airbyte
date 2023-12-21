@@ -110,7 +110,8 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     };
   }
 
-  protected DataType<?> toDialectType(final AirbyteProtocolType airbyteProtocolType) {
+  @VisibleForTesting
+  public DataType<?> toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
       // Many destinations default to a very short length (e.g. Redshift defaults to 256).
       // Explicitly set 64KiB here. Subclasses may want to override this value.
