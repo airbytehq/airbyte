@@ -44,12 +44,12 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
       throws Exception;
 
   @Override
-  protected void createNamespace(String namespace) throws Exception {
+  protected void createNamespace(final String namespace) throws Exception {
     getDatabase().execute(getDslContext().createSchemaIfNotExists(namespace).getSQL(ParamType.INLINED));
   }
 
   @Override
-  protected void createRawTable(StreamId streamId) throws Exception {
+  protected void createRawTable(final StreamId streamId) throws Exception {
     getDatabase().execute(getDslContext().createTable(DSL.name(streamId.rawNamespace(), streamId.rawName()))
         .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
         .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
@@ -59,7 +59,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
   }
 
   @Override
-  protected void createV1RawTable(StreamId v1RawTable) throws Exception {
+  protected void createV1RawTable(final StreamId v1RawTable) throws Exception {
     getDatabase().execute(getDslContext().createTable(DSL.name(v1RawTable.rawNamespace(), v1RawTable.rawName()))
         .column(COLUMN_NAME_AB_ID, SQLDataType.VARCHAR(36).nullable(false))
         .column(COLUMN_NAME_EMITTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
@@ -68,7 +68,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
   }
 
   @Override
-  protected void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws Exception {
+  protected void insertRawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
     insertRecords(
         DSL.name(streamId.rawNamespace(), streamId.rawName()),
         JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
@@ -77,7 +77,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
   }
 
   @Override
-  protected void insertV1RawTableRecords(StreamId streamId, List<JsonNode> records) throws Exception {
+  protected void insertV1RawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
     insertRecords(
         DSL.name(streamId.rawNamespace(), streamId.rawName()),
         LEGACY_RAW_TABLE_COLUMNS,
@@ -86,7 +86,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
   }
 
   @Override
-  protected void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records) throws Exception {
+  protected void insertFinalTableRecords(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix, final List<JsonNode> records) throws Exception {
     final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
     insertRecords(
         DSL.name(streamId.finalNamespace(), streamId.finalName() + suffix),
@@ -96,18 +96,18 @@ public abstract class JdbcSqlGeneratorIntegrationTest<T> extends BaseSqlGenerato
   }
 
   @Override
-  protected List<JsonNode> dumpRawTableRecords(StreamId streamId) throws Exception {
+  protected List<JsonNode> dumpRawTableRecords(final StreamId streamId) throws Exception {
     return getDatabase().queryJsons(getDslContext().selectFrom(DSL.name(streamId.rawNamespace(), streamId.rawName())).getSQL(ParamType.INLINED));
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(StreamId streamId, String suffix) throws Exception {
+  protected List<JsonNode> dumpFinalTableRecords(final StreamId streamId, final String suffix) throws Exception {
     return getDatabase()
         .queryJsons(getDslContext().selectFrom(DSL.name(streamId.finalNamespace(), streamId.finalName() + suffix)).getSQL(ParamType.INLINED));
   }
 
   @Override
-  protected void teardownNamespace(String namespace) throws Exception {
+  protected void teardownNamespace(final String namespace) throws Exception {
     getDatabase().execute(getDslContext().dropSchema(namespace).cascade().getSQL(ParamType.INLINED));
   }
 
