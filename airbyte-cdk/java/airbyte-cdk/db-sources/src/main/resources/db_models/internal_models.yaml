@@ -12,11 +12,12 @@ properties:
     "$ref": "#/definitions/CursorBasedStatus"
 definitions:
   StateType:
-    description: Enum to define the sync mode of state.
+    description: Enum to define the sync mode of stream state.
     type: string
     enum:
       - cursor_based
       - ordered_column
+      - cdc
   CursorBasedStatus:
     type: object
     extends:
