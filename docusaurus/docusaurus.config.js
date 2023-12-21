@@ -9,9 +9,8 @@ const { themes } = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
-
-
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
+const productInformation = require("./src/remark/productInformation");
 
 const redirects = yaml.load(
   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
@@ -73,7 +72,10 @@ const config = {
     }),
   ],
 
-  clientModules: [require.resolve("./src/scripts/cloudStatus.js")],
+  clientModules: [
+    require.resolve("./src/scripts/fontAwesomeIcons.js"),
+    require.resolve("./src/scripts/cloudStatus.js"),
+  ],
 
   presets: [
     [
@@ -87,7 +89,7 @@ const config = {
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
           exclude: ["**/*.inapp.md"],
-          remarkPlugins: [docsHeaderDecoration],
+          remarkPlugins: [docsHeaderDecoration, productInformation],
         },
         blog: false,
         theme: {
