@@ -120,7 +120,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
       case NUMBER -> SQLDataType.DECIMAL(38, 9);
       case INTEGER -> SQLDataType.BIGINT;
       case BOOLEAN -> SQLDataType.BOOLEAN;
-      case TIMESTAMP_WITH_TIMEZONE -> getTimestampWithTimeZoneType();
+      case TIMESTAMP_WITH_TIMEZONE -> SQLDataType.TIMESTAMPWITHTIMEZONE;
       case TIMESTAMP_WITHOUT_TIMEZONE -> SQLDataType.TIMESTAMP;
       case TIME_WITH_TIMEZONE -> SQLDataType.TIMEWITHTIMEZONE;
       case TIME_WITHOUT_TIMEZONE -> SQLDataType.TIME;
@@ -133,8 +133,9 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
 
   protected abstract DataType<?> getArrayType();
 
-  protected DataType<?> getTimestampWithTimeZoneType() {
-    return SQLDataType.TIMESTAMPWITHTIMEZONE;
+  @VisibleForTesting
+  public DataType<?> getTimestampWithTimeZoneType() {
+    return toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
   }
 
   protected abstract DataType<?> getWidestType();
@@ -202,10 +203,10 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
    * @param includeMetaColumn
    * @return
    */
-  LinkedHashMap<String, DataType<?>> getFinalTableMetaColumns(boolean includeMetaColumn) {
+  LinkedHashMap<String, DataType<?>> getFinalTableMetaColumns(final boolean includeMetaColumn) {
     final LinkedHashMap<String, DataType<?>> metaColumns = new LinkedHashMap<>();
     metaColumns.put(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false));
-    metaColumns.put(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
+    metaColumns.put(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false));
     if (includeMetaColumn)
       metaColumns.put(COLUMN_NAME_AB_META, getStructType().nullable(false));
     return metaColumns;
@@ -230,7 +231,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   }
 
   @VisibleForTesting
-  Condition rawTableCondition(DestinationSyncMode syncMode, boolean isCdcDeletedAtPresent, Optional<Instant> minRawTimestamp) {
+  Condition rawTableCondition(final DestinationSyncMode syncMode, final boolean isCdcDeletedAtPresent, final Optional<Instant> minRawTimestamp) {
     Condition condition = field(name(COLUMN_NAME_AB_LOADED_AT)).isNull();
     if (syncMode == DestinationSyncMode.APPEND_DEDUP) {
       if (isCdcDeletedAtPresent) {
@@ -251,7 +252,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
-    String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
+    final String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
     if (!force) {
       return Strings.join(
           List.of(
@@ -292,20 +293,20 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     final Name rawTableName = name(streamId.rawNamespace(), streamId.rawName());
-    DSLContext dsl = getDslContext();
+    final DSLContext dsl = getDslContext();
     return Strings.join(
         List.of(
             dsl.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
             dsl.dropTableIfExists(rawTableName).getSQL(),
             DSL.createTable(rawTableName)
                 .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
-                .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
-                .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
+                .column(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false))
+                .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType().nullable(false))
                 .column(COLUMN_NAME_DATA, getStructType().nullable(false))
                 .as(select(
                     field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
                     field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
-                    cast(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
+                    cast(null, getTimestampWithTimeZoneType()).as(COLUMN_NAME_AB_LOADED_AT),
                     field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(table(name(namespace, tableName))))
                 .getSQL(ParamType.INLINED)),
         ";" + System.lineSeparator());
@@ -420,14 +421,14 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   }
 
   protected String createSchemaSql(final String namespace) {
-    DSLContext dsl = getDslContext();
-    CreateSchemaFinalStep createSchemaSql = dsl.createSchemaIfNotExists(quotedName(namespace));
+    final DSLContext dsl = getDslContext();
+    final CreateSchemaFinalStep createSchemaSql = dsl.createSchemaIfNotExists(quotedName(namespace));
     return createSchemaSql.getSQL();
   }
 
   protected String createTableSql(final String namespace, final String tableName, final LinkedHashMap<ColumnId, AirbyteType> columns) {
-    DSLContext dsl = getDslContext();
-    CreateTableColumnStep createTableSql = dsl
+    final DSLContext dsl = getDslContext();
+    final CreateTableColumnStep createTableSql = dsl
         .createTable(quotedName(namespace, tableName))
         .columns(buildFinalTableFields(columns, getFinalTableMetaColumns(true)));;
     return createTableSql.getSQL();
@@ -445,7 +446,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     return commitTransaction() + ";";
   }
 
-  private String deleteFromFinalTable(final String schemaName, final String tableName, List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
+  private String deleteFromFinalTable(final String schemaName, final String tableName, final List<ColumnId> primaryKeys, final Optional<ColumnId> cursor) {
     final DSLContext dsl = getDslContext();
     // Unknown type doesn't play well with where .. in (select..)
     final Field<Object> airbyteRawId = field(quotedName(COLUMN_NAME_AB_RAW_ID));
