@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box } from "@mui/material";
 import { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { Button, DropDown, DropDownRow, NewMainPageWithScroll } from "components";
@@ -60,8 +61,9 @@ const DDContainer = styled.div<{
 `;
 
 const AllSourcesPage: React.FC = () => {
-  const { push, query } = useRouter();
+  const { query } = useRouter();
   // const { push } = useRouter();
+  const navigate = useNavigate();
   const [pageConfig, updatePageSize] = usePageConfig();
   // const [currentPageSize, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
   const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig?.source?.pageSize);
@@ -115,55 +117,58 @@ const AllSourcesPage: React.FC = () => {
     },
     [onSelectFilter]
   );
-  const onCreateSource = () => push(`${RoutePaths.SelectSource}`);
-
-  if (sources?.length === 0) {
-    onCreateSource();
-  }
+  // const onCreateSource = () => push(`${RoutePaths.SelectSource}`);
+  console.log(sources?.length, "Source Length");
   return (
-    <NewMainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}
-      pageTitle={
-        <PageTitle
-          withPadding
-          title=""
-          endComponent={
-            <Button onClick={onCreateSource} data-id="new-source">
-              <BtnInnerContainer>
-                <BtnIcon icon={faPlus} />
-                <BtnText>
-                  <FormattedMessage id="sources.newSource" />
-                </BtnText>
-              </BtnInnerContainer>
-            </Button>
+    <>
+      {sources && sources?.length > 0 ? (
+        <NewMainPageWithScroll
+          headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}
+          pageTitle={
+            <PageTitle
+              withPadding
+              title=""
+              endComponent={
+                <Button onClick={() => navigate(`${RoutePaths.SelectSource}`)} data-id="new-source">
+                  <BtnInnerContainer>
+                    <BtnIcon icon={faPlus} />
+                    <BtnText>
+                      <FormattedMessage id="sources.newSource" />
+                    </BtnText>
+                  </BtnInnerContainer>
+                </Button>
+              }
+            />
           }
-        />
-      }
-    >
-      <DDContainer>
-        <DropDown
-          $withBorder
-          $background="white"
-          value={filters.SourceDefinitionId}
-          options={sourceOptions}
-          onChange={(option: DropDownRow.IDataItem) => onSelectFilter("SourceDefinitionId", option.value)}
-        />
-      </DDContainer>
-      <Separator height="10px" />
-      <SourcesTable sources={sources} />
-      <Separator height="24px" />
-      <Footer>
-        <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />
-        <Box paddingLeft="20px">
-          <Pagination
-            pages={total / pageSize}
-            value={filters.pageCurrent}
-            onChange={(value: number) => onSelectFilter("pageCurrent", value)}
-          />
-        </Box>
-      </Footer>
-      <Separator height="24px" />
-    </NewMainPageWithScroll>
+        >
+          <DDContainer>
+            <DropDown
+              $withBorder
+              $background="white"
+              value={filters.SourceDefinitionId}
+              options={sourceOptions}
+              onChange={(option: DropDownRow.IDataItem) => onSelectFilter("SourceDefinitionId", option.value)}
+            />
+          </DDContainer>
+          <Separator height="10px" />
+          <SourcesTable sources={sources} />
+          <Separator height="24px" />
+          <Footer>
+            <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />
+            <Box paddingLeft="20px">
+              <Pagination
+                pages={total / pageSize}
+                value={filters.pageCurrent}
+                onChange={(value: number) => onSelectFilter("pageCurrent", value)}
+              />
+            </Box>
+          </Footer>
+          <Separator height="24px" />
+        </NewMainPageWithScroll>
+      ) : (
+        navigate(`${RoutePaths.SelectSource}`)
+      )}
+    </>
   );
 };
 

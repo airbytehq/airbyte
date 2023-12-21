@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
@@ -23,6 +24,7 @@ const CreateSourcePage: React.FC = () => {
   const [successRequest, setSuccessRequest] = useState(false);
   const [currentStep, setCurrentStep] = useState<string>(CreateStepTypes.CREATE_SOURCE);
   const [isLoading, setLoadingStatus] = useState<boolean>(true);
+  const navigate = useNavigate();
   const [fetchingConnectorError, setFetchingConnectorError] = useState<JSX.Element | string | null>(null);
   const [formValues, setFormValues] = useState<ServiceFormValues>({
     name: "",
@@ -65,7 +67,7 @@ const CreateSourcePage: React.FC = () => {
   };
 
   const handleFinishButton = () => {
-    push(`/${RoutePaths.Source}`);
+    return navigate(`/${RoutePaths.Source}`);
   };
 
   const onShowLoading = (isLoading: boolean, formValues: ServiceFormValues, error: JSX.Element | string | null) => {
