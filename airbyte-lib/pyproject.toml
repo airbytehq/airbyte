@@ -20,16 +20,16 @@ SQLAlchemy = "^2.0.23"
 orjson = "^3.9.10"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.7.1"
-pytest = "^7.4.3"
-ruff = "^0.1.7"
-pytest-mypy = "^0.10.3"
 faker = "^21.0.0"
-pyarrow-stubs = "^10.0.1.7"
+mypy = "^1.7.1"
 pandas-stubs = "^2.1.4.231218"
+pyarrow-stubs = "^10.0.1.7"
+pytest = "^7.4.3"
+pytest-mypy = "^0.10.3"
+ruff = "^0.1.7"
 sqlalchemy-stubs = "^0.4"
-types-requests = "^2.31.0.10"
 types-jsonschema = "^4.20.0.0"
+types-requests = "^2.31.0.10"
 
 [tool.pytest.ini_options]
 # addopts = "--mypy"  # DEBUG: This blocks test discovery and execution, so I'm disabling it for now

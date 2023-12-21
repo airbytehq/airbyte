@@ -7,4 +7,4 @@ airbyte-lib is a library that allows to run Airbyte syncs embedded into any Pyth
 * Make sure [Poetry is installed](https://python-poetry.org/docs/#).
 * Run `poetry install`
 * For examples, check out the `examples` folder. They can be run via `poetry run python examples/<example file>`
-* Unit tests can be run via `poetry run pytest`
+* Unit tests and type checks can be run via `poetry run pytest`

@@ -62,13 +62,11 @@ def test_sync():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = ab.get_in_memory_cache()
 
-    result = ab.sync(source, cache)
+    result = source.read_all(cache)
 
     assert result.processed_records == 3
-    assert result.cache.streams == {
-        "stream1": [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}],
-        "stream2": [{"column1": "value1", "column2": 1}],
-    }
+    assert list(result["stream1"]) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
+    assert list(result["stream2"]) == [{"column1": "value1", "column2": 1}]
 
 
 def test_sync_limited_streams():
@@ -77,22 +75,34 @@ def test_sync_limited_streams():
 
     source.set_streams(["stream2"])
 
-    result = ab.sync(source, cache)
+    result = source.read_all(cache)
 
     assert result.processed_records == 1
-    assert result.cache.streams == {
-        "stream2": [{"column1": "value1", "column2": 1}],
-    }
+    assert list(result["stream2"]) == [{"column1": "value1", "column2": 1}]
 
 
-def test_peek():
+def test_read_stream():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
 
-    assert source.peek("stream1", 1) == [{"column1": "value1", "column2": 1}]
+    assert list(source.read_stream("stream1")) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
 
 
-def test_peek_nonexisting_stream():
+def test_read_stream_nonexisting():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
 
     with pytest.raises(Exception):
-        source.peek("non-existing")
+        list(source.read_stream("non-existing"))
+
+def test_failing_path_connector():
+    with pytest.raises(Exception):
+        ab.get_connector("source-test", config={"apiKey": "test"}, use_local_install=True)
+
+def test_succeeding_path_connector():
+    old_path = os.environ["PATH"]
+
+    # set path to include the test venv bin folder
+    os.environ["PATH"] = f"{os.path.abspath('.venv-source-test/bin')}:{os.environ['PATH']}"
+    source = ab.get_connector("source-test", config={"apiKey": "test"}, use_local_install=True)
+    source.check()
+
+    os.environ["PATH"] = old_path

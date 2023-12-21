@@ -76,12 +76,12 @@ def test_next_page_token(auth):
         (
             Lists,
             {"stream_slice": None, "stream_state": None, "next_page_token": None},
-            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created"},
+            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created", "exclude_fields": "lists._links"},
         ),
         (
             Lists,
             {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 1000}},
-            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created", "offset": 1000},
+            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created", "offset": 1000, "exclude_fields": "lists._links"},
         ),
         (
             InterestCategories,
@@ -299,34 +299,48 @@ def test_segment_members_parse_response(auth, stream_state, records, expected):
 
 
 @pytest.mark.parametrize(
-    "record, expected_record",
+    "stream, record, expected_record",
     [
         (
+            SegmentMembers,
             {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": ""},
             {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": None}
         ),
         (
+            SegmentMembers,
             {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": "", "ADDRESS": "", "PHONE": ""}},
             {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": None, "ADDRESS": None, "PHONE": None}}
         ),
         (
-            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": "Bobson", "ADDRESS": "101 Bob Ln", "PHONE": "111-111-1111"}},
-            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": "Bobson", "ADDRESS": "101 Bob Ln", "PHONE": "111-111-1111"}}
+            Campaigns,            
+            {"id": "1", "web_id": 2, "email_type": "html", "create_time": "2022-01-01T00:00:00.000Z", "send_time": ""},
+            {"id": "1", "web_id": 2, "email_type": "html", "create_time": "2022-01-01T00:00:00.000Z", "send_time": None}
+        ),
+        (
+            Reports,
+            {"id": "1", "type": "rss", "clicks": {"clicks_total": 1, "last_click": "2022-01-01T00:00:00Z"}, "opens": {"opens_total": 0, "last_open": ""}},
+            {"id": "1", "type": "rss", "clicks": {"clicks_total": 1, "last_click": "2022-01-01T00:00:00Z"}, "opens": {"opens_total": 0, "last_open": None}}
+        ),
+        (
+            Lists,
+            {"id": "1", "name": "Santa's List", "stats": {"last_sub_date": "2022-01-01T00:00:00Z", "last_unsub_date": ""}},
+            {"id": "1", "name": "Santa's List", "stats": {"last_sub_date": "2022-01-01T00:00:00Z", "last_unsub_date": None}}            
         )
     ],
     ids=[
-        "Replace empty string with None",
-        "Replace empty strings with None in nested fields",
-        "Leave non-empty string fields unchanged"
+        "segment_members: opt_timestamp nullified",
+        "segment_members: nested merge_fields nullified",
+        "campaigns: send_time nullified",
+        "reports: nested opens.last_open nullified",
+        "lists: stats.last_unsub_date nullified"
     ]
 )
-def test_segment_members_nullify_empty_string_fields(auth, record, expected_record):
+def test_filter_empty_fields(auth, stream, record, expected_record):
     """
-    Tests that empty string values in SegmentMembers stream are converted to None
+    Tests that empty string values are converted to None.
     """
-    stream = SegmentMembers(authenticator=auth)
-    
-    assert stream.nullify_empty_string_fields(record) == expected_record
+    stream = stream(authenticator=auth)
+    assert stream.filter_empty_fields(record) == expected_record
 
 
 def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaigns_stream, mock_campaigns_response):
@@ -592,41 +606,3 @@ def test_path(auth, stream, stream_slice, expected_endpoint):
     endpoint = stream.path(stream_slice=stream_slice)
 
     assert endpoint == expected_endpoint, f"Stream {stream}: expected path '{expected_endpoint}', got '{endpoint}'"
-
-
-@pytest.mark.parametrize(
-    "record, expected_return",
-    [
-        (
-            {"clicks": {"last_click": ""}, "opens": {"last_open": ""}},
-            {"clicks": {}, "opens": {}},
-        ),
-        (
-            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": ""}},
-            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {}},
-        ),
-        (         
-            {"clicks": {"last_click": ""}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
-            {"clicks": {}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
-
-        ),
-        (
-            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
-            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
-        ),
-    ],
-    ids=[
-        "last_click and last_open empty",
-        "last_click empty",
-        "last_open empty",
-        "last_click and last_open not empty"
-    ]
-)
-def test_reports_remove_empty_datetime_fields(auth, record, expected_return):
-    """
-    Tests that the Reports stream removes the 'clicks' and 'opens' fields from the response
-    when they are empty strings
-    """
-    stream = Reports(authenticator=auth)
-    assert stream.remove_empty_datetime_fields(record) == expected_return, f"Expected: {expected_return}, Actual: {stream.remove_empty_datetime_fields(record)}"
-    

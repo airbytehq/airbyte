@@ -1,5 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from itertools import islice
+
 import airbyte_lib as ab
 
 # preparation (from airbyte-lib main folder):
@@ -16,9 +18,9 @@ source.check()
 
 source.set_streams(["launches", "rockets", "capsules"])
 
-result = ab.sync(source, cache)
+result = source.read_all(cache)
 
-print(source.peek("capsules"))
+print(islice(source.read_stream("capsules"), 10))
 
 for name, records in result.cache.streams.items():
     print(f"Stream {name}: {len(records)} records")
