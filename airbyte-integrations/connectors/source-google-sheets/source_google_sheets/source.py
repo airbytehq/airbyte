@@ -160,14 +160,14 @@ class SourceGoogleSheets(Source):
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
         # a blank row, emit the row batch
         sheet_to_column_index_to_name = Helpers.get_available_sheets_to_column_index_to_name(
-            client, spreadsheet_id, sheet_to_column_name, config.get("names_conversion")
+            client, spreadsheet_id, sheet_to_column_name, config.get("names_conversion"), header_row_offset
         )
         sheet_row_counts = Helpers.get_sheet_row_count(client, spreadsheet_id)
         logger.info(f"Row counts: {sheet_row_counts}")
         for sheet in sheet_to_column_index_to_name.keys():
             logger.info(f"Syncing sheet {sheet}")
             # We revalidate the sheet here to avoid errors in case the sheet was changed after the sync started
-            is_valid, reason = Helpers.check_sheet_is_valid(client, spreadsheet_id, sheet)
+            is_valid, reason = Helpers.check_sheet_is_valid(client, spreadsheet_id, sheet, header_row_offset)
             if is_valid:
                 column_index_to_name = sheet_to_column_index_to_name[sheet]
                 row_cursor = header_row_offset + 2  # we start syncing past the header row
