@@ -8,7 +8,9 @@ import org.elasticsearch.common.Strings;
 /**
  * Represents a list of SQL transactions, where each transaction consists of
  * one or more SQL statements. Each transaction MUST NOT contain the BEGIN/COMMIT
- * statements. Each statement MUST be terminated with a semicolon.
+ * statements.
+ * <p>
+ * Callers are encouraged to use the static factory methods instead of the public constructor.
  */
 public record Sql(List<List<String>> transactions) {
 
@@ -88,12 +90,19 @@ public record Sql(List<List<String>> transactions) {
   }
 
   /**
-   * Utility method to create a Sql object without empty statements/transactions.
+   * Utility method to create a Sql object without empty statements/transactions, and appending semicolons
+   * when needed.
    */
-  private static Sql create(final List<List<String>> transactions) {
+  public static Sql create(final List<List<String>> transactions) {
     return new Sql(transactions.stream()
         .map(transaction -> transaction.stream()
             .filter(statement -> !Strings.isNullOrEmpty(statement))
+            .map(statement -> {
+              if (!statement.trim().endsWith(";")) {
+                return statement + ";";
+              }
+              return statement;
+            })
             .toList())
         .filter(transaction -> !transaction.isEmpty())
         .toList());
