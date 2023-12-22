@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.58.1
+Add schema normalization to declarative stream
+
+## 0.58.0
+Concurrent CDK: add state converter for ISO timestamps with millisecond granularity
+
+## 0.57.8
+add SelectiveAuthenticator
+
 ## 0.57.7
 File CDK: Support raw txt file
 
