@@ -6,7 +6,9 @@
         "name": "board_issues"
       },
       "stream_state": {
-        "updated": "2122-01-01T00:00:00Z"
+        "1": {
+          "updated": "2122-01-01T00:00:00Z"
+        }
       }
     }
   },
