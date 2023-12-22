@@ -11,9 +11,9 @@ import { Input } from "components/base";
 import { NewButton } from "components/NewButton";
 
 import styles from "./DatePicker.module.scss";
-
+// Date Picker
 /**
- * Converts a UTC string into a JS Date object with the same local time
+ * Converts a UTC string into a JS Date object with the same local time.
  *
  * Necessary because react-datepicker does not allow us to set the timezone to UTC, only the current browser time.
  * In order to display the UTC timezone in the datepicker, we need to convert it into the local time:
