@@ -173,8 +173,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_ids: List[str], access_token: str, page_size: int = 100):
-        self._account_ids = account_ids
+    def __init__(self, access_token: str, page_size: int = 100):
         self._accounts = {}
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
@@ -184,7 +183,7 @@ class API:
         # set the default API client to Facebook lib.
         FacebookAdsApi.set_default_api(self.api)
 
-    def account(self, account_id: str) -> AdAccount:
+    def get_account(self, account_id: str) -> AdAccount:
         """Get AdAccount object by id"""
         if account_id in self._accounts:
             return self._accounts[account_id]

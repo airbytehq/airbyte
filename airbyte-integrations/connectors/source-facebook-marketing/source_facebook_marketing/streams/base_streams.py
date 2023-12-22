@@ -226,8 +226,9 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
+        account_id = latest_record["account_id"]
         state_for_accounts = self._transform_state_from_old_format(current_stream_state, ["include_deleted"])
-        account_state = self.get_account_state(latest_record["account_id"], state_for_accounts)
+        account_state = self.get_account_state(account_id, state_for_accounts)
 
         potentially_new_records_in_the_past = self._include_deleted and not account_state.get("include_deleted", False)
         record_value = latest_record[self.cursor_field]
@@ -236,10 +237,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         if potentially_new_records_in_the_past:
             max_cursor = record_value
 
-        if latest_record["account_id"] in state_for_accounts:
-            state_for_accounts[latest_record["account_id"]][self.cursor_field] = str(max_cursor)
-        else:
-            state_for_accounts[latest_record["account_id"]] = {self.cursor_field: str(max_cursor)}
+        state_for_accounts.setdefault(account_id, {})[self.cursor_field] = str(max_cursor)
 
         state_for_accounts["include_deleted"] = self._include_deleted
         return state_for_accounts

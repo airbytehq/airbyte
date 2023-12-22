@@ -16,10 +16,11 @@ logger = logging.getLogger("airbyte_logger")
 
 class MigrateAccountIdToArray:
     """
-    This class stands for migrating the config at runtime,
-    while providing the backward compatibility when falling back to the previous source version.
+    This class stands for migrating the config at runtime.
+    This migration is backwards compatible with the previous version, as new property will be created.
+    When falling back to the previous source version connector will use old property `account_id`.
 
-    Specifically, starting from `1.3.0`, the `account_id` property is replaced with `account_ids` property, which is a list of strings.
+    Starting from `1.3.0`, the `account_id` property is replaced with `account_ids` property, which is a list of strings.
     """
 
     message_repository: MessageRepository = InMemoryMessageRepository()

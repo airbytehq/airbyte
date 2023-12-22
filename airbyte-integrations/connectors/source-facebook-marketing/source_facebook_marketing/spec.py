@@ -116,12 +116,14 @@ class ConnectorConfig(BaseConfig):
         title="Ad Account ID(s)",
         order=0,
         description=(
+            "The Facebook Ad account ID(s) to pull data from. "
             "The Ad account ID number is in the account dropdown menu or in your browser's address "
             'bar of your <a href="https://adsmanager.facebook.com/adsmanager/">Meta Ads Manager</a>. '
             'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
         ),
         pattern_descriptor="The Ad Account ID must be a number.",
         examples=["111111111111111"],
+        min_items=1,
     )
 
     access_token: str = Field(

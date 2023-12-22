@@ -96,19 +96,19 @@ class SourceFacebookMarketing(AbstractSource):
             if config.start_date and config.end_date < config.start_date:
                 return False, "End date must be equal or after start date."
 
-            api = API(account_ids=config.account_ids, access_token=config.access_token, page_size=config.page_size)
+            api = API(access_token=config.access_token, page_size=config.page_size)
 
             for account_id in config.account_ids:
                 # Get Ad Account to check creds
-                ad_account = api.account(account_id=account_id)
+                ad_account = api.get_account(account_id=account_id)
                 logger.info(f"Select account {ad_account}")
 
                 # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
                 for stream in self.get_custom_insights_streams(api, config):
-                    try:
-                        stream.check_breakdowns(account_id=account_id)
-                    except facebook_business.exceptions.FacebookRequestError as e:
-                        return False, e._api_error_message
+                    stream.check_breakdowns(account_id=account_id)
+
+        except facebook_business.exceptions.FacebookRequestError as e:
+            return False, e._api_error_message
 
         except AirbyteTracedException as e:
             return False, f"{e.message}. Full error: {e.internal_message}"
@@ -129,7 +129,7 @@ class SourceFacebookMarketing(AbstractSource):
             config.start_date = validate_start_date(config.start_date)
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_ids=config.account_ids, access_token=config.access_token, page_size=config.page_size)
+        api = API(access_token=config.access_token, page_size=config.page_size)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)

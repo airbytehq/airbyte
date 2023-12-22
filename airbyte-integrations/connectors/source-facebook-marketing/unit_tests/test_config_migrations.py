@@ -13,7 +13,7 @@ from source_facebook_marketing.source import SourceFacebookMarketing
 
 # BASE ARGS
 CMD = "check"
-TEST_CONFIG_PATH = "unit_tests/test_migrations/test_config.json"
+TEST_CONFIG_PATH = "unit_tests/test_migrations/test_old_config.json"
 NEW_TEST_CONFIG_PATH = "unit_tests/test_migrations/test_new_config.json"
 SOURCE_INPUT_ARGS = [CMD, "--config", TEST_CONFIG_PATH]
 SOURCE: Source = SourceFacebookMarketing()

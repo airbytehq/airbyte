@@ -86,7 +86,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.level = level
 
         # state
-        self._cursor_values: Optional[Mapping[str, pendulum.Date]] = None  # latest period that was read
+        self._cursor_values: Optional[Mapping[str, pendulum.Date]] = None  # latest period that was read for each account
         self._next_cursor_values = self._get_start_date()
         self._completed_slices = {account_id: set() for account_id in self._account_ids}
 
@@ -234,7 +234,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                 continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
-            yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account(account_id=account_id), interval=interval, params=params, job_timeout=self.insights_job_timeout)
+            yield InsightAsyncJob(
+                api=self._api.api, edge_object=self._api.get_account(account_id=account_id), interval=interval, params=params, job_timeout=self.insights_job_timeout
+            )
 
     def check_breakdowns(self, account_id: str):
         """
@@ -246,7 +248,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             "breakdowns": self.breakdowns,
             "fields": ["account_id"],
         }
-        self._api.account(account_id=account_id).get_insights(params=params, is_async=False)
+        self._api.get_account(account_id=account_id).get_insights(params=params, is_async=False)
 
     def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
         """
