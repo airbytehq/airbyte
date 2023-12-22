@@ -1,7 +1,7 @@
 """Type conversion methods for SQL Caches."""
 
 from collections import defaultdict
-from typing import Any
+from typing import cast
 
 import sqlalchemy
 
@@ -27,6 +27,24 @@ class SQLTypeConversionError(Exception):
     """An exception to be raised when a type conversion fails."""
 
 
+def _get_airbyte_type(json_schema_property_def: dict[str, str | dict]) -> tuple[str, str | None]:
+    """Get the airbyte type and subtype from a JSON schema property definition.
+    
+    Subtype is only used for array types. Otherwise, subtype will return None.
+    """
+    airbyte_type = cast(str, json_schema_property_def.get("airbyte_type", None))
+    if airbyte_type:
+        return airbyte_type, None
+
+    json_schema_type = json_schema_property_def.get("type", None)
+
+    if json_schema_type in ["string", "number", "boolean", "integer"]:
+        return cast(str, json_schema_type), None
+
+    err_msg = f"Could not determine airbyte type from JSON schema type: {json_schema_property_def}"
+    raise SQLTypeConversionError(err_msg)
+
+
 class SQLTypeConverter:
     """A base class to perform type conversions."""
 
@@ -45,13 +63,11 @@ class SQLTypeConverter:
         """Get the 'last resort' type to use if no other type is found."""
         return sqlalchemy.types.VARCHAR()
 
+
     def to_sql_type(self, json_schema_property_def: dict[str, str | dict]) -> sqlalchemy.types.TypeEngine:
         """Convert a value to a SQL type."""
-        try:
-            airbyte_type = json_schema_property_def["airbyte_type"]
-            json_schema_type = json_schema_property_def["type"]
-        except KeyError as ex:
-            raise SQLTypeConversionError(f"Invalid JSON schema: {json_schema_type}") from ex
+        airbyte_type, airbyte_subtype = _get_airbyte_type(json_schema_property_def)
+        json_schema_type = json_schema_property_def.get("type", None)
 
         if json_schema_type == "array":
             # TODO: Implement array type conversion.

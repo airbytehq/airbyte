@@ -13,6 +13,10 @@ from airbyte_lib.processors import RecordProcessor, BatchHandle  # noqa: F401  #
 DEFAULT_BATCH_SIZE = 10000
 
 
+# The batch handle for file writers is a list of Path objects.
+FileWriterBatchHandle = list[Path]
+
+
 class FileWriterConfigBase(CacheConfigBase):
     """Configuration for the Snowflake cache."""
 
@@ -32,3 +36,18 @@ class FileWriterBase(RecordProcessor, abc.ABC):
     # ) -> Path:
     #     """Create and return a new cache file path for the given stream."""
     #     ...
+
+    @abc.abstractmethod
+    @overrides
+    def _write_batch(
+        self,
+        stream_name: str,
+        batch_id: str,
+        record_batch: pa.Table | pa.RecordBatch,
+    ) -> FileWriterBatchHandle:
+        """
+        Process a record batch.
+
+        Return a list of paths to one or more cache files.
+        """
+        ...

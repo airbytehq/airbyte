@@ -18,6 +18,7 @@ python-ulid = "^2.2.0"
 requests = "^2.31.0"
 SQLAlchemy = "^2.0.23"
 orjson = "^3.9.10"
+duckdb-engine = "^0.9.5"
 
 [tool.poetry.group.dev.dependencies]
 faker = "^21.0.0"

@@ -23,7 +23,8 @@ class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     @overrides
     def get_sql_alchemy_url(self) -> str:
         """Return the SQLAlchemy URL to use."""
-        return f"duckdb://{self.db_path}?schema={self.schema_name}"
+        # return f"duckdb:///{self.db_path}?schema={self.schema_name}"
+        return f"duckdb:///{self.db_path}"
 
 
 class DuckDBCache(SQLCacheBase):

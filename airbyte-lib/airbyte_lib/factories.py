@@ -3,7 +3,7 @@
 
 from typing import Any, Dict, Optional
 
-from airbyte_lib.cache import InMemoryCache
+from airbyte_lib.caches import InMemoryCache
 from airbyte_lib.executor import PathExecutor, VenvExecutor
 from airbyte_lib.registry import get_connector_metadata
 from airbyte_lib.source import Source

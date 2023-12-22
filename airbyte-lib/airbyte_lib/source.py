@@ -7,9 +7,11 @@ from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Optional
 
 import jsonschema
-from airbyte_lib.cache import Cache, InMemoryCache
+from airbyte_lib.caches import SQLCacheBase, InMemoryCache
 from airbyte_lib.executor import Executor
-from airbyte_lib.sync_result import SyncResult
+from airbyte_lib.sync_results import SyncResult
+from airbyte_lib import _util  # Internal utility functions
+
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -22,6 +24,10 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
+
+
+def _new_default_cache() -> SQLCacheBase:
+    return InMemoryCache()
 
 
 @contextmanager
@@ -56,6 +62,7 @@ class Source:
         self.name = name
         self.streams: Optional[List[str]] = None
         self.config: Optional[Dict[str, Any]] = None
+        self._processed_records = 0
         self._last_log_messages: List[str] = []
         if config is not None:
             self.set_config(config)
@@ -146,7 +153,7 @@ class Source:
         )
         return configured_catalog
 
-    def read_stream(self, stream: str) -> Iterable[Dict[str, Any]]:
+    def get_stream_records(self, stream: str) -> Iterable[Dict[str, Any]]:
         """
         Read a stream from the connector.
 
@@ -172,8 +179,10 @@ class Source:
         )
         if len(configured_catalog.streams) == 0:
             raise Exception(f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}")
-        for message in self._read_catalog(configured_catalog):
-            yield message.data
+
+        yield from _util.airbyte_messages_to_record_dicts(
+            self._read_with_catalog(configured_catalog)
+        )
 
     def check(self):
         """
@@ -197,7 +206,7 @@ class Source:
     def install(self):
         self.executor.install()
 
-    def _read(self) -> Iterable[AirbyteRecordMessage]:
+    def _read(self) -> Iterable[AirbyteMessage]:
         """
         Call read on the connector.
 
@@ -220,9 +229,9 @@ class Source:
                 if self.streams is None or s.name in self.streams
             ]
         )
-        yield from self._read_catalog(configured_catalog)
+        yield from self._read_with_catalog(configured_catalog)
 
-    def _read_catalog(self, catalog: ConfiguredAirbyteCatalog) -> Iterable[AirbyteRecordMessage]:
+    def _read_with_catalog(self, catalog: ConfiguredAirbyteCatalog) -> Iterable[AirbyteMessage]:
         """
         Call read on the connector.
 
@@ -236,8 +245,7 @@ class Source:
             catalog_file,
         ]:
             for msg in self._execute(["read", "--config", config_file, "--catalog", catalog_file]):
-                if msg.type == Type.RECORD:
-                    yield msg.record
+                yield msg
 
     def _add_to_logs(self, message: str):
         self._last_log_messages.append(message)
@@ -268,16 +276,18 @@ class Source:
         except Exception as e:
             raise Exception(f"{str(e)}. Last logs: {self._last_log_messages}")
 
-    def _process(self, messages: Iterable[AirbyteRecordMessage]):
-        self._processed_records = 0
+    def _tally_records(self, messages: Iterable[AirbyteRecordMessage]):
+        """This method simply tallies the number of records processed and yields the messages."""
+        self._processed_records = 0  # Reset the counter before we start
         for message in messages:
             self._processed_records += 1
             yield message
 
-    def read_all(self, cache: Optional[Cache] = None) -> SyncResult:
+    def read_all(self, cache: Optional[SQLCacheBase] = None) -> SyncResult:
         if cache is None:
-            cache = InMemoryCache()
-        cache.write(self._process(self._read()))
+            cache = _new_default_cache()
+
+        cache.process_airbyte_messages(self._tally_records(self._read()))
 
         return SyncResult(
             processed_records=self._processed_records,

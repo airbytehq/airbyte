@@ -20,7 +20,7 @@ source.set_streams(["launches", "rockets", "capsules"])
 
 result = source.read_all(cache)
 
-print(islice(source.read_stream("capsules"), 10))
+print(islice(source.get_stream_records("capsules"), 10))
 
 for name, records in result.cache.streams.items():
     print(f"Stream {name}: {len(records)} records")

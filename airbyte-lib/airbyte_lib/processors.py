@@ -6,18 +6,22 @@ import abc
 import io
 import sys
 from collections import defaultdict
-from typing import final, Any
+from typing import final, Any, Iterable, Generator
 
-import orjson
 import pyarrow as pa
 import ulid
 from overrides import EnforceOverrides
 
+from airbyte_protocol.models import AirbyteRecordMessage, AirbyteMessage, AirbyteStateMessage, Type, ConfiguredAirbyteCatalog
+
 from airbyte_lib.config import CacheConfigBase
+import contextlib
+from airbyte_lib import _util  # Internal utility functions
 
 DEFAULT_BATCH_SIZE = 10000
 
 BatchHandle = Any
+
 
 
 class AirbyteMessageParsingError(Exception):
@@ -32,8 +36,8 @@ class RecordProcessor(abc.ABC, EnforceOverrides):
 
     def __init__(
         self,
-        config: CacheConfigBase | dict,
-        source_catalog: dict[str, Any],  # TODO: Better typing for ConfiguredAirbyteCatalog
+        config: CacheConfigBase | dict | None,
+        source_catalog: ConfiguredAirbyteCatalog | None,  # TODO: Better typing for ConfiguredAirbyteCatalog
         **kwargs,  # Added for future proofing purposes.
     ):
         if isinstance(config, dict):
@@ -43,11 +47,18 @@ class RecordProcessor(abc.ABC, EnforceOverrides):
             err_msg = f"Expected config class of type '{self.config_class.__name__}'.  Instead found '{type(config).__name__}'."
             raise RuntimeError(err_msg)
 
-        self.config = config
+        self.config = config or self.config_class()
         self.source_catalog = source_catalog
+        if not self.source_catalog:
+            # TODO: Consider a warning here that the cache will not be able to capture
+            #       any metadata if catalog is omitted.
+            pass
 
         self._pending_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
-        self._completed_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
+        self._finalized_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
+
+        self._pending_state_messages: dict[str, list[AirbyteStateMessage]] = defaultdict(lambda: [], {})
+        self._finalized_state_messages: dict[str, list[AirbyteStateMessage]] = defaultdict(lambda: [], {})
 
     @final
     def process_stdin(
@@ -63,6 +74,11 @@ class RecordProcessor(abc.ABC, EnforceOverrides):
         self.process_input_stream(input_stream, max_batch_size)
 
     @final
+    def _airbyte_messages_from_buffer(self, buffer: io.TextIOBase) -> Iterable[AirbyteMessage]:
+        """Yield messages from a buffer."""
+        yield from {AirbyteMessage.parse_raw(line) for line in buffer}
+
+    @final
     def process_input_stream(
         self,
         input_stream: io.TextIOBase,
@@ -73,34 +89,42 @@ class RecordProcessor(abc.ABC, EnforceOverrides):
 
         Return a list of summaries for testing.
         """
-        stream_batches: dict[str, Any] = {}
+        messages = self._airbyte_messages_from_buffer(input_stream)
+        self.process_airbyte_messages(messages, max_batch_size)
 
-        for line in input_stream:
-            record = orjson.loads(line)
-            try:
-                stream_name = record["stream_name"]
-            except KeyError:
-                raise AirbyteMessageParsingError(
-                    f"Record missing stream_name: {record}"
-                )
+    @final
+    def process_airbyte_messages(self,
+            messages: Iterable[AirbyteMessage],
+            max_batch_size: int = DEFAULT_BATCH_SIZE,
+        ) -> None:
+        stream_batches: dict[str, list[AirbyteRecordMessage]] = defaultdict(lambda: [], {})
 
-            if stream_name not in stream_batches:
-                stream_batches[stream_name] = []
+        for message in messages:
+            if message.type is Type.RECORD:
+                record_msg = message.record
+                stream_name = record_msg.stream
+                stream_batch = stream_batches[stream_name]
+                stream_batch.append(_util.airbyte_record_message_to_dict(record_msg))
 
-            stream_batch = stream_batches[stream_name]
-            stream_batch.append(record)
+                if len(stream_batch) >= max_batch_size:
+                    record_batch = pa.Table.from_pylist(stream_batch)
+                    self._process_batch(stream_name, record_batch)
+                    stream_batch.clear()
 
-            if len(stream_batch) >= max_batch_size:
-                record_batch = pa.Table.from_pydict(stream_batch)
-                self._process_batch(stream_name, record_batch)
-                stream_batch.clear()
+            elif message.type is Type.STATE:
+                state_msg = message.state
+                stream_name = state_msg.stream
+                self._pending_state_messages[stream_name].append(state_msg)
+
+            else:
+                raise ValueError(f"Unexpected message type: {message.type}")
 
         for stream_name, batch in stream_batches.items():
             if batch:
-                record_batch = pa.Table.from_pydict(batch)
+                record_batch = pa.Table.from_pylist(batch)
                 self._process_batch(stream_name, record_batch)
 
-        for stream_name in self._pending_batches:
+        for stream_name in list(self._pending_batches.keys()):
             self._finalize_batches(stream_name)
 
 
@@ -119,11 +143,8 @@ class RecordProcessor(abc.ABC, EnforceOverrides):
             stream_name, batch_id, record_batch
         ) or self._get_batch_handle(stream_name, batch_id)
 
-        if stream_name not in self._pending_batches:
-            self._pending_batches[stream_name] = {}
-
-        if not self.skip_finalize_step:
-            self._completed_batches[stream_name][batch_id] = batch_handle
+        if self.skip_finalize_step:
+            self._finalized_batches[stream_name][batch_id] = batch_handle
         else:
             self._pending_batches[stream_name][batch_id] = batch_handle
 
@@ -159,12 +180,38 @@ class RecordProcessor(abc.ABC, EnforceOverrides):
         batch_id = batch_id or self._new_batch_id()
         return f"{stream_name}_{batch_id}"
 
+
     def _finalize_batches(self, stream_name: str) -> dict[str, BatchHandle]:
-        """Commit all uncommitted batches for a given stream.
+        """Finalize all uncommitted batches.
+
+        If a stream name is provided, only process uncommitted batches for that stream.
+
+        This is a generic 'final' implementation, which should not be overridden by subclasses.
+
+        Returns a mapping of batch IDs to batch handles, for those batches that were processed.
+        """
+        with self._finalizing_batches(stream_name) as batches_to_finalize:
+            if batches_to_finalize and not self.skip_finalize_step:
+                raise NotImplementedError(
+                    "Caches need to be finalized but no _finalize_batch() method "
+                    f"exists for class {self.__class__.__name__}"
+                )
+
+            return batches_to_finalize
+
+
+    @final
+    @contextlib.contextmanager
+    def _finalizing_batches(self, stream_name: str) -> Generator[dict[str, BatchHandle], str, None] :
+        """Context manager to use for finalizing batches, if applicable.
         
         Returns a mapping of batch IDs to batch handles, for those batches that were processed.
         """
-        batches_to_finalize = self._pending_batches[stream_name]
-        self._completed_batches.update(batches_to_finalize)
-        self._pending_batches.clear()
-        return batches_to_finalize
+        batches_to_finalize = self._pending_batches[stream_name].copy()
+        state_messages_to_finalize = self._pending_state_messages[stream_name].copy()
+        self._pending_batches[stream_name].clear()
+        self._pending_state_messages[stream_name].clear()
+        yield batches_to_finalize
+
+        self._finalized_batches[stream_name].update(batches_to_finalize)
+        self._finalized_state_messages[stream_name].append(state_messages_to_finalize)

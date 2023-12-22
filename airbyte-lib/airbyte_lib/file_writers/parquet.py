@@ -3,9 +3,10 @@
 from pathlib import Path
 from typing import cast
 import pyarrow as pa
+from pyarrow import parquet
 import ulid
 
-from .base import FileWriterBase, FileWriterConfigBase
+from .base import FileWriterBase, FileWriterConfigBase, FileWriterBatchHandle
 from overrides import overrides
 
 
@@ -30,7 +31,9 @@ class ParquetWriter(FileWriterBase):
         """Return a new cache file path for the given stream."""
         batch_id = batch_id or str(ulid.ULID())
         config: ParquetWriterConfig = cast(ParquetWriterConfig, self.config)
-        return Path(config.cache_path) / f"{stream_name}_{batch_id}.parquet"
+        target_dir = Path(config.cache_path)
+        target_dir.mkdir(parents=True, exist_ok=True)
+        return target_dir / f"{stream_name}_{batch_id}.parquet"
 
     @overrides
     def _write_batch(
@@ -38,14 +41,15 @@ class ParquetWriter(FileWriterBase):
         stream_name: str,
         batch_id: str,
         record_batch: pa.Table | pa.RecordBatch,
-    ) -> Path:
+    ) -> FileWriterBatchHandle:
         """
         Process a record batch.
 
         Return the path to the cache file.
         """
         output_file_path = self.get_new_cache_file_path(stream_name)
-        with pa.parquet.ParquetWriter(output_file_path, record_batch.schema) as writer:
+
+        with parquet.ParquetWriter(output_file_path, record_batch.schema) as writer:
             writer.write_table(cast(pa.Table, record_batch))
 
-        return output_file_path
+        return [output_file_path]
