@@ -93,7 +93,7 @@ const CreateSourcePage: React.FC = () => {
         {currentStep === CreateStepTypes.TEST_CONNECTION && (
           <Container>
             <TestConnection
-              onBack={handleBackButton}
+              // onBack={handleBackButton}
               onFinish={handleFinishButton}
               isLoading={isLoading}
               type="source"

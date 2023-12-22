@@ -90,7 +90,7 @@ export const CreateDestinationPage: React.FC = () => {
           <Container>
             {" "}
             <TestConnection
-              onBack={handleBackButton}
+              // onBack={handleBackButton}
               onFinish={handleFinishButton}
               isLoading={isLoading}
               type="destination"
