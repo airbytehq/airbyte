@@ -91,8 +91,8 @@ class Helpers(object):
         return [value.formattedValue for value in row_data.values]
 
     @staticmethod
-    def get_first_row(client, spreadsheet_id: str, sheet_name: str) -> List[str]:
-        spreadsheet = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1"))
+    def get_first_row(client, spreadsheet_id: str, sheet_name: str, header_row_offset: int = 0) -> List[str]:
+        spreadsheet = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!{header_row_offset+1}:{header_row_offset+1}"))
 
         # There is only one sheet since we are specifying the sheet in the requested ranges.
         returned_sheets = spreadsheet.sheets
@@ -229,3 +229,10 @@ class Helpers(object):
             return True, ""
         except Exception as e:
             return False, str(e)
+
+    @staticmethod
+    def get_header_row_offset(config) -> int:
+        if config.get("header_row_offset"):
+            return config["header_row_offset"]
+
+        return 0

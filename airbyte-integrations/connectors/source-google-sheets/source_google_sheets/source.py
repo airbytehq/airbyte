@@ -73,11 +73,12 @@ class SourceGoogleSheets(Source):
         # Check for duplicate headers
         spreadsheet_metadata = Spreadsheet.parse_obj(spreadsheet)
         grid_sheets = Helpers.get_grid_sheets(spreadsheet_metadata)
+        header_row_offset = Helpers.get_header_row_offset(config)
 
         duplicate_headers_in_sheet = {}
         for sheet_name in grid_sheets:
             try:
-                header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
+                header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name, header_row_offset)
                 if config.get("names_conversion"):
                     header_row_data = [safe_name_conversion(h) for h in header_row_data]
                 _, duplicate_headers = Helpers.get_valid_headers_and_duplicates(header_row_data)
@@ -109,6 +110,8 @@ class SourceGoogleSheets(Source):
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         client = GoogleSheetsClient(self.get_credentials(config))
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
+        header_row_offset = Helpers.get_header_row_offset(config)
+
         try:
             logger.info(f"Running discovery on sheet {spreadsheet_id}")
             spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
@@ -116,7 +119,7 @@ class SourceGoogleSheets(Source):
             streams = []
             for sheet_name in grid_sheets:
                 try:
-                    header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
+                    header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name, header_row_offset)
                     if config.get("names_conversion"):
                         header_row_data = [safe_name_conversion(h) for h in header_row_data]
                     stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_row_data)
@@ -151,6 +154,7 @@ class SourceGoogleSheets(Source):
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
+        header_row_offset = Helpers.get_header_row_offset(config)
 
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
@@ -166,7 +170,7 @@ class SourceGoogleSheets(Source):
             is_valid, reason = Helpers.check_sheet_is_valid(client, spreadsheet_id, sheet)
             if is_valid:
                 column_index_to_name = sheet_to_column_index_to_name[sheet]
-                row_cursor = 2  # we start syncing past the header row
+                row_cursor = header_row_offset + 2  # we start syncing past the header row
                 # For the loop, it is necessary that the initial row exists when we send a request to the API,
                 # if the last row of the interval goes outside the sheet - this is normal, we will return
                 # only the real data of the sheet and in the next iteration we will loop out.
