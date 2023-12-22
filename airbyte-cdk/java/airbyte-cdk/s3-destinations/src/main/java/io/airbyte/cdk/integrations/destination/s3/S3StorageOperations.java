@@ -20,6 +20,7 @@ import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateManager;
 import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
+import io.airbyte.cdk.integrations.destination.s3.util.PartIdSingleton;
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -75,6 +76,8 @@ public class S3StorageOperations extends BlobStorageOperations {
     this.s3Client = s3Client;
     this.s3Config = s3Config;
   }
+
+  private final PartIdSingleton partIdSingleton = PartIdSingleton.getInstance();
 
   @Override
   public String getBucketObjectPath(final String namespace, final String streamName, final DateTime writeDatetime, final String customPathFormat) {
@@ -153,10 +156,10 @@ public class S3StorageOperations extends BlobStorageOperations {
    *
    * @return the uploaded filename, which is different from the serialized buffer filename
    */
-  private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
+  private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException, InterruptedException {
     final long partSize = DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
-    final String partId = UUID.randomUUID().toString();
+    final String partId = partIdSingleton.getPartId(s3Client, s3Config, objectPath);
     final String fileExtension = getExtension(recordsData.getFilename());
     final String fullObjectKey;
     if (StringUtils.isNotBlank(s3Config.getFileNamePattern())) {
