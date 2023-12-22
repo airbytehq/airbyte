@@ -11,7 +11,8 @@ from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 from .streams import (
     GainsightCsStream,
-    Person
+    Person,
+    Company
 )
 
 
@@ -42,5 +43,6 @@ class SourceGainsightCs(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
         return [
-            Person(authenticator=auth)
+            Person(authenticator=auth),
+            Company(authenticator=auth)
         ]
