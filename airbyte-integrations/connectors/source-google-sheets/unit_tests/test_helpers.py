@@ -202,6 +202,16 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(Helpers.get_first_row(sheet_client, spreadsheet_id, sheet), [])
         client.get.assert_called_with(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet}!1:1")
 
+    def test_get_header_row_with_offset(self):
+        spreadsheet_id = "123"
+        sheet = "s1"
+        header_row_offset = 1
+        row_data = []
+        client = Mock()
+        sheet_client = google_sheet_client(row_data, spreadsheet_id, client)
+        self.assertEqual(Helpers.get_first_row(sheet_client, spreadsheet_id, sheet, header_row_offset), [])
+        client.get.assert_called_with(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet}!2:2")
+
     def test_check_sheet_is_valid(self):
         spreadsheet_id = "123"
         sheet = "s1"
