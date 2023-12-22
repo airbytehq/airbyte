@@ -1,15 +1,19 @@
+---
+products: oss-enterprise
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Implementation Guide
 
-[Airbyte Enterprise](./README.md) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Enterprise license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
+[Airbyte Self-Managed Enterprise](./README.md) is in an early access stage for select priority users. Once you [are qualified for a Self-Managed Enterprise license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
 
-Airbyte Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
+Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
 
 ## Prerequisites
 
-There are three prerequisites to deploying Enterprise: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
+There are three prerequisites to deploying: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
 
 For production, we recommend deploying to EKS, GKE or AKS. If you are doing some local testing, follow the cluster setup instructions outlined [here](/deploying-airbyte/on-kubernetes-via-helm.md#cluster-setup).
 
@@ -49,7 +53,6 @@ Follow these instructions to add the Airbyte helm repository:
 
 ### Clone & Configure Airbyte
 
-
 1. `git clone` the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
 
 2. Create a new `airbyte.yml` file in the `configs` directory of the `airbyte-platform` folder. You may also copy `airbyte.sample.yml` to use as a template:
@@ -58,7 +61,7 @@ Follow these instructions to add the Airbyte helm repository:
 cp configs/airbyte.sample.yml configs/airbyte.yml
 ```
 
-3. Add your Airbyte Enterprise license key to your `airbyte.yml`. 
+3. Add your Airbyte Self-Managed Enterprise license key to your `airbyte.yml`. 
 
 4. Add your [auth details](/enterprise-setup/sso) to your `airbyte.yml`. Auth configurations aren't easy to modify after Airbyte is installed, so please double check them to make sure they're accurate before proceeding.
 
@@ -67,7 +70,7 @@ cp configs/airbyte.sample.yml configs/airbyte.yml
 
 To configure SSO with Okta, add the following at the end of your `airbyte.yml` file:
 
-```
+```yaml
 auth:   
     identity-providers:
         -   type: okta
@@ -81,11 +84,163 @@ To configure basic auth (deploy without SSO), remove the entire `auth:` section 
 
 </details>
 
+#### Configuring the Airbyte Database
+
+For Self-Managed Enterprise deployments, we recommend using a dedicated database instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL) instead of the default internal Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster.
+
+We assume in the following that you've already configured a Postgres instance:
+
+<details>
+<summary>External database setup steps</summary>
+
+1. In the `charts/airbyte/values.yaml` file, disable the default Postgres database (`airbyte/db`):
+
+```yaml
+postgresql:
+    enabled: false
+```
+
+2. In the `charts/airbyte/values.yaml` file, enable and configure the external Postgres database:
+
+```yaml
+externalDatabase:   
+    host: ## Database host
+    user: ## Non-root username for the Airbyte database
+    database: db-airbyte ## Database name
+    port: 5432 ## Database port number 
+```
+
+For the non-root user's password which has database access, you may use `password`, `existingSecret` or `jdbcUrl`. We recommend using `existingSecret`, or injecting sensitive fields from your own external secret store. Each of these parameters is mutually exclusive: 
+
+```yaml
+externalDatabase:
+    ...
+    password: ## Password for non-root database user
+    existingSecret: ## The name of an existing Kubernetes secret containing the password.
+    existingSecretPasswordKey: ## The Kubernetes secret key containing the password.
+    jdbcUrl: "jdbc:postgresql://<user>:<password>@localhost:5432/db-airbyte" ## Full database JDBC URL. You can also add additional arguments.
+```
+
+The optional `jdbcUrl` field should be entered in the following format: `jdbc:postgresql://localhost:5432/db-airbyte`. We recommend against using this unless you need to add additional extra arguments can be passed to the JDBC driver at this time (e.g. to handle SSL).
+
+</details>
+
+#### Configuring External Logging
+
+For Self-Managed Enterprise deployments, we recommend spinning up standalone log storage for additional reliability using tools such as S3 and GCS instead of against using the defaul internal Minio storage (`airbyte/minio`). It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
+
+<details>
+<summary>External log storage setup steps</summary>
+
+1. In the `charts/airbyte/values.yaml` file, disable the default Minio instance (`airbyte/minio`):
+
+```yaml
+minio:
+  enabled: false
+```
+
+2. In the `charts/airbyte/values.yaml` file, enable and configure external log storage:
+
+
+<Tabs>
+<TabItem value="S3" label="S3">
+
+```yaml
+global:
+    ...
+    logs:
+        storage:
+            type: "S3"
+        
+        minio:
+            enabled: false
+
+        s3:
+            enabled: true
+            bucket: "" ## S3 bucket name that you've created.
+            bucketRegion: "" ## e.g. us-east-1
+
+        accessKey: ## AWS Access Key.
+            password: ""
+            existingSecret: "" ## The name of an existing Kubernetes secret containing the AWS Access Key.
+            existingSecretKey: "" ## The Kubernetes secret key containing the AWS Access Key.
+
+        secretKey: ## AWS Secret Access Key
+            password:
+            existingSecret: "" ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
+            existingSecretKey: "" ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
+```
+
+For each of `accessKey` and `secretKey`, the `password` and `existingSecret` fields are mutually exclusive.
+
+</TabItem>
+<TabItem value="GKE" label="GKE" default> 
+
+
+```yaml
+global:
+    ...
+    logs:
+        storage:
+            type: "GCS"
+        
+        minio:
+            enabled: false
+            
+        gcs:
+            bucket: airbyte-dev-logs # GCS bucket name that you've created.
+            credentials: ""
+            credentialsJson: "" ## Base64 encoded json GCP credentials file contents
+```
+
+Note that the `credentials` and `credentialsJson` fields are mutually exclusive.
+
+</TabItem>
+</Tabs>
+</details>
+
+
+#### Configuring Ingress
+
+To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: # ingress name, example: enterprise-demo
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  - host: # host, example: enterprise-demo.airbyte.com
+    http:
+      paths:
+      - backend:
+          service:
+            # format is ${RELEASE_NAME}-airbyte-webapp-svc
+            name: airbyte-pro-airbyte-webapp-svc 
+            port:
+              number: # service port, example: 8080
+        path: /
+        pathType: Prefix
+      - backend:
+          service:
+            # format is ${RELEASE_NAME}-airbyte-keycloak-svc
+            name: airbyte-pro-airbyte-keycloak-svc
+            port:
+              number: # service port, example: 8180
+        path: /auth
+        pathType: Prefix
+```
+
+You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
+
 ### Install Airbyte Enterprise
 
 Install Airbyte Enterprise on helm using the following command:
 
-```text
+```sh
 ./tools/bin/install_airbyte_pro_on_helm.sh
 ```
 
@@ -98,6 +253,6 @@ In order to customize your deployment, you need to create `values.yaml` file in 
 
 After specifying your own configuration, run the following command:
 
-```text
+```sh
 ./tools/bin/install_airbyte_pro_on_helm.sh --values path/to/values.yaml
 ```

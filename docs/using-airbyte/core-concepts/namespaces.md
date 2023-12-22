@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Namespaces
 
 ## High-Level Overview
@@ -70,8 +74,8 @@ The following table summarises how this works. In this example, we're looking at
 | Mirror source structure | public | my\_table | public | my\_table |
 | Mirror source structure |  | my\_table | my\_schema | my\_table |
 | Custom format = "custom" | public | my\_table | custom | my\_table |
-| Custom format = "${SOURCE\_NAMESPACE}" | public | my\_table | public | my\_table |
-| Custom format = "my\_${SOURCE\_NAMESPACE}\_schema" | public | my\_table | my\_public\_schema | my\_table |
+| Custom format = `"${SOURCE\_NAMESPACE}"` | public | my\_table | public | my\_table |
+| Custom format = `"my\_${SOURCE\_NAMESPACE}\_schema"` | public | my\_table | my\_public\_schema | my\_table |
 | Custom format = "   " | public | my\_table | my\_schema | my\_table |
 
 ## Syncing Details

@@ -19,9 +19,7 @@
                 "title": "Mode",
                 "default": "openai",
                 "const": "openai",
-                "enum": [
-                  "openai"
-                ],
+                "enum": ["openai"],
                 "type": "string"
               },
               "openai_key": {
@@ -30,10 +28,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "openai_key",
-              "mode"
-            ],
+            "required": ["openai_key", "mode"],
             "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
@@ -44,9 +39,7 @@
                 "title": "Mode",
                 "default": "cohere",
                 "const": "cohere",
-                "enum": [
-                  "cohere"
-                ],
+                "enum": ["cohere"],
                 "type": "string"
               },
               "cohere_key": {
@@ -55,10 +48,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "cohere_key",
-              "mode"
-            ],
+            "required": ["cohere_key", "mode"],
             "description": "Use the Cohere API to embed text."
           },
           {
@@ -69,16 +59,12 @@
                 "title": "Mode",
                 "default": "fake",
                 "const": "fake",
-                "enum": [
-                  "fake"
-                ],
+                "enum": ["fake"],
                 "type": "string"
               }
             },
             "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs.",
-            "required": [
-              "mode"
-            ]
+            "required": ["mode"]
           },
           {
             "title": "Azure OpenAI",
@@ -88,9 +74,7 @@
                 "title": "Mode",
                 "default": "azure_openai",
                 "const": "azure_openai",
-                "enum": [
-                  "azure_openai"
-                ],
+                "enum": ["azure_openai"],
                 "type": "string"
               },
               "openai_key": {
@@ -102,26 +86,17 @@
               "api_base": {
                 "title": "Resource base URL",
                 "description": "The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                "examples": [
-                  "https://your-resource-name.openai.azure.com"
-                ],
+                "examples": ["https://your-resource-name.openai.azure.com"],
                 "type": "string"
               },
               "deployment": {
                 "title": "Deployment",
                 "description": "The deployment for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                "examples": [
-                  "your-resource-name"
-                ],
+                "examples": ["your-resource-name"],
                 "type": "string"
               }
             },
-            "required": [
-              "openai_key",
-              "api_base",
-              "deployment",
-              "mode"
-            ],
+            "required": ["openai_key", "api_base", "deployment", "mode"],
             "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
@@ -132,9 +107,7 @@
                 "title": "Mode",
                 "default": "openai_compatible",
                 "const": "openai_compatible",
-                "enum": [
-                  "openai_compatible"
-                ],
+                "enum": ["openai_compatible"],
                 "type": "string"
               },
               "api_key": {
@@ -146,35 +119,24 @@
               "base_url": {
                 "title": "Base URL",
                 "description": "The base URL for your OpenAI-compatible service",
-                "examples": [
-                  "https://your-service-name.com"
-                ],
+                "examples": ["https://your-service-name.com"],
                 "type": "string"
               },
               "model_name": {
                 "title": "Model name",
                 "description": "The name of the model to use for embedding",
                 "default": "text-embedding-ada-002",
-                "examples": [
-                  "text-embedding-ada-002"
-                ],
+                "examples": ["text-embedding-ada-002"],
                 "type": "string"
               },
               "dimensions": {
                 "title": "Embedding dimensions",
                 "description": "The number of dimensions the embedding model is generating",
-                "examples": [
-                  1536,
-                  384
-                ],
+                "examples": [1536, 384],
                 "type": "integer"
               }
             },
-            "required": [
-              "base_url",
-              "dimensions",
-              "mode"
-            ],
+            "required": ["base_url", "dimensions", "mode"],
             "description": "Use a service that's compatible with the OpenAI API to embed text."
           }
         ]
@@ -201,11 +163,7 @@
             "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
             "default": [],
             "always_show": true,
-            "examples": [
-              "text",
-              "user.name",
-              "users.*.name"
-            ],
+            "examples": ["text", "user.name", "users.*.name"],
             "type": "array",
             "items": {
               "type": "string"
@@ -216,11 +174,7 @@
             "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
             "default": [],
             "always_show": true,
-            "examples": [
-              "age",
-              "user",
-              "user.name"
-            ],
+            "examples": ["age", "user", "user.name"],
             "type": "array",
             "items": {
               "type": "string"
@@ -239,20 +193,13 @@
                     "title": "Mode",
                     "default": "separator",
                     "const": "separator",
-                    "enum": [
-                      "separator"
-                    ],
+                    "enum": ["separator"],
                     "type": "string"
                   },
                   "separators": {
                     "title": "Separators",
                     "description": "List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use \".\". To split by a newline, use \"\\n\".",
-                    "default": [
-                      "\"\\n\\n\"",
-                      "\"\\n\"",
-                      "\" \"",
-                      "\"\""
-                    ],
+                    "default": ["\"\\n\\n\"", "\"\\n\"", "\" \"", "\"\""],
                     "type": "array",
                     "items": {
                       "type": "string"
@@ -266,9 +213,7 @@
                   }
                 },
                 "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc.",
-                "required": [
-                  "mode"
-                ]
+                "required": ["mode"]
               },
               {
                 "title": "By Markdown header",
@@ -278,9 +223,7 @@
                     "title": "Mode",
                     "default": "markdown",
                     "const": "markdown",
-                    "enum": [
-                      "markdown"
-                    ],
+                    "enum": ["markdown"],
                     "type": "string"
                   },
                   "split_level": {
@@ -293,9 +236,7 @@
                   }
                 },
                 "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk.",
-                "required": [
-                  "mode"
-                ]
+                "required": ["mode"]
               },
               {
                 "title": "By Programming Language",
@@ -305,9 +246,7 @@
                     "title": "Mode",
                     "default": "code",
                     "const": "code",
-                    "enum": [
-                      "code"
-                    ],
+                    "enum": ["code"],
                     "type": "string"
                   },
                   "language": {
@@ -334,10 +273,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "language",
-                  "mode"
-                ],
+                "required": ["language", "mode"],
                 "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
               }
             ]
@@ -362,16 +298,11 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "from_field",
-                "to_field"
-              ]
+              "required": ["from_field", "to_field"]
             }
           }
         },
-        "required": [
-          "chunk_size"
-        ],
+        "required": ["chunk_size"],
         "group": "processing"
       },
       "omit_raw_text": {
@@ -422,9 +353,7 @@
                     "title": "Mode",
                     "default": "token",
                     "const": "token",
-                    "enum": [
-                      "token"
-                    ],
+                    "enum": ["token"],
                     "type": "string"
                   },
                   "token": {
@@ -434,10 +363,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "token",
-                  "mode"
-                ],
+                "required": ["token", "mode"],
                 "description": "Authenticate using an API token (suitable for Zilliz Cloud)"
               },
               {
@@ -448,9 +374,7 @@
                     "title": "Mode",
                     "default": "username_password",
                     "const": "username_password",
-                    "enum": [
-                      "username_password"
-                    ],
+                    "enum": ["username_password"],
                     "type": "string"
                   },
                   "username": {
@@ -467,11 +391,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "username",
-                  "password",
-                  "mode"
-                ],
+                "required": ["username", "password", "mode"],
                 "description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"
               },
               {
@@ -482,16 +402,12 @@
                     "title": "Mode",
                     "default": "no_auth",
                     "const": "no_auth",
-                    "enum": [
-                      "no_auth"
-                    ],
+                    "enum": ["no_auth"],
                     "type": "string"
                   }
                 },
                 "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)",
-                "required": [
-                  "mode"
-                ]
+                "required": ["mode"]
               }
             ]
           },
@@ -508,20 +424,12 @@
             "type": "string"
           }
         },
-        "required": [
-          "host",
-          "collection",
-          "auth"
-        ],
+        "required": ["host", "collection", "auth"],
         "group": "indexing",
         "description": "Indexing configuration"
       }
     },
-    "required": [
-      "embedding",
-      "processing",
-      "indexing"
-    ],
+    "required": ["embedding", "processing", "indexing"],
     "groups": [
       {
         "id": "processing",
@@ -542,9 +450,5 @@
     ]
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": [
-    "overwrite",
-    "append",
-    "append_dedup"
-  ]
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
 }

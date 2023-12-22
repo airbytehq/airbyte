@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from os import getenv
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -92,7 +93,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "authenticator": auth,
             "replication_start_date": start_date,
             "marketplace_id": marketplace_id,
-            "period_in_days": config.get("period_in_days", 90),
+            "period_in_days": config.get("period_in_days", 30),
             "replication_end_date": config.get("replication_end_date"),
         }
         return stream_kwargs

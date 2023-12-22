@@ -4,10 +4,13 @@
 
 package io.airbyte.cdk.integrations.destination_async;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferEnqueue;
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
@@ -18,8 +21,14 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -47,6 +56,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   private final Set<StreamDescriptor> streamNames;
   private final FlushFailure flushFailure;
   private final String defaultNamespace;
+  // Note that this map will only be populated for streams with nonzero records.
+  private final ConcurrentMap<StreamDescriptor, AtomicLong> recordCounts;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -102,6 +113,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     flushWorkers =
         new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager(), workerPool);
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
+    this.recordCounts = new ConcurrentHashMap<>();
   }
 
   @VisibleForTesting
@@ -113,18 +125,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
                              final BufferManager bufferManager,
                              final FlushFailure flushFailure,
                              final String defaultNamespace) {
-    this.defaultNamespace = defaultNamespace;
-    hasStarted = false;
-    hasClosed = false;
-
-    this.onStart = onStart;
-    this.onClose = onClose;
-    this.catalog = catalog;
-    this.bufferManager = bufferManager;
-    bufferEnqueue = bufferManager.getBufferEnqueue();
-    this.flushFailure = flushFailure;
-    flushWorkers = new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager());
-    streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
+    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, flushFailure, defaultNamespace, Executors.newFixedThreadPool(5));
   }
 
   @Override
@@ -153,6 +154,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
         message.getRecord().setNamespace(defaultNamespace);
       }
       validateRecord(message);
+
+      getRecordCounter(message.getRecord().getStreamDescriptor()).incrementAndGet();
     }
     bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
   }
@@ -204,11 +207,20 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     flushWorkers.close();
 
     bufferManager.close();
-    onClose.accept(hasFailed);
+
+    final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries = streamNames.stream().collect(toMap(
+        streamDescriptor -> streamDescriptor,
+        streamDescriptor -> new StreamSyncSummary(
+            Optional.of(getRecordCounter(streamDescriptor).get()))));
+    onClose.accept(hasFailed, streamSyncSummaries);
 
     // as this throws an exception, we need to be after all other close functions.
     propagateFlushWorkerExceptionIfPresent();
     LOGGER.info("{} closed", AsyncStreamConsumer.class);
+  }
+
+  private AtomicLong getRecordCounter(final StreamDescriptor streamDescriptor) {
+    return recordCounts.computeIfAbsent(streamDescriptor, sd -> new AtomicLong());
   }
 
   private void propagateFlushWorkerExceptionIfPresent() throws Exception {
