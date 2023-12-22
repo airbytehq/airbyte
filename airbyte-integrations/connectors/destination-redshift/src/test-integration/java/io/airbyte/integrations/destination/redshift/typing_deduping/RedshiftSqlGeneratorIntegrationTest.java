@@ -21,6 +21,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGener
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
@@ -216,7 +217,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    final String sql = generator.createTable(incrementalDedupStream, "", false);
+    final Sql sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
     final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(incrementalDedupStream.id());
