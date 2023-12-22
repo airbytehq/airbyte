@@ -18,14 +18,15 @@ public class MssqlDataSourceFactoryTest {
 
   @Test
   protected void testCreatingDataSourceWithConnectionTimeoutSetBelowDefault() {
-    MSSQLServerContainer container = new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2019-latest");
-    Map<String, String> connectionProperties = Map.of("loginTimeout", String.valueOf(5));
+    final MSSQLServerContainer container = new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2019-latest");
+    final Map<String, String> connectionProperties = Map.of("loginTimeout", String.valueOf(5));
     final DataSource dataSource = DataSourceFactory.create(
         container.getUsername(),
         container.getPassword(),
         container.getDriverClassName(),
         container.getJdbcUrl(),
-        connectionProperties);
+        connectionProperties,
+        new MssqlSource().getConnectionTimeoutMssql(connectionProperties));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());

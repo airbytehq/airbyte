@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
+    cdkVersionRequired = '0.7.7'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -42,4 +42,6 @@ dependencies {
 
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     testImplementation "org.testcontainers:localstack:${testContainersVersion}"
+    integrationTestJavaImplementation 'com.amazonaws:aws-java-sdk:1.12.610'
+
 }
