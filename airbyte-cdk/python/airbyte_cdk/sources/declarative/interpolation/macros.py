@@ -5,7 +5,7 @@
 import builtins
 import datetime
 import numbers
-from typing import Optional, Union, Any, Iterable
+from typing import Any, Iterable, Optional, Union
 
 from dateutil import parser
 from isodate import parse_duration
