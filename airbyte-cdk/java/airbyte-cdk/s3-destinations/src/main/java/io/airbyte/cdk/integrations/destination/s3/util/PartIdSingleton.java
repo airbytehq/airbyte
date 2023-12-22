@@ -22,11 +22,7 @@ public class PartIdSingleton {
     return instance;
   }
 
-  /**
-   * We can now assume that S3's directory listing is factual (no lag with new files)
-   * But, we need to be sure that multiple threads aren't both looking to write the next ID at the same time.
-   */
-  public String getPartId(final AmazonS3 s3Client, final S3DestinationConfig s3Config, final String objectPath) throws InterruptedException {
+  public synchronized String getPartId(final AmazonS3 s3Client, final S3DestinationConfig s3Config, final String objectPath) throws InterruptedException {
     initialize(s3Client, s3Config, objectPath);
 
     if (usingUUIDs) {
@@ -37,7 +33,13 @@ public class PartIdSingleton {
     }
   }
 
-  private void initialize (final AmazonS3 s3Client, final S3DestinationConfig s3Config, final String objectPath) throws InterruptedException {
+  /**
+   * We can now assume that S3's directory listing is factual (no lag with new files)
+   * But, we need to be sure that multiple threads aren't both looking to write the next ID at the same time.
+   */
+
+  // TODO: Caching needs to be per objectPath, not globally
+  private synchronized void initialize (final AmazonS3 s3Client, final S3DestinationConfig s3Config, final String objectPath) throws InterruptedException {
     // usingUUIDs being null can also be a signal for the need to load what's in the bucket the first time
     if (usingUUIDs != null) {
       return;
@@ -64,9 +66,6 @@ public class PartIdSingleton {
         locked = false;
       }
     }
-
-
   }
-
 }
 
