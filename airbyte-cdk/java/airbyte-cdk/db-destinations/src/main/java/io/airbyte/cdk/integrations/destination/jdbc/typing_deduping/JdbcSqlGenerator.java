@@ -145,11 +145,12 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   protected abstract SQLDialect getDialect();
 
   /**
-   * @param columns from the schema to be extracted from _airbyte_data column. Use the destination
-   *        specific syntax to extract data
+   * @param columns                  from the schema to be extracted from _airbyte_data column. Use the destination
+   *                                 specific syntax to extract data
+   * @param useExpensiveSaferCasting
    * @return a list of jooq fields for the final table insert statement.
    */
-  protected abstract List<Field<?>> extractRawDataFields(final LinkedHashMap<ColumnId, AirbyteType> columns);
+  protected abstract List<Field<?>> extractRawDataFields(final LinkedHashMap<ColumnId, AirbyteType> columns, boolean useExpensiveSaferCasting);
 
   /**
    *
@@ -223,11 +224,13 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
    * @return
    */
   @VisibleForTesting
-  List<Field<?>> buildRawTableSelectFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final Map<String, DataType<?>> metaColumns) {
+  List<Field<?>> buildRawTableSelectFields(final LinkedHashMap<ColumnId, AirbyteType> columns,
+                                           final Map<String, DataType<?>> metaColumns,
+                                           final boolean useExpensiveSaferCasting) {
     final List<Field<?>> fields =
         metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(toList());
     // Use originalName with non-sanitized characters when extracting data from _airbyte_data
-    final List<Field<?>> dataFields = extractRawDataFields(columns);
+    final List<Field<?>> dataFields = extractRawDataFields(columns, useExpensiveSaferCasting);
     dataFields.addAll(fields);
     return dataFields;
   }
@@ -315,10 +318,11 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
                                                  final String tableName,
                                                  final LinkedHashMap<ColumnId, AirbyteType> columns,
                                                  final Map<String, DataType<?>> metaColumns,
-                                                 final Condition condition) {
+                                                 final Condition condition,
+                                                 final boolean useExpensiveSaferCasting) {
     final DSLContext dsl = getDslContext();
     return dsl
-        .select(buildRawTableSelectFields(columns, metaColumns))
+        .select(buildRawTableSelectFields(columns, metaColumns, useExpensiveSaferCasting))
         .select(buildAirbyteMetaColumn(columns))
         .from(table(quotedName(schemaName, tableName)))
         .where(condition);
@@ -351,7 +355,8 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
             getFinalTableMetaColumns(false),
             rawTableCondition(streamConfig.destinationSyncMode(),
                 streamConfig.columns().containsKey(cdcDeletedAtColumn),
-                minRawTimestamp)));
+                minRawTimestamp),
+            useExpensiveSaferCasting));
     final List<Field<?>> finalTableFields = buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true));
     final Field<Integer> rowNumber = getRowNumber(streamConfig.primaryKey(), streamConfig.cursor());
     final CommonTableExpression<Record> filteredRows = name(NUMBERED_ROWS_CTE_ALIAS).as(
