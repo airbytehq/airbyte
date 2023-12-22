@@ -22,40 +22,39 @@ def patch_base_class(mocker):
 
 
 @pytest.mark.parametrize(
-    "stream_offset,stream_offset_context,next_page_token_value",
+    "stream_offset,cursor_value,next_page_token_value",
     [
-        (None, None, "next_page_token"),
-        (None, 200, "next_page_token"),
+        (None, None, 120),
+        (None, 200, 250),
         (None, None, None),
         (None, 200, None),
-        (100, None, None),
+        (100, 100, None),
         (100, 200, None),
-        (100, None, "next_page_token"),
-        (100, 200, "next_page_token"),
+        (100, None, 100),
+        (100, 200, 205),
     ],
 )
-def test_request_params(patch_base_class, stream_offset, stream_offset_context, next_page_token_value):
+def test_request_params(patch_base_class, stream_offset, cursor_value, next_page_token_value):
     stream = KyveStream(config, pool_data)
-    if stream_offset:
-        stream._offset = 100
 
-    expected_params = {"pagination.limit": 100, "pagination.offset": stream_offset_context or stream_offset or 0}
+    expected_params = {"pagination.limit": 100, "pagination.offset": cursor_value or stream_offset or 0}
 
     inputs = {
         "stream_slice": None,
-        "stream_state": {"offset": stream_offset_context} if stream_offset_context else {},
+        "stream_state": {"offset": cursor_value} if cursor_value else {},
         "next_page_token": next_page_token_value,
     }
 
     if next_page_token_value:
-        expected_params["next_page_token"] = next_page_token_value
+        expected_params["pagination.offset"] = next_page_token_value
+
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token_max_pages_set(patch_base_class):
     stream = KyveStream(config, pool_data)
     stream.max_pages = 20
-    stream._offset = 2100
+    stream._cursor_value = 2100
     inputs = {"response": MagicMock()}
 
     assert stream.next_page_token(**inputs) is None
@@ -64,8 +63,10 @@ def test_next_page_token_max_pages_set(patch_base_class):
 def test_next_page_token(patch_base_class):
     stream = KyveStream(config, pool_data)
     inputs = {"response": MagicMock()}
-    expected_token = {"pagination.offset": 100}
-    assert stream.next_page_token(**inputs) == expected_token
+    stream._cursor_value = 100
+    expected_token = stream._cursor_value
+
+    assert stream.next_page_token(**inputs) == str(expected_token)
 
 
 def test_parse_response(patch_base_class, monkeypatch):
