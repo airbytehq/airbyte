@@ -64,22 +64,16 @@
         "examples": ["6783948572,5839201945"],
         "order": 1
       },
-      "customer_status_filter" : {
-        "title" : "Customer Statuses Filter",
-        "description" : "A list of customer statuses to filter on. For detailed info about what each status mean refer to Google Ads <a href=\"https://developers.google.com/google-ads/api/reference/rpc/v15/CustomerStatusEnum.CustomerStatus\">documentation</a>.",
-        "default" : [],
+      "customer_status_filter": {
+        "title": "Customer Statuses Filter",
+        "description": "A list of customer statuses to filter on. For detailed info about what each status mean refer to Google Ads <a href=\"https://developers.google.com/google-ads/api/reference/rpc/v15/CustomerStatusEnum.CustomerStatus\">documentation</a>.",
+        "default": [],
         "order": 2,
-        "type" : "array",
-        "items" : {
-          "title" : "CustomerStatus",
-          "description" : "An enumeration.",
-          "enum" : [
-            "UNKNOWN",
-            "ENABLED",
-            "CANCELED",
-            "SUSPENDED",
-            "CLOSED"
-          ]
+        "type": "array",
+        "items": {
+          "title": "CustomerStatus",
+          "description": "An enumeration.",
+          "enum": ["UNKNOWN", "ENABLED", "CANCELED", "SUSPENDED", "CLOSED"]
         }
       },
       "start_date": {

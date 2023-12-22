@@ -16,6 +16,15 @@ from source_google_ads.streams import AdGroupLabel, Label, ServiceAccounts
 
 from .common import MockGoogleAdsClient, mock_google_ads_request_failure
 
+
+@pytest.fixture
+def mock_get_customers(mocker):
+    mocker.patch(
+        "source_google_ads.source.SourceGoogleAds.get_customers",
+        Mock(return_value=[CustomerModel(is_manager_account=False, time_zone="Europe/Berlin", id="123")]),
+    )
+
+
 params = [
     (
         ["USER_PERMISSION_DENIED"],
@@ -52,6 +61,10 @@ params = [
 @pytest.mark.parametrize(("exception", "error_message"), params)
 def test_expected_errors(mocker, config, exception, error_message):
     mock_google_ads_request_failure(mocker, exception)
+    mocker.patch(
+        "source_google_ads.google_ads.GoogleAds.get_accessible_accounts",
+        Mock(return_value=["123", "12345"]),
+    )
     source = SourceGoogleAds()
     with pytest.raises(AirbyteTracedException) as exception:
         status_ok, error = source.check_connection(AirbyteLogger(), config)

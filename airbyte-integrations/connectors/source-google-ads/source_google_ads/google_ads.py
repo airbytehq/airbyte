@@ -80,7 +80,7 @@ class GoogleAds:
         search_request.query = query
         search_request.page_size = self.DEFAULT_PAGE_SIZE
         search_request.customer_id = customer_id
-        return [self.ga_service(login_customer_id).search(search_request, timeout=300)]
+        return [self.ga_service(login_customer_id).search(search_request)]
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """
