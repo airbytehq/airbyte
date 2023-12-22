@@ -39,7 +39,7 @@ For COPY strategy:
 - **Part Size**
   - Affects the size limit of an individual Redshift table. Optional. Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default table limit of 100GB. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care.
 - **S3 Filename pattern**
-  - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.
+  - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. Please, don't use empty space and not supportable placeholders, as they won't recognized.
 
 Optional parameters:
 
@@ -54,9 +54,9 @@ NOTE: S3 staging does not use the SSH Tunnel option, if configured. SSH Tunnel s
 
 1. [Log in](https://aws.amazon.com/console/) to AWS Management console.
    If you don't have a AWS account already, you’ll need to [create](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/) one in order to use the API.
-2. Go to the AWS Redshift service
-3. [Create](https://docs.aws.amazon.com/ses/latest/dg/event-publishing-redshift-cluster.html) and activate AWS Redshift cluster if you don't have one ready
-4. (Optional) [Allow](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/) connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\)
+2. Go to the AWS Redshift service.
+3. [Create](https://docs.aws.amazon.com/ses/latest/dg/event-publishing-redshift-cluster.html) and activate AWS Redshift cluster if you don't have one ready.
+4. (Optional) [Allow](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/) connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\).
 5. (Optional) [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a staging S3 bucket \(for the COPY strategy\).
 6. Create a user with at least create table permissions for the schema. If the schema does not exist you need to add permissions for that, too. Something like this:
 
@@ -78,7 +78,7 @@ Enter the bastion host, port and credentials in the destination configuration.
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a name for this connector.
-4. Fill in all the required fields to use the INSERT or COPY strategy
+4. Fill in all the required fields to use the INSERT or COPY strategy.
 5. Click `Set up destination`.
 
 **For Airbyte Open Source:**
@@ -86,7 +86,7 @@ Enter the bastion host, port and credentials in the destination configuration.
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a name for this connector.
-4. Fill in all the required fields to use the INSERT or COPY strategy
+4. Fill in all the required fields to use the INSERT or COPY strategy.
 5. Click `Set up destination`.
 
 ## Supported sync modes
@@ -100,7 +100,7 @@ The Redshift destination connector supports the following [sync modes](https://d
 ## Performance considerations
 
 Synchronization performance depends on the amount of data to be transferred.
-Cluster scaling issues can be resolved directly using the cluster settings in the AWS Redshift console
+Cluster scaling issues can be resolved directly using the cluster settings in the AWS Redshift console.
 
 ## Connector-specific features & highlights
 
@@ -123,12 +123,12 @@ Therefore, Airbyte Redshift destination will create tables and schemas using the
 
 ### Data Size Limitations
 
-Redshift specifies a maximum limit of 1MB (and 65535 bytes for any VARCHAR fields within the JSON record) to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
-See docs for [SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html)
+Redshift specifies a maximum limit of 16MB (and 65535 bytes for any VARCHAR fields within the JSON record) to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
+See docs for [SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html).
 
 ### Encryption
 
-All Redshift connections are encrypted using SSL
+All Redshift connections are encrypted using SSL.
 
 ### Output schema
 
@@ -156,9 +156,15 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.7.0   | 2023-12-05 | [32326](https://github.com/airbytehq/airbyte/pull/32326)   | Opt in beta for v2 destination                                                                                                                                                                                   |
-| 0.6.11  | 2023-11-29 | [#32888](https://github.com/airbytehq/airbyte/pull/32888)  | Use the new async framework.                                                                                                                                                                                     |
-| 0.6.10  | 2023-11-06 | [#32193](https://github.com/airbytehq/airbyte/pull/32193)  | Adopt java CDK version 0.4.1.                                                                                                                                                                                    |
+| 0.7.6   | 2023-12-20 | [\#33704](https://github.com/airbytehq/airbyte/pull/33704) | Only run T+D on a stream if it had any records during the sync                                                                                                                                                   |
+| 0.7.5   | 2023-12-18 | [\#33124](https://github.com/airbytehq/airbyte/pull/33124) | Make Schema Creation Separate from Table Creation                                                                                                                                                                |
+| 0.7.4   | 2023-12-13 | [\#33369](https://github.com/airbytehq/airbyte/pull/33369) | Use jdbc common sql implementation                                                                                                                                                                               |
+| 0.7.3   | 2023-12-12 | [\#33367](https://github.com/airbytehq/airbyte/pull/33367) | DV2: fix migration logic                                                                                                                                                                                         |
+| 0.7.2   | 2023-12-11 | [\#33335](https://github.com/airbytehq/airbyte/pull/33335) | DV2: improve data type mapping                                                                                                                                                                                   |
+| 0.7.1   | 2023-12-11 | [\#33307](https://github.com/airbytehq/airbyte/pull/33307) | ~DV2: improve data type mapping~ No changes                                                                                                                                                                      |
+| 0.7.0   | 2023-12-05 | [\#32326](https://github.com/airbytehq/airbyte/pull/32326) | Opt in beta for v2 destination                                                                                                                                                                                   |
+| 0.6.11  | 2023-11-29 | [\#32888](https://github.com/airbytehq/airbyte/pull/32888) | Use the new async framework.                                                                                                                                                                                     |
+| 0.6.10  | 2023-11-06 | [\#32193](https://github.com/airbytehq/airbyte/pull/32193) | Adopt java CDK version 0.4.1.                                                                                                                                                                                    |
 | 0.6.9   | 2023-10-10 | [\#31083](https://github.com/airbytehq/airbyte/pull/31083) | Fix precision of numeric values in async destinations                                                                                                                                                            |
 | 0.6.8   | 2023-10-10 | [\#31218](https://github.com/airbytehq/airbyte/pull/31218) | Clarify configuration groups                                                                                                                                                                                     |
 | 0.6.7   | 2023-10-06 | [\#31153](https://github.com/airbytehq/airbyte/pull/31153) | Increase jvm GC retries                                                                                                                                                                                          |
