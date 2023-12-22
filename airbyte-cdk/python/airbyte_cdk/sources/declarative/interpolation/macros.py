@@ -5,7 +5,7 @@
 import builtins
 import datetime
 import numbers
-from typing import Optional, Union
+from typing import Optional, Union, Any, Iterable
 
 from dateutil import parser
 from isodate import parse_duration
@@ -15,7 +15,7 @@ This file contains macros that can be evaluated by a `JinjaInterpolation` object
 """
 
 
-def now_utc():
+def now_utc() -> datetime.datetime:
     """
     Current local date and time in UTC timezone
 
@@ -25,7 +25,7 @@ def now_utc():
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def today_utc():
+def today_utc() -> datetime.date:
     """
     Current date in UTC timezone
 
@@ -35,7 +35,7 @@ def today_utc():
     return datetime.datetime.now(datetime.timezone.utc).date()
 
 
-def timestamp(dt: Union[numbers.Number, str]):
+def timestamp(dt: Union[numbers.Number, str]) -> Union[int, float]:
     """
     Converts a number or a string to a timestamp
 
@@ -49,7 +49,7 @@ def timestamp(dt: Union[numbers.Number, str]):
     :return: unix timestamp
     """
     if isinstance(dt, numbers.Number):
-        return int(dt)
+        return int(dt)  # type: ignore
     else:
         return _str_to_datetime(dt).astimezone(datetime.timezone.utc).timestamp()
 
@@ -66,7 +66,7 @@ def _str_to_datetime(s: str, s_format: Optional[str] = None) -> datetime.datetim
     return parsed_date.astimezone(datetime.timezone.utc)
 
 
-def max(*args):
+def max(*args: Iterable[Any]) -> Any:
     """
     Returns biggest object of an iterable, or two or more arguments.
 
@@ -106,7 +106,8 @@ def duration(datestring: str) -> datetime.timedelta:
     Usage:
     `"{{ now_utc() - duration('P1D') }}"`
     """
-    return parse_duration(datestring)
+    time_delta: datetime.timedelta = parse_duration(datestring)
+    return time_delta
 
 
 def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
