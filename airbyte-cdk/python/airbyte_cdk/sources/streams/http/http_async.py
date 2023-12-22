@@ -18,6 +18,7 @@ from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.async_call_rate import AsyncCachedLimiterSession, AsyncLimiterSession
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.core_async import AsyncStream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions_async import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.utils.types import JsonType
@@ -31,7 +32,7 @@ BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 T = TypeVar("T")
 
 
-class AsyncHttpStream(HttpStream, ABC):
+class AsyncHttpStream(HttpStream, AsyncStream, ABC):
     """
     Base abstract class for an Airbyte Stream using the HTTP protocol with asyncio.
 
