@@ -21,10 +21,15 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGener
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
+import org.jooq.Field;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Name;
+import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
@@ -52,11 +57,43 @@ public abstract class JdbcSqlGeneratorIntegrationTest extends BaseSqlGeneratorIn
     return DSL.using(getSqlDialect());
   }
 
-  protected abstract void insertRecords(final Name tableName,
-                                        final List<String> columnNames,
-                                        final List<JsonNode> records,
-                                        final String... jsonColumns)
-      throws Exception;
+  /**
+   * Many destinations require special handling to create JSON values. For example,
+   * redshift requires you to invoke JSON_PARSE('{...}'), and postgres requires you to
+   * CAST('{...}' AS JSONB). This method allows subclasses to implement that logic.
+   */
+  protected abstract Field<?> toJsonValue(String valueAsString);
+
+  private void insertRecords(final Name tableName, final List<String> columnNames, final List<JsonNode> records, final String... columnsToParseJson)
+      throws SQLException {
+    InsertValuesStepN<Record> insert = getDslContext().insertInto(
+        DSL.table(tableName),
+        columnNames.stream().map(DSL::field).toList());
+    for (final JsonNode record : records) {
+      insert = insert.values(
+          columnNames.stream()
+              .map(fieldName -> {
+                // Convert this field to a string. Pretty naive implementation.
+                final JsonNode column = record.get(fieldName);
+                final String columnAsString;
+                if (column == null) {
+                  columnAsString = null;
+                } else if (column.isTextual()) {
+                  columnAsString = column.asText();
+                } else {
+                  columnAsString = column.toString();
+                }
+
+                if (Arrays.asList(columnsToParseJson).contains(fieldName)) {
+                  return toJsonValue(columnAsString);
+                } else {
+                  return DSL.val(columnAsString);
+                }
+              })
+              .toList());
+    }
+    getDatabase().execute(insert.getSQL(ParamType.INLINED));
+  }
 
   @Override
   protected void createNamespace(final String namespace) throws Exception {

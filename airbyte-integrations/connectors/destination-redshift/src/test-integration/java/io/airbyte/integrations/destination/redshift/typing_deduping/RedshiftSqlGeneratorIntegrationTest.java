@@ -38,6 +38,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
+import org.jooq.Field;
 import org.jooq.InsertValuesStepN;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -173,44 +174,8 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
     return SQLDialect.POSTGRES;
   }
 
-  /**
-   * Insert arbitrary records into an arbitrary table.
-   *
-   * @param columnsToParseJson Columns that must be wrapped in JSON_PARSE, because we're inserting
-   *        them into a SUPER column. Naively inserting a string results a SUPER value containing a
-   *        json string, rather than a json object.
-   */
-  protected void insertRecords(final Name tableName, final List<String> columnNames, final List<JsonNode> records, final String... columnsToParseJson)
-      throws SQLException {
-    InsertValuesStepN<Record> insert = DSL.insertInto(
-        DSL.table(tableName),
-        columnNames.stream().map(DSL::field).toList());
-    for (final JsonNode record : records) {
-      insert = insert.values(
-          columnNames.stream()
-              .map(fieldName -> {
-                // Convert this field to a string. Pretty naive implementation.
-                final JsonNode column = record.get(fieldName);
-                final String columnAsString;
-                if (column == null) {
-                  columnAsString = null;
-                } else if (column.isTextual()) {
-                  columnAsString = column.asText();
-                } else {
-                  columnAsString = column.toString();
-                }
-
-                if (Arrays.asList(columnsToParseJson).contains(fieldName)) {
-                  // TODO this is redshift-specific. If we try and genericize this class, we need to handle this
-                  // specifically
-                  return DSL.function("JSON_PARSE", String.class, DSL.inline(escapeStringLiteral(columnAsString)));
-                } else {
-                  return DSL.inline(escapeStringLiteral(columnAsString));
-                }
-              })
-              .toList());
-    }
-    database.execute(insert.getSQL());
+  protected Field<?> toJsonValue(final String valueAsString) {
+    return DSL.function("JSON_PARSE", String.class, DSL.val(valueAsString));
   }
 
   @Override
@@ -242,16 +207,6 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
         () -> assertEquals("date", existingTable.get().columns().get("date").type()),
         () -> assertEquals("super", existingTable.get().columns().get("unknown").type()));
     // TODO assert on table clustering, etc.
-  }
-
-  private static String escapeStringLiteral(final String str) {
-    if (str == null) {
-      return null;
-    } else {
-      // jooq handles most things
-      // but we need to manually escape backslashes for some reason
-      return str.replace("\\", "\\\\");
-    }
   }
 
 }
