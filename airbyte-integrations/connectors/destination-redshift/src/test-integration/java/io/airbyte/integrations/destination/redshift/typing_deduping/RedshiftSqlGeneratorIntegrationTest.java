@@ -23,6 +23,7 @@ import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.Jdbc
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import java.nio.file.Files;
