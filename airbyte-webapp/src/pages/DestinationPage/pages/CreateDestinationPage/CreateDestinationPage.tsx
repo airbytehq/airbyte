@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
@@ -23,6 +24,7 @@ export const CreateDestinationPage: React.FC = () => {
   `;
 
   const { push, location } = useRouter();
+  const navigate = useNavigate();
   const [successRequest, setSuccessRequest] = useState(false);
   const { destinationDefinitions } = useDestinationDefinitionList();
   const { mutateAsync: createDestination } = useCreateDestination();
@@ -66,7 +68,7 @@ export const CreateDestinationPage: React.FC = () => {
   };
 
   const handleFinishButton = () => {
-    push(`/${RoutePaths.Destination}`);
+    navigate(`/${RoutePaths.Destination}`);
   };
 
   const onShowLoading = (isLoading: boolean, formValues: ServiceFormValues, error: JSX.Element | string | null) => {
