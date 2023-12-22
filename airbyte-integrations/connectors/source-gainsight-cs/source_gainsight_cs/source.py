@@ -12,7 +12,13 @@ from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from .streams import (
     GainsightCsStream,
     Person,
-    Company
+    Company,
+    User,
+    CompanyPerson,
+    ActivityTimeline,
+    CallToAction,
+    SurveyParticipant,
+    Playbook
 )
 
 
@@ -44,5 +50,11 @@ class SourceGainsightCs(AbstractSource):
         auth = self._get_authenticator(config)
         return [
             Person(authenticator=auth),
-            Company(authenticator=auth)
+            Company(authenticator=auth),
+            User(authenticator=auth),
+            CompanyPerson(authenticator=auth),
+            ActivityTimeline(authenticator=auth),
+            CallToAction(authenticator=auth),
+            SurveyParticipant(authenticator=auth),
+            Playbook(authenticator=auth)
         ]

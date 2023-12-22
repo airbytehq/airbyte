@@ -92,23 +92,37 @@ class GainsightCsObjectStream(GainsightCsStream):
         json_schema = self.get_json_schema()
         return [key for key in json_schema['properties']]
 
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"data/objects/query/{self.name}"
+
 
 class Person(GainsightCsObjectStream):
     name = "person"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "data/objects/query/Person"
 
 
 class Company(GainsightCsObjectStream):
     name = "company"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "data/objects/query/Company"
-
 
 class User(GainsightCsObjectStream):
-    name = "user"
+    name = "gsuser"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "data/objects/query/GsUser"
+
+class CompanyPerson(GainsightCsObjectStream):
+    name = "company_person"
+
+
+class Playbook(GainsightCsObjectStream):
+    name = "playbook"
+
+
+class CallToAction(GainsightCsObjectStream):
+    name = "call_to_action"
+
+
+class SurveyParticipant(GainsightCsObjectStream):
+    name = "survey_participant"
+
+
+class ActivityTimeline(GainsightCsObjectStream):
+    name = "activity_timeline"
