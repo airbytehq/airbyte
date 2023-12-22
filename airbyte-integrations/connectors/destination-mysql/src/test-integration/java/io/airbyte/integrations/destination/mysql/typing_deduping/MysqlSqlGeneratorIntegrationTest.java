@@ -13,8 +13,10 @@ import io.airbyte.integrations.destination.mysql.MySQLNameTransformer;
 import java.util.List;
 import javax.sql.DataSource;
 import org.jooq.DataType;
+import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -84,10 +86,8 @@ public class MysqlSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegratio
   }
 
   @Override
-  protected void insertRecords(final Name tableName,
-                               final List<String> columnNames,
-                               final List<JsonNode> records,
-                               final String... jsonColumns) {
-    // TODO
+  protected Field<?> toJsonValue(final String valueAsString) {
+    // mysql lets you just insert json strings directly into json columns
+    return DSL.val(valueAsString);
   }
 }

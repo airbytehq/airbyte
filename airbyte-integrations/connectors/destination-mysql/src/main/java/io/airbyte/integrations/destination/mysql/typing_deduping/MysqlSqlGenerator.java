@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGener
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -109,7 +110,7 @@ public class MysqlSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  public String createSchema(final String schema) {
+  public Sql createSchema(final String schema) {
     throw new NotImplementedException();
   }
 
