@@ -322,7 +322,9 @@ class BoardIssues(StartDateJiraStream):
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
         board_id = str(stream_slice["board_id"])
         if self.cursor_field not in self._starting_point_cache:
-            self._starting_point_cache.setdefault(board_id, {})[self.cursor_field] = self._get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+            self._starting_point_cache.setdefault(board_id, {})[self.cursor_field] = self._get_starting_point(
+                stream_state=stream_state, stream_slice=stream_slice
+            )
         return self._starting_point_cache[board_id][self.cursor_field]
 
     def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
