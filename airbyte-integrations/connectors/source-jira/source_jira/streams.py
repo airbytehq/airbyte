@@ -254,6 +254,7 @@ class BoardIssues(StartDateJiraStream):
     cursor_field = "updated"
     extract_field = "issues"
     api_v1 = True
+    state_checkpoint_interval = 50  # default page size is 50
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
