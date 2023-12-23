@@ -23,6 +23,7 @@ requests = "^2.31.0"
 SQLAlchemy = "^2.0.23"
 orjson = "^3.9.10"
 duckdb-engine = "^0.9.5"
+psycopg = {extras = ["binary", "pool"], version = "^3.1.16"}
 
 [tool.poetry.group.dev.dependencies]
 faker = "^21.0.0"
@@ -34,6 +35,9 @@ pytest-mypy = "^0.10.3"
 ruff = "^0.1.7"
 types-jsonschema = "^4.20.0.0"
 types-requests = "^2.31.0.10"
+pytest-postgresql = "^5.0.0"
+docker = "^7.0.0"
+pytest-docker = "^2.0.1"
 
 [tool.pytest.ini_options]
 # addopts = "--mypy"  # DEBUG: This blocks test discovery and execution, so I'm disabling it for now

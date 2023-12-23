@@ -303,7 +303,9 @@ class SQLCacheBase(RecordProcessor):
         return [
             found_schema.split(".")[-1].strip('"')
             for found_schema in found_schemas
-            if found_schema.split(".")[0].lower().strip('"') == database_name.lower()
+            if "." not in found_schema or (
+                found_schema.split(".")[0].lower().strip('"') == database_name.lower()
+            )
         ]
 
     def _ensure_final_table_exists(

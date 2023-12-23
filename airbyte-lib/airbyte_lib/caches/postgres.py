@@ -27,13 +27,13 @@ class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     @overrides
     def get_sql_alchemy_url(self) -> str:
         """Return the SQLAlchemy URL to use."""
-        return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?schema={self.schema_name}"
+        return f"postgresql+psycopg://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
 
     def get_database_name(self) -> str:
         """Return the name of the database."""
         return self.database
 
-class PostgresSQLCache(SQLCacheBase):
+class PostgresCache(SQLCacheBase):
     """A Postgres implementation of the cache.
 
     Parquet is used for local file storage before bulk loading.

@@ -1,9 +1,10 @@
 """Base module for all caches."""
 
 from airbyte_lib.caches.base import SQLCacheBase
-from airbyte_lib.types import SQLTypeConverter
 from airbyte_lib.caches.duckdb import DuckDBCache, DuckDBCacheConfig
 from airbyte_lib.caches.memory import InMemoryCache, InMemoryCacheConfig
+from airbyte_lib.caches.postgres import PostgresCache, PostgresCacheConfig
+from airbyte_lib.types import SQLTypeConverter
 
 
 # We export these classes for easy access: `airbyte_lib.caches...`
@@ -12,6 +13,8 @@ __all__ = [
     "DuckDBCacheConfig",
     "InMemoryCache",
     "InMemoryCacheConfig",
+    "PostgresCache",
+    "PostgresCacheConfig",
     "SQLCacheBase",
     "SQLTypeConverter",
 ]
