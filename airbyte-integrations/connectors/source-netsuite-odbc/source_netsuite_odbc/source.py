@@ -26,7 +26,7 @@ class SourceNetsuiteOdbc(AbstractSource):
         for stream in streams:
             stream_name = stream.name
             number_streams = number_streams + 1
-            netsuite_stream = NetsuiteODBCStream(db_connection=db_connection, table_name=stream_name, stream=stream)
+            netsuite_stream = NetsuiteODBCStream(db_connection=db_connection, table_name=stream_name, stream=stream, config=config)
             yield netsuite_stream
         self.logger.info(f"Finished generating streams.  Discovered {number_streams} streams.")
     

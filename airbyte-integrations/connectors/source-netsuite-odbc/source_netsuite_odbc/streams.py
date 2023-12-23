@@ -15,6 +15,8 @@ from airbyte_cdk.models import (
 import pyodbc
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from dateutil import parser
+from .errors import NETSUITE_CONNECTION_EXPIRED_FAILURE
+from .odbc_utils import NetsuiteODBCCursorConstructor
 
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
@@ -33,6 +35,7 @@ GENERATING_INCREMENTAL_QUERY_WITH_NO_INCREMENTAL_COLUMN_ERROR: Final[str] = "We 
 
 class NetsuiteODBCStream(Stream):
 
+    #  The functions before the init call are all used to initialize the stream
     def get_primary_key_from_airbyte_stream(self, stream: AirbyteStream):
       key = stream.primary_key
       if not key:
@@ -58,7 +61,7 @@ class NetsuiteODBCStream(Stream):
         primary_key_last_value_seen[key] = STARTING_PRIMARY_KEY_VALUE
       return primary_key_last_value_seen
 
-    def __init__(self, db_connection: pyodbc.Cursor, table_name, stream):
+    def __init__(self, db_connection: pyodbc.Cursor, table_name, stream, config):
       self.db_connection = db_connection
       self.table_name = table_name
       self.properties = self.get_properties_from_stream(stream)
@@ -67,26 +70,7 @@ class NetsuiteODBCStream(Stream):
       self.primary_key_last_value_seen = self.set_up_primary_key_last_value_seen(self.primary_key_column)
       self.incremental_most_recent_value_seen = None
       self.json_schema = stream.json_schema
-
-    @property
-    def name(self) -> str:
-      return self.table_name
-  
-    @property
-    def cursor_field(self) -> Union[str, List[str]]:
-      return self.incremental_column
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-      return self.primary_key_column
-
-    def process_stream_state(self, stream_state):
-      if stream_state is None:
-        return
-      if 'last_date_updated' in stream_state:
-        self.incremental_most_recent_value_seen = stream_state['last_date_updated']
-      if 'last_values_seen' in stream_state:
-        self.primary_key_last_value_seen = stream_state['last_values_seen']
+      self.config = config # used for restoring the connection when it expires
 
     def read_records(
       self,
@@ -95,28 +79,49 @@ class NetsuiteODBCStream(Stream):
       stream_slice: Optional[Mapping[str, Any]] = None,
       stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-      self.process_stream_state(stream_state)
-      self.db_connection.execute(self.generate_query(sync_mode, stream_slice))
-      number_records = 0
-      while True:
-        row = self.db_connection.fetchone()
-        if not row and number_records < NETSUITE_PAGINATION_INTERVAL:
-          break
-        # if number of rows >= page limit, we need to fetch another page
-        elif not row:
-          self.logger.info(f"Fetching another page for the stream {self.table_name}.  Current state is (primary key: {str(self.primary_key_last_value_seen)}, date: {self.incremental_most_recent_value_seen}")
-          number_records = 0
-          self.db_connection.execute(self.generate_query(sync_mode, stream_slice))
-          continue
-        # data from netsuite does not include columns, so we need to assign each value to the correct column name
-        serialized_data = self.serialize_row_to_response(row)
-        # before we yield record, update state
-        self.update_last_values_seen(serialized_data, sync_mode)
-        self.find_most_recent_date(serialized_data)
-        number_records = number_records + 1
-        #yield response
-        yield serialized_data
+      try:
+        self.process_stream_state(stream_state)
+        self.db_connection.execute(self.generate_query(sync_mode, stream_slice))
+        number_records = 0
+        while True:
+          row = self.db_connection.fetchone()
+          if not row and number_records < NETSUITE_PAGINATION_INTERVAL:
+            break
+          # if number of rows >= page limit, we need to fetch another page
+          elif not row:
+            self.logger.info(f"Fetching another page for the stream {self.table_name}.  Current state is (primary key: {str(self.primary_key_last_value_seen)}, date: {self.incremental_most_recent_value_seen}")
+            number_records = 0
+            self.db_connection.execute(self.generate_query(sync_mode, stream_slice))
+            continue
+          # data from netsuite does not include columns, so we need to assign each value to the correct column name
+          serialized_data = self.serialize_row_to_response(row)
+          # before we yield record, update state
+          self.update_last_values_seen(serialized_data, sync_mode)
+          self.find_most_recent_date(serialized_data)
+          number_records = number_records + 1
+          #yield response
+          yield serialized_data
+      except Exception as e:
+        message = str(e)
+        if NETSUITE_CONNECTION_EXPIRED_FAILURE in message:
+          self.logger.info(f"Connection expired for stream {self.table_name}.  Reconnecting...")
+          cursor_constructor = NetsuiteODBCCursorConstructor()
+          new_db_connection = cursor_constructor.create_database_connection(self.config)
+          self.db_connection = new_db_connection
+          current_stream_state = self.get_updated_state(stream_state, {})
+          self.read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=current_stream_state)
+        else:
+          raise e
       self.logger.info(f"Finished Stream Slice for Netsuite ODBC Table {self.table_name} with stream slice: {stream_slice}")
+
+    #  STATE MANAGEMENT FUNCTIONS
+    def process_stream_state(self, stream_state):
+      if stream_state is None:
+        return
+      if 'last_date_updated' in stream_state:
+        self.incremental_most_recent_value_seen = stream_state['last_date_updated']
+      if 'last_values_seen' in stream_state:
+        self.primary_key_last_value_seen = stream_state['last_values_seen']
 
     def find_most_recent_date(self, result):
       if self.incremental_column is None:
@@ -140,7 +145,47 @@ class NetsuiteODBCStream(Stream):
           self.primary_key_last_value_seen[key] = result[key]
         else:
           raise Exception('A primary key column was not found in the result. Please make sure your properties include all primary key columns.')
+        
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+      """
+      Decides how often to checkpoint state (i.e: emit a STATE message). E.g: if this returns a value of 100, then state is persisted after reading
+      100 records, then 200, 300, etc.. A good default value is 1000 although your mileage may vary depending on the underlying data source.
 
+      Checkpointing a stream avoids re-reading records in the case a sync is failed or cancelled.
+
+      We return state after 10,000 records because that is how large of a page we can return from Netsuite in
+      a sustainable way, and we should be able to restart successfully after each page.
+      """
+      return 10000
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+      if 'last_date_updated' in current_stream_state and self.incremental_most_recent_value_seen is not None:
+        last_date_updated = max(current_stream_state['last_date_updated'], self.incremental_most_recent_value_seen)
+      else:
+        last_date_updated = self.incremental_most_recent_value_seen
+      if 'last_values_seen' in current_stream_state:
+        last_values_seen = self.update_last_values_seen_from_current_stream_state(current_stream_state)
+      else:
+        last_values_seen = self.primary_key_last_value_seen
+
+      return {
+        'last_values_seen': last_values_seen,
+        'last_date_updated': last_date_updated
+      }
+    
+    def update_last_values_seen_from_current_stream_state(self, current_stream_state: MutableMapping[str, Any]):
+      stream_last_values = current_stream_state['last_values_seen']
+      new_values = {}
+      for key in self.primary_key_column:
+        stream_value = stream_last_values[key] if key in stream_last_values else STARTING_PRIMARY_KEY_VALUE
+        non_stream_value = self.primary_key_last_value_seen[key] if key in self.primary_key_last_value_seen else STARTING_PRIMARY_KEY_VALUE
+        new_values[key] = max(stream_value, non_stream_value)
+      return new_values
+
+    # END STATE MANAGEMENT FUNCTIONS
+
+    # QUERY GENERATION FUNCTIONS
     def has_composite_primary_key(self):
       return len(self.primary_key_column) > 1
     
@@ -243,12 +288,15 @@ class NetsuiteODBCStream(Stream):
       ending_timestamp = parser.parse(str(stream_slice['last_day'])).strftime('%Y-%m-%d %H:%M:%S.%f')
       return f"({self.incremental_column} > to_timestamp('{starting_timestamp}', 'YYYY-MM-DD HH24:MI:SS.FF') AND {self.incremental_column} <= to_timestamp('{ending_timestamp}', 'YYYY-MM-DD HH24:MI:SS.FF'))"
     
+    # END QUERY GENERATION FUNCTIONS
   
     def serialize_row_to_response(self, row):
       response = {}
       for i, column in enumerate(self.properties):
         response[column] = row[i]
       return response
+
+    # STREAM SLICE FUNCTIONS
 
     def stream_slices(
       self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
@@ -287,43 +335,20 @@ class NetsuiteODBCStream(Stream):
       last_day = date(year_to_use, 12, 31)
       return {'first_day': first_day, 'last_day': last_day}
     
+    # END STREAM SLICE FUNCTIONS
+
+    # DEFINE PROPERTIES
     @property
-    def state_checkpoint_interval(self) -> Optional[int]:
-      """
-      Decides how often to checkpoint state (i.e: emit a STATE message). E.g: if this returns a value of 100, then state is persisted after reading
-      100 records, then 200, 300, etc.. A good default value is 1000 although your mileage may vary depending on the underlying data source.
+    def name(self) -> str:
+      return self.table_name
+  
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+      return self.incremental_column
 
-      Checkpointing a stream avoids re-reading records in the case a sync is failed or cancelled.
-
-      We return state after 10,000 records because that is how large of a page we can return from Netsuite in
-      a sustainable way, and we should be able to restart successfully after each page.
-      """
-      return 10000
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-      if 'last_date_updated' in current_stream_state and self.incremental_most_recent_value_seen is not None:
-        last_date_updated = max(current_stream_state['last_date_updated'], self.incremental_most_recent_value_seen)
-      else:
-        last_date_updated = self.incremental_most_recent_value_seen
-      if 'last_values_seen' in current_stream_state:
-        last_values_seen = self.update_last_values_seen_from_current_stream_state(current_stream_state)
-      else:
-        last_values_seen = self.primary_key_last_value_seen
-
-      return {
-        'last_values_seen': last_values_seen,
-        'last_date_updated': last_date_updated
-      }
-    
-    def update_last_values_seen_from_current_stream_state(self, current_stream_state: MutableMapping[str, Any]):
-      stream_last_values = current_stream_state['last_values_seen']
-      new_values = {}
-      for key in self.primary_key_column:
-        stream_value = stream_last_values[key] if key in stream_last_values else STARTING_PRIMARY_KEY_VALUE
-        non_stream_value = self.primary_key_last_value_seen[key] if key in self.primary_key_last_value_seen else STARTING_PRIMARY_KEY_VALUE
-        new_values[key] = max(stream_value, non_stream_value)
-      return new_values
-
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+      return self.primary_key_column
     
     def supports_incremental(self) -> bool:
       """

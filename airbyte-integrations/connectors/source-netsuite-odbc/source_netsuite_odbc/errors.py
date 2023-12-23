@@ -13,5 +13,7 @@ AIRBYTE_ODBC_DRIVER_INCORRECT_PASSWORD_ERROR = """We failed to login using TBA. 
 
 NETSUITE_HOST_RESOLUTION_FAILURE = "Network problem, host resolution failure"
 
+NETSUITE_CONNECTION_EXPIRED_FAILURE = "Connection expired. Please reconnect"
+
 def generate_host_resolution_error_message(host_received):
   return f"We received a host resolution failure from netsuite.  Please make sure your host subdomains are correct.  We received the host: {host_received}"
