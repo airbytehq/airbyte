@@ -20,7 +20,7 @@ from google.api_core.exceptions import InternalServerError, ServerError, Service
 
 from .google_ads import GoogleAds, logger
 from .models import CustomerModel
-from .utils import ExpiredPageTokenError, chunk_date_range, generator_backoff, get_resource_name, parse_dates, traced_exception
+from .utils import ExpiredPageTokenError, chunk_date_range, detached, generator_backoff, get_resource_name, parse_dates, traced_exception
 
 
 class GoogleAdsStream(Stream, ABC):
@@ -44,6 +44,7 @@ class GoogleAdsStream(Stream, ABC):
         for customer in self.customers:
             yield {"customer_id": customer.id}
 
+    @detached(timeout_minutes=5)
     def read_records(self, sync_mode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         if stream_slice is None:
             return []
