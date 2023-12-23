@@ -19,10 +19,11 @@ class InMemoryCacheConfig(DuckDBCacheConfig):
     """Configuration for the in-memory cache."""
 
     type: str = "in_memory"
-    db_path: str = "./.output/temp/in_memory.db"  # Workaround because memory is not supported yet
+    # FIXME: This option doesn't work yet.
+    db_path: str = ":memory:"
+    # Workaround:
+    # db_path: str = "./.output/temp/in_memory.db"
 
-    # TODO: Fix this later
-    # db_path: str = ":memory:"
 
 
 class InMemoryFileWriterConfig(FileWriterConfigBase):
@@ -66,8 +67,8 @@ class InMemoryCache(DuckDBCacheBase):
     config_class = InMemoryCacheConfig
     file_writer_class = InMemoryFileWriterEmulator
 
-    # TODO: implement this later
-    # use_singleton_connection = True  # Dropped connection will lose data
+    # FIXME: This option doesn't work yet.
+    use_singleton_connection = True  # Dropped connection will lose data
 
     @overrides
     def _write_batch(
