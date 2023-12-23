@@ -950,6 +950,15 @@ class DefaultPaginator(BaseModel):
         description='Strategy defining how records are paginated.',
         title='Pagination Strategy',
     )
+    stop_condition: Optional[str] = Field(
+        None,
+        description='Template string evaluating when to stop paginating.',
+        examples=[
+            '{{ response.data.has_more is false }}',
+            "{{ 'next' not in headers['link'] }}",
+        ],
+        title='Stop Condition',
+    )
     decoder: Optional[JsonDecoder] = Field(
         None,
         description='Component decoding the response so records can be extracted.',

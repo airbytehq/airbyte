@@ -999,6 +999,18 @@ definitions:
           - "$ref": "#/definitions/CustomPaginationStrategy"
           - "$ref": "#/definitions/OffsetIncrement"
           - "$ref": "#/definitions/PageIncrement"
+      stop_condition:
+        title: Stop Condition
+        description: Template string evaluating when to stop paginating.
+        type: string
+        interpolation_context:
+          - config
+          - headers
+          - last_records
+          - response
+        examples:
+          - "{{ response.data.has_more is false }}"
+          - "{{ 'next' not in headers['link'] }}"
       decoder:
         title: Decoder
         description: Component decoding the response so records can be extracted.
