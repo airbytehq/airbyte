@@ -269,7 +269,6 @@ class NetsuiteODBCStream(Stream):
         WHERE {incremental_filter} OR {primary_key_filter}
         ORDER BY {incremental_column_sorter}, {primary_key_sorter}
       """
-      print(query)
       return query
     
     def generate_primary_key_filter_for_incremental_refresh(self, stream_slice):
