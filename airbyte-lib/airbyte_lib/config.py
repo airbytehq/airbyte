@@ -1,4 +1,4 @@
-"""Define abstract base class for Caches, which write and read from durable storage."""
+"""Define base Config interface, used by Caches and also File Writers (Processors)."""
 
 from __future__ import annotations
 
