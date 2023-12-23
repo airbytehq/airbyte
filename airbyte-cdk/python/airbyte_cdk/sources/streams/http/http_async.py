@@ -206,8 +206,14 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
 
-        # TODO: get headers and anything else off of request & combine with request_kwargs?
-        response = await self._session.request(request.method, request.url, **request_kwargs)
+        response = await self._session.request(
+            request.method, request.url,
+            headers=request.headers,
+            auth=request.auth,
+            chunked=request.chunked,
+            compress=request.compress,
+            **request_kwargs,
+        )
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
