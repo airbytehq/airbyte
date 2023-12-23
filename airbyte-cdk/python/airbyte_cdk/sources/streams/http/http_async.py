@@ -162,6 +162,7 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
         json_data: Optional[Mapping[str, Any]] = None,
         data: Optional[Union[str, Mapping[str, Any]]] = None,
     ) -> aiohttp.ClientRequest:
+        str_url = self._join_url(self.url_base, path)
         str_url = "http://localhost:8000"
         url = URL(str_url)
         if self.must_deduplicate_query_params():
@@ -173,10 +174,12 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
                 raise RequestBodyException(
                     "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
                 )
+            elif json_data:
+                headers = headers or {}
+                headers.update({'Content-Type': 'application/json'})
+                data = json.dumps(json_data)
 
-        client_request = aiohttp.ClientRequest(
-            self.http_method, url, headers=headers, params=query_params, data=json.dumps(json_data) if json_data else data
-        )  # TODO: add json header if json_data?
+        client_request = aiohttp.ClientRequest(self.http_method, url, headers=headers, params=query_params, data=data)
 
         return client_request
 
@@ -280,7 +283,7 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
         return await send()
 
     @classmethod
-    async def parse_response_error_message(cls, response: aiohttp.ClientResponse) -> Optional[str]:  # TODO
+    async def parse_response_error_message(cls, response: aiohttp.ClientResponse) -> Optional[str]:
         """
         Parses the raw response object from a failed request into a user-friendly error message.
         By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
@@ -288,7 +291,6 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
         :param response:
         :return: A user-friendly message that indicates the cause of the error
         """
-
         # default logic to grab error from common fields
         def _try_get_error(value: Optional[JsonType]) -> Optional[str]:
             if isinstance(value, str):
