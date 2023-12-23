@@ -34,6 +34,10 @@ class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
             f"snowflake://{self.username}:{self.password}@{self.account}/"
             f"?warehouse={self.warehouse}&database={self.database}&schema={self.schema_name}"
         )
+    
+    def get_database_name(self) -> str:
+        """Return the name of the database."""
+        return self.database
 
 
 class SnowflakeSQLCache(SQLCacheBase):

@@ -1,18 +1,28 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+"""A DuckDB implementation of the cache."""
+
+from __future__ import annotations
+
+from typing import cast
+
+import pyarrow as pa
+from overrides import overrides
+
+from airbyte_lib.caches.duckdb import DuckDBCacheBase, DuckDBCacheConfig
+from airbyte_lib.file_writers import (
+    FileWriterBase,
+    FileWriterBatchHandle,
+    FileWriterConfigBase,
+)
 
 
-from typing import Iterable
-
-from airbyte_protocol.models import AirbyteRecordMessage
-
-from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
-from airbyte_lib.file_writers import FileWriterBase, FileWriterConfigBase
-
-
-class InMemoryCacheConfig(SQLCacheConfigBase):
+class InMemoryCacheConfig(DuckDBCacheConfig):
     """Configuration for the in-memory cache."""
 
     type: str = "in_memory"
+    db_path: str = "./.output/temp/in_memory.db"  # Workaround because memory is not supported yet
+
+    # TODO: Fix this later
+    # db_path: str = ":memory:"
 
 
 class InMemoryFileWriterConfig(FileWriterConfigBase):
@@ -26,15 +36,52 @@ class InMemoryFileWriterEmulator(FileWriterBase):
 
     config_class = InMemoryFileWriterConfig
 
+    @overrides
+    def _write_batch(
+        self,
+        stream_name: str,
+        batch_id: str,
+        record_batch: pa.Table | pa.RecordBatch,
+    ) -> InMemoryBatchHandle:
+        """
+        Process a record batch.
 
-class InMemoryCache(SQLCacheBase):
+        Return the path to the cache file.
+        """
+        _ = stream_name, batch_id
+        batch_handle = InMemoryBatchHandle()
+        batch_handle.pyarrow_table = cast(pa.Table, record_batch)
+        return batch_handle
+
+
+class InMemoryBatchHandle(FileWriterBatchHandle):
+    """The in-memory cache batch handle is a list of dicts."""
+
+    pyarrow_table: pa.Table
+
+
+class InMemoryCache(DuckDBCacheBase):
     """The in-memory cache is accepting airbyte messages and stores them in a dictionary for streams (one list of dicts per stream)."""
 
     config_class = InMemoryCacheConfig
     file_writer_class = InMemoryFileWriterEmulator
 
-    def write(self, messages: Iterable[AirbyteRecordMessage]) -> None:
-        for message in messages:
-            if message.stream not in self.streams:
-                self.streams[message.stream] = []
-            self.streams[message.stream].append(message.data)
+    # TODO: implement this later
+    # use_singleton_connection = True  # Dropped connection will lose data
+
+    @overrides
+    def _write_batch(
+        self,
+        stream_name: str,
+        batch_id: str,
+        record_batch: pa.Table | pa.RecordBatch,
+    ) -> InMemoryBatchHandle:
+        """
+        Process a record batch.
+
+        Return the path to the cache file.
+        """
+        _ = stream_name, batch_id
+        batch_handle = InMemoryBatchHandle()
+        batch_handle.pyarrow_table = cast(pa.Table, record_batch)
+        return batch_handle

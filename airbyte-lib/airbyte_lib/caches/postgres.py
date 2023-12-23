@@ -29,6 +29,9 @@ class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
         """Return the SQLAlchemy URL to use."""
         return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?schema={self.schema_name}"
 
+    def get_database_name(self) -> str:
+        """Return the name of the database."""
+        return self.database
 
 class PostgresSQLCache(SQLCacheBase):
     """A Postgres implementation of the cache.

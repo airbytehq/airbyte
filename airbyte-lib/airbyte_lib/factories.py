@@ -3,14 +3,48 @@
 
 from typing import Any, Dict, Optional
 
-from airbyte_lib.caches import InMemoryCache
+from airbyte_protocol.models import ConfiguredAirbyteCatalog
+import ulid
+from airbyte_lib.caches.duckdb import DuckDBCache, DuckDBCacheConfig
+
 from airbyte_lib.executor import PathExecutor, VenvExecutor
 from airbyte_lib.registry import get_connector_metadata
 from airbyte_lib.source import Source
 
 
-def get_in_memory_cache():
-    return InMemoryCache()
+def get_default_cache(source_catalog: ConfiguredAirbyteCatalog) -> DuckDBCache:
+    """Get a local cache for storing data, using the default database path.
+
+    Cache files are stored in the `.cache` directory, relative to the current
+    working directory.
+    """
+    config = DuckDBCacheConfig(
+        db_path="./.cache/default_cache_db.duckdb",
+    )
+    return DuckDBCache(
+        config=config,
+        source_catalog=source_catalog,
+    )
+
+
+def new_local_cache(
+        cache_name: str | None = None,
+        *,
+        source_catalog: ConfiguredAirbyteCatalog,
+    ) -> DuckDBCache:
+    """Get a local cache for storing data, using a string to determine the.
+
+    Cache files are stored in the `.cache` directory, relative to the current
+    working directory.
+    """
+    cache_name = cache_name or str(ulid.ULID())
+    config = DuckDBCacheConfig(
+        db_path=f"./.cache/db_{cache_name}.duckdb",
+    )
+    return DuckDBCache(
+        config=config,
+        source_catalog=source_catalog,
+    )
 
 
 def get_connector(

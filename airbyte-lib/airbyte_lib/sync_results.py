@@ -10,8 +10,6 @@ from pandas import DataFrame
 
 
 
-
-
 class SyncResult:
     def __init__(self, processed_records: int, cache: SQLCacheBase) -> None:
         self.processed_records = processed_records

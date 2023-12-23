@@ -52,4 +52,6 @@ class ParquetWriter(FileWriterBase):
         with parquet.ParquetWriter(output_file_path, record_batch.schema) as writer:
             writer.write_table(cast(pa.Table, record_batch))
 
-        return [output_file_path]
+        batch_handle = FileWriterBatchHandle()
+        batch_handle.files.append(output_file_path)
+        return batch_handle
