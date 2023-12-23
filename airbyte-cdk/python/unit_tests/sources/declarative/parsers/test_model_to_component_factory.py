@@ -60,6 +60,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     PageIncrement,
     StopConditionPaginationStrategyDecorator,
 )
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.stop_condition import InterpolatedStopCondition
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
@@ -1118,6 +1119,86 @@ def test_create_default_paginator():
     assert isinstance(paginator.pagination_strategy, CursorPaginationStrategy)
     assert paginator.pagination_strategy.page_size == 50
     assert paginator.pagination_strategy.cursor_value.string == "{{ response._metadata.next }}"
+
+    assert isinstance(paginator.page_size_option, RequestOption)
+    assert paginator.page_size_option.inject_into == RequestOptionType.request_parameter
+    assert paginator.page_size_option.field_name == "page_size"
+
+    assert isinstance(paginator.page_token_option, RequestPath)
+
+
+def test_create_default_paginator_with_stop_condition():
+    content = """
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page_size
+        stop_condition: "{{ True }}"
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: "CursorPagination"
+          page_size: 50
+          cursor_value: "{{ response._metadata.next }}"
+    """
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    paginator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["paginator"], {})
+
+    paginator = factory.create_component(
+        model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config, url_base="https://airbyte.io"
+    )
+
+    assert isinstance(paginator, DefaultPaginator)
+    assert paginator.url_base.string == "https://airbyte.io"
+
+    assert isinstance(paginator.pagination_strategy, StopConditionPaginationStrategyDecorator)
+    assert isinstance(paginator.pagination_strategy._delegate, CursorPaginationStrategy)
+    assert paginator.pagination_strategy._delegate.page_size == 50
+    assert paginator.pagination_strategy._delegate.cursor_value.string == "{{ response._metadata.next }}"
+    assert isinstance(paginator.pagination_strategy._stop_condition, InterpolatedStopCondition)
+
+    assert isinstance(paginator.page_size_option, RequestOption)
+    assert paginator.page_size_option.inject_into == RequestOptionType.request_parameter
+    assert paginator.page_size_option.field_name == "page_size"
+
+    assert isinstance(paginator.page_token_option, RequestPath)
+
+
+def test_create_default_paginator_with_strategy_with_stop_condition():
+    content = """
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page_size
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: "CursorPagination"
+          page_size: 50
+          stop_condition: "{{ True }}"
+          cursor_value: "{{ response._metadata.next }}"
+    """
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    paginator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["paginator"], {})
+
+    paginator = factory.create_component(
+        model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config, url_base="https://airbyte.io"
+    )
+
+    assert isinstance(paginator, DefaultPaginator)
+    assert paginator.url_base.string == "https://airbyte.io"
+
+    assert isinstance(paginator.pagination_strategy, StopConditionPaginationStrategyDecorator)
+    assert isinstance(paginator.pagination_strategy._delegate, CursorPaginationStrategy)
+    assert isinstance(paginator.pagination_strategy._stop_condition, InterpolatedStopCondition)
+    assert paginator.pagination_strategy._delegate.page_size == 50
+    assert paginator.pagination_strategy._delegate.cursor_value.string == "{{ response._metadata.next }}"
 
     assert isinstance(paginator.page_size_option, RequestOption)
     assert paginator.page_size_option.inject_into == RequestOptionType.request_parameter
