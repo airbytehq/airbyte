@@ -24,8 +24,8 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
-from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.streams.concurrent.partitions.partition_async import AsyncPartition
+from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator_async import AsyncPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
@@ -255,7 +255,7 @@ class StreamFacade(Stream):
         self._abstract_stream.log_stream_sync_configuration()
 
 
-class StreamPartition(Partition):
+class StreamPartition(AsyncPartition):
     """
     This class acts as an adapter between the new Partition interface and the Stream's stream_slice interface
 
@@ -348,7 +348,7 @@ class StreamPartition(Partition):
         return f"StreamPartition({self._stream.name}, {self._slice})"
 
 
-class StreamPartitionGenerator(PartitionGenerator):
+class StreamPartitionGenerator(AsyncPartitionGenerator):
     """
     This class acts as an adapter between the new PartitionGenerator and Stream.stream_slices
 
@@ -376,7 +376,7 @@ class StreamPartitionGenerator(PartitionGenerator):
         self._state = state
         self._cursor = cursor
 
-    def generate(self) -> Iterable[Partition]:
+    def generate(self) -> Iterable[AsyncPartition]:
         for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
             yield StreamPartition(
                 self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor
