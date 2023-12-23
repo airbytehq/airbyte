@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import asyncio
 import csv
 import ctypes
 import math
@@ -11,15 +12,17 @@ import urllib.parse
 import uuid
 from abc import ABC
 from contextlib import closing
+from threading import Thread
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
+import aiohttp
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.http_async import AsyncHttpStream, AsyncHttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
@@ -39,7 +42,7 @@ csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 DEFAULT_ENCODING = "utf-8"
 
 
-class SalesforceStream(HttpStream, ABC):
+class SalesforceStream(AsyncHttpStream, ABC):
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     encoding = DEFAULT_ENCODING
@@ -95,8 +98,8 @@ class SalesforceStream(HttpStream, ABC):
         properties_length = len(urllib.parse.quote(",".join(p for p in selected_properties)))
         return properties_length > self.max_properties_length
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()["records"]
+    async def parse_response(self, response: aiohttp.ClientResponse, **kwargs) -> List[Mapping]:
+        return (await response.json())["records"]
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
@@ -140,8 +143,8 @@ class RestSalesforceStream(SalesforceStream):
             return next_token
         return f"/services/data/{self.sf_api.version}/queryAll"
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        response_data = response.json()
+    async def next_page_token(self, response: aiohttp.ClientResponse) -> Optional[Mapping[str, Any]]:
+        response_data = await response.json()
         next_token = response_data.get("nextRecordsUrl")
         return {"next_token": next_token} if next_token else None
 
@@ -210,14 +213,30 @@ class RestSalesforceStream(SalesforceStream):
             return None
         return min(non_exhausted_chunks, key=non_exhausted_chunks.get)
 
-    def _read_pages(
+    async def _read_pages(
         self,
         records_generator_fn: Callable[
-            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
+            [aiohttp.ClientRequest, aiohttp.ClientResponse, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
         ],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[StreamData]:
+    ) -> None:
+        self._session = await self._ensure_session()
+        assert not self._session.closed
+        # try:
+        async for record in self._do_read_pages(records_generator_fn, stream_slice, stream_state):
+            yield record
+        # finally:
+        # await self._session.close()
+
+    async def _do_read_pages(
+            self,
+            records_generator_fn: Callable[
+                [aiohttp.ClientRequest, aiohttp.ClientResponse, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
+            ],
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ):
         stream_state = stream_state or {}
         records_by_primary_key = {}
         property_chunks: Mapping[int, PropertyChunk] = {
@@ -230,15 +249,21 @@ class RestSalesforceStream(SalesforceStream):
                 break
 
             property_chunk = property_chunks[chunk_id]
-            request, response = self._fetch_next_page_for_chunk(
-                stream_slice, stream_state, property_chunk.next_page, property_chunk.properties
-            )
+
+            async def f():
+                assert not self._session.closed
+                request, response = await self._fetch_next_page_for_chunk(
+                    stream_slice, stream_state, property_chunk.next_page, property_chunk.properties
+                )
+                next_page = await self.next_page_token(response)
+                return request, response, next_page
+
+            request, response, property_chunk.next_page = await f()
 
             # When this is the first time we're getting a chunk's records, we set this to False to be used when deciding the next chunk
             if property_chunk.first_time:
                 property_chunk.first_time = False
-            property_chunk.next_page = self.next_page_token(response)
-            chunk_page_records = records_generator_fn(request, response, stream_state, stream_slice)
+            chunk_page_records = await records_generator_fn(request, response, stream_state, stream_slice)
             if not self.too_many_properties:
                 # this is the case when a stream has no primary key
                 # (it is allowed when properties length does not exceed the maximum value)
@@ -276,16 +301,14 @@ class RestSalesforceStream(SalesforceStream):
         if incomplete_record_ids:
             self.logger.warning(f"Inconsistent record(s) with primary keys {incomplete_record_ids} found. Skipping them.")
 
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
-
-    def _fetch_next_page_for_chunk(
+    async def _fetch_next_page_for_chunk(
         self,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
         property_chunk: Mapping[str, Any] = None,
-    ) -> Tuple[requests.PreparedRequest, requests.Response]:
+    ) -> Tuple[aiohttp.ClientRequest, aiohttp.ClientResponse]:
+        assert not self._session.closed
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -297,7 +320,7 @@ class RestSalesforceStream(SalesforceStream):
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
         )
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        response = self._send_request(request, request_kwargs)
+        response = await self._send_request(request, request_kwargs)
         return request, response
 
 
@@ -336,24 +359,24 @@ class BulkSalesforceStream(SalesforceStream):
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
     @default_backoff_handler(max_tries=5, factor=15)
-    def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
+    async def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream=False) -> aiohttp.ClientResponse:
         headers = self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
-        response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
-        if response.status_code not in [200, 204]:
-            self.logger.error(f"error body: {response.text}, sobject options: {self.sobject_options}")
+        response = await self._session.request(method, url=url, headers=headers, json=json)
+        if response.status not in [200, 204]:
+            self.logger.error(f"error body: {await response.text()}, sobject options: {self.sobject_options}")
         response.raise_for_status()
-        return response
+        return response  # TODO: how to handle the stream argument
 
-    def create_stream_job(self, query: str, url: str) -> Optional[str]:
+    async def create_stream_job(self, query: str, url: str) -> Optional[str]:
         """
         docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html
         """
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
-            response = self._send_http_request("POST", url, json=json)
-            job_id: str = response.json()["id"]
+            response = await self._send_http_request("POST", url, json=json)
+            job_id: str = (await response.json())["id"]
             return job_id
-        except exceptions.HTTPError as error:
+        except exceptions.HTTPError as error:  # TODO: which errors?
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 # A part of streams can't be used by BULK API. Every API version can have a custom list of
                 # these sobjects. Another part of them can be generated dynamically. That's why we can't track
@@ -408,7 +431,7 @@ class BulkSalesforceStream(SalesforceStream):
                 raise error
         return None
 
-    def wait_for_job(self, url: str) -> str:
+    async def wait_for_job(self, url: str) -> str:
         expiration_time: DateTime = pendulum.now().add(seconds=self.DEFAULT_WAIT_TIMEOUT_SECONDS)
         job_status = "InProgress"
         delay_timeout = 0.0
@@ -419,7 +442,7 @@ class BulkSalesforceStream(SalesforceStream):
         time.sleep(0.5)
         while pendulum.now() < expiration_time:
             try:
-                job_info = self._send_http_request("GET", url=url).json()
+                job_info = await (await self._send_http_request("GET", url=url)).json()
             except exceptions.HTTPError as error:
                 error_data = error.response.json()[0]
                 error_code = error_data.get("errorCode")
@@ -457,14 +480,14 @@ class BulkSalesforceStream(SalesforceStream):
         self.logger.warning(f"Not wait the {self.name} data for {self.DEFAULT_WAIT_TIMEOUT_SECONDS} seconds, data: {job_info}!!")
         return job_status
 
-    def execute_job(self, query: str, url: str) -> Tuple[Optional[str], Optional[str]]:
+    async def execute_job(self, query: str, url: str) -> Tuple[Optional[str], Optional[str]]:
         job_status = "Failed"
         for i in range(0, self.MAX_RETRY_NUMBER):
-            job_id = self.create_stream_job(query=query, url=url)
+            job_id = await self.create_stream_job(query=query, url=url)
             if not job_id:
                 return None, job_status
             job_full_url = f"{url}/{job_id}"
-            job_status = self.wait_for_job(url=job_full_url)
+            job_status = await self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
                 break
             self.logger.error(f"Waiting error. Try to run this job again {i + 1}/{self.MAX_RETRY_NUMBER}...")
@@ -472,7 +495,7 @@ class BulkSalesforceStream(SalesforceStream):
             job_status = "Aborted"
 
         if job_status in ["Aborted", "Failed"]:
-            self.delete_job(url=job_full_url)
+            await self.delete_job(url=job_full_url)
             return None, job_status
         return job_full_url, job_status
 
@@ -504,7 +527,7 @@ class BulkSalesforceStream(SalesforceStream):
 
         return self.encoding
 
-    def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
+    async def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
         @ url: string - the url of the `executed_job`
@@ -513,12 +536,13 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = str(uuid.uuid4())
-        with closing(self._send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
+        response = await self._send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)
+        with open(
             tmp_file, "wb"
         ) as data_file:
             response_headers = response.headers
             response_encoding = self.get_response_encoding(response_headers)
-            for chunk in response.iter_content(chunk_size=chunk_size):
+            async for chunk in response.content.iter_chunked(chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
         # check the file exists
         if os.path.isfile(tmp_file):
@@ -554,8 +578,8 @@ class BulkSalesforceStream(SalesforceStream):
         self._send_http_request("PATCH", url=url, json=data)
         self.logger.warning("Broken job was aborted")
 
-    def delete_job(self, url: str):
-        self._send_http_request("DELETE", url=url)
+    async def delete_job(self, url: str):
+        await self._send_http_request("DELETE", url=url)
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
@@ -593,19 +617,34 @@ class BulkSalesforceStream(SalesforceStream):
 
         return {"q": query}
 
-    def read_records(
+    async def read_records(
         self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        self._session = await self._ensure_session()
+        assert not self._session.closed
+        # try:
+        async for record in self._do_read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            yield record
+        # finally:
+        #     await self._session.close()
+
+    async def _do_read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ):
         stream_state = stream_state or {}
         next_page_token = None
 
         params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        job_full_url, job_status = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
+        job_full_url, job_status = await self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
         if not job_full_url:
             if job_status == "Failed":
                 # As rule as BULK logic returns unhandled error. For instance:
@@ -618,23 +657,25 @@ class BulkSalesforceStream(SalesforceStream):
                 if not stream_is_available:
                     self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
                     return
-                yield from standard_instance.read_records(
+                for record in standard_instance.read_records(
                     sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-                )
+                ):
+                    yield record
                 return
             raise SalesforceException(f"Job for {self.name} stream using BULK API was failed.")
         salesforce_bulk_api_locator = None
         while True:
             req = PreparedRequest()
             req.prepare_url(f"{job_full_url}/results", {"locator": salesforce_bulk_api_locator})
-            tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
+            tmp_file, response_encoding, response_headers = await self.download_data(url=req.url)
             for record in self.read_with_chunks(tmp_file, response_encoding):
                 yield record
 
             if response_headers.get("Sforce-Locator", "null") == "null":
                 break
             salesforce_bulk_api_locator = response_headers.get("Sforce-Locator")
-        self.delete_job(url=job_full_url)
+
+        await self.delete_job(url=job_full_url)
 
     def get_standard_instance(self) -> SalesforceStream:
         """Returns a instance of standard logic(non-BULK) with same settings"""
@@ -645,6 +686,7 @@ class BulkSalesforceStream(SalesforceStream):
             schema=self.schema,
             sobject_options=self.sobject_options,
             authenticator=self.authenticator,
+            session=self._session,
         )
         new_cls: Type[SalesforceStream] = RestSalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):
