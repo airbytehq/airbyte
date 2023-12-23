@@ -12,7 +12,7 @@ from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core_async import AsyncStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
@@ -38,7 +38,7 @@ This module contains adapters to help enabling concurrency on Stream objects wit
 
 
 @deprecated("This class is experimental. Use at your own risk.")
-class AsyncStreamFacade(Stream):
+class AsyncStreamFacade(AsyncStream):
     """
     The StreamFacade is a Stream that wraps an AbstractStream and exposes it as a Stream.
 
@@ -49,12 +49,12 @@ class AsyncStreamFacade(Stream):
     @classmethod
     def create_from_stream(
         cls,
-        stream: Stream,
+        stream: AsyncStream,
         source: AbstractSource,
         logger: logging.Logger,
         state: Optional[MutableMapping[str, Any]],
         cursor: Cursor,
-    ) -> Stream:
+    ) -> AsyncStream:
         """
         Create a ConcurrentStream from a Stream object.
         :param source: The source
@@ -119,7 +119,7 @@ class AsyncStreamFacade(Stream):
             raise ValueError(f"Invalid type for primary key: {stream_primary_key}")
 
     @classmethod
-    def _get_cursor_field_from_stream(cls, stream: Stream) -> Optional[str]:
+    def _get_cursor_field_from_stream(cls, stream: AsyncStream) -> Optional[str]:
         if isinstance(stream.cursor_field, list):
             if len(stream.cursor_field) > 1:
                 raise ValueError(f"Nested cursor fields are not supported. Got {stream.cursor_field} for {stream.name}")
@@ -130,7 +130,7 @@ class AsyncStreamFacade(Stream):
         else:
             return stream.cursor_field
 
-    def __init__(self, stream: AbstractStream, legacy_stream: Stream, cursor: Cursor, slice_logger: SliceLogger, logger: logging.Logger):
+    def __init__(self, stream: AbstractStream, legacy_stream: AsyncStream, cursor: Cursor, slice_logger: SliceLogger, logger: logging.Logger):
         """
         :param stream: The underlying AbstractStream
         """
@@ -259,7 +259,7 @@ class AsyncStreamPartition(Partition):
 
     def __init__(
         self,
-        stream: Stream,
+        stream: AsyncStream,
         _slice: Optional[Mapping[str, Any]],
         message_repository: MessageRepository,
         sync_mode: SyncMode,
@@ -309,7 +309,7 @@ class AsyncStreamPartition(Partition):
                 else:
                     self._message_repository.emit_message(record_data)
         except Exception as e:
-            display_message = self._stream.get_error_display_message(e)
+            display_message = await self._stream.get_error_display_message(e)
             if display_message:
                 raise ExceptionWithDisplayMessage(display_message) from e
             else:
@@ -350,7 +350,7 @@ class AsyncStreamPartitionGenerator(PartitionGenerator):
 
     def __init__(
         self,
-        stream: Stream,
+        stream: AsyncStream,
         message_repository: MessageRepository,
         sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
@@ -380,7 +380,7 @@ class AsyncAvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
 
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: AsyncStream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
         """
         Checks stream availability.
 
@@ -406,7 +406,7 @@ class AsyncStreamAvailabilityStrategy(AbstractAvailabilityStrategy):
     In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
     """
 
-    def __init__(self, stream: Stream, source: Source):
+    def __init__(self, stream: AsyncStream, source: Source):
         """
         :param stream: The stream to delegate to
         :param source: The source to delegate to
@@ -414,15 +414,15 @@ class AsyncStreamAvailabilityStrategy(AbstractAvailabilityStrategy):
         self._stream = stream
         self._source = source
 
-    def check_availability(self, logger: logging.Logger) -> StreamAvailability:
+    async def check_availability(self, logger: logging.Logger) -> StreamAvailability:
         try:
-            available, message = self._stream.check_availability(logger, self._source)
+            available, message = await self._stream.check_availability(logger, self._source)
             if available:
                 return StreamAvailable()
             else:
                 return StreamUnavailable(str(message))
         except Exception as e:
-            display_message = self._stream.get_error_display_message(e)
+            display_message = await self._stream.get_error_display_message(e)
             if display_message:
                 raise ExceptionWithDisplayMessage(display_message)
             else:

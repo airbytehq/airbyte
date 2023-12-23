@@ -5,7 +5,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models import Type as MessageType
@@ -112,3 +112,30 @@ class AsyncStream(Stream, ABC):
         :return:
         """
         return [None]
+
+    async def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+        """
+        Checks whether this stream is available.
+
+        :param logger: source logger
+        :param source: (optional) source
+        :return: A tuple of (boolean, str). If boolean is true, then this stream
+          is available, and no str is required. Otherwise, this stream is unavailable
+          for some reason and the str should describe what went wrong and how to
+          resolve the unavailability, if possible.
+        """
+        if self.availability_strategy:
+            return self.availability_strategy.check_availability(self, logger, source)
+        return True, None
+
+    async def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        """
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        """
+        return None
