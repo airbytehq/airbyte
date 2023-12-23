@@ -1,4 +1,9 @@
-"""Define abstract base class for Caches, which write and read from durable storage."""
+"""Define abstract base class for Processors, including Caches and File writers.
+
+Processors can all take input from STDIN or a stream of Airbyte messages.
+
+Caches will pass their input to the File Writer. They share a common base class so certain abstractions like "write" and "finalize" can be handled in either layer, or both.
+"""
 
 from __future__ import annotations
 
