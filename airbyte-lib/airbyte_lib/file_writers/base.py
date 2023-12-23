@@ -1,4 +1,4 @@
-"""Define abstract base class for Caches, which write and read from durable storage."""
+"""Define abstract base class for File Writers, which write and read from file storage."""
 
 from __future__ import annotations
 
