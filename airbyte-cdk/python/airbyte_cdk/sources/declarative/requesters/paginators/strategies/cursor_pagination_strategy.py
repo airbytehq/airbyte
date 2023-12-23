@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.types import Config, Record
 
 
 @dataclass
@@ -31,7 +31,7 @@ class CursorPaginationStrategy(PaginationStrategy):
     page_size: Optional[int] = None
     decoder: Decoder = JsonDecoder(parameters={})
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if isinstance(self.cursor_value, str):
             self.cursor_value = InterpolatedString.create(self.cursor_value, parameters=parameters)
 
@@ -39,18 +39,20 @@ class CursorPaginationStrategy(PaginationStrategy):
     def initial_token(self) -> Optional[Any]:
         return None
 
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
 
         # The default way that link is presented in requests.Response is a string of various links (last, next, etc). This
         # is not indexable or useful for parsing the cursor, so we replace it with the link dictionary from response.links
         headers = response.headers
-        headers["link"] = response.links
+        # Incompatible types in assignment (expression has type "dict[Any, Any]", target has type "str")  [assignment]
+        headers["link"] = response.links  # type: ignore[assignment]
 
+        assert isinstance(self.cursor_value, InterpolatedString)  # for mypy
         token = self.cursor_value.eval(config=self.config, last_records=last_records, response=decoded_response, headers=headers)
         return token if token else None
 
-    def reset(self):
+    def reset(self) -> None:
         # No state to reset
         pass
 

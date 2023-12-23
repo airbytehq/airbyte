@@ -28,7 +28,7 @@ class InterpolatedBoolean:
         self._interpolation = JinjaInterpolation()
         self._parameters = parameters
 
-    def eval(self, config: Config, **additional_parameters):
+    def eval(self, config: Config, **additional_parameters) -> bool:
         """
         Interpolates the predicate condition string using the config and other optional arguments passed as parameter.
 

@@ -49,7 +49,8 @@ class InterpolatedStopCondition(PaginationStopCondition):
         # The default way that link is presented in requests.Response is a string of various links (last, next, etc). This
         # is not indexable or useful for parsing the cursor, so we replace it with the link dictionary from response.links
         headers = response.headers
-        headers["link"] = response.links
+        # Incompatible types in assignment (expression has type "dict[Any, Any]", target has type "str")  [assignment]
+        headers["link"] = response.links  # type: ignore[assignment]
 
         return self._condition.eval(self._config, response=decoded_response, headers=response.headers, last_records=last_records)
 

@@ -671,7 +671,7 @@ class ModelToComponentFactory:
                 InterpolatedStopCondition(
                     condition=model.stop_condition,
                     decoder=decoder,
-                    parameters=model.parameters,
+                    parameters=model.parameters or {},
                     config=config,
                 ),
             )
@@ -681,7 +681,7 @@ class ModelToComponentFactory:
                 InterpolatedStopCondition(
                     condition=model.pagination_strategy.stop_condition,
                     decoder=decoder,
-                    parameters=model.pagination_strategy.parameters,
+                    parameters=model.pagination_strategy.parameters or {},
                     config=config,
                 ),
             )
