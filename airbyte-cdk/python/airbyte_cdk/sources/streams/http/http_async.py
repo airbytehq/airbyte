@@ -43,6 +43,7 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
     def __init__(self, authenticator: Optional[Union[BasicAuth, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
         self._session: aiohttp.ClientSession = None
+        # self._session: aiohttp.ClientSession = self.request_session()
         assert authenticator
         self._authenticator = authenticator  # TODO: handle the preexisting code paths
 
@@ -51,7 +52,17 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
         Session factory based on use_cache property and call rate limits (api_budget parameter)
         :return: instance of request-based session
         """
+        connector = aiohttp.TCPConnector(
+            limit_per_host=MAX_CONNECTION_POOL_SIZE,
+            limit=MAX_CONNECTION_POOL_SIZE,
+        )
+        kwargs = {}
+        assert self._authenticator.get_auth_header()
+        if self._authenticator:
+            kwargs['headers'] = self._authenticator.get_auth_header()
+
         if self.use_cache:
+            raise NotImplementedError("TODO: test this codepath")
             cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
             # Use in-memory cache if cache_dir is not set
             # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
@@ -59,9 +70,9 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
                 sqlite_path = str(Path(cache_dir) / self.cache_filename)
             else:
                 sqlite_path = "file::memory:?cache=shared"
-            return AsyncCachedLimiterSession(sqlite_path, backend="sqlite", api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
+            return AsyncCachedLimiterSession(sqlite_path, backend="sqlite", connector=connector, api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
         else:
-            return AsyncLimiterSession(api_budget=self._api_budget)
+            return AsyncLimiterSession(connector=connector, api_budget=self._api_budget, **kwargs)
 
     def clear_cache(self) -> None:
         """
@@ -220,30 +231,8 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
         return response
 
     async def _ensure_session(self) -> aiohttp.ClientSession:
-
-        # if self.use_cache:
-        #     cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
-        #     # Use in-memory cache if cache_dir is not set
-        #     # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
-        #     if cache_dir:
-        #         sqlite_path = str(Path(cache_dir) / self.cache_filename)
-        #     else:
-        #         sqlite_path = "file::memory:?cache=shared"
-        #     self._session = AsyncCachedLimiterSession(sqlite_path, backend="sqlite", api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
-        # else:
-        #     self._session = AsyncLimiterSession(api_budget=self._api_budget)
-
         if self._session is None or self._session.closed:  # TODO: why is the session closing?
-            # TODO: figure out caching of session & requests
-            connector = aiohttp.TCPConnector(
-                limit_per_host=MAX_CONNECTION_POOL_SIZE,
-                limit=MAX_CONNECTION_POOL_SIZE,
-            )
-            kwargs = {}
-            assert self._authenticator.get_auth_header()
-            if self._authenticator:
-                kwargs['headers'] = self._authenticator.get_auth_header()
-            self._session = aiohttp.ClientSession(connector=connector, **kwargs)
+            self._session = self.request_session()
         return self._session
 
     async def _send_request(self, request: aiohttp.ClientRequest, request_kwargs: Mapping[str, Any]) -> aiohttp.ClientResponse:

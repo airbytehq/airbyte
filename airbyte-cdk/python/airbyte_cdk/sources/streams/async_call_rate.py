@@ -483,10 +483,10 @@ class AsyncLimiterMixin(MIXIN_BASE):
         self._api_budget = api_budget
         super().__init__(**kwargs)  # type: ignore # Base Session doesn't take any kwargs
 
-    def send(self, request: aiohttp.ClientRequest, **kwargs: Any) -> aiohttp.ClientResponse:
+    async def send(self, request: aiohttp.ClientRequest, **kwargs: Any) -> aiohttp.ClientResponse:
         """Send a request with rate-limiting."""
         self._api_budget.acquire_call(request)
-        response = super().send(request, **kwargs)
+        response = await super().send(request, **kwargs)
         self._api_budget.update_from_response(request, response)
         return response
 
