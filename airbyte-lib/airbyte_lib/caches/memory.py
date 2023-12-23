@@ -1,4 +1,7 @@
-"""A DuckDB implementation of the cache."""
+"""A DuckDB in-memory implementation of the cache.
+
+TODO: FIXME: In-memory caches don't work yet. Delete or fix.
+"""
 
 from __future__ import annotations
 
