@@ -669,7 +669,10 @@ class ModelToComponentFactory:
             pagination_strategy = StopConditionPaginationStrategyDecorator(
                 pagination_strategy,
                 InterpolatedStopCondition(
-                    condition=model.stop_condition, decoder=decoder, parameters=model.parameters, config=config,
+                    condition=model.stop_condition,
+                    decoder=decoder,
+                    parameters=model.parameters,
+                    config=config,
                 ),
             )
         elif isinstance(model.pagination_strategy, CursorPaginationModel) and model.pagination_strategy.stop_condition:

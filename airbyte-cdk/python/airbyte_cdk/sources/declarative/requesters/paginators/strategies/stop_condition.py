@@ -3,10 +3,9 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional, Union, Mapping
+from typing import Any, List, Mapping, Optional, Union
 
 import requests
-
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedBoolean
