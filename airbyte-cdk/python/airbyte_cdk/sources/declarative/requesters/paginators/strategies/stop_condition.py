@@ -30,6 +30,8 @@ class CursorStopCondition(PaginationStopCondition):
         self._cursor = cursor
 
     def is_met(self, response: requests.Response, last_records: List[Record]) -> bool:
+        # We evaluate in reverse order because the assumption is that most of the APIs using data feed structure will return records in
+        # descending order. In terms of performance/memory, we return the records lazily
         return any(not self._cursor.should_be_synced(record) for record in reversed(last_records))
 
 
@@ -61,9 +63,7 @@ class StopConditionPaginationStrategyDecorator(PaginationStrategy):
         self._stop_condition = stop_condition
 
     def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
-        # We evaluate in reverse order because the assumption is that most of the APIs using data feed structure will return records in
-        # descending order. In terms of performance/memory, we return the records lazily
-        if self._stop_condition.is_met(response, last_records):
+        if last_records and self._stop_condition.is_met(response, last_records):
             return None
         return self._delegate.next_page_token(response, last_records)
 

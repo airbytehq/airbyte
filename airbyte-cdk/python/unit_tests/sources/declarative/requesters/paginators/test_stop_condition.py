@@ -36,36 +36,25 @@ def mocked_stop_condition():
 
 def test_given_record_should_be_synced_when_is_met_return_false(mocked_cursor):
     mocked_cursor.should_be_synced.return_value = True
-    assert not CursorStopCondition(mocked_cursor).is_met(ANY_RECORD)
+    assert not CursorStopCondition(mocked_cursor).is_met(response=ANY_RESPONSE, last_records=[ANY_RECORD, ANY_RECORD])
 
 
 def test_given_record_should_not_be_synced_when_is_met_return_true(mocked_cursor):
     mocked_cursor.should_be_synced.return_value = False
-    assert CursorStopCondition(mocked_cursor).is_met(ANY_RECORD)
+    assert CursorStopCondition(mocked_cursor).is_met(response=ANY_RESPONSE, last_records=[ANY_RECORD, ANY_RECORD])
 
 
-def test_given_stop_condition_is_met_when_next_page_token_then_return_none(mocked_pagination_strategy, mocked_stop_condition):
-    mocked_stop_condition.is_met.side_effect = [False, True]
+def test_given_stop_condition_is_met_when_next_page_token_then_return_none(mocked_pagination_strategy):
+    cursor_mock = Mock(spec=Cursor)
+    stop_condition = CursorStopCondition(cursor=cursor_mock)
+    cursor_mock.should_be_synced.side_effect = [True, False]
+
     first_record = Mock(spec=Record)
     last_record = Mock(spec=Record)
 
-    decorator = StopConditionPaginationStrategyDecorator(mocked_pagination_strategy, mocked_stop_condition)
+    decorator = StopConditionPaginationStrategyDecorator(mocked_pagination_strategy, stop_condition)
 
-    assert not decorator.next_page_token(ANY_RESPONSE, [first_record, last_record])
-    mocked_stop_condition.is_met.assert_has_calls([call(last_record), call(first_record)])
-
-
-def test_given_last_record_meets_condition_when_next_page_token_then_do_not_check_for_other_records(
-    mocked_pagination_strategy, mocked_stop_condition
-):
-    mocked_stop_condition.is_met.return_value = True
-    last_record = Mock(spec=Record)
-
-    StopConditionPaginationStrategyDecorator(mocked_pagination_strategy, mocked_stop_condition).next_page_token(
-        ANY_RESPONSE, [Mock(spec=Record), last_record]
-    )
-
-    mocked_stop_condition.is_met.assert_called_once_with(last_record)
+    assert not decorator.next_page_token(ANY_RESPONSE, [last_record, first_record])
 
 
 def test_given_stop_condition_is_not_met_when_next_page_token_then_delegate(mocked_pagination_strategy, mocked_stop_condition):
@@ -78,7 +67,7 @@ def test_given_stop_condition_is_not_met_when_next_page_token_then_delegate(mock
 
     assert next_page_token == mocked_pagination_strategy.next_page_token.return_value
     mocked_pagination_strategy.next_page_token.assert_called_once_with(ANY_RESPONSE, [first_record, last_record])
-    mocked_stop_condition.is_met.assert_has_calls([call(last_record), call(first_record)])
+    mocked_stop_condition.is_met.assert_called_once_with(ANY_RESPONSE, [first_record, last_record])
 
 
 def test_given_no_records_when_next_page_token_then_delegate(mocked_pagination_strategy, mocked_stop_condition):

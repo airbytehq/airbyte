@@ -23,12 +23,13 @@ class InterpolatedBoolean:
     condition: str
     parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._default = "False"
-        self._interpolation = JinjaInterpolation()
+        # Call to untyped function "JinjaInterpolation" in typed context
+        self._interpolation: JinjaInterpolation = JinjaInterpolation()  # type: ignore[no-untyped-call]
         self._parameters = parameters
 
-    def eval(self, config: Config, **additional_parameters) -> bool:
+    def eval(self, config: Config, **additional_parameters: Any) -> bool:
         """
         Interpolates the predicate condition string using the config and other optional arguments passed as parameter.
 

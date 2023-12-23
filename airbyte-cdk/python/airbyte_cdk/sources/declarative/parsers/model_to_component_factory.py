@@ -318,7 +318,8 @@ class ModelToComponentFactory:
         )
         if model.request_authentication.type == "Bearer":
             return ModelToComponentFactory.create_bearer_authenticator(
-                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),
+                # Missing named argument "$parameters" for "BearerAuthenticator"
+                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),  # type: ignore[call-arg]
                 config,
                 token_provider=token_provider,  # type: ignore # $parameters defaults to None
             )
