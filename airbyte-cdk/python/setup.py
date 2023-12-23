@@ -65,6 +65,8 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
+        "aiohttp-client-cache[aiosqlite]",
+        "aiosqlite",
         "airbyte-protocol-models==0.5.1",
         "backoff",
         "dpath~=2.0.1",

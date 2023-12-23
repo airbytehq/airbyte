@@ -62,7 +62,6 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
             kwargs['headers'] = self._authenticator.get_auth_header()
 
         if self.use_cache:
-            raise NotImplementedError("TODO: test this codepath")
             cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
             # Use in-memory cache if cache_dir is not set
             # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
@@ -70,7 +69,8 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
                 sqlite_path = str(Path(cache_dir) / self.cache_filename)
             else:
                 sqlite_path = "file::memory:?cache=shared"
-            return AsyncCachedLimiterSession(sqlite_path, backend="sqlite", connector=connector, api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
+            cache = aiohttp_client_cache.SQLiteBackend(cache_dir=sqlite_path)
+            return AsyncCachedLimiterSession(cache=cache, connector=connector, api_budget=self._api_budget)
         else:
             return AsyncLimiterSession(connector=connector, api_budget=self._api_budget, **kwargs)
 
@@ -390,7 +390,7 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Tuple[aiohttp.ClientRequest, aiohttp.ClientResponse]:  # TODO: maybe don't need to return request too since its on aiohttp.ClientResponse
+    ) -> Tuple[aiohttp.ClientRequest, aiohttp.ClientResponse]:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
