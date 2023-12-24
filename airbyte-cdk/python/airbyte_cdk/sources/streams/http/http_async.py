@@ -41,7 +41,6 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
     def __init__(self, authenticator: HttpAuthenticator, api_budget: Optional[APIBudget] = None):
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
         self._session: aiohttp.ClientSession = None
-        # self._session: aiohttp.ClientSession = self.request_session()
         # TODO: HttpStream handles other authentication codepaths, which may need to be added later
         self._authenticator = authenticator
 
@@ -347,12 +346,17 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-
+        self._session = await self._ensure_session()
+        assert not self._session.closed
+        # try:
         async for record in self._read_pages(
             lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice,
             stream_state
         ):
             yield record
+        # finally:
+        # await self._session.close()
+
 
     async def _read_pages(
         self,

@@ -221,13 +221,8 @@ class RestSalesforceStream(SalesforceStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> None:
-        self._session = await self._ensure_session()
-        assert not self._session.closed
-        # try:
         async for record in self._do_read_pages(records_generator_fn, stream_slice, stream_state):
             yield record
-        # finally:
-        # await self._session.close()
 
     async def _do_read_pages(
             self,
@@ -624,13 +619,8 @@ class BulkSalesforceStream(SalesforceStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        self._session = await self._ensure_session()
-        assert not self._session.closed
-        # try:
         async for record in self._do_read_records(sync_mode, cursor_field, stream_slice, stream_state):
             yield record
-        # finally:
-        #     await self._session.close()
 
     async def _do_read_records(
         self,
@@ -686,7 +676,6 @@ class BulkSalesforceStream(SalesforceStream):
             schema=self.schema,
             sobject_options=self.sobject_options,
             authenticator=self.authenticator,
-            session=self._session,
         )
         new_cls: Type[SalesforceStream] = RestSalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):
