@@ -12,7 +12,6 @@ from yarl import URL
 
 import aiohttp
 import aiohttp_client_cache
-from aiohttp import BasicAuth
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.async_call_rate import AsyncCachedLimiterSession, AsyncLimiterSession
@@ -24,7 +23,7 @@ from airbyte_cdk.sources.streams.http.exceptions_async import DefaultBackoffExce
 from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 
-from .auth.core import HttpAuthenticator, NoAuth
+from .auth.core import HttpAuthenticator
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
@@ -39,13 +38,16 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
     Basic building block for users building an Airbyte source for an async HTTP API.
     """
 
-    # TODO: remove legacy HttpAuthenticator authenticator references
-    def __init__(self, authenticator: Optional[Union[BasicAuth, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
+    def __init__(self, authenticator: HttpAuthenticator, api_budget: Optional[APIBudget] = None):
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
         self._session: aiohttp.ClientSession = None
         # self._session: aiohttp.ClientSession = self.request_session()
-        assert authenticator
-        self._authenticator = authenticator  # TODO: handle the preexisting code paths
+        # TODO: HttpStream handles other authentication codepaths, which may need to be added later
+        self._authenticator = authenticator
+
+    @property
+    def authenticator(self) -> HttpAuthenticator:
+        return self._authenticator
 
     def request_session(self) -> aiohttp.ClientSession:
         """
@@ -57,7 +59,7 @@ class AsyncHttpStream(HttpStream, AsyncStream, ABC):
             limit=MAX_CONNECTION_POOL_SIZE,
         )
         kwargs = {}
-        assert self._authenticator.get_auth_header()
+
         if self._authenticator:
             kwargs['headers'] = self._authenticator.get_auth_header()
 
