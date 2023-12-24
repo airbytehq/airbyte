@@ -4,9 +4,12 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.cdk.testutils.ContainerFactory;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import org.apache.commons.lang3.StringUtils;
+import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -62,7 +65,7 @@ public class PostgresContainerFactory implements ContainerFactory<PostgreSQLCont
       "openssl ecparam -name prime256v1 -genkey -noout -out ca.key",
       "openssl req -new -x509 -sha256 -key ca.key -out ca.crt -subj \"/CN=127.0.0.1\"",
       "openssl ecparam -name prime256v1 -genkey -noout -out server.key",
-      "openssl req -new -sha256 -key server.key -out server.csr -subj \"/CN=localhost\"",
+      StringUtils.replace("openssl req -new -sha256 -key server.key -out server.csr -subj \"/CN={hostName}\"", "{hostName}", HostPortResolver.resolveHost(container)),
       "openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256",
       "cp server.key /etc/ssl/private/",
       "cp server.crt /etc/ssl/private/",
@@ -73,21 +76,18 @@ public class PostgresContainerFactory implements ContainerFactory<PostgreSQLCont
       "echo \"ssl_cert_file = '/etc/ssl/private/server.crt'\" >> /var/lib/postgresql/data/postgresql.conf",
       "echo \"ssl_key_file = '/etc/ssl/private/server.key'\" >> /var/lib/postgresql/data/postgresql.conf",
       "echo \"ssl_ca_file = '/etc/ssl/private/ca.crt'\" >> /var/lib/postgresql/data/postgresql.conf",
-      "mkdir root/.postgresql",
-      "echo \"hostssl    all    all    127.0.0.1/32    cert clientcert=verify-full\" >> /var/lib/postgresql/data/pg_hba.conf",
-      "openssl ecparam -name prime256v1 -genkey -noout -out client.key",
-      "openssl req -new -sha256 -key client.key -out client.csr -subj \"/CN=postgres\"",
-      "openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 365 -sha256",
-      "cp client.crt ~/.postgresql/postgresql.crt",
-      "cp client.key ~/.postgresql/postgresql.key",
-      "chmod 0600 ~/.postgresql/postgresql.crt ~/.postgresql/postgresql.key",
-      "cp ca.crt root/.postgresql/ca.crt",
-      "chown postgres:postgres ~/.postgresql/ca.crt",
-      "psql -U test -c \"SELECT pg_reload_conf();\"",
+      "rm /var/lib/postgresql/data/pg_hba.conf",
+      "echo \"local      all    test                   trust\" >> /var/lib/postgresql/data/pg_hba.conf",
+      "echo \"host       all    test   all             trust\" >> /var/lib/postgresql/data/pg_hba.conf",
+      "echo \"hostssl    all    all    all             cert clientcert=verify-full\" >> /var/lib/postgresql/data/pg_hba.conf",
+      "psql -U test -c \"SELECT pg_reload_conf();\""
     };
     for (String cmd : commands) {
       try {
-        container.execInContainer("su", "-c", cmd);
+        ExecResult execResult = container.execInContainer("su", "-c", cmd);
+        if (execResult.getExitCode() != 0) {
+          throw new RuntimeException ("Command '" + cmd + "' returned result code " + execResult.getExitCode() + ". stderr was:\n" + execResult.getStderr());
+        }
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       } catch (InterruptedException e) {
