@@ -31,6 +31,9 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.slf4j.Logger;
@@ -51,13 +54,23 @@ public class SSLCertificateUtils {
   public static final String KEYSTORE_FILE_NAME = KEYSTORE_ENTRY_PREFIX + "keystore_";
   public static final String KEYSTORE_FILE_TYPE = ".p12";
 
-  private static URI saveKeyStoreToFile(final KeyStore keyStore, final String keyStorePassword)
+  public record KeyStoreAndPassword(URI keystore, String password) {
+    
+  }
+
+  private static KeyStoreAndPassword saveKeyStoreToFile(final KeyStore keyStore)
+      throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+    String password = RandomStringUtils.randomAlphanumeric(10);
+    return saveKeyStoreToFile(keyStore, password);
+  }
+  private static KeyStoreAndPassword saveKeyStoreToFile(final KeyStore keyStore, final String keyStorePassword)
       throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
     File keyStoreFile = File.createTempFile(KEYSTORE_FILE_NAME + RANDOM.nextInt(), KEYSTORE_FILE_TYPE);
     final OutputStream os = new FileOutputStream(keyStoreFile);
+
     keyStore.store(os, keyStorePassword.toCharArray());
 
-    return keyStoreFile.toPath().toUri();
+    return new KeyStoreAndPassword(keyStoreFile.toPath().toUri(), keyStorePassword);
   }
 
   private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
@@ -76,36 +89,33 @@ public class SSLCertificateUtils {
     return cf.generateCertificate(bufferedInputStream);
   }
 
-  public static URI keyStoreFromCertificate(final Certificate cert,
-                                            final String keyStorePassword)
+  public static KeyStoreAndPassword keyStoreFromCertificate(final Certificate cert)
       throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
     final KeyStore keyStore = KeyStore.getInstance(PKCS_12);
     keyStore.load(null);
     keyStore.setCertificateEntry(KEYSTORE_ENTRY_PREFIX + "1", cert);
-    return saveKeyStoreToFile(keyStore, keyStorePassword);
+    return saveKeyStoreToFile(keyStore);
   }
 
-  public static URI keyStoreFromCertificate(final String certString,
-                                            final String keyStorePassword)
+  public static KeyStoreAndPassword keyStoreFromCertificate(final String certString)
       throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
-    return keyStoreFromCertificate(fromPEMString(certString), keyStorePassword);
+    return keyStoreFromCertificate(fromPEMString(certString));
   }
 
-  public static URI keyStoreFromClientCertificate(
+  public static KeyStoreAndPassword keyStoreFromClientCertificate(
                                                   final Certificate cert,
-                                                  final PrivateKey key,
-                                                  final String keyStorePassword)
+                                                  final PrivateKey key)
       throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+    String keyStorePassword = RandomStringUtils.randomAlphanumeric(10);
     final KeyStore keyStore = KeyStore.getInstance(PKCS_12);
     keyStore.load(null);
     keyStore.setKeyEntry(KEYSTORE_ENTRY_PREFIX, key, keyStorePassword.toCharArray(), new Certificate[] {cert});
     return saveKeyStoreToFile(keyStore, keyStorePassword);
   }
 
-  public static URI keyStoreFromClientCertificate(
+  public static KeyStoreAndPassword keyStoreFromClientCertificate(
                                                   final String certString,
-                                                  final String keyString,
-                                                  final String keyStorePassword)
+                                                  final String keyString)
       throws IOException, InterruptedException, NoSuchAlgorithmException, InvalidKeySpecException, CertificateException, KeyStoreException {
 
     // Convert RSA key (PKCS#1) to PKCS#8 key
@@ -121,7 +131,7 @@ public class SSLCertificateUtils {
     Files.write(pkcs1Key, keyString.getBytes(StandardCharsets.UTF_8));
     runProcess(
         "openssl pkcs8 -topk8 -inform PEM -outform DER -in " + pkcs1Key.toAbsolutePath() + " -out " + pkcs8Key.toAbsolutePath()
-            + " -nocrypt -passout pass:" + keyStorePassword,
+            + " -nocrypt ",
         Runtime.getRuntime());
 
     final PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Files.readAllBytes(pkcs8Key));
@@ -136,7 +146,7 @@ public class SSLCertificateUtils {
       }
     }
 
-    return keyStoreFromClientCertificate(fromPEMString(certString), privateKey, keyStorePassword);
+    return keyStoreFromClientCertificate(fromPEMString(certString), privateKey);
 
   }
 
