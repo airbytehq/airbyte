@@ -12,7 +12,7 @@ from source_netsuite_odbc.discover_utils import NetsuiteODBCTableDiscoverer
 from .streams import NetsuiteODBCStream
 from .odbc_utils import NetsuiteODBCCursorConstructor
 
-
+NETSUITE_ODBC_BASE_URL = "connect.api.netsuite.com"
 
 class SourceNetsuiteOdbc(AbstractSource):
     logger: logging.Logger = logging.getLogger("airbyte")
@@ -41,11 +41,16 @@ class SourceNetsuiteOdbc(AbstractSource):
           and the "error" object should describe what went wrong.
           The error object will be cast to string to display the problem to the user.
         """
+        # check if config is valid
+        service_host = config.get("service_host")
+        if not (NETSUITE_ODBC_BASE_URL in service_host):
+            return False, f"Invalid service_host: {service_host}.  Must be of the form: *******.connect.api.netsuite.com"
+
         try:
             cursor_constructor = NetsuiteODBCCursorConstructor()
             db_connection = cursor_constructor.create_database_connection(config)
 
-            db_connection.execute("SELECT * FROM OA_TABLES")
+            db_connection.execute("SELECT TOP 10 * FROM OA_TABLES")
             db_connection.fetchone()
             return True, None
         except Exception as e:

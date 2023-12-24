@@ -9,6 +9,8 @@ connectionSpecification:
     - consumer_secret
     - token_key
     - token_secret
+    - service_host
+    - service_port
   properties:
     account_id:
       type: string
@@ -64,3 +66,4 @@ connectionSpecification:
         - "57"
       order: 7
       airbyte_secret: false
+      default: "57"
