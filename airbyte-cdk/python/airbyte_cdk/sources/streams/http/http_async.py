@@ -280,7 +280,6 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         """
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
-        assert not self._session.closed
 
         @default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self.retry_factor)
         @user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)
@@ -347,7 +346,6 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         self._session = await self._ensure_session()
-        assert not self._session.closed
         # try:
         async for record in self._read_pages(
             lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice,
@@ -366,30 +364,23 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        self._session = await self._create_session()
-        assert self._session
-        assert not self._session.closed
-        try:
-            stream_state = stream_state or {}
-            pagination_complete = False
-            next_page_token = None
-            while not pagination_complete:
-                async def f():
-                    nonlocal next_page_token
-                    assert not self._session.closed
-                    request, response = await self._fetch_next_page(stream_slice, stream_state, next_page_token)
-                    next_page_token = await self.next_page_token(response)
-                    return request, response, next_page_token
+        stream_state = stream_state or {}
+        pagination_complete = False
+        next_page_token = None
+        while not pagination_complete:
+            async def f():
+                nonlocal next_page_token
+                request, response = await self._fetch_next_page(stream_slice, stream_state, next_page_token)
+                next_page_token = await self.next_page_token(response)
+                return request, response, next_page_token
 
-                request, response, next_page_token = await f()
+            request, response, next_page_token = await f()
 
-                async for record in records_generator_fn(request, response, stream_state, stream_slice):
-                    yield record
+            async for record in records_generator_fn(request, response, stream_state, stream_slice):
+                yield record
 
-                if not next_page_token:
-                    pagination_complete = True
-        finally:
-            await self._session.close()
+            if not next_page_token:
+                pagination_complete = True
 
     async def _fetch_next_page(
         self,
@@ -407,7 +398,6 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         )
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-        assert not self._session.closed
         response = await self._send_request(request, request_kwargs)
         return request, response
 
