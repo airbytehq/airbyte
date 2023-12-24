@@ -19,7 +19,7 @@ def stream_state():
   }
 
 def test_get_range_to_fetch(stream_state, stream):
-  stream = NetsuiteODBCStream({}, 'test', stream)
+  stream = NetsuiteODBCStream({}, 'test', stream, config={})
   range = stream.get_range_to_fetch(SyncMode.full_refresh, stream_state)
   assert range == (date(2020, 1, 1), date(2024, 12, 1))
 
@@ -28,7 +28,7 @@ def test_get_range_to_fetch(stream_state, stream):
 
 
 def test_stream_slices(stream_state, stream):
-  netsuite_stream = NetsuiteODBCStream({}, 'test', stream)
+  netsuite_stream = NetsuiteODBCStream({}, 'test', stream, config={})
   slices = netsuite_stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state)
   assert slices[0] == {'first_day': date(2023, 1, 1), 'last_day': date(2023, 12, 31)}
   assert slices[1] == {'first_day': date(2024, 1, 1), 'last_day': date(2024, 12, 31)}
@@ -36,7 +36,7 @@ def test_stream_slices(stream_state, stream):
 
 
 def test_get_updated_state(stream_state, stream):
-  netsuite_stream = NetsuiteODBCStream({}, 'test', stream)
+  netsuite_stream = NetsuiteODBCStream({}, 'test', stream, config={})
   netsuite_stream.incremental_most_recent_value_seen = '2022-01-01'
   netsuite_stream.primary_key_last_value_seen = {'id': 155}
   new_state = netsuite_stream.get_updated_state(stream_state, {})
@@ -44,15 +44,15 @@ def test_get_updated_state(stream_state, stream):
 
 
 def test_generate_ordered_query(stream_state, stream):
-  netsuite_stream = NetsuiteODBCStream({}, 'test', stream)
-  query = netsuite_stream.generate_ordered_query({'first_day': date(2024, 1, 1), 'last_day': date(2024, 12, 31)})
+  netsuite_stream = NetsuiteODBCStream({}, 'test', stream, config={})
+  query = netsuite_stream.generate_query(SyncMode.full_refresh, {'first_day': date(2024, 1, 1), 'last_day': date(2024, 12, 31)})
   stripped_query = query.replace(" ", "").replace("\n", "")
   expected_query = f"""SELECT TOP {NETSUITE_PAGINATION_INTERVAL} accountnumber, acquisitionsource, alcoholrecipienttype, altemail, altname, altphone, assignedwebsite, lastmodifieddate FROM testWHERE id > -10000 AND lastmodifieddate >= to_timestamp('2024-01-01', 'YYYY-MM-DD') AND lastmodifieddate <= to_timestamp('2024-12-31', 'YYYY-MM-DD')ORDER BY id ASC,lastmodifieddateASC""".replace(" ", "")
 
   assert stripped_query == expected_query
   
 def test_processing_new_state(stream_state, stream):
-  netsuite_stream = NetsuiteODBCStream({}, 'test', stream)
+  netsuite_stream = NetsuiteODBCStream({}, 'test', stream, config={})
   netsuite_stream.process_stream_state(stream_state)
   assert netsuite_stream.primary_key_last_value_seen == {'id': 200}
   assert netsuite_stream.incremental_most_recent_value_seen == '2023-01-01'

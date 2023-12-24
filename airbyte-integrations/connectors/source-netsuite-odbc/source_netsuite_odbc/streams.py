@@ -305,7 +305,7 @@ class NetsuiteODBCStream(Stream):
 
       # Ensure start_date is before end_date
       if start_date > end_date:
-        start_date, end_date = end_date, start_date
+        return []
 
       current_date = start_date
       date_slices = []

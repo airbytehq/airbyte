@@ -1,7 +1,8 @@
 import pytest
 
 from source_netsuite_odbc.odbc_utils import NetsuiteODBCCursorConstructor
-from source_netsuite_odbc.errors import AIRBYTE_ODBC_DRIVER_HOST_RESOLUTION_FAILURE
+from source_netsuite_odbc.errors import generate_host_resolution_error_message
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 @pytest.fixture
 def config_one():
@@ -54,9 +55,11 @@ class TestNetsuiteODBCCursorConstructor:
     assert connection_string_two == CONNECTION_STRING_TWO
   
   def test_properly_handled_failure_for_host_resolution_failure(self, config_one):
-    with pytest.raises(Exception, match=AIRBYTE_ODBC_DRIVER_HOST_RESOLUTION_FAILURE):
+    try:
       constructor = NetsuiteODBCCursorConstructor()
       constructor.create_database_connection(config_one)
+    except Exception as e:
+      assert e.message == generate_host_resolution_error_message(config_one["service_host"])
 
   def test_nonce_generation_is_10_characters(self):
     constructor = NetsuiteODBCCursorConstructor()

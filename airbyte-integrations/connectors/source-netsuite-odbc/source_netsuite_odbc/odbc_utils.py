@@ -74,8 +74,8 @@ class NetsuiteODBCCursorConstructor:
       if NETSUITE_DRIVER_NOT_FOUND_ERROR in message:
         raise AirbyteTracedException.from_exception(e, failure_type=FailureType.system_error)
       elif NETSUITE_INCORRECT_PASSWORD in message:
-        raise AirbyteTracedException(message=AIRBYTE_ODBC_DRIVER_INCORRECT_PASSWORD_ERROR, failure_type=FailureType.config_error)
+        raise AirbyteTracedException(message=AIRBYTE_ODBC_DRIVER_INCORRECT_PASSWORD_ERROR, failure_type=FailureType.config_error, exception=e)
       elif NETSUITE_HOST_RESOLUTION_FAILURE in message:
-        raise AirbyteTracedException(message=generate_host_resolution_error_message(config["service_host"]), failure_type=FailureType.config_error)
+        raise AirbyteTracedException(message=generate_host_resolution_error_message(config["service_host"]), failure_type=FailureType.config_error, exception=e)
       else:
         raise AirbyteTracedException.from_exception(e)
