@@ -45,6 +45,9 @@ class SourceNetsuiteOdbc(AbstractSource):
         service_host = config.get("service_host")
         if not (NETSUITE_ODBC_BASE_URL in service_host):
             return False, f"Invalid service_host: {service_host}.  Must be of the form: *******.connect.api.netsuite.com"
+        starting_year = config.get("starting_year")
+        if not (starting_year >= 1900 and starting_year <= datetime.now().year):
+            return False, f"Invalid starting_year: {starting_year}.  Must be between 1900 and {datetime.now().year}"
 
         try:
             cursor_constructor = NetsuiteODBCCursorConstructor()

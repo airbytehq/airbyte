@@ -320,13 +320,16 @@ class NetsuiteODBCStream(Stream):
       # we fetch data for some years in the future because accountants can book transactions in the future
       end_slice_range = end_slice_range.replace(year=end_slice_range.year + YEARS_FORWARD_LOOKING, day=1) 
       # we use an earliest date of 1980 since 1998 was when netsuite was founded.  Note that in some cases customers might have ported over older historical data
-      start_slice_range = EARLIEST_DATE
+      start_slice_range = self.get_earliest_date()
       if sync_mode == SyncMode.incremental:
         incremental_date = date.fromisoformat(stream_state['last_date_updated']) if 'last_date_updated' in stream_state else EARLIEST_DATE
         start_slice_range = incremental_date
       elif not (sync_mode == SyncMode.full_refresh):
         raise Exception(f'Unsupported Sync Mode: {sync_mode}.  Please use either "full_refresh" or "incremental"')
       return start_slice_range, end_slice_range
+    
+    def get_earliest_date(self):
+      return self.config.get('starting_year', 1980)
     
     def get_slice_for_year(self, date_for_slice: date):
       year_to_use = date_for_slice.year

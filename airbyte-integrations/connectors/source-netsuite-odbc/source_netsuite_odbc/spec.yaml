@@ -63,7 +63,17 @@ connectionSpecification:
       type: string
       title: Role Id
       description: The ID of the role used to access the ODBC connection
+      examples:
         - "57"
       order: 7
       airbyte_secret: false
       default: "57"
+    starting_year:
+      type: integer
+      title: Starting Year
+      description: The year to start fetching data from
+      examples:
+        - 2020
+      order: 8
+      airbyte_secret: false
+      default: 1980
