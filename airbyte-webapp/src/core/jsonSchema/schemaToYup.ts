@@ -89,18 +89,19 @@ export const buildYupFormForJsonSchema = (
       }
       break;
     case "array":
-      if (typeof jsonSchema.items === "object" && !Array.isArray(jsonSchema.items)) {
-        schema = yup
-          .array()
-          .of(
-            buildYupFormForJsonSchema(
-              jsonSchema.items,
-              uiConfig,
-              jsonSchema,
-              propertyKey,
-              propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
-            )
-          );
+      if (typeof jsonSchema.items === "object" && typeof jsonSchema.items === "string") {
+        schema = yup.array().of(yup.string().trim()).ensure();
+
+        // Check if the array is required and apply the required validation conditionally
+        const isRequired =
+          !jsonSchema.default &&
+          parentSchema &&
+          Array.isArray(parentSchema.required) &&
+          parentSchema.required.find((item) => item === propertyKey);
+
+        if (isRequired) {
+          schema = schema.required("form.empty.error");
+        }
       }
       break;
     case "object":
