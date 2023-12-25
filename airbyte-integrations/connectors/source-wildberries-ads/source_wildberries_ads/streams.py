@@ -165,22 +165,79 @@ class WordsStatStream(AdsStream):
 
 class FullStatStream(AdsStream):
     SCHEMA: Type[AdsFullStat] = AdsFullStat
-    URL: str = "https://advert-api.wb.ru/adv/v1/fullstat"
-    RATE_LIMIT: int = 10
+    URL: str = "https://advert-api.wb.ru/adv/v2/fullstats"
+    RATE_LIMIT: int = 1
+    CAMPAIGNS_PER_REQUEST: int = 100  # -1 – все кампании в 1 запросе; 100 – MAX(?)
 
     def __init__(self, credentials: WildberriesCredentials, campaign_id: int | None, date_from: date | None, date_to: date | None):
         super().__init__(credentials, campaign_id)
         self.date_from = date_from
         self.date_to = date_to
 
-    @property
-    def url(self) -> str:
-        url = self.URL + f"?id={self.campaign_id}"
-        if self.date_from:
-            url += f"&begin={self.date_from.strftime('%Y-%m-%d')}"
-        if self.date_to:
-            url += f"&end={self.date_to.strftime('%Y-%m-%d')}"
-        return url
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if self.campaign_id:
+            self.campaigns_ids = [self.campaign_id]
+        else:
+            self._get_campaigns()
+
+        chunk_counter: int = 0
+        chunk_size = len(self.campaigns_ids) if self.CAMPAIGNS_PER_REQUEST == -1 else self.CAMPAIGNS_PER_REQUEST
+        for chunk in chunks(self.campaigns_ids, chunk_size):
+            print(f"Running {self.__class__.__name__} for {len(chunk)} campaigns: {chunk}")
+            if chunk_counter > 0:
+                time.sleep(self.timeout)
+            yield from self._get_campaigns_data(chunk)
+            chunk_counter += 1
+
+    def _get_campaigns_data(self, chunk: list[int]) -> Iterable[Mapping[str, Any]]:
+        attempts_count = 0
+        while attempts_count < 3:
+            try:
+                response = requests.post(self.URL, json=self.get_request_body(campaign_ids=chunk), headers=self.headers)
+            except ChunkedEncodingError:
+                print(f"Chunked EncodingError, sleeping for 20 sec...")
+                time.sleep(20)
+                continue
+            if response.status_code == 200:
+                if records := response.json():
+                    for record in records:
+                        yield self.SCHEMA(**record).dict()
+                else:
+                    print("No data for all campaigns in the chunk")
+                return
+            elif response.status_code > 500:
+                print(f"{response.status_code} error, sleeping for 20 sec...")
+                time.sleep(20)
+                continue
+            elif response.status_code in (408, 429):
+                attempts_count += 1
+                if attempts_count < 3:
+                    print(f"{response.status_code} error, sleeping for 20 sec...")
+                    time.sleep(20)  # Wait for Wildberries rate limits
+                else:
+                    raise Exception(f"Failed to load data from Wildberries API after 3 attempts due to rate limits")
+            else:
+                raise Exception(f"Status code: {response.status_code}. Body: {response.text}")
+
+    def get_request_body(self, campaign_ids: list[int]) -> list[dict]:
+        body = []
+        for campaign_id in campaign_ids:
+            body.append(
+                {
+                    "id": campaign_id,
+                    "interval": {
+                        "begin": self.date_from.strftime("%Y-%m-%d"),
+                        "end": self.date_to.strftime("%Y-%m-%d"),
+                    },
+                }
+            )
+        return body
 
 
 class AutoStatStream(AdsStream):
