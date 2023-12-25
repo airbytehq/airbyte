@@ -52,6 +52,7 @@ export const buildYupFormForJsonSchema = (
     }
   }
 
+  console.log("Final schema:", schema);
   switch (jsonSchema.type) {
     case "string":
       schema = yup.string().trim();
@@ -59,7 +60,16 @@ export const buildYupFormForJsonSchema = (
       if (jsonSchema?.pattern !== undefined) {
         schema = schema.matches(new RegExp(jsonSchema.pattern), "form.pattern.error");
       }
-
+      if (jsonSchema?.type === "string" && jsonSchema?.format === "date-time") {
+        schema = yup
+          .string()
+          .trim()
+          .test("is-valid-date-time", "Invalid date-time format", (value) => {
+            return (
+              value === null || value === undefined || /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?/.test(value)
+            );
+          });
+      }
       break;
     case "boolean":
       schema = yup.boolean();
