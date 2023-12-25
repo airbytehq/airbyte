@@ -5,15 +5,15 @@ import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 
 interface Iprops {
   isLoading: boolean;
-  onBack: () => void;
+  onBack?: () => void;
   onFinish: () => void;
 }
-const FooterButtons: React.FC<Iprops> = ({ isLoading, onBack, onFinish }) => {
+const FooterButtons: React.FC<Iprops> = ({ isLoading, onFinish }) => {
   return (
     <ButtonRows bottom="40" position="absolute">
-      <BigButton secondary type="button" onClick={onBack}>
+      {/* <BigButton secondary type="button" onClick={onBack}>
         <FormattedMessage id="form.button.back" />
-      </BigButton>
+      </BigButton> */}
       <BigButton onClick={onFinish} disabled={isLoading}>
         <FormattedMessage id="form.button.finish" />
       </BigButton>

@@ -8,7 +8,7 @@ import TestingSuccess from "views/Connector/TestConnection/components/TestingSuc
 interface Iprops {
   isLoading: boolean;
   type: "destination" | "source";
-  onBack: () => void;
+  onBack?: () => void;
   onFinish: () => void;
 }
 
