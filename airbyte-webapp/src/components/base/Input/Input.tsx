@@ -36,7 +36,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       }
 
       const { current: element } = inputRef;
-      const selectionStart = inputSelectionStartRef.current ?? inputRef.current?.value.length;
+      const selectionStart = inputSelectionStartRef.current ?? inputRef?.current?.value?.length;
 
       element.focus();
 

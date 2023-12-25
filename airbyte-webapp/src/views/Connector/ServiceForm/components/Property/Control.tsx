@@ -84,41 +84,43 @@ export const Control: React.FC<ControlProps> = ({
       />
     );
   }
+  console.log(meta, "meta");
+  console.log(property, "property");
   if (
-    property.type === "string" &&
-    (property.format === "date-time" || property.format === "date") &&
+    property?.type === "string" &&
+    (property?.format === "date-time" || property?.format === "date") &&
     useDatepickerExperiment
   ) {
     return (
       <DatePicker
-        error={!!meta.error}
-        withTime={property.format === "date-time"}
+        error={meta?.touched && !!meta?.error}
+        withTime={property?.format === "date-time"}
         onChange={(value) => {
           form.setTouched(true);
           form.setValue(value);
         }}
-        value={field.value}
+        value={field?.value}
         disabled={disabled}
         onBlur={() => form.setTouched(true)}
       />
     );
   }
-  const value = field.value ?? property.default;
-  if (property.enum) {
+  const value = field?.value ?? property?.default;
+  if (property?.enum) {
     return (
       <DropDown
         {...field}
         placeholder={placeholder}
-        options={property.enum.map((dataItem) => ({
+        options={property?.enum?.map((dataItem) => ({
           label: dataItem?.toString() ?? "",
           value: dataItem?.toString() ?? "",
         }))}
-        onChange={(selectedItem) => selectedItem && form.setValue(selectedItem.value)}
+        onChange={(selectedItem) => selectedItem && form?.setValue(selectedItem.value)}
         value={value}
         isDisabled={disabled}
       />
     );
-  } else if (property.multiline && !property.isSecret) {
+  } else if (property?.multiline && !property.isSecret) {
     return (
       <TextArea
         {...field}

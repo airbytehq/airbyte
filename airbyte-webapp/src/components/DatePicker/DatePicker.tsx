@@ -92,6 +92,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 }) => {
   const { locale, formatMessage } = useIntl();
   const datepickerRef = useRef<ReactDatePicker>(null);
+  console.log(datepickerRef.current, "Current");
 
   // Additional locales can be registered here as necessary
   useEffect(() => {
@@ -134,7 +135,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       onBlur();
     }
   };
-
+  // inputRef.current?.setAttribute("readOnly", "true"); this line disable typing on datepicker
   return (
     <div className={styles.wrapper} ref={wrapperRef} onBlur={handleWrapperBlur}>
       <Input
@@ -142,7 +143,11 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         error={error}
         value={value}
         onChange={handleInputChange}
-        onFocus={() => datepickerRef.current?.setOpen(true)}
+        onFocus={() => {
+          datepickerRef.current?.setOpen(true);
+          inputRef.current?.setAttribute("readOnly", "true");
+        }}
+        onBlur={() => inputRef.current?.removeAttribute("readOnly")}
         className={styles.input}
         ref={inputRef}
       />
