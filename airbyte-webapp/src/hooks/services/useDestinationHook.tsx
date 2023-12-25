@@ -65,7 +65,7 @@ const useDestinationList = (): DestinationList => {
 const usePaginatedDestination = (filters: any): PaginatedDestinationList => {
   const service = useDestinationService();
 
-  return useSuspenseQuery(destinationsKeys.list(filters), () => service.filteredList(filters));
+  return useSuspenseQuery(destinationsKeys.list(filters), () => service.filteredList(filters), { cacheTime: 0 });
 };
 const useGetDestination = <T extends string | undefined | null>(
   destinationId: T

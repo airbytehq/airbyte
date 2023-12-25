@@ -10,6 +10,9 @@ RUN apk --no-cache upgrade \
     && apk --no-cache add tzdata build-base
 
 COPY setup.py ./
+
+RUN echo "Cython<3" > cython_constraint.txt && PIP_CONSTRAINT=cython_constraint.txt pip install --prefix=/install .
+
 # install necessary packages to a temporary folder 
 RUN pip install --prefix=/install .
 

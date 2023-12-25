@@ -69,7 +69,7 @@ const useSourceList = (): SourceList => {
 const usePaginatedSources = (filters: any): PaginatedSourceList => {
   const service = useSourceService();
 
-  return useSuspenseQuery(sourcesKeys.list(filters), () => service.filteredList(filters));
+  return useSuspenseQuery(sourcesKeys.list(filters), () => service.filteredList(filters), { cacheTime: 0 });
 };
 
 const useGetSource = <T extends string | undefined | null>(
