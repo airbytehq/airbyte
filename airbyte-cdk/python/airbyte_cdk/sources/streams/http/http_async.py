@@ -241,7 +241,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         return response
 
     async def _ensure_session(self) -> aiohttp.ClientSession:
-        if self._session is None or self._session.closed:  # TODO: why is the session closing?
+        if self._session is None:
             self._session = self.request_session()
         return self._session
 
@@ -345,16 +345,11 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        self._session = await self._ensure_session()
-        # try:
         async for record in self._read_pages(
             lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice,
             stream_state
         ):
             yield record
-        # finally:
-        # await self._session.close()
-
 
     async def _read_pages(
         self,

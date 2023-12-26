@@ -126,8 +126,17 @@ class AsyncAbstractSource(AbstractSource, ABC):
             yield record
 
     async def _read_streams(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
-        tasks = [asyncio.create_task(self._do_async_read_stream(s, stream_instances, timer, logger, state_manager, internal_config)) for s in catalog.streams]
-        await asyncio.gather(*tasks)
+        tasks = []
+        sessions = []
+        try:
+            for s in catalog.streams:
+                stream = stream_instances.get(s.stream.name)
+                sessions.append(await stream._legacy_stream._ensure_session())
+                tasks.append(asyncio.create_task(self._do_async_read_stream(s, stream_instances, timer, logger, state_manager, internal_config)))
+            await asyncio.gather(*tasks)
+        finally:
+            for session in sessions:
+                await session.close()
 
     async def _do_async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         print(f">>>>>>>>> _do_async_read_stream {configured_stream.stream.name}")
