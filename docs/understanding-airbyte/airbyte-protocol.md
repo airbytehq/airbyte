@@ -509,6 +509,41 @@ This table breaks down attributes of these state types.
 - **Stream-Level Replication Isolation** means that a Source could be run in parallel by splitting up its streams across running instances. This is only possible for Stream state types, because they are the only state type that can update its current state completely on a per-stream basis. This is one of the main drawbacks of Sources that use Global state; it is not possible to increase their throughput through parallelization.
 - **Single state message describes full state for Source** means that any state message contains the full state information for a Source. Stream does not meet this condition because each state message is scoped by stream. This means that in order to build a full picture of the state for the Source, the state messages for each configured stream must be gathered.
 
+### State Principles
+The following are principles Airbyte recommends Sources/Destinations adhere to with State. Airbyte enforces these principles via our CDK.
+
+These principles are intended to produce simple overall system behavior, and move Airbyte towards a world of shorter-lived jobs. The goal is reliable data movement with minimal data loss windows on errors.
+
+1. **New Sources must use per-stream/global State**.
+
+   Per-stream/Global state unlocks more granular State operations e.g. per-stream resets, per-stream parallelisation etc. No new Connectors should be created using Legacy state.
+
+2. **Sources always emit State, regardless of sync mode.**
+
+   This simplifies how the Platform treats jobs and means all Syncs are resumable. This also enables checkpointing on full refreshes in the future. This rule does not appear to Sources that do not support cursors.
+   However:
+   1. If the source stream has no records, an empty state should still be emitted. This supports state-based counts/checksums. It is recommended for the emitted state to have unique and non-null content.
+   2. If the stream is unsorted, and therefore non-resumable, it is recommended to still send a state message, even with bogus resumability, to indicate progress in the sync.
+
+3. **Sources do not emit sequential duplicate States with interleaved records.**
+
+   Duplicate States make it challenging to debug state-related operations. E.g. Is this a duplicate or did we fail to properly update state? Is this a duplicate log? Sync will fail if this rule is violated.
+
+4. **Sources should emit state whenever it is meaningful to resume a failed sync. Platform reserves the right to discard too frequent State emission per internal platform rules.**
+
+   Sources should strive to emit state as fast as it’s useful. Platform can discard this state if this leads to undesirable downstream behavior e.g. out of memory. This is fine as there is increasingly lower marginal value to emitting States at higher frequencies.
+
+5. **Platform & Destinations treat state as a black box.**
+
+   Sources are the sole producer/consumer of a State messages’ contents. Precisely, this refers to the state fields within the various State messages. Modifying risks corrupting our data sync cursor, which is a strict no-no.
+
+6. **Destinations return state in the order it was received.**
+
+   Order is used by the Platform to determine if a State message was dropped. Out-of-order State messages throw errors.
+
+   Order-ness is determined by the type of State message. Per-stream state messages require order per-stream. Global state messages require global ordering.
+
+
 ## Messages
 
 ### Common
