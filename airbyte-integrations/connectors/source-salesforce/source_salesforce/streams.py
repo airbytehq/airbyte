@@ -708,7 +708,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         super().__init__(**kwargs)
         self.replication_key = replication_key
 
-    def stream_slices(
+    async def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start, end = (None, None)

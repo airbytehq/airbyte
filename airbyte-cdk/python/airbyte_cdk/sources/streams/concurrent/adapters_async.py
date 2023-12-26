@@ -369,7 +369,7 @@ class AsyncStreamPartitionGenerator(PartitionGenerator):
         self._cursor = cursor
 
     async def generate(self) -> Iterable[Partition]:
-        for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
+        async for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
             yield AsyncStreamPartition(
                 self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor
             )
