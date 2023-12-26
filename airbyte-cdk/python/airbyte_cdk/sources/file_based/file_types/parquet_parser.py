@@ -119,6 +119,8 @@ class ParquetParser(FileTypeParser):
                 "values": parquet_value.dictionary.tolist(),
             }
         if pa.types.is_map(parquet_value.type):
+            if not parquet_value.as_py():
+                return None
             return {k: v for k, v in parquet_value.as_py()}
 
         if pa.types.is_null(parquet_value.type):
