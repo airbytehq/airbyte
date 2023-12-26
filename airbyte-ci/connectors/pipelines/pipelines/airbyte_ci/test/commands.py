@@ -3,6 +3,8 @@
 #
 
 import logging
+from pathlib import Path
+from typing import List
 
 import asyncclick as click
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
@@ -13,7 +15,13 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 
 @click.command()
 @click.argument("poetry_package_path")
-@click.option("--test-directory", default="tests", help="The directory containing the tests to run.")
+@click.option(
+    "-c",
+    "--poetry-run-command",
+    multiple=True,
+    help="The poetry run command to run.",
+    required=True,
+)
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
@@ -24,7 +32,10 @@ async def test(pipeline_context: ClickPipelineContext):
         pipeline_context (ClickPipelineContext): The context object.
     """
     poetry_package_path = pipeline_context.params["poetry_package_path"]
-    test_directory = pipeline_context.params["test_directory"]
+    if not Path(f"{poetry_package_path}/pyproject.toml").exists():
+        raise click.UsageError(f"Could not find pyproject.toml in {poetry_package_path}")
+
+    commands_to_run: List[str] = pipeline_context.params["poetry_run_command"]
 
     logger = logging.getLogger(f"{poetry_package_path}.tests")
     logger.info(f"Running tests for {poetry_package_path}")
@@ -47,7 +58,7 @@ async def test(pipeline_context: ClickPipelineContext):
 
     pipeline_name = f"Unit tests for {poetry_package_path}"
     dagger_client = await pipeline_context.get_dagger_client(pipeline_name=pipeline_name)
-    pytest_container = await (
+    test_container = await (
         dagger_client.container()
         .from_("python:3.10.12")
         .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
@@ -73,10 +84,11 @@ async def test(pipeline_context: ClickPipelineContext):
             ),
         )
         .with_workdir(f"/airbyte/{poetry_package_path}")
-        .with_exec(["poetry", "install"])
+        .with_exec(["poetry", "install", "--with=dev"])
         .with_unix_socket("/var/run/docker.sock", dagger_client.host().unix_socket("/var/run/docker.sock"))
         .with_env_variable("CI", str(pipeline_context.params["is_ci"]))
-        .with_exec(["poetry", "run", "pytest", test_directory])
+        .with_workdir(f"/airbyte/{poetry_package_path}")
     )
-
-    await pytest_container
+    for command in commands_to_run:
+        test_container = test_container.with_exec(["poetry", "run", *command.split(" ")])
+    await test_container
