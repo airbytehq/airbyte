@@ -39,7 +39,8 @@ class Sentinel:
 
 
 class SourceReader(Iterator):
-    def __init__(self, queue: Queue, sentinels: Dict[str, Sentinel], reader_fn: Callable, *args: Any):
+    def __init__(self, logger: logging.Logger, queue: Queue, sentinels: Dict[str, Sentinel], reader_fn: Callable, *args: Any):
+        self.logger = logger
         self.queue = queue
         self.sentinels = sentinels
         self.reader_fn = reader_fn
@@ -55,10 +56,14 @@ class SourceReader(Iterator):
     def __next__(self):
         item = self.queue.get()
         if isinstance(item, Sentinel):
-            session = self.sessions.pop(item.name)
-            if session:
-                session.close()
-            self.sentinels.pop(item.name)  # TODO: error handling?
+            # Sessions can only be closed once items in the stream have been dequeued
+            if session := self.sessions.pop(item.name):
+                loop = asyncio.get_event_loop()
+                loop.create_task(session.close())
+            try:
+                self.sentinels.pop(item.name)
+            except KeyError:
+                raise RuntimeError(f"The sentinel for stream {item.name} was already dequeued. This is unexpected and indicates a possible problem with the connector. Please contact Support.")
             if not self.sentinels:
                 self.thread.join()
                 raise StopIteration
@@ -126,7 +131,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
 
     def _do_read(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         streams_in_progress = {s.stream.name: Sentinel(s.stream.name) for s in catalog.streams}
-        self.reader = SourceReader(self.queue, streams_in_progress, self._read_streams, catalog, stream_instances, timer, logger, state_manager, internal_config)
+        self.reader = SourceReader(logger, self.queue, streams_in_progress, self._read_streams, catalog, stream_instances, timer, logger, state_manager, internal_config)
         for record in self.reader:
             yield record
 
