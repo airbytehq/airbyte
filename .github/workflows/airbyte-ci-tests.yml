@@ -73,7 +73,7 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "test airbyte-ci/connectors/connector_ops"
+          subcommand: "test airbyte-ci/connectors/connector_ops --poetry-run-command='pytest tests'"
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
@@ -88,7 +88,7 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "test airbyte-ci/connectors/pipelines"
+          subcommand: "test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests'"
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
@@ -103,7 +103,7 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "test airbyte-ci/connectors/base_images"
+          subcommand: "test airbyte-ci/connectors/base_images --poetry-run-command='pytest tests'"
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
@@ -112,7 +112,7 @@ jobs:
         if: steps.changes.outputs.metadata_lib_any_changed == 'true'
         uses: ./.github/actions/run-dagger-pipeline
         with:
-          subcommand: "test airbyte-ci/connectors/metadata_service/lib/"
+          subcommand: "test airbyte-ci/connectors/metadata_service/lib/ --poetry-run-command='pytest tests'"
           context: "pull_request"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -125,7 +125,7 @@ jobs:
         if: steps.changes.outputs.metadata_orchestrator_any_changed == 'true'
         uses: ./.github/actions/run-dagger-pipeline
         with:
-          subcommand: "test airbyte-ci/connectors/metadata_service/orchestrator/"
+          subcommand: "test airbyte-ci/connectors/metadata_service/orchestrator/ --poetry-run-command='pytest tests'"
           context: "pull_request"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
