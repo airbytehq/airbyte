@@ -40,6 +40,14 @@ class Config(AbstractFileBasedSpec):
         order=3,
     )
 
+    bucket_region_name: Optional[str] = Field(
+        default="",
+        title="Region",
+        description="S3 Region, Leave empty to use default",
+        examples=["ap-southeast-1"],
+        order=5,
+    )
+
     endpoint: Optional[str] = Field(
         default="",
         title="Endpoint",

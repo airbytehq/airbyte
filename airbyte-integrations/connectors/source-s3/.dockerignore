@@ -5,3 +5,4 @@
 !source_s3
 !setup.py
 !secrets
+!.venv/lib/python3.10/site-packages/airbyte_cdk/sources/file_based/file_types/parquet_parser.py
