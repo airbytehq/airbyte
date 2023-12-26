@@ -218,15 +218,15 @@ public class S3StorageOperations extends BlobStorageOperations {
   }
 
   /**
-   * Users want deterministic file names (e.g. the first file part is really foo-0.csv
-   * Using UUIDs (previous approach) doesn't allow that.
-   * However, using pure integers could lead to a collision with an existing file.
-   * So, we'll count up the existing files in the directory and use that as a lazy-offset, assuming airbyte manages the dir and has similar naming conventions.
-   * `getPartId` will be 1-indexed.
+   * Users want deterministic file names (e.g. the first file part is really foo-0.csv Using UUIDs
+   * (previous approach) doesn't allow that. However, using pure integers could lead to a collision
+   * with an existing file. So, we'll count up the existing files in the directory and use that as a
+   * lazy-offset, assuming airbyte manages the dir and has similar naming conventions. `getPartId`
+   * will be 1-indexed.
    */
   @VisibleForTesting
   String getPartId(String objectPath) {
-    if (partCounts.get(objectPath) == null){
+    if (partCounts.get(objectPath) == null) {
       partCounts.put(objectPath, new AtomicInteger(0));
     }
 
@@ -237,14 +237,15 @@ public class S3StorageOperations extends BlobStorageOperations {
       final ObjectListing objects = s3Client.listObjects(bucket, objectPath);
 
       // another thread beat us here, so recurse
-      if (partCount.get() != 0){
+      if (partCount.get() != 0) {
         return getPartId(objectPath);
       }
 
-      if(objects == null) {
+      if (objects == null) {
         partCount.set(0);
       } else if (objects.isTruncated()) {
-        // The bucket contains too many objects, and there is no reasonable way to get a count of all objects in a bucket in S3 without multiple requests
+        // The bucket contains too many objects, and there is no reasonable way to get a count of all
+        // objects in a bucket in S3 without multiple requests
         // So, let's pick a big number and assume overwriting existing files is OK...
         partCount.set(objects.getObjectSummaries().size() + 101);
       } else {

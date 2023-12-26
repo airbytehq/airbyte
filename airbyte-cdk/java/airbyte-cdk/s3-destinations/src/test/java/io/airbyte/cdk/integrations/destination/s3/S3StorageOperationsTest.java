@@ -112,24 +112,26 @@ public class S3StorageOperationsTest {
   }
 
   @Test
-  void getPartId () throws InterruptedException {
+  void getPartId() throws InterruptedException {
 
     // Multithreaded utility class
     class PartIdGetter implements Runnable {
-      final List<String> responses  = new ArrayList<>();
+
+      final List<String> responses = new ArrayList<>();
       final S3StorageOperations s3StorageOperations;
 
-      PartIdGetter(S3StorageOperations instance){
+      PartIdGetter(S3StorageOperations instance) {
         s3StorageOperations = instance;
       }
 
-      public void run () {
+      public void run() {
         responses.add(s3StorageOperations.getPartId(FAKE_BUCKET_PATH));
       }
 
-      List<String> getResponses () {
+      List<String> getResponses() {
         return responses;
       }
+
     }
 
     PartIdGetter partIdGetter = new PartIdGetter(s3StorageOperations);
@@ -155,7 +157,7 @@ public class S3StorageOperationsTest {
   }
 
   @Test
-  void getPartIdMultiplePaths () {
+  void getPartIdMultiplePaths() {
     assertEquals("1", s3StorageOperations.getPartId(FAKE_BUCKET_PATH));
     assertEquals("2", s3StorageOperations.getPartId(FAKE_BUCKET_PATH));
 
