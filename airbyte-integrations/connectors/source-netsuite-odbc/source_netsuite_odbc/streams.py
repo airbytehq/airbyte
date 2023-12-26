@@ -117,6 +117,8 @@ class NetsuiteODBCStream(Stream):
       #  across stream slives.  Therefore, we reset the primary key last value seen after each stream slice
       if self.incremental_column is not None: #  if an incremental column does not exist, we do NOT reset the primary key
         self.primary_key_last_value_seen = self.set_up_primary_key_last_value_seen(self.primary_key_column)
+      self.db_connection.execute("SELECT COUNT(*) FROM " + self.table_name)
+      self.logger.info(f"Finished reading stream slice for {self.table_name}.  Total number of records in table: {self.db_connection.fetchone()[0]}")
 
     #  STATE MANAGEMENT FUNCTIONS
     def process_stream_state(self, stream_state):
