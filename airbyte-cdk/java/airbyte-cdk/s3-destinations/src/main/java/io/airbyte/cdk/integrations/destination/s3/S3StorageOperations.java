@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,8 @@ public class S3StorageOperations extends BlobStorageOperations {
   private static final String FORMAT_VARIABLE_EPOCH = "${EPOCH}";
   private static final String FORMAT_VARIABLE_UUID = "${UUID}";
   private static final String GZ_FILE_EXTENSION = "gz";
+//  private final AtomicInteger partCount = new AtomicInteger(0);
+  private final HashMap<String, AtomicInteger> partCounts = new HashMap<>();
 
   private final NamingConventionTransformer nameTransformer;
   protected final S3DestinationConfig s3Config;
@@ -156,7 +159,7 @@ public class S3StorageOperations extends BlobStorageOperations {
   private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
     final long partSize = DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
-    final String partId = UUID.randomUUID().toString();
+    final String partId = getPartId(objectPath);
     final String fileExtension = getExtension(recordsData.getFilename());
     final String fullObjectKey;
     if (StringUtils.isNotBlank(s3Config.getFileNamePattern())) {
@@ -213,6 +216,44 @@ public class S3StorageOperations extends BlobStorageOperations {
     final String newFilename = getFilename(fullObjectKey);
     LOGGER.info("Uploaded buffer file to storage: {} -> {} (filename: {})", recordsData.getFilename(), fullObjectKey, newFilename);
     return newFilename;
+  }
+
+  /**
+   * Users want deterministic file names (e.g. the first file part is really foo-0.csv
+   * Using UUIDs (previous approach) doesn't allow that.
+   * However, using pure integers could lead to a collision with an existing file.
+   * So, we'll count up the existing files in the directory and use that as a lazy-offset, assuming airbyte manages the dir and has similar naming conventions.
+   * `getPartId` will be 1-indexed.
+   */
+  @VisibleForTesting
+  String getPartId(String objectPath) {
+    if (partCounts.get(objectPath) == null){
+      partCounts.put(objectPath, new AtomicInteger(0));
+    }
+
+    final AtomicInteger partCount = partCounts.get(objectPath);
+
+    if (partCount.get() == 0) {
+      final String bucket = s3Config.getBucketName();
+      final ObjectListing objects = s3Client.listObjects(bucket, objectPath);
+
+      // another thread beat us here, so recurse
+      if (partCount.get() != 0){
+        return getPartId(objectPath);
+      }
+
+      if(objects == null) {
+        partCount.set(0);
+      } else if (objects.isTruncated()) {
+        // The bucket contains too many objects, and there is no reasonable way to get a count of all objects in a bucket in S3 without multiple requests
+        // So, let's pick a big number and assume overwriting existing files is OK...
+        partCount.set(objects.getObjectSummaries().size() + 101);
+      } else {
+        partCount.set(objects.getObjectSummaries().size());
+      }
+    }
+
+    return Integer.toString(partCount.incrementAndGet());
   }
 
   @VisibleForTesting
