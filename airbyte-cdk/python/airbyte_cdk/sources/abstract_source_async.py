@@ -159,7 +159,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
             )
 
         try:
-            # timer.start_event(f"Syncing stream {configured_stream.stream.name}")
+            timer.start_event(f"Syncing stream {configured_stream.stream.name}")
             stream_is_available, reason = await stream_instance.check_availability(logger, self)
             if not stream_is_available:
                 logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
@@ -190,9 +190,9 @@ class AsyncAbstractSource(AbstractSource, ABC):
                 raise AirbyteTracedException.from_exception(e, message=display_message) from e
             raise e
         finally:
-            # timer.finish_event()
+            timer.finish_event()
             logger.info(f"Finished syncing {configured_stream.stream.name}")
-            # logger.info(timer.report())
+            logger.info(timer.report())
 
     async def _read_stream(
         self,
