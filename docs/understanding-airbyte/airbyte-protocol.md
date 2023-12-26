@@ -28,7 +28,6 @@ The Airbyte Protocol is versioned independently of the Airbyte Platform, and the
 
 | Version  | Date of Change | Pull Request(s)                                                                                                     | Subject                                                                          |
 |:---------|:---------------|:--------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------|
-| `v1.0.0` | 2022-11-28     | [17486](https://github.com/airbytehq/airbyte/pull/17486) & [19846](https://github.com/airbytehq/airbyte/pull/19846) | Well known data types added                                                      |
 | `v0.3.2` | 2022-10-28     | [18875](https://github.com/airbytehq/airbyte/pull/18875)                                                            | `AirbyteEstimateTraceMessage` added                                              |
 | `v0.3.1` | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                            | `AirbyteControlMessage.ConnectorConfig` added                                    |
 | `v0.3.0` | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                            | `AirbyteLogMessage.stack_trace` added                                            |
@@ -478,19 +477,14 @@ The normal success case (T3, not depicted) would be that all the records would m
 
 -- [link](https://whimsical.com/state-TYX5bSCVtVF4BU1JbUwfpZ) to source image
 
-### V1
-
-The state for an actor is emitted as a complete black box. When emitted it is wrapped in the [AirbyteStateMessage](#airbytestatemessage-v1). The contents of the `data` field is what is passed to the Source on start up. This gives the Source lead to decide how to track the state of each stream. That being said, a common pattern is a `Map<StreamDescriptor, StreamStateBlob>`. Nothing outside the source can make any inference about the state of the object EXCEPT, if it is null, it can be concluded that there is no state and the Source will start at the beginning.
-
-### V2 (coming soon!)
-
+### State Types
 In addition to allowing a Source to checkpoint data replication, the state object is structure to allow for the ability to configure and reset streams in isolation from each other. For example, if adding or removing a stream, it is possible to do so without affecting the state of any other stream in the Source.
 
 There are 3 types of state: Stream, Global, and Legacy.
 
 - **Stream** represents Sources where there is complete isolation between stream states. In these cases, the state for each stream will be emitted in its own state message. In other words, if there are 3 streams replicated during a sync, the Source would emit at least 3 state message (1 per stream). The state of the Source is the sum of all the stream states.
 - **Global** represents Sources where this shared state across streams. In these cases each state message contains the whole state for the connection. The `shared_state` field is where any information that is shared across streams must go. The `stream_states` field contains a list of objects that contain a Stream Descriptor and the state information for that stream that is stream-specific. There are drawbacks to this state type, so it should only be used in cases where a shared state between streams is unavoidable.
-- **Legacy** exists for backwards compatibility. In this state type, the state object is totally a black box. The only inference tha can be drawn from the state object is that if it is null, then there is no state for the entire Source. All current legacy cases can be ported to stream or global. Once they are, it will be removed.
+- **Legacy** exists for backwards compatibility. In this state type, the state object is totally a black box. The only inference tha can be drawn from the state object is that if it is null, then there is no state for the entire Source. **All current legacy cases can be ported to stream or global. Once they are, it will be removed.**
 
 This table breaks down attributes of these state types.
 
