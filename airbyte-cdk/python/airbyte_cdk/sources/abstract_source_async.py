@@ -9,6 +9,7 @@ from queue import Queue
 from threading import Thread
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
 
+import aiohttp
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteStateMessage,
@@ -43,6 +44,7 @@ class SourceReader(Iterator):
         self.sentinels = sentinels
         self.reader_fn = reader_fn
         self.reader_args = args
+        self.sessions: Dict[str, aiohttp.ClientSession] = {}
 
         self.thread = Thread(target=self._start_reader_thread)
         self.thread.start()
@@ -53,7 +55,9 @@ class SourceReader(Iterator):
     def __next__(self):
         item = self.queue.get()
         if isinstance(item, Sentinel):
-            print(f">>>>>>>>> Finished {item.name} stream")
+            session = self.sessions.pop(item.name)
+            if session:
+                session.close()
             self.sentinels.pop(item.name)  # TODO: error handling?
             if not self.sentinels:
                 self.thread.join()
@@ -122,21 +126,17 @@ class AsyncAbstractSource(AbstractSource, ABC):
 
     def _do_read(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         streams_in_progress = {s.stream.name: Sentinel(s.stream.name) for s in catalog.streams}
-        for record in SourceReader(self.queue, streams_in_progress, self._read_streams, catalog, stream_instances, timer, logger, state_manager, internal_config):
+        self.reader = SourceReader(self.queue, streams_in_progress, self._read_streams, catalog, stream_instances, timer, logger, state_manager, internal_config)
+        for record in self.reader:
             yield record
 
     async def _read_streams(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         tasks = []
-        sessions = []
-        try:
-            for s in catalog.streams:
-                stream = stream_instances.get(s.stream.name)
-                sessions.append(await stream._legacy_stream._ensure_session())
-                tasks.append(asyncio.create_task(self._do_async_read_stream(s, stream_instances, timer, logger, state_manager, internal_config)))
-            await asyncio.gather(*tasks)
-        finally:
-            for session in sessions:
-                await session.close()
+        for s in catalog.streams:
+            stream = stream_instances.get(s.stream.name)
+            self.reader.sessions[s.stream.name] = await stream._legacy_stream._ensure_session()
+            tasks.append(asyncio.create_task(self._do_async_read_stream(s, stream_instances, timer, logger, state_manager, internal_config)))
+        await asyncio.gather(*tasks)
 
     async def _do_async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         print(f">>>>>>>>> _do_async_read_stream {configured_stream.stream.name}")
