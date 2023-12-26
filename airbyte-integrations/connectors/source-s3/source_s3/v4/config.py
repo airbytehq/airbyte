@@ -48,6 +48,14 @@ class Config(AbstractFileBasedSpec):
         order=4,
     )
 
+    bucket_region_name: Optional[str] = Field(
+        default=None,
+        title="Region",
+        description="S3 Region name",
+        examples=["ap-southeast-1"],
+        order=5,
+    )
+
     @root_validator
     def validate_optional_args(cls, values):
         aws_access_key_id = values.get("aws_access_key_id")

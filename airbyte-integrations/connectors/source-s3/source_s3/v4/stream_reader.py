@@ -56,6 +56,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 "s3",
                 aws_access_key_id=self.config.aws_access_key_id,
                 aws_secret_access_key=self.config.aws_secret_access_key,
+                region_name=self.config.bucket_region_name,
                 **client_kv_args,
             )
         return self._s3_client
