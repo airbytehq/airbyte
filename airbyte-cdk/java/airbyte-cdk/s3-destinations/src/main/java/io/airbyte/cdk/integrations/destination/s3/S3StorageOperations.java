@@ -66,7 +66,6 @@ public class S3StorageOperations extends BlobStorageOperations {
   private static final String FORMAT_VARIABLE_EPOCH = "${EPOCH}";
   private static final String FORMAT_VARIABLE_UUID = "${UUID}";
   private static final String GZ_FILE_EXTENSION = "gz";
-//  private final AtomicInteger partCount = new AtomicInteger(0);
   private final HashMap<String, AtomicInteger> partCounts = new HashMap<>();
 
   private final NamingConventionTransformer nameTransformer;
