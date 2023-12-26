@@ -12,8 +12,8 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-import pkg_resources
-import requests
+import pkg_resources  # type: ignore
+import requests  # type: ignore
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME
 
 LOGGER = logging.getLogger(__name__)
@@ -35,6 +35,7 @@ def get_dagger_path() -> Optional[str]:
     except subprocess.CalledProcessError:
         if Path(BIN_DIR / "dagger").exists():
             return str(Path(BIN_DIR / "dagger"))
+    return None
 
 
 def get_current_dagger_sdk_version() -> str:
@@ -82,6 +83,7 @@ def check_dagger_cli_install() -> str:
         LOGGER.info(f"The Dagger CLI is not installed. Installing {expected_dagger_cli_version}...")
         install_dagger_cli(expected_dagger_cli_version)
         dagger_path = get_dagger_path()
+        assert dagger_path is not None, "Dagger CLI installation failed, dagger not found in path"
 
     cli_version = get_dagger_cli_version(dagger_path)
     if cli_version != expected_dagger_cli_version:
@@ -93,14 +95,14 @@ def check_dagger_cli_install() -> str:
     return dagger_path
 
 
-def mark_dagger_wrap():
+def mark_dagger_wrap() -> None:
     """
     Mark that the dagger wrap has been applied.
     """
     os.environ[DAGGER_WRAP_ENV_VAR_NAME] = "true"
 
 
-def call_current_command_with_dagger_run():
+def call_current_command_with_dagger_run() -> None:
     mark_dagger_wrap()
     if (os.environ.get("AIRBYTE_ROLE") == "airbyter") or (os.environ.get("CI") == "True"):
         os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]

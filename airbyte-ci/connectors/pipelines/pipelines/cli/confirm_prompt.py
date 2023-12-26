@@ -2,14 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import asyncclick as click
+
+if TYPE_CHECKING:
+    from typing import Callable
 
 PRE_CONFIRM_ALL_KEY = "yes"
 
 
-def pre_confirm_all_flag(f):
+def pre_confirm_all_flag(f: Callable) -> Callable:
     """Decorator to add a --yes flag to a command."""
     return click.option("-y", "--yes", PRE_CONFIRM_ALL_KEY, is_flag=True, default=False, help="Skip prompts and use default values")(f)
 
