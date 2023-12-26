@@ -31,6 +31,7 @@ from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_s
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 T = TypeVar("T")
+DEFAULT_SESSION_LIMIT = 10000
 
 
 class Sentinel:
@@ -82,6 +83,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
     def __init__(self):
         super().__init__()
         self.queue = Queue(10000)
+        self.session_limit = DEFAULT_SESSION_LIMIT
 
     @abstractmethod
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -134,12 +136,20 @@ class AsyncAbstractSource(AbstractSource, ABC):
             yield record
 
     async def _read_streams(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
-        tasks = []
-        for s in catalog.streams:
-            stream = stream_instances.get(s.stream.name)
-            self.reader.sessions[s.stream.name] = await stream._legacy_stream._ensure_session()
-            tasks.append(asyncio.create_task(self._do_async_read_stream(s, stream_instances, timer, logger, state_manager, internal_config)))
-        await asyncio.gather(*tasks)
+        pending_tasks = set()
+        n_started, n_streams = 0, len(catalog.streams)
+        streams_iterator = iter(catalog.streams)
+
+        while pending_tasks or n_started < n_streams:
+            while len(pending_tasks) <= self.session_limit and (s := next(streams_iterator, None)):
+                if s is None:
+                    break
+                stream = stream_instances.get(s.stream.name)
+                self.reader.sessions[s.stream.name] = await stream._legacy_stream._ensure_session()
+                pending_tasks.add(asyncio.create_task(self._do_async_read_stream(s, stream_instances, timer, logger, state_manager, internal_config)))
+                n_started += 1
+
+            _, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
 
     async def _do_async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         print(f">>>>>>>>> _do_async_read_stream {configured_stream.stream.name}")
