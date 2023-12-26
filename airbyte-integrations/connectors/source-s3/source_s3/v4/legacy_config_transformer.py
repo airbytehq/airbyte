@@ -42,6 +42,8 @@ class LegacyConfigTransformer:
             transformed_config["aws_access_key_id"] = legacy_config.provider.aws_access_key_id
         if legacy_config.provider.aws_secret_access_key:
             transformed_config["aws_secret_access_key"] = legacy_config.provider.aws_secret_access_key
+        if legacy_config.provider.bucket_region_name:
+            transformed_config["bucket_region_name"] = legacy_config.provider.bucket_region_name
         if legacy_config.provider.endpoint:
             transformed_config["endpoint"] = legacy_config.provider.endpoint
         if legacy_config.user_schema and legacy_config.user_schema != "{}":
