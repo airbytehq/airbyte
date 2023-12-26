@@ -47,7 +47,7 @@ class SimpleDockerStep(Step):
 
     def _mount_paths(self, container: dagger.Container) -> dagger.Container:
         for path_to_mount in self.paths_to_mount:
-            if path_to_mount.optional and not path_to_mount.path.exists():
+            if path_to_mount.optional and not path_to_mount.get_path().exists():
                 continue
 
             path_string = str(path_to_mount)

@@ -19,9 +19,8 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.airbyte_ci.steps.gradle import GradleTask
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.system import docker
-from pipelines.helpers.run_steps import RESULTS_DICT, StepToRun
+from pipelines.helpers.run_steps import RESULTS_DICT, STEP_TREE, StepToRun
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import StepResult, StepStatus
 
@@ -66,7 +65,7 @@ class UnitTests(GradleTask):
     bind_to_docker_host = True
 
 
-def _create_integration_step_args_factory(context: ConnectorContext) -> Callable[[RESULTS_DICT], dict]:
+def _create_integration_step_args_factory(context: ConnectorContext) -> Callable:
     """
     Create a function that can process the args for the integration step.
     """
@@ -129,12 +128,12 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
     ]
 
 
-def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
+def get_test_steps(context: ConnectorContext) -> STEP_TREE:
     """
     Get all the tests steps for a Java connector.
     """
 
-    steps = [
+    steps: STEP_TREE = [
         [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD_TAR, step=BuildConnectorDistributionTar(context))],
         [StepToRun(id=CONNECTOR_TEST_STEP_ID.UNIT, step=UnitTests(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR])],
         [

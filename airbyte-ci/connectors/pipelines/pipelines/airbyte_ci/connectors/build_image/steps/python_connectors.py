@@ -17,9 +17,10 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     A spec command is run on the container to validate it was built successfully.
     """
 
+    context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
-    async def _build_connector(self, platform: Platform):
+    async def _build_connector(self, platform: Platform, *args) -> Container:
         if (
             "connectorBuildOptions" in self.context.connector.metadata
             and "baseImage" in self.context.connector.metadata["connectorBuildOptions"]

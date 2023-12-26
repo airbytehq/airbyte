@@ -6,7 +6,7 @@ import importlib.metadata
 import os
 
 import sentry_sdk
-from connector_ops.utils import Connector
+from connector_ops.utils import Connector  # type: ignore
 
 
 def initialize():

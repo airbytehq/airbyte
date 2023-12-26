@@ -23,11 +23,12 @@ def deploy(ctx: click.Context):
 
 @deploy.command(cls=DaggerPipelineCommand, name="orchestrator", help="Deploy the metadata service orchestrator to production")
 @click.pass_context
-async def deploy_orchestrator(ctx: click.Context) -> bool:
+async def deploy_orchestrator(ctx: click.Context) -> None:
     await run_metadata_orchestrator_deploy_pipeline(
         ctx.obj["is_local"],
         ctx.obj["git_branch"],
         ctx.obj["git_revision"],
+        ctx.obj["report_output_prefix"],
         ctx.obj.get("gha_workflow_run_url"),
         ctx.obj.get("dagger_logs_url"),
         ctx.obj.get("pipeline_start_timestamp"),

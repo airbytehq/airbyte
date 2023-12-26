@@ -6,19 +6,21 @@ import textwrap
 from copy import deepcopy
 from typing import Optional
 
-from base_images import version_registry
-from connector_ops.utils import ConnectorLanguage
+from base_images import version_registry  # type: ignore
+from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
 from jinja2 import Template
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.helpers import git
 from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
 class UpgradeBaseImageMetadata(Step):
+    context: ConnectorContext
+
     title = "Upgrade the base image to the latest version in metadata.yaml"
 
     def __init__(
@@ -91,6 +93,8 @@ class UpgradeBaseImageMetadata(Step):
 
 
 class DeleteConnectorFile(Step):
+    context: ConnectorContext
+
     def __init__(
         self,
         context: ConnectorContext,
@@ -122,6 +126,8 @@ class DeleteConnectorFile(Step):
 
 
 class AddBuildInstructionsToReadme(Step):
+    context: ConnectorContext
+
     title = "Add build instructions to README.md"
 
     def __init__(self, context: PipelineContext, repo_dir: Directory) -> None:
@@ -252,7 +258,7 @@ class AddBuildInstructionsToReadme(Step):
         return new_doc
 
 
-async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, semaphore, set_if_not_exists: bool) -> ConnectorReport:
+async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, semaphore, set_if_not_exists: bool) -> Report:
     """Run a pipeline to upgrade for a single connector to use our base image."""
     async with semaphore:
         steps_results = []

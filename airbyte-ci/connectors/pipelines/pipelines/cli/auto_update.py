@@ -10,7 +10,7 @@ import os
 import sys
 
 import asyncclick as click
-import requests
+import requests  # type: ignore
 from pipelines import main_logger
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH

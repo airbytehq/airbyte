@@ -13,7 +13,7 @@ from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
 from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.common import with_pip_packages
 from pipelines.dagger.containers.python import with_python_base
-from pipelines.helpers.run_steps import StepToRun, run_steps
+from pipelines.helpers.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.helpers.utils import DAGGER_CONFIG, get_secret_host_variable
 from pipelines.models.reports import Report
 from pipelines.models.steps import MountPath, Step, StepResult
@@ -74,7 +74,7 @@ class MetadataUpload(SimpleDockerStep):
             metadata_bucket_name,
         ]
 
-        if pre_release:
+        if pre_release and pre_release_tag:
             command_to_run += ["--prerelease", pre_release_tag]
 
         super().__init__(
@@ -145,10 +145,8 @@ class TestOrchestrator(PoetryRunStep):
             title="Test Metadata Orchestrator",
             parent_dir_path="airbyte-ci/connectors/metadata_service",
             module_path="orchestrator",
+            poetry_run_args=["pytest"],
         )
-
-    async def _run(self) -> StepResult:
-        return await super()._run(["pytest"])
 
 
 # PIPELINES
@@ -158,6 +156,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
     is_local: bool,
     git_branch: str,
     git_revision: str,
+    report_output_prefix: str,
     gha_workflow_run_url: Optional[str],
     dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
@@ -168,6 +167,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
         is_local=is_local,
         git_branch=git_branch,
         git_revision=git_revision,
+        report_output_prefix=report_output_prefix,
         gha_workflow_run_url=gha_workflow_run_url,
         dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
@@ -178,7 +178,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
 
         async with metadata_pipeline_context:
-            steps = [
+            steps: STEP_TREE = [
                 StepToRun(
                     id=CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR,
                     step=TestOrchestrator(context=metadata_pipeline_context),
@@ -191,6 +191,8 @@ async def run_metadata_orchestrator_deploy_pipeline(
             ]
             steps_results = await run_steps(steps)
             metadata_pipeline_context.report = Report(
-                pipeline_context=metadata_pipeline_context, steps_results=steps_results, name="METADATA ORCHESTRATOR DEPLOY RESULTS"
+                pipeline_context=metadata_pipeline_context,
+                steps_results=list(steps_results.values()),
+                name="METADATA ORCHESTRATOR DEPLOY RESULTS",
             )
     return metadata_pipeline_context.report.success

@@ -10,18 +10,19 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Final, Optional, Union
 
 import anyio
 import asyncer
 import click
-from dagger import Container, DaggerError
+from dagger import Client, Container, DaggerError
 from pipelines import main_logger
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.utils import format_duration, get_exec_result
 
 if TYPE_CHECKING:
     from pipelines.models.contexts.pipeline_context import PipelineContext
+    from pipelines.airbyte_ci.format.format_command import FormatCommand
 
 from abc import ABC
 
@@ -30,7 +31,7 @@ from rich.style import Style
 
 @dataclass
 class MountPath:
-    path: Path
+    path: Union[Path, str]
     optional: bool = False
 
     def _cast_fields(self):
@@ -38,12 +39,15 @@ class MountPath:
         self.optional = bool(self.optional)
 
     def _check_exists(self):
-        if not self.path.exists():
+        if not self.get_path().exists():
             message = f"{self.path} does not exist."
             if self.optional:
                 main_logger.warning(message)
             else:
                 raise FileNotFoundError(message)
+
+    def get_path(self) -> Path:
+        return Path(self.path)
 
     def __post_init__(self):
         self._cast_fields()
@@ -54,14 +58,14 @@ class MountPath:
 
     @property
     def is_file(self) -> bool:
-        return self.path.is_file()
+        return self.get_path().is_file()
 
 
 @dataclass(frozen=True)
 class StepResult:
     """A dataclass to capture the result of a step."""
 
-    step: Union[Step, click.command]
+    step: Step
     status: StepStatus
     created_at: datetime = field(default_factory=datetime.utcnow)
     stderr: Optional[str] = None
@@ -91,7 +95,7 @@ class StepResult:
 class CommandResult:
     """A dataclass to capture the result of a command."""
 
-    command: click.command
+    command: click.Command | FormatCommand
     status: StepStatus
     created_at: datetime = field(default_factory=datetime.utcnow)
     stderr: Optional[str] = None
@@ -142,12 +146,12 @@ class StepStatus(Enum):
 class Step(ABC):
     """An abstract class to declare and run pipeline step."""
 
-    title: ClassVar[str]
+    title: str
     max_retries: ClassVar[int] = 0
     max_dagger_error_retries: ClassVar[int] = 3
     should_log: ClassVar[bool] = True
     success_exit_code: ClassVar[int] = 0
-    skipped_exit_code: ClassVar[int] = None
+    skipped_exit_code: ClassVar[Optional[int]] = None
     # The max duration of a step run. If the step run for more than this duration it will be considered as timed out.
     # The default of 5 hours is arbitrary and can be changed if needed.
     max_duration: ClassVar[timedelta] = timedelta(hours=5)
@@ -157,8 +161,8 @@ class Step(ABC):
     def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
         self.retry_count = 0
-        self.started_at = None
-        self.stopped_at = None
+        self.started_at: Optional[datetime] = None
+        self.stopped_at: Optional[datetime] = None
 
     @property
     def run_duration(self) -> timedelta:
@@ -177,12 +181,13 @@ class Step(ABC):
             return disabled_logger
 
     @property
-    def dagger_client(self) -> Container:
+    def dagger_client(self) -> Client:
         return self.context.dagger_client.pipeline(self.title)
 
     async def log_progress(self, completion_event: anyio.Event) -> None:
         """Log the step progress every 30 seconds until the step is done."""
         while not completion_event.is_set():
+            assert self.started_at is not None, "The step must be started before logging its progress."
             duration = datetime.utcnow() - self.started_at
             elapsed_seconds = duration.total_seconds()
             if elapsed_seconds > 30 and round(elapsed_seconds) % 30 == 0:
@@ -268,7 +273,7 @@ class Step(ABC):
         """
         raise NotImplementedError("Steps must define a '_run' attribute.")
 
-    def skip(self, reason: str = None) -> StepResult:
+    def skip(self, reason: Optional[str] = None) -> StepResult:
         """Declare a step as skipped.
 
         Args:

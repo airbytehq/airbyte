@@ -16,8 +16,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple
 
 import anyio
+import asyncclick as click
 import asyncer
-import click
 from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, Platform, QueryError, Secret
 from more_itertools import chunked
 

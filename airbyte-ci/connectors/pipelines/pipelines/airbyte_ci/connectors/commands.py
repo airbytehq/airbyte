@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Optional, Set, Tuple
 
 import asyncclick as click
-from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
+from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
 from pipelines import main_logger
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup

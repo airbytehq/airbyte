@@ -5,7 +5,7 @@
 import io
 import sys
 import tempfile
-from typing import Any, Callable, Optional, TextIO, Tuple
+from typing import Any, Callable, Optional, TextIO, Tuple, Union
 
 import anyio
 import dagger
@@ -29,7 +29,7 @@ class ClickPipelineContext(BaseModel, Singleton):
     dockerd_service: Optional[Container] = Field(default=None)
     _dagger_client: Optional[Client] = PrivateAttr(default=None)
     _click_context: Callable[[], Context] = PrivateAttr(default_factory=lambda: get_current_context)
-    _og_click_context: Callable[[], Context] = PrivateAttr(default=None)
+    _og_click_context: Context = PrivateAttr(default=None)
 
     @property
     def params(self):
@@ -109,13 +109,13 @@ class ClickPipelineContext(BaseModel, Singleton):
             log_output, self._click_context().obj["dagger_logs_path"] = self._create_dagger_client_log_file()
             return log_output
 
-    def _create_dagger_client_log_file(self) -> Tuple[io.FileIO, str]:
+    def _create_dagger_client_log_file(self) -> Tuple[TextIO, str]:
         """
         Create the dagger client log file.
         """
         dagger_logs_file_descriptor, dagger_logs_temp_file_path = tempfile.mkstemp(dir="/tmp", prefix=f"dagger_client_", suffix=".log")
         main_logger.info(f"Dagger client logs stored in {dagger_logs_temp_file_path}")
-        return io.FileIO(dagger_logs_file_descriptor, "w+"), dagger_logs_temp_file_path
+        return io.TextIOWrapper(io.FileIO(dagger_logs_file_descriptor, "w+")), dagger_logs_temp_file_path
 
 
 # Create @pass_pipeline_context decorator for use in click commands

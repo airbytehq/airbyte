@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Dict
 
 from anyio import Path
 from dagger import Secret
@@ -81,6 +81,7 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     Raises:
         ExecError: If the command returns a non-zero exit code.
     """
+    assert context.updated_secrets_dir is not None, "The context's updated_secrets_dir must be set to upload secrets."
     # temp - fix circular import
     from pipelines.dagger.containers.internal_tools import with_ci_credentials
 
@@ -94,7 +95,7 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     )
 
 
-async def load_from_local(context: ConnectorContext) -> dict[str, Secret]:
+async def load_from_local(context: ConnectorContext) -> Dict[str, Secret]:
     """Load the secrets from the local secrets directory for a connector.
 
     Args:
@@ -103,7 +104,7 @@ async def load_from_local(context: ConnectorContext) -> dict[str, Secret]:
     Returns:
         dict[str, Secret]: A dict mapping the secret file name to the dagger Secret object.
     """
-    connector_secrets = {}
+    connector_secrets: Dict[str, Secret] = {}
     local_secrets_path = Path(context.connector.code_directory / "secrets")
     if not await local_secrets_path.is_dir():
         context.logger.warning(f"Local secrets directory {local_secrets_path} does not exist, no secrets will be loaded.")

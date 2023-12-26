@@ -6,9 +6,9 @@
 
 from datetime import datetime
 from types import TracebackType
-from typing import Iterable, List, Optional
+from typing import Dict, Optional, Sequence
 
-import yaml
+import yaml  # type: ignore
 from anyio import Path
 from asyncer import asyncify
 from dagger import Directory, Platform, Secret
@@ -34,22 +34,22 @@ class ConnectorContext(PipelineContext):
         pipeline_name: str,
         connector: ConnectorWithModifiedFiles,
         is_local: bool,
-        git_branch: bool,
-        git_revision: bool,
+        git_branch: str,
+        git_revision: str,
         report_output_prefix: str,
         use_remote_secrets: bool = True,
         ci_report_bucket: Optional[str] = None,
         ci_gcs_credentials: Optional[str] = None,
         ci_git_user: Optional[str] = None,
         ci_github_access_token: Optional[str] = None,
-        connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
+        connector_acceptance_test_image: str = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
         slack_webhook: Optional[str] = None,
         reporting_slack_channel: Optional[str] = None,
-        pull_request: PullRequest = None,
+        pull_request: Optional[PullRequest.PullRequest] = None,
         should_save_report: bool = True,
         code_tests_only: bool = False,
         use_local_cdk: bool = False,
@@ -61,7 +61,7 @@ class ConnectorContext(PipelineContext):
         s3_build_cache_secret_key: Optional[str] = None,
         concurrent_cat: Optional[bool] = False,
         run_step_options: RunStepOptions = RunStepOptions(),
-        targeted_platforms: Optional[Iterable[Platform]] = BUILD_PLATFORMS,
+        targeted_platforms: Sequence[Platform] = BUILD_PLATFORMS,
     ):
         """Initialize a connector context.
 
@@ -95,10 +95,9 @@ class ConnectorContext(PipelineContext):
         self.connector = connector
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
-        self.report_output_prefix = report_output_prefix
-        self._secrets_dir = None
-        self._updated_secrets_dir = None
-        self.cdk_version = None
+        self._secrets_dir: Optional[Directory] = None
+        self._updated_secrets_dir: Optional[Directory] = None
+        self.cdk_version: Optional[str] = None
         self.should_save_report = should_save_report
         self.code_tests_only = code_tests_only
         self.use_local_cdk = use_local_cdk
@@ -109,7 +108,7 @@ class ConnectorContext(PipelineContext):
         self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
         self.s3_build_cache_secret_key = s3_build_cache_secret_key
         self.concurrent_cat = concurrent_cat
-        self._connector_secrets = None
+        self._connector_secrets: Optional[Dict[str, Secret]] = None
         self.targeted_platforms = targeted_platforms
 
         super().__init__(
@@ -117,6 +116,7 @@ class ConnectorContext(PipelineContext):
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
+            report_output_prefix=report_output_prefix,
             gha_workflow_run_url=gha_workflow_run_url,
             dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
@@ -149,7 +149,7 @@ class ConnectorContext(PipelineContext):
         return self.connector.modified_files
 
     @property
-    def secrets_dir(self) -> Directory:  # noqa D102
+    def secrets_dir(self) -> Optional[Directory]:  # noqa D102
         return self._secrets_dir
 
     @secrets_dir.setter
@@ -157,7 +157,7 @@ class ConnectorContext(PipelineContext):
         self._secrets_dir = secrets_dir
 
     @property
-    def updated_secrets_dir(self) -> Directory:  # noqa D102
+    def updated_secrets_dir(self) -> Optional[Directory]:  # noqa D102
         return self._updated_secrets_dir
 
     @updated_secrets_dir.setter
@@ -262,7 +262,8 @@ class ConnectorContext(PipelineContext):
         await asyncify(update_commit_status_check)(**self.github_commit_status)
 
         if self.should_send_slack_message:
-            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
+            # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook and reporting_slack_channel
+            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)  # type: ignore
 
         # Supress the exception if any
         return True

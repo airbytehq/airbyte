@@ -6,9 +6,9 @@ import datetime
 from copy import deepcopy
 
 import semver
-from dagger import Container
+from dagger import Container, Directory
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.helpers import git
 from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
@@ -28,6 +28,7 @@ def get_bumped_version(version: str, bump_type: str) -> str:
 
 
 class AddChangelogEntry(Step):
+    context: ConnectorContext
     title = "Add changelog entry"
 
     def __init__(
@@ -60,7 +61,7 @@ class AddChangelogEntry(Step):
                 self,
                 StepStatus.FAILURE,
                 stdout=f"Could not add changelog entry: {e}",
-                output_artifact=self.container_with_airbyte_repo,
+                output_artifact=self.repo_dir,
             )
         updated_repo_dir = self.repo_dir.with_new_file(str(doc_path), updated_doc)
         return StepResult(
@@ -87,12 +88,13 @@ class AddChangelogEntry(Step):
 
 
 class BumpDockerImageTagInMetadata(Step):
+    context: ConnectorContext
     title = "Upgrade the dockerImageTag to the latest version in metadata.yaml"
 
     def __init__(
         self,
         context: ConnectorContext,
-        repo_dir: Container,
+        repo_dir: Directory,
         new_version: str,
     ):
         super().__init__(context)
@@ -138,14 +140,14 @@ async def run_connector_version_bump_pipeline(
     bump_type: str,
     changelog_entry: str,
     pull_request_number: str,
-) -> ConnectorReport:
+) -> Report:
     """Run a pipeline to upgrade for a single connector.
 
     Args:
         context (ConnectorContext): The initialized connector context.
 
     Returns:
-        ConnectorReport: The reports holding the base image version upgrade results.
+        Report: The reports holding the base image version upgrade results.
     """
     async with semaphore:
         steps_results = []

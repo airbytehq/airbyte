@@ -15,8 +15,11 @@ def _contains_var_kwarg(f: Callable) -> bool:
 
 
 def _is_kwarg_of(key: str, f: Callable) -> bool:
-    param = inspect.signature(f).parameters.get(key, False)
-    return param and (param.kind is inspect.Parameter.KEYWORD_ONLY or param.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD)
+    param = inspect.signature(f).parameters.get(key)
+    if not param:
+        return False
+
+    return bool(param) and (param.kind is inspect.Parameter.KEYWORD_ONLY or param.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD)
 
 
 def click_ignore_unused_kwargs(f: Callable) -> Callable:

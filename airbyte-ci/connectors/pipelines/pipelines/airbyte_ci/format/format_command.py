@@ -3,10 +3,8 @@
 #
 from __future__ import annotations
 
-import io
 import logging
 import sys
-import tempfile
 from typing import Any, Callable, List, Tuple
 
 import asyncclick as click
@@ -36,10 +34,8 @@ class FormatCommand(click.Command):
         get_format_container_fn: Callable,
         format_commands: List[str],
         export_formatted_code: bool,
-        *args,
         enable_logging: bool = True,
         exit_on_failure: bool = True,
-        **kwargs,
     ) -> None:
         """Initialize a FormatCommand.
 
@@ -52,7 +48,7 @@ class FormatCommand(click.Command):
             enable_logging (bool, optional): Make the command log its output. Defaults to True.
             exit_on_failure (bool, optional): Exit the process with status code 1 if the command fails. Defaults to True.
         """
-        super().__init__(formatter.value, *args, **kwargs)
+        super().__init__(formatter.value)
         self.formatter = formatter
         self.file_filter = file_filter
         self.get_format_container_fn = get_format_container_fn

@@ -8,7 +8,7 @@ import os
 import platform
 import sys
 
-import segment.analytics as analytics
+import segment.analytics as analytics  # type: ignore
 from asyncclick import get_current_context
 
 analytics.write_key = "G6G7whgro81g9xM00kN2buclGKvcOjFd"
