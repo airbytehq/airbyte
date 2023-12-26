@@ -510,9 +510,9 @@ This table breaks down attributes of these state types.
 - **Single state message describes full state for Source** means that any state message contains the full state information for a Source. Stream does not meet this condition because each state message is scoped by stream. This means that in order to build a full picture of the state for the Source, the state messages for each configured stream must be gathered.
 
 ### State Principles
-The following is a set of principles Airbyte recommends Sources/Destinations adhere to with State. Airbyte strives to enforces these principles via our CDK.
+The following are principles Airbyte recommends Sources/Destinations adhere to with State. Airbyte enforces these principles via our CDK.
 
-These principles are designed to produce simple overall system behavior, and move Airbyte towards a world of shorter-lived jobs.
+These principles are intended to produce simple overall system behavior, and move Airbyte towards a world of shorter-lived jobs.
 
 1. **New Sources must use per-stream/global State**.
 
