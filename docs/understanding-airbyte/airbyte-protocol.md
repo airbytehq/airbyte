@@ -512,7 +512,7 @@ This table breaks down attributes of these state types.
 ### State Principles
 The following are principles Airbyte recommends Sources/Destinations adhere to with State. Airbyte enforces these principles via our CDK.
 
-These principles are intended to produce simple overall system behavior, and move Airbyte towards a world of shorter-lived jobs.
+These principles are intended to produce simple overall system behavior, and move Airbyte towards a world of shorter-lived jobs. The goal is reliable data movement with minimal data loss windows on errors.
 
 1. **New Sources must use per-stream/global State**.
 
