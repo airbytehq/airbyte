@@ -9,9 +9,7 @@ from urllib.parse import urljoin
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
 from .auth.core import HttpAuthenticator
 
@@ -102,10 +100,6 @@ class BaseHttpStream(Stream, ABC):
     @abstractmethod
     def authenticator(self) -> HttpAuthenticator:
         ...
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return HttpAvailabilityStrategy()
 
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:

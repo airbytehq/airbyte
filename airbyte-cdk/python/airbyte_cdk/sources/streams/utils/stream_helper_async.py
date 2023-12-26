@@ -8,7 +8,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 
 
-def get_first_stream_slice(stream) -> Optional[Mapping[str, Any]]:
+async def get_first_stream_slice(stream) -> Optional[Mapping[str, Any]]:
     """
     Gets the first stream_slice from a given stream's stream_slices.
     :param stream: stream
@@ -23,10 +23,10 @@ def get_first_stream_slice(stream) -> Optional[Mapping[str, Any]]:
             sync_mode=SyncMode.full_refresh,
         )
     )
-    return anext(slices)
+    return next(slices)
 
 
-def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[str, Any]]) -> StreamData:
+async def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[str, Any]]) -> StreamData:
     """
     Gets the first record for a stream_slice of a stream.
     :param stream: stream

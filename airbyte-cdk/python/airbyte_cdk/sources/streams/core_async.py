@@ -5,13 +5,16 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
 
 
 class AsyncStream(Stream, ABC):
@@ -113,6 +116,13 @@ class AsyncStream(Stream, ABC):
         """
         return [None]
 
+    @property
+    def availability_strategy(self) -> Optional["AsyncHttpAvailabilityStrategy"]:
+        """
+        :return: The AvailabilityStrategy used to check whether this stream is available.
+        """
+        return None
+
     async def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         """
         Checks whether this stream is available.
@@ -125,7 +135,7 @@ class AsyncStream(Stream, ABC):
           resolve the unavailability, if possible.
         """
         if self.availability_strategy:
-            return self.availability_strategy.check_availability(self, logger, source)
+            return await self.availability_strategy.check_availability(self, logger, source)
         return True, None
 
     async def get_error_display_message(self, exception: BaseException) -> Optional[str]:

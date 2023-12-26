@@ -18,6 +18,7 @@ from airbyte_cdk.sources.streams.async_call_rate import AsyncCachedLimiterSessio
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.core_async import AsyncStream
+from airbyte_cdk.sources.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http_base import BaseHttpStream
 from airbyte_cdk.sources.streams.http.exceptions_async import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.utils.types import JsonType
@@ -47,6 +48,10 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
     @property
     def authenticator(self) -> HttpAuthenticator:
         return self._authenticator
+
+    @property
+    async def availability_strategy(self) -> Optional[AsyncHttpAvailabilityStrategy]:
+        return AsyncHttpAvailabilityStrategy()
 
     def request_session(self) -> aiohttp.ClientSession:
         """

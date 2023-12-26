@@ -215,14 +215,14 @@ class AsyncStreamFacade(AsyncStream):
     def supports_incremental(self) -> bool:
         return self._legacy_stream.supports_incremental
 
-    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+    async def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         """
         Verifies the stream is available. Delegates to the underlying AbstractStream and ignores the parameters
         :param logger: (ignored)
         :param source:  (ignored)
         :return:
         """
-        availability = self._abstract_stream.check_availability()
+        availability = await self._abstract_stream.check_availability()
         return availability.is_available(), availability.message()
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
@@ -380,7 +380,7 @@ class AsyncAvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
 
-    def check_availability(self, stream: AsyncStream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
+    async def check_availability(self, stream: AsyncStream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
         """
         Checks stream availability.
 
@@ -392,7 +392,7 @@ class AsyncAvailabilityStrategyFacade(AvailabilityStrategy):
         :return: A tuple of (boolean, str). If boolean is true, then the stream
         """
         stream_availability = self._abstract_availability_strategy.check_availability(logger)
-        return stream_availability.is_available(), stream_availability.message()
+        return await stream_availability.is_available(), await stream_availability.message()
 
 
 class AsyncStreamAvailabilityStrategy(AbstractAvailabilityStrategy):

@@ -7,14 +7,14 @@ import typing
 from typing import Optional, Tuple
 
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
 from requests import HTTPError, codes
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
 
 
-class SalesforceAvailabilityStrategy(HttpAvailabilityStrategy):
+class SalesforceAvailabilityStrategy(AsyncHttpAvailabilityStrategy):
     def handle_http_error(
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
     ) -> Tuple[bool, Optional[str]]:

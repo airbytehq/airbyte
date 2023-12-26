@@ -114,8 +114,6 @@ class AsyncAbstractSource(AbstractSource, ABC):
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
-        # TODO assert all streams exist in the connector
-        # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
         state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         self._stream_to_instance_map = stream_instances
@@ -155,17 +153,17 @@ class AsyncAbstractSource(AbstractSource, ABC):
         if not stream_instance:
             if not self.raise_exception_on_missing_stream:
                 return
-            # raise KeyError(
-            #     f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
-            #     f"Refresh the schema in replication settings and remove this stream from future sync attempts."
-            # )
+            raise KeyError(
+                f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
+                f"Refresh the schema in replication settings and remove this stream from future sync attempts."
+            )
 
         try:
             # timer.start_event(f"Syncing stream {configured_stream.stream.name}")
-            # stream_is_available, reason = stream_instance.check_availability(logger, self)
-            # if not stream_is_available:
-            #     logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
-            #     return
+            stream_is_available, reason = await stream_instance.check_availability(logger, self)
+            if not stream_is_available:
+                logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
+                return
             logger.info(f"Marking stream {configured_stream.stream.name} as STARTED")
             self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.STARTED))
             async for record in self._read_stream(
