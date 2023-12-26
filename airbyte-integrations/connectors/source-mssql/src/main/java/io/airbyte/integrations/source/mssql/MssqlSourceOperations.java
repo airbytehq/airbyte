@@ -18,7 +18,6 @@ import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
-import java.nio.charset.Charset;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
