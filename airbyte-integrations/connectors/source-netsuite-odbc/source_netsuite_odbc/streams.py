@@ -23,7 +23,7 @@ from .odbc_utils import NetsuiteODBCCursorConstructor
 # AirbyteMessage: An AirbyteMessage. Could be of any type
 StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
-NETSUITE_PAGINATION_INTERVAL: Final[int] = 10
+NETSUITE_PAGINATION_INTERVAL: Final[int] = 10000
 EARLIEST_DATE: Final[str] = date(2020, 1, 1)
 YEARS_FORWARD_LOOKING: Final[int] = 1
 # Sometimes, system created accounts can have primary key values < 0.  To be safe, we choose
@@ -113,6 +113,10 @@ class NetsuiteODBCStream(Stream):
         else:
           raise e
       self.logger.info(f"Finished Stream Slice for Netsuite ODBC Table {self.table_name} with stream slice: {stream_slice}")
+      #  Because the WHERE filter changes in each stream slice, primary key values are not guaranteed to be in order
+      #  across stream slives.  Therefore, we reset the primary key last value seen after each stream slice
+      if self.incremental_column is not None: #  if an incremental column does not exist, we do NOT reset the primary key
+        self.primary_key_last_value_seen = self.set_up_primary_key_last_value_seen(self.primary_key_column)
 
     #  STATE MANAGEMENT FUNCTIONS
     def process_stream_state(self, stream_state):
@@ -329,7 +333,8 @@ class NetsuiteODBCStream(Stream):
       return start_slice_range, end_slice_range
     
     def get_earliest_date(self):
-      return self.config.get('starting_year', 1980)
+      starting_year = self.config.get('starting_year', 1980)
+      return date(starting_year, 1, 1)
     
     def get_slice_for_year(self, date_for_slice: date):
       year_to_use = date_for_slice.year

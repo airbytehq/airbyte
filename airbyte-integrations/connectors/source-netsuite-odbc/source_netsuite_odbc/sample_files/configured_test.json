@@ -1,0 +1,148 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "employee",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "accountnumber": { "type": ["string", "null"] },
+            "aliennumber": { "type": ["string", "null"] },
+            "approvallimit": { "type": ["number", "null"] },
+            "approver": { "type": ["integer", "null"] },
+            "authworkdate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "basewage": { "type": ["number", "null"] },
+            "basewagetype": { "type": ["integer", "null"] },
+            "billingclass": { "type": ["integer", "null"] },
+            "billpay": { "type": ["string", "null"] },
+            "birthdate": { "type": ["string", "null"], "format": "date-time" },
+            "bonustarget": { "type": ["number", "null"] },
+            "bonustargetcomment": { "type": ["string", "null"] },
+            "bonustargetpayfrequency": { "type": ["integer", "null"] },
+            "bonustargettype": { "type": ["integer", "null"] },
+            "btemplate": { "type": ["string", "null"] },
+            "class": { "type": ["integer", "null"] },
+            "comments": { "type": ["string", "null"] },
+            "commissionpaymentpreference": { "type": ["integer", "null"] },
+            "compensationcurrency": { "type": ["integer", "null"] },
+            "currency": { "type": ["integer", "null"] },
+            "custentity_jpmc_ven_pm": { "type": ["integer", "null"] },
+            "custentity_soap_je_approver": { "type": ["string", "null"] },
+            "datecreated": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "defaultacctcorpcardexp": { "type": ["integer", "null"] },
+            "defaultexpensereportcurrency": { "type": ["integer", "null"] },
+            "defaultjobresourcerole": { "type": ["integer", "null"] },
+            "department": { "type": ["integer", "null"] },
+            "directdeposit": { "type": ["string", "null"] },
+            "eligibleforcommission": { "type": ["string", "null"] },
+            "email": { "type": ["string", "null"] },
+            "employeeftestatus": { "type": ["integer", "null"] },
+            "employeestatus": { "type": ["integer", "null"] },
+            "employeetype": { "type": ["integer", "null"] },
+            "enabledeductionlimits": { "type": ["string", "null"] },
+            "entityid": { "type": ["string", "null"] },
+            "ethnicity": { "type": ["integer", "null"] },
+            "expenselimit": { "type": ["number", "null"] },
+            "externalid": { "type": ["string", "null"] },
+            "fax": { "type": ["string", "null"] },
+            "firstname": { "type": ["string", "null"] },
+            "gender": { "type": ["string", "null"] },
+            "giveaccess": { "type": ["string", "null"] },
+            "globalsubscriptionstatus": { "type": ["integer", "null"] },
+            "hiredate": { "type": ["string", "null"], "format": "date-time" },
+            "homephone": { "type": ["string", "null"] },
+            "i9verified": { "type": ["string", "null"] },
+            "id": { "type": ["integer", "null"] },
+            "inheritiprules": { "type": ["string", "null"] },
+            "initials": { "type": ["string", "null"] },
+            "ipaddressrule": { "type": ["string", "null"] },
+            "isinactive": { "type": ["string", "null"] },
+            "isjobmanager": { "type": ["string", "null"] },
+            "isjobresource": { "type": ["string", "null"] },
+            "issalesrep": { "type": ["string", "null"] },
+            "issupportrep": { "type": ["string", "null"] },
+            "job": { "type": ["integer", "null"] },
+            "jobdescription": { "type": ["string", "null"] },
+            "jobemploymentcategory": { "type": ["integer", "null"] },
+            "laborcategory": { "type": ["integer", "null"] },
+            "laborcost": { "type": ["number", "null"] },
+            "lastmodifieddate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "lastname": { "type": ["string", "null"] },
+            "lastpaiddate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "lastreviewdate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "location": { "type": ["integer", "null"] },
+            "maritalstatus": { "type": ["integer", "null"] },
+            "middlename": { "type": ["string", "null"] },
+            "mobilephone": { "type": ["string", "null"] },
+            "nextreviewdate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "officephone": { "type": ["string", "null"] },
+            "overtimepolicy": { "type": ["integer", "null"] },
+            "payfrequency": { "type": ["integer", "null"] },
+            "phone": { "type": ["string", "null"] },
+            "purchaseorderapprovallimit": { "type": ["number", "null"] },
+            "purchaseorderapprover": { "type": ["integer", "null"] },
+            "purchaseorderlimit": { "type": ["number", "null"] },
+            "rate": { "type": ["number", "null"] },
+            "releasedate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "residentstatus": { "type": ["integer", "null"] },
+            "rolesforsearch": { "type": ["string", "null"] },
+            "salesrole": { "type": ["integer", "null"] },
+            "salutation": { "type": ["string", "null"] },
+            "startdatetimeoffcalc": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "subsidiary": { "type": ["integer", "null"] },
+            "supervisor": { "type": ["integer", "null"] },
+            "targetutilization": { "type": ["number", "null"] },
+            "terminationcategory": { "type": ["integer", "null"] },
+            "terminationdetails": { "type": ["string", "null"] },
+            "terminationreason": { "type": ["integer", "null"] },
+            "terminationregretted": { "type": ["integer", "null"] },
+            "timeapprover": { "type": ["integer", "null"] },
+            "timeoffplan": { "type": ["integer", "null"] },
+            "title": { "type": ["string", "null"] },
+            "useperquest": { "type": ["string", "null"] },
+            "usetimedata": { "type": ["integer", "null"] },
+            "visaexpdate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "visatype": { "type": ["integer", "null"] },
+            "workassignment": { "type": ["integer", "null"] },
+            "workcalendar": { "type": ["integer", "null"] },
+            "workplace": { "type": ["integer", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastmodifieddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}
