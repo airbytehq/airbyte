@@ -457,6 +457,8 @@ This concept enables incremental syncs--syncs that only replicate data that is n
 
 State also enables Partial Success. In the case where during a sync there is a failure before all data has been extracted and committed, if all records up to a certain state are committed, then the next time the sync happens, it can start from that state as opposed to going back to the beginning. Partial Success is powerful, because especially in the case of high data volumes and long syncs, being able to pick up from wherever the failure occurred can costly re-syncing of data that has already been replicated.
 
+The state for an actor is emitted as a black box by the Source. When emitted it is wrapped in the [AirbyteStateMessage](#airbytestatemessage). The contents of the `data` field is what is passed to the Source on start up. It is up to the Source to interpret the state object. Nothing outside the Source can make any inference about the state of the object EXCEPT, if it is null, it can be concluded that there is no state and the Source will start at the beginning.
+
 ### State & Source
 
 This section will step through how state is used to allow a Source to pick up where it left off. A Source takes state as an input. A Source should be able to take that input and use it to determine where it left off the last time. The contents of the Source is a black box to the Protocol. The Protocol provides an envelope for the Source to put its state in and then passes the state back in that envelope. The Protocol never needs to know anything about the contents of the state. Thus, the Source can track state however makes most sense to it.
