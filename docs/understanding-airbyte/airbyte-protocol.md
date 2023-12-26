@@ -26,17 +26,26 @@ Each of these concepts is described in greater depth in their respective section
 
 The Airbyte Protocol is versioned independently of the Airbyte Platform, and the version number is used to determine the compatibility between connectors and the Airbyte Platform.
 
-| Version  | Date of Change | Pull Request(s)                                                                                                     | Subject                                                                          |
-|:---------|:---------------|:--------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------|
-| `v0.3.2` | 2022-10-28     | [18875](https://github.com/airbytehq/airbyte/pull/18875)                                                            | `AirbyteEstimateTraceMessage` added                                              |
-| `v0.3.1` | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                            | `AirbyteControlMessage.ConnectorConfig` added                                    |
-| `v0.3.0` | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                            | `AirbyteLogMessage.stack_trace` added                                            |
-| `v0.2.0` | 2022-06-10     | [13573](https://github.com/airbytehq/airbyte/pull/13573) & [12586](https://github.com/airbytehq/airbyte/pull/12586) | `STREAM` and `GLOBAL` STATE messages                                             |
-| `v0.1.1` | 2022-06-06     | [13356](https://github.com/airbytehq/airbyte/pull/13356)                                                            | Add a namespace in association with the stream name                              |
-| `v0.1.0` | 2022-05-03     | [12458](https://github.com/airbytehq/airbyte/pull/12458) & [12581](https://github.com/airbytehq/airbyte/pull/12581) | `AirbyteTraceMessage` added to allow connectors to better communicate exceptions |
-| `v0.0.2` | 2021-11-15     | [7798](https://github.com/airbytehq/airbyte/pull/7798)                                                              | Support oAuth Connectors (internal)                                              |
-| `v0.0.1` | 2021-11-19     | [1021](https://github.com/airbytehq/airbyte/pull/1021)                                                              | Remove sub-JSON Schemas                                                          |
-| `v0.0.0` | 2020-11-18     | [998](https://github.com/airbytehq/airbyte/pull/998)                                                                | Initial version described via JSON Schema                                        |
+| Version  | Date of Change | Pull Request(s)                                                                                                           | Subject                                                                           |
+|:---------|:---------------|:--------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------|
+| `v0.5.2` | 2023-12-26     | [58](https://github.com/airbytehq/airbyte-protocol/pull/58)                                                               | Remove unused V1.                                                                 |
+| `v0.5.1` | 2023-04-12     | [53](https://github.com/airbytehq/airbyte-protocol/pull/53)                                                               | Modify various helper libraries.                                                  |
+| `v0.5.0` | 2023-11-13     | [49](https://github.com/airbytehq/airbyte-protocol/pull/49)                                                               | `AirbyteStateStatsMessage` added.                                                 |
+| `v0.4.2` | 2023-04-12     | [46](https://github.com/airbytehq/airbyte-protocol/pull/46)                                                               | `AirbyteAnalyticsTraceMessage` added.                                             |
+| `v0.4.1` | 2023-08-14     | [41](https://github.com/airbytehq/airbyte-protocol/pull/41) & [44](https://github.com/airbytehq/airbyte-protocol/pull/44) | Various bug fixes.                                                                |
+| `v0.3.6` | 2023-04-21     | [34](https://github.com/airbytehq/airbyte-protocol/pull/34)                                                               | Add explicit `AirbyteStreamStatus` statue values.                                 |
+| `v0.3.5` | 2023-04-13     | [30](https://github.com/airbytehq/airbyte-protocol/pull/30)                                                               | Fix indentation.                                                                  |
+| `v0.3.4` | 2023-04-13     | [28](https://github.com/airbytehq/airbyte-protocol/pull/28)                                                               | Fix Indentation.                                                                  |
+| `v0.3.3` | 2023-04-12     | [18](https://github.com/airbytehq/airbyte-protocol/pull/18)                                                               | `AirbyteStreamStatusMessage` added.                                               |
+| `v0.3.2` | 2022-10-28     | [18875](https://github.com/airbytehq/airbyte/pull/18875)                                                                  | `AirbyteEstimateTraceMessage` added.                                              |
+| `v0.3.1` | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                                  | `AirbyteControlMessage.ConnectorConfig` added.                                    |
+| `v0.3.0` | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                                  | `AirbyteLogMessage.stack_trace` added.                                            |
+| `v0.2.0` | 2022-06-10     | [13573](https://github.com/airbytehq/airbyte/pull/13573) & [12586](https://github.com/airbytehq/airbyte/pull/12586)       | `STREAM` and `GLOBAL` STATE messages.                                             |
+| `v0.1.1` | 2022-06-06     | [13356](https://github.com/airbytehq/airbyte/pull/13356)                                                                  | Add a namespace in association with the stream name.                              |
+| `v0.1.0` | 2022-05-03     | [12458](https://github.com/airbytehq/airbyte/pull/12458) & [12581](https://github.com/airbytehq/airbyte/pull/12581)       | `AirbyteTraceMessage` added to allow connectors to better communicate exceptions. |
+| `v0.0.2` | 2021-11-15     | [7798](https://github.com/airbytehq/airbyte/pull/7798)                                                                    | Support oAuth Connectors (internal).                                              |
+| `v0.0.1` | 2021-11-19     | [1021](https://github.com/airbytehq/airbyte/pull/1021)                                                                    | Remove sub-JSON Schemas.                                                          |
+| `v0.0.0` | 2020-11-18     | [998](https://github.com/airbytehq/airbyte/pull/998)                                                                      | Initial version described via JSON Schema.                                        |
 
 ## Actor Interface
 
@@ -478,7 +487,7 @@ The normal success case (T3, not depicted) would be that all the records would m
 -- [link](https://whimsical.com/state-TYX5bSCVtVF4BU1JbUwfpZ) to source image
 
 ### State Types
-In addition to allowing a Source to checkpoint data replication, the state object is structure to allow for the ability to configure and reset streams in isolation from each other. For example, if adding or removing a stream, it is possible to do so without affecting the state of any other stream in the Source.
+In addition to allowing a Source to checkpoint data replication, the state object allows for the ability to configure and reset streams in isolation from each other. For example, if adding or removing a stream, it is possible to do so without affecting the state of any other stream in the Source.
 
 There are 3 types of state: Stream, Global, and Legacy.
 
@@ -494,7 +503,6 @@ This table breaks down attributes of these state types.
 | Stream-Level Replication Isolation                   | X      |        |        |
 | Single state message describes full state for Source |        | X      | X      |
 
-- **Protocol Version** simply connotes which versions of the Protocol have support for these State types. The new state message is backwards compatible with the V1 message. This allows old versions of connectors and platforms to interact with the new message.
 - **Stream-Level Configuration / Reset** was mentioned above. The drawback of the old state struct was that it was not possible to configure or reset the state for a single stream without doing it for all of them. Thus, new state types support this, but the legacy one cannot.
 - **Stream-Level Replication Isolation** means that a Source could be run in parallel by splitting up its streams across running instances. This is only possible for Stream state types, because they are the only state type that can update its current state completely on a per-stream basis. This is one of the main drawbacks of Sources that use Global state; it is not possible to increase their throughput through parallelization.
 - **Single state message describes full state for Source** means that any state message contains the full state information for a Source. Stream does not meet this condition because each state message is scoped by stream. This means that in order to build a full picture of the state for the Source, the state messages for each configured stream must be gathered.
@@ -609,26 +617,7 @@ AirbyteRecordMessage:
       type: integer
 ```
 
-### AirbyteStateMessage (V1)
-
-The state message enables the Source to emit checkpoints while replicating data. These checkpoints mean that if replication fails before completion, the next sync is able to start from the last checkpoint instead of returning to the beginning of the previous sync. The details of this process are described in [State & Checkpointing](#state--checkpointing).
-
-The state message is a wrapper around the state that a Source emits. The state that the Source emits is treated as a black box by the protocol--it is modeled as a JSON blob.
-
-```yaml
-AirbyteStateMessage:
-  type: object
-  additionalProperties: true
-  required:
-    - data
-  properties:
-    data:
-      description: "the state data"
-      type: object
-      existingJavaType: com.fasterxml.jackson.databind.JsonNode
-```
-
-### AirbyteStateMessage (V2 -- coming soon!)
+### AirbyteStateMessage
 
 The state message enables the Source to emit checkpoints while replicating data. These checkpoints mean that if replication fails before completion, the next sync is able to start from the last checkpoint instead of returning to the beginning of the previous sync. The details of this process are described in [State & Checkpointing](#state--checkpointing).
 
