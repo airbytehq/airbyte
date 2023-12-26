@@ -4,8 +4,14 @@ connectionSpecification:
   title: Gainsight CS Spec
   type: object
   required:
+    - domain_url
     - access_key
   properties:
+    domain_url:
+      type: string
+      title: Domain URL
+      examples:
+        - "https://company-name.gainsightcloud.com"
     access_key:
       type: string
       title: Access Key

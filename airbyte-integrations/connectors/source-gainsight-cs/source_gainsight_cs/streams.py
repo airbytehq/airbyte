@@ -22,6 +22,7 @@ class GainsightCsObjectStream(GainsightCsStream):
     primary_key = "gsid"
     limit = 100
     json_schema = None
+    offset = 0
 
     gainsight_airbyte_type_map = {
         "STRING": ["null", "string"],
@@ -52,12 +53,12 @@ class GainsightCsObjectStream(GainsightCsStream):
         return "POST"
 
     def request_body_json(self, stream_state: Mapping[str, Any] | None, stream_slice: Mapping[str, Any] | None = None, next_page_token: Mapping[str, Any] | None = None) -> Mapping[str, Any] | None:
-        created_date, modified_date = self.get_dates("")
         select_columns = self.get_select_columns()
+        offset = self.offset if next_page_token is None else next_page_token
         request_body = {
           "select": select_columns,
           "limit": self.limit,
-          "offset": 0
+          "offset": offset
         }
         return request_body
 
@@ -66,7 +67,11 @@ class GainsightCsObjectStream(GainsightCsStream):
         yield from records
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+        data = response.json().get("data", {}).get("records", [])
+        if len(data) < self.limit:
+            return None
+        self.offset = self.offset + self.limit
+        return self.offset
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if self.json_schema is not None:
