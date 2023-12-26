@@ -28,9 +28,8 @@ class AsyncStream(Stream, ABC):
         logger: logging.Logger,
         slice_logger: SliceLogger,
     ) -> Iterable[StreamData]:
-        slices = self.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
-        logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)", extra={"stream_slices": slices})
-        for _slice in slices:
+        async for _slice in self.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field):
+            logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)", extra={"stream_slice": _slice})
             if slice_logger.should_log_slice_message(logger):
                 yield slice_logger.create_slice_log_message(_slice)
             async for record in self.read_records(

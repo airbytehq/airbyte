@@ -145,7 +145,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
                 if s is None:
                     break
                 stream = stream_instances.get(s.stream.name)
-                self.reader.sessions[s.stream.name] = await stream._legacy_stream._ensure_session()
+                self.reader.sessions[s.stream.name] = await stream._ensure_session()
                 pending_tasks.add(asyncio.create_task(self._do_async_read_stream(s, stream_instances, timer, logger, state_manager, internal_config)))
                 n_started += 1
 
@@ -195,7 +195,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
             logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
             logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
             self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE))
-            display_message = stream_instance.get_error_display_message(e)
+            display_message = await stream_instance.get_error_display_message(e)
             if display_message:
                 raise AirbyteTracedException.from_exception(e, message=display_message) from e
             raise e
