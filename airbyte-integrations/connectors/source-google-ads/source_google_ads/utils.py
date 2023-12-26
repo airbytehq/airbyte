@@ -225,6 +225,8 @@ class RunAsThread:
                     # The timer is reset since a new result has been received, preventing the timeout from occurring.
                     start_time = time.time()
                 except queue.Empty:
+                    if exit_event.is_set():
+                        break
                     # Check if the timeout has been reached without new results.
                     if time.time() - start_time > self._timeout_seconds:
                         # The exit event is set to signal the generator function to stop producing data.
@@ -254,6 +256,12 @@ class RunAsThread:
                 if exit_event.is_set():
                     break
                 self.write(the_queue, value, write_event)
+            else:
+                # Notify the main thread that the generator function has completed its execution.
+                exit_event.set()
+                # Notify the main thread (even if the generator didn't produce any data) to prevent waiting for no reason.
+                if not write_event.is_set():
+                    write_event.set()
         except Exception as e:
             self.write(the_queue, e, write_event)
 
