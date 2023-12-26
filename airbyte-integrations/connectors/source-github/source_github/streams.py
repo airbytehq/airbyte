@@ -738,7 +738,7 @@ class GitHubGraphQLStream(GithubStream, ABC):
         return "graphql"
 
     def should_retry(self, response: requests.Response) -> bool:
-        return True if response.json().get("errors") else super().should_retry(response)
+        return super().should_retry(response) or response.json().get("errors")
 
     def _get_repository_name(self, repository: Mapping[str, Any]) -> str:
         return repository["owner"]["login"] + "/" + repository["name"]
