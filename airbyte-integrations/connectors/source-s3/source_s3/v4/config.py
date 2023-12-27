@@ -2,12 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from os import getenv
 from typing import Any, Dict, Optional
 
 import dpath.util
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.utils import is_cloud_environment
 from pydantic import AnyUrl, Field, ValidationError, root_validator
+
+AWS_EXTERNAL_ID = getenv("AWS_EXTERNAL_ID")
 
 
 class Config(AbstractFileBasedSpec):
@@ -29,6 +32,15 @@ class Config(AbstractFileBasedSpec):
         "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
         order=2,
+    )
+
+    role_arn: Optional[str] = Field(
+        title="AWS Role ARN",
+        default=None,
+        description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations "
+        f"requested using this profile. Set External ID as {AWS_EXTERNAL_ID}.",
+        airbyte_secret=True,
+        order=6,
     )
 
     aws_secret_access_key: Optional[str] = Field(

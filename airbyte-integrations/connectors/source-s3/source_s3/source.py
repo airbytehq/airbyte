@@ -3,11 +3,14 @@
 #
 
 
+from os import getenv
 from typing import Optional
 
 from pydantic import BaseModel, Field
 
 from .source_files_abstract.spec import SourceFilesAbstractSpec
+
+AWS_EXTERNAL_ID = getenv("AWS_EXTERNAL_ID")
 
 
 class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
@@ -38,6 +41,15 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             airbyte_secret=True,
             always_show=True,
             order=2,
+        )
+        role_arn: Optional[str] = Field(
+            title="AWS Role ARN",
+            default=None,
+            description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations "
+            f"requested using this profile. Set External ID as '{AWS_EXTERNAL_ID}'.",
+            always_show=True,
+            airbyte_secret=True,
+            order=6,
         )
         path_prefix: str = Field(
             default="",
