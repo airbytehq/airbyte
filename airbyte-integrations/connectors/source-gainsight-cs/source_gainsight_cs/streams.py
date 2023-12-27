@@ -6,7 +6,13 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class GainsightCsStream(HttpStream, ABC):
-    url_base = "https://demo-magnify.gainsightcloud.com/v1/"
+    def __init__(self, domain_url: str, **kwargs):
+        super().__init__(**kwargs)
+        self.domain_url = f"{domain_url}/v1/"
+
+    @property
+    def url_base(self):
+        return self.domain_url
 
     def get_dates(self, stream_name):
         match stream_name:

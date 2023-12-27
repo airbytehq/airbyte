@@ -37,7 +37,8 @@ class SourceGainsightCs(AbstractSource):
         return GainsightCsAuthenticator(token)
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        url = f"{GainsightCsStream.url_base}meta/services/objects/Person/describe?idd=true"
+        domain_url = config.get("domain_url")
+        url = f"{domain_url}/v1/meta/services/objects/Person/describe?idd=true"
         auth = SourceGainsightCs._get_authenticator(config)
         try:
             session = requests.get(url, headers=auth.get_auth_header())
@@ -48,13 +49,14 @@ class SourceGainsightCs(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
+        domain_url = config.get("domain_url")
         return [
-            Person(authenticator=auth),
-            Company(authenticator=auth),
-            User(authenticator=auth),
-            CompanyPerson(authenticator=auth),
-            ActivityTimeline(authenticator=auth),
-            CallToAction(authenticator=auth),
-            SurveyParticipant(authenticator=auth),
-            Playbook(authenticator=auth)
+            Person(domain_url=domain_url, authenticator=auth),
+            Company(domain_url=domain_url, authenticator=auth),
+            User(domain_url=domain_url, authenticator=auth),
+            CompanyPerson(domain_url=domain_url, authenticator=auth),
+            ActivityTimeline(domain_url=domain_url, authenticator=auth),
+            CallToAction(domain_url=domain_url, authenticator=auth),
+            SurveyParticipant(domain_url=domain_url, authenticator=auth),
+            Playbook(domain_url=domain_url, authenticator=auth)
         ]
