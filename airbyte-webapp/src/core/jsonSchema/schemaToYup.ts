@@ -1,3 +1,4 @@
+// import dayjs from "dayjs";
 import { JSONSchema7 } from "json-schema";
 import * as yup from "yup";
 
@@ -59,6 +60,17 @@ export const buildYupFormForJsonSchema = (
       if (jsonSchema?.pattern !== undefined) {
         schema = schema.matches(new RegExp(jsonSchema.pattern), "form.pattern.error");
       }
+      // if (jsonSchema?.type === "string" && jsonSchema?.format === "date-time") {
+      //   schema = yup
+      //     .string()
+      //     .trim()
+      //     .test("is-valid-date-time", "Invalid date-time format", (value) => {
+      //       const isValidDateTime = dayjs(value).isValid();
+      //       const valueAsString = String(value);
+      //       const isValidSimpleDate = /^\d{4}-\d{2}-\d{2}$/.test(valueAsString);
+      //       return isValidDateTime || isValidSimpleDate;
+      //     });
+      // }
 
       break;
     case "boolean":
