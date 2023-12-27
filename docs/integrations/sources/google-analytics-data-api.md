@@ -264,6 +264,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 2.1.0   | 2023-12-28 | [33802](https://github.com/airbytehq/airbyte/pull/33802) | Add `CohortSpec` to custom report in specification                              |
 | 2.0.3   | 2023-11-03 | [32149](https://github.com/airbytehq/airbyte/pull/32149) | Fixed bug with missing `metadata` when the credentials are not valid            |
 | 2.0.2   | 2023-11-02 | [32094](https://github.com/airbytehq/airbyte/pull/32094) | Added handling for `JSONDecodeError` while checking for `api qouta` limits      |
 | 2.0.1   | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
