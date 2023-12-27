@@ -41,47 +41,47 @@ class Report:
     filename: str = "output"
 
     @property
-    def report_output_prefix(self) -> str:  # noqa D102
+    def report_output_prefix(self) -> str:
         return self.pipeline_context.report_output_prefix
 
     @property
-    def json_report_file_name(self) -> str:  # noqa D102
+    def json_report_file_name(self) -> str:
         return self.filename + ".json"
 
     @property
-    def json_report_remote_storage_key(self) -> str:  # noqa D102
+    def json_report_remote_storage_key(self) -> str:
         return f"{self.report_output_prefix}/{self.json_report_file_name}"
 
     @property
-    def failed_steps(self) -> List[StepResult]:  # noqa D102
+    def failed_steps(self) -> List[StepResult]:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.FAILURE]
 
     @property
-    def successful_steps(self) -> List[StepResult]:  # noqa D102
+    def successful_steps(self) -> List[StepResult]:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.SUCCESS]
 
     @property
-    def skipped_steps(self) -> List[StepResult]:  # noqa D102
+    def skipped_steps(self) -> List[StepResult]:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.SKIPPED]
 
     @property
-    def success(self) -> bool:  # noqa D102
+    def success(self) -> bool:
         return len(self.failed_steps) == 0 and (len(self.skipped_steps) > 0 or len(self.successful_steps) > 0)
 
     @property
-    def run_duration(self) -> timedelta:  # noqa D102
+    def run_duration(self) -> timedelta:
         assert self.pipeline_context.started_at is not None, "The pipeline started_at timestamp must be set to save reports."
         assert self.pipeline_context.stopped_at is not None, "The pipeline stopped_at timestamp must be set to save reports."
         return self.pipeline_context.stopped_at - self.pipeline_context.started_at
 
     @property
-    def lead_duration(self) -> timedelta:  # noqa D102
+    def lead_duration(self) -> timedelta:
         assert self.pipeline_context.started_at is not None, "The pipeline started_at timestamp must be set to save reports."
         assert self.pipeline_context.stopped_at is not None, "The pipeline stopped_at timestamp must be set to save reports."
         return self.pipeline_context.stopped_at - self.pipeline_context.created_at
 
     @property
-    def remote_storage_enabled(self) -> bool:  # noqa D102
+    def remote_storage_enabled(self) -> bool:
         return self.pipeline_context.is_ci
 
     async def save_local(self, filename: str, content: str) -> Path:
@@ -151,7 +151,7 @@ class Report:
             }
         )
 
-    def print(self):
+    def print(self) -> None:
         """Print the test report to the console in a nice way."""
         pipeline_name = self.pipeline_context.pipeline_name
         main_panel_title = Text(f"{pipeline_name.upper()} - {self.name}")

@@ -13,7 +13,7 @@ class LazyGroup(click.Group):
     A click Group that can lazily load subcommands.
     """
 
-    def __init__(self, *args, lazy_subcommands: Optional[Dict[str, str]] = None, **kwargs):
+    def __init__(self, *args, lazy_subcommands: Optional[Dict[str, str]] = None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         # lazy_subcommands is a map of the form:
         #

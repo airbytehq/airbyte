@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Final, Optional, Union
+from typing import TYPE_CHECKING
 
 import anyio
 import asyncer
@@ -21,6 +21,7 @@ from pipelines.helpers import sentry_utils
 from pipelines.helpers.utils import format_duration, get_exec_result
 
 if TYPE_CHECKING:
+    from typing import Any, ClassVar, Optional, Union
     from pipelines.airbyte_ci.format.format_command import FormatCommand
     from pipelines.models.contexts.pipeline_context import PipelineContext
 
@@ -34,11 +35,11 @@ class MountPath:
     path: Union[Path, str]
     optional: bool = False
 
-    def _cast_fields(self):
+    def _cast_fields(self) -> None:
         self.path = Path(self.path)
         self.optional = bool(self.optional)
 
-    def _check_exists(self):
+    def _check_exists(self) -> None:
         if not self.get_path().exists():
             message = f"{self.path} does not exist."
             if self.optional:
@@ -49,11 +50,11 @@ class MountPath:
     def get_path(self) -> Path:
         return Path(self.path)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._cast_fields()
         self._check_exists()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.path)
 
     @property
@@ -79,7 +80,7 @@ class StepResult:
     def __str__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}\n\nSTDOUT:\n{self.stdout}\n\nSTDERR:\n{self.stderr}"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.stderr:
             super().__setattr__("stderr", self.redact_secrets_from_string(self.stderr))
         if self.stdout:
@@ -146,7 +147,6 @@ class StepStatus(Enum):
 class Step(ABC):
     """An abstract class to declare and run pipeline step."""
 
-    title: str
     max_retries: ClassVar[int] = 0
     max_dagger_error_retries: ClassVar[int] = 3
     should_log: ClassVar[bool] = True
@@ -163,6 +163,11 @@ class Step(ABC):
         self.retry_count = 0
         self.started_at: Optional[datetime] = None
         self.stopped_at: Optional[datetime] = None
+
+    @property
+    def title(self) -> str:
+        """The title of the step."""
+        raise NotImplementedError("Steps must define a 'title' attribute.")
 
     @property
     def run_duration(self) -> timedelta:
@@ -242,7 +247,7 @@ class Step(ABC):
         max_retries = self.max_dagger_error_retries if step_result.exc_info else self.max_retries
         return self.retry_count < max_retries and max_retries > 0
 
-    async def retry(self, step_result, *args, **kwargs) -> StepResult:
+    async def retry(self, step_result: StepResult, *args, **kwargs) -> StepResult:
         self.retry_count += 1
         self.logger.warn(
             f"Failed with error: {step_result.stderr}.\nRetry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds..."

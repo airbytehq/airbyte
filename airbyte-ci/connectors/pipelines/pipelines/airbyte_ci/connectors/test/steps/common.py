@@ -36,7 +36,7 @@ class VersionCheck(Step, ABC):
         return True
 
     @property
-    def github_master_metadata_url(self):
+    def github_master_metadata_url(self) -> str:
         return f"{self.GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
 
     @cached_property
@@ -325,7 +325,7 @@ class CheckBaseImageIsUsed(Step):
                 StepStatus.FAILURE,
                 stdout=f"Connector is certified but does not use our base image. {migration_hint}",
             )
-        has_dockerfile = "Dockerfile" in await (await self.context.get_connector_dir(include="Dockerfile")).entries()
+        has_dockerfile = "Dockerfile" in await (await self.context.get_connector_dir(include=["Dockerfile"])).entries()
         if has_dockerfile:
             return StepResult(
                 self,

@@ -6,15 +6,17 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Callable, Dict
+from typing import TYPE_CHECKING
 
 from anyio import Path
 from dagger import Secret
 from pipelines.helpers.utils import get_file_contents, get_secret_host_variable
 
 if TYPE_CHECKING:
+    from typing import Callable, Dict
+
     from dagger import Container
-    from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
+    from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
 async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container) -> list[str]:
@@ -32,7 +34,7 @@ async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container)
     return secrets_to_mask
 
 
-async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> dict[str, Secret]:
+async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> Dict[str, Secret]:
     """Use the ci-credentials tool to download the secrets stored for a specific connector to a Directory.
 
     Args:
@@ -68,7 +70,7 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
     return connector_secrets
 
 
-async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS"):
+async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> Container:
     """Use the ci-credentials tool to upload the secrets stored in the context's updated_secrets-dir.
 
     Args:

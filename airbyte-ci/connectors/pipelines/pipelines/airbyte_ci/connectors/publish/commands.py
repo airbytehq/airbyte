@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List
 
 import asyncclick as click
 from pipelines import main_logger
@@ -68,7 +67,7 @@ async def publish(
     metadata_service_gcs_credentials: str,
     slack_webhook: str,
     slack_channel: str,
-):
+) -> bool:
     ctx.obj["spec_cache_gcs_credentials"] = spec_cache_gcs_credentials
     ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
     ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name

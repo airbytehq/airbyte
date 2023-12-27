@@ -4,7 +4,7 @@
 
 import json
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Tuple
 
 from google.cloud import storage  # type: ignore
 from google.oauth2 import service_account  # type: ignore

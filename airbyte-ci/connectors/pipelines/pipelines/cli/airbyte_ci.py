@@ -4,6 +4,8 @@
 
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
+from __future__ import annotations
+
 import logging
 import multiprocessing
 import os
@@ -79,7 +81,7 @@ def set_working_directory_to_root() -> None:
     os.chdir(working_dir)
 
 
-def log_git_info(ctx: click.Context):
+def log_git_info(ctx: click.Context) -> None:
     main_logger.info("Running airbyte-ci in CI mode.")
     main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
     main_logger.info(f"CI Report Bucket Name: {ctx.obj['ci_report_bucket_name']}")
@@ -110,7 +112,7 @@ def _get_pull_request(ctx: click.Context) -> Optional[PullRequest.PullRequest]:
     return github.get_pull_request(pull_request_number, ci_github_access_token)
 
 
-def check_local_docker_configuration():
+def check_local_docker_configuration() -> None:
     try:
         docker_client = docker.from_env()
     except Exception as e:
@@ -139,7 +141,7 @@ def is_dagger_run_enabled_by_default() -> bool:
     return False
 
 
-def check_dagger_wrap():
+def check_dagger_wrap() -> bool:
     """
     Check if the command is already wrapped by dagger run.
     This is useful to avoid infinite recursion when calling dagger run from dagger run.

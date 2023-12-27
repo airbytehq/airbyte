@@ -5,7 +5,7 @@
 import io
 import sys
 import tempfile
-from typing import Any, Callable, Optional, TextIO, Tuple, Union
+from typing import Any, Callable, Dict, Optional, TextIO, Tuple
 
 import anyio
 import dagger
@@ -32,7 +32,7 @@ class ClickPipelineContext(BaseModel, Singleton):
     _og_click_context: Context = PrivateAttr(default=None)
 
     @property
-    def params(self):
+    def params(self) -> Dict[str, Any]:
         """
         Returns a combination of the click context object and the click context params.
 
@@ -57,7 +57,7 @@ class ClickPipelineContext(BaseModel, Singleton):
     class Config:
         arbitrary_types_allowed = True
 
-    def __init__(self, **data: dict[str, Any]):
+    def __init__(self, **data: dict[str, Any]) -> None:
         """
         Initialize the ClickPipelineContext instance.
 
@@ -113,7 +113,7 @@ class ClickPipelineContext(BaseModel, Singleton):
         """
         Create the dagger client log file.
         """
-        dagger_logs_file_descriptor, dagger_logs_temp_file_path = tempfile.mkstemp(dir="/tmp", prefix=f"dagger_client_", suffix=".log")
+        dagger_logs_file_descriptor, dagger_logs_temp_file_path = tempfile.mkstemp(dir="/tmp", prefix="dagger_client_", suffix=".log")
         main_logger.info(f"Dagger client logs stored in {dagger_logs_temp_file_path}")
         return io.TextIOWrapper(io.FileIO(dagger_logs_file_descriptor, "w+")), dagger_logs_temp_file_path
 

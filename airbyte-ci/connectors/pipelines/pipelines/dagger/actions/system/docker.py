@@ -20,7 +20,6 @@ from pipelines.consts import (
     TAILSCALE_AUTH_KEY,
 )
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.models.contexts.pipeline_context import PipelineContext
 
 
 def get_base_dockerd_container(dagger_client: Client) -> Container:
@@ -190,7 +189,7 @@ def with_docker_cli(context: ConnectorContext) -> Container:
     return with_bound_docker_host(context, docker_cli)
 
 
-async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str):
+async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str) -> str:
     """Load a docker image tar archive to the docker host.
 
     Args:

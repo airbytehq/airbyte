@@ -22,7 +22,7 @@ class SimpleDockerStep(Step):
         env_variables: dict[str, str] = {},
         working_directory: str = "/",
         command: Optional[List[str]] = None,
-    ):
+    ) -> None:
         """A simple step that runs a given command in a container.
 
         Args:
@@ -35,7 +35,7 @@ class SimpleDockerStep(Step):
             working_directory (str, optional): working directory to run the command in. Defaults to "/".
             command (Optional[List[str]], optional): The default command to run. Defaults to None.
         """
-        self.title = title
+        self._title = title
         super().__init__(context)
 
         self.paths_to_mount = paths_to_mount
@@ -44,6 +44,10 @@ class SimpleDockerStep(Step):
         self.secrets = secrets
         self.env_variables = env_variables
         self.command = command
+
+    @property
+    def title(self) -> str:
+        return self._title
 
     def _mount_paths(self, container: dagger.Container) -> dagger.Container:
         for path_to_mount in self.paths_to_mount:
@@ -89,7 +93,7 @@ class SimpleDockerStep(Step):
 
         return container
 
-    async def _run(self, command=None) -> StepResult:
+    async def _run(self, command: Optional[List[str]] = None) -> StepResult:
         command_to_run = command or self.command
         if not command_to_run:
             raise ValueError(f"No command given to the {self.title} step")

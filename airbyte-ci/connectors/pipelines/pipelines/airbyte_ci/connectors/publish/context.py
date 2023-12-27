@@ -46,7 +46,7 @@ class PublishConnectorContext(ConnectorContext):
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
         use_local_cdk: bool = False,
-    ):
+    ) -> None:
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
         self.metadata_bucket_name = metadata_bucket_name
@@ -90,7 +90,7 @@ class PublishConnectorContext(ConnectorContext):
         return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
 
     @property
-    def docker_image_tag(self):
+    def docker_image_tag(self) -> str:
         # get the docker image tag from the parent class
         metadata_tag = super().docker_image_tag
         if self.pre_release:
@@ -99,6 +99,8 @@ class PublishConnectorContext(ConnectorContext):
             return metadata_tag
 
     def create_slack_message(self) -> str:
+        assert self.report and self.report.run_duration is not None, "The report must be set to create a slack message."
+
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
         message = f"*Publish <{docker_hub_url}|{self.docker_image}>*\n"
         if self.is_ci:

@@ -13,13 +13,13 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Tuple, U
 import anyio
 import asyncer
 from pipelines import main_logger
-from pipelines.models.steps import StepResult, StepStatus
-
-RESULTS_DICT = Dict[str, StepResult]
-ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict], Awaitable[Dict]]
+from pipelines.models.steps import StepStatus
 
 if TYPE_CHECKING:
     from pipelines.models.steps import Step, StepResult
+
+RESULTS_DICT = Dict[str, StepResult]
+ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict], Awaitable[Dict]]
 
 
 @dataclass
@@ -135,7 +135,7 @@ def _get_next_step_group(steps: STEP_TREE) -> Tuple[STEP_TREE, STEP_TREE]:
         return steps, []
 
 
-def _log_step_tree(step_tree: STEP_TREE, options: RunStepOptions, depth: int = 0):
+def _log_step_tree(step_tree: STEP_TREE, options: RunStepOptions, depth: int = 0) -> None:
     """
     Log the step tree to the console.
 

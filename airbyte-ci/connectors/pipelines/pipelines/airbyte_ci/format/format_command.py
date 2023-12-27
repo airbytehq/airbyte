@@ -72,7 +72,7 @@ class FormatCommand(click.Command):
             message = f"{message}."
         return message
 
-    def get_dir_to_format(self, dagger_client) -> dagger.Directory:
+    def get_dir_to_format(self, dagger_client: dagger.Client) -> dagger.Directory:
         """Get a directory with all the source code to format according to the file_filter.
         We mount the files to format in a git container and remove all gitignored files.
         It ensures we're not formatting files that are gitignored.

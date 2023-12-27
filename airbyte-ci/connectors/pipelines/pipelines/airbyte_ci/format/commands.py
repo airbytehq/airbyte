@@ -28,7 +28,7 @@ from pipelines.models.steps import StepStatus
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def format_code(pipeline_context: ClickPipelineContext):
+async def format_code(pipeline_context: ClickPipelineContext) -> None:
     pass
 
 
@@ -36,7 +36,7 @@ async def format_code(pipeline_context: ClickPipelineContext):
     help="Run code format checks and fail if any checks fail.",
     chain=True,
 )
-async def check():
+async def check() -> None:
     pass
 
 
@@ -44,7 +44,7 @@ async def check():
     help="Run code format checks and fix any failures.",
     chain=True,
 )
-async def fix():
+async def fix() -> None:
     pass
 
 
@@ -74,7 +74,7 @@ for formatter, fix_command in FORMATTERS_FIX_COMMANDS.items():
 
 @check.command(name="all", help="Run all format checks and fail if any checks fail.")
 @click.pass_context
-async def all_checks(ctx: click.Context):
+async def all_checks(ctx: click.Context) -> None:
     """
     Run all format checks and fail if any checks fail.
     """
@@ -97,7 +97,7 @@ async def all_checks(ctx: click.Context):
 
 @fix.command(name="all", help="Fix all format failures. Exits with status 1 if any file was modified.")
 @click.pass_context
-async def all_fix(ctx: click.Context):
+async def all_fix(ctx: click.Context) -> None:
     """Run code format checks and fix any failures."""
     logger = logging.getLogger(fix.commands["all"].name)
 

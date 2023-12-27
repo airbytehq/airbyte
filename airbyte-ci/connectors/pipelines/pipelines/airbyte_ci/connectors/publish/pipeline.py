@@ -57,7 +57,7 @@ class PushConnectorImageToRegistry(Step):
     title = "Push connector image to registry"
 
     @property
-    def latest_docker_image_name(self):
+    def latest_docker_image_name(self) -> str:
         return f"{self.context.docker_repository}:latest"
 
     async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:
@@ -148,15 +148,15 @@ class UploadSpecToCache(Step):
     cloud_spec_file_name = "spec.cloud.json"
 
     @property
-    def spec_key_prefix(self):
+    def spec_key_prefix(self) -> str:
         return "specs/" + self.context.docker_image.replace(":", "/")
 
     @property
-    def cloud_spec_key(self):
+    def cloud_spec_key(self) -> str:
         return f"{self.spec_key_prefix}/{self.cloud_spec_file_name}"
 
     @property
-    def oss_spec_key(self):
+    def oss_spec_key(self) -> str:
         return f"{self.spec_key_prefix}/{self.default_spec_file_name}"
 
     def _parse_spec_output(self, spec_output: str) -> str:
@@ -182,7 +182,7 @@ class UploadSpecToCache(Step):
         spec_output = await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"]).stdout()
         return self._parse_spec_output(spec_output)
 
-    async def _get_spec_as_file(self, spec: str, name="spec_to_cache.json") -> File:
+    async def _get_spec_as_file(self, spec: str, name: str = "spec_to_cache.json") -> File:
         return (await self.context.get_connector_dir()).with_new_file(name, contents=spec).file(name)
 
     async def _run(self, built_connector: Container) -> StepResult:

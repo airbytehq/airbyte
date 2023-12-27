@@ -4,15 +4,17 @@
 
 """Module declaring context related classes."""
 
+from __future__ import annotations
+
 import logging
 import os
 from datetime import datetime
 from glob import glob
 from types import TracebackType
-from typing import List, Optional
+from typing import TYPE_CHECKING
 
 from asyncer import asyncify
-from dagger import Client, Container, Directory, File, Secret
+from dagger import Client, Container, Directory, File, GitRepository, Secret
 from github import PullRequest
 from pipelines.consts import CIContext, ContextState
 from pipelines.helpers.gcs import sanitize_gcs_credentials
@@ -22,12 +24,17 @@ from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import AIRBYTE_REPO_URL
 from pipelines.models.reports import Report
 
+if TYPE_CHECKING:
+    from typing import List, Optional
+
+    from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+
 
 class PipelineContext:
     """The pipeline context is used to store configuration for a specific pipeline run."""
 
     _dagger_client: Optional[Client]
-    _report: Optional[Report]
+    _report: Optional[Report | ConnectorReport]
     dockerd_service: Optional[Container]
     started_at: Optional[datetime]
     stopped_at: Optional[datetime]
@@ -73,7 +80,7 @@ class PipelineContext:
         ci_github_access_token: Optional[str] = None,
         run_step_options: RunStepOptions = RunStepOptions(),
         enable_report_auto_open: bool = True,
-    ):
+    ) -> None:
         """Initialize a pipeline context.
 
         Args:
@@ -122,33 +129,33 @@ class PipelineContext:
         update_commit_status_check(**self.github_commit_status)
 
     @property
-    def dagger_client(self) -> Client:  # noqa D102
+    def dagger_client(self) -> Client:
         assert self._dagger_client is not None, "The dagger client was not set on this PipelineContext"
         return self._dagger_client
 
     @dagger_client.setter
-    def dagger_client(self, dagger_client: Client):  # noqa D102
+    def dagger_client(self, dagger_client: Client) -> None:
         self._dagger_client = dagger_client
 
     @property
-    def is_ci(self):  # noqa D102
+    def is_ci(self) -> bool:
         return self.is_local is False
 
     @property
-    def is_pr(self):  # noqa D102
+    def is_pr(self) -> bool:
         return self.ci_context == CIContext.PULL_REQUEST
 
     @property
-    def repo(self):  # noqa D102
+    def repo(self) -> GitRepository:
         return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
 
     @property
-    def report(self) -> Report:  # noqa D102
+    def report(self) -> Report | ConnectorReport:
         assert self._report is not None, "The report was not set on this PipelineContext."
         return self._report
 
     @report.setter
-    def report(self, report: Report):  # noqa D102
+    def report(self, report: Report | ConnectorReport) -> None:
         self._report = report
 
     @property
@@ -233,7 +240,7 @@ class PipelineContext:
     def create_slack_message(self) -> str:
         raise NotImplementedError()
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> PipelineContext:
         """Perform setup operation for the PipelineContext.
 
         Updates the current commit status on Github.

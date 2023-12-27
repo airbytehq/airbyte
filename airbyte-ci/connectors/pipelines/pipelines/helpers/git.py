@@ -3,10 +3,7 @@
 #
 
 import functools
-import os
-import re
-from pathlib import Path
-from typing import List, Set
+from typing import Set
 
 import git
 from dagger import Connection

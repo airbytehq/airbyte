@@ -50,7 +50,9 @@ class LogOptions:
     help_message: Optional[str] = None
 
 
-def log_command_results(ctx: click.Context, command_results: List[CommandResult], logger: Logger, options: LogOptions = LogOptions()):
+def log_command_results(
+    ctx: click.Context, command_results: List[CommandResult], logger: Logger, options: LogOptions = LogOptions()
+) -> None:
     """
     Log the output of the subcommands run by `run_all_subcommands`.
     """

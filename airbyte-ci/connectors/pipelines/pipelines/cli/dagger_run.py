@@ -95,14 +95,14 @@ def check_dagger_cli_install() -> str:
     return dagger_path
 
 
-def mark_dagger_wrap():
+def mark_dagger_wrap() -> None:
     """
     Mark that the dagger wrap has been applied.
     """
     os.environ[DAGGER_WRAP_ENV_VAR_NAME] = "true"
 
 
-def call_current_command_with_dagger_run():
+def call_current_command_with_dagger_run() -> None:
     mark_dagger_wrap()
     if (os.environ.get("AIRBYTE_ROLE") == "airbyter") or (os.environ.get("CI") == "True"):
         os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]

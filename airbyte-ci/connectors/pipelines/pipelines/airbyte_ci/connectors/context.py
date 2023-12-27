@@ -6,7 +6,7 @@
 
 from datetime import datetime
 from types import TracebackType
-from typing import Dict, Optional, Sequence
+from typing import TYPE_CHECKING
 
 import yaml  # type: ignore
 from anyio import Path
@@ -22,6 +22,10 @@ from pipelines.helpers.run_steps import RunStepOptions
 from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import METADATA_FILE_NAME
 from pipelines.models.contexts.pipeline_context import PipelineContext
+
+if TYPE_CHECKING:
+    from pathlib import Path as NativePath
+    from typing import Dict, FrozenSet, List, Optional, Sequence
 
 
 class ConnectorContext(PipelineContext):
@@ -62,7 +66,7 @@ class ConnectorContext(PipelineContext):
         concurrent_cat: Optional[bool] = False,
         run_step_options: RunStepOptions = RunStepOptions(),
         targeted_platforms: Sequence[Platform] = BUILD_PLATFORMS,
-    ):
+    ) -> None:
         """Initialize a connector context.
 
         Args:
@@ -145,31 +149,31 @@ class ConnectorContext(PipelineContext):
         return None
 
     @property
-    def modified_files(self):
+    def modified_files(self) -> FrozenSet[NativePath]:
         return self.connector.modified_files
 
     @property
-    def secrets_dir(self) -> Optional[Directory]:  # noqa D102
+    def secrets_dir(self) -> Optional[Directory]:
         return self._secrets_dir
 
     @secrets_dir.setter
-    def secrets_dir(self, secrets_dir: Directory):  # noqa D102
+    def secrets_dir(self, secrets_dir: Directory) -> None:
         self._secrets_dir = secrets_dir
 
     @property
-    def updated_secrets_dir(self) -> Optional[Directory]:  # noqa D102
+    def updated_secrets_dir(self) -> Optional[Directory]:
         return self._updated_secrets_dir
 
     @updated_secrets_dir.setter
-    def updated_secrets_dir(self, updated_secrets_dir: Directory):  # noqa D102
+    def updated_secrets_dir(self, updated_secrets_dir: Directory) -> None:
         self._updated_secrets_dir = updated_secrets_dir
 
     @property
-    def connector_acceptance_test_source_dir(self) -> Directory:  # noqa D102
+    def connector_acceptance_test_source_dir(self) -> Directory:
         return self.get_repo_dir("airbyte-integrations/bases/connector-acceptance-test")
 
     @property
-    def should_save_updated_secrets(self) -> bool:  # noqa D102
+    def should_save_updated_secrets(self) -> bool:
         return self.use_remote_secrets and self.updated_secrets_dir is not None
 
     @property
@@ -208,12 +212,12 @@ class ConnectorContext(PipelineContext):
             return None
         return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
 
-    async def get_connector_secrets(self):
+    async def get_connector_secrets(self) -> Dict[str, Secret]:
         if self._connector_secrets is None:
             self._connector_secrets = await secrets.get_connector_secrets(self)
         return self._connector_secrets
 
-    async def get_connector_dir(self, exclude=None, include=None) -> Directory:
+    async def get_connector_dir(self, exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get the connector under test source code directory.
 
         Args:

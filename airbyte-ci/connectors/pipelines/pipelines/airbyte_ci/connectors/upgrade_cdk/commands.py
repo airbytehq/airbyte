@@ -10,7 +10,7 @@ from pipelines.airbyte_ci.connectors.upgrade_cdk.pipeline import run_connector_c
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
-def latest_cdk_version():
+def latest_cdk_version() -> str:
     """
     Get the latest version of airbyte-cdk from pypi
     """

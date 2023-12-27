@@ -39,7 +39,7 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
         return []
 
 
-async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore):
+async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
     """
     Compute the steps to run for a connector test pipeline.
     """
@@ -64,6 +64,7 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
             )
 
             results = list(result_dict.values())
-            context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
+            report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
+            context.report = report
 
-        return context.report
+        return report

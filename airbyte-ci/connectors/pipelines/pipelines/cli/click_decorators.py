@@ -34,7 +34,7 @@ def click_ignore_unused_kwargs(f: Callable) -> Callable:
         return f
 
     @functools.wraps(f)
-    def inner(*args, **kwargs):
+    def inner(*args, **kwargs) -> Callable:
         filtered_kwargs = {key: value for key, value in kwargs.items() if _is_kwarg_of(key, f)}
         return f(*args, **filtered_kwargs)
 
@@ -46,7 +46,7 @@ def click_merge_args_into_context_obj(f: Callable) -> Callable:
     Decorator to pass click context and args to children commands.
     """
 
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs) -> Callable:
         ctx = click.get_current_context()
         ctx.ensure_object(dict)
         click_obj = ctx.obj
@@ -69,8 +69,8 @@ def click_append_to_context_object(key: str, value: Callable | Any) -> Callable:
     Decorator to append a value to the click context object.
     """
 
-    def decorator(f):
-        async def wrapper(*args, **kwargs):
+    def decorator(f: Callable) -> Callable:
+        async def wrapper(*args, **kwargs) -> Any:
             ctx = click.get_current_context()
             ctx.ensure_object(dict)
 

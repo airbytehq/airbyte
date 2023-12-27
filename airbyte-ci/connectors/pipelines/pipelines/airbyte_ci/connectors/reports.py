@@ -35,19 +35,19 @@ class ConnectorReport(Report):
     pipeline_context: ConnectorContext
 
     @property
-    def report_output_prefix(self) -> str:  # noqa D102
+    def report_output_prefix(self) -> str:
         return f"{self.pipeline_context.report_output_prefix}/{self.pipeline_context.connector.technical_name}/{self.pipeline_context.connector.version}"
 
     @property
-    def html_report_file_name(self) -> str:  # noqa D102
+    def html_report_file_name(self) -> str:
         return self.filename + ".html"
 
     @property
-    def html_report_remote_storage_key(self) -> str:  # noqa D102
+    def html_report_remote_storage_key(self) -> str:
         return f"{self.report_output_prefix}/{self.html_report_file_name}"
 
     @property
-    def html_report_url(self) -> str:  # noqa D102
+    def html_report_url(self) -> str:
         return f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
 
     def to_json(self) -> str:
@@ -129,7 +129,7 @@ class ConnectorReport(Report):
             self.pipeline_context.logger.info(f"HTML report uploaded to {self.html_report_url}")
         await super().save()
 
-    def print(self):
+    def print(self) -> None:
         """Print the test report to the console in a nice way."""
         connector_name = self.pipeline_context.connector.technical_name
         main_panel_title = Text(f"{connector_name.upper()} - {self.name}")

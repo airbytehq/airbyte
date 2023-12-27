@@ -52,14 +52,14 @@ async def context_to_step_result(context: PipelineContext) -> StepResult:
 # TODO (ben): Refactor run_connectors_pipelines to wrap the whole pipeline in a dagger pipeline once Steps are refactored
 async def run_report_complete_pipeline(
     dagger_client: dagger.Client, contexts: List[ConnectorContext] | List[PublishConnectorContext] | List[PipelineContext]
-):
+) -> None:
     """Create and Save a report representing the run of the encompassing pipeline.
 
     This is to denote when the pipeline is complete, useful for long running pipelines like nightlies.
     """
 
     if not contexts:
-        return []
+        return
 
     # Repurpose the first context to be the pipeline upload context to preserve timestamps
     first_connector_context = contexts[0]

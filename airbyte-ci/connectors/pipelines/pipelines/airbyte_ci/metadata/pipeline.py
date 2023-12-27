@@ -22,7 +22,7 @@ from pipelines.models.steps import MountPath, Step, StepResult
 
 
 class MetadataValidation(SimpleDockerStep):
-    def __init__(self, context: ConnectorContext):
+    def __init__(self, context: ConnectorContext) -> None:
         super().__init__(
             title=f"Validate metadata for {context.connector.technical_name}",
             context=context,
@@ -64,7 +64,7 @@ class MetadataUpload(SimpleDockerStep):
         docker_hub_password_secret: dagger.Secret,
         pre_release: bool = False,
         pre_release_tag: Optional[str] = None,
-    ):
+    ) -> None:
         title = f"Upload metadata for {context.connector.technical_name} v{context.connector.version}"
         command_to_run = [
             "metadata_service",
@@ -131,7 +131,7 @@ class DeployOrchestrator(Step):
         container_to_run = (
             python_with_dependencies.with_mounted_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
-            .with_workdir(f"/src/orchestrator")
+            .with_workdir("/src/orchestrator")
             .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
             .with_exec(self.deploy_dagster_command)
         )
@@ -139,7 +139,7 @@ class DeployOrchestrator(Step):
 
 
 class TestOrchestrator(PoetryRunStep):
-    def __init__(self, context: PipelineContext):
+    def __init__(self, context: PipelineContext) -> None:
         super().__init__(
             context=context,
             title="Test Metadata Orchestrator",

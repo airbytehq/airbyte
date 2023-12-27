@@ -4,10 +4,10 @@
 
 """This module groups steps made to run tests for a specific Java connector given a test context."""
 
-from typing import Callable, List, Optional
+from typing import TYPE_CHECKING
 
 import anyio
-from dagger import Directory, File, QueryError
+from dagger import File, QueryError
 from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     BuildConnectorDistributionTar,
     BuildConnectorImages,
@@ -24,6 +24,9 @@ from pipelines.helpers.run_steps import RESULTS_DICT, STEP_TREE, StepToRun
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import StepResult, StepStatus
 
+if TYPE_CHECKING:
+    from typing import Callable, Dict, List, Optional
+
 
 class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
@@ -33,13 +36,13 @@ class IntegrationTests(GradleTask):
     mount_connector_secrets = True
     bind_to_docker_host = True
 
-    async def _load_normalization_image(self, normalization_tar_file: File):
+    async def _load_normalization_image(self, normalization_tar_file: File) -> None:
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         self.context.logger.info("Load the normalization image to the docker host.")
         await docker.load_image_to_docker_host(self.context, normalization_tar_file, normalization_image_tag)
         self.context.logger.info("Successfully loaded the normalization image to the docker host.")
 
-    async def _load_connector_image(self, connector_tar_file: File):
+    async def _load_connector_image(self, connector_tar_file: File) -> None:
         connector_image_tag = f"airbyte/{self.context.connector.technical_name}:dev"
         self.context.logger.info("Load the connector image to the docker host")
         await docker.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag)
@@ -70,7 +73,7 @@ def _create_integration_step_args_factory(context: ConnectorContext) -> Callable
     Create a function that can process the args for the integration step.
     """
 
-    async def _create_integration_step_args(results: RESULTS_DICT):
+    async def _create_integration_step_args(results: RESULTS_DICT) -> Dict[str, Optional[File]]:
 
         connector_container = results["build"].output_artifact[LOCAL_BUILD_PLATFORM]
         connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container, LOCAL_BUILD_PLATFORM)

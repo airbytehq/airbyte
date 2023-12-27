@@ -93,7 +93,7 @@ def get_selected_connectors_with_modified_files(
     return selected_connectors_with_modified_files
 
 
-def validate_environment(is_local: bool):
+def validate_environment(is_local: bool) -> None:
     """Check if the required environment variables exist."""
     if is_local:
         if not Path(".git").is_dir():
@@ -236,7 +236,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
 @click_ignore_unused_kwargs
 async def connectors(
     ctx: click.Context,
-):
+) -> None:
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"])
 

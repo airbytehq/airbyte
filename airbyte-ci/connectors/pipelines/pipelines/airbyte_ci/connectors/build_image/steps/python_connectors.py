@@ -75,10 +75,10 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             # copy python dependencies from builder to connector container
             customized_base.with_directory("/usr/local", builder.directory("/usr/local"))
             .with_workdir(self.PATH_TO_INTEGRATION_CODE)
-            .with_file(main_file_name, (await self.context.get_connector_dir(include=main_file_name)).file(main_file_name))
+            .with_file(main_file_name, (await self.context.get_connector_dir(include=[main_file_name])).file(main_file_name))
             .with_directory(
                 connector_snake_case_name,
-                (await self.context.get_connector_dir(include=connector_snake_case_name)).directory(connector_snake_case_name),
+                (await self.context.get_connector_dir(include=[connector_snake_case_name])).directory(connector_snake_case_name),
             )
             .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
             .with_entrypoint(entrypoint)

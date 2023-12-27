@@ -11,13 +11,13 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 @click.group(help="Commands related to the metadata service.")
 @click.pass_context
-def metadata(ctx: click.Context):
+def metadata(ctx: click.Context) -> None:
     pass
 
 
 @metadata.group(help="Commands related to deploying components of the metadata service.")
 @click.pass_context
-def deploy(ctx: click.Context):
+def deploy(ctx: click.Context) -> None:
     pass
 
 

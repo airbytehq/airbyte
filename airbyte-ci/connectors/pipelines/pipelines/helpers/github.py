@@ -38,10 +38,10 @@ def update_commit_status_check(
     target_url: str,
     description: str,
     context: str,
-    is_optional=False,
-    should_send=True,
+    is_optional: bool = False,
+    should_send: bool = True,
     logger: Optional[Logger] = None,
-):
+) -> None:
     """Call the GitHub API to create commit status check.
 
     Args:
@@ -98,7 +98,7 @@ def get_pull_request(pull_request_number: int, github_access_token: str) -> Pull
     return airbyte_repo.get_pull(pull_request_number)
 
 
-def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Optional[Logger] = None):
+def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Optional[Logger] = None) -> None:
 
     update_commit_status_check(
         click_context["git_revision"],
