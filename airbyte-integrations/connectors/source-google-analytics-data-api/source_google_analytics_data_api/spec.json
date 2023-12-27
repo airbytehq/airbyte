@@ -2095,6 +2095,75 @@
                   "required": ["field_name", "filter"]
                 }
               ]
+            },
+            "cohortSpec": {
+              "title": "Cohort specs",
+              "description": "A list of cohorts.",
+              "type": "object",
+              "properties": {
+                "cohorts": {
+                  "type": "array",
+                  "items": {
+                    "title": "Cohorts",
+                    "type": "object",
+                    "required": ["dateRange"],
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^(?!(cohort_|RESERVED_)).*$",
+                        "description": "Assigns a name to this cohort. If not set, cohorts are named by their zero based index cohort_0, cohort_1, etc."
+                      },
+                      "dimension": {
+                        "type": "string",
+                        "enum": ["firstSessionDate"]
+                      },
+                      "dateRange": {
+                        "type": "object",
+                        "properties": {
+                          "startDate": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                            "pattern_descriptor": "YYYY-MM-DD",
+                            "examples": ["2021-01-01"]
+                          },
+                          "endDate": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                            "pattern_descriptor": "YYYY-MM-DD",
+                            "examples": ["2021-01-01"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "cohortsRange": {
+                  "type": "object",
+                  "required": ["granularity"],
+                  "properties": {
+                    "granularity": {
+                      "type": "string",
+                      "enum": ["GRANULARITY_UNSPECIFIED", "DAILY", "WEEKLY", "MONTHLY"]
+                    },
+                    "startOffset": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "endOffset": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "cohortReportSettings": {
+                  "type": "object",
+                  "properties": {
+                    "accumulate": "boolean"
+                  }
+                }
+              }
             }
           },
           "required": ["name", "dimensions", "metrics"]
