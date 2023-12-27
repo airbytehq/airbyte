@@ -58,7 +58,7 @@ class SourceReader(Iterator):
     def _start_reader_thread(self):
         try:
             asyncio.run(self.reader_fn(*self.reader_args))
-        except Exception as e:
+        except Exception as e:  # TODO: is this definitely needed?
             with self.error_lock:
                 self.error = (e, traceback.format_exc())
 
@@ -71,7 +71,7 @@ class SourceReader(Iterator):
         item = self.queue.get(timeout=DEFAULT_TIMEOUT)
         if isinstance(item, Sentinel):
             # Sessions can only be closed once items in the stream have all been dequeued
-            if session := self.sessions.pop(item.name):
+            if session := self.sessions.pop(item.name, None):
                 loop = asyncio.get_event_loop()
                 loop.create_task(session.close())
             try:
@@ -171,8 +171,8 @@ class AsyncAbstractSource(AbstractSource, ABC):
             while len(pending_tasks) <= self.session_limit and (configured_stream := next(streams_iterator, None)):
                 if configured_stream is None:
                     break
-                stream_instance = stream_instances.get("Account")  # TODO
-                # stream_instance = stream_instances.get(configured_stream.stream.name)
+                # stream_instance = stream_instances.get("Account")  # TODO
+                stream_instance = stream_instances.get(configured_stream.stream.name)
                 stream = stream_instances.get(configured_stream.stream.name)
                 self.reader.sessions[configured_stream.stream.name] = await stream.ensure_session()
                 pending_tasks.add(asyncio.create_task(self._do_async_read_stream(configured_stream, stream_instance, timer, logger, state_manager, internal_config)))
@@ -213,10 +213,10 @@ class AsyncAbstractSource(AbstractSource, ABC):
             self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE))
         except AirbyteTracedException as e:
             self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE))
-            raise e
-        except Exception as e:
             with self.reader.error_lock:
                 self.reader.error = (e, traceback.format_exc())
+            raise e
+        except Exception as e:
             for message in self._emit_queued_messages():
                 self.queue.put(message)
             logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
@@ -224,7 +224,12 @@ class AsyncAbstractSource(AbstractSource, ABC):
             self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE))
             display_message = await stream_instance.get_error_display_message(e)
             if display_message:
-                raise AirbyteTracedException.from_exception(e, message=display_message) from e
+                exc = AirbyteTracedException.from_exception(e, message=display_message)
+                with self.reader.error_lock:
+                    self.reader.error = (exc, traceback.format_exc())
+                raise exc from e
+            with self.reader.error_lock:
+                self.reader.error = (e, traceback.format_exc())
             raise e
         finally:
             timer.finish_event()
