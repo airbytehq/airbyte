@@ -2154,14 +2154,18 @@
                       "title": "Granularity",
                       "description": "The granularity used to interpret the startOffset and endOffset for the extended reporting date range for a cohort report.",
                       "type": "string",
-                      "enum": ["GRANULARITY_UNSPECIFIED", "DAILY", "WEEKLY", "MONTHLY"]
+                      "enum": [
+                        "GRANULARITY_UNSPECIFIED",
+                        "DAILY",
+                        "WEEKLY",
+                        "MONTHLY"
+                      ]
                     },
                     "startOffset": {
                       "title": "Start Offset",
                       "description": "Specifies the start date of the extended reporting date range for a cohort report.",
                       "type": "integer",
                       "minimum": 0
-
                     },
                     "endOffset": {
                       "title": "End Offset",
