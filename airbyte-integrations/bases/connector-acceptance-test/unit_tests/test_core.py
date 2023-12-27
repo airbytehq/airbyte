@@ -21,7 +21,14 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
-from connector_acceptance_test.config import BasicReadTestConfig, Config, ExpectedRecordsConfig, IgnoredFieldsConfiguration
+from connector_acceptance_test.config import (
+    BasicReadTestConfig,
+    Config,
+    ExpectedRecordsConfig,
+    FileTypesConfig,
+    IgnoredFieldsConfiguration,
+    UnsupportedFileTypeConfig,
+)
 from connector_acceptance_test.tests import test_core
 from jsonschema.exceptions import SchemaError
 
@@ -687,6 +694,7 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
             docker_runner=docker_runner_mock,
             ignored_fields=ignored_fields,
             detailed_logger=MagicMock(),
+            file_based_connector=False,
         )
 
 
@@ -741,6 +749,7 @@ async def test_fail_on_extra_columns(
                 docker_runner=docker_runner_mock,
                 ignored_fields=None,
                 detailed_logger=MagicMock(),
+                file_based_connector=False,
             )
     else:
         t.test_read(
@@ -755,6 +764,7 @@ async def test_fail_on_extra_columns(
             docker_runner=docker_runner_mock,
             ignored_fields=None,
             detailed_logger=MagicMock(),
+            file_based_connector=False,
         )
 
 
@@ -1319,3 +1329,73 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
             t._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
     else:
         t._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
+
+
+@pytest.mark.parametrize(
+    ("metadata", "expected_file_based"),
+    (
+        ({"data": {"connectorSubtype": "file", "supportLevel": "certified"}}, True),
+        ({}, False),
+        ({"data": {"supportLevel": "certified"}}, False),
+        ({"data": {"connectorSubtype": "file"}}, False),
+        ({"data": {"connectorSubtype": "not_file", "supportLevel": "certified"}}, False),
+        ({"data": {"connectorSubtype": "file", "supportLevel": "community"}}, False),
+    ),
+)
+def test_is_file_based_connector(metadata, expected_file_based):
+    t = test_core.TestBasicRead()
+    assert test_core.TestBasicRead.is_file_based_connector.__wrapped__(t, metadata) is expected_file_based
+
+
+@pytest.mark.parametrize(
+    ("file_name", "expected_extension"),
+    (
+        ("test.csv", ".csv"),
+        ("test/directory/test.csv", ".csv"),
+        ("test/directory/", ""),
+        (".bashrc", ""),
+        ("", ""),
+    ),
+)
+def test_get_file_extension(file_name, expected_extension):
+    t = test_core.TestBasicRead()
+    assert t._get_file_extension(file_name) == expected_extension
+
+
+@pytest.mark.parametrize(
+    ("records", "expected_file_types"),
+    (
+        ([], set()),
+        (
+            [
+                AirbyteRecordMessage(stream="stream", data={"field": "value", "_ab_source_file_url": "test.csv"}, emitted_at=111),
+                AirbyteRecordMessage(stream="stream", data={"field": "value", "_ab_source_file_url": "test_2.pdf"}, emitted_at=111),
+                AirbyteRecordMessage(stream="stream", data={"field": "value", "_ab_source_file_url": "test_3.pdf"}, emitted_at=111),
+            ],
+            {".csv", ".pdf"},
+        ),
+        (
+            [
+                AirbyteRecordMessage(stream="stream", data={"field": "value"}, emitted_at=111),
+                AirbyteRecordMessage(stream="stream", data={"field": "value", "_ab_source_file_url": ""}, emitted_at=111),
+                AirbyteRecordMessage(stream="stream", data={"field": "value", "_ab_source_file_url": ".bashrc"}, emitted_at=111),
+            ],
+            {""},
+        ),
+    ),
+)
+def test_get_actual_file_types(records, expected_file_types):
+    t = test_core.TestBasicRead()
+    assert t._get_actual_file_types(records) == expected_file_types
+
+
+@pytest.mark.parametrize(
+    ("config", "expected_file_types"),
+    (
+        ([], set()),
+        ([UnsupportedFileTypeConfig(extension=".csv"), UnsupportedFileTypeConfig(extension=".pdf")], {".csv", ".pdf"}),
+    ),
+)
+def test_get_unsupported_file_types(config, expected_file_types):
+    t = test_core.TestBasicRead()
+    assert t._get_unsupported_file_types(config) == expected_file_types

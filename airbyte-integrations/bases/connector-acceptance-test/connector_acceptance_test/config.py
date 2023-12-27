@@ -147,9 +147,11 @@ class FileTypesConfig(BaseConfig):
     skip_test: Optional[bool] = Field(False, description="Skip file-based connector specific test.")
 
     @validator("skip_test", always=True)
-    def no_extra_fields_when_skip_test(cls, skip_test: bool, values: Dict[str, Any]) -> bool:
-        if skip_test and (values.get("bypass_reason") or values.get("unsupported_types")):
-            raise ValueError("You can't set 'bypass_reason' or 'unsupported_types' if the test is skipped.")
+    def no_unsupported_types_when_skip_test(cls, skip_test: bool, values: Dict[str, Any]) -> bool:
+        if skip_test and values.get("unsupported_types"):
+            raise ValueError("You can't set 'unsupported_types' if the test is skipped.")
+        if not skip_test and values.get("bypass_reason") is not None:
+            raise ValueError("You can't set 'bypass_reason' if the test is not skipped.")
         return skip_test
 
 
@@ -162,16 +164,12 @@ class BasicReadTestConfig(BaseConfig):
     )
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
-    fail_on_extra_columns: bool = Field(
-        True, description="Fail if extra top-level properties (i.e. columns) are detected in records."
-    )
+    fail_on_extra_columns: bool = Field(True, description="Fail if extra top-level properties (i.e. columns) are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(
         False, description="Set whether we need to validate that all fields in all streams contained at least one data point"
     )
-    expect_trace_message_on_failure: bool = Field(
-        True, description="Ensure that a trace message is emitted when the connector crashes"
-    )
+    expect_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
     timeout_seconds: int = timeout_seconds
     ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
     file_types: Optional[FileTypesConfig] = Field(
