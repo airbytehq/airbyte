@@ -665,6 +665,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
   }
 
+  @Override
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
+      throws Exception {
+    final JdbcDatabase database = createDatabase(config);
+    logPreSyncDebugData(database, catalog);
+    return super.readStreams(config, catalog, state);
+  }
+
   private boolean cloudDeploymentMode() {
     return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
