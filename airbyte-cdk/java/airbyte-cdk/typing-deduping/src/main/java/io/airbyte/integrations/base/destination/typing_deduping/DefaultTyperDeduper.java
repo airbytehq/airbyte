@@ -9,11 +9,13 @@ import static io.airbyte.integrations.base.destination.typing_deduping.FutureUti
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 import static java.util.Collections.singleton;
 
+import com.google.common.collect.Streams;
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -24,6 +26,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.tuple.Pair;
@@ -101,12 +104,24 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator(), defaultThreadCount);
   }
 
+  private void prepareSchemas(ParsedCatalog parsedCatalog) throws Exception {
+    var rawSchema = parsedCatalog.streams().stream().map(stream -> stream.id().rawNamespace());
+    var finalSchema = parsedCatalog.streams().stream().map(stream -> stream.id().finalNamespace());
+    var createAllSchemasSql = Streams.concat(rawSchema, finalSchema)
+        .filter(Objects::nonNull)
+        .distinct()
+        .map(sqlGenerator::createSchema)
+        .collect(Collectors.joining("\n"));
+    destinationHandler.execute(createAllSchemasSql);
+  }
+
   public void prepareTables() throws Exception {
     if (overwriteStreamsWithTmpTable != null) {
       throw new IllegalStateException("Tables were already prepared.");
     }
     overwriteStreamsWithTmpTable = ConcurrentHashMap.newKeySet();
-    LOGGER.info("Preparing final tables");
+    LOGGER.info("Preparing tables");
+    prepareSchemas(parsedCatalog);
     final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
     for (final StreamConfig stream : parsedCatalog.streams()) {
       prepareTablesTasks.add(prepareTablesFuture(stream));

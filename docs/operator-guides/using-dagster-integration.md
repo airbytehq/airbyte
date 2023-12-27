@@ -1,5 +1,6 @@
 ---
 description: Start triggering Airbyte jobs with Dagster in minutes
+products: oss-*
 ---
 
 # Using the Dagster Integration 
