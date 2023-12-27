@@ -115,6 +115,12 @@ class AsyncStream(Stream, ABC):
         """
         return [None]
 
+    async def ensure_session(self, *args: Any, **kwargs: Any) -> Any:
+        """
+        Override to define a session object on the stream.
+        """
+        pass
+
     @property
     def availability_strategy(self) -> Optional["AsyncHttpAvailabilityStrategy"]:
         """

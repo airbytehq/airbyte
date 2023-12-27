@@ -245,7 +245,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
                 raise exc
         return response
 
-    async def _ensure_session(self) -> aiohttp.ClientSession:
+    async def ensure_session(self) -> aiohttp.ClientSession:
         if self._session is None:
             self._session = self.request_session()
         return self._session

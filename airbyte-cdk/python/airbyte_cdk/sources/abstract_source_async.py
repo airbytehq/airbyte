@@ -159,8 +159,9 @@ class AsyncAbstractSource(AbstractSource, ABC):
                 if configured_stream is None:
                     break
                 stream_instance = stream_instances.get("Account")  # TODO
+                # stream_instance = stream_instances.get(configured_stream.stream.name)
                 stream = stream_instances.get(configured_stream.stream.name)
-                self.reader.sessions[configured_stream.stream.name] = await stream._ensure_session()
+                self.reader.sessions[configured_stream.stream.name] = await stream.ensure_session()
                 pending_tasks.add(asyncio.create_task(self._do_async_read_stream(configured_stream, stream_instance, timer, logger, state_manager, internal_config)))
                 n_started += 1
 
