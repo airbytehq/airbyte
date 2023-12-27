@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Add a Destination
 
 Destinations are the data warehouses, data lakes, databases and analytics tools where you will load the data from your chosen source(s). The steps to setting up your first destination are very similar to those for [setting up a source](./add-a-source).
