@@ -191,7 +191,7 @@ class RunAsThread:
 
     def __init__(self, timeout_minutes):
         """
-        :param timeout_minutes: The maximum allowed time (in minutes) for the generator function to run.
+        :param timeout_minutes: The maximum allowed time (in minutes) for the generator function to idle.
                                 If the timeout is reached, a TimeoutError is raised.
         """
         self._timeout_seconds = timeout_minutes * 60
@@ -225,11 +225,13 @@ class RunAsThread:
                     # The timer is reset since a new result has been received, preventing the timeout from occurring.
                     start_time = time.time()
                 except queue.Empty:
+                    # If exit_event is set it means that the generator function in the thread has completed its execution.
                     if exit_event.is_set():
                         break
                     # Check if the timeout has been reached without new results.
                     if time.time() - start_time > self._timeout_seconds:
-                        # The exit event is set to signal the generator function to stop producing data.
+                        # The thread may continue to run for some time after reaching a timeout and even come to life and continue working.
+                        # That is why the exit event is set to signal the generator function to stop producing data.
                         exit_event.set()
                         raise TimeoutError(f"Method '{generator_func.__name__}' timed out after {self._timeout_seconds / 60.0} minutes")
                     # The write event is cleared to reset it for the next iteration.
