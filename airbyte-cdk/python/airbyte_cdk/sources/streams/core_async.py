@@ -113,7 +113,7 @@ class AsyncStream(Stream, ABC):
         :param stream_state:
         :return:
         """
-        return [None]
+        yield [None]
 
     async def ensure_session(self, *args: Any, **kwargs: Any) -> Any:
         """

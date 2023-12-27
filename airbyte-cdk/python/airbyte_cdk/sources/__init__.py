@@ -5,6 +5,7 @@
 import dpath.options
 
 from .abstract_source import AbstractSource
+from .abstract_source_async import AsyncAbstractSource
 from .config import BaseConfig
 from .source import Source
 
@@ -19,4 +20,4 @@ from .source import Source
 # this will not be thread-safe.
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
-__all__ = ["AbstractSource", "BaseConfig", "Source"]
+__all__ = ["AbstractSource", "AsyncAbstractSource", "BaseConfig", "Source"]

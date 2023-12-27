@@ -4,9 +4,10 @@
 
 import asyncio
 import logging
+import traceback
 from abc import ABC, abstractmethod
 from queue import Queue
-from threading import Thread
+from threading import Lock, Thread
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
 
 import aiohttp
@@ -32,6 +33,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 T = TypeVar("T")
 DEFAULT_SESSION_LIMIT = 10000
+DEFAULT_TIMEOUT = None
 
 
 class Sentinel:
@@ -47,17 +49,28 @@ class SourceReader(Iterator):
         self.reader_fn = reader_fn
         self.reader_args = args
         self.sessions: Dict[str, aiohttp.ClientSession] = {}
+        self.error = None
+        self.error_lock = Lock()
 
         self.thread = Thread(target=self._start_reader_thread)
         self.thread.start()
 
     def _start_reader_thread(self):
-        asyncio.run(self.reader_fn(*self.reader_args))
+        try:
+            asyncio.run(self.reader_fn(*self.reader_args))
+        except Exception as e:
+            with self.error_lock:
+                self.error = (e, traceback.format_exc())
 
     def __next__(self):
-        item = self.queue.get()
+        with self.error_lock:
+            if self.error:
+                exception, traceback_str = self.error
+                self.logger.error(f"An error occurred in the async thread: {traceback_str}")
+                raise exception
+        item = self.queue.get(timeout=DEFAULT_TIMEOUT)
         if isinstance(item, Sentinel):
-            # Sessions can only be closed once items in the stream have been dequeued
+            # Sessions can only be closed once items in the stream have all been dequeued
             if session := self.sessions.pop(item.name):
                 loop = asyncio.get_event_loop()
                 loop.create_task(session.close())
@@ -165,7 +178,13 @@ class AsyncAbstractSource(AbstractSource, ABC):
                 pending_tasks.add(asyncio.create_task(self._do_async_read_stream(configured_stream, stream_instance, timer, logger, state_manager, internal_config)))
                 n_started += 1
 
-            _, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
+            done, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
+
+            for task in done:
+                if task.exception():
+                    for remaining_task in pending_tasks:
+                        remaining_task.cancel()
+                    raise task.exception()
 
     async def _do_async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instance: AsyncStream, timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         try:
@@ -196,6 +215,8 @@ class AsyncAbstractSource(AbstractSource, ABC):
             self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE))
             raise e
         except Exception as e:
+            with self.reader.error_lock:
+                self.reader.error = (e, traceback.format_exc())
             for message in self._emit_queued_messages():
                 self.queue.put(message)
             logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
