@@ -119,6 +119,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
         stream_instances = {s.name: s for s in self.streams(config)}
         state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         self._stream_to_instance_map = stream_instances
+        self._assert_streams(catalog, stream_instances)
 
         n_records = 0
         with create_timer(self.name) as timer:
@@ -130,9 +131,10 @@ class AsyncAbstractSource(AbstractSource, ABC):
         logger.info(f"Finished syncing {self.name}")
 
     def _do_read(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, AsyncStream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
-        streams_in_progress = {s.stream.name: Sentinel(s.stream.name) for s in catalog.streams}
-        self._assert_streams(catalog, stream_instances)
-        self.reader = SourceReader(logger, self.queue, streams_in_progress, self._read_streams, catalog, stream_instances, timer, logger, state_manager, internal_config)
+        streams_in_progress_sentinels = {s.stream.name: Sentinel(s.stream.name) for s in catalog.streams if s.stream.name in stream_instances}
+        if not streams_in_progress_sentinels:
+            return
+        self.reader = SourceReader(logger, self.queue, streams_in_progress_sentinels, self._read_streams, catalog, stream_instances, timer, logger, state_manager, internal_config)
         for record in self.reader:
             yield record
 
