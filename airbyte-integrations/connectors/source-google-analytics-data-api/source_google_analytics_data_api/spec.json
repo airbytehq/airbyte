@@ -2100,6 +2100,7 @@
               "title": "Cohort Reports",
               "description": "Cohort reports creates a time series of user retention for the cohort.",
               "type": "object",
+              "order": 5,
               "properties": {
                 "cohorts": {
                   "name": "Cohorts",
