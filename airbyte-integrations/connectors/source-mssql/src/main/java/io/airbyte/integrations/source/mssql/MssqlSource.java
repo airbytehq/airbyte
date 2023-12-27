@@ -697,7 +697,5 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) throws SQLException {
     super.logPreSyncDebugData(database, catalog);
     MssqlQueryUtils.getIndexInfoForStreams(database, catalog, getQuoteString());
-
-
   }
 }
