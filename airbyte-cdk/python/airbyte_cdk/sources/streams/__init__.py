@@ -4,5 +4,6 @@
 
 # Initialize Streams Package
 from .core import IncrementalMixin, Stream
+from .core_async import AsyncStream
 
-__all__ = ["IncrementalMixin", "Stream"]
+__all__ = ["IncrementalMixin", "Stream", "AsyncStream"]

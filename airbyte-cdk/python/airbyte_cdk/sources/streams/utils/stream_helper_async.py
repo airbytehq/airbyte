@@ -5,8 +5,8 @@
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import AsyncStream
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.core_async import AsyncStream
 
 
 async def get_first_stream_slice(stream: AsyncStream) -> Optional[Mapping[str, Any]]:

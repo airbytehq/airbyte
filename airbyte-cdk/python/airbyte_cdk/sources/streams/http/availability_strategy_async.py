@@ -6,7 +6,7 @@ import logging
 import typing
 from typing import Optional, Tuple
 
-from airbyte_cdk.sources.streams.core_async import AsyncStream
+from airbyte_cdk.sources.streams import AsyncStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.utils.stream_helper_async import get_first_record_for_slice, get_first_stream_slice
 from requests import HTTPError

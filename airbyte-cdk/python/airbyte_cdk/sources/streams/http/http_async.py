@@ -14,10 +14,10 @@ import aiohttp
 import aiohttp_client_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
+from airbyte_cdk.sources.streams import AsyncStream
 from airbyte_cdk.sources.streams.async_call_rate import AsyncCachedLimiterSession, AsyncLimiterSession
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.core_async import AsyncStream
 from airbyte_cdk.sources.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http_base import BaseHttpStream
 from airbyte_cdk.sources.streams.http.exceptions_async import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException

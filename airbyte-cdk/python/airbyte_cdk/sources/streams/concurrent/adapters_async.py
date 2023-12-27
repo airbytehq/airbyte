@@ -12,7 +12,7 @@ from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams.core_async import AsyncStream
+from airbyte_cdk.sources.streams import AsyncStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
