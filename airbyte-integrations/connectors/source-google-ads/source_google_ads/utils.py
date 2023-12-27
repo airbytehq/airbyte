@@ -218,7 +218,8 @@ class RunAsThread:
             start_time = time.time()
             while thread.is_alive() or not the_queue.empty():
                 # The main thread waits for the `write_event` to be set or until the specified timeout.
-                write_event.wait(self._timeout_seconds)
+                if the_queue.empty():
+                    write_event.wait(self._timeout_seconds)
                 try:
                     # The main thread yields the result obtained from reading the queue.
                     yield self.read(the_queue)

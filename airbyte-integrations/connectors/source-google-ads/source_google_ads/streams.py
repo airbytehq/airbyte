@@ -44,6 +44,15 @@ class GoogleAdsStream(Stream, ABC):
         for customer in self.customers:
             yield {"customer_id": customer.id}
 
+    @generator_backoff(
+        wait_gen=backoff.constant,
+        exception=(TimeoutError),
+        max_tries=5,
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error {details['exception']} after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        interval=1,
+    )
     @detached(timeout_minutes=5)
     def request_records_job(self, customer_id, query, stream_slice):
         response_records = self.google_ads_client.send_request(query=query, customer_id=customer_id)
