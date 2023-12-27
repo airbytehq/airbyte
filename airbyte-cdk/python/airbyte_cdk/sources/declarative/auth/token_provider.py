@@ -5,7 +5,7 @@
 
 import datetime
 from abc import abstractmethod
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, List, Mapping, Optional, Union
 
 import dpath.util
@@ -36,7 +36,7 @@ class SessionTokenProvider(TokenProvider):
     parameters: InitVar[Mapping[str, Any]]
     message_repository: MessageRepository = NoopMessageRepository()
 
-    _decoder: Decoder = JsonDecoder(parameters={})
+    _decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
     _next_expiration_time: Optional[DateTime] = None
     _token: Optional[str] = None
 
