@@ -1,16 +1,37 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List
+from typing import TYPE_CHECKING
 
 import asyncclick as click
+import asyncer
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.consts import DOCKER_VERSION
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
+
+if TYPE_CHECKING:
+    from typing import List, Tuple
+
+    import dagger
+
+## HELPERS
+async def run_poetry_command(container: dagger.Container, command: str) -> Tuple[str, str]:
+    """Run a poetry command in a container and return the stdout and stderr.
+
+    Args:
+        container (dagger.Container): The container to run the command in.
+        command (str): The command to run.
+
+    Returns:
+        Tuple[str, str]: The stdout and stderr of the command.
+    """
+    container = container.with_exec(["poetry", "run", *command.split(" ")])
+    return await container.stdout(), await container.stderr()
 
 
 @click.command()
@@ -89,6 +110,15 @@ async def test(pipeline_context: ClickPipelineContext):
         .with_env_variable("CI", str(pipeline_context.params["is_ci"]))
         .with_workdir(f"/airbyte/{poetry_package_path}")
     )
-    for command in commands_to_run:
-        test_container = test_container.with_exec(["poetry", "run", *command.split(" ")])
-    await test_container
+
+    soon_command_executions_results = []
+    async with asyncer.create_task_group() as poetry_commands_task_group:
+        for command in commands_to_run:
+            logger.info(f"Running command: {command}")
+            soon_command_execution_result = poetry_commands_task_group.soonify(run_poetry_command)(test_container, command)
+            soon_command_executions_results.append(soon_command_execution_result)
+
+    for result in soon_command_executions_results:
+        stdout, stderr = result.value
+        logger.info(stdout)
+        logger.error(stderr)
