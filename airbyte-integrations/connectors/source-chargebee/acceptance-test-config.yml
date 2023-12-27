@@ -32,6 +32,8 @@ acceptance_tests:
             bypass_reason: "Empty stream. Unstable data"
           - name: "hosted_page"
             bypass_reason: "Empty stream. Unstable data"
+          - name: "event"
+            bypass_reason: "Unstable data. Updated daily."
         ignored_fields:
           subscription:
             - name: "current_term_start"
