@@ -18,6 +18,15 @@
         ],
         "order": 0
       },
+      "endpoint_url": {
+        "title": "Endpoint URL",
+        "description": "Specify the custom endpoint URL when using local development or testing environments, such as Localstack for AWS services",
+        "type": "string",
+        "examples": [
+          "http://localhost:4566"
+        ],
+        "order": 1
+      },
       "region": {
         "title": "AWS Region",
         "description": "AWS Region of the SQS Queue",
@@ -49,44 +58,54 @@
           "us-gov-east-1",
           "us-gov-west-1"
         ],
-        "order": 1
+        "order": 2
       },
       "message_delay": {
         "title": "Message Delay",
         "description": "Modify the Message Delay of the individual message from the Queue's default (seconds).",
         "type": "integer",
-        "examples": ["15"],
-        "order": 2
+        "examples": [
+          "15"
+        ],
+        "order": 3
       },
       "access_key": {
         "title": "AWS IAM Access Key ID",
         "description": "The Access Key ID of the AWS IAM Role to use for sending  messages",
         "type": "string",
-        "examples": ["xxxxxHRNxxx3TBxxxxxx"],
-        "order": 3,
+        "examples": [
+          "xxxxxHRNxxx3TBxxxxxx"
+        ],
+        "order": 4,
         "airbyte_secret": true
       },
       "secret_key": {
         "title": "AWS IAM Secret Key",
         "description": "The Secret Key of the AWS IAM Role to use for sending messages",
         "type": "string",
-        "examples": ["hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz"],
-        "order": 4,
+        "examples": [
+          "hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz"
+        ],
+        "order": 5,
         "airbyte_secret": true
       },
       "message_body_key": {
         "title": "Message Body Key",
         "description": "Use this property to extract the contents of the named key in the input record to use as the SQS message body. If not set, the entire content of the input record data is used as the message body.",
         "type": "string",
-        "examples": ["myDataPath"],
-        "order": 5
+        "examples": [
+          "myDataPath"
+        ],
+        "order": 6
       },
       "message_group_id": {
         "title": "Message Group Id",
         "description": "The tag that specifies that a message belongs to a specific message group. This parameter applies only to, and is REQUIRED by, FIFO queues.",
         "type": "string",
-        "examples": ["my-fifo-group"],
-        "order": 6
+        "examples": [
+          "my-fifo-group"
+        ],
+        "order": 7
       }
     }
   }

@@ -84,6 +84,7 @@ class DestinationAmazonSqs(Destination):
         # Required propeties
         queue_url = config["queue_url"]
         queue_region = config["region"]
+        endpoint_url = config.get("endpoint_url", None)
 
         # TODO: Implement optional params for batch
         # Optional Properties
@@ -100,7 +101,13 @@ class DestinationAmazonSqs(Destination):
         secret_key = config["secret_key"]
 
         session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
-        sqs = session.resource("sqs")
+        
+        # If endpoint_url is provided, use it; otherwise, let boto3 use the default
+        if endpoint_url:
+            sqs = session.resource("sqs", endpoint_url=endpoint_url)
+        else:
+            sqs = session.resource("sqs")
+        
         queue = sqs.Queue(url=queue_url)
 
         # TODO: Make access/secret key optional, support public access & profiles
@@ -129,6 +136,9 @@ class DestinationAmazonSqs(Destination):
             # Required propeties
             queue_url = config["queue_url"]
             logger.debug("Amazon SQS Destination Config Check - queue_url: " + queue_url)
+            endpoint_url = config.get("endpoint_url", None)
+            if endpoint_url:
+                logger.debug("Amazon SQS Destination Config Check - endpoint_url: " + endpoint_url)
             queue_region = config["region"]
             logger.debug("Amazon SQS Destination Config Check - region: " + queue_region)
 
@@ -140,7 +150,13 @@ class DestinationAmazonSqs(Destination):
 
             logger.debug("Amazon SQS Destination Config Check - Starting connection test ---")
             session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
-            sqs = session.resource("sqs")
+
+            # If endpoint_url is provided, use it; otherwise, let boto3 use the default
+            if endpoint_url:
+                sqs = session.resource("sqs", endpoint_url=endpoint_url)
+            else:
+                sqs = session.resource("sqs")
+
             queue = sqs.Queue(url=queue_url)
             if hasattr(queue, "attributes"):
                 logger.debug("Amazon SQS Destination Config Check - Connection test successful ---")
