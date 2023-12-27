@@ -1399,3 +1399,37 @@ def test_get_actual_file_types(records, expected_file_types):
 def test_get_unsupported_file_types(config, expected_file_types):
     t = test_core.TestBasicRead()
     assert t._get_unsupported_file_types(config) == expected_file_types
+
+
+@pytest.mark.parametrize(
+    ("is_file_based_connector", "skip_test"),
+    ((False, True), (False, False), (True, True)),
+)
+async def test_all_supported_file_types_present_skipped(mocker, is_file_based_connector, skip_test):
+    mocker.patch.object(test_core.pytest, "skip")
+    mocker.patch.object(test_core.TestBasicRead, "_file_types", {".avro", ".csv", ".jsonl", ".parquet", ".pdf"})
+
+    t = test_core.TestBasicRead()
+    config = BasicReadTestConfig(config_path="config_path", file_types=FileTypesConfig(skip_test=skip_test))
+    await t.test_all_supported_file_types_present(is_file_based_connector, config)
+    test_core.pytest.skip.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    ("file_types_found", "should_fail"),
+    (
+        ({".avro", ".csv", ".jsonl", ".parquet", ".pdf"}, False),
+        ({".csv", ".jsonl", ".parquet", ".pdf"}, True),
+        ({".avro", ".csv", ".jsonl", ".parquet"}, True),
+    ),
+)
+async def test_all_supported_file_types_present(mocker, file_types_found, should_fail):
+    mocker.patch.object(test_core.TestBasicRead, "_file_types", file_types_found)
+    t = test_core.TestBasicRead()
+    config = BasicReadTestConfig(config_path="config_path", file_types=FileTypesConfig(skip_test=False))
+
+    if should_fail:
+        with pytest.raises(AssertionError) as e:
+            await t.test_all_supported_file_types_present(file_based_connector=True, inputs=config)
+    else:
+        await t.test_all_supported_file_types_present(file_based_connector=True, inputs=config)
