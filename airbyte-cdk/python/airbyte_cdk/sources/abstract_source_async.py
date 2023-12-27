@@ -21,7 +21,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.abstract_source import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import AsyncStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
@@ -99,7 +99,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
         """
 
     @abstractmethod
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> List[AsyncStream]:
         """
         :param config: The user-provided configuration as specified by the source's spec.
         Any stream construction related operation should happen here.
@@ -129,37 +129,37 @@ class AsyncAbstractSource(AbstractSource, ABC):
         print(f"_______________________-ASYNCIO SOURCE N RECORDS == {n_records}")
         logger.info(f"Finished syncing {self.name}")
 
-    def _do_read(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
+    def _do_read(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, AsyncStream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         streams_in_progress = {s.stream.name: Sentinel(s.stream.name) for s in catalog.streams}
         self.reader = SourceReader(logger, self.queue, streams_in_progress, self._read_streams, catalog, stream_instances, timer, logger, state_manager, internal_config)
         for record in self.reader:
             yield record
 
-    async def _read_streams(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
+    async def _read_streams(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, AsyncStream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         pending_tasks = set()
         n_started, n_streams = 0, len(catalog.streams)
         streams_iterator = iter(catalog.streams)
 
         while pending_tasks or n_started < n_streams:
-            while len(pending_tasks) <= self.session_limit and (s := next(streams_iterator, None)):
-                if s is None:
+            while len(pending_tasks) <= self.session_limit and (configured_stream := next(streams_iterator, None)):
+                if configured_stream is None:
                     break
-                stream = stream_instances.get(s.stream.name)
-                self.reader.sessions[s.stream.name] = await stream._ensure_session()
-                pending_tasks.add(asyncio.create_task(self._do_async_read_stream(s, stream_instances, timer, logger, state_manager, internal_config)))
+                stream_instance = stream_instances.get("Account")
+                stream = stream_instances.get(configured_stream.stream.name)
+                self.reader.sessions[configured_stream.stream.name] = await stream._ensure_session()
+                pending_tasks.add(asyncio.create_task(self._do_async_read_stream(configured_stream, stream_instance, timer, logger, state_manager, internal_config)))
                 n_started += 1
 
             _, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
 
-    async def _do_async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
+    async def _do_async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instance: AsyncStream, timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         print(f">>>>>>>>> _do_async_read_stream {configured_stream.stream.name}")
         try:
-            await self._async_read_stream(configured_stream, stream_instances, timer, logger, state_manager, internal_config)
+            await self._async_read_stream(configured_stream, stream_instance, timer, logger, state_manager, internal_config)
         finally:
             self.queue.put(Sentinel(configured_stream.stream.name))
 
-    async def _async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instances: Dict[str, Stream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
-        stream_instance = stream_instances.get("Account")
+    async def _async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instance: AsyncStream, timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         if not stream_instance:
             if not self.raise_exception_on_missing_stream:
                 return
@@ -207,7 +207,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
     async def _read_stream(
         self,
         logger: logging.Logger,
-        stream_instance: Stream,
+        stream_instance: AsyncStream,
         configured_stream: ConfiguredAirbyteStream,
         state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
@@ -256,7 +256,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
     async def _read_incremental(
         self,
         logger: logging.Logger,
-        stream_instance: Stream,
+        stream_instance: AsyncStream,
         configured_stream: ConfiguredAirbyteStream,
         state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
@@ -296,7 +296,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
     async def _read_full_refresh(
         self,
         logger: logging.Logger,
-        stream_instance: Stream,
+        stream_instance: AsyncStream,
         configured_stream: ConfiguredAirbyteStream,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
@@ -309,7 +309,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
                 if internal_config.is_limit_reached(total_records_counter):
                     return
 
-    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream) -> AirbyteMessage:
+    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: AsyncStream) -> AirbyteMessage:
         """
         Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
         """
