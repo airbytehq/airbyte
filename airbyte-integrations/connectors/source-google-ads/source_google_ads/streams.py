@@ -45,17 +45,22 @@ class GoogleAdsStream(Stream, ABC):
             yield {"customer_id": customer.id}
 
     @detached(timeout_minutes=5)
+    def request_records_job(self, customer_id, query, stream_slice):
+        response_records = self.google_ads_client.send_request(query=query, customer_id=customer_id)
+        yield from self.parse_records_with_backoff(response_records, stream_slice)
+
     def read_records(self, sync_mode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         if stream_slice is None:
             return []
 
         customer_id = stream_slice["customer_id"]
         try:
-            response_records = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=customer_id)
-
-            yield from self.parse_records_with_backoff(response_records, stream_slice)
+            yield from self.request_records_job(customer_id, self.get_query(stream_slice), stream_slice)
         except GoogleAdsException as exception:
             traced_exception(exception, customer_id, self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
+        except TimeoutError as exception:
+            # Prevent sync failure
+            logger.warning(f"Timeout: Failed to access {self.name} stream data. {str(exception)}")
 
     @generator_backoff(
         wait_gen=backoff.expo,
