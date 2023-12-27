@@ -2097,30 +2097,36 @@
               ]
             },
             "cohortSpec": {
-              "title": "Cohort specs",
-              "description": "A list of cohorts.",
+              "title": "Cohort Reports",
+              "description": "Cohort reports creates a time series of user retention for the cohort.",
               "type": "object",
               "properties": {
                 "cohorts": {
+                  "name": "Cohorts",
                   "type": "array",
                   "items": {
                     "title": "Cohorts",
                     "type": "object",
-                    "required": ["dateRange"],
+                    "required": ["dimension", "dateRange"],
                     "properties": {
                       "name": {
+                        "title": "Name",
                         "type": "string",
                         "pattern": "^(?!(cohort_|RESERVED_)).*$",
                         "description": "Assigns a name to this cohort. If not set, cohorts are named by their zero based index cohort_0, cohort_1, etc."
                       },
                       "dimension": {
+                        "title": "Dimension",
+                        "description": "Dimension used by the cohort. Required and only supports `firstSessionDate`",
                         "type": "string",
                         "enum": ["firstSessionDate"]
                       },
                       "dateRange": {
                         "type": "object",
+                        "required": ["startDate", "endDate"],
                         "properties": {
                           "startDate": {
+                            "title": "Start Date",
                             "type": "string",
                             "format": "date",
                             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
@@ -2128,6 +2134,7 @@
                             "examples": ["2021-01-01"]
                           },
                           "endDate": {
+                            "title": "End Date",
                             "type": "string",
                             "format": "date",
                             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
@@ -2141,17 +2148,24 @@
                 },
                 "cohortsRange": {
                   "type": "object",
-                  "required": ["granularity"],
+                  "required": ["granularity", "endOffset"],
                   "properties": {
                     "granularity": {
+                      "title": "Granularity",
+                      "description": "The granularity used to interpret the startOffset and endOffset for the extended reporting date range for a cohort report.",
                       "type": "string",
                       "enum": ["GRANULARITY_UNSPECIFIED", "DAILY", "WEEKLY", "MONTHLY"]
                     },
                     "startOffset": {
+                      "title": "Start Offset",
+                      "description": "Specifies the start date of the extended reporting date range for a cohort report.",
                       "type": "integer",
                       "minimum": 0
+
                     },
                     "endOffset": {
+                      "title": "End Offset",
+                      "description": "Specifies the end date of the extended reporting date range for a cohort report.",
                       "type": "integer",
                       "minimum": 0
                     }
@@ -2159,8 +2173,14 @@
                 },
                 "cohortReportSettings": {
                   "type": "object",
+                  "title": "Cohort Report Settings",
+                  "description": "Optional settings for a cohort report.",
                   "properties": {
-                    "accumulate": "boolean"
+                    "accumulate": {
+                      "title": "Accumulate",
+                      "description": "If true, accumulates the result from first touch day to the end day",
+                      "type": "boolean"
+                    }
                   }
                 }
               }
