@@ -44,6 +44,8 @@ import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
+import io.airbyte.db.instance.configs.jooq.generated.tables.Actor;
+import io.airbyte.db.instance.configs.jooq.generated.tables.ActorDefinition;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -52,12 +54,14 @@ import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import org.apache.commons.lang3.ObjectUtils;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -668,7 +672,9 @@ public class ConfigRepository {
                                                        final UUID destinationId,
                                                        final String status,
                                                        final Integer pageSize,
-                                                       final Integer pageCurrent)
+                                                       final Integer pageCurrent,
+                                                       final String sortFieldName,
+                                                       final String sortDirection)
       throws IOException {
     final Result<Record> result = database.query(ctx -> {
       List<UUID> destinationList = null;
@@ -678,11 +684,20 @@ public class ConfigRepository {
           destinationList = List.of(destinationId);
         }
       }
+      Actor SOURCE_ACTOR = ACTOR.as("SOURCE_ACTOR");
+      ActorDefinition SOURCE_ACTOR_DEFINITION = ACTOR_DEFINITION.as("SOURCE_ACTOR_DEFINITION");
+      Actor DESTINATION_ACTOR = ACTOR.as("DESTINATION_ACTOR");
+      ActorDefinition DESTINATION_ACTOR_DEFINITION = ACTOR_DEFINITION.as("DESTINATION_ACTOR_DEFINITION");
+
       SelectConditionStep<Record> where = ctx.select(CONNECTION.asterisk()).from(CONNECTION)
-          .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
-          .where(ACTOR.WORKSPACE_ID.eq(workspaceId));
+              .join(SOURCE_ACTOR).on(CONNECTION.SOURCE_ID.eq(SOURCE_ACTOR.ID))
+              .join(SOURCE_ACTOR_DEFINITION).on(SOURCE_ACTOR.ACTOR_DEFINITION_ID.eq(SOURCE_ACTOR_DEFINITION.ID))
+              .join(DESTINATION_ACTOR).on(CONNECTION.DESTINATION_ID.eq(DESTINATION_ACTOR.ID))
+              .join(DESTINATION_ACTOR_DEFINITION).on(DESTINATION_ACTOR.ACTOR_DEFINITION_ID.eq(DESTINATION_ACTOR_DEFINITION.ID))
+              .where(SOURCE_ACTOR.WORKSPACE_ID.eq(workspaceId));
+      
       if (sourceId != null) {
-        where.and(ACTOR.ACTOR_DEFINITION_ID.eq(sourceId));
+        where.and(SOURCE_ACTOR.ACTOR_DEFINITION_ID.eq(sourceId));
       }
       if (destinationList != null && !destinationList.isEmpty()) {
         where.and(CONNECTION.DESTINATION_ID.in(destinationList));
@@ -692,6 +707,29 @@ public class ConfigRepository {
       } else {
         where.and(CONNECTION.STATUS.notEqual(StatusType.deprecated));
       }
+
+      SortField<?> sortField = null;
+      if (!ObjectUtils.isEmpty(sortFieldName)) {
+        if ("name".equalsIgnoreCase(sortFieldName)) {
+          sortField = convertTableFieldToSortField(CONNECTION.NAME, sortDirection);
+        } else if ("status".equalsIgnoreCase(sortFieldName)) {
+          sortField = convertTableFieldToSortField(CONNECTION.STATUS, sortDirection);
+        } else if ("connectorName".equalsIgnoreCase(sortFieldName)) {
+          sortField = convertTableFieldToSortField(SOURCE_ACTOR_DEFINITION.NAME, sortDirection);
+        } else if ("entityName".equalsIgnoreCase(sortFieldName)) {
+          sortField = convertTableFieldToSortField(DESTINATION_ACTOR_DEFINITION.NAME, sortDirection);
+        } else {
+          LOGGER.error("Could not found sorting field : {}", sortFieldName);
+        }
+      } else {
+        /* Default newest first */
+        sortField = convertTableFieldToSortField(CONNECTION.CREATED_AT, "desc");
+      }
+
+      if (sortField != null) {
+        where.orderBy(sortField);
+      }
+      
       return where.limit(pageSize)
           .offset(pageSize * (pageCurrent - 1));
     }).fetch();
@@ -699,19 +737,47 @@ public class ConfigRepository {
     return getStandardSyncsWithoutOperationFromResult(result);
   }
 
+  private SortField<?> convertTableFieldToSortField(Field field, String sortDirection) {
+    if ("desc".equalsIgnoreCase(sortDirection)) {
+      return field.desc();
+    } else {
+      return field.asc();
+    }
+  }
+
   public List<SourceConnection> pageWorkspaceSourceConnection(final UUID workspaceId,
                                                               final UUID sourceDefinitionId,
                                                               final Integer pageSize,
-                                                              final Integer pageCurrent)
+                                                              final Integer pageCurrent,
+                                                              final String sortFieldName,
+                                                              final String sortDirection)
       throws IOException {
     final Result<Record> result = database.query(ctx -> {
-      SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
-          .and(ACTOR.ACTOR_TYPE.eq(ActorType.source));
+      SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR)
+              .join(ACTOR_DEFINITION).on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
+              .where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
+              .and(ACTOR.ACTOR_TYPE.eq(ActorType.source));
       if (workspaceId != null) {
         where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
       }
       if (sourceDefinitionId != null) {
         where.and(ACTOR.ACTOR_DEFINITION_ID.eq(sourceDefinitionId));
+      }
+      SortField<?> sortField = null;
+      if (!ObjectUtils.isEmpty(sortFieldName)) {
+        if ("name".equalsIgnoreCase(sortFieldName)) {
+          sortField = convertTableFieldToSortField(ACTOR.NAME, sortDirection);
+        } else if ("sourceName".equalsIgnoreCase(sortFieldName)) {
+          sortField = convertTableFieldToSortField(ACTOR_DEFINITION.NAME, sortDirection);
+        } else {
+          LOGGER.error("Could not found sorting field : {}", sortFieldName);
+        }
+      } else {
+        /* Default integration name alphabetically */
+        sortField = convertTableFieldToSortField(ACTOR_DEFINITION.NAME, "asc");
+      }
+      if (sortField != null) {
+        where.orderBy(sortField);
       }
       return where.limit(pageSize)
           .offset(pageSize * (pageCurrent - 1));
@@ -727,16 +793,36 @@ public class ConfigRepository {
   public List<DestinationConnection> pageWorkspaceDestinationConnection(final UUID workspaceId,
                                                                         final UUID destinationDefinitionId,
                                                                         final Integer pageSize,
-                                                                        final Integer pageCurrent)
+                                                                        final Integer pageCurrent,
+                                                                        final String sortFieldName,
+                                                                        final String sortDirection)
       throws IOException {
     final Result<Record> result = database.query(ctx -> {
-      SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
-          .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination));
+      SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR)
+              .join(ACTOR_DEFINITION).on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
+              .where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
+              .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination));
       if (workspaceId != null) {
         where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
       }
       if (destinationDefinitionId != null) {
         where.and(ACTOR.ACTOR_DEFINITION_ID.eq(destinationDefinitionId));
+      }
+      SortField<?> sortField = null;
+      if (!ObjectUtils.isEmpty(sortFieldName)) {
+        if ("name".equalsIgnoreCase(sortFieldName)) {
+          sortField = convertTableFieldToSortField(ACTOR.NAME, sortDirection);
+        } else if ("destinationName".equalsIgnoreCase(sortFieldName)) {
+          sortField = convertTableFieldToSortField(ACTOR_DEFINITION.NAME, sortDirection);
+        } else {
+          LOGGER.error("Could not found sorting field : {}", sortFieldName);
+        }
+      } else {
+        /* Default integration name alphabetically */
+        sortField = convertTableFieldToSortField(ACTOR_DEFINITION.NAME, "asc");
+      }
+      if (sortField != null) {
+        where.orderBy(sortField);
       }
       return where.limit(pageSize)
           .offset(pageSize * (pageCurrent - 1));
