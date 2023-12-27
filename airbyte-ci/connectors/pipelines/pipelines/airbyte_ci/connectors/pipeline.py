@@ -3,10 +3,11 @@
 #
 
 """This module groups the functions to run full pipelines for connector testing."""
+from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Callable, List, Optional, Union
 
 import anyio
 import dagger
@@ -19,7 +20,10 @@ from pipelines.consts import DOCKER_CLI_IMAGE, DOCKER_HOST_NAME, DOCKER_HOST_POR
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.utils import create_and_open_file
 from pipelines.models.reports import Report
-from pipelines.models.steps import PipelineContext, StepResult, StepStatus
+from pipelines.models.steps import StepResult, StepStatus
+
+if TYPE_CHECKING:
+    from pipelines.models.contexts.pipeline_context import PipelineContext
 
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"

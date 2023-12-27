@@ -21,8 +21,8 @@ from pipelines.helpers import sentry_utils
 from pipelines.helpers.utils import format_duration, get_exec_result
 
 if TYPE_CHECKING:
-    from pipelines.models.contexts.pipeline_context import PipelineContext
     from pipelines.airbyte_ci.format.format_command import FormatCommand
+    from pipelines.models.contexts.pipeline_context import PipelineContext
 
 from abc import ABC
 
