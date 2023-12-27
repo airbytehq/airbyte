@@ -131,9 +131,21 @@ class AsyncAbstractSource(AbstractSource, ABC):
 
     def _do_read(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, AsyncStream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         streams_in_progress = {s.stream.name: Sentinel(s.stream.name) for s in catalog.streams}
+        self._assert_streams(catalog, stream_instances)
         self.reader = SourceReader(logger, self.queue, streams_in_progress, self._read_streams, catalog, stream_instances, timer, logger, state_manager, internal_config)
         for record in self.reader:
             yield record
+
+    def _assert_streams(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, AsyncStream]):
+        for configured_stream in catalog.streams:
+            stream_instance = stream_instances.get(configured_stream.stream.name)
+            if not stream_instance:
+                if not self.raise_exception_on_missing_stream:
+                    return
+                raise KeyError(
+                    f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
+                    f"Refresh the schema in replication settings and remove this stream from future sync attempts."
+                )
 
     async def _read_streams(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, AsyncStream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         pending_tasks = set()
@@ -144,7 +156,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
             while len(pending_tasks) <= self.session_limit and (configured_stream := next(streams_iterator, None)):
                 if configured_stream is None:
                     break
-                stream_instance = stream_instances.get("Account")
+                stream_instance = stream_instances.get("Account")  # TODO
                 stream = stream_instances.get(configured_stream.stream.name)
                 self.reader.sessions[configured_stream.stream.name] = await stream._ensure_session()
                 pending_tasks.add(asyncio.create_task(self._do_async_read_stream(configured_stream, stream_instance, timer, logger, state_manager, internal_config)))
@@ -153,21 +165,12 @@ class AsyncAbstractSource(AbstractSource, ABC):
             _, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
 
     async def _do_async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instance: AsyncStream, timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
-        print(f">>>>>>>>> _do_async_read_stream {configured_stream.stream.name}")
         try:
             await self._async_read_stream(configured_stream, stream_instance, timer, logger, state_manager, internal_config)
         finally:
             self.queue.put(Sentinel(configured_stream.stream.name))
 
     async def _async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instance: AsyncStream, timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
-        if not stream_instance:
-            if not self.raise_exception_on_missing_stream:
-                return
-            raise KeyError(
-                f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
-                f"Refresh the schema in replication settings and remove this stream from future sync attempts."
-            )
-
         try:
             timer.start_event(f"Syncing stream {configured_stream.stream.name}")
             stream_is_available, reason = await stream_instance.check_availability(logger, self)
