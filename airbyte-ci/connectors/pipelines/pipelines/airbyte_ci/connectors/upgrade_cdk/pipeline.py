@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from __future__ import annotations
+
 import os
 import re
 from typing import TYPE_CHECKING

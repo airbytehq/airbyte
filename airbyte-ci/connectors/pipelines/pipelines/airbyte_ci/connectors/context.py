@@ -5,6 +5,7 @@
 """Module declaring context related classes."""
 
 from __future__ import annotations
+
 from datetime import datetime
 from types import TracebackType
 from typing import TYPE_CHECKING

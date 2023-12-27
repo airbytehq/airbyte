@@ -17,6 +17,7 @@ from pipelines.models.steps import StepStatus
 
 if TYPE_CHECKING:
     from pipelines.models.steps import Step, StepResult
+
     RESULTS_DICT = Dict[str, StepResult]
     ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict], Awaitable[Dict]]
 

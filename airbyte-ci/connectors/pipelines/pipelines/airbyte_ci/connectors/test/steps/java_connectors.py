@@ -4,6 +4,7 @@
 
 """This module groups steps made to run tests for a specific Java connector given a test context."""
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import anyio
@@ -26,7 +27,9 @@ from pipelines.models.steps import StepResult, StepStatus
 
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional
+
     from pipelines.helpers.run_steps import RESULTS_DICT, STEP_TREE
+
 
 class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
