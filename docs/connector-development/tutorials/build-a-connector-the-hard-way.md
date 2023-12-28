@@ -174,6 +174,7 @@ import argparse  # helps parse commandline arguments
 import json
 import sys
 import os
+from datetime import datetime
 
 
 def read_json(filepath):
@@ -185,6 +186,10 @@ def log(message):
     log_json = {"type": "LOG", "log": message}
     print(json.dumps(log_json))
 
+def log_error(error_message):
+    current_time_in_ms = int(datetime.now().timestamp()) * 1000
+    log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
+    print(json.dumps(log_json))
 
 def spec():
     # Read the file named spec.json from the module directory as a JSON file
@@ -980,9 +985,11 @@ and with that, we've packaged our connector in a functioning Docker image. The l
 
 ### 4. Test the connector
 
-The minimum requirement for testing your connector is to pass the [Connector Acceptance Test](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) suite. The connector acceptence test is a blackbox test suite containing a number of tests that validate your connector behaves as intended by the Airbyte Specification. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass Airbyte's acceptance test suite.
+The minimum requirement for testing your connector is to pass the [Connector Acceptance Test](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) suite. The connector acceptence test is a blackbox test suite containing a number of tests that validate your connector behaves as intended by the Airbyte Specification. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, your connector must pass Airbyte's acceptance test suite.
 
-The code generator should have already generated a YAML file which configures the test suite. In order to run it, modify the `acceptance-test-config.yaml` file to look like this:
+The code generator makes a minimal acceptance test configuration. Let's modify it as follows to setup
+tests for each operation with valid and invalid credentials. Edit `acceptance-test-config.yaml` to look
+as follows:
 
 ```yaml
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
@@ -1018,25 +1025,13 @@ acceptance_tests:
 #      future_state_path: "integration_tests/abnormal_state.json"
 ```
 
-Then from the connector module directory run
+To run the test suite, run [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) as follows:
 
-```bash
-./acceptance-test-docker.sh
+```shell
+airbyte-ci connectors --name=<name-of-your-connector></name-of-your-connector> --use-remote-secrets=false test
 ```
 
-After tests have run, you should see a test summary like:
-
-```text
-collecting ...
- test_core.py ✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓                                                                                                                                                                                                                                                                                                                           95% █████████▌
- test_full_refresh.py ✓                                                                                                                                                                                                                                                                                                                                    100% ██████████
-
-================== short test summary info ==================
-SKIPPED [1] connector_acceptance_test/plugin.py:56: Skipping TestIncremental.test_two_sequential_reads because not found in the config
-
-Results (8.91s):
-      20 passed
-```
+`airbyte-ci` will build and then test your connector, and provide a report on the test results.
 
 That's it! We've created a fully functioning connector. Now let's get to the exciting part: using it from the Airbyte UI.
 
@@ -1046,7 +1041,7 @@ Let's recap what we've achieved so far:
 
 1. Implemented a connector
 2. Packaged it in a Docker image
-3. Integrated it with the Airbyte Standard Test suite
+3. Ran Connector Acceptance Tests for the connector with `airbyte-ci`
 
 To use it from the Airbyte UI, we need to:
 
