@@ -15,6 +15,7 @@ from source_facebook_marketing.source import SourceFacebookMarketing
 CMD = "check"
 TEST_CONFIG_PATH = "unit_tests/test_migrations/test_old_config.json"
 NEW_TEST_CONFIG_PATH = "unit_tests/test_migrations/test_new_config.json"
+UPGRADED_TEST_CONFIG_PATH = "unit_tests/test_migrations/test_upgraded_config.json"
 SOURCE_INPUT_ARGS = [CMD, "--config", TEST_CONFIG_PATH]
 SOURCE: Source = SourceFacebookMarketing()
 
@@ -77,5 +78,10 @@ def test_config_is_reverted():
 
 def test_should_not_migrate_new_config():
     new_config = load_config(NEW_TEST_CONFIG_PATH)
+    migration_instance = MigrateAccountIdToArray()
+    assert not migration_instance.should_migrate(new_config)
+
+def test_should_not_migrate_upgraded_config():
+    new_config = load_config(UPGRADED_TEST_CONFIG_PATH)
     migration_instance = MigrateAccountIdToArray()
     assert not migration_instance.should_migrate(new_config)
