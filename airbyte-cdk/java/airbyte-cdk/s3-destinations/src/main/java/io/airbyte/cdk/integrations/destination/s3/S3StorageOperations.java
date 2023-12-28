@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
@@ -66,7 +68,7 @@ public class S3StorageOperations extends BlobStorageOperations {
   private static final String FORMAT_VARIABLE_EPOCH = "${EPOCH}";
   private static final String FORMAT_VARIABLE_UUID = "${UUID}";
   private static final String GZ_FILE_EXTENSION = "gz";
-  private final HashMap<String, AtomicInteger> partCounts = new HashMap<>();
+  private final ConcurrentMap<String, AtomicInteger> partCounts = new ConcurrentHashMap<>();
 
   private final NamingConventionTransformer nameTransformer;
   protected final S3DestinationConfig s3Config;
@@ -226,11 +228,7 @@ public class S3StorageOperations extends BlobStorageOperations {
    */
   @VisibleForTesting
   String getPartId(String objectPath) {
-    if (partCounts.get(objectPath) == null) {
-      partCounts.put(objectPath, new AtomicInteger(0));
-    }
-
-    final AtomicInteger partCount = partCounts.get(objectPath);
+    final AtomicInteger partCount = partCounts.computeIfAbsent(objectPath, k -> new AtomicInteger(0));
 
     if (partCount.get() == 0) {
       final String bucket = s3Config.getBucketName();

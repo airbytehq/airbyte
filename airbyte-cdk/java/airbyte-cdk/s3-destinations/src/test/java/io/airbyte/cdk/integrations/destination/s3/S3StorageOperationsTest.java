@@ -137,9 +137,9 @@ public class S3StorageOperationsTest {
     PartIdGetter partIdGetter = new PartIdGetter(s3StorageOperations);
 
     // single threaded
+    partIdGetter.run(); // 0
     partIdGetter.run(); // 1
     partIdGetter.run(); // 2
-    partIdGetter.run(); // 3
 
     // multithreaded
     ExecutorService executor = Executors.newFixedThreadPool(3);
