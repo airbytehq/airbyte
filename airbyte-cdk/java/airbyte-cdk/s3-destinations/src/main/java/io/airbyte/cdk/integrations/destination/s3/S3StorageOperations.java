@@ -222,7 +222,7 @@ public class S3StorageOperations extends BlobStorageOperations {
    * (previous approach) doesn't allow that. However, using pure integers could lead to a collision
    * with an existing file. So, we'll count up the existing files in the directory and use that as a
    * lazy-offset, assuming airbyte manages the dir and has similar naming conventions. `getPartId`
-   * will be 1-indexed.
+   * will be 0-indexed.
    */
   @VisibleForTesting
   String getPartId(String objectPath) {
@@ -253,7 +253,7 @@ public class S3StorageOperations extends BlobStorageOperations {
       }
     }
 
-    return Integer.toString(partCount.incrementAndGet());
+    return Integer.toString(partCount.getAndIncrement());
   }
 
   @VisibleForTesting

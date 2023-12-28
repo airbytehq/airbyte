@@ -151,17 +151,17 @@ public class S3StorageOperationsTest {
 
     List<String> responses = partIdGetter.getResponses();
     assertEquals(10, responses.size());
-    for (int i = 1; i <= 10; i++) {
+    for (int i = 0; i <= 9; i++) {
       assertTrue(responses.contains(Integer.toString(i)));
     }
   }
 
   @Test
   void getPartIdMultiplePaths() {
+    assertEquals("0", s3StorageOperations.getPartId(FAKE_BUCKET_PATH));
     assertEquals("1", s3StorageOperations.getPartId(FAKE_BUCKET_PATH));
-    assertEquals("2", s3StorageOperations.getPartId(FAKE_BUCKET_PATH));
 
-    assertEquals("1", s3StorageOperations.getPartId("other_path"));
+    assertEquals("0", s3StorageOperations.getPartId("other_path"));
   }
 
 }
