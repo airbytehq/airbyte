@@ -222,7 +222,8 @@ public class DestinationHandler {
     }
     List<DestinationConnection> destinationConnections = configRepository.pageWorkspaceDestinationConnection(
         destinationPageRequestBody.getWorkspaceId(), destinationPageRequestBody.getDestinationDefinitionId(),
-        destinationPageRequestBody.getPageSize(), destinationPageRequestBody.getPageCurrent());
+        destinationPageRequestBody.getPageSize(), destinationPageRequestBody.getPageCurrent(), destinationPageRequestBody.getSortDetails().getSortFieldName(),
+            destinationPageRequestBody.getSortDetails().getSortDirection());
     final List<DestinationRead> destinationReads = Lists.newArrayList();
     for (final DestinationConnection destinationConnection : destinationConnections) {
       try {
