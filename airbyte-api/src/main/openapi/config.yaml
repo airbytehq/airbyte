@@ -2568,6 +2568,8 @@ components:
           type: integer
         pageCurrent:
           type: integer
+        sortDetails:
+          $ref: "#/components/schemas/sortDetails"
     PageRequestBody:
       type: object
       required:
@@ -2698,6 +2700,13 @@ components:
           type: boolean
         hasDestinations:
           type: boolean
+    sortDetails:
+      type: object
+      properties:
+        sortFieldName:
+          type: string
+        sortDirection:
+          type: string
     # SLUG
     SlugRequestBody:
       type: object
@@ -2964,6 +2973,8 @@ components:
           type: integer
         pageCurrent:
           type: integer
+        sortDetails:
+          $ref: "#/components/schemas/sortDetails"
     SourceCloneRequestBody:
       description: The values required to configure the source. The schema for this should have an id of the existing source along with the configuration you want to change in case.
       type: object
@@ -3309,6 +3320,8 @@ components:
           type: integer
         pageCurrent:
           type: integer
+        sortDetails:
+          $ref: "#/components/schemas/sortDetails"
     DestinationConfiguration:
       description: The values required to configure the destination. The schema for this must match the schema return by destination_definition_specifications/get for the destinationDefinition.
       example: { user: "charles" }
