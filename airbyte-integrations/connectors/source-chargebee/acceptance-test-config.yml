@@ -23,9 +23,9 @@ acceptance_tests:
         timeout_seconds: 1200
         empty_streams:
           - name: "addon"
-            bypass_reason: "Not permitted for this site"
+            bypass_reason: "Not available for Product Catalog 2.0 sites."
           - name: "plan"
-            bypass_reason: "Not permitted for this site"
+            bypass_reason: "Not available for Product Catalog 2.0 sites."
           - name: "virtual_bank_account"
             bypass_reason: "Cannot populate with test data"
           - name: "unbilled_charge"
@@ -34,6 +34,8 @@ acceptance_tests:
             bypass_reason: "Empty stream. Unstable data"
           - name: "event"
             bypass_reason: "Unstable data. Updated daily."
+          - name: "site_migration_detail"
+            bypass_reason: "Cannnot populate with test data."
         ignored_fields:
           subscription:
             - name: "current_term_start"
