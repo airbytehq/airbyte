@@ -30,7 +30,7 @@ If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denot
 :::
 
 7. (Optional) In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
-8. (Optional) In the **Custom Reports** field, you may optionally provide a JSON array describing any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
+8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
 
 :::caution
@@ -91,7 +91,7 @@ If the start date is not provided, the default value will be used, which is two 
 Many analyses and data investigations may require 24-48 hours to process information from your website or app. To ensure the accuracy of the data, we subtract two days from the starting date. For more details, please refer to [Google's documentation](https://support.google.com/analytics/answer/9333790?hl=en).
 :::
 
-7. (Optional) In the **Custom Reports** field, you may optionally provide a JSON array describing any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
+7. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 8. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
 
 :::caution
@@ -191,7 +191,6 @@ Custom reports in Google Analytics allow for flexibility in querying specific da
 - **Pivots**: (Optional) An array of pivot tables for data, such as page views by city, etc. More information on pivots can be found in [the GA4 documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).
 
 A full list of dimensions and metrics supported in the API can be found [here](https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema). To ensure your dimensions and metrics are compatible for your GA4 property, you can use the [GA4 Dimensions & Metrics Explorer](https://ga-dev-tools.google/ga4/dimensions-metrics-explorer/).
-
 
 
 The following is an example of a basic User Engagement report to track sessions and bounce rate, segmented by city:
