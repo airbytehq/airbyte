@@ -261,8 +261,8 @@ public class ConnectionsHandler {
 
     for (final StandardSync standardSync : configRepository.pageWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(),
         workspaceIdRequestBody.getSourceDefinitionId(), workspaceIdRequestBody.getDestinationDefinitionId(), workspaceIdRequestBody.getStatus(),
-        workspaceIdRequestBody.getPageSize(), workspaceIdRequestBody.getPageCurrent()), workspaceIdRequestBody.getSortDetails().getSortFieldName(),
-            workspaceIdRequestBody.getSortDetails().getSortDirection())) {
+        workspaceIdRequestBody.getPageSize(), workspaceIdRequestBody.getPageCurrent(), workspaceIdRequestBody.getSortDetails().getSortFieldName(),
+        workspaceIdRequestBody.getSortDetails().getSortDirection())) {
       connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
@@ -276,7 +276,7 @@ public class ConnectionsHandler {
     for (final StandardSync standardSync : configRepository.pageWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(),
         workspaceIdRequestBody.getSourceDefinitionId(), workspaceIdRequestBody.getDestinationDefinitionId(), workspaceIdRequestBody.getStatus(),
         workspaceIdRequestBody.getPageSize(), workspaceIdRequestBody.getPageCurrent(), workspaceIdRequestBody.getSortDetails().getSortFieldName(),
-            workspaceIdRequestBody.getSortDetails().getSortDirection())) {
+        workspaceIdRequestBody.getSortDetails().getSortDirection())) {
       connectionReads.add(ApiPojoConverters.internalToConnectionPageRead(standardSync));
     }
 
