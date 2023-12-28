@@ -503,6 +503,7 @@ module.exports = {
       items: [
         "operator-guides/configuring-airbyte-db",
         "operator-guides/configuring-connector-resources",
+        "operator-guides/telemetry",
       ]
     },
     {
