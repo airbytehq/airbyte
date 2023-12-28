@@ -35,10 +35,10 @@ class Config(AbstractFileBasedSpec):
     )
 
     role_arn: Optional[str] = Field(
-        title="AWS Role ARN",
+        title=f"AWS Role ARN (External ID is '{AWS_EXTERNAL_ID}')" if AWS_EXTERNAL_ID else "AWS Role ARN",
         default=None,
         description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations "
-        f"requested using this profile. Set External ID as {AWS_EXTERNAL_ID}.",
+        f"requested using this profile. Set External ID as '{AWS_EXTERNAL_ID}'.",
         airbyte_secret=True,
         order=6,
     )

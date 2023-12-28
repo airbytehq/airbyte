@@ -60,32 +60,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             client_kv_args = _get_s3_compatible_client_args(self.config) if self.config.endpoint else {}
 
             if self.config.role_arn:
-
-                def refresh():
-                    client = boto3.client("sts")
-                    role = client.assume_role(
-                        RoleArn=self.config.role_arn,
-                        RoleSessionName="airbyte-source-s3",
-                        ExternalId=AWS_EXTERNAL_ID,
-                    )
-                    creds = role.get("Credentials", {})
-                    return {
-                        "access_key": creds["AccessKeyId"],
-                        "secret_key": creds["SecretAccessKey"],
-                        "token": creds["SessionToken"],
-                        "expiry_time": creds["Expiration"].isoformat(),
-                    }
-
-                session_credentials = RefreshableCredentials.create_from_metadata(
-                    metadata=refresh(),
-                    refresh_using=refresh,
-                    method="sts-assume-role",
-                )
-
-                session = get_session()
-                session._credentials = session_credentials
-                autorefresh_session = boto3.Session(botocore_session=session)
-                self._s3_client = autorefresh_session.client("s3", **client_kv_args)
+                self._s3_client = self._get_iam_s3_client(client_kv_args)
             else:
                 self._s3_client = boto3.client(
                     "s3",
@@ -95,6 +70,41 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 )
 
         return self._s3_client
+
+    def _get_iam_s3_client(self, client_kv_args: dict) -> BaseClient:
+        def refresh():
+            client = boto3.client("sts")
+            if AWS_EXTERNAL_ID:
+                role = client.assume_role(
+                    RoleArn=self.config.role_arn,
+                    RoleSessionName="airbyte-source-s3",
+                    ExternalId=AWS_EXTERNAL_ID,
+                )
+            else:
+                role = client.assume_role(
+                    RoleArn=self.config.role_arn,
+                    RoleSessionName="airbyte-source-s3",
+                )
+
+            creds = role.get("Credentials", {})
+            return {
+                "access_key": creds["AccessKeyId"],
+                "secret_key": creds["SecretAccessKey"],
+                "token": creds["SessionToken"],
+                "expiry_time": creds["Expiration"].isoformat(),
+            }
+
+        session_credentials = RefreshableCredentials.create_from_metadata(
+            metadata=refresh(),
+            refresh_using=refresh,
+            method="sts-assume-role",
+        )
+
+        session = get_session()
+        session._credentials = session_credentials
+        autorefresh_session = boto3.Session(botocore_session=session)
+
+        return autorefresh_session.client("s3", **client_kv_args)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """

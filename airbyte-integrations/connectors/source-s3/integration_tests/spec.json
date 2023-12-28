@@ -365,6 +365,13 @@
         "order": 3,
         "type": "string"
       },
+      "role_arn": {
+        "title": "AWS Role ARN",
+        "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set External ID as 'None'.",
+        "airbyte_secret": true,
+        "order": 6,
+        "type": "string"
+      },
       "endpoint": {
         "title": "Endpoint",
         "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
