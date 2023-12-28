@@ -232,9 +232,9 @@ For a brief overview on the catalog check out [Beginner's Guide to the Airbyte C
 
 As described in the template code, this method takes in the same config object as the previous methods. It also takes in a "configured catalog". This object wraps the catalog emitted by the `discover` step and includes configuration on how the data should be replicated. For a brief overview on the configured catalog check out [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md). It then returns a generator which returns each record in the stream.
 
-### Step 8: Set up Standard Tests
+### Step 8: Set up Connector Acceptance Tests (CATs)
 
-The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../testing-connectors/connector-acceptance-tests-reference.md) explains Standard Tests and how to run them.
+The Connector Acceptance Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../testing-connectors/connector-acceptance-tests-reference.md) explains Connector Acceptance Tests and how to run them.
 
 You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
 
@@ -246,7 +246,7 @@ In some rare cases we make exceptions and allow a source to not need to pass all
 
 ### Step 9: Write unit tests and/or integration tests
 
-The Standard Tests are meant to cover the basic functionality of a source. Think of it as the bare minimum required for us to add a source to Airbyte. In case you need to test additional functionality of your source, write unit or integration tests.
+The connector acceptance tests are meant to cover the basic functionality of a source. Think of it as the bare minimum required for us to add a source to Airbyte. In case you need to test additional functionality of your source, write unit or integration tests.
 
 #### Unit Tests
 
@@ -272,7 +272,7 @@ If you are self hosting Airbyte (OSS) you are able to use the Custom Connector f
 If you are using Airbyte Cloud (or OSS), you can submit a PR to add your connector to the Airbyte repository. Once the PR is merged, the connector will be available to all Airbyte Cloud users. You can read more about it [here](https://docs.airbyte.com/contributing-to-airbyte/submit-new-connector).
 
 Note that when submitting an Airbyte connector, you will need to ensure that
-1. The connector passes the standard test suite. See [Set up Standard Tests](#step-8-set-up-standard-tests).
+1. The connector passes the CAT suite. See [Set up Connector Acceptance Tests](#step-8-set-up-connector-acceptance-tests-\(cats\)).
 2. The metadata.yaml file (created by our generator) is filed out and valid. See [Connector Metadata File](https://docs.airbyte.com/connector-development/connector-metadata-file).
 3. You have created appropriate documentation for the connector. See [Add docs](#step-12-add-docs).
 
