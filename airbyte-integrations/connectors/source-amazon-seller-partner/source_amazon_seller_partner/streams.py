@@ -749,7 +749,6 @@ class IncrementalAnalyticsStream(AnalyticsStream):
             start_date = pendulum.parse(state)
 
         start_date = min(start_date, end_date)
-        slices = []
 
         while start_date < end_date:
             # If request only returns data on day level
@@ -759,15 +758,11 @@ class IncrementalAnalyticsStream(AnalyticsStream):
                 slice_range = self.period_in_days
 
             end_date_slice = start_date.add(days=slice_range)
-            slices.append(
-                {
-                    "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
-                    "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
-                }
-            )
+            yield {
+                "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
+                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
+            }
             start_date = end_date_slice
-
-        return slices
 
 
 class BrandAnalyticsMarketBasketReports(IncrementalAnalyticsStream):
