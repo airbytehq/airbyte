@@ -29,7 +29,7 @@ def get_query_products(first: int, filter_field: str, filter_value: str, next_pa
     products_args = {
         "first": first,
         "query": f"{snake_case_filter_field}:>'{filter_value}'" if filter_value else None,
-        "after": next_page_token
+        "after": next_page_token,
     }
     products = op.products(**products_args)
     products.nodes.id()
