@@ -10,7 +10,7 @@ import TestingSuccess from "views/Connector/TestConnection/components/TestingSuc
 interface Iprops {
   isLoading: boolean;
   type: "destination" | "source" | "connection";
-  onBack: () => void;
+  onBack?: () => void;
   onFinish: () => void;
 }
 
@@ -29,16 +29,16 @@ const LoadingContainer = styled.div`
   // flex: 1;
 `;
 // disabled isLoading was removed from back button
-const TestConnection: React.FC<Iprops> = ({ isLoading, type, onBack, onFinish }) => {
+const TestConnection: React.FC<Iprops> = ({ isLoading, type, onFinish }) => {
   return (
     <Container>
       <LoadingContainer>{isLoading ? <TestingLoading /> : <TestingSuccess type={type} />}</LoadingContainer>
       <ButtonRows>
-        {((isLoading && type === "connection") || type !== "connection") && (
+        {/* {((isLoading && type === "connection") || type !== "connection") && (
           <BigButton secondary onClick={onBack} disabled={isLoading}>
             <FormattedMessage id="form.button.back" />
           </BigButton>
-        )}
+        )} */}
         {((!isLoading && type === "connection") || type !== "connection") && (
           <BigButton disabled={isLoading} onClick={onFinish}>
             <FormattedMessage id={type === "connection" ? "form.button.returnToDashoard" : "form.button.continue"} />
