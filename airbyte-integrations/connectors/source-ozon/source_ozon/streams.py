@@ -233,7 +233,7 @@ class CampaignsReportStream(Stream):
         csvreader = csv.reader(csv_file, delimiter=";")
         report_schema = self._get_campaign_schema(campaign)
         next(csvreader, None)  # Skip report header
-        next(csvreader, None)  # Skip columns headers
+        columns_headers = next(csvreader, None)
         for current_row, next_row in pairwise(csvreader):
             if current_row[0] == "Корректировка":  # Не учитываем корректировку
                 continue
@@ -243,11 +243,7 @@ class CampaignsReportStream(Stream):
                     campaign_name=campaign.title,
                     campaign_type=campaign.advObjectType,
                 )
-
-                if report_schema == BrandShelfReport and not current_row[0]:  # В отчете BrandShelfReport первая колонка может быть пустая
-                    current_row = current_row[1:]
-
-                row.report_data = report_schema.from_list_of_values(values=current_row)
+                row.report_data = report_schema.parse_obj(dict(zip(columns_headers, current_row)))
                 yield row.dict()
             except Exception as e:
                 print(f"Failed to parse Ozon report for campaign '{campaign.id}': {str(e)}")
