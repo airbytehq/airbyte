@@ -4,7 +4,7 @@ description: Building a source connector without using any helpers to learn the 
 
 # Building a Source Connector: The Hard Way
 
-This tutorial walks you through building a simple Airbyte source without using any helpers to demonstrate the following concepts in Action:
+This tutorial walks you through building a simple Airbyte source without using any helpers to demonstrate the following concepts in action:
 
 - [The Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and the interface implemented by a source connector
 - [The AirbyteCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md)
@@ -58,18 +58,11 @@ Let's get started!
 
 ### 1. Bootstrap the connector package
 
-We'll start the process from the Airbyte repository root:
+Start the process from the Airbyte repository root:
 
 ```bash
 $ pwd
 /Users/sherifnada/code/airbyte
-```
-
-First, let's create a new branch:
-
-```bash
-$ git checkout -b $(whoami)/source-connector-tutorial
-Switched to a new branch 'sherifnada/source-connector-tutorial'
 ```
 
 Airbyte provides a code generator which bootstraps the scaffolding for our connector. Let's use it by running:
@@ -79,21 +72,23 @@ $ cd airbyte-integrations/connector-templates/generator
 $ ./generate.sh
 ```
 
-We'll select the `generic` template and call the connector `stock-ticker-api`:
+Select the `Generic Source` template and call the connector `stock-ticker-api`:
 
 ![](../../.gitbook/assets/newsourcetutorial_plop.gif)
 
-Note: The generic template is very bare. If you are planning on developing a Python source, we recommend using the `python` template. It provides some convenience code to help reduce boilerplate. This tutorial uses the bare-bones version because it makes it easier to see how all the pieces of a connector work together. You can find a walk through on how to build a Python connector here \(**coming soon**\).
+:::info
+This tutorial uses the bare-bones `Generic Source` template to illustrate how all the pieces of a connector
+work together. For real connectors, the generator provides `Python` and `Python HTTP API` source templates, they use
+[Airbyte CDK](../cdk-python/README.md).
+:::
 
-Head to the connector directory and we should see the following files have been generated:
+After running the above command, head to `../../connectors/source-stock-ticker-api`:
 
 ```bash
 $ cd ../../connectors/source-stock-ticker-api
 $ ls
-Dockerfile                 README.md                  acceptance-test-config.yml acceptance-test-docker.sh  build.gradle
+Dockerfile                 README.md                  acceptance-test-config.yml  metadata.yaml
 ```
-
-We'll use each of these files later. But first, let's write some code!
 
 ### 2. Implement the connector in line with the Airbyte Specification
 
