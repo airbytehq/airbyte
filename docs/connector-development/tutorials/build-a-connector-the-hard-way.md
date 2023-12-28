@@ -82,7 +82,6 @@ work together. For real connectors, the generator provides `Python` and `Python 
 [Airbyte CDK](../cdk-python/README.md).
 :::
 
-After running the above command, head to `../../connectors/source-stock-ticker-api`:
 
 ```bash
 $ cd ../../connectors/source-stock-ticker-api
@@ -100,17 +99,18 @@ touch source.py
 
 #### Implement the spec operation
 
-At this stage in the tutorial, we just want to implement the `spec` operation as described in the [Airbyte Protocol](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#spec). This involves a couple of steps:
-
-1. Decide which inputs we need from the user in order to connect to the stock ticker API \(i.e: the connector's specification\) and encode it as a JSON file.
-2. Identify when the connector has been invoked with the `spec` operation and return the specification as an `AirbyteMessage`
+The `spec` operation is described in the [Airbyte Protocol](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#spec).
+It's a way for the connector to tell Airbyte what user inputs it needs in order to connecto to the source (the stock
+ticker API in our case). Airbyte expects the command to output a connector specification in `AirbyteMessage` format.
 
 To contact the stock ticker API, we need two things:
 
 1. Which stock ticker we're interested in
 2. The API key to use when contacting the API \(you can obtain a free API token from [Polygon.io](https://polygon.io/dashboard/signup) free plan\)
 
+:::info
 For reference, the API docs we'll be using [can be found here](https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to).
+:::
 
 Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding these two requirements:
 
@@ -144,16 +144,14 @@ Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding t
 - `description` will be shown in the Airbyte UI under each field to help the user understand it
 - `airbyte_secret` used by Airbyte to determine if the field should be displayed as a password \(e.g: `********`\) in the UI and not readable from the API
 
-We'll save this file in the root directory of our connector. Now we have the following files:
 
 ```bash
 $ ls -1
 Dockerfile
 README.md
 acceptance-test-config.yml
-acceptance-test-docker.sh
-build.gradle
 source.py
+metadata.yaml
 spec.json
 ```
 
@@ -177,10 +175,12 @@ def log(message):
     log_json = {"type": "LOG", "log": message}
     print(json.dumps(log_json))
 
+
 def log_error(error_message):
     current_time_in_ms = int(datetime.now().timestamp()) * 1000
     log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
     print(json.dumps(log_json))
+
 
 def spec():
     # Read the file named spec.json from the module directory as a JSON file
@@ -228,9 +228,13 @@ if __name__ == "__main__":
 
 Some notes on the above code:
 
-1. As described in the [specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout
-2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging
-3. All Airbyte commands can output error messages that take the form `{"type":"TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}}`, so we create a helper method `log_error(message)` to allow error messages
+1. As described in the [specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#key-takeaways),
+   Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string
+   formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout.
+2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging.
+3. All Airbyte commands can output error messages that take the form
+   `{"type":"TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}}`,
+   so we create a helper method `log_error(message)` to allow error messages.
 
 Now if we run `python source.py spec` we should see the specification printed out:
 
