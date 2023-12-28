@@ -58,7 +58,7 @@ class AsyncStream(Stream, ABC):
 
         has_slices = False
         record_counter = 0
-        for _slice in slices:
+        async for _slice in slices:
             has_slices = True
             if slice_logger.should_log_slice_message(logger):
                 yield slice_logger.create_slice_log_message(_slice)
@@ -68,7 +68,7 @@ class AsyncStream(Stream, ABC):
                 stream_state=stream_state,
                 cursor_field=cursor_field or None,
             )
-            for record_data_or_message in records:
+            async for record_data_or_message in records:
                 yield record_data_or_message
                 if isinstance(record_data_or_message, Mapping) or (
                     hasattr(record_data_or_message, "type") and record_data_or_message.type == MessageType.RECORD
@@ -113,7 +113,7 @@ class AsyncStream(Stream, ABC):
         :param stream_state:
         :return:
         """
-        yield [None]
+        yield None
 
     async def ensure_session(self, *args: Any, **kwargs: Any) -> Any:
         """
