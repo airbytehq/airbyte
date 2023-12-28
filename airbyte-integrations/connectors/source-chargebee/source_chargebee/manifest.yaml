@@ -324,7 +324,7 @@ definitions:
         request_parameters:
           sort_by[asc]: migrated_at
           include_deleted: "true"
-          created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+          migrated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     incremental_sync:
       $ref: "#/definitions/date_stream_slicer"
     $parameters:
