@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Review the connection status
 The connection status displays information about the connection and of each stream being synced. Reviewing this summary allows you to assess the connection's current status and understand when the next sync will be run.
  
