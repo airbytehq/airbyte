@@ -1,9 +1,8 @@
 # Connector Development Kit \(Python\)
 
-The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors. The CDK currently offers helpers specific for creating Airbyte source connectors for:
+The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors.The CDK currently offers helpers specific for creating Airbyte source connectors for:
 
 - HTTP APIs \(REST APIs, GraphQL, etc..\)
-- Singer Taps
 - Generic Python sources \(anything not covered by the above\)
 
 The CDK provides an improved developer experience by providing basic implementation structure and abstracting away low-level glue boilerplate.
@@ -14,14 +13,14 @@ This document is a general introduction to the CDK. Readers should have basic fa
 
 Generate an empty connector using the code generator. First clone the Airbyte repository then from the repository root run
 
-```text
+```bash
 cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```
 
 then follow the interactive prompt. Next, find all `TODO`s in the generated project directory -- they're accompanied by lots of comments explaining what you'll need to do in order to implement your connector. Upon completing all TODOs properly, you should have a functioning connector.
 
-Additionally, you can follow [this tutorial](https://docs.airbyte.io/connector-development/tutorials/cdk-tutorial-python-http) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
+Additionally, you can follow [this tutorial](https://docs.airbyte.com/connector-development/cdk-python/) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
 
 ### Concepts & Documentation
 
@@ -47,7 +46,7 @@ We assume `python` points to Python 3.9 or higher.
 
 Setup a virtual env:
 
-```text
+```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]" # [dev] installs development-only dependencies
@@ -148,7 +147,10 @@ For example, using [mockserver](https://www.mock-server.com/), you can set up an
 ```
 
 Assuming this file has been created at `secrets/mock_server_config/expectations.json`, running the following command will allow to match any requests on path `/data` to return the response defined in the expectation file:
-`docker run -d --rm -v $(pwd)/secrets/mock_server_config:/config -p 8113:8113 --env MOCKSERVER_LOG_LEVEL=TRACE --env MOCKSERVER_SERVER_PORT=8113 --env MOCKSERVER_WATCH_INITIALIZATION_JSON=true --env MOCKSERVER_PERSISTED_EXPECTATIONS_PATH=/config/expectations.json --env MOCKSERVER_INITIALIZATION_JSON_PATH=/config/expectations.json mockserver/mockserver:5.15.0`
+
+```bash
+docker run -d --rm -v $(pwd)/secrets/mock_server_config:/config -p 8113:8113 --env MOCKSERVER_LOG_LEVEL=TRACE --env MOCKSERVER_SERVER_PORT=8113 --env MOCKSERVER_WATCH_INITIALIZATION_JSON=true --env MOCKSERVER_PERSISTED_EXPECTATIONS_PATH=/config/expectations.json --env MOCKSERVER_INITIALIZATION_JSON_PATH=/config/expectations.json mockserver/mockserver:5.15.0
+```
 
 HTTP requests to `localhost:8113/data` should now return the body defined in the expectations file. To test this, the implementer either has to change the code which defines the base URL for Python source or update the `url_base` from low-code. With the Connector Builder running in docker, you will have to use domain `host.docker.internal` instead of `localhost` as the requests are executed within docker.
 
@@ -156,11 +158,3 @@ HTTP requests to `localhost:8113/data` should now return the body defined in the
 
 1. Open a PR
 2. Once it is approved and **merged**, an Airbyte member must run the `Publish CDK Manually` workflow from master using `release-type=major|manor|patch` and setting the changelog message.
-
-## Coming Soon
-
-- Full OAuth 2.0 support \(including refresh token issuing flow via UI or CLI\)
-- Airbyte Java HTTP CDK
-- CDK for Async HTTP endpoints \(request-poll-wait style endpoints\)
-- CDK for other protocols
-- Don't see a feature you need? [Create an issue and let us know how we can help!](https://github.com/airbytehq/airbyte/discussions/categories/ideas-and-features)

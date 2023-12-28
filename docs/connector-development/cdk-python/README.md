@@ -29,7 +29,6 @@ offers helpers specific for creating Airbyte source connectors for:
 
 - HTTP APIs \(REST APIs, GraphQL, etc..\)
 - Generic Python sources \(anything not covered by the above\)
-- Singer Taps (Note: The CDK supports building Singer taps, but Airbyte no longer accepts contributions of this type)
 
 This document is a general introduction to the CDK. Readers should have basic familiarity with the
 [Airbyte Specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/) before proceeding.
@@ -95,7 +94,7 @@ We assume `python` points to Python 3.9 or higher.
 
 Setup a virtual env:
 
-```text
+```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[tests]" # [tests] installs test-only dependencies
@@ -112,7 +111,7 @@ pip install -e ".[tests]" # [tests] installs test-only dependencies
 
 While developing your connector, you can print detailed debug information during a sync by specifying the `--debug` flag. This allows you to get a better picture of what is happening during each step of your sync.
 
-```text
+```bash
 python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
 ```
 
@@ -130,11 +129,3 @@ All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_c
 
 1. Open a PR
 2. Once it is approved and merge, an Airbyte member must run the `Publish CDK Manually` workflow using `release-type=major|manor|patch` and setting the changelog message.
-
-## Coming Soon
-
-- Full OAuth 2.0 support \(including refresh token issuing flow via UI or CLI\)
-- Airbyte Java HTTP CDK
-- CDK for Async HTTP endpoints \(request-poll-wait style endpoints\)
-- CDK for other protocols
-- Don't see a feature you need? [Create an issue and let us know how we can help!](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement&template=feature-request.md&title=)
