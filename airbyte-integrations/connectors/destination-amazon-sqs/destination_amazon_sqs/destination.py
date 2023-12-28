@@ -84,7 +84,6 @@ class DestinationAmazonSqs(Destination):
         # Required propeties
         queue_url = config["queue_url"]
         queue_region = config["region"]
-        endpoint_url = config.get("endpoint_url", None)
 
         # TODO: Implement optional params for batch
         # Optional Properties
@@ -92,6 +91,7 @@ class DestinationAmazonSqs(Destination):
         # send_as_batch = config.get("send_as_batch", False)
         message_delay = config.get("message_delay")
         message_body_key = config.get("message_body_key")
+        endpoint_url = config.get("endpoint_url", None)
 
         # FIFO Properties
         message_group_id = config.get("message_group_id")
@@ -136,9 +136,6 @@ class DestinationAmazonSqs(Destination):
             # Required propeties
             queue_url = config["queue_url"]
             logger.debug("Amazon SQS Destination Config Check - queue_url: " + queue_url)
-            endpoint_url = config.get("endpoint_url", None)
-            if endpoint_url:
-                logger.debug("Amazon SQS Destination Config Check - endpoint_url: " + endpoint_url)
             queue_region = config["region"]
             logger.debug("Amazon SQS Destination Config Check - region: " + queue_region)
 
@@ -148,6 +145,11 @@ class DestinationAmazonSqs(Destination):
             secret_key = config["secret_key"]
             logger.debug("Amazon SQS Destination Config Check - secret_key (ends with): " + secret_key[-1])
 
+            # Optional Properties
+            endpoint_url = config.get("endpoint_url", None)
+            if endpoint_url:
+                logger.debug("Amazon SQS Destination Config Check - endpoint_url: " + endpoint_url)
+            
             logger.debug("Amazon SQS Destination Config Check - Starting connection test ---")
             session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
 
