@@ -73,7 +73,8 @@ const AllConnectionsPage: React.FC = () => {
   const [messageId, setMessageId] = useState<string | undefined>("");
   const [pageConfig, updatePageSize] = usePageConfig();
   const [currentPageSize, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
-
+  const [sortFieldName, setSortFieldName] = useState("");
+  const [sortDirection, setSortDirection] = useState("");
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const workspace = useCurrentWorkspace();
   const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions(workspace.workspaceId);
@@ -85,6 +86,10 @@ const AllConnectionsPage: React.FC = () => {
     status: statusOptions[0].value,
     sourceDefinitionId: sourceOptions[0].value,
     destinationDefinitionId: destinationOptions[0].value,
+    sortDetails: {
+      sortFieldName,
+      sortDirection,
+    },
   };
 
   const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
@@ -97,23 +102,60 @@ const AllConnectionsPage: React.FC = () => {
 
   // const { connectionStatusList } = useConnectionStatusList(apiData) || [];
 
+  // const onSelectFilter = useCallback(
+  //   (
+  //     filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId" | "pageSize",
+  //     filterValue: number | string
+  //   ) => {
+  //     if (
+  //       filterType === "status" ||
+  //       filterType === "sourceDefinitionId" ||
+  //       filterType === "destinationDefinitionId" ||
+  //       filterType === "pageSize"
+  //     ) {
+  //       setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
+  //     } else if (filterType === "pageCurrent") {
+  //       setFilters({ ...filters, [filterType]: filterValue as number });
+  //     }
+  //   },
+  //   [filters]
+  // );
+
   const onSelectFilter = useCallback(
     (
-      filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId" | "pageSize",
+      filterType:
+        | "pageCurrent"
+        | "status"
+        | "sourceDefinitionId"
+        | "destinationDefinitionId"
+        | "pageSize"
+        | "sortDirection"
+        | "sortFieldName",
       filterValue: number | string
     ) => {
-      if (
-        filterType === "status" ||
-        filterType === "sourceDefinitionId" ||
-        filterType === "destinationDefinitionId" ||
-        filterType === "pageSize"
-      ) {
-        setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
-      } else if (filterType === "pageCurrent") {
-        setFilters({ ...filters, [filterType]: filterValue as number });
-      }
+      setFilters((prevFilters) => {
+        if (
+          filterType === "destinationDefinitionId" ||
+          filterType === "pageSize" ||
+          filterType === "pageCurrent" ||
+          filterType === "status" ||
+          filterType === "sourceDefinitionId"
+        ) {
+          return { ...prevFilters, [filterType]: filterValue };
+        } else if (filterType === "sortDirection" || filterType === "sortFieldName") {
+          return {
+            ...prevFilters,
+            sortDetails: {
+              ...prevFilters.sortDetails,
+              [filterType]: filterValue,
+            },
+            pageCurrent: 1,
+          };
+        }
+        return prevFilters;
+      });
     },
-    [filters]
+    []
   );
 
   const hasConnections = useCallback((): boolean => {
@@ -208,6 +250,9 @@ const AllConnectionsPage: React.FC = () => {
             <NewConnectionsTable
               connections={connections as any}
               onSetMessageId={onSetMessageId}
+              setSortDirection={setSortDirection}
+              setSortFieldName={setSortFieldName}
+              onSelectFilter={onSelectFilter}
               // connectionStatus={connectionStatusList as any}
             />
             <Separator height="24px" />

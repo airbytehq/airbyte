@@ -13,10 +13,19 @@ import useRouter from "hooks/useRouter";
 
 interface DestinationsTableProps {
   destinations: DestinationRead[];
+  setSortFieldName?: any;
+  setSortDirection?: any;
+  onSelectFilter?: any;
+
   // connections: WebBackendConnectionRead[];
 }
 
-const DestinationsTable: React.FC<DestinationsTableProps> = ({ destinations }) => {
+const DestinationsTable: React.FC<DestinationsTableProps> = ({
+  destinations,
+  setSortDirection,
+  setSortFieldName,
+  onSelectFilter,
+}) => {
   const { push } = useRouter();
   // const { connections } = useConnectionList();
   // const { destinationDefinitions } = useDestinationDefinitionList();
@@ -25,7 +34,16 @@ const DestinationsTable: React.FC<DestinationsTableProps> = ({ destinations }) =
 
   const clickRow = (destination: DestinationRead) => push(`${destination.destinationId}`);
 
-  return <DestinationTable data={destinations} onClickRow={clickRow} entity="destination" />;
+  return (
+    <DestinationTable
+      data={destinations}
+      onClickRow={clickRow}
+      entity="destination"
+      setSortFieldName={setSortFieldName}
+      setSortDirection={setSortDirection}
+      onSelectFilter={onSelectFilter}
+    />
+  );
 };
 
 export default DestinationsTable;
