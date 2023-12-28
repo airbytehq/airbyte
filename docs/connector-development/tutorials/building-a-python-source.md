@@ -32,15 +32,11 @@ All the commands below assume that `python` points to a version of python &gt;3.
 * Step 12: Add docs \(in `docs/integrations/sources/<source-name>.md`\)
 
 :::info
-
 Each step of the Creating a Source checklist is explained in more detail below.
-
 :::
 
 :::info
-
 All `./gradlew` commands must be run from the root of the airbyte project.
-
 :::
 
 ### Submitting a Source to Airbyte
@@ -52,9 +48,7 @@ All `./gradlew` commands must be run from the root of the airbyte project.
 * Edit the `airbyte/tools/bin/ci_credentials.sh` script to pull the script from the build environment and write it to `secrets/config.json` during the build.
 
 :::info
-
-If you have a question about a step the Submitting a Source to Airbyte checklist include it in your PR or ask it on [slack](https://slack.airbyte.io).
-
+If you have a question about a step the Submitting a Source to Airbyte checklist include it in your PR or ask it on [#help-connector-development channel on Slack](https://airbytehq.slack.com/archives/C027KKE4BCZ).
 :::
 
 ## Explaining Each Step
@@ -74,7 +68,7 @@ Select the `python` template and then input the name of your connector. For this
 
 Build the source by running:
 
-```text
+```bash
 cd airbyte-integrations/connectors/source-<name>
 python -m venv .venv # Create a virtual environment in the .venv directory
 source .venv/bin/activate # enable the venv
@@ -105,9 +99,7 @@ The commands we ran above created a virtual environment for your source. If you 
 Pretty much all it takes to create a source is to implement the `Source` interface. The template fills in a lot of information for you and has extensive docstrings describing what you need to do to implement each method. The next 4 steps are just implementing that interface.
 
 :::info
-
 All logging should be done through the `logger` object passed into each method. Otherwise, logs will not be shown in the Airbyte UI.
-
 :::
 
 #### Iterating on your implementation
@@ -118,7 +110,7 @@ Everyone develops differently but here are 3 ways that we recommend iterating on
 
 You'll notice in your source's directory that there is a python file called `main.py`. This file exists as convenience for development. You can call it from within the virtual environment mentioned above `. ./.venv/bin/activate` to test out that your source works.
 
-```text
+```bash
 # from airbyte-integrations/connectors/source-<source-name>
 python main.py spec
 python main.py check --config secrets/config.json
@@ -129,7 +121,7 @@ python main.py read --config secrets/config.json --catalog sample_files/configur
 The nice thing about this approach is that you can iterate completely within in python. The downside is that you are not quite running your source as it will actually be run by Airbyte. Specifically you're not running it from within the docker container that will house it.
 
 
-** Build the source docker image**
+**Build the source docker image**
 
 You have to build a docker image for your connector if you want to run your source exactly as it will be run by Airbyte.
 
@@ -150,6 +142,7 @@ Once the command is done, you will find your connector image in your local docke
 If you don't want to rely on `airbyte-ci` to build your connector, you can build the docker image using your own Dockerfile. This method is not preferred, and is not supported for certified connectors.
 
 Create a `Dockerfile` in the root of your connector directory. The `Dockerfile` should look something like this:
+
 ```Dockerfile
 
 FROM airbyte/python-connector-base:1.1.0
@@ -171,25 +164,29 @@ docker build . -t airbyte/source-example-python:dev
 
 **Run the source docker image**
 
-```
+```bash
 docker run --rm airbyte/source-example-python:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-example-python:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-example-python:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-example-python:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
 ```
 
-Note: Each time you make a change to your implementation you need to re-build the connector image. This ensures the new python code is added into the docker container.
+:::info
+Each time you make a change to your implementation you need to re-build the connector image. This ensures the new python code is added into the docker container.
+:::
 
 The nice thing about this approach is that you are running your source exactly as it will be run by Airbyte. The tradeoff is that iteration is slightly slower, because you need to re-build the connector between each change.
 
 **Detailed Debug Messages**
 
 During development of your connector, you can enable the printing of detailed debug information during a sync by specifying the `--debug` flag. This will allow you to get a better picture of what is happening during each step of your sync.
-```text
+
+```bash
 python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
 ```
 
 In addition to the preset CDK debug statements, you can also emit custom debug information from your connector by introducing your own debug statements:
+
 ```python
 self.logger.debug(
     "your debug message here",
@@ -239,9 +236,7 @@ The Connector Acceptance Tests are a set of tests that run against all sources. 
 You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
 
 :::info
-
 In some rare cases we make exceptions and allow a source to not need to pass all the standard tests. If for some reason you think your source cannot reasonably pass one of the tests cases, reach out to us on github or slack, and we can determine whether there's a change we can make so that the test will pass or if we should skip that test for your source.
-
 :::
 
 ### Step 9: Write unit tests and/or integration tests
