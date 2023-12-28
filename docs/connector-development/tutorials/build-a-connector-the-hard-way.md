@@ -243,17 +243,19 @@ python source.py spec
 {"type": "SPEC", "spec": {"documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The Polygon.io Stocks API key to use to hit the API.", "airbyte_secret": true}}}}}
 ```
 
-We've implemented the first command! Three more and we'll have a working connector.
-
 #### Implementing check connection
 
-The second command to implement is the [check operation](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#check) `check --config <config_name>`, which tells the user whether a config file they gave us is correct. In our case, "correct" means they input a valid stock ticker and a correct API key like we declare via the `spec` operation.
+The second command to implement is the [check operation](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#check) `check --config <config_name>`,
+which tells the user whether a config file they gave us is correct. In our case, "correct" means they input a valid
+stock ticker and a correct API key like we declare via the `spec` operation.
 
 To achieve this, we'll:
 
-1. Create valid and invalid configuration files to test the success and failure cases with our connector. We'll place config files in the `secrets/` directory which is gitignored everywhere in the Airbyte monorepo by default to avoid accidentally checking in API keys
-2. Add a `check` method which calls the Polygon.io API to verify if the provided token & stock ticker are correct and output the correct airbyte message
-3. Extend the argument parser to recognize the `check --config <config>` command and call the `check` method when the `check` command is invoked
+1. Create valid and invalid configuration files to test the success and failure cases with our connector. 
+   We'll place config files in the `secrets/` directory which is gitignored everywhere in the Airbyte monorepo by
+   default to avoid accidentally checking in API keys.
+2. Add a `check` method which calls the Polygon.io API to verify if the provided token & stock ticker are correct and output the correct airbyte message.
+3. Extend the argument parser to recognize the `check --config <config>` command and call the `check` method when the `check` command is invoked.
 
 Let's first add the configuration files:
 
@@ -265,7 +267,7 @@ $ echo '{"api_key": "not_a_real_key", "stock_ticker": "TSLA"}' > secrets/invalid
 
 Make sure to add your actual API key instead of the placeholder value `<put_your_key_here>` when following the tutorial.
 
-Then we'll add the `check_method`:
+Then we'll add the `check` method:
 
 ```python
 import requests
@@ -295,7 +297,8 @@ def check(config):
     print(json.dumps(output_message))
 ```
 
-Lastly we'll extend the `run` method to accept the `check` command and call the `check` method. First we'll add a helper method for reading input:
+In Airbyte, the contract for input files is that they will be available in the current working directory if they are not provided as an absolute path.
+This method helps us achieve that:
 
 ```python
 def get_input_file_path(path):
@@ -305,33 +308,7 @@ def get_input_file_path(path):
         return os.path.join(os.getcwd(), path)
 ```
 
-In Airbyte, the contract for input files is that they will be available in the current working directory if they are not provided as an absolute path. This method helps us achieve that.
-
-We also need to extend the arguments parser by adding the following two blocks to the `run` method:
-
-```python
-    # Accept the check command
-    check_parser = subparsers.add_parser("check", help="checks the config used to connect", parents=[parent_parser])
-    required_check_parser = check_parser.add_argument_group("required named arguments")
-    required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
-```
-
-and
-
-```python
-elif command == "check":
-    config_file_path = get_input_file_path(parsed_args.config)
-    config = read_json(config_file_path)
-    check(config)
-```
-
-Then we need to update our list of available commands:
-
-```python
-        log("Invalid command. Allowable commands: [spec, check]")
-```
-
-This results in the following `run` method.
+We'll then add the `check` command support to `run`:
 
 ```python
 def run(args):
@@ -366,8 +343,6 @@ def run(args):
     sys.exit(0)
 ```
 
-and that should be it.
-
 Let's test our new method:
 
 ```bash
@@ -383,7 +358,8 @@ Our connector is able to detect valid and invalid configs correctly. Two methods
 
 The `discover` command outputs a Catalog, a struct that declares the Streams and Fields \(Airbyte's equivalents of tables and columns\) output by the connector. It also includes metadata around which features a connector supports \(e.g. which sync modes\). In other words it describes what data is available in the source. If you'd like to read a bit more about this concept check out our [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md) or for a more detailed treatment read the [Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md).
 
-The data output by this connector will be structured in a very simple way. This connector outputs records belonging to exactly one Stream \(table\). Each record contains three Fields \(columns\): `date`, `price`, and `stock_ticker`, corresponding to the price of a stock on a given day.
+The stock ticker connector outputs records belonging to exactly one Stream \(table\). 
+Each record contains three Fields \(columns\): `date`, `price`, and `stock_ticker`, corresponding to the price of a stock on a given day.
 
 To implement `discover`, we'll:
 
@@ -440,8 +416,9 @@ We need to update our list of available commands:
 ```python
         log("Invalid command. Allowable commands: [spec, check, discover]")
 ```
-
+:::info
 You may be wondering why `config` is a required input to `discover` if it's not used. This is done for consistency: the Airbyte Specification requires `--config` as an input to `discover` because many sources require it \(e.g: to discover the tables available in a Postgres database, you must supply a password\). So instead of guessing whether the flag is required depending on the connector, we always assume it is required, and the connector can choose whether to use it.
+:::
 
 The full run method is now below:
 
@@ -504,10 +481,11 @@ python source.py read --config <config_file_path> --catalog <configured_catalog.
 
 Each of these are described in the Airbyte Specification in detail, but we'll give a quick description of the two options we haven't seen so far:
 
-- `--catalog` points to a Configured Catalog. The Configured Catalog contains the contents for the Catalog \(remember the Catalog we output from discover?\). It also contains some configuration information that describes how the data will by replicated. For example, we had `supported_sync_modes` in the Catalog. In the Configured Catalog, we select which of the `supported_sync_modes` we want to use by specifying the `sync_mode` field. \(This is the most complicated concept when working Airbyte, so if it is still not making sense that's okay for now. If you're just dying to understand how the Configured Catalog works checkout the [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md)\)
-- `--state` points to a state file. The state file is only relevant when some Streams are synced with the sync mode `incremental`, so we'll cover the state file in more detail in the incremental section below
+- `--catalog` points to a Configured Catalog. The Configured Catalog contains the contents for the Catalog \(remember the Catalog we output from discover?\). It also contains some configuration information that describes how the data will by replicated. For example, we had `supported_sync_modes` in the Catalog. In the Configured Catalog, we select which of the `supported_sync_modes` we want to use by specifying the `sync_mode` field. \(This is the most complicated concept when working Airbyte, so if it is still not making sense that's okay for now. If you're just dying to understand how the Configured Catalog works checkout the [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md)\).
+- `--state` points to a state file. The state file is only relevant when some Streams are synced with the sync mode `incremental`, so we'll cover the state file in more detail in the incremental section below.
 
-For our connector, the contents of those two files should be very unsurprising: the connector only supports one Stream, `stock_prices`, so we'd expect the input catalog to contain that stream configured to sync in full refresh. Since our connector doesn't support incremental sync \(yet!\) we'll ignore the state option for now.
+Our connector only supports one Stream, `stock_prices`, so we'd expect the input catalog to contain that stream configured to sync in full refresh. 
+Since our connector doesn't support incremental sync yet, we'll ignore the state option for now.
 
 To read data in our connector, we'll:
 
@@ -594,8 +572,6 @@ def read(config, catalog):
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
 ```
-
-Note we've added a `log_error()` function to simplify formatting error messages from within connector functions as [`AirbyteTraceMessage`](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#airbytetracemessage)s, specifically `AirbyteErrorTraceMessage`s.
 
 After doing some input validation, the code above calls the API to obtain daily prices for the input stock ticker, then outputs the prices. As always, our output is formatted according to the Airbyte Specification. Let's update our args parser with the following blocks:
 
@@ -696,30 +672,7 @@ With this method, we now have a fully functioning connector! Let's pat ourselves
 For reference, the full `source.py` file now looks like this:
 
 ```python
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-
-import argparse  # helps parse commandline arguments
+import argparse
 import json
 import sys
 import os
@@ -915,11 +868,13 @@ if __name__ == "__main__":
     main()
 ```
 
-A full connector in less than 200 lines of code. Not bad! We're now ready to package & test our connector then use it in the Airbyte UI.
+A full connector in about 200 lines of code. Not bad! We're now ready to package & test our connector then use it in the Airbyte UI.
+
+---
 
 ### 3. Package the connector in a Docker image
 
-Our connector is very lightweight, so the Dockerfile needed to run it is very light as well. We edit the autogenerated `Dockerfile` so that its contents are as followed:
+Our connector is very lightweight, so the Dockerfile needed to run it is very light as well. Edit the `Dockerfile` as follows:
 
 ```Dockerfile
 FROM python:3.9-slim
@@ -950,13 +905,8 @@ Once we save the `Dockerfile`, we can build the image by running:
 docker build . -t airbyte/source-stock-ticker-api:dev
 ```
 
-Then we can run the image using:
-
-```bash
-docker run airbyte/source-stock-ticker-api:dev
-```
-
-To run any of our commands, we'll need to mount all the inputs into the Docker container first, then refer to their _mounted_ paths when invoking the connector. This allows the connector to access your secrets without having to build them into the container. For example, we'd run `check` or `read` as follows:
+To run any of our commands, we'll need to mount all the inputs into the Docker container first, then refer to their _mounted_ paths when invoking the connector.
+This allows the connector to access your secrets without having to build them into the container. For example, we'd run `check` or `read` as follows:
 
 ```bash
 $ docker run airbyte/source-stock-ticker-api:dev spec
@@ -976,7 +926,7 @@ $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/ful
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-21', 'stock_ticker': 'TSLA', 'price': 649.86}, 'emitted_at': 1608628424000}}
 ```
 
-and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Connector Acceptance Test suite](../testing-connectors/connector-acceptance-tests-reference.md).
+---
 
 ### 4. Test the connector
 
@@ -1019,8 +969,8 @@ acceptance_tests:
 #      configured_catalog_path: "integration_tests/configured_catalog.json"
 #      future_state_path: "integration_tests/abnormal_state.json"
 ```
-
-To run the test suite, run [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) as follows:
+To run the test suite, we'll use [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md).
+You can build and install `airbyte-ci` locally from Airbyte repository root by running `make`. Assuming you have it already:
 
 ```shell
 airbyte-ci connectors --name=<name-of-your-connector></name-of-your-connector> --use-remote-secrets=false test
@@ -1029,6 +979,8 @@ airbyte-ci connectors --name=<name-of-your-connector></name-of-your-connector> -
 `airbyte-ci` will build and then test your connector, and provide a report on the test results.
 
 That's it! We've created a fully functioning connector. Now let's get to the exciting part: using it from the Airbyte UI.
+
+---
 
 ### Use the connector in the Airbyte UI
 
@@ -1046,7 +998,8 @@ To use it from the Airbyte UI, we need to:
 
 #### 1. Publish the Docker image
 
-Since we're running this tutorial locally, Airbyte will have access to any Docker images available to your local `docker` daemon. So all we need to do is build & tag our connector. If you want your connector to be available to everyone using Airbyte, you'll need to publish it to `Dockerhub`. [Open a PR](https://github.com/airbytehq/airbyte) or visit our [Slack](https://slack.airbyte.io) for help with this.
+Since we're running this tutorial locally, Airbyte will have access to any Docker images available to your local `docker` daemon. So all we need to do is build & tag our connector.
+For real production connectors to be available on Airbyte Cloud, you'd need to publish them on DockerHub. 
 
 Airbyte's build system builds and tags your connector's image correctly by default as part of the connector's standard `build` process. **From the Airbyte repo root**, run:
 
@@ -1181,25 +1134,12 @@ $ cat /tmp/airbyte_local/tutorial_json/_airbyte_raw_stock_prices.jsonl
 
 Congratulations! We've successfully written a fully functioning Airbyte connector. You're an Airbyte contributor now ;\)
 
-Armed with the knowledge you gained in this guide, here are some places you can go from here:
+1. Follow the [next tutorial](adding-incremental-sync.md) to implement incremental sync.
+2. Implement another connector using the Low-code CDK, [Connector Builder](../connector-builder-ui/overview), or [Connector Development Kit](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/python/docs/tutorials)
+3. We welcome low-code configuration based connector contributions! If you make a connector in the connector builder
+   and want to share it with everyone using Airbyte, pull requests are welcome!
 
-1. Implement Incremental Sync for your connector \(described in the sections below\)
-2. Implement another connector using the language specific helpers listed below
-3. While not required, we love contributions! if you end up creating a new connector, we're here to help you make it available to everyone using Airbyte. Remember that you're never expected to maintain a connector by yourself if you merge it to Airbyte -- we're committed to supporting connectors if you can't do it yourself
-
-## Optional additions
-
-This section is not yet complete and will be completed soon. Please reach out to us on [Slack](https://slack.airbyte.io) or [Github](https://github.com/airbytehq/airbyte) if you need the information promised by these sections immediately.
-
-### Incremental sync
-
-Follow the [next tutorial](adding-incremental-sync.md) to implement incremental sync.
-
-### Connector Development Kit
-
-Like we mention at the beginning of the tutorial, this guide is meant more for understanding than as a blueprint for implementing production connectors. See the [Connector Development Kit](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/python/docs/tutorials) for the frameworks you should use to build production-ready connectors.
-
-### Language specific helpers
+## Additional guides
 
 - [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/building-a-python-source)
 - [Building a Java Destination](https://docs.airbyte.com/connector-development/tutorials/building-a-java-destination)
