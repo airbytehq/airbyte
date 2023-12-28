@@ -220,7 +220,7 @@ public class S3StorageOperations extends BlobStorageOperations {
   }
 
   /**
-   * Users want deterministic file names (e.g. the first file part is really foo-0.csv Using UUIDs
+   * Users want deterministic file names (e.g. the first file part is really foo-0.csv). Using UUIDs
    * (previous approach) doesn't allow that. However, using pure integers could lead to a collision
    * with an upload from another thread. We also want to be able to continue the same offset between
    * attempts. So, we'll count up the existing files in the directory and use that as a lazy-offset,
