@@ -284,7 +284,7 @@ class CustomerClient(GoogleAdsStream):
         # if the result is more than one customer, it's a manager, otherwise it is client account for which we don't need login_customer_id
         root_is_manager = len(records) > 1
         for record in records:
-            record["login_customer_id"] = stream_slice["login_customer_id"] if root_is_manager else "none"
+            record["login_customer_id"] = stream_slice["login_customer_id"] if root_is_manager else "default"
             yield record
 
 

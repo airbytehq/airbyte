@@ -31,12 +31,12 @@ class GoogleAds:
         self.ga_services = {}
         self.credentials = credentials
 
-        self.clients["none"] = self.get_google_ads_client(credentials)
-        self.ga_services["none"] = self.clients["none"].get_service("GoogleAdsService")
+        self.clients["default"] = self.get_google_ads_client(credentials)
+        self.ga_services["default"] = self.clients["default"].get_service("GoogleAdsService")
 
-        self.customer_service = self.clients["none"].get_service("CustomerService")
+        self.customer_service = self.clients["default"].get_service("CustomerService")
 
-    def client(self, login_customer_id="none"):
+    def get_client(self, login_customer_id="default"):
         if login_customer_id in self.clients:
             return self.clients[login_customer_id]
         new_creds = self.credentials.copy()
@@ -44,7 +44,7 @@ class GoogleAds:
         self.clients[login_customer_id] = self.get_google_ads_client(new_creds)
         return self.clients[login_customer_id]
 
-    def ga_service(self, login_customer_id="none"):
+    def ga_service(self, login_customer_id="default"):
         if login_customer_id in self.ga_services:
             return self.ga_services[login_customer_id]
         self.ga_services[login_customer_id] = self.clients[login_customer_id].get_service("GoogleAdsService")
@@ -74,8 +74,8 @@ class GoogleAds:
         ),
         max_tries=5,
     )
-    def send_request(self, query: str, customer_id: str, login_customer_id: str = "none") -> Iterator[SearchGoogleAdsResponse]:
-        client = self.client(login_customer_id)
+    def send_request(self, query: str, customer_id: str, login_customer_id: str = "default") -> Iterator[SearchGoogleAdsResponse]:
+        client = self.get_client(login_customer_id)
         search_request = client.get_type("SearchGoogleAdsRequest")
         search_request.query = query
         search_request.page_size = self.DEFAULT_PAGE_SIZE
@@ -89,8 +89,8 @@ class GoogleAds:
         :return dict of fields type info.
         """
 
-        ga_field_service = self.client().get_service("GoogleAdsFieldService")
-        request = self.client().get_type("SearchGoogleAdsFieldsRequest")
+        ga_field_service = self.get_client().get_service("GoogleAdsFieldService")
+        request = self.get_client().get_type("SearchGoogleAdsFieldsRequest")
         request.page_size = len(fields)
         fields_sql = ",".join([f"'{field}'" for field in fields])
         request.query = f"""

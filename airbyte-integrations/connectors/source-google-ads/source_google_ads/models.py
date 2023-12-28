@@ -18,17 +18,17 @@ class CustomerModel:
     login_customer_id: str = None
 
     @classmethod
-    def from_accounts(cls, accounts: Iterable[Mapping[str, Any]], table_name: str = "customer_client") -> Iterable["CustomerModel"]:
+    def from_accounts(cls, accounts: Iterable[Mapping[str, Any]]) -> Iterable["CustomerModel"]:
         data_objects = []
         for account in accounts:
-            time_zone_name = account.get(f"{table_name}.time_zone")
+            time_zone_name = account.get("customer_client.time_zone")
             tz = Timezone(time_zone_name) if time_zone_name else "local"
 
             data_objects.append(
                 cls(
-                    id=str(account[f"{table_name}.id"]),
+                    id=str(account["customer_client.id"]),
                     time_zone=tz,
-                    is_manager_account=bool(account.get(f"{table_name}.manager")),
+                    is_manager_account=bool(account.get("customer_client.manager")),
                     login_customer_id=account.get("login_customer_id"),
                 )
             )
