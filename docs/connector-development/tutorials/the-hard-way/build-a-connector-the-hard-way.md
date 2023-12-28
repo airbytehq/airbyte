@@ -9,17 +9,17 @@ description:
 This tutorial walks you through building a simple Airbyte source without using any helpers to
 demonstrate the following concepts in action:
 
-- [The Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and the interface
+- [The Airbyte Specification](../../../understanding-airbyte/airbyte-protocol.md) and the interface
   implemented by a source connector
-- [The AirbyteCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md)
+- [The AirbyteCatalog](../../../understanding-airbyte/beginners-guide-to-catalog.md)
 - [Packaging your connector](https://docs.airbyte.com/connector-development#1.-implement-and-package-the-connector)
-- [Testing your connector](../testing-connectors/connector-acceptance-tests-reference.md)
+- [Testing your connector](../../testing-connectors/connector-acceptance-tests-reference.md)
 
 :::warning
 
 **This tutorial is meant for those interested in learning how the Airbyte Specification
 works in detail, not for creating production connectors**. If you're building a real source, you
-should start with using the [Connector Builder](../connector-builder-ui/overview), or the
+should start with using the [Connector Builder](../../connector-builder-ui/overview), or the
 [Connector Development Kit](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/python/docs/tutorials).
 
 :::
@@ -29,7 +29,7 @@ should start with using the [Connector Builder](../connector-builder-ui/overview
 To run this tutorial, you'll need:
 
 - Docker, Python, and Java with the versions listed in the
-  [tech stack section](../../understanding-airbyte/tech-stack.md).
+  [tech stack section](../../../understanding-airbyte/tech-stack.md).
 - The `requests` Python package installed via `pip install requests` \(or `pip3` if `pip` is linked
   to a Python2 installation on your system\)
 
@@ -60,7 +60,7 @@ Here's the outline of what we'll do to build the connector:
 
 [Part 2 of this article](adding-incremental-sync.md) covers:
 
-- Support [incremental sync](../../using-airbyte/core-concepts/sync-modes/incremental-append.md)
+- Support [incremental sync](../../../using-airbyte/core-concepts/sync-modes/incremental-append.md)
 - Add custom integration tests
 
 Let's get started!
@@ -86,7 +86,7 @@ $ ./generate.sh
 
 Select the `Generic Source` template and call the connector `stock-ticker-api`:
 
-![](../../.gitbook/assets/newsourcetutorial_plop.gif)
+![](../../../.gitbook/assets/newsourcetutorial_plop.gif)
 
 :::info
 
@@ -395,9 +395,9 @@ The `discover` command outputs a Catalog, a struct that declares the Streams and
 equivalents of tables and columns\) output by the connector. It also includes metadata around which
 features a connector supports \(e.g. which sync modes\). In other words it describes what data is
 available in the source. If you'd like to read a bit more about this concept check out our
-[Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md)
+[Beginner's Guide to the Airbyte Catalog](../../../understanding-airbyte/beginners-guide-to-catalog.md)
 or for a more detailed treatment read the
-[Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md).
+[Airbyte Specification](../../../understanding-airbyte/airbyte-protocol.md).
 
 The stock ticker connector outputs records belonging to exactly one Stream \(table\). Each record
 contains three Fields \(columns\): `date`, `price`, and `stock_ticker`, corresponding to the price
@@ -407,7 +407,7 @@ To implement `discover`, we'll:
 
 1. Add a method `discover` in `source.py` which outputs the Catalog. To better understand what a
    catalog is, check out our
-   [Beginner's Guide to the AirbyteCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md)
+   [Beginner's Guide to the AirbyteCatalog](../../../understanding-airbyte/beginners-guide-to-catalog.md)
 2. Extend the arguments parser to use detect the `discover --config <config_path>` command and call
    the `discover` method
 
@@ -543,7 +543,7 @@ description of the two options we haven't seen so far:
   `supported_sync_modes` we want to use by specifying the `sync_mode` field. \(This is the most
   complicated concept when working Airbyte, so if it is still not making sense that's okay for now.
   If you're just dying to understand how the Configured Catalog works checkout the
-  [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md)\).
+  [Beginner's Guide to the Airbyte Catalog](../../../understanding-airbyte/beginners-guide-to-catalog.md)\).
 - `--state` points to a state file. The state file is only relevant when some Streams are synced
   with the sync mode `incremental`, so we'll cover the state file in more detail in the incremental
   section below.
@@ -1150,35 +1150,35 @@ wizard. To skip it, click the "Skip Onboarding" button.
 
 In the UI, click the "Settings" button in the left side bar:
 
-![](../../.gitbook/assets/newsourcetutorial_sidebar_settings.png)
+![](../../../.gitbook/assets/newsourcetutorial_sidebar_settings.png)
 
 Then on the Settings page, select Sources
 
-![](../../.gitbook/assets/newsourcetutorial_settings_page.png)
+![](../../../.gitbook/assets/newsourcetutorial_settings_page.png)
 
 Then on the Settings/Sources page, click "+ New Connector" button at the top right:
 
-![](../../.gitbook/assets/newsourcetutorial_settings_sources_newconnector.png)
+![](../../../.gitbook/assets/newsourcetutorial_settings_sources_newconnector.png)
 
 On the modal that pops up, enter the following information then click "Add"
 
-![](../../.gitbook/assets/newsourcetutorial_new_connector_modal.png)
+![](../../../.gitbook/assets/newsourcetutorial_new_connector_modal.png)
 
 After you click "Add", the modal will close and you will be back at the Settings page. Now click
 "Sources" in the navigation bar on the left:
 
-![](../../.gitbook/assets/newsourcetutorial_sources_navbar.png)
+![](../../../.gitbook/assets/newsourcetutorial_sources_navbar.png)
 
 You will be redirected to Sources page, which, if you have not set up any connections, will be
 empty. On the Sources page click "+ new source" in the top right corner:
 
-![](../../.gitbook/assets/newsourcetutorial_sources_page.png)
+![](../../../.gitbook/assets/newsourcetutorial_sources_page.png)
 
 A new modal will prompt you for details of the new source. Type "Stock Ticker" in the Name field.
 Then, find your connector in the Source type dropdown. We have lots of connectors already, so it
 might be easier to find your connector by typing part of its name:
 
-![](../../.gitbook/assets/newsourcetutorial_find_your_connector.png)
+![](../../../.gitbook/assets/newsourcetutorial_find_your_connector.png)
 
 After you select your connector in the Source type dropdown, the modal will show two more fields:
 API Key and Stock Ticker. Remember that `spec.json` file you created at the very beginning of this
@@ -1186,19 +1186,19 @@ tutorial? These fields should correspond to the `properties` section of that fil
 Polygon.io API key and a stock ticker into these fields and then click "Set up source" button at the
 bottom right of the modal.
 
-![](../../.gitbook/assets/newsourcetutorial_source_config.png)
+![](../../../.gitbook/assets/newsourcetutorial_source_config.png)
 
 Once you click "Set up source", Airbyte will spin up your connector and run "check" method to verify
 the configuration. You will see a progress bar briefly and if the configuration is valid, you will
 see a success message, the modal will close and you will see your connector on the updated Sources
 page.
 
-![](../../.gitbook/assets/newsourcetutorial_sources_stock_ticker.png)
+![](../../../.gitbook/assets/newsourcetutorial_sources_stock_ticker.png)
 
 Next step is to add a destination. On the same page, click "add destination" and then click "+ add a
 new destination":
 
-![](../../.gitbook/assets/newsourcetutorial_add_destination_new_destination.png)
+![](../../../.gitbook/assets/newsourcetutorial_add_destination_new_destination.png)
 
 "New destination" wizard will show up. Type a name (e.g. "Local JSON") into the Name field and
 select "Local JSON" in Destination type drop-down. After you select the destination type, type
@@ -1207,24 +1207,24 @@ local filesystem in `/tmp/airbyte_local/tutorial_json`.
 
 Click "Set up destination" at the lower right of the form.
 
-![](../../.gitbook/assets/newsourcetutorial_add_destination.png)
+![](../../../.gitbook/assets/newsourcetutorial_add_destination.png)
 
 After that Airbyte will test the destination and prompt you to configure the connection between
 Stock Ticker source and Local JSON destination. Select "Mirror source structure" in the Destination
 Namespace, check the checkbox next to the stock_prices stream, and click "Set up connection" button
 at the bottom of the form:
 
-![](../../.gitbook/assets/newsourcetutorial_configure_connection.png)
+![](../../../.gitbook/assets/newsourcetutorial_configure_connection.png)
 
 Ta-da! Your connection is now configured to sync once a day. You will see your new connection on the
 next screen:
 
-![](../../.gitbook/assets/newsourcetutorial_connection_done.png)
+![](../../../.gitbook/assets/newsourcetutorial_connection_done.png)
 
 Airbyte will run the first sync job as soon as your connection is saved. Navigate to "Connections"
 in the side bar and wait for the first sync to succeed:
 
-![](../../.gitbook/assets/newsourcetutorial_first_sync.png)
+![](../../../.gitbook/assets/newsourcetutorial_first_sync.png)
 
 Let's verify the output. From your shell, run:
 
@@ -1242,12 +1242,12 @@ contributor now ;\)
 
 1. Follow the [next tutorial](adding-incremental-sync.md) to implement incremental sync.
 2. Implement another connector using the Low-code CDK,
-   [Connector Builder](../connector-builder-ui/overview), or
+   [Connector Builder](../../connector-builder-ui/overview.md), or
    [Connector Development Kit](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/python/docs/tutorials)
 3. We welcome low-code configuration based connector contributions! If you make a connector in the
    connector builder and want to share it with everyone using Airbyte, pull requests are welcome!
 
 ## Additional guides
 
-- [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/building-a-python-source)
+- [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/building-a-python-source.md)
 - [Building a Java Destination](https://docs.airbyte.com/connector-development/tutorials/building-a-java-destination)
