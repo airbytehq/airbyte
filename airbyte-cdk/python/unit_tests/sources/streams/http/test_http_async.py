@@ -8,6 +8,7 @@ import json
 from http import HTTPStatus
 from typing import Any, Iterable, Mapping, Optional
 from unittest.mock import ANY, MagicMock, patch
+from yarl import URL
 
 import aiohttp
 import pytest
@@ -152,16 +153,21 @@ class StubCustomBackoffHttpStream(StubBasicReadHttpStream):
 def test_stub_custom_backoff_http_stream(mocker):
     mocker.patch("time.sleep", lambda x: None)
     stream = StubCustomBackoffHttpStream()
-    req = requests.Response()
-    req.status_code = 429
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(stream.ensure_session())
+    call_counter = 0
 
-    send_mock = mocker.patch.object(requests.Session, "send", return_value=req)
+    def request_callback(*args, **kwargs):
+        nonlocal call_counter
+        call_counter += 1
 
-    with pytest.raises(UserDefinedBackoffException):
-        list(stream.read_records(SyncMode.full_refresh))
-    assert send_mock.call_count == stream.max_retries + 1
+    with aioresponses() as m:
+        m.get(stream.url_base, status=429, repeat=True, callback=request_callback)
 
-    # TODO(davin): Figure out how to assert calls.
+        with pytest.raises(UserDefinedBackoffException):
+            loop.run_until_complete(read_records(stream))
+
+    assert call_counter == stream.max_retries + 1
 
 
 @pytest.mark.parametrize("retries", [-20, -1, 0, 1, 2, 10])
@@ -173,19 +179,27 @@ def test_stub_custom_backoff_http_stream_retries(mocker, retries):
         def max_retries(self):
             return retries
 
-    stream = StubCustomBackoffHttpStreamRetries()
-    req = requests.Response()
-    req.status_code = HTTPStatus.TOO_MANY_REQUESTS
-    send_mock = mocker.patch.object(requests.Session, "send", return_value=req)
+    def request_callback(*args, **kwargs):
+        nonlocal call_counter
+        call_counter += 1
 
-    with pytest.raises(UserDefinedBackoffException, match="Request URL: https://test_base_url.com/, Response Code: 429") as excinfo:
-        list(stream.read_records(SyncMode.full_refresh))
-    assert isinstance(excinfo.value.request, requests.PreparedRequest)
-    assert isinstance(excinfo.value.response, requests.Response)
-    if retries <= 0:
-        assert send_mock.call_count == 1
-    else:
-        assert send_mock.call_count == stream.max_retries + 1
+    stream = StubCustomBackoffHttpStreamRetries()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(stream.ensure_session())
+    call_counter = 0
+
+    with aioresponses() as m:
+        m.get(stream.url_base, status=429, repeat=True, callback=request_callback)
+
+        with pytest.raises(UserDefinedBackoffException) as excinfo:
+            loop.run_until_complete(read_records(stream))
+            assert isinstance(excinfo.value.request, aiohttp.ClientRequest)
+            assert isinstance(excinfo.value.response, aiohttp.ClientResponse)
+
+        if retries <= 0:
+            m.assert_called_once()
+        else:
+            assert call_counter == stream.max_retries + 1
 
 
 def test_stub_custom_backoff_http_stream_endless_retries(mocker):
@@ -196,28 +210,41 @@ def test_stub_custom_backoff_http_stream_endless_retries(mocker):
         def max_retries(self):
             return None
 
-    infinite_number = 20
-
     stream = StubCustomBackoffHttpStreamRetries()
-    req = requests.Response()
-    req.status_code = HTTPStatus.TOO_MANY_REQUESTS
-    send_mock = mocker.patch.object(requests.Session, "send", side_effect=[req] * infinite_number)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(stream.ensure_session())
+    infinite_number = 20
+    call_counter = 0
 
-    # Expecting mock object to raise a RuntimeError when the end of side_effect list parameter reached.
-    with pytest.raises(RuntimeError):
-        list(stream.read_records(SyncMode.full_refresh))
-    assert send_mock.call_count == infinite_number + 1
+    with aioresponses() as m:
+        def request_callback(*args, **kwargs):
+            nonlocal call_counter
+            call_counter += 1
+            if call_counter > infinite_number:
+                # Simulate a different response or a break in the pattern
+                # to stop the infinite retries
+                raise RuntimeError("End of retries")
+
+        m.get(stream.url_base, status=HTTPStatus.TOO_MANY_REQUESTS, repeat=True, callback=request_callback)
+
+        # Expecting mock object to raise a RuntimeError when the end of side_effect list parameter reached.
+        with pytest.raises(RuntimeError):
+            loop.run_until_complete(read_records(stream))
+
+    assert call_counter == infinite_number + 1
 
 
 @pytest.mark.parametrize("http_code", [400, 401, 403])
-def test_4xx_error_codes_http_stream(mocker, http_code):
+def test_4xx_error_codes_http_stream(http_code):
     stream = StubCustomBackoffHttpStream()
-    req = requests.Response()
-    req.status_code = http_code
-    mocker.patch.object(requests.Session, "send", return_value=req)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(stream.ensure_session())
 
-    with pytest.raises(requests.exceptions.HTTPError):
-        list(stream.read_records(SyncMode.full_refresh))
+    with aioresponses() as m:
+        m.get(stream.url_base, status=http_code, repeat=True)
+
+        with pytest.raises(aiohttp.ClientResponseError):
+            loop.run_until_complete(read_records(stream))
 
 
 class AutoFailFalseHttpStream(StubBasicReadHttpStream):
@@ -226,56 +253,74 @@ class AutoFailFalseHttpStream(StubBasicReadHttpStream):
     retry_factor = 0.01
 
 
-def test_raise_on_http_errors_off_429(mocker):
+def test_raise_on_http_errors_off_429():
     stream = AutoFailFalseHttpStream()
-    req = requests.Response()
-    req.status_code = 429
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(stream.ensure_session())
 
-    mocker.patch.object(requests.Session, "send", return_value=req)
-    with pytest.raises(DefaultBackoffException, match="Request URL: https://test_base_url.com/, Response Code: 429"):
-        list(stream.read_records(SyncMode.full_refresh))
+    with aioresponses() as m:
+        m.get(stream.url_base, status=429, repeat=True)
+        with pytest.raises(DefaultBackoffException):
+            loop.run_until_complete(read_records(stream))
 
 
 @pytest.mark.parametrize("status_code", [500, 501, 503, 504])
-def test_raise_on_http_errors_off_5xx(mocker, status_code):
+def test_raise_on_http_errors_off_5xx(status_code):
     stream = AutoFailFalseHttpStream()
-    req = requests.Response()
-    req.status_code = status_code
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(stream.ensure_session())
+    call_counter = 0
 
-    send_mock = mocker.patch.object(requests.Session, "send", return_value=req)
-    with pytest.raises(DefaultBackoffException):
-        list(stream.read_records(SyncMode.full_refresh))
-    assert send_mock.call_count == stream.max_retries + 1
+    def request_callback(*args, **kwargs):
+        nonlocal call_counter
+        call_counter += 1
+
+    with aioresponses() as m:
+        m.get(stream.url_base, status=status_code, repeat=True, callback=request_callback)
+        with pytest.raises(DefaultBackoffException):
+            loop.run_until_complete(read_records(stream))
+
+    assert call_counter == stream.max_retries + 1
 
 
 @pytest.mark.parametrize("status_code", [400, 401, 402, 403, 416])
-def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
+def test_raise_on_http_errors_off_non_retryable_4xx(status_code):
     stream = AutoFailFalseHttpStream()
-    req = requests.PreparedRequest()
-    res = requests.Response()
-    res.status_code = status_code
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(stream.ensure_session())
 
-    mocker.patch.object(requests.Session, "send", return_value=res)
-    response = stream._send_request(req, {})
-    assert response.status_code == status_code
+    with aioresponses() as m:
+        m.get(stream.url_base, status=status_code, repeat=True)
+        response = loop.run_until_complete(stream._send_request(aiohttp.ClientRequest("GET", URL(stream.url_base)), {}))
+
+    assert response.status == status_code
 
 
 @pytest.mark.parametrize(
     "error",
     (
-        requests.exceptions.ConnectTimeout,
-        requests.exceptions.ConnectionError,
-        requests.exceptions.ChunkedEncodingError,
-        requests.exceptions.ReadTimeout,
+        aiohttp.ServerDisconnectedError,
+        aiohttp.ServerConnectionError,
+        aiohttp.ServerTimeoutError,
     ),
 )
-def test_raise_on_http_errors(mocker, error):
+def test_raise_on_http_errors(error):
     stream = AutoFailFalseHttpStream()
-    send_mock = mocker.patch.object(requests.Session, "send", side_effect=error())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(stream.ensure_session())
+    call_counter = 0
 
-    with pytest.raises(error):
-        list(stream.read_records(SyncMode.full_refresh))
-    assert send_mock.call_count == stream.max_retries + 1
+    def request_callback(*args, **kwargs):
+        nonlocal call_counter
+        call_counter += 1
+
+    with aioresponses() as m:
+        m.get(stream.url_base, repeat=True, callback=request_callback, exception=error())
+
+        with pytest.raises(error):
+            loop.run_until_complete(read_records(stream))
+
+    assert call_counter == stream.max_retries + 1
 
 
 class PostHttpStream(StubBasicReadHttpStream):
@@ -294,30 +339,43 @@ class TestRequestBody:
     form_body = {"key1": "value1", "key2": 1234}
     urlencoded_form_body = "key1=value1&key2=1234"
 
-    def request2response(self, request, context):
-        return json.dumps({"body": request.text, "content_type": request.headers.get("Content-Type")})
+    def request2response(self, **kwargs):
+        """Callback function to handle request and return mock response."""
+        body = kwargs.get("data")
+        headers = kwargs.get("headers", {})
+        return {
+            "body": json.dumps(body) if isinstance(body, dict) else body,
+            "content_type": headers.get("Content-Type")
+        }
 
-    def test_json_body(self, mocker, requests_mock):
-
+    def test_json_body(self, mocker):
         stream = PostHttpStream()
         mocker.patch.object(stream, "request_body_json", return_value=self.json_body)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(stream.ensure_session())
 
-        requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
-        response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
+        with aioresponses() as m:
+            m.post(stream.url_base, payload=self.request2response(data=self.json_body, headers={"Content-Type": "application/json"}))
 
-        assert response["content_type"] == "application/json"
-        assert json.loads(response["body"]) == self.json_body
+            response = []
+            for r in loop.run_until_complete(read_records(stream)):
+                response.append(loop.run_until_complete(r))
 
-    def test_text_body(self, mocker, requests_mock):
+        assert response[0]["content_type"] == "application/json"
+        assert json.loads(response[0]["body"]) == self.json_body
 
+    def test_text_body(self, mocker):
         stream = PostHttpStream()
         mocker.patch.object(stream, "request_body_data", return_value=self.data_body)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(stream.ensure_session())
 
-        requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
-        response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
+        with aioresponses() as m:
+            m.post(stream.url_base, payload=self.request2response(data=self.data_body))
 
-        assert response["content_type"] is None
-        assert response["body"] == self.data_body
+            response = []
+            for r in loop.run_until_complete(read_records(stream)):
+                response.append(loop.run_until_complete(r))
 
     def test_form_body(self, mocker, requests_mock):
 

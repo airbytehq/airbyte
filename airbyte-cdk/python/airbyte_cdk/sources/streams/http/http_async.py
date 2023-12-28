@@ -26,7 +26,7 @@ from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 
 from .auth.core import HttpAuthenticator
-from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from .rate_limiting_async import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")

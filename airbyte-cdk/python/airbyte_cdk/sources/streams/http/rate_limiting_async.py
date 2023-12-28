@@ -10,7 +10,7 @@ from typing import Any, Callable, Coroutine, Mapping, Optional
 import aiohttp
 import backoff
 
-from .exceptions import DefaultBackoffException, UserDefinedBackoffException
+from .exceptions_async import DefaultBackoffException, UserDefinedBackoffException
 
 TRANSIENT_EXCEPTIONS = (
     DefaultBackoffException,
