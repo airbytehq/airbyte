@@ -64,7 +64,7 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMessage, isValid, onBack }) => {
+const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMessage, isValid }) => {
   if (isSubmitting) {
     return (
       <LoadingContainer>
@@ -87,9 +87,9 @@ const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMess
         </ErrorBlock>
       ) : null}
       <ButtonRows top="0" position="absolute" width="calc(100% - 18px)">
-        <CustomButton type="button" onClick={onBack} secondary>
+        {/* <CustomButton type="button" onClick={onBack} secondary>
           <FormattedMessage id="form.button.back" />
-        </CustomButton>
+        </CustomButton> */}
         <CustomButton type="submit" disabled={isSubmitting || !isValid}>
           <FormattedMessage id="form.button.finishSetup" />
         </CustomButton>
