@@ -17,6 +17,7 @@ from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+from pendulum.duration import Duration
 from source_facebook_marketing.streams.common import retry_pattern
 
 from ..utils import validate_start_date
@@ -189,10 +190,10 @@ class ParentAsyncJob(AsyncJob):
 class InsightAsyncJob(AsyncJob):
     """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
 
-    job_timeout = pendulum.duration(hours=1)
+    job_timeout = pendulum.duration(minutes=60)
     page_size = 100
 
-    def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet, Ad], params: Mapping[str, Any], **kwargs):
+    def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet, Ad], params: Mapping[str, Any], job_timeout: Duration, **kwargs):
         """Initialize
 
         :param api: FB API
@@ -205,6 +206,7 @@ class InsightAsyncJob(AsyncJob):
             "since": self._interval.start.to_date_string(),
             "until": self._interval.end.to_date_string(),
         }
+        self.job_timeout = job_timeout
 
         self._edge_object = edge_object
         self._job: Optional[AdReportRun] = None
