@@ -29,8 +29,9 @@ FULL_REFRESH_CUSTOM_TABLE = [
 
 class MigrateCustomQuery:
     """
-    This class stands for migrating the config at runtime,
-    while providing the backward compatibility when falling back to the previous source version.
+    This class stands for migrating the config at runtime.
+    This migration is backwards compatible with the previous version, as new property will be created.
+    When falling back to the previous source version connector will use old property `custom_queries`.
 
     Add `segments.date` for all queries where it was previously added by IncrementalCustomQuery class.
     """
