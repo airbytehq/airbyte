@@ -18,6 +18,7 @@ from airbyte_cdk.sources.streams import AsyncStream
 from airbyte_cdk.sources.streams.async_call_rate import AsyncCachedLimiterSession, AsyncLimiterSession
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http_base import BaseHttpStream
 from airbyte_cdk.sources.streams.http.exceptions_async import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
@@ -39,14 +40,17 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
     Basic building block for users building an Airbyte source for an async HTTP API.
     """
 
-    def __init__(self, authenticator: HttpAuthenticator, api_budget: Optional[APIBudget] = None):
+    def __init__(self, authenticator: Optional[Union[HttpAuthenticator, NoAuth]] = NoAuth(), api_budget: Optional[APIBudget] = None):
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
         self._session: aiohttp.ClientSession = None
         # TODO: HttpStream handles other authentication codepaths, which may need to be added later
         self._authenticator = authenticator
 
     @property
-    def authenticator(self) -> HttpAuthenticator:
+    def authenticator(self) -> Optional[Union[HttpAuthenticator, NoAuth]]:
+        # TODO: this behaves differently than http.py, which would return None if self._authenticator is an HttpAuthenticator.
+        #  But, it looks like this property is only used here in http_async.py and Salesforce's streams.py.
+        #  It doesn't appear to be causing any problems with Salesforce.
         return self._authenticator
 
     @property
@@ -169,7 +173,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         data: Optional[Union[str, Mapping[str, Any]]] = None,
     ) -> aiohttp.ClientRequest:
         str_url = self._join_url(self.url_base, path)
-        str_url = "http://localhost:8000"
+        str_url = "http://localhost:8000"  # TODO
         url = URL(str_url)
         if self.must_deduplicate_query_params():
             query_params = self.deduplicate_query_params(str_url, params)
@@ -216,8 +220,6 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
             request.method, request.url,
             headers=request.headers,
             auth=request.auth,
-            chunked=request.chunked,
-            compress=request.compress,
             **request_kwargs,
         )
 
@@ -350,10 +352,11 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        async for record in self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice,
-            stream_state
-        ):
+        async def _records_generator_fn(req, res, state, _slice):
+            async for record in self.parse_response(res, stream_slice=_slice, stream_state=state):
+                yield record
+
+        async for record in self._read_pages(_records_generator_fn, stream_slice, stream_state):
             yield record
 
     async def _read_pages(

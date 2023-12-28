@@ -99,7 +99,8 @@ class SalesforceStream(AsyncHttpStream, ABC):
         return properties_length > self.max_properties_length
 
     async def parse_response(self, response: aiohttp.ClientResponse, **kwargs) -> List[Mapping]:
-        return (await response.json())["records"]
+        for record in (await response.json())["records"]:
+            yield record
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
@@ -257,12 +258,11 @@ class RestSalesforceStream(SalesforceStream):
             # When this is the first time we're getting a chunk's records, we set this to False to be used when deciding the next chunk
             if property_chunk.first_time:
                 property_chunk.first_time = False
-            chunk_page_records = await records_generator_fn(request, response, stream_state, stream_slice)
             if not self.too_many_properties:
                 # this is the case when a stream has no primary key
                 # (it is allowed when properties length does not exceed the maximum value)
                 # so there would be a single chunk, therefore we may and should yield records immediately
-                for record in chunk_page_records:
+                async for record in records_generator_fn(request, response, stream_state, stream_slice):
                     property_chunk.record_counter += 1
                     yield record
                 continue
