@@ -6,10 +6,10 @@
     "id": {
       "type": ["null", "string"]
     },
-    "group_id": {
+    "groupId": {
       "type": ["null", "string"]
     },
-    "business_phones": {
+    "businessPhones": {
       "anyOf": [
         {
           "type": "array",
@@ -22,31 +22,31 @@
         }
       ]
     },
-    "display_name": {
+    "displayName": {
       "type": ["null", "string"]
     },
-    "given_name": {
+    "givenName": {
       "type": ["null", "string"]
     },
-    "job_title": {
+    "jobTitle": {
       "type": ["null", "string"]
     },
     "mail": {
       "type": ["null", "string"]
     },
-    "mobile_phone": {
+    "mobilePhone": {
       "type": ["null", "string"]
     },
-    "office_location": {
+    "officeLocation": {
       "type": ["null", "string"]
     },
-    "preferred_language": {
+    "preferredLanguage": {
       "type": ["null", "string"]
     },
     "surname": {
       "type": ["null", "string"]
     },
-    "user_principal_name": {
+    "userPrincipalName": {
       "type": ["null", "string"]
     }
   }

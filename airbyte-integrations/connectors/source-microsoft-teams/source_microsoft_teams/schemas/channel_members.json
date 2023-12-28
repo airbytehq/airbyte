@@ -6,7 +6,7 @@
     "id": {
       "type": ["null", "string"]
     },
-    "display_name": {
+    "displayName": {
       "type": ["null", "string"]
     },
     "roles": {
@@ -22,13 +22,13 @@
         }
       ]
     },
-    "user_id": {
+    "userId": {
       "type": ["null", "string"]
     },
     "email": {
       "type": ["null", "string"]
     },
-    "channel_id": {
+    "channelId": {
       "type": ["null", "string"]
     }
   }

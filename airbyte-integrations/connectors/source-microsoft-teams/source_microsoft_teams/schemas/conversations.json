@@ -6,20 +6,20 @@
     "id": {
       "type": ["null", "string"]
     },
-    "group_id": {
+    "groupId": {
       "type": ["null", "string"]
     },
     "topic": {
       "type": ["null", "string"]
     },
-    "has_attachments": {
+    "hasAttachments": {
       "type": ["null", "boolean"]
     },
-    "last_delivered_date_time": {
+    "lastDeliveredDateTime": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "unique_senders": {
+    "uniqueSenders": {
       "anyOf": [
         {
           "type": "array",

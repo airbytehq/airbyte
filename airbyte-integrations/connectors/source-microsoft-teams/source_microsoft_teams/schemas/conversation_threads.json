@@ -6,29 +6,29 @@
     "id": {
       "type": ["null", "string"]
     },
-    "group_id": {
+    "groupId": {
       "type": ["null", "string"]
     },
-    "conversation_id": {
+    "conversationId": {
       "type": ["null", "string"]
     },
     "topic": {
       "type": ["null", "string"]
     },
-    "has_attachments": {
+    "hasAttachments": {
       "type": ["null", "boolean"]
     },
-    "last_delivered_date_time": {
+    "lastDeliveredDateTime": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "unique_senders": {
+    "uniqueSenders": {
       "type": ["null", "string"]
     },
     "preview": {
       "type": ["null", "string"]
     },
-    "is_locked": {
+    "isLocked": {
       "type": ["null", "boolean"]
     }
   }

@@ -6,24 +6,24 @@
     "id": {
       "type": ["null", "string"]
     },
-    "reply_to_id": {
+    "replyToId": {
       "type": ["null", "string"]
     },
     "etag": {
       "type": ["null", "string"]
     },
-    "message_type": {
+    "messageYype": {
       "type": ["null", "string"]
     },
-    "created_date_time": {
+    "createdDateTime": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "lastModified_date_time": {
+    "lastModifiedDateTime": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "deleted_date_time": {
+    "deletedDateTime": {
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -33,7 +33,7 @@
     "summary": {
       "type": ["null", "string"]
     },
-    "chat_id": {
+    "chatId": {
       "type": ["null", "string"]
     },
     "importance": {
@@ -42,10 +42,10 @@
     "locale": {
       "type": ["null", "string"]
     },
-    "web_url": {
+    "webUrl": {
       "type": ["null", "string"]
     },
-    "policy_violation": {
+    "policyViolation": {
       "type": ["null", "string"]
     },
     "from": {
@@ -68,10 +68,10 @@
             "id": {
               "type": ["null", "string"]
             },
-            "display_name": {
+            "displayName": {
               "type": ["null", "string"]
             },
-            "user_identity_type": {
+            "userIdentityType": {
               "type": ["null", "string"]
             }
           }
@@ -82,7 +82,7 @@
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "content_type": {
+        "contentType": {
           "type": ["null", "string"]
         },
         "content": {
@@ -90,14 +90,14 @@
         }
       }
     },
-    "channel_identity": {
+    "channelIdentity": {
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "teamId": {
           "type": ["null", "string"]
         },
-        "channel_id": {
+        "channelId": {
           "type": ["null", "string"]
         }
       }
@@ -113,10 +113,10 @@
               "id": {
                 "type": ["null", "string"]
               },
-              "content_type": {
+              "contentType": {
                 "type": ["null", "string"]
               },
-              "content_url": {
+              "contentUrl": {
                 "type": ["null", "string"]
               },
               "content": {
@@ -125,7 +125,7 @@
               "name": {
                 "type": ["null", "string"]
               },
-              "thumbnail_url": {
+              "thumbnailUrl": {
                 "type": ["null", "string"]
               }
             }
@@ -147,7 +147,7 @@
               "id": {
                 "type": ["null", "integer"]
               },
-              "mention_text": {
+              "mentionText": {
                 "type": ["null", "string"]
               },
               "mentioned": {
@@ -170,10 +170,10 @@
                       "id": {
                         "type": ["null", "string"]
                       },
-                      "display_name": {
+                      "displayName": {
                         "type": ["null", "string"]
                       },
-                      "userIdentity_type": {
+                      "userIdentityType": {
                         "type": ["null", "string"]
                       }
                     }
@@ -196,10 +196,10 @@
             "type": ["null", "object"],
             "additionalProperties": true,
             "properties": {
-              "reaction_type": {
+              "reactionType": {
                 "type": ["null", "string"]
               },
-              "created_date_time": {
+              "createdDateTime": {
                 "type": ["null", "string"],
                 "format": "date-time"
               },
@@ -223,10 +223,10 @@
                       "id": {
                         "type": ["null", "string"]
                       },
-                      "display_name": {
+                      "displayName": {
                         "type": ["null", "string"]
                       },
-                      "user_identity_type": {
+                      "userIdentityType": {
                         "type": ["null", "string"]
                       }
                     }

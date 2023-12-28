@@ -61,7 +61,6 @@
       "properties": {
         "emailAddress": {
           "type": ["null", "object"],
-          "additionalProperties": false,
           "properties": {
             "name": {
               "type": ["null", "string"]
