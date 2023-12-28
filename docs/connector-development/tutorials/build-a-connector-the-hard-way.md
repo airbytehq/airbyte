@@ -11,39 +11,31 @@ This tutorial walks you through building a simple Airbyte source without using a
 - [Packaging your connector](https://docs.airbyte.com/connector-development#1.-implement-and-package-the-connector)
 - [Testing your connector](../testing-connectors/connector-acceptance-tests-reference.md)
 
-At the end of this tutorial, you will have a working source that you will be able to use in the Airbyte UI.
+:::warning
+**This tutorial is meant for those interested in learning how the Airbyte Specification works in detail,
+not for creating production connectors**.
+If you're building a real source, you should start with using the [Connector Builder](../connector-builder-ui/overview), or
+the [Connector Development Kit](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/python/docs/tutorials).
+:::
 
-**This tutorial is meant for those interested in learning how the Airbyte Specification works in detail, not for creating production connectors**. We intentionally don't use helper libraries provided by Airbyte so that this tutorial is self-contained. If you were building a "real" source, you'll want to use the helper modules such as the [Connector Development Kit](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/python/docs/tutorials).
-
-This tutorial can be done entirely on your local workstation.
-
-### Requirements
+## Requirements
 
 To run this tutorial, you'll need:
 
 - Docker, Python, and Java with the versions listed in the [tech stack section](../../understanding-airbyte/tech-stack.md).
 - The `requests` Python package installed via `pip install requests` \(or `pip3` if `pip` is linked to a Python2 installation on your system\)
 
-**A note on running Python**: all the commands below assume that `python` points to a version of Python 3.9 or greater. Verify this by running
-
-```bash
-$ python --version
-Python 3.9.11
-```
-
-On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
-
-You need also to install `requests` python library:
-
-```bash
-pip install requests
-```
-
 ## Our connector: a stock ticker API
 
-Our connector will output the daily price of a stock since a given date. We'll leverage the free [Polygon.io API](https://polygon.io/pricing) for this. We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied to any language.
+The connector will output the daily price of a stock since a given date.
+We'll leverage [Polygon.io API](https://polygon.io/) for this. 
 
-Here's the outline of what we'll do to build our connector:
+:::info
+We'll use Python to implement the connector, but you could build an Airbyte
+connector in any language. 
+:::
+
+Here's the outline of what we'll do to build the connector:
 
 1. Use the Airbyte connector template to bootstrap the connector package
 2. Implement the methods required by the Airbyte Specification for our connector:
@@ -52,13 +44,17 @@ Here's the outline of what we'll do to build our connector:
    3. `discover`: declares the different streams of data that this connector can output
    4. `read`: reads data from the underlying data source \(The stock ticker API\)
 3. Package the connector in a Docker image
-4. Test the connector using Airbyte's Standard Test Suite
+4. Test the connector using Airbyte's Connector Acceptance Test Suite
 5. Use the connector to create a new Connection and run a sync in Airbyte UI
 
-Once we've completed the above steps, we will have built a functioning connector. Then, we'll add some optional functionality:
+[Part 2 of this article](adding-incremental-sync.md) covers:
 
-- Support [incremental sync](/using-airbyte/core-concepts/sync-modes/incremental-append.md)
+- Support [incremental sync](../../using-airbyte/core-concepts/sync-modes/incremental-append.md)
 - Add custom integration tests
+
+Let's get started! 
+
+---
 
 ### 1. Bootstrap the connector package
 
