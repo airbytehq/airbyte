@@ -137,3 +137,33 @@ class SurveyParticipant(GainsightCsObjectStream):
 
 class ActivityTimeline(GainsightCsObjectStream):
     name = "activity_timeline"
+
+
+class CustomObjectStream(GainsightCsObjectStream):
+    def __init__(self, name: str, domain_url: str, **kwargs):
+        super().__init__(domain_url, **kwargs)
+        self.name = name
+
+    @property
+    def name(self):
+        return self.name
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        if self.json_schema is not None:
+            return self.json_schema
+
+        base_schema = {}
+        url = f"{self.url_base}meta/services/objects/{self.name}/describe?idd=true"
+        auth_headers = self.authenticator.get_auth_header()
+
+        try:
+            session = requests.get(url, headers=auth_headers)
+            body = session.json()
+            full_schema = base_schema
+            fields = body['data'][0]['fields']
+            full_schema = self.dynamic_schema(full_schema, fields)
+            self.json_schema = full_schema
+        except requests.exceptions.RequestException:
+            self.json_schema = base_schema
+
+        return self.json_schema

@@ -18,7 +18,8 @@ from .streams import (
     ActivityTimeline,
     CallToAction,
     SurveyParticipant,
-    Playbook
+    Playbook,
+    CustomObjectStream
 )
 
 
@@ -58,5 +59,6 @@ class SourceGainsightCs(AbstractSource):
             ActivityTimeline(domain_url=domain_url, authenticator=auth),
             CallToAction(domain_url=domain_url, authenticator=auth),
             SurveyParticipant(domain_url=domain_url, authenticator=auth),
-            Playbook(domain_url=domain_url, authenticator=auth)
+            Playbook(domain_url=domain_url, authenticator=auth),
+            # CustomObjectStream(name="sf_1i0025dxe6kkg8jcv1zrb42nk97l9wbigcdp", domain_url=domain_url, authenticator=auth)
         ]
