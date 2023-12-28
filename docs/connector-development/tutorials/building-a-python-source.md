@@ -25,7 +25,7 @@ All the commands below assume that `python` points to a version of python &gt;3.
 * Step 5: Implement `check`
 * Step 6: Implement `discover`
 * Step 7: Implement `read`
-* Step 8: Set up Standard Tests
+* Step 8: Set up Connector Acceptance Tests
 * Step 9: Write unit tests or integration tests
 * Step 10: Update the `README.md` \(If API credentials are required to run the integration, please document how they can be obtained or link to a how-to guide.\)
 * Step 11: Update the `metadata.yaml` file with accurate information about your connector. These metadata will be used to add the connector to Airbyte's connector registry.
@@ -200,9 +200,9 @@ self.logger.debug(
 )
 ```
 
-**TDD using standard tests**
+**TDD using acceptance tests & integration tests**
 
-Airbyte provides a standard test suite that is run against every source. The objective of these tests is to provide some "free" tests that can sanity check that the basic functionality of the source works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.
+Airbyte provides an acceptance test suite that is run against every source. The objective of these tests is to provide some "free" tests that can sanity check that the basic functionality of the source works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.
 
 If you want to try out this approach, check out Step 8 which describes what you need to do to set up the standard tests for your source.
 
