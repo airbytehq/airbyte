@@ -7,19 +7,17 @@ import asyncio
 import json
 from http import HTTPStatus
 from typing import Any, Iterable, Mapping, Optional
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import MagicMock, patch
 from yarl import URL
 
 import aiohttp
 import pytest
-import requests
 from aioresponses import CallbackResult, aioresponses
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator as HttpTokenAuthenticator
 from airbyte_cdk.sources.streams.http.http_async import AsyncHttpStream, AsyncHttpSubStream
 from airbyte_cdk.sources.streams.http.exceptions_async import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class StubBasicReadHttpStream(AsyncHttpStream):
@@ -31,13 +29,13 @@ class StubBasicReadHttpStream(AsyncHttpStream):
         self.resp_counter = 1
         self._deduplicate_query_params = deduplicate_query_params
 
-    async def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    async def next_page_token(self, response: aiohttp.ClientResponse) -> Optional[Mapping[str, Any]]:
         return None
 
     def path(self, **kwargs) -> str:
         return ""
 
-    async def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    async def parse_response(self, response: aiohttp.ClientResponse, **kwargs) -> Iterable[Mapping]:
         stubResp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stubResp
@@ -60,7 +58,6 @@ def test_request_kwargs_used(mocker):
     loop = asyncio.get_event_loop()
     stream = StubBasicReadHttpStream()
     loop.run_until_complete(stream.ensure_session())
-
     request_kwargs = {"chunked": True, "compress": True}
     mocker.patch.object(stream, "request_kwargs", return_value=request_kwargs)
 
@@ -70,6 +67,8 @@ def test_request_kwargs_used(mocker):
 
         m.assert_any_call(stream.url_base, "GET", **request_kwargs)
         m.assert_called_once()
+
+    loop.run_until_complete(stream._session.close())
 
 
 async def read_records(stream, sync_mode=SyncMode.full_refresh, stream_slice=None):
@@ -97,7 +96,7 @@ class StubNextPageTokenHttpStream(StubBasicReadHttpStream):
         super().__init__()
         self._pages = pages
 
-    async def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    async def next_page_token(self, response: aiohttp.ClientResponse) -> Optional[Mapping[str, Any]]:
         while self.current_page < self._pages:
             page_token = {"page": self.current_page}
             self.current_page += 1
@@ -146,7 +145,7 @@ def test_stub_bad_url_http_stream_read_records():
 
 
 class StubCustomBackoffHttpStream(StubBasicReadHttpStream):
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
+    def backoff_time(self, response: aiohttp.ClientResponse) -> Optional[float]:
         return 0.5
 
 
@@ -168,6 +167,7 @@ def test_stub_custom_backoff_http_stream(mocker):
             loop.run_until_complete(read_records(stream))
 
     assert call_counter == stream.max_retries + 1
+    loop.run_until_complete(stream._session.close())
 
 
 @pytest.mark.parametrize("retries", [-20, -1, 0, 1, 2, 10])
@@ -200,6 +200,7 @@ def test_stub_custom_backoff_http_stream_retries(mocker, retries):
             m.assert_called_once()
         else:
             assert call_counter == stream.max_retries + 1
+    loop.run_until_complete(stream._session.close())
 
 
 def test_stub_custom_backoff_http_stream_endless_retries(mocker):
@@ -232,6 +233,7 @@ def test_stub_custom_backoff_http_stream_endless_retries(mocker):
             loop.run_until_complete(read_records(stream))
 
     assert call_counter == infinite_number + 1
+    loop.run_until_complete(stream._session.close())
 
 
 @pytest.mark.parametrize("http_code", [400, 401, 403])
@@ -245,6 +247,8 @@ def test_4xx_error_codes_http_stream(http_code):
 
         with pytest.raises(aiohttp.ClientResponseError):
             loop.run_until_complete(read_records(stream))
+
+    loop.run_until_complete(stream._session.close())
 
 
 class AutoFailFalseHttpStream(StubBasicReadHttpStream):
@@ -262,6 +266,8 @@ def test_raise_on_http_errors_off_429():
         m.get(stream.url_base, status=429, repeat=True)
         with pytest.raises(DefaultBackoffException):
             loop.run_until_complete(read_records(stream))
+
+    loop.run_until_complete(stream._session.close())
 
 
 @pytest.mark.parametrize("status_code", [500, 501, 503, 504])
@@ -281,6 +287,7 @@ def test_raise_on_http_errors_off_5xx(status_code):
             loop.run_until_complete(read_records(stream))
 
     assert call_counter == stream.max_retries + 1
+    loop.run_until_complete(stream._session.close())
 
 
 @pytest.mark.parametrize("status_code", [400, 401, 402, 403, 416])
@@ -294,6 +301,7 @@ def test_raise_on_http_errors_off_non_retryable_4xx(status_code):
         response = loop.run_until_complete(stream._send_request(aiohttp.ClientRequest("GET", URL(stream.url_base)), {}))
 
     assert response.status == status_code
+    loop.run_until_complete(stream._session.close())
 
 
 @pytest.mark.parametrize(
@@ -321,12 +329,13 @@ def test_raise_on_http_errors(error):
             loop.run_until_complete(read_records(stream))
 
     assert call_counter == stream.max_retries + 1
+    loop.run_until_complete(stream._session.close())
 
 
 class PostHttpStream(StubBasicReadHttpStream):
     http_method = "POST"
 
-    async def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    async def parse_response(self, response: aiohttp.ClientResponse, **kwargs) -> Iterable[Mapping]:
         """Returns response data as is"""
         yield response.json()
 
@@ -363,6 +372,7 @@ class TestRequestBody:
 
         assert response[0]["content_type"] == "application/json"
         assert json.loads(response[0]["body"]) == self.json_body
+        loop.run_until_complete(stream._session.close())
 
     def test_text_body(self, mocker):
         stream = PostHttpStream()
@@ -379,6 +389,7 @@ class TestRequestBody:
 
         assert response[0]["content_type"] is None
         assert response[0]["body"] == self.data_body
+        loop.run_until_complete(stream._session.close())
 
     def test_form_body(self, mocker):
         raise NotImplementedError("This is not supported for the async flow yet.")
@@ -396,6 +407,8 @@ class TestRequestBody:
             m.post(stream.url_base, payload=self.request2response(data=self.data_body))
             with pytest.raises(RequestBodyException):
                 loop.run_until_complete(read_records(stream))
+
+        loop.run_until_complete(stream._session.close())
 
     def test_body_for_all_methods(self, mocker, requests_mock):
         """Stream must send a body for GET/POST/PATCH/PUT methods only"""
@@ -439,6 +452,8 @@ class TestRequestBody:
             # aiohttp does not.
             assert response[0]["body"] == self.data_body
 
+        loop.run_until_complete(stream._session.close())
+
 
 class CacheHttpStream(StubBasicReadHttpStream):
     use_cache = True
@@ -451,10 +466,10 @@ class CacheHttpSubStream(AsyncHttpSubStream):
     def __init__(self, parent):
         super().__init__(parent=parent)
 
-    async def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    async def parse_response(self, response: aiohttp.ClientResponse, **kwargs) -> Iterable[Mapping]:
         yield None
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: aiohttp.ClientResponse) -> Optional[Mapping[str, Any]]:
         return None
 
     def path(self, **kwargs) -> str:
@@ -475,6 +490,8 @@ def test_caching_sessions_are_different():
 
     assert stream_1._session != stream_2._session
     assert stream_1.cache_filename == stream_2.cache_filename
+    loop.run_until_complete(stream_1._session.close())
+    loop.run_until_complete(stream_2._session.close())
 
 
 def test_parent_attribute_exist():
@@ -503,6 +520,7 @@ def test_that_response_was_cached(mocker):
         m2.assert_not_called()
 
     assert len(records) == len(new_records)
+    loop.run_until_complete(stream._session.close())
 
 
 class CacheHttpStreamWithSlices(CacheHttpStream):
@@ -511,21 +529,26 @@ class CacheHttpStreamWithSlices(CacheHttpStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f'{stream_slice["path"]}' if stream_slice else ""
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    async def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for path in self.paths:
             yield {"path": path}
 
-    async def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    async def parse_response(self, response: aiohttp.ClientResponse, **kwargs) -> Iterable[Mapping]:
         yield {"value": len(await response.text())}
+
+
+async def stream_slices(stream, sync_mode=SyncMode.full_refresh):
+    slices = []
+    async for s in stream.stream_slices(sync_mode=sync_mode):
+        slices.append(s)
+    return slices
 
 
 @patch("airbyte_cdk.sources.streams.core.logging", MagicMock())
 def test_using_cache(mocker):
-    raise NotImplementedError("giving up for now")
     parent_stream = CacheHttpStreamWithSlices()
     loop = asyncio.get_event_loop()
     loop.run_until_complete(parent_stream.ensure_session())
-    loop.run_until_complete(parent_stream.clear_cache())
 
     mocker.patch.object(parent_stream, "url_base", "https://google.com/")
 
@@ -534,33 +557,44 @@ def test_using_cache(mocker):
         nonlocal call_counter
         call_counter += 1
 
+    async def get_urls(stream):
+        urls = []
+        async for u in stream._session.cache.get_urls():
+            urls.append(u)
+        return urls
+
     with aioresponses() as m:
+        # Set up the mocks
+        slices = loop.run_until_complete(stream_slices(parent_stream, sync_mode=SyncMode.full_refresh))
+        m.get(parent_stream.url_base, callback=request_callback)
+        m.get(f"{parent_stream.url_base}search", callback=request_callback)
 
-        # assert len(parent_stream._session.cache.responses) == 0
-
-        slices = list(parent_stream.stream_slices())
-        m.get(parent_stream.url_base, repeat=True, callback=request_callback, payload=slices[0])
-        m.get(parent_stream.url_base, repeat=True, callback=request_callback, payload=slices[1])
-
+        loop.run_until_complete(parent_stream.clear_cache())
         assert call_counter == 0
 
-
-        r1 = loop.run_until_complete(read_records(parent_stream, stream_slice=slices[0]))
-        r2 = loop.run_until_complete(read_records(parent_stream, stream_slice=slices[1]))
+        # Get the parent stream's records; the responses should be cached
+        loop.run_until_complete(read_records(parent_stream, stream_slice=slices[0]))
+        loop.run_until_complete(read_records(parent_stream, stream_slice=slices[1]))
 
         assert call_counter == 2
-        # assert len(parent_stream._session.cache.responses) == 2
-        #
-        # child_stream = CacheHttpSubStream(parent=parent_stream)
-        #
-        # for _slice in child_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-        #     pass
-        #
-        # assert call_counter == 2
-        # assert len(parent_stream._session.cache.responses) == 2
-        # assert parent_stream._session.cache.contains(url="https://google.com/")
-        # assert parent_stream._session.cache.contains(url="https://google.com/search")
-        #
+        urls = loop.run_until_complete(get_urls(parent_stream))
+        assert len(urls) == 2
+
+        child_stream = CacheHttpSubStream(parent=parent_stream)
+        loop.run_until_complete(child_stream.ensure_session())
+
+        # child_stream.stream_slices will call `parent.read_records`, however this shouldn't
+        # result in a new request to the 3rd party since the response has been cached
+        loop.run_until_complete(stream_slices(child_stream, sync_mode=SyncMode.full_refresh))
+
+        assert call_counter == 2
+        urls = loop.run_until_complete(get_urls(parent_stream))
+        assert len(urls) == 2
+        assert URL("https://google.com/") in urls
+        assert URL("https://google.com/search") in urls
+
+    loop.run_until_complete(parent_stream._session.close())
+    loop.run_until_complete(child_stream._session.close())
 
 
 class AutoFailTrueHttpStream(StubBasicReadHttpStream):
@@ -585,6 +619,8 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
             response = loop.run_until_complete(stream._send_request(req, {}))
             stream.logger.error.assert_called_with("text")
             assert response.status == status_code
+
+    loop.run_until_complete(stream._session.close())
 
 
 @pytest.mark.parametrize(
@@ -637,6 +673,7 @@ def test_default_parse_response_error_message_not_json():
         response = loop.run_until_complete(stream._send_request(req, {}))
         message = loop.run_until_complete(stream.parse_response_error_message(response))
     assert message is None
+    loop.run_until_complete(stream._session.close())
 
 
 def test_default_get_error_display_message_handles_http_error(mocker):
@@ -658,6 +695,7 @@ def test_default_get_error_display_message_handles_http_error(mocker):
 
     http_err_msg = loop.run_until_complete(stream.get_error_display_message(http_exception))
     assert http_err_msg == "my custom message"
+    loop.run_until_complete(stream._session.close())
 
 
 @pytest.mark.parametrize(
@@ -759,3 +797,4 @@ def test_connection_pool():
     loop = asyncio.get_event_loop()
     loop.run_until_complete(stream.ensure_session())
     assert stream._session.connector.limit == 20
+    loop.run_until_complete(stream._session.close())
