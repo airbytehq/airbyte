@@ -240,8 +240,7 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
         shouldFetchFromOriginalResource = self.shouldFetchFromOriginalResource(stream_state)
         if shouldFetchFromOriginalResource:
             self.logger.info("Fetching from original source")
-            if stream_state:
-                self.setLastSlice(stream_state)
+            self.setLastSlice(stream_state)
             self.completed = False
             yield from self.lookahead(stream_slice, super().read_records(stream_slice=stream_slice, stream_state=None, **kwargs))
         else:
