@@ -79,17 +79,17 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
                 sqlite_path = str(Path(cache_dir) / self.cache_filename)
             else:
                 sqlite_path = "file::memory:?cache=shared"
-            cache = aiohttp_client_cache.SQLiteBackend(cache_dir=sqlite_path)
+            cache = aiohttp_client_cache.SQLiteBackend(cache_name=sqlite_path, allowed_methods=("get", "post", "put", "patch", "options", "delete", "list"))
             return AsyncCachedLimiterSession(cache=cache, connector=connector, api_budget=self._api_budget)
         else:
             return AsyncLimiterSession(connector=connector, api_budget=self._api_budget, **kwargs)
 
-    def clear_cache(self) -> None:
+    async def clear_cache(self) -> None:
         """
         Clear cached requests for current session, can be called any time
         """
         if isinstance(self._session, aiohttp_client_cache.CachedSession):
-            self._session.cache.clear()
+            await self._session.cache.clear()
 
     @abstractmethod
     async def next_page_token(self, response: aiohttp.ClientResponse) -> Optional[Mapping[str, Any]]:
