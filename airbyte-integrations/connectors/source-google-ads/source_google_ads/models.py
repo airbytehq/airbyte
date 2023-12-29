@@ -4,16 +4,16 @@
 
 
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping, Union
+from typing import Any, Iterable, Mapping
 
-from pendulum import timezone
+from pendulum import local_timezone, timezone
 from pendulum.tz.timezone import Timezone
 
 
 @dataclass
 class CustomerModel:
     id: str
-    time_zone: Union[timezone, str] = "local"
+    time_zone: timezone = local_timezone()
     is_manager_account: bool = False
     login_customer_id: str = None
 
@@ -22,7 +22,7 @@ class CustomerModel:
         data_objects = []
         for account in accounts:
             time_zone_name = account.get("customer_client.time_zone")
-            tz = Timezone(time_zone_name) if time_zone_name else "local"
+            tz = Timezone(time_zone_name) if time_zone_name else local_timezone()
 
             data_objects.append(
                 cls(

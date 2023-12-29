@@ -210,7 +210,7 @@ def test_retry_transient_errors(mocker, config, customers, error_cls):
     credentials = config["credentials"]
     credentials.update(use_proto_plus=True)
     api = GoogleAds(credentials=credentials)
-    mocked_search = mocker.patch.object(api.ga_services["none"], "search", side_effect=error_cls("Error message"))
+    mocked_search = mocker.patch.object(api.ga_services["default"], "search", side_effect=error_cls("Error message"))
     incremental_stream_config = dict(
         api=api,
         conversion_window_days=config["conversion_window_days"],
@@ -219,7 +219,7 @@ def test_retry_transient_errors(mocker, config, customers, error_cls):
         customers=customers,
     )
     stream = ClickView(**incremental_stream_config)
-    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04", "login_customer_id": "none"}
+    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04", "login_customer_id": "default"}
     records = []
     with pytest.raises(error_cls) as exception:
         records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))

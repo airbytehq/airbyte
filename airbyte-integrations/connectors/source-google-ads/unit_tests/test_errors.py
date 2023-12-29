@@ -88,7 +88,7 @@ def test_read_record_error_handling(mocker, config, customers, cls, raise_expect
     context = pytest.raises(AirbyteTracedException) if raise_expected else does_not_raise()
 
     with context as exception:
-        for _ in stream.read_records(sync_mode=Mock(), stream_slice={"customer_id": "1234567890", "login_customer_id": "none"}):
+        for _ in stream.read_records(sync_mode=Mock(), stream_slice={"customer_id": "1234567890", "login_customer_id": "default"}):
             pass
 
     if raise_expected:
