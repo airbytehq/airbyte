@@ -1,9 +1,11 @@
-import queryString from "query-string";
-import React, { useCallback } from "react";
+import { IconButton } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
+import { SortDownIcon } from "components/icons/SortDownIcon";
+import { SortUpIcon } from "components/icons/SortUpIcon";
 import Table from "components/Table";
 
 import { DestinationRead } from "core/request/AirbyteClient";
@@ -14,7 +16,6 @@ import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import ConnectorCell from "./components/ConnectorCell";
 import NameCell from "./components/NameCell";
 import NewTabIconButton from "./components/NewTabIconButton";
-import SortButton from "./components/SortButton";
 import styles from "./ImplementationTable.module.scss";
 import { SortOrderEnum } from "./types";
 import { RoutePaths } from "../../pages/routePaths";
@@ -23,6 +24,9 @@ interface IProps {
   data: DestinationRead[];
   entity: "destination";
   onClickRow?: (data: DestinationRead) => void;
+  setSortFieldName?: any;
+  setSortDirection?: any;
+  onSelectFilter?: any;
 }
 
 const NameColums = styled.div`
@@ -30,50 +34,21 @@ const NameColums = styled.div`
   aligin-items: center;
 `;
 
-const DestinationTable: React.FC<IProps> = ({ data, entity }) => {
-  const { query, push } = useRouter();
-  const sortBy = query.sortBy || "entity";
-  const sortOrder = query.order || SortOrderEnum.ASC;
+const DestinationTable: React.FC<IProps> = ({ data, entity, setSortDirection, setSortFieldName, onSelectFilter }) => {
+  const { push } = useRouter();
 
-  const onSortClick = useCallback(
-    (field: string) => {
-      const order =
-        sortBy !== field ? SortOrderEnum.ASC : sortOrder === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
-      push({
-        search: queryString.stringify(
-          {
-            sortBy: field,
-            order,
-          },
-          { skipNull: true }
-        ),
-      });
-    },
-    [push, sortBy, sortOrder]
-  );
-
-  // const sortData = useCallback(
-  //   (a, b) => {
-  //     let result;
-  //     if (sortBy === "lastSync") {
-  //       result = b[sortBy] - a[sortBy];
-  //     } else {
-  //       result = a[`${sortBy}Name`].toLowerCase().localeCompare(b[`${sortBy}Name`].toLowerCase());
-  //     }
-
-  //     if (sortOrder === SortOrderEnum.DESC) {
-  //       return -1 * result;
-  //     }
-
-  //     return result;
-  //   },
-  //   [sortBy, sortOrder]
-  // );
+  const [localSortOrder, setLocalSortOrder] = useState(SortOrderEnum.DESC);
+  const [destinationSortOrder, setDestinationSortOrder] = useState(SortOrderEnum.DESC);
+  useEffect(() => {
+    // Set initial sort order to DESC when the component mounts
+    setSortFieldName("name");
+    onSelectFilter("sortFieldName", "name");
+    setSortDirection(SortOrderEnum.DESC);
+    setLocalSortOrder(SortOrderEnum.DESC);
+  }, []);
 
   const routerPath = entity === "destination" ? RoutePaths.Destination : RoutePaths.Destination;
   const clickEditRow = (destinationId: string) => push(`/${routerPath}/${destinationId}`);
-
-  // const sortingData = React.useMemo(() => data.sort(sortData), [sortData, data]);
 
   const clickCopyRow = (destinationId: string) => {
     push(`${destinationId}/copy`, {});
@@ -85,11 +60,23 @@ const DestinationTable: React.FC<IProps> = ({ data, entity }) => {
         Header: (
           <div className={styles.headerColumns}>
             <FormattedMessage id="tables.name" />
-            <SortButton
-              wasActive={sortBy === "entity"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("entity")}
-            />
+            <IconButton
+              onClick={() => {
+                setSortFieldName("name");
+                onSelectFilter("sortFieldName", "name");
+
+                setSortDirection((prevSortOrder: any) => {
+                  const newSortOrder = prevSortOrder === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
+
+                  onSelectFilter("sortDirection", newSortOrder);
+                  setLocalSortOrder(newSortOrder);
+                  return newSortOrder;
+                });
+              }}
+              sx={{ paddingTop: "1px" }}
+            >
+              {localSortOrder === SortOrderEnum.ASC ? <SortDownIcon /> : <SortUpIcon />}
+            </IconButton>
           </div>
         ),
         headerHighlighted: true,
@@ -106,11 +93,20 @@ const DestinationTable: React.FC<IProps> = ({ data, entity }) => {
         Header: (
           <div className={styles.headerColumns}>
             <FormattedMessage id="tables.connector" />
-            <SortButton
-              wasActive={sortBy === "connector"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("connector")}
-            />
+            <IconButton
+              onClick={() => {
+                setSortFieldName("destinationName");
+                setDestinationSortOrder((prev) => {
+                  const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
+                  onSelectFilter("sortFieldName", "destinationName");
+                  onSelectFilter("sortDirection", newSortOrder);
+                  return newSortOrder;
+                });
+              }}
+              sx={{ paddingTop: "1px" }}
+            >
+              {destinationSortOrder === SortOrderEnum.ASC ? <SortDownIcon /> : <SortUpIcon />}
+            </IconButton>
           </div>
         ),
         customWidth: 40,
@@ -139,7 +135,7 @@ const DestinationTable: React.FC<IProps> = ({ data, entity }) => {
         ),
       },
     ],
-    [entity, onSortClick, sortBy, sortOrder]
+    [entity, localSortOrder, destinationSortOrder]
   );
 
   return (

@@ -14,9 +14,12 @@ import useRouter from "hooks/useRouter";
 
 interface SourcesTableProps {
   sources: SourceRead[];
+  setSortFieldName?: any;
+  setSortDirection?: any;
+  onSelectFilter?: any;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({ sources }) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({ sources, setSortFieldName, setSortDirection, onSelectFilter }) => {
   const { push } = useRouter();
 
   // const { connections } = useConnectionList();
@@ -26,7 +29,16 @@ const SourcesTable: React.FC<SourcesTableProps> = ({ sources }) => {
   // console.log(data, "Data");
   // const clickRow = (source: EntityTableDataItem) => push(`${source.entityId}`);
   const clickRow = (source: SourceTableDataItem) => push(`${source.sourceId}`);
-  return <SourceTable data={sources} onClickRow={clickRow} entity="source" />;
+  return (
+    <SourceTable
+      data={sources}
+      onClickRow={clickRow}
+      entity="source"
+      setSortFieldName={setSortFieldName}
+      setSortDirection={setSortDirection}
+      onSelectFilter={onSelectFilter}
+    />
+  );
 };
 
 export default SourcesTable;
