@@ -220,15 +220,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
         "final_namespace", stream.id().finalNamespace(QUOTE),
-        "dataset_location", datasetLocation,
         "force_create_table", forceCreateTable,
         "final_table_id", stream.id().finalTableId(QUOTE, suffix),
         "column_declarations", columnDeclarations,
         "cluster_config", clusterConfig)).replace(
             """
-            CREATE SCHEMA IF NOT EXISTS ${project_id}.${final_namespace}
-            OPTIONS(location="${dataset_location}");
-
             CREATE ${force_create_table} TABLE ${project_id}.${final_table_id} (
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
@@ -709,17 +705,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
+  public String createSchema(final String schema) {
+    return new StringSubstitutor(Map.of("schema", StringUtils.wrap(schema, QUOTE),
+        "project_id", StringUtils.wrap(projectId, QUOTE),
+        "dataset_location", datasetLocation))
+            .replace("CREATE SCHEMA IF NOT EXISTS ${project_id}.${schema} OPTIONS(location=\"${dataset_location}\");");
+  }
+
+  @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
-        "raw_namespace", StringUtils.wrap(streamId.rawNamespace(), QUOTE),
-        "dataset_location", datasetLocation,
         "v2_raw_table", streamId.rawTableId(QUOTE),
         "v1_raw_table", wrapAndQuote(namespace, tableName))).replace(
             """
-            CREATE SCHEMA IF NOT EXISTS ${project_id}.${raw_namespace}
-            OPTIONS(location="${dataset_location}");
-
             CREATE OR REPLACE TABLE ${project_id}.${v2_raw_table} (
               _airbyte_raw_id STRING,
               _airbyte_data STRING,

@@ -11,12 +11,12 @@ import backoff
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v13.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
+from google.ads.googleads.v15.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, TooManyRequests
 from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
 
-API_VERSION = "v13"
+API_VERSION = "v15"
 logger = logging.getLogger("airbyte")
 
 
@@ -170,14 +170,16 @@ class GoogleAds:
             elif isinstance(field_value, (Repeated, RepeatedComposite)):
                 field_value = [str(value) for value in field_value]
 
-        # Google Ads has a lot of entities inside itself and we cannot process them all separately, because:
+        # Google Ads has a lot of entities inside itself, and we cannot process them all separately, because:
         # 1. It will take a long time
         # 2. We have no way to get data on absolutely all entities to test.
         #
         # To prevent JSON from throwing an error during deserialization, we made such a hack.
         # For example:
-        # 1. ad_group_ad.ad.responsive_display_ad.long_headline - type AdTextAsset (https://developers.google.com/google-ads/api/reference/rpc/v6/AdTextAsset?hl=en).
-        # 2. ad_group_ad.ad.legacy_app_install_ad - type LegacyAppInstallAdInfo (https://developers.google.com/google-ads/api/reference/rpc/v7/LegacyAppInstallAdInfo?hl=en).
+        # 1. ad_group_ad.ad.responsive_display_ad.long_headline - type AdTextAsset
+        # (https://developers.google.com/google-ads/api/reference/rpc/v6/AdTextAsset?hl=en).
+        # 2. ad_group_ad.ad.legacy_app_install_ad - type LegacyAppInstallAdInfo
+        # (https://developers.google.com/google-ads/api/reference/rpc/v7/LegacyAppInstallAdInfo?hl=en).
         if not isinstance(field_value, (list, int, float, str, bool, dict)) and field_value is not None:
             field_value = str(field_value)
 

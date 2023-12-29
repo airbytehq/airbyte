@@ -11,7 +11,7 @@ from unittest.mock import ANY, Mock, patch
 import pendulum
 import pytest
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, SourceMarketo
+from source_marketo.source import Activities, Campaigns, IncrementalMarketoStream, Leads, MarketoStream, Programs, SourceMarketo
 
 
 def test_create_export_job(mocker, send_email_stream, caplog):
@@ -314,3 +314,56 @@ def test_get_updated_state(config, latest_record, current_state, expected_state)
     if expected_state == "start_date":
         expected_state = {"updatedAt": config["start_date"]}
     assert stream.get_updated_state(latest_record, current_state) == expected_state
+
+
+def test_filter_null_bytes(config):
+    stream = Leads(config)
+
+    test_lines = [
+        "Hello\x00World\n",
+        "Name,Email\n",
+        "John\x00Doe,john.doe@example.com\n"
+    ]
+    expected_lines = [
+        "HelloWorld\n",
+        "Name,Email\n",
+        "JohnDoe,john.doe@example.com\n"
+    ]
+    filtered_lines = stream.filter_null_bytes(test_lines)
+    for expected_line, filtered_line in zip(expected_lines, filtered_lines):
+        assert expected_line == filtered_line
+
+
+def test_csv_rows(config):
+    stream = Leads(config)
+
+    test_lines = [
+        "Name,Email\n",
+        "John Doe,john.doe@example.com\n",
+        "Jane Doe,jane.doe@example.com\n"
+    ]
+    expected_records = [
+        {"Name": "John Doe", "Email": "john.doe@example.com"},
+        {"Name": "Jane Doe", "Email": "jane.doe@example.com"}
+    ]
+    records = stream.csv_rows(test_lines)
+    for expected_record, record in zip(expected_records, records):
+        assert expected_record == record
+
+def test_availablity_strategy(config):
+    stream = Leads(config)
+    assert stream.availability_strategy == None
+
+def test_path(config):
+    stream = MarketoStream(config)
+    assert stream.path() == "rest/v1/marketo_stream.json"
+
+def test_get_state(config):
+    stream = IncrementalMarketoStream(config)
+    assert stream.state == {}
+
+def test_set_tate(config):
+    stream = IncrementalMarketoStream(config)
+    expected_state = {"id": 1}
+    stream.state = expected_state
+    assert stream._state == expected_state

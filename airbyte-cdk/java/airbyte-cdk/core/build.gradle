@@ -65,7 +65,11 @@ dependencies {
 
     // testImplementation libs.junit.jupiter.api
     implementation libs.hikaricp
-    implementation libs.bundles.debezium.bundle
+    implementation libs.debezium.api
+    implementation libs.debezium.embedded
+    implementation libs.debezium.mysql
+    implementation libs.debezium.postgres
+    implementation libs.debezium.mongodb
 
     api libs.bundles.datadog
     implementation 'org.apache.sshd:sshd-mina:2.8.0'
@@ -77,7 +81,6 @@ dependencies {
     testImplementation libs.testcontainers.jdbc
     testImplementation libs.testcontainers.mysql
     testImplementation libs.testcontainers.postgresql
-    testImplementation libs.testcontainers.mssqlserver
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
 
     // bouncycastle is pinned to version-match the transitive dependency from kubernetes client-java
