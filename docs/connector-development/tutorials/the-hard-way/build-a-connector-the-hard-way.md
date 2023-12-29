@@ -92,7 +92,7 @@ Select the `Generic Source` template and call the connector `stock-ticker-api`:
 
 This tutorial uses the bare-bones `Generic Source` template to illustrate how all the pieces
 of a connector work together. For real connectors, the generator provides `Python` and
-`Python HTTP API` source templates, they use [Airbyte CDK](../cdk-python/README.md).
+`Python HTTP API` source templates, they use [Airbyte CDK](../../cdk-python/README.md).
 
 :::
 

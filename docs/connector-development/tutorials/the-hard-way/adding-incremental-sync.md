@@ -231,7 +231,7 @@ python source.py read --config secrets/valid_config.json --catalog incremental_c
 ## Run the incremental tests
 
 The
-[Source Acceptance Test (SAT) suite](../testing-connectors/connector-acceptance-tests-reference)
+[Connector Acceptance Test (CAT) suite](../../testing-connectors/connector-acceptance-tests-reference)
 also includes test cases to ensure that incremental mode is working correctly.
 
 To enable these tests, modify the existing `acceptance-test-config.yml` by adding the following:
