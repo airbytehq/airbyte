@@ -3,7 +3,7 @@ package io.airbyte.integrations.source.mysql.initialsync;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.MYSQL_STATUS_VERSION;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorProcessor;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
 import io.airbyte.integrations.source.mysql.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -16,9 +16,9 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlInitialSyncStateIteratorProcessor implements SourceStateIteratorProcessor<AirbyteMessage> {
+public class MySqlInitialSyncStateIteratorManager implements SourceStateIteratorManager<AirbyteMessage> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialSyncStateIteratorProcessor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialSyncStateIteratorManager.class);
 
   private final AirbyteStreamNameNamespacePair pair;
   private PrimaryKeyLoadStatus pkStatus;
@@ -28,7 +28,7 @@ public class MySqlInitialSyncStateIteratorProcessor implements SourceStateIterat
   private final Long syncCheckpointRecords;
   private final String pkFieldName;
 
-  public MySqlInitialSyncStateIteratorProcessor(
+  public MySqlInitialSyncStateIteratorManager(
       final AirbyteStreamNameNamespacePair pair,
       final MySqlInitialLoadStateManager stateManager,
       final JsonNode streamStateForIncrementalRun,

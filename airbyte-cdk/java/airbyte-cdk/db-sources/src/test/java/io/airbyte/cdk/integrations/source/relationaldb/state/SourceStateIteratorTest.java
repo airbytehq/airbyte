@@ -9,7 +9,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateStats;
@@ -22,14 +21,14 @@ import org.junit.jupiter.api.Test;
 
 public class SourceStateIteratorTest {
 
-  SourceStateIteratorProcessor mockProcessor;
+  SourceStateIteratorManager mockProcessor;
   Iterator<AirbyteMessage> messageIterator;
 
   SourceStateIterator sourceStateIterator;
 
   @BeforeEach
   void setup() {
-    mockProcessor = mock(SourceStateIteratorProcessor.class);
+    mockProcessor = mock(SourceStateIteratorManager.class);
     messageIterator = mock(Iterator.class);
     sourceStateIterator = new SourceStateIterator(messageIterator, mockProcessor);
   }

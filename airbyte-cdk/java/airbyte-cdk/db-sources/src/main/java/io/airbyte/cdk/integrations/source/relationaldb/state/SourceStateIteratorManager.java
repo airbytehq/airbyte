@@ -1,11 +1,10 @@
 package io.airbyte.cdk.integrations.source.relationaldb.state;
 
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import java.time.Instant;
 
-public interface SourceStateIteratorProcessor<T> {
+public interface SourceStateIteratorManager<T> {
   /**
    * Returns a state message that should be emitted at checkpoint.
    */
