@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - "api.polygon.io"
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  tags:
+    - language:python
+  definitionId: a59a1500-7d25-49e0-920e-f49c395710b7
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-stock-ticker
+  githubIssueLabel: source-stock-ticker
+  icon: stock-ticker.svg
+  license: MIT
+  name: Stock Ticker
+  releaseDate: 2023-12-28
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/stock-ticker
+metadataSpecVersion: "1.0"
