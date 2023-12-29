@@ -16,7 +16,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams import AsyncStream
 from airbyte_cdk.sources.streams.async_call_rate import AsyncCachedLimiterSession, AsyncLimiterSession
-from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
@@ -40,8 +39,9 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
     Basic building block for users building an Airbyte source for an async HTTP API.
     """
 
-    def __init__(self, authenticator: Optional[Union[HttpAuthenticator, NoAuth]] = NoAuth(), api_budget: Optional[APIBudget] = None):
-        self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
+    def __init__(self, authenticator: Optional[Union[HttpAuthenticator, NoAuth]] = NoAuth()):
+        # TODO: wire in rate limiting via ApiBudget
+        self._api_budget = None
         self._session: aiohttp.ClientSession = None
         # TODO: HttpStream handles other authentication codepaths, which may need to be added later
         self._authenticator = authenticator
