@@ -1837,7 +1837,7 @@ class PropertyHistory(ClientSideIncrementalStream):
     @property
     @abstractmethod
     def entity_primary_key(self) -> str:
-        """Indicates a field name which is considered to be a primary key of the stream"""
+        """Indicates a field name which is considered to be a primary key of the parent entity"""
 
     @property
     @abstractmethod
