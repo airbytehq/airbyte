@@ -17,9 +17,22 @@ interface SourcesTableProps {
   setSortFieldName?: any;
   setSortDirection?: any;
   onSelectFilter?: any;
+  localSortOrder?: any;
+  setLocalSortOrder?: any;
+  sourceSortOrder?: any;
+  setSourceSortOrder?: any;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({ sources, setSortFieldName, setSortDirection, onSelectFilter }) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({
+  sources,
+  setSortFieldName,
+  setSortDirection,
+  onSelectFilter,
+  localSortOrder,
+  setLocalSortOrder,
+  sourceSortOrder,
+  setSourceSortOrder,
+}) => {
   const { push } = useRouter();
 
   // const { connections } = useConnectionList();
@@ -37,6 +50,10 @@ const SourcesTable: React.FC<SourcesTableProps> = ({ sources, setSortFieldName, 
       setSortFieldName={setSortFieldName}
       setSortDirection={setSortDirection}
       onSelectFilter={onSelectFilter}
+      localSortOrder={localSortOrder}
+      setLocalSortOrder={setLocalSortOrder}
+      sourceSortOrder={sourceSortOrder}
+      setSourceSortOrder={setSourceSortOrder}
     />
   );
 };

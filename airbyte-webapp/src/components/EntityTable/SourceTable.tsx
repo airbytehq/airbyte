@@ -1,5 +1,5 @@
 import { IconButton } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import styled from "styled-components";
@@ -26,6 +26,10 @@ interface IProps {
   setSortFieldName?: any;
   setSortDirection?: any;
   onSelectFilter?: any;
+  localSortOrder?: any;
+  setLocalSortOrder?: any;
+  sourceSortOrder?: any;
+  setSourceSortOrder?: any;
 }
 
 const NameColums = styled.div`
@@ -33,19 +37,18 @@ const NameColums = styled.div`
   aligin-items: center;
 `;
 
-const SourceTable: React.FC<IProps> = ({ data, entity, setSortFieldName, setSortDirection, onSelectFilter }) => {
+const SourceTable: React.FC<IProps> = ({
+  data,
+  entity,
+  setSortFieldName,
+  setSortDirection,
+  onSelectFilter,
+  localSortOrder,
+  setLocalSortOrder,
+  sourceSortOrder,
+  setSourceSortOrder,
+}) => {
   const { push } = useRouter();
-
-  useEffect(() => {
-    // Set initial sort order to DESC when the component mounts
-    setSortFieldName("name");
-    onSelectFilter("sortFieldName", "name");
-    setSortDirection(SortOrderEnum.DESC);
-    setLocalSortOrder(SortOrderEnum.DESC);
-  }, []);
-
-  const [localSortOrder, setLocalSortOrder] = useState(SortOrderEnum.DESC);
-  const [sourceSortOrder, setSourceSortOrder] = useState(SortOrderEnum.DESC);
 
   const routerPath = entity === "source" ? RoutePaths.Source : RoutePaths.Destination;
   const clickEditRow = (sourceId: string) => push(`/${routerPath}/${sourceId}`);
@@ -54,7 +57,7 @@ const SourceTable: React.FC<IProps> = ({ data, entity, setSortFieldName, setSort
     push(`${sourceId}/copy`, {});
   };
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () => [
       {
         Header: (
@@ -63,13 +66,11 @@ const SourceTable: React.FC<IProps> = ({ data, entity, setSortFieldName, setSort
             <IconButton
               onClick={() => {
                 setSortFieldName("name");
-                onSelectFilter("sortFieldName", "name");
-
-                setSortDirection((prevSortOrder: any) => {
-                  const newSortOrder = prevSortOrder === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
-
+                setLocalSortOrder((prev: any) => {
+                  const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
+                  setSortDirection(newSortOrder);
+                  onSelectFilter("sortFieldName", "name");
                   onSelectFilter("sortDirection", newSortOrder);
-                  setLocalSortOrder(newSortOrder);
                   return newSortOrder;
                 });
               }}
@@ -97,7 +98,7 @@ const SourceTable: React.FC<IProps> = ({ data, entity, setSortFieldName, setSort
             <IconButton
               onClick={() => {
                 setSortFieldName("sourceName");
-                setSourceSortOrder((prev) => {
+                setSourceSortOrder((prev: any) => {
                   const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
                   onSelectFilter("sortFieldName", "sourceName");
                   onSelectFilter("sortDirection", newSortOrder);

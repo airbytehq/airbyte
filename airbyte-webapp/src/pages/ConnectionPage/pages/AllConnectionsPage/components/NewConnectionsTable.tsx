@@ -23,9 +23,30 @@ interface IProps {
   setSortFieldName?: any;
   setSortDirection?: any;
   onSelectFilter?: any;
+  localSortOrder?: any;
+  setLocalSortOrder?: any;
+  connectorSortOrder?: any;
+  setConnectorSortOrder?: any;
+  entitySortOrder?: any;
+  setEntitySortOrder?: any;
+  statusSortOrder?: any;
+  setStatusSortOrder?: any;
 }
 
-const NewConnectionsTable: React.FC<IProps> = ({ connections, setSortDirection, setSortFieldName, onSelectFilter }) => {
+const NewConnectionsTable: React.FC<IProps> = ({
+  connections,
+  setSortDirection,
+  setSortFieldName,
+  onSelectFilter,
+  localSortOrder,
+  setLocalSortOrder,
+  connectorSortOrder,
+  setConnectorSortOrder,
+  entitySortOrder,
+  setEntitySortOrder,
+  statusSortOrder,
+  setStatusSortOrder,
+}) => {
   const [statusList, setStatusList] = useState([]);
   const user = getUser();
   const connectionIds = connections?.map((con: any) => con?.connectionId);
@@ -80,6 +101,14 @@ const NewConnectionsTable: React.FC<IProps> = ({ connections, setSortDirection, 
         setSortFieldName={setSortFieldName}
         setSortDirection={setSortDirection}
         onSelectFilter={onSelectFilter}
+        localSortOrder={localSortOrder}
+        setLocalSortOrder={setLocalSortOrder}
+        connectorSortOrder={connectorSortOrder}
+        setConnectorSortOrder={setConnectorSortOrder}
+        entitySortOrder={entitySortOrder}
+        setEntitySortOrder={setEntitySortOrder}
+        statusSortOrder={statusSortOrder}
+        setStatusSortOrder={setStatusSortOrder}
       />
     </Content>
   );

@@ -179,7 +179,9 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const isEditMode: boolean = mode !== "create";
   const initialValues = useInitialValues(connection, destDefinition, isEditMode);
   const workspace = useCurrentWorkspace();
-
+  const isEmptyObject = (obj: any) => {
+    return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+  };
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
       // Set the scheduleType based on the schedule value
@@ -187,9 +189,19 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
         typeof values?.scheduleData?.basicSchedule === "string" && values?.scheduleData?.basicSchedule === "manual"
           ? ConnectionScheduleType.manual
           : ConnectionScheduleType.basic;
+      // If basicSchedule is "manual", set scheduleData to an empty object
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
         context: { isRequest: true },
       }) as unknown as ConnectionFormValues;
+      if (formValues.scheduleType === ConnectionScheduleType.manual) {
+        // Set scheduleData to an empty object
+        formValues.scheduleData = {};
+
+        // If basicSchedule is an empty object, delete it
+        if (isEmptyObject(formValues?.scheduleData?.basicSchedule)) {
+          delete formValues.scheduleData.basicSchedule;
+        }
+      }
 
       formValues.operations = mapFormPropsToOperation(values, connection.operations, workspace.workspaceId);
 

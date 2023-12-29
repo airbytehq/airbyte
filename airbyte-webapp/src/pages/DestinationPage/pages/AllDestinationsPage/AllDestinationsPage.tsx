@@ -1,12 +1,13 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box } from "@mui/material";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { Button, DropDown, DropDownRow, NewMainPageWithScroll } from "components";
+import { SortOrderEnum } from "components/EntityTable/types";
 import HeadTitle from "components/HeadTitle";
 import { PageSize } from "components/PageSize";
 import PageTitle from "components/PageTitle";
@@ -75,6 +76,14 @@ const AllDestinationsPage: React.FC = () => {
   const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig?.destination?.pageSize);
   const [sortFieldName, setSortFieldName] = useState("");
   const [sortDirection, setSortDirection] = useState("");
+  const [localSortOrder, setLocalSortOrder] = useState(SortOrderEnum.DESC);
+  const [destinationSortOrder, setDestinationSortOrder] = useState(SortOrderEnum.DESC);
+  useEffect(() => {
+    // Set initial sort order to DESC when the component mounts
+    setSortFieldName("name");
+    setLocalSortOrder(SortOrderEnum.DESC);
+    setDestinationSortOrder(SortOrderEnum.DESC);
+  }, []);
   useTrackPage(PageTrackingCodes.DESTINATION_LIST);
   const workspace = useCurrentWorkspace();
   const { destinationOptions } = useConnectionFilterOptions(workspace?.workspaceId);
@@ -124,7 +133,7 @@ const AllDestinationsPage: React.FC = () => {
       filterValue: number | string
     ) => {
       setFilters((prevFilters) => {
-        if (filterType === "DestinationDefinitionId" || filterType === "pageSize" || filterType === "pageCurrent") {
+        if (filterType === "DestinationDefinitionId" || filterType === "pageSize") {
           return { ...prevFilters, [filterType]: filterValue };
         } else if (filterType === "sortDirection" || filterType === "sortFieldName") {
           return {
@@ -133,7 +142,15 @@ const AllDestinationsPage: React.FC = () => {
               ...prevFilters.sortDetails,
               [filterType]: filterValue,
             },
-            pageCurrent: 1,
+            pageCurrent: prevFilters.pageCurrent,
+          };
+        } else if (filterType === "pageCurrent") {
+          setLocalSortOrder(SortOrderEnum.DESC);
+          setDestinationSortOrder(SortOrderEnum.DESC);
+          return {
+            ...filters,
+            [filterType]: filterValue as number,
+            sortDetails: { sortFieldName: "", sortDirection: "" },
           };
         }
         return prevFilters;
@@ -188,6 +205,10 @@ const AllDestinationsPage: React.FC = () => {
             setSortFieldName={setSortFieldName}
             setSortDirection={setSortDirection}
             onSelectFilter={onSelectFilter}
+            localSortOrder={localSortOrder}
+            setLocalSortOrder={setLocalSortOrder}
+            destinationSortOrder={destinationSortOrder}
+            setDestinationSortOrder={setDestinationSortOrder}
           />
           <Separator height="24px" />
           <Footer>
