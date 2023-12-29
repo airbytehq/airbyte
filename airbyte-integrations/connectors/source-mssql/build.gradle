@@ -4,9 +4,9 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.10.4'
+    cdkVersionRequired = '0.13.0'
     features = ['db-sources']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 configurations.all {
@@ -14,7 +14,6 @@ configurations.all {
         force libs.jooq
     }
 }
-
 
 
 application {
