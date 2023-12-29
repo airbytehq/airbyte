@@ -1,27 +1,27 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "name": "Comment",
+  "name": "Item Families",
   "type": "object",
   "properties": {
     "id": {
       "type": ["string", "null"]
     },
-    "entity_type": {
+    "name": {
       "type": ["string", "null"]
     },
-    "added_by": {
+    "description": {
       "type": ["string", "null"]
     },
-    "notes": {
+    "status": {
       "type": ["string", "null"]
     },
-    "created_at": {
+    "resource_version": {
       "type": ["integer", "null"]
     },
-    "type": {
-      "type": ["string", "null"]
+    "updated_at": {
+      "type": ["integer", "null"]
     },
-    "entity_id": {
+    "channel": {
       "type": ["string", "null"]
     },
     "object": {

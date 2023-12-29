@@ -124,5 +124,12 @@
       "stream_state": { "created_at": 2147483647 },
       "stream_descriptor": { "name": "comment" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "item_family" }
+    }
   }
 ]
