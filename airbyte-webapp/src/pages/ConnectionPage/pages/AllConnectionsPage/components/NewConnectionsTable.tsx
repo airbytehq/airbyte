@@ -20,9 +20,12 @@ interface IProps {
   connections?: WebBackendNewConnectionList[];
   connectionStatus?: WebBackendNewConnectionStatusList[];
   onSetMessageId: (id: string) => void;
+  setSortFieldName?: any;
+  setSortDirection?: any;
+  onSelectFilter?: any;
 }
 
-const NewConnectionsTable: React.FC<IProps> = ({ connections }) => {
+const NewConnectionsTable: React.FC<IProps> = ({ connections, setSortDirection, setSortFieldName, onSelectFilter }) => {
   const [statusList, setStatusList] = useState([]);
   const user = getUser();
   const connectionIds = connections?.map((con: any) => con?.connectionId);
@@ -47,7 +50,7 @@ const NewConnectionsTable: React.FC<IProps> = ({ connections }) => {
           });
 
           const responseData = await response.json();
-          setStatusList(responseData.connectionStatusList);
+          setStatusList(responseData?.connectionStatusList);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -69,7 +72,15 @@ const NewConnectionsTable: React.FC<IProps> = ({ connections }) => {
 
   return (
     <Content>
-      <ConnectionTable data={updatedConnections as any} onClickRow={clickRow} entity="connection" rowId={rowId} />
+      <ConnectionTable
+        data={updatedConnections as any}
+        onClickRow={clickRow}
+        entity="connection"
+        rowId={rowId}
+        setSortFieldName={setSortFieldName}
+        setSortDirection={setSortDirection}
+        onSelectFilter={onSelectFilter}
+      />
     </Content>
   );
 };

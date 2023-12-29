@@ -68,6 +68,8 @@ const AllSourcesPage: React.FC = () => {
   // const [currentPageSize, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
   const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig?.source?.pageSize);
   // const { sources } = useSourceList();
+  const [sortFieldName, setSortFieldName] = useState("");
+  const [sortDirection, setSortDirection] = useState("");
 
   useTrackPage(PageTrackingCodes.SOURCE_LIST);
   const workspace = useCurrentWorkspace();
@@ -77,6 +79,10 @@ const AllSourcesPage: React.FC = () => {
     pageSize: pageCurrent,
     pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
     SourceDefinitionId: sourceOptions[0].value,
+    sortDetails: {
+      sortFieldName,
+      sortDirection,
+    },
   };
 
   const [filters, setFilters] = useState<FilterSourceRequestBody>(initialFiltersState);
@@ -99,15 +105,38 @@ const AllSourcesPage: React.FC = () => {
   // const { connections, total, pageSize } = useFilteredConnectionList(filters);
   // const { connections } = useFilteredConnectionList(filters);
 
+  // const onSelectFilter = useCallback(
+  //   (filterType: "pageCurrent" | "SourceDefinitionId" | "pageSize" | "sortDirection" | "sortFieldName", filterValue: number | string) => {
+  //     if (filterType === "SourceDefinitionId" || filterType === "pageSize"|| filterType === "sortDirection" || filterType === "sortFieldName") {
+  //       setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
+  //     } else if (filterType === "pageCurrent") {
+  //       setFilters({ ...filters, [filterType]: filterValue as number });
+  //     }
+  //   },
+  //   [filters,sortDirection,sortFieldName]
+  // );
   const onSelectFilter = useCallback(
-    (filterType: "pageCurrent" | "SourceDefinitionId" | "pageSize", filterValue: number | string) => {
-      if (filterType === "SourceDefinitionId" || filterType === "pageSize") {
-        setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
-      } else if (filterType === "pageCurrent") {
-        setFilters({ ...filters, [filterType]: filterValue as number });
-      }
+    (
+      filterType: "pageCurrent" | "SourceDefinitionId" | "pageSize" | "sortDirection" | "sortFieldName",
+      filterValue: number | string
+    ) => {
+      setFilters((prevFilters) => {
+        if (filterType === "SourceDefinitionId" || filterType === "pageSize" || filterType === "pageCurrent") {
+          return { ...prevFilters, [filterType]: filterValue };
+        } else if (filterType === "sortDirection" || filterType === "sortFieldName") {
+          return {
+            ...prevFilters,
+            sortDetails: {
+              ...prevFilters.sortDetails,
+              [filterType]: filterValue,
+            },
+            pageCurrent: 1,
+          };
+        }
+        return prevFilters;
+      });
     },
-    [filters]
+    []
   );
   const onChangePageSize = useCallback(
     (size: number) => {
@@ -117,6 +146,7 @@ const AllSourcesPage: React.FC = () => {
     },
     [onSelectFilter]
   );
+
   // const onCreateSource = () => push(`${RoutePaths.SelectSource}`);
   console.log(sources?.length, "Source Length");
   return (
@@ -151,7 +181,12 @@ const AllSourcesPage: React.FC = () => {
             />
           </DDContainer>
           <Separator height="10px" />
-          <SourcesTable sources={sources} />
+          <SourcesTable
+            sources={sources}
+            setSortFieldName={setSortFieldName}
+            setSortDirection={setSortDirection}
+            onSelectFilter={onSelectFilter}
+          />
           <Separator height="24px" />
           <Footer>
             <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />

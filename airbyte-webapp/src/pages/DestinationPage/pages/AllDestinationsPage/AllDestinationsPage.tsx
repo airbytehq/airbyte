@@ -73,6 +73,8 @@ const AllDestinationsPage: React.FC = () => {
 
   // const [currentPageSize] = useState<number>(pageConfig.connection.pageSize);
   const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig?.destination?.pageSize);
+  const [sortFieldName, setSortFieldName] = useState("");
+  const [sortDirection, setSortDirection] = useState("");
   useTrackPage(PageTrackingCodes.DESTINATION_LIST);
   const workspace = useCurrentWorkspace();
   const { destinationOptions } = useConnectionFilterOptions(workspace?.workspaceId);
@@ -81,6 +83,10 @@ const AllDestinationsPage: React.FC = () => {
     pageSize: pageCurrent,
     pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
     DestinationDefinitionId: destinationOptions[0].value,
+    sortDetails: {
+      sortFieldName,
+      sortDirection,
+    },
   };
 
   const [filters, setFilters] = useState<FilterDestinationRequestBody>(initialFiltersState);
@@ -102,15 +108,38 @@ const AllDestinationsPage: React.FC = () => {
   // const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
   // const { connections, total, pageSize } = useFilteredConnectionList(filters);
   // const { connections } = useFilteredConnectionList(filters);
+  // const onSelectFilter = useCallback(
+  //   (filterType: "pageCurrent" | "DestinationDefinitionId" | "pageSize", filterValue: number | string) => {
+  //     if (filterType === "DestinationDefinitionId" || filterType === "pageSize") {
+  //       setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
+  //     } else if (filterType === "pageCurrent") {
+  //       setFilters({ ...filters, [filterType]: filterValue as number });
+  //     }
+  //   },
+  //   [filters]
+  // );
   const onSelectFilter = useCallback(
-    (filterType: "pageCurrent" | "DestinationDefinitionId" | "pageSize", filterValue: number | string) => {
-      if (filterType === "DestinationDefinitionId" || filterType === "pageSize") {
-        setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
-      } else if (filterType === "pageCurrent") {
-        setFilters({ ...filters, [filterType]: filterValue as number });
-      }
+    (
+      filterType: "pageCurrent" | "DestinationDefinitionId" | "pageSize" | "sortDirection" | "sortFieldName",
+      filterValue: number | string
+    ) => {
+      setFilters((prevFilters) => {
+        if (filterType === "DestinationDefinitionId" || filterType === "pageSize" || filterType === "pageCurrent") {
+          return { ...prevFilters, [filterType]: filterValue };
+        } else if (filterType === "sortDirection" || filterType === "sortFieldName") {
+          return {
+            ...prevFilters,
+            sortDetails: {
+              ...prevFilters.sortDetails,
+              [filterType]: filterValue,
+            },
+            pageCurrent: 1,
+          };
+        }
+        return prevFilters;
+      });
     },
-    [filters]
+    []
   );
   const onChangePageSize = useCallback(
     (size: number) => {
@@ -154,7 +183,12 @@ const AllDestinationsPage: React.FC = () => {
             />
           </DDContainer>
           <Separator height="10px" />
-          <DestinationsTable destinations={destinations} />
+          <DestinationsTable
+            destinations={destinations}
+            setSortFieldName={setSortFieldName}
+            setSortDirection={setSortDirection}
+            onSelectFilter={onSelectFilter}
+          />
           <Separator height="24px" />
           <Footer>
             <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />

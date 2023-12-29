@@ -19,6 +19,10 @@ export interface FilterConnectionRequestBody {
   sourceDefinitionId: string;
   destinationDefinitionId: string;
   status: string;
+  sortDetails: {
+    sortFieldName: string;
+    sortDirection: string;
+  };
 }
 export interface ConnectionData {
   connectionIds: string[];
@@ -28,6 +32,10 @@ export interface FilterSourceRequestBody {
   pageSize: number;
   pageCurrent: number;
   SourceDefinitionId: string;
+  sortDetails: {
+    sortFieldName: string;
+    sortDirection: string;
+  };
 }
 
 export interface FilterDestinationRequestBody {
@@ -35,6 +43,10 @@ export interface FilterDestinationRequestBody {
   pageSize: number;
   pageCurrent: number;
   DestinationDefinitionId: string;
+  sortDetails: {
+    sortFieldName: string;
+    sortDirection: string;
+  };
 }
 export interface FilterSourceItemRequestBody {
   sourceId: string;

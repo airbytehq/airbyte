@@ -24,7 +24,7 @@ const SortButtonView = styled(Button)<{ wasActive?: boolean }>`
 interface IProps {
   lowToLarge?: boolean;
   wasActive?: boolean;
-  onClick: () => void;
+  onClick: () => any;
 }
 
 const SortButton: React.FC<IProps> = ({ wasActive, onClick, lowToLarge }) => {
