@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import asyncio
 import copy
 import datetime
 import logging
@@ -63,7 +64,7 @@ class MockSource(AsyncAbstractSource):
         self._message_repository = message_repository
         super().__init__()
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    async def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         if self.check_lambda:
             return self.check_lambda()
         return False, "Missing callable."
@@ -126,20 +127,23 @@ def message_repository():
 def test_successful_check():
     """Tests that if a source returns TRUE for the connection check the appropriate connectionStatus success message is returned"""
     expected = AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert expected == MockSource(check_lambda=lambda: (True, None)).check(logger, {})
+    loop = asyncio.get_event_loop()
+    assert expected == loop.run_until_complete(MockSource(check_lambda=lambda: (True, None)).check(logger, {}))
 
 
 def test_failed_check():
     """Tests that if a source returns FALSE for the connection check the appropriate connectionStatus failure message is returned"""
     expected = AirbyteConnectionStatus(status=Status.FAILED, message="'womp womp'")
-    assert expected == MockSource(check_lambda=lambda: (False, "womp womp")).check(logger, {})
+    loop = asyncio.get_event_loop()
+    assert expected == loop.run_until_complete(MockSource(check_lambda=lambda: (False, "womp womp")).check(logger, {}))
 
 
 def test_raising_check(mocker):
     """Tests that if a source raises an unexpected exception the appropriate connectionStatus failure message is returned."""
     check_lambda = mocker.Mock(side_effect=BaseException("this should fail"))
+    loop = asyncio.get_event_loop()
     with pytest.raises(BaseException):
-        MockSource(check_lambda=check_lambda).check(logger, {})
+        loop.run_until_complete(MockSource(check_lambda=check_lambda).check(logger, {}))
 
 
 class MockStream(AsyncStream):
@@ -155,7 +159,7 @@ class MockStream(AsyncStream):
     def name(self):
         return self._name
 
-    async def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:  # type: ignore
+    async def read_records(self, error: Exception = None, **kwargs) -> Iterable[Mapping[str, Any]]:  # type: ignore
         # Remove None values
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         output_supplied = False
@@ -302,14 +306,16 @@ def test_read_stream_emits_repository_message_on_error(mocker, message_repositor
         assert MESSAGE_FROM_REPOSITORY in messages
 
 
-async def fake_get_error_display_message(*args, **kwargs):
-    return "my message"
+async def read_records_with_error(*args, **kwargs):
+    if False:
+        yield
+    raise RuntimeError("oh no!")
 
 
 def test_read_stream_with_error_no_display_message(mocker):
     stream = MockStream(name="my_stream")
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
-    mocker.patch.object(MockStream, "read_records", side_effect=RuntimeError("oh no!"))
+    stream.read_records = read_records_with_error
 
     source = MockSource(streams=[stream])
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])
@@ -321,8 +327,8 @@ def test_read_stream_with_error_no_display_message(mocker):
 def test_read_stream_with_error_with_display_message(mocker):
     stream = MockStream(name="my_stream")
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
-    mocker.patch.object(MockStream, "read_records", side_effect=RuntimeError("oh no!"))
-    mocker.patch.object(stream, "get_error_display_message", fake_get_error_display_message)
+    stream.read_records = read_records_with_error
+    stream.get_error_display_message = AsyncMock(return_value="my message")
 
     source = MockSource(streams=[stream])
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])

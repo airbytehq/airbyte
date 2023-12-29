@@ -12,11 +12,13 @@ from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Mutab
 
 import aiohttp
 from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteStateMessage,
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
+    Status,
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
@@ -110,6 +112,15 @@ class AsyncAbstractSource(AbstractSource, ABC):
           and the "error" object should describe what went wrong.
           The error object will be cast to string to display the problem to the user.
         """
+
+    async def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        """Implements the Check Connection operation from the Airbyte Specification.
+        See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#check.
+        """
+        check_succeeded, error = await self.check_connection(logger, config)
+        if not check_succeeded:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     @abstractmethod
     def streams(self, config: Mapping[str, Any]) -> List[AsyncStream]:
