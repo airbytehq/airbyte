@@ -11,6 +11,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadS
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mssql.MssqlQueryUtils.TableSizeInfo;
 import io.airbyte.integrations.source.mssql.MssqlSourceOperations;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
@@ -43,8 +44,10 @@ public class MssqlInitialLoadHandler {
   private final MssqlSourceOperations sourceOperations;
   private final String quoteString;
   private final MssqlInitialLoadStateManager initialLoadStateManager;
+  private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
   private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
+  final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
   public MssqlInitialLoadHandler(
       final JsonNode config,
@@ -52,13 +55,15 @@ public class MssqlInitialLoadHandler {
       final MssqlSourceOperations sourceOperations,
       final String quoteString,
       final MssqlInitialLoadStateManager initialLoadStateManager,
-      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
+      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
+      final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
     this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
     this.initialLoadStateManager = initialLoadStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
+    this.tableSizeInfoMap = tableSizeInfoMap;
   }
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
       final ConfiguredAirbyteCatalog catalog,
@@ -92,7 +97,7 @@ public class MssqlInitialLoadHandler {
         });
 
         final AutoCloseableIterator<JsonNode> queryStream =
-            new MssqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair, calculateChunkSize(), isCompositePrimaryKey(airbyteStream));
+            new MssqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair, calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
@@ -157,7 +162,15 @@ public class MssqlInitialLoadHandler {
     return stream.getStream().getSourceDefinedPrimaryKey().size() > 1;
   }
 
-  public static long calculateChunkSize() {
-    return DEFAULT_CHUNK_SIZE; // TEMP
+  public static long calculateChunkSize(final TableSizeInfo tableSizeInfo, final AirbyteStreamNameNamespacePair pair) {
+    // If table size info could not be calculated, a default chunk size will be provided.
+    if (tableSizeInfo == null || tableSizeInfo.tableSize() == 0 || tableSizeInfo.avgRowLength() == 0) {
+      LOGGER.info("Chunk size could not be determined for pair: {}, defaulting to {} rows", pair, DEFAULT_CHUNK_SIZE);
+      return DEFAULT_CHUNK_SIZE;
+    }
+    final long avgRowLength = tableSizeInfo.avgRowLength();
+    final long chunkSize = QUERY_TARGET_SIZE_GB / avgRowLength;
+    LOGGER.info("Chunk size determined for pair: {}, is {}", pair, chunkSize);
+    return chunkSize;
   }
 }
