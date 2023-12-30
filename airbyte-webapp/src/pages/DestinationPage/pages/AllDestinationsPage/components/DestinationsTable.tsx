@@ -16,6 +16,10 @@ interface DestinationsTableProps {
   setSortFieldName?: any;
   setSortDirection?: any;
   onSelectFilter?: any;
+  localSortOrder?: any;
+  setLocalSortOrder?: any;
+  destinationSortOrder?: any;
+  setDestinationSortOrder?: any;
 
   // connections: WebBackendConnectionRead[];
 }
@@ -25,6 +29,11 @@ const DestinationsTable: React.FC<DestinationsTableProps> = ({
   setSortDirection,
   setSortFieldName,
   onSelectFilter,
+  localSortOrder,
+  setLocalSortOrder,
+  destinationSortOrder,
+
+  setDestinationSortOrder,
 }) => {
   const { push } = useRouter();
   // const { connections } = useConnectionList();
@@ -42,6 +51,10 @@ const DestinationsTable: React.FC<DestinationsTableProps> = ({
       setSortFieldName={setSortFieldName}
       setSortDirection={setSortDirection}
       onSelectFilter={onSelectFilter}
+      localSortOrder={localSortOrder}
+      setLocalSortOrder={setLocalSortOrder}
+      destinationSortOrder={destinationSortOrder}
+      setDestinationSortOrder={setDestinationSortOrder}
     />
   );
 };

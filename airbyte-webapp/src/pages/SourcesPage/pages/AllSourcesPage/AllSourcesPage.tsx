@@ -1,12 +1,13 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box } from "@mui/material";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { Button, DropDown, DropDownRow, NewMainPageWithScroll } from "components";
+import { SortOrderEnum } from "components/EntityTable/types";
 import HeadTitle from "components/HeadTitle";
 import { PageSize } from "components/PageSize";
 import PageTitle from "components/PageTitle";
@@ -70,7 +71,14 @@ const AllSourcesPage: React.FC = () => {
   // const { sources } = useSourceList();
   const [sortFieldName, setSortFieldName] = useState("");
   const [sortDirection, setSortDirection] = useState("");
-
+  const [localSortOrder, setLocalSortOrder] = useState(SortOrderEnum.DESC);
+  const [sourceSortOrder, setSourceSortOrder] = useState(SortOrderEnum.DESC);
+  useEffect(() => {
+    // Set initial sort order to DESC when the component mounts
+    onSelectFilter("sortFieldName", "");
+    setSourceSortOrder(SortOrderEnum.DESC);
+    setLocalSortOrder(SortOrderEnum.DESC);
+  }, []);
   useTrackPage(PageTrackingCodes.SOURCE_LIST);
   const workspace = useCurrentWorkspace();
   const { sourceOptions } = useConnectionFilterOptions(workspace.workspaceId);
@@ -121,7 +129,7 @@ const AllSourcesPage: React.FC = () => {
       filterValue: number | string
     ) => {
       setFilters((prevFilters) => {
-        if (filterType === "SourceDefinitionId" || filterType === "pageSize" || filterType === "pageCurrent") {
+        if (filterType === "SourceDefinitionId" || filterType === "pageSize") {
           return { ...prevFilters, [filterType]: filterValue };
         } else if (filterType === "sortDirection" || filterType === "sortFieldName") {
           return {
@@ -130,7 +138,15 @@ const AllSourcesPage: React.FC = () => {
               ...prevFilters.sortDetails,
               [filterType]: filterValue,
             },
-            pageCurrent: 1,
+            pageCurrent: prevFilters.pageCurrent,
+          };
+        } else if (filterType === "pageCurrent") {
+          setLocalSortOrder(SortOrderEnum.DESC);
+          setSourceSortOrder(SortOrderEnum.DESC);
+          return {
+            ...filters,
+            [filterType]: filterValue as number,
+            sortDetails: { sortFieldName: "", sortDirection: "" },
           };
         }
         return prevFilters;
@@ -148,7 +164,7 @@ const AllSourcesPage: React.FC = () => {
   );
 
   // const onCreateSource = () => push(`${RoutePaths.SelectSource}`);
-  console.log(sources?.length, "Source Length");
+
   return (
     <>
       {sources && sources?.length > 0 ? (
@@ -186,6 +202,10 @@ const AllSourcesPage: React.FC = () => {
             setSortFieldName={setSortFieldName}
             setSortDirection={setSortDirection}
             onSelectFilter={onSelectFilter}
+            localSortOrder={localSortOrder}
+            setLocalSortOrder={setLocalSortOrder}
+            sourceSortOrder={sourceSortOrder}
+            setSourceSortOrder={setSourceSortOrder}
           />
           <Separator height="24px" />
           <Footer>
