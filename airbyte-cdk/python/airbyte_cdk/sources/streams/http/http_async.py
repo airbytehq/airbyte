@@ -54,7 +54,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         return self._authenticator
 
     @property
-    async def availability_strategy(self) -> Optional[AsyncHttpAvailabilityStrategy]:
+    def availability_strategy(self) -> Optional[AsyncHttpAvailabilityStrategy]:
         return AsyncHttpAvailabilityStrategy()
 
     def request_session(self) -> aiohttp.ClientSession:

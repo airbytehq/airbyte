@@ -19,6 +19,7 @@ TRANSIENT_EXCEPTIONS = (
     # exceptions.ReadTimeout,
     # exceptions.ConnectionError,
     # exceptions.ChunkedEncodingError,
+    aiohttp.ClientPayloadError,
     aiohttp.ServerTimeoutError,
     aiohttp.ServerConnectionError,
     aiohttp.ServerDisconnectedError,

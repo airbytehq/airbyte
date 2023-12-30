@@ -4,12 +4,13 @@
 
 import logging
 import typing
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
+import requests
+from aiohttp import ClientResponseError
 from airbyte_cdk.sources.streams import AsyncStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.utils.stream_helper_async import get_first_record_for_slice, get_first_stream_slice
-from requests import HTTPError
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
@@ -39,8 +40,8 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
             # without accounting for the case in which the parent stream is empty.
             reason = f"Cannot attempt to connect to stream {stream.name} - no stream slices were found, likely because the parent stream is empty."
             return False, reason
-        except HTTPError as error:
-            is_available, reason = self.handle_http_error(stream, logger, source, error)
+        except ClientResponseError as error:
+            is_available, reason = await self._handle_http_error(stream, logger, source, error)
             if not is_available:
                 reason = f"Unable to get slices for {stream.name} stream, because of error in parent stream. {reason}"
             return is_available, reason
@@ -51,14 +52,14 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
         except StopIteration:
             logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
             return True, None
-        except HTTPError as error:
-            is_available, reason = self.handle_http_error(stream, logger, source, error)
+        except ClientResponseError as error:
+            is_available, reason = await self._handle_http_error(stream, logger, source, error)
             if not is_available:
                 reason = f"Unable to read {stream.name} stream. {reason}"
             return is_available, reason
 
-    async def handle_http_error(
-        self, stream: AsyncStream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
+    async def _handle_http_error(
+        self, stream: AsyncStream, logger: logging.Logger, source: Optional["Source"], error: ClientResponseError
     ) -> Tuple[bool, Optional[str]]:
         """
         Override this method to define error handling for various `HTTPError`s
@@ -76,7 +77,7 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
           for some reason and the str should describe what went wrong and how to
           resolve the unavailability, if possible.
         """
-        status_code = error.response.status_code
+        status_code = error.status
         known_status_codes = self.reasons_for_unavailable_status_codes(stream, logger, source, error)
         known_reason = known_status_codes.get(status_code)
         if not known_reason:
@@ -84,8 +85,26 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
             raise error
 
         doc_ref = self._visit_docs_message(logger, source)
-        reason = f"The endpoint {error.response.url} returned {status_code}: {error.response.reason}. {known_reason}. {doc_ref} "
-        response_error_message = await stream.parse_response_error_message(error.response)
-        if response_error_message:
-            reason += response_error_message
+        reason = f"The endpoint {error.request_info.url} returned {status_code}: {error.message}. {known_reason}. {doc_ref} "
         return False, reason
+
+    def reasons_for_unavailable_status_codes(
+        self, stream: AsyncStream, logger: logging.Logger, source: Optional["Source"], error: ClientResponseError
+    ) -> Dict[int, str]:
+        """
+        Returns a dictionary of HTTP status codes that indicate stream
+        unavailability and reasons explaining why a given status code may
+        have occurred and how the user can resolve that error, if applicable.
+
+        :param stream: stream
+        :param logger: source logger
+        :param source: optional (source)
+        :return: A dictionary of (status code, reason) where the 'reason' explains
+        why 'status code' may have occurred and how the user can resolve that
+        error, if applicable.
+        """
+        reasons_for_codes: Dict[int, str] = {
+            requests.codes.FORBIDDEN: "This is most likely due to insufficient permissions on the credentials in use. "
+            "Try to grant required permissions/scopes or re-authenticate"
+        }
+        return reasons_for_codes

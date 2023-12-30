@@ -14,6 +14,7 @@ def helper_with_exceptions(exception_type):
 @pytest.mark.parametrize(
     "max_tries, max_time, factor, exception_to_raise",
     [
+        (1, None, 1, aiohttp.ClientPayloadError),
         (1, None, 1, aiohttp.ServerTimeoutError),
         (2, 2, 1, aiohttp.ServerConnectionError),
         (2, 2, 1, aiohttp.ServerDisconnectedError),

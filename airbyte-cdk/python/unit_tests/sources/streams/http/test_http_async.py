@@ -307,6 +307,7 @@ def test_raise_on_http_errors_off_non_retryable_4xx(status_code):
 @pytest.mark.parametrize(
     "error",
     (
+        aiohttp.ClientPayloadError,
         aiohttp.ServerDisconnectedError,
         aiohttp.ServerConnectionError,
         aiohttp.ServerTimeoutError,
