@@ -53,6 +53,7 @@ public class MssqlQueryUtils {
       """
         SELECT %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s);
       """;
+
   public static final String INDEX_QUERY = "EXEC sp_helpindex N'%s'";
 
   public record Index(
@@ -68,6 +69,8 @@ public class MssqlQueryUtils {
   public static final String MAX_OC_COL = "max_oc";
   public static final String DATA_SIZE_HUMAN_READABLE = "data";
   public static final String NUM_ROWS = "rows";
+  public static final String TABLE_SIZE_BYTES_COL = "TotalSizeBytes";
+  public static final String AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
 
   public static void getIndexInfoForStreams(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final String quoteString) {
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
@@ -106,7 +109,7 @@ public class MssqlQueryUtils {
     LOGGER.info("Querying for max oc value: {}", maxOcQuery);
     try {
       final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(maxOcQuery).executeQuery(),
-          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
       Preconditions.checkState(jsonNodes.size() == 1);
       if (jsonNodes.get(0).get(MAX_OC_COL) == null) {
         LOGGER.info("Max PK is null for table {} - this could indicate an empty table", fullTableName);
@@ -137,8 +140,8 @@ public class MssqlQueryUtils {
   }
 
   public static Map<AirbyteStreamNameNamespacePair, TableSizeInfo> getTableSizeInfoForStreams(final JdbcDatabase database,
-                                                                                              final List<ConfiguredAirbyteStream> streams,
-                                                                                              final String quoteString) {
+      final List<ConfiguredAirbyteStream> streams,
+      final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap = new HashMap<>();
     streams.forEach(stream -> {
       try {
