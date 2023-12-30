@@ -7,8 +7,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import aiohttp
 import pytest
-import requests
-from aioresponses import CallbackResult, aioresponses
+from aioresponses import aioresponses
 from airbyte_cdk.sources.abstract_source_async import AsyncAbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
@@ -61,7 +60,6 @@ class MockHttpStream(AsyncHttpStream):
     ],
 )
 def test_default_http_availability_strategy(
-    mocker,
     status_code,
     expected_is_available,
     expected_messages,
@@ -116,55 +114,62 @@ def test_http_availability_raises_unhandled_error(mocker):
     http_stream = MockHttpStream()
     assert isinstance(http_stream.availability_strategy, AsyncHttpAvailabilityStrategy)
 
-    req = requests.Response()
-    req.status_code = 404
-    mocker.patch.object(requests.Session, "send", return_value=req)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(http_stream.ensure_session())
 
-    with pytest.raises(aiohttp):
-        http_stream.check_availability(logger)
+    with aioresponses() as m:
+        m.get(http_stream.url_base, status=404)
+
+        with pytest.raises(aiohttp.ClientResponseError):
+            loop.run_until_complete(http_stream.check_availability(logger))
 
 
-def test_send_handles_retries_when_checking_availability(mocker, caplog):
+def test_send_handles_retries_when_checking_availability(caplog):
     http_stream = MockHttpStream()
     assert isinstance(http_stream.availability_strategy, AsyncHttpAvailabilityStrategy)
 
-    req_1 = requests.Response()
-    req_1.status_code = 429
-    req_2 = requests.Response()
-    req_2.status_code = 503
-    req_3 = requests.Response()
-    req_3.status_code = 200
-    mock_send = mocker.patch.object(requests.Session, "send", side_effect=[req_1, req_2, req_3])
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(http_stream.ensure_session())
 
-    with caplog.at_level(logging.INFO):
-        stream_is_available, _ = http_stream.check_availability(logger)
+    call_counter = 0
+
+    def request_callback(*args, **kwargs):
+        nonlocal call_counter
+        call_counter += 1
+
+    with aioresponses() as m:
+        m.get(http_stream.url_base, status=429, callback=request_callback)
+        m.get(http_stream.url_base, status=503, callback=request_callback)
+        m.get(http_stream.url_base, status=200, callback=request_callback)
+
+        with caplog.at_level(logging.INFO):
+            stream_is_available, _ = loop.run_until_complete(http_stream.check_availability(logger))
 
     assert stream_is_available
-    assert mock_send.call_count == 3
+    assert call_counter == 3
     for message in ["Caught retryable error", "Response Code: 429", "Response Code: 503"]:
         assert message in caplog.text
 
 
-@pytest.mark.parametrize("records_as_list", [True, False])
-def test_http_availability_strategy_on_empty_stream(mocker, records_as_list):
+def test_http_availability_strategy_on_empty_stream(mocker):
+    empty_stream_called = False
+    async def empty_aiter(*args, **kwargs):
+        nonlocal empty_stream_called
+        empty_stream_called = True
+        yield
+
     class MockEmptyHttpStream(mocker.MagicMock, MockHttpStream):
         def __init__(self, *args, **kvargs):
             mocker.MagicMock.__init__(self)
-            self.read_records = mocker.MagicMock()
+            self.read_records = empty_aiter
 
     empty_stream = MockEmptyHttpStream()
     assert isinstance(empty_stream, AsyncHttpStream)
-
     assert isinstance(empty_stream.availability_strategy, AsyncHttpAvailabilityStrategy)
 
-    # Generator should have no values to generate
-    if records_as_list:
-        empty_stream.read_records.return_value = []
-    else:
-        empty_stream.read_records.return_value = iter([])
-
     logger = logging.getLogger("airbyte.test-source")
-    stream_is_available, _ = empty_stream.check_availability(logger)
+    loop = asyncio.get_event_loop()
+    stream_is_available, _ = loop.run_until_complete(empty_stream.check_availability(logger))
 
     assert stream_is_available
-    assert empty_stream.read_records.called
+    assert empty_stream_called

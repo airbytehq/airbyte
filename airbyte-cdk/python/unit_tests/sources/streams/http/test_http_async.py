@@ -616,7 +616,7 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
     with aioresponses() as m:
         m.get(stream.url_base, status=status_code, repeat=True, payload="text")
 
-        with pytest.raises(aiohttp.ClientError):
+        with pytest.raises(aiohttp.ClientResponseError):
             response = loop.run_until_complete(stream._send_request(req, {}))
             stream.logger.error.assert_called_with("text")
             assert response.status == status_code
