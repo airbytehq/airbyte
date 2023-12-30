@@ -67,7 +67,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MssqlInitialReadUtil {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialReadUtil.class);
 
   public record InitialLoadStreams(List<ConfiguredAirbyteStream> streamsForInitialLoad,
@@ -83,11 +82,11 @@ public class MssqlInitialReadUtil {
   public record OrderedColumnInfo(String ocFieldName, JDBCType fieldType, String ocMaxValue) {}
 
   public static List<AutoCloseableIterator<AirbyteMessage>> getCdcReadIterators(final JdbcDatabase database,
-                                                                                final ConfiguredAirbyteCatalog catalog,
-                                                                                final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                                final StateManager stateManager,
-                                                                                final Instant emittedAt,
-                                                                                final String quoteString) {
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt,
+      final String quoteString) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
     final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
@@ -249,7 +248,7 @@ public class MssqlInitialReadUtil {
     return pairToOcInfoMap;
   }
 
-  final static OrderedColumnInfo getOrderedColumnInfo(final JdbcDatabase database,
+  static OrderedColumnInfo getOrderedColumnInfo(final JdbcDatabase database,
                                                       final ConfiguredAirbyteStream stream,
                                                       final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                       final String quoteString) {
