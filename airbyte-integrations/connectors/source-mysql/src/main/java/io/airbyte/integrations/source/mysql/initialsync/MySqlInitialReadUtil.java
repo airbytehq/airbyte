@@ -348,7 +348,7 @@ public class MySqlInitialReadUtil {
     }
     final String pkFieldName = stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
     final String fullyQualifiedTableName =
-        DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), (stream.getStream().getName()));
+        DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
     final TableInfo<CommonField<MysqlType>> table = tableNameToTable
         .get(fullyQualifiedTableName);
     final MysqlType pkFieldType = table.getFields().stream()
