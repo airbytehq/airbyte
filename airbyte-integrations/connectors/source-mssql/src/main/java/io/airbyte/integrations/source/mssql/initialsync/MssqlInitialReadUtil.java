@@ -151,16 +151,15 @@ public class MssqlInitialReadUtil {
         OptionalInt.empty());
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(catalog,
-        new MssqlCdcSavedInfoFetcher(stateToBeUsed),
-        new MssqlCdcStateHandler(stateManager),
-        mssqlCdcConnectorMetadataInjector,
-        getDebeziumProperties(database, catalog, false),
-        DebeziumConnectorType.RELATIONALDB,
-        emittedAt,
-        true); // TODO: check why add db name to state
+    new MssqlCdcSavedInfoFetcher(stateToBeUsed),
+    new MssqlCdcStateHandler(stateManager),
+    mssqlCdcConnectorMetadataInjector,
+    getDebeziumProperties(database, catalog, false),
+    DebeziumConnectorType.RELATIONALDB,
+    emittedAt,
+    true); // TODO: check why add db name to state
 
-    // This starts processing the transaction logs as soon as initial sync is complete, this is a bit
-    // different
+    // This starts processing the transaction logs as soon as initial sync is complete, this is a bit different
     // from the current cdc syncs.
     // We finish the current CDC once the initial snapshot is complete and the next sync starts
     // processing the transaction logs
@@ -174,8 +173,8 @@ public class MssqlInitialReadUtil {
   }
 
   public static InitialLoadStreams cdcStreamsForInitialOrderedCoumnLoad(final CdcStateManager stateManager,
-                                                                        final ConfiguredAirbyteCatalog fullCatalog,
-                                                                        final boolean savedOffsetStillPresentOnServer) {
+      final ConfiguredAirbyteCatalog fullCatalog,
+      final boolean savedOffsetStillPresentOnServer) {
     if (!savedOffsetStillPresentOnServer) {
       return new InitialLoadStreams(
           fullCatalog.getStreams()
@@ -222,13 +221,12 @@ public class MssqlInitialReadUtil {
   }
 
   public static Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, OrderedColumnInfo> initPairToOrderedColumnInfoMap(
-                                                                                                                                 final JdbcDatabase database,
-                                                                                                                                 final InitialLoadStreams initialLoadStreams,
-                                                                                                                                 final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                                                                                 final String quoteString) {
+      final JdbcDatabase database,
+      final InitialLoadStreams initialLoadStreams,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final String quoteString) {
     final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOcInfoMap = new HashMap<>();
-    // For every stream that is in initial ordered column sync, we want to maintain information about
-    // the
+    // For every stream that is in initial ordered column sync, we want to maintain information about the
     // current ordered column info associated with the
     // stream
     initialLoadStreams.streamsForInitialLoad.forEach(stream -> {
@@ -241,11 +239,10 @@ public class MssqlInitialReadUtil {
   }
 
   final static OrderedColumnInfo getOrderedColumnInfo(final JdbcDatabase database,
-                                                      final ConfiguredAirbyteStream stream,
-                                                      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                      final String quoteString) {
-    // For cursor-based syncs, we cannot always assume a ordered column field exists. We need to handle
-    // the
+      final ConfiguredAirbyteStream stream,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final String quoteString) {
+    // For cursor-based syncs, we cannot always assume a ordered column field exists. We need to handle the
     // case where it does not exist when we support
     // cursor-based syncs.
     if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) { // TODO: validate the seleted column rather than primary key
@@ -265,7 +262,7 @@ public class MssqlInitialReadUtil {
   }
 
   public static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,
-                                                                        final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
+      final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
     return catalog.getStreams().stream()
