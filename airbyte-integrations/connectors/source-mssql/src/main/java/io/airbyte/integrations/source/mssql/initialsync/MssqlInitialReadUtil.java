@@ -62,7 +62,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MssqlInitialReadUtil {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialReadUtil.class);
 
   public record InitialLoadStreams(List<ConfiguredAirbyteStream> streamsForInitialLoad,
@@ -73,11 +72,11 @@ public class MssqlInitialReadUtil {
   public record OrderedColumnInfo(String ocFieldName, JDBCType fieldType, String ocMaxValue) {}
 
   public static List<AutoCloseableIterator<AirbyteMessage>> getCdcReadIterators(final JdbcDatabase database,
-                                                                                final ConfiguredAirbyteCatalog catalog,
-                                                                                final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                                final StateManager stateManager,
-                                                                                final Instant emittedAt,
-                                                                                final String quoteString) {
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt,
+      final String quoteString) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
     final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
@@ -96,25 +95,23 @@ public class MssqlInitialReadUtil {
             ? initialDebeziumState
             : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
 
-    /*
-     * final Optional<MysqlDebeziumStateAttributes> savedOffset = mySqlDebeziumStateUtil.savedOffset(
-     * MySqlCdcProperties.getDebeziumProperties(database), catalog, state.get(MYSQL_CDC_OFFSET),
-     * sourceConfig);
-     *
-     * final boolean savedOffsetStillPresentOnServer = savedOffset.isPresent() &&
-     * mySqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
-     *
-     * if (!savedOffsetStillPresentOnServer) { LOGGER.
-     * warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch"
-     * ); }
-     *
-     */
+/*
+    final Optional<MysqlDebeziumStateAttributes> savedOffset = mySqlDebeziumStateUtil.savedOffset(
+        MySqlCdcProperties.getDebeziumProperties(database), catalog, state.get(MYSQL_CDC_OFFSET), sourceConfig);
+
+    final boolean savedOffsetStillPresentOnServer =
+        savedOffset.isPresent() && mySqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
+
+    if (!savedOffsetStillPresentOnServer) {
+      LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
+    }
+
+*/
     final boolean savedOffsetStillPresentOnServer = true; // TEMP
-    final InitialLoadStreams initialLoadStreams =
-        cdcStreamsForInitialOrderedCoumnLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
+    final InitialLoadStreams initialLoadStreams = cdcStreamsForInitialOrderedCoumnLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
     final CdcState stateToBeUsed = (!savedOffsetStillPresentOnServer || (stateManager.getCdcStateManager().getCdcState() == null
         || stateManager.getCdcStateManager().getCdcState().getState() == null)) ? new CdcState().withState(initialDebeziumState)
-            : stateManager.getCdcStateManager().getCdcState();
+        : stateManager.getCdcStateManager().getCdcState();
 
     final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
     // If there are streams to sync via ordered column load, build the relevant iterators.
@@ -277,5 +274,4 @@ public class MssqlInitialReadUtil {
         .map(Jsons::clone)
         .collect(Collectors.toList());
   }
-
 }
