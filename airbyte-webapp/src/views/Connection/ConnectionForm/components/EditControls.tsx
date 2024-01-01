@@ -14,6 +14,7 @@ interface EditControlProps {
   errorMessage?: React.ReactNode;
   enableControls?: boolean;
   withLine?: boolean;
+  healthData?: any;
 }
 
 // const Container = styled.div``;
@@ -44,6 +45,7 @@ const EditControls: React.FC<EditControlProps> = ({
   errorMessage,
   enableControls,
   withLine,
+  healthData,
 }) => {
   const showStatusMessage = () => {
     if (errorMessage) {
@@ -66,7 +68,12 @@ const EditControls: React.FC<EditControlProps> = ({
         <BigButton
           type="submit"
           isLoading={isSubmitting}
-          disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
+          disabled={
+            submitDisabled ||
+            isSubmitting ||
+            (!dirty && !enableControls) ||
+            healthData?.connectionUpdate === "INPROGRESS"
+          }
         >
           <FormattedMessage id="form.saveChanges" />
         </BigButton>

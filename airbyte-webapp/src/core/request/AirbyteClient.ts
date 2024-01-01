@@ -575,6 +575,7 @@ export interface HealthCheckRead {
   usage?: number;
   isPaymentFailed?: boolean;
   isUpdatePaymentMethod?: boolean;
+  connectionUpdate?:string;
 }
 
 export interface Pagination {

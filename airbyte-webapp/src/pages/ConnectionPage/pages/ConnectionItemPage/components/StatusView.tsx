@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, LoadingButton } from "components";
+import Alert from "components/Alert";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 
@@ -39,6 +40,7 @@ interface StatusViewProps {
   afterSync?: (disabled?: boolean) => void;
   getLastSyncTime: (dateTime?: number) => void;
   onOpenMessageBox: (id: string) => void;
+  healthData?: any;
 }
 
 const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
@@ -54,6 +56,7 @@ const StatusView: React.FC<StatusViewProps> = ({
   afterSync,
   getLastSyncTime,
   onOpenMessageBox,
+  healthData,
 }) => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_STATUS);
   const [activeJob, setActiveJob] = useState<ActiveJob>();
@@ -184,39 +187,58 @@ const StatusView: React.FC<StatusViewProps> = ({
   );
 
   return (
-    <div className={styles.statusView}>
-      <div className={styles.contentCard}>
-        <div className={styles.title}>
-          <div className={styles.titleText}>
-            <FormattedMessage id="sources.syncHistory" />
-          </div>
-          {connection.status === ConnectionStatus.active && (
-            <div className={styles.actions}>
-              {!activeJob?.action && (
-                <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
-                  <FormattedMessage id="connection.resetData" />
-                </Button>
-              )}
-              {activeJob?.action && !activeJob.isCanceling && cancelJobBtn}
-              {activeJob?.action && activeJob.isCanceling && (
-                <Tooltip control={cancelJobBtn} cursor="not-allowed">
-                  <FormattedMessage id="connection.canceling" />
-                </Tooltip>
-              )}
-            </div>
-          )}
-        </div>
-
-        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
-      </div>
-      {(moreJobPagesAvailable || isJobPageLoading) && (
-        <footer className={styles.footer}>
-          <LoadingButton className={styles.loadButton} isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
-            <FormattedMessage id="connection.loadMoreJobs" />
-          </LoadingButton>
-        </footer>
+    <>
+      {healthData?.available && healthData?.connectionUpdate && (
+        <Alert
+          formattedMessage={
+            healthData?.connectionUpdate === "INPROGRESS" ? (
+              <FormattedMessage id="connection.configuration.inprogress" />
+            ) : healthData?.connectionUpdate === "SUCCESS" ? (
+              <FormattedMessage id="connection.configuration.success" />
+            ) : (
+              <FormattedMessage id="connection.configuration.failure" />
+            )
+          }
+          bgColor={healthData?.connectionUpdate === "SUCCESS" ? "#EFF6FF" : "#FEF2F2"}
+          onClose={() => {
+            console.log("close");
+          }}
+        />
       )}
-    </div>
+      <div className={styles.statusView}>
+        <div className={styles.contentCard}>
+          <div className={styles.title}>
+            <div className={styles.titleText}>
+              <FormattedMessage id="sources.syncHistory" />
+            </div>
+            {connection.status === ConnectionStatus.active && (
+              <div className={styles.actions}>
+                {!activeJob?.action && (
+                  <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
+                    <FormattedMessage id="connection.resetData" />
+                  </Button>
+                )}
+                {activeJob?.action && !activeJob.isCanceling && cancelJobBtn}
+                {activeJob?.action && activeJob.isCanceling && (
+                  <Tooltip control={cancelJobBtn} cursor="not-allowed">
+                    <FormattedMessage id="connection.canceling" />
+                  </Tooltip>
+                )}
+              </div>
+            )}
+          </div>
+
+          {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
+        </div>
+        {(moreJobPagesAvailable || isJobPageLoading) && (
+          <footer className={styles.footer}>
+            <LoadingButton className={styles.loadButton} isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
+              <FormattedMessage id="connection.loadMoreJobs" />
+            </LoadingButton>
+          </footer>
+        )}
+      </div>
+    </>
   );
 };
 

@@ -145,6 +145,7 @@ export interface ConnectionFormProps {
   onListenAfterSubmit?: (isSuccess: boolean) => void;
   onFormDirtyChanges?: (dirty: boolean) => void;
   loading?: boolean;
+  healthData?: any;
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
   canSubmitUntouchedForm?: boolean;
@@ -167,6 +168,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onFormDirtyChanges,
   onBack,
   onListenAfterSubmit,
+  healthData,
 }) => {
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const { clearFormChange } = useFormChangeTrackerService();
@@ -392,6 +394,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
               />
               <EditControls
                 isSubmitting={isSubmitting}
+                healthData={healthData}
                 dirty={dirty}
                 resetForm={() => {
                   resetForm();

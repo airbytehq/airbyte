@@ -32,6 +32,7 @@ import { ConnectionForm, ConnectionFormSubmitResult } from "views/Connection/Con
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
   connectionId: string;
+  healthData?: any;
 }
 
 interface ResetWarningModalProps {
@@ -105,7 +106,7 @@ const TryArrow = styled(FontAwesomeIcon)`
   font-size: 14px;
 `;
 
-export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
+export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId, healthData }) => {
   const { formatMessage } = useIntl();
   const { push } = useRouter();
   const { openModal, closeModal } = useModalService();
@@ -253,6 +254,23 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   return (
     <Content>
+      {healthData?.available && healthData?.connectionUpdate && (
+        <Alert
+          formattedMessage={
+            healthData?.connectionUpdate === "INPROGRESS" ? (
+              <FormattedMessage id="connection.configuration.inprogress" />
+            ) : healthData?.connectionUpdate === "SUCCESS" ? (
+              <FormattedMessage id="connection.configuration.success" />
+            ) : (
+              <FormattedMessage id="connection.configuration.failure" />
+            )
+          }
+          bgColor={healthData?.connectionUpdate === "SUCCESS" ? "#EFF6FF" : "#FEF2F2"}
+          onClose={() => {
+            console.log("close");
+          }}
+        />
+      )}
       {errorMessage?.length > 0 && (
         <Alert
           formattedMessage={<FormattedMessage id="connection.sync.error" />}
@@ -268,6 +286,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
           onSubmit={onSubmitForm}
           onCancel={onCancelConnectionFormEdit}
           canSubmitUntouchedForm={activeUpdatingSchemaMode}
+          healthData={healthData}
           additionalSchemaControl={
             <Tooltip
               placement="top"

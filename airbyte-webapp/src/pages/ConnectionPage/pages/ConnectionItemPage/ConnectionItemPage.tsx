@@ -10,6 +10,7 @@ import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useHealth } from "hooks/services/Health";
 import { connectionsKeys, useGetConnection } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
@@ -22,6 +23,7 @@ import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 
 const ConnectionItemPage: React.FC = () => {
   const { push, pathname } = useRouter();
+  const { healthData } = useHealth();
   const params = useParams<{
     connectionId: string;
     "*": ConnectionSettingsRoutes;
@@ -128,6 +130,7 @@ const ConnectionItemPage: React.FC = () => {
             onSync={onSync}
             disabled={disabled}
             lastSyncTime={lastSyncTime}
+            healthData={healthData}
           />
           <Suspense fallback={<LoadingPage />}>
             <Routes>
@@ -141,12 +144,19 @@ const ConnectionItemPage: React.FC = () => {
                     isSync={isSync}
                     afterSync={afterSync}
                     getLastSyncTime={getLastSyncTime}
+                    healthData={healthData}
                   />
                 }
               />
               <Route
                 path={ConnectionSettingsRoutes.CONFIGURATIONS}
-                element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
+                element={
+                  <ReplicationView
+                    onAfterSaveSchema={onAfterSaveSchema}
+                    connectionId={connectionId}
+                    healthData={healthData}
+                  />
+                }
               />
               <Route
                 path={ConnectionSettingsRoutes.DANGERZONE}
