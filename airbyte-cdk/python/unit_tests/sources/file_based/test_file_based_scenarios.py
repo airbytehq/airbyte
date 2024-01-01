@@ -126,7 +126,7 @@ from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import 
     wait_for_rediscovery_scenario_multi_stream,
     wait_for_rediscovery_scenario_single_stream,
 )
-from unit_tests.sources.file_based.test_scenarios import verify_check, verify_discover, verify_read, verify_spec
+from unit_tests.sources.scenario_based.helpers import verify_check, verify_discover, verify_read, verify_spec
 
 discover_scenarios = [
     csv_multi_stream_scenario,
