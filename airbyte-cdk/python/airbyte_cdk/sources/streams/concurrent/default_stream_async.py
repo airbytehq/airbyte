@@ -7,13 +7,13 @@ from logging import Logger
 from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.abstract_stream_async import AsyncAbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 
 
-class AsyncDefaultStream(AbstractStream):
+class AsyncDefaultStream(AsyncAbstractStream):
     def __init__(
         self,
         partition_generator: PartitionGenerator,
@@ -42,7 +42,7 @@ class AsyncDefaultStream(AbstractStream):
     def name(self) -> str:
         return self._name
 
-    def check_availability(self) -> StreamAvailability:
+    async def check_availability(self) -> StreamAvailability:
         return self._availability_strategy.check_availability(self._logger)
 
     @property

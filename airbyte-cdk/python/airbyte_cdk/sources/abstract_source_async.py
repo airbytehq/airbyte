@@ -151,7 +151,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
                 n_records += 1
                 yield record
 
-        print(f"_______________________-ASYNCIO SOURCE N RECORDS == {n_records}")
+        # print(f"_______________________-ASYNCIO SOURCE N RECORDS == {n_records}")
         logger.info(f"Finished syncing {self.name}")
 
     def _do_read(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, AsyncStream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
@@ -245,7 +245,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
         finally:
             timer.finish_event()
             logger.info(f"Finished syncing {configured_stream.stream.name}")
-            logger.info(timer.report())
+            # logger.info(timer.report())  # TODO - this is causing scenario-based test failures
 
     async def _read_stream(
         self,
