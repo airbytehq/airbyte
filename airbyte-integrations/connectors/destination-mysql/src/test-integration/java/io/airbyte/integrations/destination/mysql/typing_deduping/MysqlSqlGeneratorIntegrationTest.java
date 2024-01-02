@@ -1,6 +1,9 @@
 package io.airbyte.integrations.destination.mysql.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.jdbc.AbstractJdbcCompatibleSourceOperations;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
@@ -10,11 +13,13 @@ import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandl
 import io.airbyte.integrations.destination.mysql.MySQLDestination;
 import io.airbyte.integrations.destination.mysql.MySQLDestinationAcceptanceTest;
 import io.airbyte.integrations.destination.mysql.MySQLNameTransformer;
-import java.util.List;
+import io.airbyte.protocol.models.JsonSchemaType;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.jooq.DataType;
 import org.jooq.Field;
-import org.jooq.Name;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
@@ -30,7 +35,7 @@ public class MysqlSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegratio
   private static JdbcDatabase database;
 
   @BeforeAll
-  public static void setupMysql() {
+  public static void setupMysql() throws Exception {
     testContainer = new MySQLContainer<>("mysql:8.0");
     testContainer.start();
     MySQLDestinationAcceptanceTest.configureTestContainer(testContainer);
