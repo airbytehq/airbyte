@@ -118,7 +118,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const connectionService = useConnectionService();
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
 
-  const { mutateAsync: updateConnection } = useUpdateConnection();
+  const { mutateAsync: updateConnection } = useUpdateConnection(connectionId);
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
 
@@ -254,23 +254,28 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   return (
     <Content>
-      {healthData?.available && healthData?.connectionUpdate && (
+      {healthData?.available &&
+      healthData?.connectionUpdate &&
+      healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId) ? (
         <Alert
           formattedMessage={
-            healthData?.connectionUpdate === "INPROGRESS" ? (
+            healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
+            "INPROGRESS" ? (
               <FormattedMessage id="connection.configuration.inprogress" />
-            ) : healthData?.connectionUpdate === "SUCCESS" ? (
+            ) : healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
+              "SUCCESS" ? (
               <FormattedMessage id="connection.configuration.success" />
             ) : (
               <FormattedMessage id="connection.configuration.failure" />
             )
           }
-          bgColor={healthData?.connectionUpdate === "SUCCESS" ? "#EFF6FF" : "#FEF2F2"}
-          onClose={() => {
-            console.log("close");
-          }}
+          bgColor={
+            healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status === "SUCCESS"
+              ? "#EFF6FF"
+              : "#FEF2F2"
+          }
         />
-      )}
+      ) : null}
       {errorMessage?.length > 0 && (
         <Alert
           formattedMessage={<FormattedMessage id="connection.sync.error" />}

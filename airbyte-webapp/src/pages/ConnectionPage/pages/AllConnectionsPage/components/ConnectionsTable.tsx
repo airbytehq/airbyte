@@ -30,7 +30,7 @@ const ConnectionsTable: React.FC<IProps> = ({ connections, onSetMessageId }) => 
   const [statusLoading, setStatusLoading] = useState<boolean>(false);
   const [statusCode, setStatusCode] = useState<number | undefined>(200);
   const { push } = useRouter();
-  const { changeStatus, syncManualConnection } = useSyncActions();
+  const { changeStatus, syncManualConnection } = useSyncActions(rowId);
   const queryClient = useQueryClient();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
 

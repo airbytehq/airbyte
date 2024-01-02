@@ -3288,11 +3288,12 @@ export const webBackendCreateConnection = (
  */
 export const webBackendUpdateConnection = (
   webBackendConnectionUpdate: WebBackendConnectionUpdate,
+  connectionId:string,
   options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<WebBackendConnectionRead>(
     {
-      url: `/etl/web_backend/connections/update`,
+      url: `/etl/web_backend/connections/update?connectionId=${connectionId}`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: webBackendConnectionUpdate,

@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useQueryClient } from "react-query";
 
 import { ConnectionTable } from "components/EntityTable";
@@ -19,9 +19,10 @@ interface IProps {
 }
 
 const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
+  const [conId, setConID] = useState<string>("");
   const { push } = useRouter();
   const queryClient = useQueryClient();
-  const { changeStatus, syncManualConnection } = useSyncActions();
+  const { changeStatus, syncManualConnection } = useSyncActions(conId);
 
   const { sourceDefinitions } = useSourceDefinitionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
@@ -43,7 +44,9 @@ const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
   const onSync = useCallback(
     async (connectionId: string) => {
       const connection = connections.find((item) => item.connectionId === connectionId);
+
       if (connection) {
+        setConID(connection?.connectionId);
         await syncManualConnection(connection);
       }
     },

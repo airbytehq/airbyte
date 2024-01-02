@@ -28,6 +28,7 @@ const ConnectionItemPage: React.FC = () => {
     connectionId: string;
     "*": ConnectionSettingsRoutes;
   }>();
+
   const connectionId = params.connectionId || "";
   const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
   const connection = useGetConnection(connectionId);
@@ -130,7 +131,6 @@ const ConnectionItemPage: React.FC = () => {
             onSync={onSync}
             disabled={disabled}
             lastSyncTime={lastSyncTime}
-            healthData={healthData}
           />
           <Suspense fallback={<LoadingPage />}>
             <Routes>
@@ -144,7 +144,6 @@ const ConnectionItemPage: React.FC = () => {
                     isSync={isSync}
                     afterSync={afterSync}
                     getLastSyncTime={getLastSyncTime}
-                    healthData={healthData}
                   />
                 }
               />

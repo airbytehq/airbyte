@@ -47,9 +47,11 @@ const Alert: React.FC<IProps> = ({ message, onClose, formattedMessage, bgColor }
     return (
       <AlertContainer bgColor={bgColor}>
         <Message>{formattedMessage ? formattedMessage : message}</Message>
-        <CrossButton onClick={onClose}>
-          <CrossIcon color="#F87171" />
-        </CrossButton>
+        {onClose && (
+          <CrossButton onClick={onClose}>
+            <CrossIcon color="#F87171" />
+          </CrossButton>
+        )}
       </AlertContainer>
     );
   }

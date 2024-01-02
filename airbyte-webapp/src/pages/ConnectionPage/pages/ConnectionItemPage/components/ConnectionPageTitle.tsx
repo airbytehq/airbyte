@@ -21,7 +21,6 @@ interface ConnectionPageTitleProps {
   onSync: () => void;
   disabled?: boolean;
   lastSyncTime?: number;
-  healthData?: any;
 }
 
 const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
@@ -33,10 +32,8 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
   lastSyncTime,
   onStatusUpdating,
   onSync,
-  healthData,
 }) => {
   const { push } = useRouter<{ id: string }>();
-  const isConfigurationsStepDisabled = healthData?.connectionUpdate === "INPROGRESS";
   const steps = useMemo(() => {
     const steps = [
       {
@@ -62,10 +59,6 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
     (id: string) => {
       if (id === ConnectionSettingsRoutes.STATUS) {
         push("");
-      } else if (id === ConnectionSettingsRoutes.CONFIGURATIONS && isConfigurationsStepDisabled) {
-        // Prevent navigation if configurations step is disabled
-        // You can add a notification or any other behavior to inform the user
-        console.log("Configurations step is disabled.");
       } else {
         push(id);
       }
