@@ -109,6 +109,7 @@ At this point you can run `airbyte-ci` commands.
 - [Examples](#examples)
 - [Options](#options-2)
 - [`connectors bump_version` command](#connectors-bump_version)
+- [`connectors upgrade_cdk` command](#connectors-upgrade_cdk)
 - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
 - [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
 - [`format` command subgroup](#format-subgroup)
@@ -259,8 +260,8 @@ flowchart TD
 
 | Option              | Multiple | Default value | Description                                                                                                                                                                                              |
 | ------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--skip-step/-x`    | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                         |
 | `--fail-fast`       | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
-| `--fast-tests-only` | True     | False         | Run unit tests only, skipping integration tests or any tests explicitly tagged as slow. Use this for more frequent checks, when it is not feasible to run the entire test suite.                         |
 | `--code-tests-only` | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`  | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 
@@ -390,6 +391,20 @@ Bump source-openweather: `airbyte-ci connectors --name=source-openweather bump_v
 | `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry            |
 | `CHANGELOG_ENTRY`     | The changelog entry that will get added to the connector documentation |
 
+### <a id="connectors-upgrade_cdk"></a>`connectors upgrade_cdk` command
+
+Upgrade the CDK version of the selected connectors by updating the dependency in the setup.py file.
+
+### Examples
+
+Upgrade for source-openweather: `airbyte-ci connectors --name=source-openweather upgrade_cdk <new-cdk-version>`
+
+#### Arguments
+
+| Argument              | Description                                                            |
+| --------------------- | ---------------------------------------------------------------------- |
+| `CDK_VERSION`         | CDK version to set (default to the most recent version)                |
+
 ### <a id="connectors-upgrade_base_image"></a>`connectors upgrade_base_image` command
 
 Modify the selected connector metadata to use the latest base image version.
@@ -502,7 +517,9 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 2.10.11 | [#33497](https://github.com/airbytehq/airbyte/pull/33497)  | Consider nested .gitignore rules in format.                                          |
+| 2.11.0  | [#32188](https://github.com/airbytehq/airbyte/pull/32188)  | Add -x option to connector test to allow for skipping steps                                               |
+| 2.10.12 | [#33419](https://github.com/airbytehq/airbyte/pull/33419)  | Make ClickPipelineContext handle dagger logging.                                                          |
+| 2.10.11 | [#33497](https://github.com/airbytehq/airbyte/pull/33497)  | Consider nested .gitignore rules in format.                                                               |
 | 2.10.10 | [#33449](https://github.com/airbytehq/airbyte/pull/33449)  | Add generated metadata models to the default format ignore list.                                          |
 | 2.10.9  | [#33370](https://github.com/airbytehq/airbyte/pull/33370)  | Fix bug that broke airbyte-ci test                                                                        |
 | 2.10.8  | [#33249](https://github.com/airbytehq/airbyte/pull/33249)  | Exclude git ignored files from formatting.                                                                |
