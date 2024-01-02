@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 import pytest
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import get_source_iter
-from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput

@@ -5,7 +5,6 @@
 from pathlib import PosixPath
 
 import pytest
-from _pytest.capture import CaptureFixture
 from freezegun import freeze_time
 from unit_tests.sources.scenario_based.scenario_builder import TestScenario
 from unit_tests.sources.scenario_based.helpers import verify_discover, verify_read

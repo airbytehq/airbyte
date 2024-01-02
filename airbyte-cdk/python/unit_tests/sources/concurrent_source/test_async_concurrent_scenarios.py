@@ -5,7 +5,6 @@
 from pathlib import PosixPath
 
 import pytest
-from _pytest.capture import CaptureFixture
 from freezegun import freeze_time
 from pytest import LogCaptureFixture
 from unit_tests.sources.scenario_based.helpers import verify_discover, verify_read
@@ -48,8 +47,8 @@ scenarios = [
 
 @pytest.mark.parametrize("scenario", scenarios, ids=[s.name for s in scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
-def test_concurrent_read(caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
-    verify_read(caplog, tmp_path, scenario)
+def test_concurrent_read(scenario: TestScenario) -> None:
+    verify_read(scenario)
 
 
 @pytest.mark.parametrize("scenario", scenarios, ids=[s.name for s in scenarios])
