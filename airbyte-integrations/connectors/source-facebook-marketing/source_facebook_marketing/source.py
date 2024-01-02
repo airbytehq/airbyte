@@ -285,6 +285,7 @@ class SourceFacebookMarketing(AbstractSource):
                 start_date=insight.start_date or config.start_date or pendulum.now().add(years=-2),
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
+                insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
             )
             streams.append(stream)
