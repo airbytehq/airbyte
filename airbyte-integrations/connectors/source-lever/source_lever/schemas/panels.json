@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "applications": {
+      "items": [
+        {
+          "type": "string"
+        }
+      ],
+      "type": "array"
+    },
+    "canceledAt": {
+      "type": "null"
+    },
+    "createdAt": {
+      "type": "integer"
+    },
+    "end": {
+      "type": "integer"
+    },
+    "externalUrl": {
+      "type": "string"
+    },
+    "externallyManaged": {
+      "type": "boolean"
+    },
+    "id": {
+      "type": "string"
+    },
+    "interviews": {
+      "items": [
+        {
+          "properties": {
+            "date": {
+              "type": "integer"
+            },
+            "duration": {
+              "type": "integer"
+            },
+            "feedbackReminder": {
+              "type": "string"
+            },
+            "feedbackTemplate": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "interviewers": {
+              "items": [
+                {
+                  "properties": {
+                    "email": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              ],
+              "type": "array"
+            },
+            "location": {
+              "type": "string"
+            },
+            "note": {
+              "type": "string"
+            },
+            "subject": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      ],
+      "type": "array"
+    },
+    "note": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string"
+    },
+    "start": {
+      "type": "integer"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "user": {
+      "type": "string"
+    },
+    "opportunity": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

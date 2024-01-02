@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "baseTemplateId": {
+      "type": "string"
+    },
+    "completedAt": {
+      "type": ["null", "number"]
+    },
+    "createdAt": {
+      "type": "number"
+    },
+    "fields": {
+      "items": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "properties": {
+                "text": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": ["array", "null"]
+          },
+          "prompt": {
+            "type": ["string", "null"]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "scores": {
+            "items": {
+              "properties": {
+                "description": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": ["array", "null"]
+          },
+          "text": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": ["null", "string", "number"]
+              },
+              {
+                "items": {
+                  "properties": {
+                    "comment": {
+                      "type": ["null", "string"]
+                    },
+                    "score": {
+                      "type": ["null", "number"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": ["null", "array"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "instructions": {
+      "type": "string"
+    },
+    "interview": {
+      "type": ["null", "string"]
+    },
+    "panel": {
+      "type": ["null", "string"]
+    },
+    "text": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": ["null", "number"]
+    },
+    "user": {
+      "type": "string"
+    },
+    "opportunity": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
