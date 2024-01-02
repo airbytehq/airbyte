@@ -9,7 +9,6 @@ import styled from "styled-components";
 import { Button, LoadingPage, NewMainPageWithScroll, PageTitle, DropDown, DropDownRow } from "components";
 import MessageBox from "components/base/MessageBox";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
-import { SortOrderEnum } from "components/EntityTable/types";
 import HeadTitle from "components/HeadTitle";
 import { PageSize } from "components/PageSize";
 import { Pagination } from "components/Pagination";
@@ -76,10 +75,10 @@ const AllConnectionsPage: React.FC = () => {
   const [currentPageSize, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
   const [sortFieldName, setSortFieldName] = useState("");
   const [sortDirection, setSortDirection] = useState("");
-  const [localSortOrder, setLocalSortOrder] = useState(SortOrderEnum.DESC);
-  const [connectorSortOrder, setConnectorSortOrder] = useState(SortOrderEnum.DESC);
-  const [entitySortOrder, setEntitySortOrder] = useState(SortOrderEnum.DESC);
-  const [statusSortOrder, setStatusSortOrder] = useState(SortOrderEnum.DESC);
+  const [localSortOrder, setLocalSortOrder] = useState("");
+  const [connectorSortOrder, setConnectorSortOrder] = useState("");
+  const [entitySortOrder, setEntitySortOrder] = useState("");
+  const [statusSortOrder, setStatusSortOrder] = useState("");
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const workspace = useCurrentWorkspace();
   const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions(workspace.workspaceId);
@@ -96,15 +95,7 @@ const AllConnectionsPage: React.FC = () => {
       sortDirection,
     },
   };
-  useEffect(() => {
-    // Set initial sort order to DESC when the component mounts
-    setSortFieldName("name");
-    onSelectFilter("sortFieldName", "name");
-    setLocalSortOrder(SortOrderEnum.DESC);
-    setConnectorSortOrder(SortOrderEnum.DESC);
-    setStatusSortOrder(SortOrderEnum.DESC);
-    setEntitySortOrder(SortOrderEnum.DESC);
-  }, []);
+
   const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
 
   const { connections, total, pageSize } = useFilteredConnectionList(filters);
@@ -164,10 +155,10 @@ const AllConnectionsPage: React.FC = () => {
             pageCurrent: prevFilters.pageCurrent,
           };
         } else if (filterType === "pageCurrent") {
-          setLocalSortOrder(SortOrderEnum.DESC);
-          setConnectorSortOrder(SortOrderEnum.DESC);
-          setStatusSortOrder(SortOrderEnum.DESC);
-          setEntitySortOrder(SortOrderEnum.DESC);
+          setLocalSortOrder("");
+          setConnectorSortOrder("");
+          setStatusSortOrder("");
+          setEntitySortOrder("");
           return {
             ...filters,
             [filterType]: filterValue as number,

@@ -4,6 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
+import { SortDescIcon } from "components/icons/SortDescIcon";
 import { SortDownIcon } from "components/icons/SortDownIcon";
 import { SortUpIcon } from "components/icons/SortUpIcon";
 import Table from "components/Table";
@@ -67,7 +68,9 @@ const SourceTable: React.FC<IProps> = ({
               onClick={() => {
                 setSortFieldName("name");
                 setLocalSortOrder((prev: any) => {
-                  const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
+                  const newSortOrder =
+                    prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
+                  // const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
                   setSortDirection(newSortOrder);
                   onSelectFilter("sortFieldName", "name");
                   onSelectFilter("sortDirection", newSortOrder);
@@ -76,7 +79,13 @@ const SourceTable: React.FC<IProps> = ({
               }}
               sx={{ paddingTop: "1px" }}
             >
-              {localSortOrder === SortOrderEnum.ASC ? <SortDownIcon /> : <SortUpIcon />}
+              {localSortOrder === "" ? (
+                <SortUpIcon />
+              ) : localSortOrder === SortOrderEnum.ASC ? (
+                <SortDownIcon />
+              ) : (
+                <SortDescIcon />
+              )}
             </IconButton>
           </div>
         ),
@@ -99,7 +108,8 @@ const SourceTable: React.FC<IProps> = ({
               onClick={() => {
                 setSortFieldName("sourceName");
                 setSourceSortOrder((prev: any) => {
-                  const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
+                  const newSortOrder =
+                    prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
                   onSelectFilter("sortFieldName", "sourceName");
                   onSelectFilter("sortDirection", newSortOrder);
                   return newSortOrder;
@@ -107,7 +117,13 @@ const SourceTable: React.FC<IProps> = ({
               }}
               sx={{ paddingTop: "1px" }}
             >
-              {sourceSortOrder === SortOrderEnum.ASC ? <SortDownIcon /> : <SortUpIcon />}
+              {sourceSortOrder === "" ? (
+                <SortUpIcon />
+              ) : sourceSortOrder === SortOrderEnum.ASC ? (
+                <SortDownIcon />
+              ) : (
+                <SortDescIcon />
+              )}
             </IconButton>
           </div>
         ),
