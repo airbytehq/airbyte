@@ -668,11 +668,9 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         # the `job_result_url` could be `None`,
         # meaning there are no data available for the slice period.
         if job_result_url:
+            # add `shop_url` field to each record produced
             records = self.add_shop_url_field(
-                self.bulk_job.job_record_producer(
-                    job_result_url=job_result_url,
-                    query=self.query,
-                    custom_transform=self.custom_transform,
-                )
+                # produce records from saved bulk job result
+                self.bulk_job.job_record_producer(job_result_url, self.query, self.custom_transform)
             )
             yield from self.filter_records_newer_than_state(stream_state, records)

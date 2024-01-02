@@ -115,7 +115,7 @@ Please use this as an example. This is not optimized.
 
 2. Build your image:
 ```bash
-docker build -t airbyte/source-shopify:dev .
+docker build . --no-cache -t airbyte/source-shopify:dev
 # Running the spec command against your patched connector
 docker run airbyte/source-shopify:dev spec
 ```

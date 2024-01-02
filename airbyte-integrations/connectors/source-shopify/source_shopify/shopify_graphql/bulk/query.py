@@ -765,7 +765,6 @@ class InventoryLevel(ShopifyBulkQuery):
     ]
 
     def query(self, filter_query: Optional[str] = None) -> Query:
-        # resolve query path if the List[str] is provided
         # build the nested query first with `filter_query` to have the incremental syncs
         inventory_levels: List[Query] = [self.build("inventoryLevels", self.inventory_levels_fields, filter_query)]
         # build the main query around previous

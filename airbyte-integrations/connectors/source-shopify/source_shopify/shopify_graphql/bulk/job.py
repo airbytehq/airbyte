@@ -18,7 +18,6 @@ from .exceptions import ShopifyBulkExceptions
 from .query import ShopifyBulkQuery, ShopifyBulkTemplates
 from .record import ShopifyBulkRecord
 
-# from .status import ShopifyBulkStatus
 from .tools import BulkTools
 
 
@@ -48,7 +47,7 @@ class ShopifyBulkJob:
         self.logger = logger
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord()
         self.tools: BulkTools = BulkTools()
-        # setting custom record reader, if passed
+        # overide record reader, if passed
         if custom_reader:
             self.record_producer.record_reader: Callable = custom_reader
 
