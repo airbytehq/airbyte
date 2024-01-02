@@ -343,16 +343,15 @@ public class SshTunnel implements AutoCloseable {
     // Additional delay used for ChannelOutputStream to wait for space in the remote socket send buffer.
     CoreModuleProperties.WAIT_FOR_SPACE_TIMEOUT.set(client, Duration.ofMinutes(2));
     // No timeout so no point having a disconnect handler. Intentionally commented for future testing.
-    /*client.setSessionDisconnectHandler(new SessionDisconnectHandler() {
-      @Override
-      public boolean handleTimeoutDisconnectReason(Session session, TimeoutIndicator timeoutStatus) throws IOException {
-        LOGGER.info("Handling session timeout. {}", timeoutStatus.getStatus());
-        if (timeoutStatus.getStatus() == TimeoutStatus.IdleTimeout) {
-          return true;
-        }
-        return SessionDisconnectHandler.super.handleTimeoutDisconnectReason(session, timeoutStatus);
-      }
-    });*/
+    /*
+     * client.setSessionDisconnectHandler(new SessionDisconnectHandler() {
+     *
+     * @Override public boolean handleTimeoutDisconnectReason(Session session, TimeoutIndicator
+     * timeoutStatus) throws IOException { LOGGER.info("Handling session timeout. {}",
+     * timeoutStatus.getStatus()); if (timeoutStatus.getStatus() == TimeoutStatus.IdleTimeout) { return
+     * true; } return SessionDisconnectHandler.super.handleTimeoutDisconnectReason(session,
+     * timeoutStatus); } });
+     */
     // Global keepalive message sent every 2 seconds. This precedes the session level heartbeat.
     CoreModuleProperties.HEARTBEAT_INTERVAL.set(client, Duration.ofMillis(2000));
     return client;
