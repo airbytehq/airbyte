@@ -10,6 +10,10 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 class StripeRequestBuilder:
 
     @classmethod
+    def accounts_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("accounts", account_id, client_secret)
+
+    @classmethod
     def application_fees_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
         return cls("application_fees", account_id, client_secret)
 
@@ -50,6 +54,10 @@ class StripeRequestBuilder:
     @classmethod
     def payment_methods_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
         return cls("payment_methods", account_id, client_secret)
+
+    @classmethod
+    def persons_endpoint(cls, account_id: str, client_secret: str, ) -> "StripeRequestBuilder":
+        return cls(f"accounts/{account_id}/persons", account_id, client_secret)
 
     @classmethod
     def radar_early_fraud_warnings_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":

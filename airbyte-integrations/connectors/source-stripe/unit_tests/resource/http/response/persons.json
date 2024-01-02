@@ -1,0 +1,65 @@
+{
+  "object": "list",
+  "url": "/v1/accounts/acct_1G9HZLIEn49ers/persons",
+  "has_more": false,
+  "data": [
+    {
+      "id": "person_1MqjB62eZvKYlo2CaeEJzK13",
+      "person": "person_1MqjB62eZvKYlo2CaeEJzK13",
+      "object": "person",
+      "account": "acct_1G9HZLIEn49ers",
+      "created": 1680035496,
+      "dob": {
+        "day": null,
+        "month": null,
+        "year": null
+      },
+      "first_name": "Brock",
+      "future_requirements": {
+        "alternatives": [],
+        "currently_due": [],
+        "errors": [],
+        "eventually_due": [],
+        "past_due": [],
+        "pending_verification": []
+      },
+      "id_number_provided": false,
+      "last_name": "Purdy",
+      "metadata": {},
+      "relationship": {
+        "director": false,
+        "executive": true,
+        "owner": false,
+        "percent_ownership": null,
+        "representative": false,
+        "title": null
+      },
+      "requirements": {
+        "alternatives": [],
+        "currently_due": [],
+        "errors": [],
+        "eventually_due": [],
+        "past_due": [],
+        "pending_verification": []
+      },
+      "ssn_last_4_provided": false,
+      "verification": {
+        "additional_document": {
+          "back": null,
+          "details": null,
+          "details_code": null,
+          "front": null
+        },
+        "details": null,
+        "details_code": null,
+        "document": {
+          "back": null,
+          "details": null,
+          "details_code": null,
+          "front": null
+        },
+        "status": "verified"
+      }
+    }
+  ]
+}
