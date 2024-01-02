@@ -43,6 +43,7 @@ Most streams are supported regardless of your Chargebee site's [Product Catalog 
 | [Coupons](https://apidocs.chargebee.com/docs/api/coupons)                                              | ✔                   | ✔                   |
 | [Credit Notes](https://apidocs.chargebee.com/docs/api/credit_notes)                                    | ✔                   | ✔                   |
 | [Customers](https://apidocs.chargebee.com/docs/api/customers)                                          | ✔                   | ✔                   |
+| [Differential Prices](https://apidocs.chargebee.com/docs/api/differential_prices)                      | ✔                   | ✔                   |
 | [Events](https://apidocs.chargebee.com/docs/api/events)                                                | ✔                   | ✔                   |
 | [Gifts](https://apidocs.chargebee.com/docs/api/gifts)                                                  | ✔                   | ✔                   |
 | [Hosted Pages](https://apidocs.chargebee.com/docs/api/hosted_pages)                                    | ✔                   | ✔                   |

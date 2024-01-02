@@ -131,5 +131,12 @@
       "stream_state": { "updated_at": 2147483647 },
       "stream_descriptor": { "name": "item_family" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "differential_price" }
+    }
   }
 ]
