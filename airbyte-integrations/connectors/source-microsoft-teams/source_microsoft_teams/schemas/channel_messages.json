@@ -12,20 +12,23 @@
     "etag": {
       "type": ["null", "string"]
     },
-    "messageYype": {
+    "messageType": {
       "type": ["null", "string"]
     },
     "createdDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "lastModifiedDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "deletedDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "subject": {
       "type": ["null", "string"]

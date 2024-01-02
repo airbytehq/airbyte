@@ -6,6 +6,11 @@
     "id": {
       "type": ["null", "string"]
     },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
     "displayName": {
       "type": ["null", "string"]
     },
@@ -13,6 +18,15 @@
       "type": ["null", "string"]
     },
     "email": {
+      "type": ["null", "string"]
+    },
+    "isFavoriteByDefault": {
+      "type": ["null", "boolean"]
+    },
+    "membershipType": {
+      "type": ["null", "string"]
+    },
+    "tenantId": {
       "type": ["null", "string"]
     },
     "webUrl": {

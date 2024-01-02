@@ -39,7 +39,8 @@
               "tenant_id": {
                 "title": "Directory (tenant) ID",
                 "type": "string",
-                "description": "A globally unique identifier (GUID) that is different than your organization name or domain. Follow these steps to obtain: open one of the Teams where you belong inside the Teams Application -> Click on the … next to the Team title -> Click on Get link to team -> Copy the link to the team and grab the tenant ID form the URL"
+                "description": "A globally unique identifier (GUID) that is different than your organization name or domain. Follow these steps to obtain: open one of the Teams where you belong inside the Teams Application -> Click on the … next to the Team title -> Click on Get link to team -> Copy the link to the team and grab the tenant ID form the URL",
+                "airbyte_secret": true
               },
               "client_id": {
                 "title": "Client ID",
@@ -76,7 +77,8 @@
               "tenant_id": {
                 "title": "Directory (tenant) ID",
                 "type": "string",
-                "description": "A globally unique identifier (GUID) that is different than your organization name or domain. Follow these steps to obtain: open one of the Teams where you belong inside the Teams Application -> Click on the … next to the Team title -> Click on Get link to team -> Copy the link to the team and grab the tenant ID form the URL"
+                "description": "A globally unique identifier (GUID) that is different than your organization name or domain. Follow these steps to obtain: open one of the Teams where you belong inside the Teams Application -> Click on the … next to the Team title -> Click on Get link to team -> Copy the link to the team and grab the tenant ID form the URL",
+                "airbyte_secret": true
               },
               "client_id": {
                 "title": "Client ID",

@@ -6,8 +6,30 @@
     "id": {
       "type": ["null", "string"]
     },
-    "lastModifiedDateTime": {
+    "createdDateTime": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "description": {
       "type": ["null", "string"]
+    },
+    "lastModifiedBy": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "displayName": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "lastModifiedDateTime": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "name": {
       "type": ["null", "string"]

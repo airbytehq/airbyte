@@ -20,10 +20,14 @@
     },
     "lastDeliveredDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "uniqueSenders": {
-      "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "preview": {
       "type": ["null", "string"]

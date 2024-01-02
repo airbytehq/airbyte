@@ -4,6 +4,10 @@
   "additionalProperties": true,
   "properties": {
     "reportRefreshDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "userId": {
       "type": ["null", "string"]
     },
     "userPrincipalName": {
@@ -34,6 +38,15 @@
       "type": ["null", "string"]
     },
     "usedWindows": {
+      "type": ["null", "string"]
+    },
+    "usedChromeOS": {
+      "type": ["null", "string"]
+    },
+    "usedLinux": {
+      "type": ["null", "string"]
+    },
+    "isLisenced": {
       "type": ["null", "string"]
     },
     "reportPeriod": {

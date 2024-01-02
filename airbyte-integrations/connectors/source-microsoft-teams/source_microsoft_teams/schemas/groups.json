@@ -8,14 +8,16 @@
     },
     "deletedDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "classification": {
       "type": ["null", "string"]
     },
     "createdDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "creationOptions": {
       "type": ["null", "array"],
@@ -31,7 +33,8 @@
     },
     "expirationDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "groupTypes": {
       "type": ["null", "array"],
@@ -90,7 +93,8 @@
     },
     "renewedDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "resourceBehaviorOptions": {
       "type": ["null", "array"],
@@ -109,6 +113,25 @@
     },
     "securityIdentifier": {
       "type": ["null", "string"]
+    },
+    "serviceProvisioningErrors": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "createdDateTime": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "airbyte_type": "timestamp_without_timezone"
+          },
+          "isResolved": {
+            "type": ["null", "boolean"]
+          },
+          "serviceInstance": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     },
     "theme": {
       "type": ["null", "string"]

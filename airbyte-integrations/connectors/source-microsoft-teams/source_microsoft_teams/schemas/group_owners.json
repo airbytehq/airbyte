@@ -9,18 +9,14 @@
     "groupId": {
       "type": ["null", "string"]
     },
+    "@odata.type": {
+      "type": ["null", "string"]
+    },
     "businessPhones": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "displayName": {
       "type": ["null", "string"]
