@@ -236,7 +236,7 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
         # Fetch data from original stream else fetch data from events
         shouldResetState = durationInDaysFromLastSync >= 30
         return hasState is False or self.completed is False or shouldResetState
-    def read_records(self, stream_slice, stream_state = None, cursor_field= None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice, stream_state = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         shouldFetchFromOriginalResource = self.shouldFetchFromOriginalResource(stream_state)
         if shouldFetchFromOriginalResource:
             self.logger.info("Fetching from original source")
