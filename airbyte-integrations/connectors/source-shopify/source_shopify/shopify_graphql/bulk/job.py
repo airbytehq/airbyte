@@ -17,7 +17,6 @@ from source_shopify.utils import ShopifyRateLimiter as limiter
 from .exceptions import ShopifyBulkExceptions
 from .query import ShopifyBulkQuery, ShopifyBulkTemplates
 from .record import ShopifyBulkRecord
-
 from .tools import BulkTools
 
 
