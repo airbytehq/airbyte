@@ -180,6 +180,9 @@ const ConnectionTable: React.FC<IProps> = ({
                   const newSortOrder =
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
                   setSortDirection(newSortOrder);
+                  setConnectorSortOrder("");
+                  setEntitySortOrder("");
+                  setStatusSortOrder("");
                   onSelectFilter("sortFieldName", "name");
                   onSelectFilter("sortDirection", newSortOrder);
                   return newSortOrder;
@@ -223,6 +226,9 @@ const ConnectionTable: React.FC<IProps> = ({
                 setConnectorSortOrder((prev: any) => {
                   const newSortOrder =
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
+                  setLocalSortOrder("");
+                  setEntitySortOrder("");
+                  setStatusSortOrder("");
                   onSelectFilter("sortFieldName", "connectorName");
                   onSelectFilter("sortDirection", newSortOrder);
                   return newSortOrder;
@@ -253,6 +259,9 @@ const ConnectionTable: React.FC<IProps> = ({
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
                   onSelectFilter("sortFieldName", "entityName");
                   onSelectFilter("sortDirection", newSortOrder);
+                  setLocalSortOrder("");
+                  setConnectorSortOrder("");
+                  setStatusSortOrder("");
                   return newSortOrder;
                 });
               }}
@@ -281,6 +290,9 @@ const ConnectionTable: React.FC<IProps> = ({
                 setStatusSortOrder((prev: any) => {
                   const newSortOrder =
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
+                  setLocalSortOrder("");
+                  setEntitySortOrder("");
+                  setConnectorSortOrder("");
                   onSelectFilter("sortFieldName", "status");
                   onSelectFilter("sortDirection", newSortOrder);
                   return newSortOrder;

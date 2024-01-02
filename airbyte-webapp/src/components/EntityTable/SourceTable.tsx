@@ -72,6 +72,7 @@ const SourceTable: React.FC<IProps> = ({
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
                   // const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
                   setSortDirection(newSortOrder);
+                  setSourceSortOrder("");
                   onSelectFilter("sortFieldName", "name");
                   onSelectFilter("sortDirection", newSortOrder);
                   return newSortOrder;
@@ -110,6 +111,7 @@ const SourceTable: React.FC<IProps> = ({
                 setSourceSortOrder((prev: any) => {
                   const newSortOrder =
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
+                  setLocalSortOrder("");
                   onSelectFilter("sortFieldName", "sourceName");
                   onSelectFilter("sortDirection", newSortOrder);
                   return newSortOrder;
