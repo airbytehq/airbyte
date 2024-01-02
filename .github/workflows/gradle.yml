@@ -71,7 +71,7 @@ jobs:
       # IMPORTANT! DO NOT CHANGE THE QUOTES AROUND THE GLOBS. THEY ARE REQUIRED.
       # MAKE SURE TO TEST ANY SYNTAX CHANGES BEFORE MERGING.
       - name: Get changed files
-        uses: tj-actions/changed-files@v39
+        uses: tj-actions/changed-files@v41
         id: changes
         with:
           files_yaml: |
