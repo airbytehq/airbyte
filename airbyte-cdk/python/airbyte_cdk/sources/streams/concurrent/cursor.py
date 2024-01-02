@@ -9,7 +9,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.state_converter import ConcurrentStreamStateConverter
+from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import AbstractStreamStateConverter
 
 
 def _extract_value(mapping: Mapping[str, Any], path: List[str]) -> Any:
@@ -26,12 +26,12 @@ class Comparable(Protocol):
 
 class CursorField:
     def __init__(self, cursor_field_key: str) -> None:
-        self._cursor_field_key = cursor_field_key
+        self.cursor_field_key = cursor_field_key
 
     def extract_value(self, record: Record) -> Comparable:
-        cursor_value = record.data.get(self._cursor_field_key)
+        cursor_value = record.data.get(self.cursor_field_key)
         if cursor_value is None:
-            raise ValueError(f"Could not find cursor field {self._cursor_field_key} in record")
+            raise ValueError(f"Could not find cursor field {self.cursor_field_key} in record")
         return cursor_value  # type: ignore  # we assume that the value the path points at is a comparable
 
 
@@ -70,7 +70,7 @@ class ConcurrentCursor(Cursor):
         stream_state: Any,
         message_repository: MessageRepository,
         connector_state_manager: ConnectorStateManager,
-        connector_state_converter: ConcurrentStreamStateConverter,
+        connector_state_converter: AbstractStreamStateConverter,
         cursor_field: CursorField,
         slice_boundary_fields: Optional[Tuple[str, str]],
     ) -> None:
@@ -84,7 +84,7 @@ class ConcurrentCursor(Cursor):
         self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
         self._most_recent_record: Optional[Record] = None
         self._has_closed_at_least_one_slice = False
-        self._state = connector_state_converter.get_concurrent_stream_state(stream_state)
+        self.state = stream_state
 
     def observe(self, record: Record) -> None:
         if self._slice_boundary_fields:
@@ -96,22 +96,22 @@ class ConcurrentCursor(Cursor):
         if not self._most_recent_record or self._extract_cursor_value(self._most_recent_record) < self._extract_cursor_value(record):
             self._most_recent_record = record
 
-    def _extract_cursor_value(self, record: Record) -> Comparable:
-        return self._cursor_field.extract_value(record)
+    def _extract_cursor_value(self, record: Record) -> Any:
+        return self._connector_state_converter.parse_value(self._cursor_field.extract_value(record))
 
     def close_partition(self, partition: Partition) -> None:
-        slice_count_before = len(self._state["slices"])
+        slice_count_before = len(self.state.get("slices", []))
         self._add_slice_to_state(partition)
-        if slice_count_before < len(self._state["slices"]):
+        if slice_count_before < len(self.state["slices"]):
             self._merge_partitions()
             self._emit_state_message()
         self._has_closed_at_least_one_slice = True
 
     def _add_slice_to_state(self, partition: Partition) -> None:
         if self._slice_boundary_fields:
-            if "slices" not in self._state:
-                self._state["slices"] = []
-            self._state["slices"].append(
+            if "slices" not in self.state:
+                self.state["slices"] = []
+            self.state["slices"].append(
                 {
                     "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
                     "end": self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
@@ -124,28 +124,37 @@ class ConcurrentCursor(Cursor):
                     "expected."
                 )
 
-            self._state["slices"].append(
+            self.state["slices"].append(
                 {
-                    "start": 0,  # FIXME this only works with int datetime
+                    # TODO: if we migrate stored state to the concurrent state format, we may want this to be the config start date
+                    #  instead of zero_value.
+                    "start": self._connector_state_converter.zero_value,
                     "end": self._extract_cursor_value(self._most_recent_record),
                 }
             )
 
     def _emit_state_message(self) -> None:
-        self._connector_state_manager.update_state_for_stream(self._stream_name, self._stream_namespace, self._state)
+        self._connector_state_manager.update_state_for_stream(
+            self._stream_name,
+            self._stream_namespace,
+            self._connector_state_converter.convert_to_sequential_state(self._cursor_field, self.state),
+        )
+        # TODO: if we migrate stored state to the concurrent state format
+        #  (aka stop calling self._connector_state_converter.convert_to_sequential_state`), we'll need to cast datetimes to string or
+        #  int before emitting state
         state_message = self._connector_state_manager.create_state_message(
             self._stream_name, self._stream_namespace, send_per_stream_state=True
         )
         self._message_repository.emit_message(state_message)
 
     def _merge_partitions(self) -> None:
-        self._state["slices"] = self._connector_state_converter.merge_intervals(self._state["slices"])
+        self.state["slices"] = self._connector_state_converter.merge_intervals(self.state["slices"])
 
     def _extract_from_slice(self, partition: Partition, key: str) -> Comparable:
         try:
             _slice = partition.to_slice()
             if not _slice:
                 raise KeyError(f"Could not find key `{key}` in empty slice")
-            return _slice[key]  # type: ignore  # we expect the devs to specify a key that would return a Comparable
+            return self._connector_state_converter.parse_value(_slice[key])  # type: ignore  # we expect the devs to specify a key that would return a Comparable
         except KeyError as exception:
             raise KeyError(f"Partition is expected to have key `{key}` but could not be found") from exception

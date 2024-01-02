@@ -1,6 +1,8 @@
-# Manage data residency
+---
+products: cloud
+---
 
-<AppliesTo cloud />
+# Manage data residency
 
 In Airbyte Cloud, you can set the default data residency and choose the data residency for individual connections, which can help you comply with data localization requirements.
 

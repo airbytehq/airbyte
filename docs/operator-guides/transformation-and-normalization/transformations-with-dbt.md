@@ -1,6 +1,8 @@
-# Transformations with dbt (Part 2/3)
+---
+products: oss-*
+---
 
-## Overview
+# Transformations with dbt (Part 2/3)
 
 This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using specialized transformation tool: dbt.
 

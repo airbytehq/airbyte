@@ -45,8 +45,6 @@
   to: /enterprise-setup/
 - from: /enterprise-setup/self-managed/implementation-guide
   to: /enterprise-setup/implementation-guide
-- from: /enterprise-setup/self-managed/sso
-  to: /enterprise-setup/sso
 - from:
     - /project-overview/security
     - /operator-guides/securing-airbyte
@@ -90,3 +88,8 @@
   to: /using-airbyte/workspaces
 - from: /operator-guides/locating-files-local-destination
   to: /integrations/locating-files-local-destination
+# End November 2023 restructure
+- from:
+    - /enterprise-setup/self-managed/sso
+    - /enterprise-setup/sso
+  to: /access-management/sso

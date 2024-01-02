@@ -15,6 +15,9 @@
       "type": ["string", "null"],
       "maxLength": 50
     },
+    "business_entity_id": {
+      "type": ["string", "null"]
+    },
     "subscription_id": {
       "type": ["string", "null"],
       "maxLength": 50
@@ -142,13 +145,22 @@
     "payment_owner": {
       "type": ["string", "null"]
     },
-
     "void_reason_code": {
       "type": ["string", "null"],
       "maxLength": 100
     },
     "deleted": {
       "type": ["boolean", "null"]
+    },
+    "base_currency_code": {
+      "type": ["string", "null"],
+      "maxLength": 3
+    },
+    "channel": {
+      "type": ["string", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
     },
     "vat_number_prefix": {
       "type": ["string", "null"],
@@ -281,7 +293,6 @@
             "type": ["integer", "null"],
             "minimum": 0
           },
-
           "entity_id": {
             "type": ["string", "null"],
             "maxLength": 100
