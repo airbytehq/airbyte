@@ -190,7 +190,6 @@ class ParentAsyncJob(AsyncJob):
 class InsightAsyncJob(AsyncJob):
     """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
 
-    job_timeout = pendulum.duration(minutes=60)
     page_size = 100
 
     def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet, Ad], params: Mapping[str, Any], job_timeout: Duration, **kwargs):
@@ -206,7 +205,7 @@ class InsightAsyncJob(AsyncJob):
             "since": self._interval.start.to_date_string(),
             "until": self._interval.end.to_date_string(),
         }
-        self.job_timeout = job_timeout
+        self._job_timeout = job_timeout
 
         self._edge_object = edge_object
         self._job: Optional[AdReportRun] = None
@@ -253,7 +252,12 @@ class InsightAsyncJob(AsyncJob):
         ids = set(row[pk_name] for row in result)
         logger.info(f"Got {len(ids)} {pk_name}s for period {self._interval}: {ids}")
 
-        jobs = [InsightAsyncJob(api=self._api, edge_object=edge_class(pk), params=self._params, interval=self._interval) for pk in ids]
+        jobs = [
+            InsightAsyncJob(
+                api=self._api, edge_object=edge_class(pk), params=self._params, interval=self._interval, job_timeout=self._job_timeout
+            )
+            for pk in ids
+        ]
         return jobs
 
     def start(self):
@@ -337,8 +341,8 @@ class InsightAsyncJob(AsyncJob):
         percent = self._job["async_percent_completion"]
         logger.info(f"{self}: is {percent} complete ({job_status})")
 
-        if self.elapsed_time > self.job_timeout:
-            logger.info(f"{self}: run more than maximum allowed time {self.job_timeout}.")
+        if self.elapsed_time > self._job_timeout:
+            logger.info(f"{self}: run more than maximum allowed time {self._job_timeout}.")
             self._finish_time = pendulum.now()
             self._failed = True
             return True
