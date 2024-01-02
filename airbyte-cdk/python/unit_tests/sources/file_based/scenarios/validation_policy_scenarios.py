@@ -4,7 +4,7 @@
 
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from unit_tests.sources.scenario_based.scenario_builder import TestScenarioBuilder
 
 _base_single_stream_scenario = (
     TestScenarioBuilder()

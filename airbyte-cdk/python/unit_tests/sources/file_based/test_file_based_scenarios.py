@@ -97,7 +97,7 @@ from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     single_parquet_scenario,
     single_partitioned_parquet_scenario,
 )
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
+from unit_tests.sources.scenario_based.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.unstructured_scenarios import (
     corrupted_file_scenario,
     no_file_extension_unstructured_scenario,

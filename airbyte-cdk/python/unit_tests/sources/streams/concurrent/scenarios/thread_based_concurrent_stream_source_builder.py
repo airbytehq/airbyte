@@ -20,7 +20,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_protocol.models import ConfiguredAirbyteStream
-from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
+from unit_tests.sources.scenario_based.scenario_builder import SourceBuilder
 
 
 class LegacyStream(Stream):

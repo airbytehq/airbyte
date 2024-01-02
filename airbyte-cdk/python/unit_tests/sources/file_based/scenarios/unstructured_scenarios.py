@@ -6,7 +6,7 @@ import base64
 import nltk
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from unit_tests.sources.scenario_based.scenario_builder import TestScenarioBuilder
 
 # import nltk data for pdf parser
 nltk.download("punkt")

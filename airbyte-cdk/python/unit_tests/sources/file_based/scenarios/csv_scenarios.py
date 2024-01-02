@@ -11,7 +11,7 @@ from airbyte_protocol.models import SyncMode
 from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario, TestScenarioBuilder
+from unit_tests.sources.scenario_based.scenario_builder import TestScenario, TestScenarioBuilder
 
 single_csv_scenario: TestScenario[InMemoryFilesSource] = (
     TestScenarioBuilder[InMemoryFilesSource]()

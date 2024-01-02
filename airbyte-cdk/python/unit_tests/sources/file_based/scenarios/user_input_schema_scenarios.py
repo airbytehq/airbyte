@@ -7,7 +7,7 @@ from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, Fil
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_protocol.models import SyncMode
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from unit_tests.sources.scenario_based.scenario_builder import TestScenarioBuilder
 
 """
 User input schema rules:

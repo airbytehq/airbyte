@@ -17,7 +17,7 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
+from unit_tests.sources.scenario_based.scenario_builder import TestScenario
 
 
 def verify_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> None:

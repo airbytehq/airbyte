@@ -9,7 +9,7 @@ from unit_tests.sources.file_based.helpers import (
     TestErrorOpenFileInMemoryFilesStreamReader,
 )
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from unit_tests.sources.scenario_based.scenario_builder import TestScenarioBuilder
 
 _base_success_scenario = (
     TestScenarioBuilder()

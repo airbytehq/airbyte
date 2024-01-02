@@ -7,7 +7,7 @@ from pathlib import PosixPath
 import pytest
 from _pytest.capture import CaptureFixture
 from freezegun import freeze_time
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
+from unit_tests.sources.scenario_based.scenario_builder import TestScenario
 from unit_tests.sources.scenario_based.helpers import verify_discover, verify_read
 from unit_tests.sources.streams.concurrent.scenarios.incremental_scenarios import (
     test_incremental_stream_with_slice_boundaries_no_input_state,

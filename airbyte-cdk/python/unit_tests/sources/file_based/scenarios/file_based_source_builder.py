@@ -15,7 +15,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
-from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
+from unit_tests.sources.scenario_based.scenario_builder import SourceBuilder
 
 
 class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
