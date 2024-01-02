@@ -146,6 +146,24 @@ export interface SourcePageReadList {
   pageCurrent?: number;
 }
 
+export interface WebBackendConnectionStatusReadList {
+  connectionStatusList: WebBackendConnectionStatusRead[];
+}
+
+export interface WebBackendConnectionsPageReadList {
+  connections: WebBackendConnectionPageRead[];
+  total?: number;
+  pageSize?: number;
+  pageCurrent?: number;
+}
+
+export interface WebBackendConnectionPageReadList {
+  connections: WebBackendConnectionRead[];
+  total?: number;
+  pageSize?: number;
+  pageCurrent?: number;
+}
+
 export interface WebBackendConnectionReadList {
   connections: WebBackendConnectionRead[];
 }
@@ -155,10 +173,6 @@ export interface WebBackendConnectionStatusRead {
   /** epoch time of the latest sync job. null if no sync job has taken place. */
   latestSyncJobCreatedAt?: number;
   latestSyncJobStatus?: JobStatus;
-}
-
-export interface WebBackendConnectionStatusReadList {
-  connectionStatusList: WebBackendConnectionStatusRead[];
 }
 
 export interface WebBackendConnectionPageRead {
@@ -171,13 +185,6 @@ export interface WebBackendConnectionPageRead {
 
 export interface WebBackendConnectionList {
   connections: WebBackendConnectionPageRead[];
-}
-
-export interface WebBackendConnectionsPageReadList {
-  connections: WebBackendConnectionPageRead[];
-  total?: number;
-  pageSize?: number;
-  pageCurrent?: number;
 }
 
 export interface WebBackendConnectionRead {
@@ -206,13 +213,6 @@ export interface WebBackendConnectionRead {
   resourceRequirements?: ResourceRequirements;
   catalogId?: string;
   catalogDiff?: CatalogDiff;
-}
-
-export interface WebBackendConnectionPageReadList {
-  connections: WebBackendConnectionRead[];
-  total?: number;
-  pageSize?: number;
-  pageCurrent?: number;
 }
 
 export interface WebBackendConnectionFilterParamItem {
@@ -276,6 +276,14 @@ export interface CompleteSourceOauthRequest {
 
 export interface OAuthConsentRead {
   consentUrl: string;
+}
+
+export interface DestinationOauthConsentRequest {
+  destinationDefinitionId: DestinationDefinitionId;
+  workspaceId: WorkspaceId;
+  /** The url to redirect to after getting the user consent */
+  redirectUrl: string;
+  oAuthInputConfiguration?: OAuthConfiguration;
 }
 
 export interface OAuthConfigSpecification {
@@ -378,14 +386,6 @@ export interface AdvancedAuth {
  * The values required to configure OAuth flows. The schema for this must match the `OAuthConfigSpecification.oauthUserInputFromConnectorConfigSpecification` schema.
  */
 export type OAuthConfiguration = unknown;
-
-export interface DestinationOauthConsentRequest {
-  destinationDefinitionId: DestinationDefinitionId;
-  workspaceId: WorkspaceId;
-  /** The url to redirect to after getting the user consent */
-  redirectUrl: string;
-  oAuthInputConfiguration?: OAuthConfiguration;
-}
 
 export interface SourceOauthConsentRequest {
   sourceDefinitionId: SourceDefinitionId;
@@ -538,13 +538,6 @@ export const StreamTransformTransformType = {
   update_stream: "update_stream",
 } as const;
 
-export interface StreamTransform {
-  transformType: StreamTransformTransformType;
-  streamDescriptor: StreamDescriptor;
-  /** list of field transformations. order does not matter. */
-  updateStream?: FieldTransform[];
-}
-
 /**
  * Describes the difference between two Airbyte catalogs.
  */
@@ -565,16 +558,6 @@ export const ConnectionStateType = {
 
 export interface StateBlob {
   [key: string]: any;
-}
-
-export interface StreamState {
-  streamDescriptor: StreamDescriptor;
-  streamState?: StateBlob;
-}
-
-export interface GlobalState {
-  shared_state?: StateBlob;
-  streamStates: StreamState[];
 }
 
 /**
@@ -742,9 +725,31 @@ export const JobStatus = {
   cancelled: "cancelled",
 } as const;
 
+export interface JobWithAttemptsRead {
+  job?: JobRead;
+  attempts?: AttemptRead[];
+}
+
 export interface StreamDescriptor {
   name: string;
   namespace?: string;
+}
+
+export interface StreamTransform {
+  transformType: StreamTransformTransformType;
+  streamDescriptor: StreamDescriptor;
+  /** list of field transformations. order does not matter. */
+  updateStream?: FieldTransform[];
+}
+
+export interface StreamState {
+  streamDescriptor: StreamDescriptor;
+  streamState?: StateBlob;
+}
+
+export interface GlobalState {
+  shared_state?: StateBlob;
+  streamStates: StreamState[];
 }
 
 /**
@@ -786,11 +791,6 @@ export interface JobRead {
   updatedAt: number;
   status: JobStatus;
   resetConfig?: ResetConfig;
-}
-
-export interface JobWithAttemptsRead {
-  job?: JobRead;
-  attempts?: AttemptRead[];
 }
 
 export interface JobIdRequestBody {
@@ -1061,11 +1061,7 @@ export interface ConnectionDisplayFlag {
   flag: boolean;
 }
 
-export interface ConnectionReadList {
-  connections: ConnectionRead[];
-}
-
-export interface WebBackendConnectionCreate {
+export interface ConnectionCreate {
   /** Optional name of the connection */
   name?: string;
   namespaceDefinition?: NamespaceDefinitionType;
@@ -1082,7 +1078,6 @@ export interface WebBackendConnectionCreate {
   scheduleData?: ConnectionScheduleData;
   status: ConnectionStatus;
   resourceRequirements?: ResourceRequirements;
-  operations?: OperationCreate[];
   sourceCatalogId?: string;
 }
 
@@ -1146,6 +1141,10 @@ export interface ConnectionRead {
   status: ConnectionStatus;
   resourceRequirements?: ResourceRequirements;
   sourceCatalogId?: string;
+}
+
+export interface ConnectionReadList {
+  connections: ConnectionRead[];
 }
 
 export interface WebBackendConnectionUpdate {
@@ -1271,11 +1270,12 @@ export interface DestinationPageRequestBody {
   DestinationDefinitionId?: DestinationDefinitionId;
   pageSize?: number;
   pageCurrent?: number;
+  sortDetails?: SortDetails;
 }
 
 export type DestinationId = string;
 
-export interface ConnectionCreate {
+export interface WebBackendConnectionCreate {
   /** Optional name of the connection */
   name?: string;
   namespaceDefinition?: NamespaceDefinitionType;
@@ -1292,6 +1292,7 @@ export interface ConnectionCreate {
   scheduleData?: ConnectionScheduleData;
   status: ConnectionStatus;
   resourceRequirements?: ResourceRequirements;
+  operations?: OperationCreate[];
   sourceCatalogId?: string;
 }
 
@@ -1345,10 +1346,6 @@ export interface DestinationDefinitionSpecificationRead {
   supportsNormalization?: boolean;
 }
 
-export interface PrivateDestinationDefinitionReadList {
-  destinationDefinitions: PrivateDestinationDefinitionRead[];
-}
-
 export interface DestinationDefinitionIdWithWorkspaceId {
   destinationDefinitionId: DestinationDefinitionId;
   workspaceId: WorkspaceId;
@@ -1382,6 +1379,10 @@ export interface DestinationDefinitionRead {
 export interface PrivateDestinationDefinitionRead {
   destinationDefinition: DestinationDefinitionRead;
   granted: boolean;
+}
+
+export interface PrivateDestinationDefinitionReadList {
+  destinationDefinitions: PrivateDestinationDefinitionRead[];
 }
 
 export interface DestinationDefinitionReadList {
@@ -1457,11 +1458,9 @@ export interface SourceUpdate {
   name: string;
 }
 
-export interface SourceCreate {
+export interface SourceCoreConfig {
   sourceDefinitionId: SourceDefinitionId;
   connectionConfiguration: SourceConfiguration;
-  workspaceId: WorkspaceId;
-  name: string;
 }
 
 export interface SourceCloneConfiguration {
@@ -1474,18 +1473,10 @@ export interface SourcesPageRequestBody {
   SourceDefinitionId?: SourceDefinitionId;
   pageSize?: number;
   pageCurrent?: number;
+  sortDetails?: SortDetails;
 }
 
 export type SourceId = string;
-
-export interface SourceRead {
-  sourceDefinitionId: SourceDefinitionId;
-  sourceId: SourceId;
-  workspaceId: WorkspaceId;
-  connectionConfiguration: SourceConfiguration;
-  name: string;
-  sourceName: string;
-}
 
 /**
  * The values required to configure the source. The schema for this should have an id of the existing source along with the configuration you want to change in case.
@@ -1549,10 +1540,6 @@ export interface SourceDefinitionSpecificationRead {
   jobInfo: SynchronousJobRead;
 }
 
-export interface PrivateSourceDefinitionReadList {
-  sourceDefinitions: PrivateSourceDefinitionRead[];
-}
-
 export interface SourceDefinitionIdWithWorkspaceId {
   sourceDefinitionId: SourceDefinitionId;
   workspaceId: WorkspaceId;
@@ -1595,6 +1582,10 @@ export interface PrivateSourceDefinitionRead {
   granted: boolean;
 }
 
+export interface PrivateSourceDefinitionReadList {
+  sourceDefinitions: PrivateSourceDefinitionRead[];
+}
+
 export interface SourceDefinitionReadList {
   sourceDefinitions: SourceDefinitionRead[];
 }
@@ -1615,9 +1606,20 @@ export interface CustomSourceDefinitionCreate {
 
 export type SourceDefinitionId = string;
 
-export interface SourceCoreConfig {
+export interface SourceRead {
+  sourceDefinitionId: SourceDefinitionId;
+  sourceId: SourceId;
+  workspaceId: WorkspaceId;
+  connectionConfiguration: SourceConfiguration;
+  name: string;
+  sourceName: string;
+}
+
+export interface SourceCreate {
   sourceDefinitionId: SourceDefinitionId;
   connectionConfiguration: SourceConfiguration;
+  workspaceId: WorkspaceId;
+  name: string;
 }
 
 /**
@@ -1635,6 +1637,11 @@ export interface SourceDefinitionIdRequestBody {
 
 export interface SlugRequestBody {
   slug: string;
+}
+
+export interface SortDetails {
+  sortFieldName?: string;
+  sortDirection?: string;
 }
 
 export interface WebBackendWorkspaceStateResult {
@@ -1704,6 +1711,7 @@ export interface WorkspaceIdPageRequestBody {
   status?: string;
   pageSize?: number;
   pageCurrent?: number;
+  sortDetails?: SortDetails;
 }
 
 export type NotificationReadStatus = (typeof NotificationReadStatus)[keyof typeof NotificationReadStatus];

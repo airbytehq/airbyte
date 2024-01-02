@@ -982,7 +982,9 @@ export interface ConnectionScheduleData {
   basicSchedule?: ConnectionScheduleDataBasicSchedule;
   cron?: ConnectionScheduleDataCron;
 }
-
+export interface EmptyConnectionScheduleData{
+  
+}
 /**
  * determine how the schedule data should be interpreted
  */
