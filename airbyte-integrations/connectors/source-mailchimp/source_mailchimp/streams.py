@@ -7,6 +7,7 @@ import math
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
@@ -45,7 +46,8 @@ class MailChimpStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
-        params = {"count": self.page_size}
+        # The ._links field is returned by most Mailchimp endpoints and contains non-relevant schema metadata.
+        params = {"count": self.page_size, "exclude_fields": f"{self.data_field}._links"}
 
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
@@ -80,6 +82,10 @@ class MailChimpStream(HttpStream, ABC):
 class IncrementalMailChimpStream(MailChimpStream, ABC):
     state_checkpoint_interval = math.inf
 
+    def __init__(self, **kwargs):
+        self.start_date = kwargs.pop("start_date", None)
+        super().__init__(**kwargs)
+
     @property
     @abstractmethod
     def cursor_field(self) -> str:
@@ -97,6 +103,23 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     def sort_field(self):
         return self.cursor_field
 
+    def filter_empty_fields(self, element: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Many Mailchimp endpoints return empty strings instead of null values.
+        This causes validation errors on datetime columns, so for safety, we need to check for empty strings and set their value to None/null.
+        This method recursively traverses each element in a record and replaces any "" values with None, based on three conditions:
+
+        1. If the element is a dictionary, apply the method recursively to each value in the dictionary.
+        2. If the element is a list, apply the method recursively to each item in the list.
+        3. If the element is a string, check if it is an empty string. If so, replace it with None.
+        """
+
+        if isinstance(element, dict):
+            element = {k: self.filter_empty_fields(v) if v != "" else None for k, v in element.items()}
+        elif isinstance(element, list):
+            element = [self.filter_empty_fields(v) for v in element]
+        return element
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
@@ -111,10 +134,36 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slice_ = {}
         stream_state = stream_state or {}
-        cursor_value = stream_state.get(self.cursor_field)
+        cursor_value = self.get_filter_date(self.start_date, stream_state.get(self.cursor_field))
         if cursor_value:
             slice_[self.filter_field] = cursor_value
         yield slice_
+
+    @staticmethod
+    def get_filter_date(start_date: str, state_date: str) -> str:
+        """
+        Calculate the filter date to pass in the request parameters by comparing the start_date
+        with the value of state obtained from the stream_slice.
+        If only one value exists, use it by default. Otherwise, return None.
+        If no filter_date is provided, the API will fetch all available records.
+        """
+
+        start_date_parsed = pendulum.parse(start_date).to_iso8601_string() if start_date else None
+        state_date_parsed = pendulum.parse(state_date).to_iso8601_string() if state_date else None
+
+        # Return the max of the two dates if both are present. Otherwise return whichever is present, or None.
+        if start_date_parsed or state_date_parsed:
+            return max(filter(None, [start_date_parsed, state_date_parsed]), default=None)
+
+    def filter_old_records(self, records: Iterable, filter_date) -> Iterable:
+        """
+        Filters out records with older cursor_values than the filter_date.
+        This can be used to enforce the filter for incremental streams that do not support sorting/filtering via query params.
+        """
+        for record in records:
+            record_cursor_value = record.get(self.cursor_field)
+            if not filter_date or record_cursor_value >= filter_date:
+                yield record
 
     def request_params(self, stream_state=None, stream_slice=None, **kwargs):
         stream_state = stream_state or {}
@@ -123,6 +172,11 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         default_params = {"sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
         params.update(default_params)
         return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response = super().parse_response(response, **kwargs)
+        for record in response:
+            yield self.filter_empty_fields(record)
 
 
 class MailChimpListSubStream(IncrementalMailChimpStream):
@@ -133,8 +187,12 @@ class MailChimpListSubStream(IncrementalMailChimpStream):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         parent = Lists(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
-        for slice in parent:
-            yield {"list_id": slice["id"]}
+        for parent_record in parent:
+            slice = {"list_id": parent_record["id"]}
+            cursor_value = self.get_filter_date(self.start_date, stream_state.get(parent_record["id"], {}).get(self.cursor_field))
+            if cursor_value:
+                slice[self.filter_field] = cursor_value
+            yield slice
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         list_id = stream_slice.get("list_id")
@@ -142,9 +200,6 @@ class MailChimpListSubStream(IncrementalMailChimpStream):
 
     def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-
-        # Exclude the _links field, as it is not user-relevant data
-        params["exclude_fields"] = f"{self.data_field}._links"
 
         # Get the current state value for this list_id, if it exists
         # Then, use the value in state to filter the request
@@ -218,7 +273,8 @@ class EmailActivity(IncrementalMailChimpStream):
             campaigns = Campaigns(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
         for campaign in campaigns:
             slice_ = {"campaign_id": campaign["id"]}
-            cursor_value = stream_state.get(campaign["id"], {}).get(self.cursor_field)
+            state_value = stream_state.get(campaign["id"], {}).get(self.cursor_field)
+            cursor_value = self.get_filter_date(self.start_date, state_value)
             if cursor_value:
                 slice_[self.filter_field] = cursor_value
             yield slice_
@@ -275,13 +331,6 @@ class InterestCategories(MailChimpStream, HttpSubStream):
         list_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories"
 
-    def request_params(self, **kwargs):
-
-        # Exclude the _links field, as it is not user-relevant data
-        params = super().request_params(**kwargs)
-        params["exclude_fields"] = "categories._links"
-        return params
-
 
 class Interests(MailChimpStream, HttpSubStream):
     """
@@ -299,13 +348,6 @@ class Interests(MailChimpStream, HttpSubStream):
         category_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories/{category_id}/interests"
 
-    def request_params(self, **kwargs):
-
-        # Exclude the _links field, as it is not user-relevant data
-        params = super().request_params(**kwargs)
-        params["exclude_fields"] = "interests._links"
-        return params
-
 
 class ListMembers(MailChimpListSubStream):
     """
@@ -321,28 +363,8 @@ class Reports(IncrementalMailChimpStream):
     cursor_field = "send_time"
     data_field = "reports"
 
-    @staticmethod
-    def remove_empty_datetime_fields(record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        In some cases, the 'clicks.last_click' and 'opens.last_open' fields are returned as an empty string,
-        which causes validation errors on the `date-time` format.
-        To avoid this, we remove the fields if they are empty.
-        """
-        clicks = record.get("clicks", {})
-        opens = record.get("opens", {})
-        if not clicks.get("last_click"):
-            clicks.pop("last_click", None)
-        if not opens.get("last_open"):
-            opens.pop("last_open", None)
-        return record
-
     def path(self, **kwargs) -> str:
         return "reports"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response = super().parse_response(response, **kwargs)
-        for record in response:
-            yield self.remove_empty_datetime_fields(record)
 
 
 class SegmentMembers(MailChimpListSubStream):
@@ -353,24 +375,6 @@ class SegmentMembers(MailChimpListSubStream):
 
     cursor_field = "last_changed"
     data_field = "members"
-
-    def nullify_empty_string_fields(self, element: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        SegmentMember records may contain multiple fields that are returned as empty strings, which causes validation issues for fields with declared "datetime" formats.
-        Since all fields are nullable, replacing any string value of "" with None is a safe way to handle these edge cases.
-
-        :param element: A SegmentMember record, dictionary or list
-        """
-
-        if isinstance(element, dict):
-            # If the element is a dictionary, apply the method recursively to each value,
-            # replacing the empty string value with None.
-            element = {k: self.nullify_empty_string_fields(v) if v != "" else None for k, v in element.items()}
-        elif isinstance(element, list):
-            # If the element is a list, apply the method recursively to each item in the list.
-            element = [self.nullify_empty_string_fields(v) for v in element]
-
-        return element
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
@@ -391,18 +395,20 @@ class SegmentMembers(MailChimpListSubStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
         """
-        SegmentMembers endpoint does not support sorting, so we need to filter out records that are older than the current state
+        The SegmentMembers endpoint does not support sorting or filtering,
+        so we need to apply our own filtering logic before reading.
+        The foreign key "segment_id" is also added to each record before being read.
         """
         response = super().parse_response(response, **kwargs)
 
-        for record in response:
+        # Calculate the filter date to compare all records against in this slice
+        slice_cursor_value = stream_state.get(str(stream_slice.get("segment_id")), {}).get(self.cursor_field)
+        filter_date = self.get_filter_date(self.start_date, slice_cursor_value)
+
+        for record in self.filter_old_records(response, filter_date):
             # Add the segment_id foreign_key to each record
             record["segment_id"] = stream_slice.get("segment_id")
-
-            current_cursor_value = stream_state.get(str(record.get("segment_id")), {}).get(self.cursor_field)
-            record_cursor_value = record.get(self.cursor_field)
-            if current_cursor_value is None or record_cursor_value >= current_cursor_value:
-                yield self.nullify_empty_string_fields(record)
+            yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
@@ -485,22 +491,17 @@ class Unsubscribes(IncrementalMailChimpStream):
         campaign_id = stream_slice.get("campaign_id")
         return f"reports/{campaign_id}/unsubscribed"
 
-    def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        # Exclude the _links field, as it is not user-relevant data
-        params["exclude_fields"] = "unsubscribes._links"
-        return params
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
+        """
+        The Unsubscribes endpoint does not support sorting or filtering,
+        so we need to apply our own filtering logic before reading.
+        """
 
         response = super().parse_response(response, **kwargs)
 
-        # Unsubscribes endpoint does not support sorting, so we need to filter out records that are older than the current state
-        for record in response:
-            current_cursor_value = stream_state.get(record.get("campaign_id"), {}).get(self.cursor_field)
-            record_cursor_value = record.get(self.cursor_field)
-            if current_cursor_value is None or record_cursor_value >= current_cursor_value:
-                yield record
+        slice_cursor_value = stream_state.get(stream_slice.get("campaign_id", {}), {}).get(self.cursor_field)
+        filter_date = self.get_filter_date(self.start_date, slice_cursor_value)
+        yield from self.filter_old_records(response, filter_date)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}

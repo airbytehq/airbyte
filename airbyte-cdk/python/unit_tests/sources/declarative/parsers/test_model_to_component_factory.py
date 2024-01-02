@@ -39,6 +39,7 @@ from airbyte_cdk.sources.declarative.models import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import PageIncrement as PageIncrementModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
@@ -244,7 +245,7 @@ spec:
     assert stream.retriever.paginator.pagination_strategy.page_size == 10
 
     assert isinstance(stream.retriever.requester, HttpRequester)
-    assert stream.retriever.requester._http_method == HttpMethod.GET
+    assert stream.retriever.requester.http_method == HttpMethod.GET
     assert stream.retriever.requester.name == stream.name
     assert stream.retriever.requester._path.string == "{{ next_page_token['next_page_url'] }}"
     assert stream.retriever.requester._path.default == "{{ next_page_token['next_page_url'] }}"
@@ -828,7 +829,7 @@ requester:
     )
 
     assert isinstance(selector, HttpRequester)
-    assert selector._http_method == HttpMethod.GET
+    assert selector.http_method == HttpMethod.GET
     assert selector.name == "name"
     assert selector._path.string == "/v3/marketing/lists"
     assert selector._url_base.string == "https://api.sendgrid.com"
@@ -936,6 +937,50 @@ requester:
     }
 
 
+@pytest.mark.parametrize("input_config, expected_authenticator_class", [
+    pytest.param(
+        {"auth": {"type": "token"}, "credentials": {"api_key": "some_key"}},
+        ApiKeyAuthenticator,
+        id="test_create_requester_with_selective_authenticator_and_token_selected",
+    ),
+    pytest.param(
+        {"auth": {"type": "oauth"}, "credentials": {"client_id": "ABC"}},
+        DeclarativeOauth2Authenticator,
+        id="test_create_requester_with_selective_authenticator_and_oauth_selected",
+    ),
+]
+)
+def test_create_requester_with_selective_authenticator(input_config, expected_authenticator_class):
+    content = """
+authenticator:
+  type: SelectiveAuthenticator
+  authenticator_selection_path:
+    - auth
+    - type
+  authenticators:
+    token:
+      type: ApiKeyAuthenticator
+      header: "Authorization"
+      api_token: "api_key={{ config['credentials']['api_key']  }}"
+    oauth:
+      type: OAuthAuthenticator
+      token_refresh_endpoint: https://api.url.com
+      client_id: "{{ config['credentials']['client_id'] }}"
+      client_secret: some_secret
+      refresh_token: some_token
+    """
+    name = "name"
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    authenticator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["authenticator"], {})
+
+    authenticator = factory.create_component(
+        model_type=SelectiveAuthenticator, component_definition=authenticator_manifest, config=input_config, name=name
+    )
+
+    assert isinstance(authenticator, expected_authenticator_class)
+
+
 def test_create_composite_error_handler():
     content = """
         error_handler:
@@ -1030,7 +1075,7 @@ def test_config_with_defaults():
     assert stream.schema_loader.file_path.default == "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
 
     assert isinstance(stream.retriever.requester, HttpRequester)
-    assert stream.retriever.requester._http_method == HttpMethod.GET
+    assert stream.retriever.requester.http_method == HttpMethod.GET
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
     assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"

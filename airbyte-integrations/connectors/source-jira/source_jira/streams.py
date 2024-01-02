@@ -33,6 +33,7 @@ class JiraAvailabilityStrategy(HttpAvailabilityStrategy):
         reasons_for_codes: Dict[int, str] = {
             requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
             requests.codes.UNAUTHORIZED: "Invalid creds were provided, please check your api token, domain and/or email.",
+            requests.codes.NOT_FOUND: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
         }
         return reasons_for_codes
 
@@ -135,8 +136,14 @@ class JiraStream(HttpStream, ABC):
 
 
 class StartDateJiraStream(JiraStream, ABC):
-    def __init__(self, start_date: Optional[pendulum.DateTime] = None, **kwargs):
+    def __init__(
+        self,
+        start_date: Optional[pendulum.DateTime] = None,
+        lookback_window_minutes: pendulum.Duration = pendulum.duration(minutes=0),
+        **kwargs,
+    ):
         super().__init__(**kwargs)
+        self._lookback_window_minutes = lookback_window_minutes
         self._start_date = start_date
 
 
@@ -168,7 +175,7 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
         if stream_state:
             stream_state_value = stream_state.get(self.cursor_field)
             if stream_state_value:
-                stream_state_value = pendulum.parse(stream_state_value)
+                stream_state_value = pendulum.parse(stream_state_value) - self._lookback_window_minutes
                 return safe_max(stream_state_value, self._start_date)
         return self._start_date
 
@@ -955,6 +962,12 @@ class ProjectAvatars(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
     """
 
+    skip_http_status_codes = [
+        # Project is not found or the user does not have permission to view the project.
+        requests.codes.UNAUTHORIZED,
+        requests.codes.NOT_FOUND,
+    ]
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -979,6 +992,12 @@ class ProjectCategories(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-rest-api-3-projectcategory-get
     """
+
+    skip_http_status_codes = [
+        # Project is not found or the user does not have permission to view the project.
+        requests.codes.UNAUTHORIZED,
+        requests.codes.NOT_FOUND,
+    ]
 
     def path(self, **kwargs) -> str:
         return "projectCategory"
