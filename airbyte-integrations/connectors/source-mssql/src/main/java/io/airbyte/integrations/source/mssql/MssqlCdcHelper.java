@@ -157,6 +157,8 @@ public class MssqlCdcHelper {
     props.setProperty("provide.transaction.metadata", "false");
 
     props.setProperty("converters", "mssql_converter");
+    props.setProperty("binary.handling.mode", "base64");
+
     props.setProperty("mssql_converter.type", MssqlDebeziumConverter.class.getName());
 
     // If new stream(s) are added after a previously successful sync,
