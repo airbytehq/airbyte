@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.source.relationaldb.state;
 
 import com.google.common.collect.AbstractIterator;
@@ -11,7 +15,8 @@ import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage>  {
+public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceStateIterator.class);
   private final Iterator<T> messageIterator;
   private boolean hasEmittedFinalState = false;
@@ -21,7 +26,7 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   private final SourceStateIteratorManager sourceStateIteratorManager;
 
   public SourceStateIterator(final Iterator<T> messageIterator,
-      final SourceStateIteratorManager sourceStateIteratorManager) {
+                             final SourceStateIteratorManager sourceStateIteratorManager) {
     this.messageIterator = messageIterator;
     this.sourceStateIteratorManager = sourceStateIteratorManager;
   }
@@ -65,6 +70,5 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       return endOfData();
     }
   }
-
 
 }

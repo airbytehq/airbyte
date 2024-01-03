@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.MYSQL_STATUS_VERSION;
@@ -29,11 +33,11 @@ public class MySqlInitialSyncStateIteratorManager implements SourceStateIterator
   private final String pkFieldName;
 
   public MySqlInitialSyncStateIteratorManager(
-      final AirbyteStreamNameNamespacePair pair,
-      final MySqlInitialLoadStateManager stateManager,
-      final JsonNode streamStateForIncrementalRun,
-      final Duration checkpointDuration,
-      final Long checkpointRecords) {
+                                              final AirbyteStreamNameNamespacePair pair,
+                                              final MySqlInitialLoadStateManager stateManager,
+                                              final JsonNode streamStateForIncrementalRun,
+                                              final Duration checkpointDuration,
+                                              final Long checkpointRecords) {
     this.pair = pair;
     this.stateManager = stateManager;
     this.streamStateForIncrementalRun = streamStateForIncrementalRun;
@@ -42,6 +46,7 @@ public class MySqlInitialSyncStateIteratorManager implements SourceStateIterator
     this.pkFieldName = stateManager.getPrimaryKeyInfo(pair).pkFieldName();
     this.pkStatus = stateManager.getPrimaryKeyLoadStatus(pair);
   }
+
   @Override
   public AirbyteStateMessage generateStateMessageAtCheckpoint() {
     LOGGER.info("Emitting initial sync pk state for stream {}, state is {}", pair, pkStatus);
