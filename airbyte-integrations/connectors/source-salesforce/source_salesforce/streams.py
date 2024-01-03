@@ -317,7 +317,7 @@ class RestSalesforceStream(SalesforceStream):
         return request, response
 
 
-class BatchedSubStream(HttpSubStream):
+class BatchedSubStream(AsyncHttpSubStream):
     SLICE_BATCH_SIZE = 200
 
     def stream_slices(
