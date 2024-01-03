@@ -127,8 +127,6 @@ runs:
       with:
         python-version: "3.10"
         token: ${{ inputs.github_token }}
-      env:
-        SENTRY_ENVIRONMENT: "production"
 
     - name: Install ci-connector-ops package
       if: github.ref != 'refs/heads/master' && steps.changes.outputs.pipelines_any_changed == 'true'
@@ -137,8 +135,6 @@ runs:
         pip install pipx
         pipx ensurepath
         pipx install airbyte-ci/connectors/pipelines/
-      env:
-        SENTRY_ENVIRONMENT: "dev"
 
     - name: Run airbyte-ci
       shell: bash
@@ -161,6 +157,7 @@ runs:
         PRODUCTION: ${{ inputs.production }}
         PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
         SENTRY_DSN: ${{ inputs.sentry_dsn }}
+        SENTRY_ENVIRONMENT: "dev" if (github.ref != 'refs/heads/master' && steps.changes.outputs.pipelines_any_changed == 'true') else "production"
         SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
         SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
