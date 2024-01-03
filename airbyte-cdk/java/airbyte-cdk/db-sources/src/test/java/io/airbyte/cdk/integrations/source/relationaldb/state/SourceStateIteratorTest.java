@@ -42,8 +42,8 @@ public class SourceStateIteratorTest {
   void processRecordMessage() {
     doReturn(true).when(messageIterator).hasNext();
     doReturn(false).when(mockProcessor).shouldEmitStateMessage(anyLong(), any());
-    doNothing().when(mockProcessor).processRecordMessage(any());
     AirbyteMessage message = new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage());
+    doReturn(message).when(mockProcessor).processRecordMessage(any());
     doReturn(message).when(messageIterator).next();
 
     assertEquals(message, sourceStateIterator.computeNext());
