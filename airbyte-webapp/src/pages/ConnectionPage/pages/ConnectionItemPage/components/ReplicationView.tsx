@@ -1,5 +1,6 @@
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Box } from "@mui/material";
 import React, { useCallback, useRef, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useQueryClient } from "react-query";
@@ -257,22 +258,24 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       {healthData?.available &&
       healthData?.connectionUpdate &&
       healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId) ? (
-        <Alert
-          formattedMessage={
-            healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
-            "SUCCESS" ? (
-              <FormattedMessage id="connection.configuration.success" />
-            ) : healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
-              "FAILURE" ? (
-              <FormattedMessage id="connection.configuration.failure" />
-            ) : null
-          }
-          bgColor={
-            healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status === "SUCCESS"
-              ? "#EFF6FF"
-              : "#FEF2F2"
-          }
-        />
+        <Box mt={4}>
+          <Alert
+            formattedMessage={
+              healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
+              "SUCCESS" ? (
+                <FormattedMessage id="connection.configuration.success" />
+              ) : healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
+                "FAILURE" ? (
+                <FormattedMessage id="connection.configuration.failure" />
+              ) : null
+            }
+            bgColor={
+              healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status === "SUCCESS"
+                ? "#EFF6FF"
+                : "#FEF2F2"
+            }
+          />
+        </Box>
       ) : null}
       {errorMessage?.length > 0 && (
         <Alert

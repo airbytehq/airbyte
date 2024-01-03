@@ -109,7 +109,12 @@ const ConnectionItemPage: React.FC = () => {
         <LoadingPage />
       ) : (
         <>
-          <MessageBox message={messageId} onClose={() => setMessageId("")} type="info" position="center" />
+          <MessageBox
+            message={messageId}
+            onClose={() => setMessageId("")}
+            type={messageId === "connection.configuration.inprogress" ? "error" : "info"}
+            position="center"
+          />
           <HeadTitle
             titles={[
               { id: "connection.pageTitle" },
