@@ -101,17 +101,15 @@ runs:
           pipelines:
             - 'airbyte-ci/connectors/pipelines/**'
 
-    - name: Determine whether to install Airbyte CI locally
+    - name: Determine how Airbyte CI should be installed
       shell: bash
       id: determine-install-mode
       run: |
         if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
           echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
-          echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
-          echo "install-mode=local" >> $GITHUB_OUTPUT
+          echo "install-mode=dev" >> $GITHUB_OUTPUT
         else
-          echo "SENTRY_ENVIRONMENT=production" >> $GITHUB_ENV
-          echo "install-mode=binary" >> $GITHUB_OUTPUT
+          echo "install-mode=production" >> $GITHUB_OUTPUT
         fi
 
     - name: Docker login
@@ -127,7 +125,7 @@ runs:
 
     - name: Install airbyte-ci binary
       id: install-airbyte-ci
-      if: steps.determine-install-mode.outputs.install-mode == 'binary'
+      if: steps.determine-install-mode.outputs.install-mode == 'production'
       shell: bash
       run: |
         curl -sSL ${{ inputs.airbyte_ci_binary_url }} --output airbyte-ci-bin
@@ -136,13 +134,13 @@ runs:
 
     - name: Install Python 3.10
       uses: actions/setup-python@v4
-      if: steps.determine-install-mode.outputs.install-mode == 'local'
+      if: steps.determine-install-mode.outputs.install-mode == 'dev'
       with:
         python-version: "3.10"
         token: ${{ inputs.github_token }}
 
     - name: Install ci-connector-ops package
-      if: steps.determine-install-mode.outputs.install-mode == 'local'
+      if: steps.determine-install-mode.outputs.install-mode == 'dev'
       shell: bash
       run: |
         pip install pipx
@@ -170,6 +168,7 @@ runs:
         PRODUCTION: ${{ inputs.production }}
         PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
         SENTRY_DSN: ${{ inputs.sentry_dsn }}
+        SENTRY_ENVIRONMENT: ${{ steps.determine-install-mode.outputs.install-mode }}
         SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
         SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
