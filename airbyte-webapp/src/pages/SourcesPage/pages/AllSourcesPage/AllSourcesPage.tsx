@@ -1,13 +1,12 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { Button, DropDown, DropDownRow, NewMainPageWithScroll } from "components";
-import { SortOrderEnum } from "components/EntityTable/types";
 import HeadTitle from "components/HeadTitle";
 import { PageSize } from "components/PageSize";
 import PageTitle from "components/PageTitle";
@@ -71,14 +70,9 @@ const AllSourcesPage: React.FC = () => {
   // const { sources } = useSourceList();
   const [sortFieldName, setSortFieldName] = useState("");
   const [sortDirection, setSortDirection] = useState("");
-  const [localSortOrder, setLocalSortOrder] = useState(SortOrderEnum.DESC);
-  const [sourceSortOrder, setSourceSortOrder] = useState(SortOrderEnum.DESC);
-  useEffect(() => {
-    // Set initial sort order to DESC when the component mounts
-    onSelectFilter("sortFieldName", "");
-    setSourceSortOrder(SortOrderEnum.DESC);
-    setLocalSortOrder(SortOrderEnum.DESC);
-  }, []);
+  const [localSortOrder, setLocalSortOrder] = useState("");
+  const [sourceSortOrder, setSourceSortOrder] = useState("");
+
   useTrackPage(PageTrackingCodes.SOURCE_LIST);
   const workspace = useCurrentWorkspace();
   const { sourceOptions } = useConnectionFilterOptions(workspace.workspaceId);
@@ -141,8 +135,8 @@ const AllSourcesPage: React.FC = () => {
             pageCurrent: prevFilters.pageCurrent,
           };
         } else if (filterType === "pageCurrent") {
-          setLocalSortOrder(SortOrderEnum.DESC);
-          setSourceSortOrder(SortOrderEnum.DESC);
+          setLocalSortOrder("");
+          setSourceSortOrder("");
           return {
             ...filters,
             [filterType]: filterValue as number,

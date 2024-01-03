@@ -4,6 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
+import { SortDescIcon } from "components/icons/SortDescIcon";
 import { SortDownIcon } from "components/icons/SortDownIcon";
 import { SortUpIcon } from "components/icons/SortUpIcon";
 import Table from "components/Table";
@@ -68,8 +69,10 @@ const DestinationTable: React.FC<IProps> = ({
               onClick={() => {
                 setSortFieldName("name");
                 setLocalSortOrder((prev: any) => {
-                  const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
+                  const newSortOrder =
+                    prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
                   setSortDirection(newSortOrder);
+                  setDestinationSortOrder("");
                   onSelectFilter("sortFieldName", "name");
                   onSelectFilter("sortDirection", newSortOrder);
                   return newSortOrder;
@@ -77,7 +80,13 @@ const DestinationTable: React.FC<IProps> = ({
               }}
               sx={{ paddingTop: "1px" }}
             >
-              {localSortOrder === SortOrderEnum.ASC ? <SortDownIcon /> : <SortUpIcon />}
+              {localSortOrder === "" ? (
+                <SortUpIcon />
+              ) : localSortOrder === SortOrderEnum.ASC ? (
+                <SortDownIcon />
+              ) : (
+                <SortDescIcon />
+              )}
             </IconButton>
           </div>
         ),
@@ -99,7 +108,9 @@ const DestinationTable: React.FC<IProps> = ({
               onClick={() => {
                 setSortFieldName("destinationName");
                 setDestinationSortOrder((prev: any) => {
-                  const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
+                  const newSortOrder =
+                    prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
+                  setLocalSortOrder("");
                   onSelectFilter("sortFieldName", "destinationName");
                   onSelectFilter("sortDirection", newSortOrder);
                   return newSortOrder;
@@ -107,7 +118,13 @@ const DestinationTable: React.FC<IProps> = ({
               }}
               sx={{ paddingTop: "1px" }}
             >
-              {destinationSortOrder === SortOrderEnum.ASC ? <SortDownIcon /> : <SortUpIcon />}
+              {destinationSortOrder === "" ? (
+                <SortUpIcon />
+              ) : destinationSortOrder === SortOrderEnum.ASC ? (
+                <SortDownIcon />
+              ) : (
+                <SortDescIcon />
+              )}
             </IconButton>
           </div>
         ),
