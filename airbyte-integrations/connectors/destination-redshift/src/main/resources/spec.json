@@ -249,6 +249,13 @@
         "description": "(Early Access) The schema to write raw tables into",
         "title": "Destinations V2 Raw Table Schema (Early Access)",
         "order": 10
+      },
+      "enable_incremental_final_table_updates": {
+        "type": "boolean",
+        "default": false,
+        "description": "When enabled your data will load into your final tables incrementally while your data is still being synced. When Disabled (the default), your data loads into your final tables once at the end of a sync. Note that this option only applies if you elect to create Final tables",
+        "title": "Enable Loading Data Incrementally to Final Tables",
+        "order": 11
       }
     },
     "groups": [
