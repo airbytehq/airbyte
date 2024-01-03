@@ -32,11 +32,7 @@
     },
     "status": {
       "type": ["string", "null"],
-      "enum": [
-        "moved_in",
-        "moved_out",
-        "moving_out"
-      ]
+      "enum": ["moved_in", "moved_out", "moving_out"]
     },
     "object": {
       "type": ["string", "null"]

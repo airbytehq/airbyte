@@ -126,14 +126,14 @@
     }
   },
   {
-  "type": "STREAM",
+    "type": "STREAM",
     "stream": {
       "stream_state": { "updated_at": 1625596058 },
       "stream_descriptor": { "name": "item_family" }
     }
   },
   {
-  "type": "STREAM",
+    "type": "STREAM",
     "stream": {
       "stream_state": { "updated_at": 1625596058 },
       "stream_descriptor": { "name": "differential_price" }
