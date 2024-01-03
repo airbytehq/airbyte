@@ -216,11 +216,11 @@ const useDeleteConnection = () => {
   });
 };
 
-const useUpdateConnection = () => {
+const useUpdateConnection = (connectionId: string) => {
   const service = useWebConnectionService();
   const queryClient = useQueryClient();
 
-  return useMutation((connectionUpdate: WebBackendConnectionUpdate) => service.update(connectionUpdate), {
+  return useMutation((connectionUpdate: WebBackendConnectionUpdate) => service.update(connectionUpdate, connectionId), {
     onSuccess: (connection) => {
       queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
     },

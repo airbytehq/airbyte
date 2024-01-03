@@ -47,7 +47,7 @@ interface EnabledControlProps {
 }
 
 const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyType, onStatusUpdating }) => {
-  const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
+  const { mutateAsync: updateConnection, isLoading } = useUpdateConnection(connection.connectionId);
   const [statusCode, setStatusCode] = useState<number | undefined>(200);
   const [enabledStatus, setEnabledStatus] = useState<string>(connection.status);
   const analyticsService = useAnalyticsService();
