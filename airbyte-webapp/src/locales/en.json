@@ -845,5 +845,8 @@
   "permission.user": "User:",
   "permission.user.role": "This role has access to all sections of the space, except for billing and payment, as well as user management.",
   "form.openDatepicker": "Open datepicker",
-  "form.datepickerTimeCaption": "Time (UTC)"
+  "form.datepickerTimeCaption": "Time (UTC)",
+  "connection.configuration.inprogress": "Your configurations are being saved. Please check the Status page for more information.",
+  "connection.configuration.success": "Changes have been saved!",
+  "connection.configuration.failure": "Something went wrong while saving your changes. Please try again."
 }

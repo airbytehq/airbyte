@@ -124,7 +124,7 @@ const NormalizationCard: React.FC<{
 
 const TransformationView: React.FC<TransformationViewProps> = ({ connection }) => {
   const definition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
-  const { mutateAsync: updateConnection } = useUpdateConnection();
+  const { mutateAsync: updateConnection } = useUpdateConnection(connection?.connectionId);
   const workspace = useCurrentWorkspace();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_TRANSFORMATION);
