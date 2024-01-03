@@ -102,11 +102,7 @@ class DestinationAmazonSqs(Destination):
 
         session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
         
-        # If endpoint_url is provided, use it; otherwise, let boto3 use the default
-        if endpoint_url:
-            sqs = session.resource("sqs", endpoint_url=endpoint_url)
-        else:
-            sqs = session.resource("sqs")
+        sqs = self.initialize_sqs_client(endpoint_url, session)
         
         queue = sqs.Queue(url=queue_url)
 
@@ -153,11 +149,7 @@ class DestinationAmazonSqs(Destination):
             logger.debug("Amazon SQS Destination Config Check - Starting connection test ---")
             session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
 
-            # If endpoint_url is provided, use it; otherwise, let boto3 use the default
-            if endpoint_url:
-                sqs = session.resource("sqs", endpoint_url=endpoint_url)
-            else:
-                sqs = session.resource("sqs")
+            sqs = self.initialize_sqs_client(endpoint_url, session)
 
             queue = sqs.Queue(url=queue_url)
             if hasattr(queue, "attributes"):
@@ -192,3 +184,11 @@ class DestinationAmazonSqs(Destination):
             return AirbyteConnectionStatus(
                 status=Status.FAILED, message=f"Amazon SQS Destination Config Check - An exception occurred: {str(e)}"
             )
+
+    def initialize_sqs_client(self, endpoint_url, session):
+        # If endpoint_url is provided, use it; otherwise, let boto3 use the default
+        if endpoint_url:
+            sqs = session.resource("sqs", endpoint_url=endpoint_url)
+        else:
+            sqs = session.resource("sqs")
+        return sqs
