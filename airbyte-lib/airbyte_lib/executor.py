@@ -10,11 +10,20 @@ from typing import IO, Generator, Iterable, List
 
 from airbyte_lib.registry import ConnectorMetadata
 
+_LATEST_VERSION = "latest"
+
 
 class Executor(ABC):
-    def __init__(self, metadata: ConnectorMetadata, target_version: str = "latest"):
+    def __init__(
+        self,
+        metadata: ConnectorMetadata,
+        target_version: str | None = None,
+    ) -> None:
         self.metadata = metadata
-        self.target_version = target_version if target_version != "latest" else metadata.latest_available_version
+        if target_version is None or target_version == _LATEST_VERSION:
+            self.target_version = metadata.latest_available_version
+        else:
+            self.target_version = target_version
 
     @abstractmethod
     def execute(self, args: List[str]) -> Iterable[str]:
@@ -73,9 +82,22 @@ def _stream_from_subprocess(args: List[str]) -> Generator[Iterable[str], None, N
 
 
 class VenvExecutor(Executor):
-    def __init__(self, metadata: ConnectorMetadata, target_version: str = "latest", install_if_missing: bool = False):
+    def __init__(
+        self,
+        metadata: ConnectorMetadata,
+        target_version: str | None = None,
+        install_if_missing: bool = False,
+        pip_url: str | None = None,
+    ) -> None:
         super().__init__(metadata, target_version)
         self.install_if_missing = install_if_missing
+
+        # This is a temporary install path that will be replaced with a proper package
+        # name once they are published.
+        # TODO: Replace with `f"airbyte-{self.metadata.name}"`
+        self.pip_url = (
+            pip_url or f"../airbyte-integrations/connectors/{self.metadata.name}"
+        )
 
     def _get_venv_name(self):
         return f".venv-{self.metadata.name}"
@@ -90,13 +112,15 @@ class VenvExecutor(Executor):
 
     def install(self):
         venv_name = self._get_venv_name()
-        self._run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", venv_name])
+        self._run_subprocess_and_raise_on_failure(
+            [sys.executable, "-m", "venv", venv_name]
+        )
 
         pip_path = os.path.join(venv_name, "bin", "pip")
 
-        # TODO this is a temporary install path that will be replaced with a proper package name once they are published. At this point we are also using the version
-        package_to_install = f"../airbyte-integrations/connectors/{self.metadata.name}"
-        self._run_subprocess_and_raise_on_failure([pip_path, "install", "-e", package_to_install])
+        self._run_subprocess_and_raise_on_failure(
+            [pip_path, "install", "-e", self.pip_url]
+        )
 
     def _get_installed_version(self):
         """
@@ -105,33 +129,55 @@ class VenvExecutor(Executor):
         venv_name = self._get_venv_name()
         connector_name = self.metadata.name
         return subprocess.check_output(
-            [os.path.join(venv_name, "bin", "python"), "-c", f"from importlib.metadata import version; print(version('{connector_name}'))"],
+            [
+                os.path.join(venv_name, "bin", "python"),
+                "-c",
+                f"from importlib.metadata import version; print(version('{connector_name}'))",
+            ],
             universal_newlines=True,
         ).strip()
 
-    def ensure_installation(self):
+    def ensure_installation(
+        self,
+        verify_version: bool = False,
+    ):
+        """
+        Ensure that the connector is installed in a virtual environment.
+        If not yet installed and if install_if_missing is True, then install.
+
+        Optionally, verify that the installed version matches the target version.
+
+        Note: Version verification is not supported for connectors installed from a
+        local path.
+        """
         venv_name = f".venv-{self.metadata.name}"
         venv_path = Path(venv_name)
         if not venv_path.exists():
             if not self.install_if_missing:
-                raise Exception(f"Connector {self.metadata.name} is not available - venv {venv_name} does not exist")
+                raise Exception(
+                    f"Connector {self.metadata.name} is not available - venv {venv_name} does not exist"
+                )
             self.install()
 
         connector_path = self._get_connector_path()
         if not connector_path.exists():
-            raise Exception(f"Could not find connector {self.metadata.name} in venv {venv_name}")
+            raise FileNotFoundError(
+                f"Could not find connector '{self.metadata.name}' "
+                f"in venv '{venv_name}' with connector path '{connector_path}'."
+            )
 
-        installed_version = self._get_installed_version()
-        if installed_version != self.target_version:
-            # If the version doesn't match, reinstall
-            self.install()
+        if verify_version:
+            installed_version = self._get_installed_version()
+            if installed_version != self.target_version:
+                # If the version doesn't match, reinstall
+                self.install()
 
-            # Check the version again
-            version_after_install = self._get_installed_version()
-            if version_after_install != self.target_version:
-                raise Exception(
-                    f"Failed to install connector {self.metadata.name} version {self.target_version}. Installed version is {version_after_install}"
-                )
+                # Check the version again
+                version_after_install = self._get_installed_version()
+                if version_after_install != self.target_version:
+                    raise Exception(
+                        f"Failed to install connector {self.metadata.name} version {self.target_version}. Installed version is {version_after_install}"
+                    )
 
     def execute(self, args: List[str]) -> Iterable[str]:
         connector_path = self._get_connector_path()
@@ -145,10 +191,14 @@ class PathExecutor(Executor):
         try:
             self.execute(["spec"])
         except Exception as e:
-            raise Exception(f"Connector {self.metadata.name} is not available - executing it failed: {e}")
+            raise Exception(
+                f"Connector {self.metadata.name} is not available - executing it failed: {e}"
+            )
 
     def install(self):
-        raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")
+        raise Exception(
+            f"Connector {self.metadata.name} is not available - cannot install it"
+        )
 
     def execute(self, args: List[str]) -> Iterable[str]:
         with _stream_from_subprocess([self.metadata.name] + args) as stream:
