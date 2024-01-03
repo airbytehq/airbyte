@@ -506,17 +506,23 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 | Option             | Required | Default | Mapped environment variable | Description                                                                                      |
 | ------------------ | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
-| `--test-directory` | False    | tests   |                             | The path to the directory on which pytest should discover tests, relative to the poetry package. |
+| `-c/--poetry-run-command` | True    | None   |                             | The command to run with `poetry run` |
 
-#### Example
+#### Examples
+You can pass multiple `-c/--poetry-run-command` options to run multiple commands.
 
-`airbyte-ci test airbyte-ci/connectors/pipelines --test-directory=tests`
-`airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --test-directory=unit_tests`
+E.G.: running `pytest` and `mypy`:
+`airbyte-ci test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines'`
+
+E.G.: running `pytest` on a specific test folder:
+`airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --poetry-run-command='pytest tests/unit_tests'`
 
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.13.0  | [#33784](https://github.com/airbytehq/airbyte/pull/33784)  | Make `airbyte-ci test` able to run any poetry command                                               |
+| 2.12.0  | [#33313](https://github.com/airbytehq/airbyte/pull/33313)  | Add upgrade CDK command                                               |
 | 2.11.0  | [#32188](https://github.com/airbytehq/airbyte/pull/32188)  | Add -x option to connector test to allow for skipping steps                                               |
 | 2.10.12 | [#33419](https://github.com/airbytehq/airbyte/pull/33419)  | Make ClickPipelineContext handle dagger logging.                                                          |
 | 2.10.11 | [#33497](https://github.com/airbytehq/airbyte/pull/33497)  | Consider nested .gitignore rules in format.                                                               |
