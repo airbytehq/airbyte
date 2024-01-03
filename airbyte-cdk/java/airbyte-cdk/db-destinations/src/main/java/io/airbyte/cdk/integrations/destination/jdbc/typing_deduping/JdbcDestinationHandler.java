@@ -54,18 +54,14 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   @Override
   public boolean isFinalTableEmpty(final StreamId id) throws Exception {
-    final int rowCount = jdbcDatabase.queryInt(
-        """
-        SELECT row_count
-        FROM information_schema.tables
-        WHERE table_catalog = ?
-          AND table_schema = ?
-          AND table_name = ?
-        """,
-        databaseName,
-        id.finalNamespace(),
-        id.finalName());
-    return rowCount == 0;
+    return jdbcDatabase.queryBoolean(
+        DSL.select(
+            DSL.field(DSL.exists(
+                DSL.selectOne()
+                    .from(DSL.name(id.finalNamespace(), id.finalName()))
+            ))
+        ).getSQL()
+    );
   }
 
   @Override
