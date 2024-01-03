@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Core Concepts
 
 Airbyte enables you to build data pipelines and replicate data from a source to a destination. You can configure how frequently the data is synced, what data is replicated, and how the data is written to in the destination.
