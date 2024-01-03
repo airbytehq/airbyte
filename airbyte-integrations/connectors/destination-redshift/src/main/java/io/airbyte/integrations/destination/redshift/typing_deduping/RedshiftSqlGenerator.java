@@ -162,16 +162,13 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
       return field("ARRAY()"); // Return an empty string if the list is empty
     }
 
-    // Base case: if there's only one element, return it
-    if (arrays.size() == 1) {
-      return arrays.get(0);
+    Field<?> result = arrays.get(0);
+    for (int i = 1; i < arrays.size(); i++) {
+      result = function("ARRAY_CONCAT", getSuperType(), result, arrays.get(i));
+      // System.out.println(function("ARRAY_CONCAT", getSuperType(), result, arrays.get(i)));
     }
 
-    // Recursive case: construct ARRAY_CONCAT function call
-    Field<?> lastValue = arrays.get(arrays.size() - 1);
-    Field<?> recursiveCall = arrayConcatStmt(arrays.subList(0, arrays.size() - 1));
-
-    return function("ARRAY_CONCAT", getSuperType(), recursiveCall, lastValue);
+    return result;
   }
 
   Field<?> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
