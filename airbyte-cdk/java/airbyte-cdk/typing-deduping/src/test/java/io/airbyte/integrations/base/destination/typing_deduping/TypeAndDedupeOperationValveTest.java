@@ -90,7 +90,9 @@ public class TypeAndDedupeOperationValveTest {
     initializeDestinationConfigOption(enableIncrementalTypingAndDeduping);
     final var valve = new TypeAndDedupeOperationValve(minuteUpdates);
     valve.addStream(STREAM_A);
-    IntStream.range(0, 1).forEach(__ -> Assertions.assertEquals(valve.readyToTypeAndDedupe(STREAM_A), enableIncrementalTypingAndDeduping)); // start ready to T&D
+    IntStream.range(0, 1).forEach(__ -> Assertions.assertEquals(valve.readyToTypeAndDedupe(STREAM_A), enableIncrementalTypingAndDeduping)); // start
+                                                                                                                                            // ready
+                                                                                                                                            // to T&D
     Assertions.assertEquals(valve.readyToTypeAndDedupe(STREAM_A), enableIncrementalTypingAndDeduping);
     valve.updateTimeAndIncreaseInterval(STREAM_A);
     IntStream.range(0, 360).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
