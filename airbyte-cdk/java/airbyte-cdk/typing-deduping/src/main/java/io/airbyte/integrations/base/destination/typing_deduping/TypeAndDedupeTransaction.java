@@ -5,6 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,14 +36,14 @@ public class TypeAndDedupeTransaction {
     try {
       LOGGER.info("Attempting typing and deduping for {}.{} with suffix {}", streamConfig.id().originalNamespace(), streamConfig.id().originalName(),
           suffix);
-      final String unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, false);
+      final Sql unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, false);
       destinationHandler.execute(unsafeSql);
     } catch (final Exception e) {
       if (sqlGenerator.shouldRetry(e)) {
         // TODO Destination specific non-retryable exceptions should be added.
         LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, attempting with error handling",
             streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
-        final String saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, true);
+        final Sql saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, true);
         destinationHandler.execute(saferSql);
       } else {
         LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, Retry is skipped",

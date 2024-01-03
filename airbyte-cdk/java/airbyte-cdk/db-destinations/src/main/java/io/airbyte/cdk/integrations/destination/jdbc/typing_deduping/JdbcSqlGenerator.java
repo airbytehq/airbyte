@@ -11,6 +11,7 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+import static io.airbyte.integrations.base.destination.typing_deduping.Sql.transactionally;
 import static java.util.stream.Collectors.toList;
 import static org.jooq.impl.DSL.alterTable;
 import static org.jooq.impl.DSL.asterisk;
@@ -29,11 +30,11 @@ import static org.jooq.impl.DSL.with;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
@@ -47,8 +48,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.jooq.CommonTableExpression;
 import org.jooq.Condition;
 import org.jooq.CreateSchemaFinalStep;
@@ -251,31 +250,24 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   }
 
   @Override
-  public String createSchema(final String schema) {
-    return createSchemaSql(schema) + ";";
+  public Sql createSchema(final String schema) {
+    return Sql.of(createSchemaSql(schema));
   }
 
   @Override
-  public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
+  public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
     final String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
     if (!force) {
-      return Strings.join(
-          List.of(
-              createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
-          ";" + System.lineSeparator());
+      return Sql.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()));
     }
-    return Strings.join(
-        List.of(
-            beginTransaction(),
-            dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)),
-            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()),
-            commitTransactionInternal()),
-        ";" + System.lineSeparator());
+    return transactionally(
+            dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
+            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()));
   }
 
   @Override
-  public String updateTable(final StreamConfig streamConfig,
+  public Sql updateTable(final StreamConfig streamConfig,
                             final String finalSuffix,
                             final Optional<Instant> minRawTimestamp,
                             final boolean useExpensiveSaferCasting) {
@@ -286,22 +278,19 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   }
 
   @Override
-  public String overwriteFinalTable(final StreamId stream, final String finalSuffix) {
-    return Strings.join(
-        List.of(
-            dropTableIfExists(name(stream.finalNamespace(), stream.finalName())),
+  public Sql overwriteFinalTable(final StreamId stream, final String finalSuffix) {
+    return transactionally(
+            dropTableIfExists(name(stream.finalNamespace(), stream.finalName())).getSQL(ParamType.INLINED),
             alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
                 .renameTo(name(stream.finalName()))
-                .getSQL()),
-        ";" + System.lineSeparator());
+                .getSQL());
   }
 
   @Override
-  public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
+  public Sql migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     final Name rawTableName = name(streamId.rawNamespace(), streamId.rawName());
     final DSLContext dsl = getDslContext();
-    return Strings.join(
-        List.of(
+    return transactionally(
             dsl.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
             dsl.dropTableIfExists(rawTableName).getSQL(),
             DSL.createTable(rawTableName)
@@ -314,15 +303,14 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
                     field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
                     cast(null, getTimestampWithTimeZoneType()).as(COLUMN_NAME_AB_LOADED_AT),
                     field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(table(name(namespace, tableName))))
-                .getSQL(ParamType.INLINED)),
-        ";" + System.lineSeparator());
+                .getSQL(ParamType.INLINED));
   }
 
   @Override
-  public String clearLoadedAt(final StreamId streamId) {
-    return update(table(name(streamId.rawNamespace(), streamId.rawName())))
+  public Sql clearLoadedAt(final StreamId streamId) {
+    return Sql.of(update(table(name(streamId.rawNamespace(), streamId.rawName())))
         .set(field(COLUMN_NAME_AB_LOADED_AT), inline((String) null))
-        .getSQL();
+        .getSQL());
   }
 
   @VisibleForTesting
@@ -351,7 +339,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         .columns(buildFinalTableFields(columns, metaFields));
   }
 
-  private String insertAndDeleteTransaction(final StreamConfig streamConfig,
+  private Sql insertAndDeleteTransaction(final StreamConfig streamConfig,
                                             final String finalSuffix,
                                             final Optional<Instant> minRawTimestamp,
                                             final boolean useExpensiveSaferCasting) {
@@ -398,27 +386,19 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     final String checkpointStmt = checkpointRawTable(rawSchema, rawTable, minRawTimestamp);
 
     if (streamConfig.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
-      return Strings.join(
-          Stream.of(
-              beginTransaction(),
+      return transactionally(
               insertStmt,
-              checkpointStmt,
-              commitTransactionInternal()
-          ).filter(s -> !s.isEmpty()).collect(toList()),
-          ";" + System.lineSeparator());
+              checkpointStmt
+          );
     }
 
     // For append-dedupe
-    return Strings.join(
-        Stream.of(
-            beginTransaction(),
+    return transactionally(
             insertStmtWithDedupe,
             deleteStmt,
             deleteCdcDeletesStmt,
-            checkpointStmt,
-            commitTransactionInternal()
-        ).filter(s -> !s.isEmpty()).collect(toList()),
-        ";" + System.lineSeparator());
+            checkpointStmt
+        );
   }
 
   private String mergeTransaction(final StreamConfig streamConfig,

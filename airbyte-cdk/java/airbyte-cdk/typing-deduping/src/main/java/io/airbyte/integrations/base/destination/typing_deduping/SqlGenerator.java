@@ -33,7 +33,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    *        table already exists. If you're passing a non-empty prefix, you likely want to set this to
    *        true.
    */
-  String createTable(final StreamConfig stream, final String suffix, boolean force);
+  Sql createTable(final StreamConfig stream, final String suffix, boolean force);
 
   /**
    * Used to create either the airbyte_internal or final schemas if they don't exist
@@ -41,7 +41,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    * @param schema the schema to create
    * @return SQL to create the schema if it does not exist
    */
-  String createSchema(final String schema);
+  Sql createSchema(final String schema);
 
   /**
    * Check the final table's schema and compare it to what the stream config would generate.
@@ -80,7 +80,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    *        however sometimes we get badly typed data. In these cases we can use a more expensive
    *        query which handles casting exceptions.
    */
-  String updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp, final boolean useExpensiveSaferCasting);
+  Sql updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp, final boolean useExpensiveSaferCasting);
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
@@ -88,7 +88,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    * This method may assume that the stream is an OVERWRITE stream, and that the final suffix is
    * non-empty. Callers are responsible for verifying those are true.
    */
-  String overwriteFinalTable(StreamId stream, String finalSuffix);
+  Sql overwriteFinalTable(StreamId stream, String finalSuffix);
 
   /**
    * Creates a sql query which will create a v2 raw table from the v1 raw table, then performs a soft
@@ -99,20 +99,20 @@ public interface SqlGenerator<DialectTableDefinition> {
    * @param tableName
    * @return a string containing the necessary sql to migrate
    */
-  String migrateFromV1toV2(StreamId streamId, String namespace, String tableName);
+  Sql migrateFromV1toV2(StreamId streamId, String namespace, String tableName);
 
   /**
    * Typically we need to create a soft reset temporary table and clear loaded at values
    *
    * @return
    */
-  default String prepareTablesForSoftReset(final StreamConfig stream) {
-    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
-    final String clearLoadedAt = clearLoadedAt(stream.id());
-    return String.join("\n", createTempTable, clearLoadedAt);
+  default Sql prepareTablesForSoftReset(final StreamConfig stream) {
+    final Sql createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
+    final Sql clearLoadedAt = clearLoadedAt(stream.id());
+    return Sql.concat(createTempTable, clearLoadedAt);
   }
 
-  String clearLoadedAt(final StreamId streamId);
+  Sql clearLoadedAt(final StreamId streamId);
 
   /**
    * Implementation specific if there is no option to retry again with safe casted SQL or the specific

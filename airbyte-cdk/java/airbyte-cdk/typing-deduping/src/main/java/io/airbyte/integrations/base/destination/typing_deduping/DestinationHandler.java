@@ -5,6 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface DestinationHandler<DialectTableDefinition> {
@@ -23,6 +24,6 @@ public interface DestinationHandler<DialectTableDefinition> {
 
   record InitialRawTableState(boolean hasUnprocessedRecords, Optional<Instant> maxProcessedTimestamp) {}
 
-  void execute(final String sql) throws Exception;
+  void execute(final Sql sql) throws Exception;
 
 }
