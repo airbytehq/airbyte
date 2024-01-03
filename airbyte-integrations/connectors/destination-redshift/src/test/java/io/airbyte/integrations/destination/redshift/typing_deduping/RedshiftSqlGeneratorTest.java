@@ -32,6 +32,8 @@ import org.junit.jupiter.api.Test;
 
 public class RedshiftSqlGeneratorTest {
 
+  private static final Random RANDOM = new Random();
+
   private static final RedshiftSqlGenerator redshiftSqlGenerator = new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
 
     // Override only for tests to print formatted SQL. The actual implementation should use unformatted
@@ -113,9 +115,8 @@ public class RedshiftSqlGeneratorTest {
     columns.put(id2, AirbyteProtocolType.INTEGER);
     columns.put(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
 
-    final Random random = new Random();
     for (int i = 0; i < 2000; i++) {
-      final String columnName = random
+      final String columnName = RANDOM
           .ints('a', 'z' + 1)
           .limit(15)
           .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
