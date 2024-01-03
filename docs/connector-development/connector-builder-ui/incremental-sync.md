@@ -82,7 +82,9 @@ Then when a sync is triggered for the same connection the next day, the followin
 curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-15T07:30:58Z</b>&to-date={`<now>`}'
 </pre>
 
-Except if the last record found has a date less than the time that the sync was run. In this case the sync run time will be stored in the state.
+:::info
+	If the last record read has a datetime earlier than the end time of the stream interval, the end time of the interval will be stored in the state.
+:::
 
 The `from-date` is set to the cutoff date of articles synced already and the `to-date` is set to the current date.
 
