@@ -508,9 +508,13 @@ This command runs the Python tests for a airbyte-ci poetry package.
 | ------------------ | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
 | `-c/--poetry-run-command` | True    | None   |                             | The command to run with `poetry run` |
 
-#### Example
+#### Examples
+You can pass multiple `-c/--poetry-run-command` options to run multiple commands.
 
-`airbyte-ci test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests'`
+E.G.: running `pytest` and `mypy`:
+`airbyte-ci test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines'`
+
+E.G.: running `pytest` on a specific test folder:
 `airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --poetry-run-command='pytest tests/unit_tests'`
 
 ## Changelog
