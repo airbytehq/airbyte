@@ -469,22 +469,26 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         .getSQL(ParamType.INLINED);
   }
 
-  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias) {
+  protected Field<?> castedField(
+      final Field<?> field,
+      final AirbyteType type,
+      final String alias,
+      final boolean useExpensiveSaferCasting) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
-      return castedField(field, airbyteProtocolType).as(quotedName(alias));
-
+      return castedField(field, airbyteProtocolType, useExpensiveSaferCasting).as(quotedName(alias));
     }
+
     // Redshift SUPER can silently cast an array type to struct and vice versa.
     return switch (type.getTypeName()) {
       case Struct.TYPE, UnsupportedOneOf.TYPE -> cast(field, getStructType()).as(quotedName(alias));
       case Array.TYPE -> cast(field, getArrayType()).as(quotedName(alias));
       // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias);
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias, useExpensiveSaferCasting);
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
     };
   }
 
-  protected Field<?> castedField(final Field<?> field, final AirbyteProtocolType type) {
+  protected Field<?> castedField(final Field<?> field, final AirbyteProtocolType type, final boolean useExpensiveSaferCasting) {
     return cast(field, toDialectType(type));
   }
 
