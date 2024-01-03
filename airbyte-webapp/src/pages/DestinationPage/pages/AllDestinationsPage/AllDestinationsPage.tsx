@@ -1,7 +1,7 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box } from "@mui/material";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -77,7 +77,8 @@ const AllDestinationsPage: React.FC = () => {
   const [sortDirection, setSortDirection] = useState("");
   const [localSortOrder, setLocalSortOrder] = useState("");
   const [destinationSortOrder, setDestinationSortOrder] = useState("");
-
+  console.log(destinationSortOrder, "DestinationSort");
+  console.log(query, "Query");
   useTrackPage(PageTrackingCodes.DESTINATION_LIST);
   const workspace = useCurrentWorkspace();
   const { destinationOptions } = useConnectionFilterOptions(workspace?.workspaceId);
@@ -91,7 +92,16 @@ const AllDestinationsPage: React.FC = () => {
       sortDirection,
     },
   };
-
+  useEffect(() => {
+    if (query) {
+      if (query.sortBy === "name") {
+        setLocalSortOrder(query.order);
+      }
+      if (query.sortBy === "destinationName") {
+        setDestinationSortOrder(query.order);
+      }
+    }
+  }, []);
   const [filters, setFilters] = useState<FilterDestinationRequestBody>(initialFiltersState);
   const { destinations, total, pageSize } = usePaginatedDestination(filters);
 
@@ -139,8 +149,31 @@ const AllDestinationsPage: React.FC = () => {
             pageCurrent: prevFilters.pageCurrent,
           };
         } else if (filterType === "pageCurrent") {
-          setLocalSortOrder("");
-          setDestinationSortOrder("");
+          if (query && query.sortBy?.length > 0) {
+            if (query && query.sortBy === "name") {
+              setLocalSortOrder(query?.order);
+              setDestinationSortOrder("");
+            }
+            if (query && query.sortBy === "destinationName") {
+              setDestinationSortOrder(query?.order);
+              setLocalSortOrder("");
+            }
+          } else {
+            setLocalSortOrder("");
+            setDestinationSortOrder("");
+          }
+          if (query && query.sortBy === "") {
+            setLocalSortOrder("");
+            setDestinationSortOrder("");
+          }
+          if (query) {
+            return {
+              ...filters,
+              [filterType]: filterValue as number,
+              sortDetails: { sortFieldName: query.sortBy, sortDirection: query.order },
+            };
+          }
+
           return {
             ...filters,
             [filterType]: filterValue as number,
