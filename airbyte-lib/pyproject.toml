@@ -24,6 +24,7 @@ SQLAlchemy = "^2.0.23"
 orjson = "^3.9.10"
 duckdb-engine = "^0.9.5"
 psycopg = {extras = ["binary", "pool"], version = "^3.1.16"}
+ulid = "^1.1"
 
 [tool.poetry.group.dev.dependencies]
 faker = "^21.0.0"

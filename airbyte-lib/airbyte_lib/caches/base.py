@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """A SQL Cache implementation."""
 
 import abc
@@ -12,31 +14,19 @@ import pandas as pd
 import pyarrow as pa
 import sqlalchemy
 import ulid
-from overrides import overrides
-from sqlalchemy import (
-    ClauseElement,
-    CursorResult,
-    Executable,
-    MetaData,
-    Table,
-    TextClause,
-    create_engine,
-    text,
-)
-from sqlalchemy.engine import Engine
-from sqlalchemy.pool import StaticPool
-
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
-
 from airbyte_lib.config import CacheConfigBase
 from airbyte_lib.file_writers import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib.processors import BatchHandle, RecordProcessor
 from airbyte_lib.types import SQLTypeConverter
-
+from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
+from overrides import overrides
+from sqlalchemy import ClauseElement, CursorResult, Executable, MetaData, Table, TextClause, create_engine, text
+from sqlalchemy.engine import Engine
+from sqlalchemy.pool import StaticPool
 
 if TYPE_CHECKING:
-    from sqlalchemy.engine.reflection import Inspector
     from sqlalchemy.engine import Connection
+    from sqlalchemy.engine.reflection import Inspector
 
 
 DEBUG_MODE = True
@@ -92,9 +82,7 @@ class SQLCacheBase(RecordProcessor):
     file_writer_class: type[FileWriterBase]
 
     supports_merge_insert = False
-    use_singleton_connection = (
-        False  # If true, the same connection is used for all operations.
-    )
+    use_singleton_connection = False  # If true, the same connection is used for all operations.
 
     # Constructor:
 
@@ -112,9 +100,7 @@ class SQLCacheBase(RecordProcessor):
         super().__init__(config, source_catalog, **kwargs)
         self._ensure_schema_exists()
 
-        self.file_writer = file_writer or self.file_writer_class(
-            config, source_catalog=source_catalog
-        )
+        self.file_writer = file_writer or self.file_writer_class(config, source_catalog=source_catalog)
         self.type_converter = self.type_converter_class()
 
     # Public interface:
@@ -244,8 +230,7 @@ class SQLCacheBase(RecordProcessor):
 
         if DEBUG_MODE:
             found_schemas = self._get_schemas_list()
-            assert schema_name in found_schemas, \
-                f"Schema {schema_name} was not created. Found: {found_schemas}"
+            assert schema_name in found_schemas, f"Schema {schema_name} was not created. Found: {found_schemas}"
 
     @final
     def _get_temp_table_name(
@@ -275,10 +260,7 @@ class SQLCacheBase(RecordProcessor):
         """Create a new table for loading data."""
         temp_table_name = self._get_temp_table_name(stream_name, batch_id)
         column_definition_str = ",\n  ".join(
-            f"{column_name} {sql_type}"
-            for column_name, sql_type in self._get_sql_column_definitions(
-                stream_name
-            ).items()
+            f"{column_name} {sql_type}" for column_name, sql_type in self._get_sql_column_definitions(stream_name).items()
         )
         self._create_table(temp_table_name, column_definition_str)
 
@@ -303,9 +285,7 @@ class SQLCacheBase(RecordProcessor):
         return [
             found_schema.split(".")[-1].strip('"')
             for found_schema in found_schemas
-            if "." not in found_schema or (
-                found_schema.split(".")[0].lower().strip('"') == database_name.lower()
-            )
+            if "." not in found_schema or (found_schema.split(".")[0].lower().strip('"') == database_name.lower())
         ]
 
     def _ensure_final_table_exists(
@@ -322,10 +302,7 @@ class SQLCacheBase(RecordProcessor):
         did_exist = self._table_exists(table_name)
         if not did_exist and create_if_missing:
             column_definition_str = ",\n  ".join(
-                f"{column_name} {sql_type}"
-                for column_name, sql_type in self._get_sql_column_definitions(
-                    stream_name
-                ).items()
+                f"{column_name} {sql_type}" for column_name, sql_type in self._get_sql_column_definitions(stream_name).items()
             )
             self._create_table(table_name, column_definition_str)
 
@@ -338,8 +315,7 @@ class SQLCacheBase(RecordProcessor):
         column_definition_str: str,
     ) -> None:
         if DEBUG_MODE:
-            assert table_name not in self._get_tables_list(), \
-                f"Table {table_name} already exists."
+            assert table_name not in self._get_tables_list(), f"Table {table_name} already exists."
 
         cmd = f"""
         CREATE TABLE {self._fully_qualified(table_name)} (
@@ -349,8 +325,7 @@ class SQLCacheBase(RecordProcessor):
         result: CursorResult = self._execute_sql(cmd)
         if DEBUG_MODE:
             tables_list = self._get_tables_list()
-            assert table_name in tables_list, \
-                f"Table {table_name} was not created. Found: {tables_list}"
+            assert table_name in tables_list, f"Table {table_name} was not created. Found: {tables_list}"
 
     def _normalize_column_name(
         self,
@@ -374,9 +349,7 @@ class SQLCacheBase(RecordProcessor):
         properties = self._get_stream_json_schema(stream_name)["properties"]
         for property_name, json_schema_property_def in properties.items():
             clean_prop_name = self._normalize_column_name(property_name)
-            columns[clean_prop_name] = self.type_converter.to_sql_type(
-                json_schema_property_def
-            )
+            columns[clean_prop_name] = self.type_converter.to_sql_type(json_schema_property_def)
 
         # TODO: Add the metadata columns (this breaks tests)
         # columns["_airbyte_extracted_at"] = sqlalchemy.TIMESTAMP()
@@ -393,9 +366,7 @@ class SQLCacheBase(RecordProcessor):
             raise RuntimeError("Cannot get stream JSON schema without a catalog.")
 
         matching_streams: list[ConfiguredAirbyteStream] = [
-            stream
-            for stream in self.source_catalog.streams
-            if stream.stream.name == stream_name
+            stream for stream in self.source_catalog.streams if stream.stream.name == stream_name
         ]
         if not matching_streams:
             raise RuntimeError(f"Stream '{stream_name}' not found in catalog.")
@@ -454,24 +425,16 @@ class SQLCacheBase(RecordProcessor):
 
             # Make sure the target schema and target table exist.
             self._ensure_schema_exists()
-            final_table_name = self._ensure_final_table_exists(
-                stream_name, create_if_missing=True
-            )
+            final_table_name = self._ensure_final_table_exists(stream_name, create_if_missing=True)
 
-            temp_table_name = self._write_files_to_new_table(
-                files, stream_name, max_batch_id
-            )
-            self._write_temp_table_to_final_table(
-                stream_name, temp_table_name, final_table_name
-            )
+            temp_table_name = self._write_files_to_new_table(files, stream_name, max_batch_id)
+            self._write_temp_table_to_final_table(stream_name, temp_table_name, final_table_name)
             self._drop_temp_table(temp_table_name)
 
             # Return the batch handles as measure of work completed.
             return batches_to_finalize
 
-    def _execute_sql(
-        self, sql: str | TextClause | Executable
-    ) -> CursorResult:
+    def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult:
         """Execute the given SQL statement."""
         if isinstance(sql, str):
             sql = text(sql)
@@ -483,14 +446,9 @@ class SQLCacheBase(RecordProcessor):
         with self.get_sql_connection() as conn:
             try:
                 result = conn.execute(sql)
-            except (
-                sqlalchemy.exc.ProgrammingError, sqlalchemy.exc.SQLAlchemyError
-            ) as ex:
-                msg = (
-                    f"Error when executing SQL:\n{sql}\n"
-                    f"{type(ex).__name__}{ex!s}"
-                )
-                raise SQLRuntimeError(msg) from None # from ex
+            except (sqlalchemy.exc.ProgrammingError, sqlalchemy.exc.SQLAlchemyError) as ex:
+                msg = f"Error when executing SQL:\n{sql}\n" f"{type(ex).__name__}{ex!s}"
+                raise SQLRuntimeError(msg) from None  # from ex
 
         return result
 
@@ -539,13 +497,9 @@ class SQLCacheBase(RecordProcessor):
         """Merge the temp table into the final table."""
         if self.config.dedupe_mode == RecordDedupeMode.REPLACE:
             if not self.supports_merge_insert:
-                raise NotImplementedError(
-                    "Deduping was requested but merge-insert is not yet supported."
-                )
+                raise NotImplementedError("Deduping was requested but merge-insert is not yet supported.")
 
-            self._merge_temp_table_to_final_table(
-                stream_name, temp_table_name, final_table_name
-            )
+            self._merge_temp_table_to_final_table(stream_name, temp_table_name, final_table_name)
 
         else:
             self._append_temp_table_to_final_table(
@@ -605,9 +559,7 @@ class SQLCacheBase(RecordProcessor):
         columns = self._get_sql_column_definitions(stream_name).keys()
         pk_columns = self._get_primary_keys(stream_name)
         non_pk_columns = columns - pk_columns
-        join_clause = "{nl} AND ".join(
-            f"tmp.{pk_col} = final.{pk_col}" for pk_col in pk_columns
-        )
+        join_clause = "{nl} AND ".join(f"tmp.{pk_col} = final.{pk_col}" for pk_col in pk_columns)
         set_clause = "{nl}    ".join(f"{col} = tmp.{col}" for col in non_pk_columns)
         self._execute_sql(
             f"""

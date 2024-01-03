@@ -3,9 +3,9 @@
 from typing import Any, Iterable
 
 from airbyte_lib.caches import SQLCacheBase
-
-from sqlalchemy import Table
 from pandas import DataFrame
+from sqlalchemy import Table
+
 
 class Dataset:
     def __init__(self, cache: SQLCacheBase, stream: str) -> None:

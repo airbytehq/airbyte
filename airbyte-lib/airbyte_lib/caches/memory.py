@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """A DuckDB in-memory implementation of the cache.
 
 TODO: FIXME: In-memory caches don't work yet. Delete or fix.
@@ -8,14 +10,9 @@ from __future__ import annotations
 from typing import cast
 
 import pyarrow as pa
-from overrides import overrides
-
 from airbyte_lib.caches.duckdb import DuckDBCacheBase, DuckDBCacheConfig
-from airbyte_lib.file_writers import (
-    FileWriterBase,
-    FileWriterBatchHandle,
-    FileWriterConfigBase,
-)
+from airbyte_lib.file_writers import FileWriterBase, FileWriterBatchHandle, FileWriterConfigBase
+from overrides import overrides
 
 
 class InMemoryCacheConfig(DuckDBCacheConfig):
@@ -26,7 +23,6 @@ class InMemoryCacheConfig(DuckDBCacheConfig):
     db_path: str = ":memory:"
     # Workaround:
     # db_path: str = "./.output/temp/in_memory.db"
-
 
 
 class InMemoryFileWriterConfig(FileWriterConfigBase):

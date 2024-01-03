@@ -1,8 +1,8 @@
+---
+products: oss-*
+---
+
 # Transformations with SQL (Part 1/3)
-
-## Transformations with SQL \(Part 1/3\)
-
-### Overview
 
 This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using plain SQL queries.
 

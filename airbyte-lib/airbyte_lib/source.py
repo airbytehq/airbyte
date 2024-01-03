@@ -7,11 +7,10 @@ from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Optional
 
 import jsonschema
-from airbyte_lib.caches import SQLCacheBase, InMemoryCache
+from airbyte_lib import _util  # Internal utility functions
+from airbyte_lib.caches import InMemoryCache, SQLCacheBase
 from airbyte_lib.executor import Executor
 from airbyte_lib.sync_results import SyncResult
-from airbyte_lib import _util  # Internal utility functions
-
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -180,9 +179,7 @@ class Source:
         if len(configured_catalog.streams) == 0:
             raise Exception(f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}")
 
-        yield from _util.airbyte_messages_to_record_dicts(
-            self._read_with_catalog(configured_catalog)
-        )
+        yield from _util.airbyte_messages_to_record_dicts(self._read_with_catalog(configured_catalog))
 
     def check(self):
         """

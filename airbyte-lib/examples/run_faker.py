@@ -6,12 +6,7 @@ import airbyte_lib as ab
 
 source = ab.get_connector(
     "source-faker",
-    config={
-        "count": 10000,
-        "seed": 0,
-        "parallelism": 1,
-        "always_updated": False
-    },
+    config={"count": 10000, "seed": 0, "parallelism": 1, "always_updated": False},
     install_if_missing=True,
 )
 cache = ab.new_local_cache(source_catalog=source.configured_catalog)

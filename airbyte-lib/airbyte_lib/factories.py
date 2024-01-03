@@ -3,13 +3,12 @@
 
 from typing import Any, Dict, Optional
 
-from airbyte_protocol.models import ConfiguredAirbyteCatalog
 import ulid
 from airbyte_lib.caches.duckdb import DuckDBCache, DuckDBCacheConfig
-
 from airbyte_lib.executor import PathExecutor, VenvExecutor
 from airbyte_lib.registry import get_connector_metadata
 from airbyte_lib.source import Source
+from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
 
 def get_default_cache(source_catalog: ConfiguredAirbyteCatalog) -> DuckDBCache:
@@ -67,13 +66,9 @@ def get_connector(
     metadata = get_connector_metadata(name)
     if use_local_install:
         if pip_url:
-            raise ValueError(
-                "Param 'pip_url' is not supported when 'use_local_install' is True"
-            )
+            raise ValueError("Param 'pip_url' is not supported when 'use_local_install' is True")
         if version:
-            raise ValueError(
-                "Param 'version' is not supported when 'use_local_install' is True"
-            )
+            raise ValueError("Param 'version' is not supported when 'use_local_install' is True")
         executor = PathExecutor(
             metadata=metadata,
             target_version=version,

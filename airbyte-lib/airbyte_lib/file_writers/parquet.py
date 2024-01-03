@@ -1,13 +1,16 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """A Parquet cache implementation."""
 
 from pathlib import Path
 from typing import cast
-import pyarrow as pa
-from pyarrow import parquet
-import ulid
 
-from .base import FileWriterBase, FileWriterConfigBase, FileWriterBatchHandle
+import pyarrow as pa
+import ulid
 from overrides import overrides
+from pyarrow import parquet
+
+from .base import FileWriterBase, FileWriterBatchHandle, FileWriterConfigBase
 
 
 class ParquetWriterConfig(FileWriterConfigBase):
@@ -17,6 +20,7 @@ class ParquetWriterConfig(FileWriterConfigBase):
 
     # Inherits from base class:
     # cache_path: str
+
 
 class ParquetWriter(FileWriterBase):
     """A Parquet cache implementation."""
