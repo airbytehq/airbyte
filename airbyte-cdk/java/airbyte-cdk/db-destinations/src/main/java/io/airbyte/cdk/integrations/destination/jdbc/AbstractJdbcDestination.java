@@ -278,7 +278,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
       final TyperDeduper typerDeduper;
       if (disableTypeDedupe) {
         typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator,
-                                                                8);
+            8);
       } else {
         typerDeduper =
             new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator, 8);
