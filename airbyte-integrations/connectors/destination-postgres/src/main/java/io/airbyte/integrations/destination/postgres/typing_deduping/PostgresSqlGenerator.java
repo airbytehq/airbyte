@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static org.jooq.impl.DSL.cast;
@@ -7,6 +8,7 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.function;
 import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.quotedName;
+import static org.jooq.impl.DSL.rowNumber;
 import static org.jooq.impl.DSL.val;
 
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
@@ -20,6 +22,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -104,8 +107,21 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  protected Field<Integer> getRowNumber(final List<ColumnId> primaryKey, final Optional<ColumnId> cursorField) {
-    return val(1).as(ROW_NUMBER_COLUMN_NAME);
+  protected Field<Integer> getRowNumber(final List<ColumnId> primaryKeys, final Optional<ColumnId> cursor) {
+    // literally identical to redshift's getRowNumber implementation, changes here probably should
+    // be reflected there
+    final List<Field<?>> primaryKeyFields =
+        primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList())
+            : new ArrayList<>();
+    final List<Field<?>> orderedFields = new ArrayList<>();
+    // We can still use Jooq's field to get the quoted name with raw sql templating.
+    // jooq's .desc returns SortField<?> instead of Field<?> and NULLS LAST doesn't work with it
+    cursor.ifPresent(columnId -> orderedFields.add(field("{0} desc NULLS LAST", field(quotedName(columnId.name())))));
+    orderedFields.add(field("{0} desc", quotedName(COLUMN_NAME_AB_EXTRACTED_AT)));
+    return rowNumber()
+        .over()
+        .partitionBy(primaryKeyFields)
+        .orderBy(orderedFields).as(ROW_NUMBER_COLUMN_NAME);
   }
 
   @Override

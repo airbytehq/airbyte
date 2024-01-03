@@ -232,6 +232,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    */
   @Override
   protected Field<Integer> getRowNumber(final List<ColumnId> primaryKeys, final Optional<ColumnId> cursor) {
+    // literally identical to postgres's getRowNumber implementation, changes here probably should
+    // be reflected there
     final List<Field<?>> primaryKeyFields =
         primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList())
             : new ArrayList<>();
