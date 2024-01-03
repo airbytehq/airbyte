@@ -127,6 +127,8 @@ runs:
       with:
         python-version: "3.10"
         token: ${{ inputs.github_token }}
+      env:
+        SENTRY_ENVIRONMENT: "production"
 
     - name: Install ci-connector-ops package
       if: github.ref != 'refs/heads/master' && steps.changes.outputs.pipelines_any_changed == 'true'
@@ -135,6 +137,8 @@ runs:
         pip install pipx
         pipx ensurepath
         pipx install airbyte-ci/connectors/pipelines/
+      env:
+        SENTRY_ENVIRONMENT: "dev"
 
     - name: Run airbyte-ci
       shell: bash
