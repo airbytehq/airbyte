@@ -12,8 +12,12 @@ import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DefaultDataType;
 
 public class PostgresSqlGenerator extends JdbcSqlGenerator {
+
+  public static final DataType<?> JSONB_TYPE = new DefaultDataType<>(null, Object.class, "jsonb");
+
   @Override
   protected DataType<?> getStructType() {
     return null;
