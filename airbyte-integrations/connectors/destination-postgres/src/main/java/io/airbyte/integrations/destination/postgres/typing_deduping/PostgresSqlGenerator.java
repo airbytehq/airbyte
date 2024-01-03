@@ -125,10 +125,11 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
+    // TODO
     return false;
   }
 
-  private Field<?> extractColumn(ColumnId column) {
+  private Field<?> extractColumn(final ColumnId column) {
     return field("{0} ->> {1}", name(COLUMN_NAME_DATA), val(column.originalName()));
   }
 }

@@ -1,6 +1,9 @@
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import static io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator.JSONB_TYPE;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -14,11 +17,13 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGener
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.destination.postgres.PostgresDestination;
 import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
 import io.airbyte.integrations.destination.postgres.PostgresTestDatabase;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 import javax.sql.DataSource;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -112,6 +117,30 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   @Test
   @Override
   public void testCreateTableIncremental() throws Exception {
-    // TODO
+    final Sql sql = generator.createTable(incrementalDedupStream, "", false);
+    destinationHandler.execute(sql);
+
+    final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(incrementalDedupStream.id());
+
+    assertTrue(existingTable.isPresent());
+    assertAll(
+        () -> assertEquals("varchar", existingTable.get().columns().get("_airbyte_raw_id").type()),
+        () -> assertEquals("timestamptz", existingTable.get().columns().get("_airbyte_extracted_at").type()),
+        () -> assertEquals("jsonb", existingTable.get().columns().get("_airbyte_meta").type()),
+        () -> assertEquals("int8", existingTable.get().columns().get("id1").type()),
+        () -> assertEquals("int8", existingTable.get().columns().get("id2").type()),
+        () -> assertEquals("timestamptz", existingTable.get().columns().get("updated_at").type()),
+        () -> assertEquals("jsonb", existingTable.get().columns().get("struct").type()),
+        () -> assertEquals("jsonb", existingTable.get().columns().get("array").type()),
+        () -> assertEquals("varchar", existingTable.get().columns().get("string").type()),
+        () -> assertEquals("numeric", existingTable.get().columns().get("number").type()),
+        () -> assertEquals("int8", existingTable.get().columns().get("integer").type()),
+        () -> assertEquals("bool", existingTable.get().columns().get("boolean").type()),
+        () -> assertEquals("timestamptz", existingTable.get().columns().get("timestamp_with_timezone").type()),
+        () -> assertEquals("timestamp", existingTable.get().columns().get("timestamp_without_timezone").type()),
+        () -> assertEquals("timetz", existingTable.get().columns().get("time_with_timezone").type()),
+        () -> assertEquals("time", existingTable.get().columns().get("time_without_timezone").type()),
+        () -> assertEquals("date", existingTable.get().columns().get("date").type()),
+        () -> assertEquals("jsonb", existingTable.get().columns().get("unknown").type()));
   }
 }
