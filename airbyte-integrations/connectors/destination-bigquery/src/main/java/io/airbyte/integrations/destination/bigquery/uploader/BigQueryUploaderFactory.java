@@ -13,6 +13,7 @@ import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
@@ -56,13 +57,11 @@ public class BigQueryUploaderFactory {
     final Schema bigQuerySchema = recordFormatter.getBigQuerySchema();
 
     final TableId targetTable = TableId.of(dataset, uploaderConfig.getTargetTableName());
-    final TableId tmpTable = TableId.of(dataset, uploaderConfig.getTmpTableName());
 
     BigQueryUtils.createSchemaAndTableIfNeeded(
         uploaderConfig.getBigQuery(),
         existingDatasets,
         dataset,
-        tmpTable,
         datasetLocation,
         bigQuerySchema);
 
@@ -72,7 +71,6 @@ public class BigQueryUploaderFactory {
     return getBigQueryDirectUploader(
         uploaderConfig.getConfig(),
         targetTable,
-        tmpTable,
         uploaderConfig.getBigQuery(),
         syncMode,
         datasetLocation,
@@ -82,9 +80,8 @@ public class BigQueryUploaderFactory {
   private static BigQueryDirectUploader getBigQueryDirectUploader(
                                                                   final JsonNode config,
                                                                   final TableId targetTable,
-                                                                  final TableId tmpTable,
                                                                   final BigQuery bigQuery,
-                                                                  final JobInfo.WriteDisposition syncMode,
+                                                                  final WriteDisposition syncMode,
                                                                   final String datasetLocation,
                                                                   final BigQueryRecordFormatter formatter) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
@@ -123,7 +120,6 @@ public class BigQueryUploaderFactory {
 
     return new BigQueryDirectUploader(
         targetTable,
-        tmpTable,
         new BigQueryTableWriter(writer),
         syncMode,
         bigQuery,

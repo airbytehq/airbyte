@@ -1203,12 +1203,10 @@ definitions:
       http_method:
         title: HTTP Method
         description: The HTTP method used to fetch data from the source (can be GET or POST).
-        anyOf:
-          - type: string
-          - type: string
-            enum:
-              - GET
-              - POST
+        type: string
+        enum:
+          - GET
+          - POST
         default: GET
         examples:
           - GET
@@ -1822,9 +1820,22 @@ definitions:
         title: Record Filter
         description: Responsible for filtering records to be emitted by the Source.
         "$ref": "#/definitions/RecordFilter"
+      schema_normalization:
+        "$ref": "#/definitions/SchemaNormalization"
+        default: None
       $parameters:
         type: object
         additionalProperties: true
+  SchemaNormalization:
+    title: Schema Normalization
+    description: Responsible for normalization according to the schema.
+    type: string
+    enum:
+      - None
+      - Default
+    examples:
+      - None
+      - Default
   RemoveFields:
     title: Remove Fields
     description: A transformation which removes fields from a record. The fields removed are designated using FieldPointers. During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
