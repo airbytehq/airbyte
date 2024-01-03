@@ -10,17 +10,26 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 from .streams import (
-    GainsightCsStream,
-    Person,
-    Company,
-    User,
-    CompanyPerson,
-    ActivityTimeline,
-    CallToAction,
-    SurveyParticipant,
-    Playbook,
-    CustomObjectStream
+    GainsightCsObjectStream
 )
+
+standard_objects = [
+    "person",
+    "company",
+    "gsuser",
+    "company_person",
+    "playbook",
+    "call_to_action",
+    "survey_participant",
+    "activity_timeline"
+]
+
+# TODO: It's hardcoded right now but we will need to implement a way to retrieve
+# this info from our customers.
+custom_objects = [
+    "magnify_added__gc",
+    "sf_1i0025dxe6kkg8jcv1zrb42nk97l9wbigcdp",
+]
 
 
 class GainsightCsAuthenticator(HttpAuthenticator):
@@ -51,14 +60,8 @@ class SourceGainsightCs(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
         domain_url = config.get("domain_url")
-        return [
-            Person(domain_url=domain_url, authenticator=auth),
-            Company(domain_url=domain_url, authenticator=auth),
-            User(domain_url=domain_url, authenticator=auth),
-            CompanyPerson(domain_url=domain_url, authenticator=auth),
-            ActivityTimeline(domain_url=domain_url, authenticator=auth),
-            CallToAction(domain_url=domain_url, authenticator=auth),
-            SurveyParticipant(domain_url=domain_url, authenticator=auth),
-            Playbook(domain_url=domain_url, authenticator=auth),
-            # CustomObjectStream(name="sf_1i0025dxe6kkg8jcv1zrb42nk97l9wbigcdp", domain_url=domain_url, authenticator=auth)
-        ]
+        all_objects = standard_objects + custom_objects
+        result = []
+        for object_name in all_objects:
+            result.append(GainsightCsObjectStream(name=object_name, domain_url=domain_url, authenticator=auth))
+        return result
