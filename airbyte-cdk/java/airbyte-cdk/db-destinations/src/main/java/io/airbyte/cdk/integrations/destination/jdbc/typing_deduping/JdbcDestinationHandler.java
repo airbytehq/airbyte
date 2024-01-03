@@ -15,10 +15,16 @@ import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLType;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +65,49 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   @Override
   public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
-    return new InitialRawTableState(true, Optional.empty());
+    final ResultSet tables = jdbcDatabase.getMetaData().getTables(
+        databaseName,
+        id.rawNamespace(),
+        id.rawName(),
+        null);
+    if (!tables.next()) {
+      // There's no raw table at all. Therefore there are no unprocessed raw records, and this sync
+      // should not filter raw records by timestamp.
+      return new InitialRawTableState(false, Optional.empty());
+    }
+    // And use two explicit queries because COALESCE might not short-circuit evaluation.
+    // This first query tries to find the oldest raw record with loaded_at = NULL.
+    // Unsafe query requires us to explicitly close the Stream, which is inconvenient,
+    // but it's also the only method in the JdbcDatabase interface to return non-string/int types
+    try (final Stream<Timestamp> timestampStream = jdbcDatabase.unsafeQuery(
+        conn -> conn.prepareStatement(
+            DSL.select(DSL.field("MIN(_airbyte_extracted_at)").as("min_timestamp"))
+                .from(DSL.name(id.rawNamespace(), id.rawName()))
+                .where(DSL.condition("_airbyte_loaded_at IS NULL"))
+                .getSQL()),
+        record -> record.getTimestamp("min_timestamp"))) {
+      // Filter for nonNull values in case the query returned NULL (i.e. no unloaded records).
+      final Optional<Timestamp> minUnloadedTimestamp = timestampStream.filter(Objects::nonNull).findFirst();
+      if (minUnloadedTimestamp.isPresent()) {
+        // Decrement by 1 second since timestamp precision varies between databases.
+        final Optional<Instant> ts = minUnloadedTimestamp
+            .map(Timestamp::toInstant)
+            .map(i -> i.minus(1, ChronoUnit.SECONDS));
+        return new InitialRawTableState(true, ts);
+      }
+    }
+    // If there are no unloaded raw records, then we can safely skip all existing raw records.
+    // This second query just finds the newest raw record.
+    try (final Stream<Timestamp> timestampStream = jdbcDatabase.unsafeQuery(
+        conn -> conn.prepareStatement(
+            DSL.select(DSL.field("MAX(_airbyte_extracted_at)").as("min_timestamp"))
+                .from(DSL.name(id.rawNamespace(), id.rawName()))
+                .getSQL()),
+        record -> record.getTimestamp("min_timestamp"))) {
+      // Filter for nonNull values in case the query returned NULL (i.e. no raw records at all).
+      final Optional<Timestamp> minUnloadedTimestamp = timestampStream.filter(Objects::nonNull).findFirst();
+      return new InitialRawTableState(false, minUnloadedTimestamp.map(Timestamp::toInstant));
+    }
   }
 
   @Override
