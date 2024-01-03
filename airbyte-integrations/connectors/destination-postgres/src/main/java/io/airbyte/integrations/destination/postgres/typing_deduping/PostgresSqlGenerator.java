@@ -105,7 +105,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   protected Field<Integer> getRowNumber(final List<ColumnId> primaryKey, final Optional<ColumnId> cursorField) {
-    return null;
+    return val(0).as(ROW_NUMBER_COLUMN_NAME);
   }
 
   @Override
