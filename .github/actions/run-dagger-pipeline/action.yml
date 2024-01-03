@@ -101,6 +101,19 @@ runs:
           pipelines:
             - 'airbyte-ci/connectors/pipelines/**'
 
+    - name: Determine whether to install Airbyte CI locally
+      shell: bash
+      id: determine-install-mode
+      run: |
+        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
+          echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
+          echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
+          echo "install-mode=local" >> $GITHUB_OUTPUT
+        else
+          echo "SENTRY_ENVIRONMENT=production" >> $GITHUB_ENV
+          echo "install-mode=binary" >> $GITHUB_OUTPUT
+        fi
+
     - name: Docker login
       uses: docker/login-action@v1
       with:
@@ -114,7 +127,7 @@ runs:
 
     - name: Install airbyte-ci binary
       id: install-airbyte-ci
-      if: github.ref == 'refs/heads/master' || steps.changes.outputs.pipelines_any_changed == 'false'
+      if: steps.determine-install-mode.outputs.install-mode == 'binary'
       shell: bash
       run: |
         curl -sSL ${{ inputs.airbyte_ci_binary_url }} --output airbyte-ci-bin
@@ -123,13 +136,13 @@ runs:
 
     - name: Install Python 3.10
       uses: actions/setup-python@v4
-      if: github.ref != 'refs/heads/master' && steps.changes.outputs.pipelines_any_changed == 'true'
+      if: steps.determine-install-mode.outputs.install-mode == 'local'
       with:
         python-version: "3.10"
         token: ${{ inputs.github_token }}
 
     - name: Install ci-connector-ops package
-      if: github.ref != 'refs/heads/master' && steps.changes.outputs.pipelines_any_changed == 'true'
+      if: steps.determine-install-mode.outputs.install-mode == 'local'
       shell: bash
       run: |
         pip install pipx
@@ -140,13 +153,6 @@ runs:
       shell: bash
       run: |
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-
-        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
-          export SENTRY_ENVIRONMENT="dev"
-        else
-          export SENTRY_ENVIRONMENT="production"
-        fi
-
         airbyte-ci --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
         _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
