@@ -1,6 +1,6 @@
 # Documentation and Docusaurus
 
-We use [Docusaurus](https://docusaurus.io) to build Airbyte
+We use [Docusaurus](https://docusaurus.io) to build Airbyte's
 [documentation site](https://docs.airbyte.io) from documentation source files in Markdown, and lint
 the source files. We host the resulting docs site on Vercel. It deploys automatically when any
 changes get merged to `master`.
@@ -49,7 +49,7 @@ and link it in the pull request for review.
 
 ### Checking for broken links
 
-Airbyte docs site checks link with Docusaurus at build time, and with an additional GitHub action
+Airbyte's docs site checks links with Docusaurus at build time, and with an additional GitHub action
 periodically:
 
 - Running the build process will **check for broken links**, please read the output and address any
@@ -61,16 +61,16 @@ periodically:
 > fine. For that reason, if you're linking to another Airbyte documentation page, make it a relative
 > link. I.e. `[link](/connector-development/overview.md)` instead of
 > `[link](https://docs.airbyte.com/connector-development/)`. That way, if your link breaks in the
-> future, it will be caught with `yarn build`.
+> future due to a navigation restructure, it will be caught with `yarn build`.
 
-## Docusaurus Plusings We Use
+## Docusaurus Plugins We Use
 
 ### Plugin Client Redirects
 
 A silly name, but a useful plugin that adds redirect functionality to docusaurus
 [Official documentation here](https://docusaurus.io/docs/api/plugins/@docusaurus/plugin-client-redirects)
 
-If you're proposing to move an existing documentation file or change it's name, please setup a
+If you're proposing to move an existing documentation file or change its name, please setup a
 redirect rule.
 
 You will need to edit
