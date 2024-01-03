@@ -153,6 +153,9 @@ class RecordProcessor(abc.ABC):
                     stream_name = stream_state.stream_descriptor.name
                     self._pending_state_messages[stream_name].append(state_msg)
 
+            elif message.type in [Type.LOG, Type.TRACE]:
+                pass
+
             else:
                 raise ValueError(f"Unexpected message type: {message.type}")
 
