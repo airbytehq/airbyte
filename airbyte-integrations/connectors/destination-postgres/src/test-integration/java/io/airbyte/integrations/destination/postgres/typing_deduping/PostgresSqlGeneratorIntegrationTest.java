@@ -11,6 +11,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGener
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.destination.postgres.PostgresDestination;
+import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
 import io.airbyte.integrations.destination.postgres.PostgresTestDatabase;
 import javax.sql.DataSource;
 import org.jooq.DataType;
@@ -61,7 +62,7 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
 
   @Override
   protected JdbcSqlGenerator getSqlGenerator() {
-    return new PostgresSqlGenerator();
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
   }
 
   @Override

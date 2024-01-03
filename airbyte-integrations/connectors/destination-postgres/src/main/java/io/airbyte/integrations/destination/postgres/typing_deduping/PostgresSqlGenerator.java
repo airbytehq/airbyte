@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
@@ -18,19 +19,23 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   public static final DataType<?> JSONB_TYPE = new DefaultDataType<>(null, Object.class, "jsonb");
 
+  public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer) {
+    super(namingTransformer);
+  }
+
   @Override
   protected DataType<?> getStructType() {
-    return null;
+    return JSONB_TYPE;
   }
 
   @Override
   protected DataType<?> getArrayType() {
-    return null;
+    return JSONB_TYPE;
   }
 
   @Override
   protected DataType<?> getWidestType() {
-    return null;
+    return JSONB_TYPE;
   }
 
   @Override
