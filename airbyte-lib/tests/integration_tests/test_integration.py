@@ -80,7 +80,7 @@ def test_sync():
         (False, "test", "succeeded", 3),
     ],
 )
-def test_tracking_success(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_key: str, expected_state: str, expected_number_of_records: int):
+def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_key: str, expected_state: str, expected_number_of_records: int):
     """
     Test that the telemetry is sent when the sync is successful.
     This is done by mocking the requests.post method and checking that it is called with the right arguments.
