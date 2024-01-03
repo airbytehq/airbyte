@@ -16,6 +16,9 @@
         },
         "avatarUuid": {
           "type": ["null", "string"]
+        },
+        "avatarUrl": {
+          "type": ["null", "string"]
         }
       }
     },
@@ -185,6 +188,9 @@
             },
             "avatarUuid": {
               "type": ["null", "string"]
+            },
+            "avatarUrl": {
+              "type": ["null", "string"]
             }
           }
         },
@@ -234,6 +240,7 @@
       "items": {
         "type": "object",
         "properties": {
+          "altIsSentryApp": {},
           "assets": {
             "type": "array",
             "items": {
@@ -242,6 +249,7 @@
           },
           "author": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "name": {
                 "type": "string"
@@ -263,23 +271,45 @@
           "description": {
             "type": "string"
           },
+          "deprecationDate": {},
           "doc": {
             "type": "string"
           },
           "enabled": {
             "type": "boolean"
           },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "featureDescriptions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "firstPartyAlternative": {},
           "hasConfiguration": {
             "type": "boolean"
           },
           "id": {
             "type": "string"
           },
+          "isDeprecated": {
+            "type": "boolean"
+          },
+          "isHidden": {
+            "type": "boolean"
+          },
           "isTestable": {
             "type": "boolean"
           },
           "metadata": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           },
           "name": {
             "type": "string"
@@ -288,6 +318,7 @@
             "type": ["null", "array"],
             "items": {
               "type": "object",
+              "additionalProperties": true,
               "properties": {
                 "title": {
                   "type": "string"
@@ -440,9 +471,13 @@
     "hasReplays": { "type": ["null", "boolean"] },
     "hasSessions": { "type": ["null", "boolean"] },
     "hasFeedbacks": { "type": ["null", "boolean"] },
+    "hasCustomMetrics": { "type": ["null", "boolean"] },
     "recapServerUrl": { "type": ["null", "string"] },
     "secondaryGroupingConfig": { "type": ["null", "string"] },
     "secondaryGroupingExpiry": { "type": ["null", "integer"] },
-    "symbolSources": { "type": ["null", "string"] }
+    "symbolSources": { "type": ["null", "string"] },
+    "stats": {},
+    "transactionStats": {},
+    "sessionStats": {}
   }
 }

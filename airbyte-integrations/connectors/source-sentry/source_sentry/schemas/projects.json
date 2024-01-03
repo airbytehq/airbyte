@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "avatar": {
       "type": "object",
@@ -9,6 +10,9 @@
           "type": "string"
         },
         "avatarUuid": {
+          "type": ["null", "string"]
+        },
+        "avatarUrl": {
           "type": ["null", "string"]
         }
       }
@@ -61,6 +65,9 @@
             },
             "avatarUuid": {
               "type": ["null", "string"]
+            },
+            "avatarUrl": {
+              "type": ["string", "null"]
             }
           }
         },
@@ -73,6 +80,20 @@
         },
         "isEarlyAdopter": {
           "type": "boolean"
+        },
+        "hasAuthProvider": {
+          "type": "boolean"
+        },
+        "links": {
+          "type": "object",
+          "properties": {
+            "organizationUrl": {
+              "type": "string"
+            },
+            "regionUrl": {
+              "type": "string"
+            }
+          }
         },
         "name": {
           "type": "string"
