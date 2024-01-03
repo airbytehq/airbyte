@@ -152,7 +152,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   /**
-   * Redshift ARRAY_CONCAT supports only 2 arrays. Iteratively nest ARRAY_CONCAT to support more than 2
+   * Redshift ARRAY_CONCAT supports only 2 arrays. Iteratively nest ARRAY_CONCAT to support more than
+   * 2
    *
    * @param arrays
    * @return

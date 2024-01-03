@@ -102,7 +102,7 @@ public class RedshiftSqlGeneratorTest {
   }
 
   @Test
-  public void test500ColumnSql() {
+  public void test2000ColumnSql() {
     final ColumnId id1 = redshiftSqlGenerator.buildColumnId("id1");
     final ColumnId id2 = redshiftSqlGenerator.buildColumnId("id2");
     List<ColumnId> primaryKey = List.of(id1, id2);
