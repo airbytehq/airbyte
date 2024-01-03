@@ -4,6 +4,7 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DAT
 import static org.jooq.impl.DSL.cast;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.function;
+import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.quotedName;
 import static org.jooq.impl.DSL.val;
 
@@ -63,7 +64,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         .entrySet()
         .stream()
         .map(column -> castedField(
-            field("{0} ->> {1}", COLUMN_NAME_DATA, val(column.getKey().originalName())),
+            field("{0} ->> {1}", name(COLUMN_NAME_DATA), val(column.getKey().originalName())),
             column.getValue(),
             column.getKey().name(),
             useExpensiveSaferCasting))
