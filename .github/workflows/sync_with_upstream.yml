@@ -1,0 +1,27 @@
+name: Sync Airbyte Fork with Upstream
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Scheduled to run daily at midnight
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Sync with Upstream
+      run: |
+        git config --global user.email "seppo.alatalo@icloud.com"
+        git config --global user.name "Seppo"
+        git remote add upstream https://github.com/airbytehq/airbyte.git
+        git fetch upstream
+        git checkout master
+        git merge upstream/master
+        git push
+
