@@ -8,7 +8,7 @@ import datetime
 import os
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import ClassVar, List, Optional
+from typing import Any, ClassVar, List, Optional
 
 import requests  # type: ignore
 import semver
@@ -312,7 +312,7 @@ class CheckBaseImageIsUsed(Step):
     context: ConnectorContext
     title = "Check our base image is used"
 
-    async def _run(self, *args, **kwargs) -> StepResult:
+    async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
         is_certified = self.context.connector.metadata.get("supportLevel") == "certified"
         if not is_certified:
             return self.skip("Connector is not certified, it does not require the use of our base image.")

@@ -3,6 +3,8 @@
 #
 
 
+from typing import Any
+
 from dagger import Container, Platform
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
@@ -20,7 +22,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
-    async def _build_connector(self, platform: Platform, *args) -> Container:
+    async def _build_connector(self, platform: Platform, *args: Any) -> Container:
         if (
             "connectorBuildOptions" in self.context.connector.metadata
             and "baseImage" in self.context.connector.metadata["connectorBuildOptions"]

@@ -213,7 +213,7 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click_append_to_context_object("pull_request", _get_pull_request)
 @click.pass_context
 @click_ignore_unused_kwargs
-async def airbyte_ci(ctx: click.Context):  # noqa D103
+async def airbyte_ci(ctx: click.Context) -> None:  # noqa D103
     # Check that the command being run is not upgrade
     is_update_command = ctx.invoked_subcommand == "update"
     if ctx.obj["enable_update_check"] and ctx.obj["is_local"] and not is_update_command:

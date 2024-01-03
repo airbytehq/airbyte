@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from abc import ABC
+from typing import TYPE_CHECKING
 
 import docker  # type: ignore
 from dagger import Container, ExecError, Platform, QueryError
@@ -11,6 +12,8 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import Step, StepResult, StepStatus
 
+if TYPE_CHECKING:
+    from typing import Any
 
 class BuildConnectorImagesBase(Step, ABC):
     """
@@ -27,7 +30,7 @@ class BuildConnectorImagesBase(Step, ABC):
         self.build_platforms = context.targeted_platforms
         super().__init__(context)
 
-    async def _run(self, *args) -> StepResult:
+    async def _run(self, *args: Any) -> StepResult:
         build_results_per_platform = {}
         for platform in self.build_platforms:
             try:
@@ -47,7 +50,7 @@ class BuildConnectorImagesBase(Step, ABC):
         )
         return StepResult(self, StepStatus.SUCCESS, stdout=success_message, output_artifact=build_results_per_platform)
 
-    async def _build_connector(self, platform: Platform, *args, **kwargs) -> Container:
+    async def _build_connector(self, platform: Platform, *args: Any, **kwargs: Any) -> Container:
         """Implement the generation of the image for the platform and return the corresponding container.
 
         Returns:

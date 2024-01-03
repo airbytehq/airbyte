@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 import anyio
 import dagger
@@ -87,7 +87,7 @@ async def run_connectors_pipelines(
     concurrency: int,
     dagger_logs_path: Optional[Path],
     execute_timeout: Optional[int],
-    *args,
+    *args: Any,
 ) -> List[ConnectorContext] | List[PublishConnectorContext]:
     """Run a connector pipeline for all the connector contexts."""
 

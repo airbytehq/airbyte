@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import asyncclick as click
 
 if TYPE_CHECKING:
-    from typing import Callable
+    from typing import Any, Callable
 
 PRE_CONFIRM_ALL_KEY = "yes"
 
@@ -19,7 +19,7 @@ def pre_confirm_all_flag(f: Callable) -> Callable:
     return click.option("-y", "--yes", PRE_CONFIRM_ALL_KEY, is_flag=True, default=False, help="Skip prompts and use default values")(f)
 
 
-def confirm(*args, **kwargs) -> bool:
+def confirm(*args: Any, **kwargs: Any) -> bool:
     """Confirm a prompt with the user, with support for a --yes flag."""
     additional_pre_confirm_key = kwargs.pop("additional_pre_confirm_key", None)
     ctx = click.get_current_context()

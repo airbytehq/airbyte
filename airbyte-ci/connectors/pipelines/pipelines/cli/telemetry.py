@@ -14,7 +14,7 @@ import segment.analytics as analytics  # type: ignore
 from asyncclick import get_current_context
 
 if TYPE_CHECKING:
-    from typing import Callable
+    from typing import Any, Callable, Dict, Tuple
 
     from asyncclick import Command
 
@@ -47,7 +47,7 @@ def click_track_command(f: Callable) -> Callable:
     Decorator to track CLI commands with segment.io
     """
 
-    def wrapper(*args, **kwargs) -> Command:
+    def wrapper(*args: Tuple, **kwargs: Dict[str, Any]) -> Command:
         ctx = get_current_context()
         top_level_command = ctx.command_path
         full_cmd = " ".join(sys.argv)

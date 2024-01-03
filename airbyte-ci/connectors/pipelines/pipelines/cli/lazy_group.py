@@ -3,7 +3,7 @@
 # Source: https://click.palletsprojects.com/en/8.1.x/complex/
 
 import importlib
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import asyncclick as click
 
@@ -13,7 +13,7 @@ class LazyGroup(click.Group):
     A click Group that can lazily load subcommands.
     """
 
-    def __init__(self, *args, lazy_subcommands: Optional[Dict[str, str]] = None, **kwargs) -> None:
+    def __init__(self, *args: Any, lazy_subcommands: Optional[Dict[str, str]] = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         # lazy_subcommands is a map of the form:
         #

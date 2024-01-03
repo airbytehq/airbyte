@@ -3,7 +3,7 @@
 #
 
 from abc import ABC
-from typing import ClassVar, List
+from typing import Any, ClassVar, List
 
 import pipelines.dagger.actions.system.docker
 from dagger import CacheSharingMode, CacheVolume
@@ -55,10 +55,10 @@ class GradleTask(Step, ABC):
             for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
 
-    def _get_gradle_command(self, task: str, *args) -> str:
+    def _get_gradle_command(self, task: str, *args: Any) -> str:
         return f"./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS + args)} {task}"
 
-    async def _run(self, *args, **kwargs) -> StepResult:
+    async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
         include = [
             ".root",
             ".env",

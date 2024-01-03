@@ -199,7 +199,7 @@ class Step(ABC):
                 self.logger.info(f"⏳ Still running... (duration: {format_duration(duration)})")
             await anyio.sleep(1)
 
-    async def run_with_completion(self, completion_event: anyio.Event, *args, **kwargs) -> StepResult:
+    async def run_with_completion(self, completion_event: anyio.Event, *args: Any, **kwargs: Any) -> StepResult:
         """Run the step with a timeout and set the completion event when the step is done."""
         try:
             with anyio.fail_after(self.max_duration.total_seconds()):
@@ -213,7 +213,7 @@ class Step(ABC):
             return self._get_timed_out_step_result()
 
     @sentry_utils.with_step_context
-    async def run(self, *args, **kwargs) -> StepResult:
+    async def run(self, *args: Any, **kwargs: Any) -> StepResult:
         """Public method to run the step. It output a step result.
 
         If an unexpected dagger error happens it outputs a failed step result with the exception payload.
@@ -247,7 +247,7 @@ class Step(ABC):
         max_retries = self.max_dagger_error_retries if step_result.exc_info else self.max_retries
         return self.retry_count < max_retries and max_retries > 0
 
-    async def retry(self, step_result: StepResult, *args, **kwargs) -> StepResult:
+    async def retry(self, step_result: StepResult, *args: Any, **kwargs: Any) -> StepResult:
         self.retry_count += 1
         self.logger.warn(
             f"Failed with error: {step_result.stderr}.\nRetry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds..."
@@ -270,7 +270,7 @@ class Step(ABC):
             self.logger.info(f"{result.status.get_emoji()} was successful (duration: {duration})")
 
     @abstractmethod
-    async def _run(self, *args, **kwargs) -> StepResult:
+    async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
         """Implement the execution of the step and return a step result.
 
         Returns:
