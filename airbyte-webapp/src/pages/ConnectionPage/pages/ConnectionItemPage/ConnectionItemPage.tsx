@@ -53,7 +53,7 @@ const ConnectionItemPage: React.FC = () => {
       frequency: getFrequencyType(connection.scheduleData?.basicSchedule),
     });
 
-    onOpenMessageBox("connection.messagebox.saveChange");
+    onOpenMessageBox("connection.configuration.inprogress");
   };
   const isConnectionDeleted = connection?.status === ConnectionStatus.deprecated;
 

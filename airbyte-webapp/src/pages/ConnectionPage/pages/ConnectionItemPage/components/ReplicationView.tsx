@@ -260,14 +260,12 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         <Alert
           formattedMessage={
             healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
-            "INPROGRESS" ? (
-              <FormattedMessage id="connection.configuration.inprogress" />
-            ) : healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
-              "SUCCESS" ? (
+            "SUCCESS" ? (
               <FormattedMessage id="connection.configuration.success" />
-            ) : (
+            ) : healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
+              "FAILURE" ? (
               <FormattedMessage id="connection.configuration.failure" />
-            )
+            ) : null
           }
           bgColor={
             healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status === "SUCCESS"
@@ -288,6 +286,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         <ConnectionForm
           mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
           connection={connection}
+          connectionId={connectionId}
           onSubmit={onSubmitForm}
           onCancel={onCancelConnectionFormEdit}
           canSubmitUntouchedForm={activeUpdatingSchemaMode}

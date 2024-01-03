@@ -15,6 +15,7 @@ interface EditControlProps {
   enableControls?: boolean;
   withLine?: boolean;
   healthData?: any;
+  connectionId?: string;
 }
 
 // const Container = styled.div``;
@@ -46,6 +47,7 @@ const EditControls: React.FC<EditControlProps> = ({
   enableControls,
   withLine,
   healthData,
+  connectionId,
 }) => {
   const showStatusMessage = () => {
     if (errorMessage) {
@@ -72,7 +74,7 @@ const EditControls: React.FC<EditControlProps> = ({
             submitDisabled ||
             isSubmitting ||
             (!dirty && !enableControls) ||
-            healthData?.connectionUpdate === "INPROGRESS"
+            healthData?.connectionUpdate?.find((item: any) => item.connectionId === connectionId)
           }
         >
           <FormattedMessage id="form.saveChanges" />
