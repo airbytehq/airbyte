@@ -1,6 +1,7 @@
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static org.jooq.impl.DSL.cast;
@@ -28,6 +29,7 @@ import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DefaultDataType;
+import org.jooq.impl.SQLDataType;
 
 public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
@@ -63,7 +65,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         .entrySet()
         .stream()
         .map(column -> castedField(
-            field("{0} ->> {1}", name(COLUMN_NAME_DATA), val(column.getKey().originalName())),
+            extractColumn(column.getKey()),
             column.getValue(),
             column.getKey().name(),
             useExpensiveSaferCasting))
@@ -98,7 +100,9 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   protected Condition cdcDeletedAtNotNullCondition() {
-    return null;
+    return field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
+        .and(function("JSON_TYPEOF", SQLDataType.VARCHAR, extractColumn(cdcDeletedAtColumn))
+            .ne("null"));
   }
 
   @Override
@@ -122,5 +126,9 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
     return false;
+  }
+
+  private Field<?> extractColumn(ColumnId column) {
+    return field("{0} ->> {1}", name(COLUMN_NAME_DATA), val(column.originalName()));
   }
 }
