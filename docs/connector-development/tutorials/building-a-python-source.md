@@ -40,15 +40,11 @@ to install Python 3 before beginning.
 - Step 12: Add docs \(in `docs/integrations/sources/<source-name>.md`\)
 
 :::info
-
 Each step of the Creating a Source checklist is explained in more detail below.
-
 :::
 
 :::info
-
 All `./gradlew` commands must be run from the root of the airbyte project.
-
 :::
 
 ### Submitting a Source to Airbyte
