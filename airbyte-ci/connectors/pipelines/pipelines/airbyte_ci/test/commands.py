@@ -31,6 +31,7 @@ async def run_poetry_command(container: dagger.Container, command: str) -> Tuple
         Tuple[str, str]: The stdout and stderr of the command.
     """
     container = container.with_exec(["poetry", "run", *command.split(" ")])
+    raise Exception("Test exception")
     return await container.stdout(), await container.stderr()
 
 
