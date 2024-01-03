@@ -14,15 +14,6 @@ class GainsightCsStream(HttpStream, ABC):
     def url_base(self):
         return self.domain_url
 
-    def get_dates(self, stream_name):
-        match stream_name:
-            case "Activity_Timeline":
-                return ("CreatedDate", "LastModifiedDate")
-            case "Report":
-                return ("CreatedAt", "ModifiedAt")
-            case _:
-                return ("CreatedDate", "ModifiedDate")
-
 
 class GainsightCsObjectStream(GainsightCsStream):
     primary_key = "gsid"
