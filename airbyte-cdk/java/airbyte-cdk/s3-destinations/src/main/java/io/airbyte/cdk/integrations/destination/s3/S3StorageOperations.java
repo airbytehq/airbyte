@@ -228,28 +228,27 @@ public class S3StorageOperations extends BlobStorageOperations {
    * 0-indexed.
    */
   @VisibleForTesting
-  String getPartId(String objectPath) {
+  synchronized String getPartId(String objectPath) {
     final AtomicInteger partCount = partCounts.computeIfAbsent(objectPath, k -> new AtomicInteger(0));
 
     if (partCount.get() == 0) {
+      ObjectListing objects;
+      int objectCount = 0;
+
       final String bucket = s3Config.getBucketName();
-      final ObjectListing objects = s3Client.listObjects(bucket, objectPath);
+      objects = s3Client.listObjects(bucket, objectPath);
 
-      // another thread beat us here, so recurse
-      if (partCount.get() != 0) {
-        return getPartId(objectPath);
+      if (objects != null) {
+        objectCount = objectCount + objects.getObjectSummaries().size();
+        while (objects != null && objects.getNextMarker() != null) {
+          objects = s3Client.listObjects(new ListObjectsRequest().withBucketName(bucket).withPrefix(objectPath).withMarker(objects.getNextMarker()));
+          if (objects != null) {
+            objectCount = objectCount + objects.getObjectSummaries().size();
+          }
+        }
       }
 
-      if (objects == null) {
-        partCount.set(0);
-      } else if (objects.isTruncated()) {
-        // The bucket contains too many objects, and there is no reasonable way to get a count of all
-        // objects in a bucket in S3 without multiple requests
-        // So, let's pick a big number and assume overwriting existing files is OK...
-        partCount.set(objects.getObjectSummaries().size() + 101);
-      } else {
-        partCount.set(objects.getObjectSummaries().size());
-      }
+      partCount.set(objectCount);
     }
 
     return Integer.toString(partCount.getAndIncrement());
