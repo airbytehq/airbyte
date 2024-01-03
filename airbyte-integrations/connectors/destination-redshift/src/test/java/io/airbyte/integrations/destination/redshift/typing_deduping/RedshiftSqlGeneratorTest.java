@@ -97,8 +97,8 @@ public class RedshiftSqlGeneratorTest {
         redshiftSqlGenerator.updateTable(incrementalDedupStream, "unittest", Optional.of(Instant.parse("2023-02-15T18:35:24.00Z")), false);
     List<String> expectedSqlLines = Arrays.stream(expectedSql.split("\n")).map(String::trim).toList();
     List<String> generatedSqlLines = Arrays.stream(generatedSql.split("\n")).map(String::trim).toList();
-    assertEquals(expectedSqlLines, generatedSqlLines);
     System.out.println(generatedSql);
+    assertEquals(expectedSqlLines, generatedSqlLines);
   }
 
   @Test
@@ -129,7 +129,8 @@ public class RedshiftSqlGeneratorTest {
         primaryKey,
         Optional.of(cursor),
         columns), "unittest", Optional.of(Instant.parse("2023-02-15T18:35:24.00Z")), false);
-    System.out.println(generatedSql);
+    // This should not throw an exception.
+    assertFalse(generatedSql.isEmpty());
   }
 
 }

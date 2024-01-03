@@ -152,7 +152,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   /**
-   * Redshift ARRAY_CONCAT supports only 2 arrays, recursively build ARRAY_CONCAT for n arrays.
+   * Redshift ARRAY_CONCAT supports only 2 arrays. Iteratively nest ARRAY_CONCAT to support more than 2
    *
    * @param arrays
    * @return
@@ -163,11 +163,12 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     }
 
     Field<?> result = arrays.get(0);
+    String renderedSql = getDslContext().render(result);
     for (int i = 1; i < arrays.size(); i++) {
-      result = function("ARRAY_CONCAT", getSuperType(), result, arrays.get(i));
-      // System.out.println(function("ARRAY_CONCAT", getSuperType(), result, arrays.get(i)));
+      // We lose some nice indentation but thats ok. Queryparts
+      // are intentionally rendered here to avoid deep stack for function sql rendering.
+      result = field(getDslContext().renderNamedOrInlinedParams(function("ARRAY_CONCAT", getSuperType(), result, arrays.get(i))));
     }
-
     return result;
   }
 
