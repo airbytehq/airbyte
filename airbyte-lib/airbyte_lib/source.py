@@ -53,6 +53,7 @@ class Source:
         config: Optional[Dict[str, Any]] = None,
         streams: Optional[List[str]] = None,
     ):
+        self._processed_records = 0
         self.executor = executor
         self.name = name
         self.streams: Optional[List[str]] = None
@@ -214,10 +215,10 @@ class Source:
                     if msg.type == Type.RECORD:
                         yield msg.record
         except Exception as e:
-            track(source_tracking_information, target, "failed")
+            track(source_tracking_information, target, "failed", self._processed_records)
             raise e
         finally:
-            track(source_tracking_information, target, "succeeded")
+            track(source_tracking_information, target, "succeeded", self._processed_records)
 
     def _add_to_logs(self, message: str):
         self._last_log_messages.append(message)
