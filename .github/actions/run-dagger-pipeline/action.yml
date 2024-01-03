@@ -140,6 +140,13 @@ runs:
       shell: bash
       run: |
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
+
+        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
+          export SENTRY_ENVIRONMENT="dev"
+        else
+          export SENTRY_ENVIRONMENT="production"
+        fi
+
         airbyte-ci --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
         _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
@@ -157,7 +164,6 @@ runs:
         PRODUCTION: ${{ inputs.production }}
         PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
         SENTRY_DSN: ${{ inputs.sentry_dsn }}
-        SENTRY_ENVIRONMENT: "dev" if (github.ref != 'refs/heads/master' && steps.changes.outputs.pipelines_any_changed == 'true') else "production"
         SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
         SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
