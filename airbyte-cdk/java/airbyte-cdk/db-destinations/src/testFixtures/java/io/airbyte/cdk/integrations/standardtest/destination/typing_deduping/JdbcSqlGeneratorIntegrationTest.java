@@ -58,9 +58,9 @@ public abstract class JdbcSqlGeneratorIntegrationTest extends BaseSqlGeneratorIn
   }
 
   /**
-   * Many destinations require special handling to create JSON values. For example,
-   * redshift requires you to invoke JSON_PARSE('{...}'), and postgres requires you to
-   * CAST('{...}' AS JSONB). This method allows subclasses to implement that logic.
+   * Many destinations require special handling to create JSON values. For example, redshift requires
+   * you to invoke JSON_PARSE('{...}'), and postgres requires you to CAST('{...}' AS JSONB). This
+   * method allows subclasses to implement that logic.
    */
   protected abstract Field<?> toJsonValue(String valueAsString);
 
@@ -138,8 +138,13 @@ public abstract class JdbcSqlGeneratorIntegrationTest extends BaseSqlGeneratorIn
   }
 
   @Override
-  protected void insertFinalTableRecords(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix, final List<JsonNode> records) throws Exception {
-    final List<String> columnNames = includeCdcDeletedAt ? BaseSqlGeneratorIntegrationTest.FINAL_TABLE_COLUMN_NAMES_CDC : BaseSqlGeneratorIntegrationTest.FINAL_TABLE_COLUMN_NAMES;
+  protected void insertFinalTableRecords(final boolean includeCdcDeletedAt,
+                                         final StreamId streamId,
+                                         final String suffix,
+                                         final List<JsonNode> records)
+      throws Exception {
+    final List<String> columnNames =
+        includeCdcDeletedAt ? BaseSqlGeneratorIntegrationTest.FINAL_TABLE_COLUMN_NAMES_CDC : BaseSqlGeneratorIntegrationTest.FINAL_TABLE_COLUMN_NAMES;
     insertRecords(
         DSL.name(streamId.finalNamespace(), streamId.finalName() + suffix),
         columnNames,

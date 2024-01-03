@@ -166,9 +166,9 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public Sql updateTable(final StreamConfig stream,
-                            final String finalSuffix,
-                            final Optional<Instant> minRawTimestamp,
-                            final boolean useExpensiveSaferCasting) {
+                         final String finalSuffix,
+                         final Optional<Instant> minRawTimestamp,
+                         final boolean useExpensiveSaferCasting) {
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), minRawTimestamp, useExpensiveSaferCasting);
     String dedupFinalTable = "";
     String cdcDeletes = "";
@@ -459,8 +459,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "tmp_final_table", stream.finalTableId(QUOTE, finalSuffix.toUpperCase())));
     return transactionally(
         substitutor.replace("DROP TABLE IF EXISTS ${final_table};"),
-        substitutor.replace("ALTER TABLE ${tmp_final_table} RENAME TO ${final_table};")
-    );
+        substitutor.replace("ALTER TABLE ${tmp_final_table} RENAME TO ${final_table};"));
   }
 
   @Override

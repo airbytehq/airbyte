@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import java.util.Collections;
@@ -6,14 +10,13 @@ import java.util.stream.Stream;
 import org.elasticsearch.common.Strings;
 
 /**
- * Represents a list of SQL transactions, where each transaction consists of
- * one or more SQL statements. Each transaction MUST NOT contain the BEGIN/COMMIT
- * statements. Each inner list is a single transaction, and each String is a single
- * statement within that transaction.
+ * Represents a list of SQL transactions, where each transaction consists of one or more SQL
+ * statements. Each transaction MUST NOT contain the BEGIN/COMMIT statements. Each inner list is a
+ * single transaction, and each String is a single statement within that transaction.
  * <p>
- * Most callers likely only need a single transaction, but e.g.
- * BigQuery disallows running DDL inside transactions, and so needs to run
- * sequential "CREATE SCHEMA", "CREATE TABLE" as separate transactions.
+ * Most callers likely only need a single transaction, but e.g. BigQuery disallows running DDL
+ * inside transactions, and so needs to run sequential "CREATE SCHEMA", "CREATE TABLE" as separate
+ * transactions.
  * <p>
  * Callers are encouraged to use the static factory methods instead of the public constructor.
  */
@@ -79,8 +82,8 @@ public record Sql(List<List<String>> transactions) {
   }
 
   /**
-   * Convenience method for indicating intent. Equivalent to calling {@link #transactionally(String...)}
-   * or {@link #separately(String...)} with the same string.
+   * Convenience method for indicating intent. Equivalent to calling
+   * {@link #transactionally(String...)} or {@link #separately(String...)} with the same string.
    */
   public static Sql of(final String statement) {
     return transactionally(statement);
@@ -95,8 +98,8 @@ public record Sql(List<List<String>> transactions) {
   }
 
   /**
-   * Utility method to create a Sql object without empty statements/transactions, and appending semicolons
-   * when needed.
+   * Utility method to create a Sql object without empty statements/transactions, and appending
+   * semicolons when needed.
    */
   public static Sql create(final List<List<String>> transactions) {
     return new Sql(transactions.stream()
