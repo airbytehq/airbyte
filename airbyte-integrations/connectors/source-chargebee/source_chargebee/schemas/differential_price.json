@@ -62,7 +62,10 @@
             "type": ["string", "null"]
           },
           "period": {
-            "type": ["integer", "null"]
+            "type": ["array", "null"],
+            "items": {
+              "type": ["integer", "null"]
+            }
           }
         }
       }
