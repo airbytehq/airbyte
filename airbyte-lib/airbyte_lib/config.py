@@ -1,8 +1,11 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """Define base Config interface, used by Caches and also File Writers (Processors)."""
 
 from __future__ import annotations
 
 from pydantic import BaseModel
+
 # from overrides import EnforceOverrides
 
 

@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """Type conversion methods for SQL Caches."""
 
 from collections import defaultdict
@@ -29,7 +31,7 @@ class SQLTypeConversionError(Exception):
 
 def _get_airbyte_type(json_schema_property_def: dict[str, str | dict]) -> tuple[str, str | None]:
     """Get the airbyte type and subtype from a JSON schema property definition.
-    
+
     Subtype is only used for array types. Otherwise, subtype will return None.
     """
     airbyte_type = cast(str, json_schema_property_def.get("airbyte_type", None))
@@ -62,7 +64,6 @@ class SQLTypeConverter:
     def get_failover_type() -> sqlalchemy.types.TypeEngine:
         """Get the 'last resort' type to use if no other type is found."""
         return sqlalchemy.types.VARCHAR()
-
 
     def to_sql_type(self, json_schema_property_def: dict[str, str | dict]) -> sqlalchemy.types.TypeEngine:
         """Convert a value to a SQL type."""

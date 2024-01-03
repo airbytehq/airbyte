@@ -4,10 +4,8 @@ from typing import Any, Iterable
 
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.datasets import Dataset
-
-from sqlalchemy import Table
 from pandas import DataFrame
-
+from sqlalchemy import Table
 
 
 class SyncResult:

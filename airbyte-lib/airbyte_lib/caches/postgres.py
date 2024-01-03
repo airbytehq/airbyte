@@ -1,11 +1,12 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """A Postgres implementation of the cache."""
 
 from __future__ import annotations
 
-from overrides import overrides
-
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.file_writers import ParquetWriter, ParquetWriterConfig
+from overrides import overrides
 
 
 class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -32,6 +33,7 @@ class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     def get_database_name(self) -> str:
         """Return the name of the database."""
         return self.database
+
 
 class PostgresCache(SQLCacheBase):
     """A Postgres implementation of the cache.

@@ -3,17 +3,12 @@
 import os
 import shutil
 
-import pandas as pd
-
 import airbyte_lib as ab
+import pandas as pd
 import pytest
-
-from airbyte_lib.caches import (
-    DuckDBCache, DuckDBCacheConfig,
-    PostgresCache, PostgresCacheConfig,
-    InMemoryCache, InMemoryCacheConfig,
-)
+from airbyte_lib.caches import DuckDBCache, DuckDBCacheConfig, InMemoryCache, InMemoryCacheConfig, PostgresCache, PostgresCacheConfig
 from airbyte_lib.sync_results import SyncResult
+
 
 @pytest.fixture(scope="module", autouse=True)
 def prepare_test_env():

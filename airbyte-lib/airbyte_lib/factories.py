@@ -3,13 +3,12 @@
 
 from typing import Any, Dict, Optional
 
-from airbyte_protocol.models import ConfiguredAirbyteCatalog
 import ulid
 from airbyte_lib.caches.duckdb import DuckDBCache, DuckDBCacheConfig
-
 from airbyte_lib.executor import PathExecutor, VenvExecutor
 from airbyte_lib.registry import get_connector_metadata
 from airbyte_lib.source import Source
+from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
 
 def get_default_cache(source_catalog: ConfiguredAirbyteCatalog) -> DuckDBCache:
@@ -28,10 +27,10 @@ def get_default_cache(source_catalog: ConfiguredAirbyteCatalog) -> DuckDBCache:
 
 
 def new_local_cache(
-        cache_name: str | None = None,
-        *,
-        source_catalog: ConfiguredAirbyteCatalog,
-    ) -> DuckDBCache:
+    cache_name: str | None = None,
+    *,
+    source_catalog: ConfiguredAirbyteCatalog,
+) -> DuckDBCache:
     """Get a local cache for storing data, using a string to determine the.
 
     Cache files are stored in the `.cache` directory, relative to the current
