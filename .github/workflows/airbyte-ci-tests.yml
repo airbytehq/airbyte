@@ -61,6 +61,9 @@ jobs:
               - 'airbyte-ci/connectors/metadata_service/lib/**'
               - 'airbyte-ci/connectors/metadata_service/orchestrator/**'
               - '!**/*.md'
+            airbyte_lib:
+              - 'airbyte_lib/**'
+              - '!**/*.md'
 
       - name: Run airbyte-ci/connectors/connector_ops tests
         if: steps.changes.outputs.ops_any_changed == 'true'
@@ -130,5 +133,20 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
+
+      - name: Run airbyte-lib tests
+        if: steps.changes.outputs.airbyte_lib_any_changed == 'true'
+        id: run-airbyte-lib-tests
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "pull_request"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "test airbyte-lib"
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
