@@ -23,11 +23,10 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.Field;
@@ -71,14 +70,12 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
 
   @Override
   protected MySqlSource source() {
-    final var source = new MySqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new MySqlSource();
   }
 
   @Override
   protected MySQLTestDatabase createTestDatabase() {
-    return MySQLTestDatabase.in("mysql:8.0");
+    return MySQLTestDatabase.in(BaseImage.MYSQL_8);
   }
 
   @Override
@@ -93,7 +90,8 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
   }
 
   @Test
-  void testReadMultipleTablesIncrementally() throws Exception {
+  @Override
+  protected void testReadMultipleTablesIncrementally() throws Exception {
     final var config = config();
     ((ObjectNode) config).put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1);
     final String streamOneName = TABLE_NAME + "one";
@@ -383,13 +381,13 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
   @Override
   protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
-    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+    expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName()).withNamespace(namespace)
             .withData(Jsons.jsonNode(ImmutableMap
                 .of(COL_ID, ID_VALUE_4,
                     COL_NAME, "riker",
                     COL_UPDATED_AT, "2006-10-19")))));
-    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+    expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName()).withNamespace(namespace)
             .withData(Jsons.jsonNode(ImmutableMap
                 .of(COL_ID, ID_VALUE_5,
@@ -406,11 +404,6 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
 
     expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
   @Override
@@ -485,30 +478,26 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
   // Override from parent class as we're no longer including the legacy Data field.
   @Override
   protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states) {
-    return supportsPerStream()
-        ? states.stream()
-            .map(s -> new AirbyteMessage().withType(Type.STATE)
-                .withState(
-                    new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                        .withStream(new AirbyteStreamState()
-                            .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
-                            .withStreamState(Jsons.jsonNode(s)))))
-            .collect(
-                Collectors.toList())
-        : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)));
+    return states.stream()
+        .map(s -> new AirbyteMessage().withType(Type.STATE)
+            .withState(
+                new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                    .withStream(new AirbyteStreamState()
+                        .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                        .withStreamState(Jsons.jsonNode(s)))))
+        .collect(
+            Collectors.toList());
   }
 
   @Override
   protected List<AirbyteStateMessage> createState(final List<DbStreamState> states) {
-    return supportsPerStream()
-        ? states.stream()
-            .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                .withStream(new AirbyteStreamState()
-                    .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
-                    .withStreamState(Jsons.jsonNode(s))))
-            .collect(
-                Collectors.toList())
-        : List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
+    return states.stream()
+        .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState()
+                .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                .withStreamState(Jsons.jsonNode(s))))
+        .collect(
+            Collectors.toList());
   }
 
   @Override

@@ -261,7 +261,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final AirbyteStateType supportedStateType = getSupportedStateType(config);
     final StateManager stateManager =
         StateManagerFactory.createStateManager(supportedStateType,
-            StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType), catalog);
+            StateGeneratorUtils.deserializeInitialState(state, supportedStateType), catalog);
     final Instant emittedAt = Instant.now();
 
     final JdbcDatabase database = createDatabase(config);
@@ -318,7 +318,9 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     // When using this approach MySql creates a temporary table which may have some effect on db
     // performance.
     jdbcUrl.append("?useCursorFetch=true");
-    jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
+    // What should happen when the driver encounters DATETIME values that are composed entirely of zeros
+    // https://dev.mysql.com/doc/connector-j/8.1/en/connector-j-connp-props-datetime-types-processing.html#cj-conn-prop_zeroDateTimeBehavior
+    jdbcUrl.append("&zeroDateTimeBehavior=CONVERT_TO_NULL");
     // ensure the return tinyint(1) is boolean
     jdbcUrl.append("&tinyInt1isBit=true");
     // ensure the return year value is a Date; see the rationale
@@ -378,10 +380,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return AirbyteStateType.LEGACY;
-    }
-
     return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
@@ -527,13 +525,15 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     // return super.createDatabase(sourceConfig, this::getConnectionProperties);
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+    final Map<String, String> connectionProperties = this.getConnectionProperties(sourceConfig);
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClass,
+        driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        this.getConnectionProperties(sourceConfig));
+        connectionProperties,
+        getConnectionTimeout(connectionProperties, driverClassName));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 

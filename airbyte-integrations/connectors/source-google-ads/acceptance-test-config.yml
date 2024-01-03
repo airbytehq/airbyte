@@ -41,6 +41,8 @@ acceptance_tests:
               bypass_reason: "Value can be updated by Google Ads"
             - name: customer.optimization_score
               bypass_reason: "Value can be updated by Google Ads"
+            - name: customer.pay_per_conversion_eligibility_failure_reasons
+              bypass_reason: "Value can be updated by Google Ads"
       - config_path: "secrets/config_click_view.json"
         expect_records:
           path: "integration_tests/expected_records_click.jsonl"
@@ -59,6 +61,8 @@ acceptance_tests:
             - name: customer.optimization_score_weight
               bypass_reason: "Value can be updated by Google Ads"
             - name: customer.optimization_score
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: customer.pay_per_conversion_eligibility_failure_reasons
               bypass_reason: "Value can be updated by Google Ads"
           campaign_budget:
             - name: campaign_budget.recommended_budget_estimated_change_weekly_interactions
