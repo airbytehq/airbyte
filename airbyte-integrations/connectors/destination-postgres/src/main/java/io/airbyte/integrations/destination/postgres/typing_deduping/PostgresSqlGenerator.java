@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static org.jooq.impl.DSL.cast;
 import static org.jooq.impl.DSL.field;
@@ -94,7 +95,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   protected Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
-    return null;
+    return cast("{}", JSONB_TYPE).as(COLUMN_NAME_AB_META);
   }
 
   @Override
