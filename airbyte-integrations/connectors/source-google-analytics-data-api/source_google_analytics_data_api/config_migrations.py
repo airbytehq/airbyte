@@ -193,7 +193,7 @@ class MigrateCustomReportsCohortSpec:
         config: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         """Assign `enabled` property that will be used within the new version"""
-        for report in config.get("custom_reports_array"):
+        for report in config.get("custom_reports_array", []):
             if report.get("cohortSpec"):
                 report["cohortSpec"]["enabled"] = "true"
             else:
