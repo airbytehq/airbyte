@@ -2,7 +2,7 @@
 
 ## Upgrading to 1.0.0
 
-Note: this change is only breaking if you are using the `Boards Issues` stream in Incremental Mode.
+Note: this change is only breaking if you are using the `Boards Issues` stream in Incremental Sync mode.
 
 This is a breaking change because Stream State for `Boards Issues` will be changed, so please follow the instructions below to migrate to version 1.0.0:
 
