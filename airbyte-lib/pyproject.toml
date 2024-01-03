@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "airbyte-lib"
+version = "0.1.0"
+description = ""
+authors = ["Joe Reuter <joe@airbyte.io>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+jsonschema = "3.2.0"
+requests = "^2.31.0"
+airbyte-protocol-models = "^1.0.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+mypy = "^1.7.1"
+types-requests = "^2.31.0.10"
+types-jsonschema = "^4.20.0.0"
+pytest-mypy = "^0.10.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "--mypy"
