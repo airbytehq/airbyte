@@ -185,7 +185,7 @@ class VectaraClient:
                         pass
         else:
             for doc in documents:
-                self.index_document(doc)            
+                self.index_document(doc)
 
     def _normalize(self, metadata: dict) -> dict:
         result = {}

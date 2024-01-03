@@ -29,10 +29,10 @@ class VectaraConfig(BaseModel):
 
     parallelize: Optional[bool] = Field(
         default=False,
-        title="Parallelize", 
-        description="Parallelize indexing into Vectara with multiple threads", 
+        title="Parallelize",
+        description="Parallelize indexing into Vectara with multiple threads",
         always_show=True,
-        group="account"
+        group="account",
     )
 
     text_fields: Optional[List[str]] = Field(
@@ -49,7 +49,6 @@ class VectaraConfig(BaseModel):
         always_show=True,
         examples=["age", "user"],
     )
-
 
     class Config:
         title = "Vectara Config"
