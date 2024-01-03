@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Getting Started
 
 Getting started with Airbyte takes only a few steps! This page guides you through the initial steps to get started and you'll learn how to setup your first connection on the following pages.

@@ -33,7 +33,6 @@ import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
@@ -107,10 +106,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return AirbyteStateType.LEGACY;
-    }
-
     return MssqlCdcHelper.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
@@ -638,6 +633,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   private boolean cloudDeploymentMode() {
     return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
+  }
+
+  public Duration getConnectionTimeoutMssql(final Map<String, String> connectionProperties) {
+    return getConnectionTimeout(connectionProperties);
   }
 
   public static void main(final String[] args) throws Exception {

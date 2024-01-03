@@ -63,6 +63,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         action_report_time: str = "mixed",
         time_increment: Optional[int] = None,
         insights_lookback_window: int = None,
+        insights_job_timeout: int = 60,
         level: str = "ad",
         **kwargs,
     ):
@@ -82,6 +83,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.action_report_time = action_report_time
         self._new_class_name = name
         self._insights_lookback_window = insights_lookback_window
+        self._insights_job_timeout = insights_job_timeout
         self.level = level
 
         # state
@@ -109,6 +111,10 @@ class AdsInsights(FBMarketingIncrementalStream):
         why the value for `insights_lookback_window` is set throught config.
         """
         return pendulum.duration(days=self._insights_lookback_window)
+
+    @property
+    def insights_job_timeout(self):
+        return pendulum.duration(minutes=self._insights_job_timeout)
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """Because insights has very different read_records we don't need this method anymore"""
@@ -209,7 +215,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                 continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
-            yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
+            yield InsightAsyncJob(
+                api=self._api.api, edge_object=self._api.account, interval=interval, params=params, job_timeout=self.insights_job_timeout
+            )
 
     def check_breakdowns(self):
         """

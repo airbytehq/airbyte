@@ -47,6 +47,7 @@ public class TypeAndDedupeTransaction {
       } else {
         LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, Retry is skipped",
             streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
+        throw e;
       }
     }
   }

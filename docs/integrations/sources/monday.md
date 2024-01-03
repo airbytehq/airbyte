@@ -1,5 +1,7 @@
 # Monday
 
+This page contains the setup guide and reference information for the [Monday](https://monday.com/) source connector.
+
 ## Prerequisites
 
 * Monday API Token / Monday Access Token
@@ -15,18 +17,20 @@ You can get the API token for Monday by going to Profile picture (bottom left co
 3. On the Set up the source page, enter the name for the Monday connector and select **Monday** from the Source type dropdown.
 4. Fill in your API Key or authenticate using OAuth and then click **Set up source**.
 
-### Connect using `OAuth 2.0` option:
+### Connect using `OAuth 2.0` option
+
 1. Select `OAuth2.0` in `Authorization Method`.
 2. Click on `authenticate your Monday account`.
-2. Proceed the authentication using your credentials for your Monday account.
+3. Proceed with the authentication using the credentials for your Monday account.
 
-### Connect using `API Token` option:
+### Connect using `API Token` option
+
 1. Generate an API Token as described [here](https://developer.monday.com/api-reference/docs/authentication).
 2. Use the generated `api_token` in the Airbyte connection.
 
 ## Supported sync modes
 
-The Monday supports full refresh syncs
+The Monday source connector supports the following features:
 
 | Feature           | Supported? |
 |:------------------|:-----------|
@@ -49,6 +53,7 @@ Several output streams are available from this source:
 * [Workspaces](https://developer.monday.com/api-reference/docs/workspaces)
 
 Important Notes:
+
 * `Columns` are available from the `Boards` stream. By syncing the `Boards` stream you will get the `Columns` for each `Board` synced in the database
 The typical name of the table depends on the `destination` you use like `boards.columns`, for instance.
 
@@ -61,16 +66,15 @@ Ids of boards and items are extracted from activity logs events and used to sele
 Some data may be lost if the time between incremental syncs is longer than the activity logs retention time for your plan.
 Check your Monday plan at https://monday.com/pricing.
 
-
 ## Performance considerations
 
 The Monday connector should not run into Monday API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
 
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------|
+| 1.1.4   | 2023-12-13 | [33448](https://github.com/airbytehq/airbyte/pull/33448)  | Increase test coverage and migrate to base image                        |
 | 1.1.3   | 2023-09-23 | [30248](https://github.com/airbytehq/airbyte/pull/30248)  | Add new field "type" to board stream                                    |
 | 1.1.2   | 2023-08-23 | [29777](https://github.com/airbytehq/airbyte/pull/29777)  | Add retry for `502` error                                               |
 | 1.1.1   | 2023-08-15 | [29429](https://github.com/airbytehq/airbyte/pull/29429)  | Ignore `null` records in response                                       |
