@@ -261,6 +261,8 @@ mod test {
                 field_config_json_map: BTreeMap::new(),
                 backfill: 7,
             }],
+            last_materialization: None,
+            last_version: String::new(),
         };
 
         let msg_buf = serde_json::to_string(&msg).unwrap();

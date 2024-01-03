@@ -1,4 +1,3 @@
-use std::error::Error as StdError;
 use anyhow::Context;
 use clap::{Parser, ValueEnum};
 use errors::Error;

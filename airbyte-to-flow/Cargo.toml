@@ -24,7 +24,7 @@ clap = { version = "^3", features = ["derive"] }
 futures = "*"
 futures-core = "*"
 futures-util = "*"
-prost = "0.11"
+prost = "0.12"
 schemars = "0.8"
 serde = { version = "*", features = ["derive"]}
 serde_json = { version = "*", features = ["raw_value"]}
