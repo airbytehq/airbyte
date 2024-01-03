@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Typing and Deduping
 
 This page refers to new functionality added by [Destinations V2](/release_notes/upgrading_to_destinations_v2/). Typing and deduping is the default method of transforming datasets within data warehouse and database destinations after they've been replicated. Please check each destination to learn if Typing and Deduping is supported.
@@ -60,8 +64,8 @@ The data from one stream will now be mapped to one table in your schema as below
 
 | _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_extracted_at | \_airbyte_meta                                               | id  | first_name | age  | address                                 |
 | -------------------------------------------- | ---------------- | ---------------------- | ------------------------------------------------------------ | --- | ---------- | ---- | --------------------------------------- |
-| Successful typing and de-duping ⟶            | xxx-xxx-xxx      | 2022-01-01 12:00:00    | {}                                                           | 1   | sarah      | 39   | { city: “San Francisco”, zip: “94131” } |
-| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | 2022-01-01 12:00:00    | { errors: {[“fish” is not a valid integer for column “age”]} | 2   | evan       | NULL | { city: “Menlo Park”, zip: “94002” }    |
+| Successful typing and de-duping ⟶            | xxx-xxx-xxx      | 2022-01-01 12:00:00    | `{}`                                                           | 1   | sarah      | 39   | `{ city: “San Francisco”, zip: “94131” }` |
+| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | 2022-01-01 12:00:00    | `{ errors: {[“fish” is not a valid integer for column “age”]}` | 2   | evan       | NULL | `{ city: “Menlo Park”, zip: “94002” }`    |
 | Not-yet-typed ⟶                              |                  |                        |                                                              |     |            |      |                                         |
 
 In legacy normalization, columns of [Airbyte type](/understanding-airbyte/supported-data-types/#the-types) `Object` in the Destination were "unnested" into separate tables. In this example, with Destinations V2, the previously unnested `public.users_address` table with columns `city` and `zip` will no longer be generated.
@@ -70,9 +74,9 @@ In legacy normalization, columns of [Airbyte type](/understanding-airbyte/suppor
 
 | _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_data﻿                                                                           | \_airbyte_loaded_at  | \_airbyte_extracted_at |
 | -------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------- | -------------------- | ---------------------- |
-| Successful typing and de-duping ⟶            | xxx-xxx-xxx      | { id: 1, first_name: “sarah”, age: 39, address: { city: “San Francisco”, zip: “94131” } } | 2022-01-01 12:00:001 | 2022-01-01 12:00:00﻿   |
-| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | { id: 2, first_name: “evan”, age: “fish”, address: { city: “Menlo Park”, zip: “94002” } } | 2022-01-01 12:00:001 | 2022-01-01 12:00:00﻿   |
-| Not-yet-typed ⟶                              | zzz-zzz-zzz      | { id: 3, first_name: “edward”, age: 35, address: { city: “Sunnyvale”, zip: “94003” } }    | NULL                 | 2022-01-01 13:00:00﻿   |
+| Successful typing and de-duping ⟶            | xxx-xxx-xxx      | `{ id: 1, first_name: “sarah”, age: 39, address: { city: “San Francisco”, zip: “94131” } }` | 2022-01-01 12:00:001 | 2022-01-01 12:00:00﻿   |
+| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | `{ id: 2, first_name: “evan”, age: “fish”, address: { city: “Menlo Park”, zip: “94002” } }` | 2022-01-01 12:00:001 | 2022-01-01 12:00:00﻿   |
+| Not-yet-typed ⟶                              | zzz-zzz-zzz      | `{ id: 3, first_name: “edward”, age: 35, address: { city: “Sunnyvale”, zip: “94003” } }`    | NULL                 | 2022-01-01 13:00:00﻿   |
 
 You also now see the following changes in Airbyte-provided columns:
 

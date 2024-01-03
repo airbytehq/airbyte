@@ -2,14 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import csv
 import gzip
 import json as json_lib
 import time
 from abc import ABC, abstractmethod
+from enum import Enum
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
+import dateparser
 import pendulum
 import requests
 import xmltodict
@@ -21,7 +24,7 @@ from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handl
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-REPORTS_API_VERSION = "2021-06-30"  # 2020-09-04
+REPORTS_API_VERSION = "2021-06-30"
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
 FINANCES_API_VERSION = "v0"
@@ -96,14 +99,16 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         if next_page_token:
             return dict(next_page_token)
 
-        params = {self.replication_start_date_field: self._replication_start_date, self.page_size_field: self.page_size}
+        start_date = self._replication_start_date
+        params = {self.replication_start_date_field: start_date, self.page_size_field: self.page_size}
 
-        if self._replication_start_date and self.cursor_field:
+        if self.cursor_field:
             start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
-            params.update({self.replication_start_date_field: start_date})
+            start_date = min(start_date, pendulum.now("utc").to_date_string())
+            params[self.replication_start_date_field] = start_date
 
         if self._replication_end_date:
-            params[self.replication_end_date_field] = self._replication_end_date
+            params[self.replication_end_date_field] = max(self._replication_end_date, start_date)
 
         return params
 
@@ -114,7 +119,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
             return {self.next_page_token_field: next_page_token}
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -130,6 +135,14 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         if current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}
+
+
+class ReportProcessingStatus(str, Enum):
+    cancelled = "CANCELLED"
+    done = "DONE"
+    fatal = "FATAL"
+    in_progress = "IN_PROGRESS"
+    in_queue = "IN_QUEUE"
 
 
 class ReportsAmazonSPStream(HttpStream, ABC):
@@ -157,6 +170,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     availability_sla_days = (
         1  # see data availability sla at https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
     )
+    availability_strategy = None
 
     def __init__(
         self,
@@ -275,14 +289,11 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
-        end_date = pendulum.now("utc")
+        now = pendulum.now("utc")
+        start_date = pendulum.parse(self._replication_start_date)
+        end_date = now
         if self._replication_end_date:
-            # if replication_start_date is older than 90 days(from current date), we are overriding the value above.
-            # when replication_end_date is present, we should use the user provided replication_start_date.
-            # user may provide a date range which is older than 90 days.
             end_date = min(end_date, pendulum.parse(self._replication_end_date))
-            start_date = pendulum.parse(self._replication_start_date)
 
         if stream_state:
             state = stream_state.get(self.cursor_field)
@@ -310,7 +321,6 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         """
         report_payload = {}
         stream_slice = stream_slice or {}
-        is_processed = False
         start_time = pendulum.now("utc")
         seconds_waited = 0
         try:
@@ -318,20 +328,29 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         except DefaultBackoffException as e:
             logger.warning(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
             return []
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == requests.codes.FORBIDDEN:
+                logger.warning(
+                    f"The endpoint {e.response.url} returned {e.response.status_code}: {e.response.reason}. "
+                    "This is most likely due to insufficient permissions on the credentials in use. "
+                    "Try to grant required permissions/scopes or re-authenticate."
+                )
+                return []
+            raise e
 
         # create and retrieve the report
-        while not is_processed and seconds_waited < self.max_wait_seconds:
+        processed = False
+        while not processed and seconds_waited < self.max_wait_seconds:
             report_payload = self._retrieve_report(report_id=report_id)
             seconds_waited = (pendulum.now("utc") - start_time).seconds
-            is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
-            time.sleep(self.sleep_seconds)
+            processed = report_payload.get("processingStatus") not in (ReportProcessingStatus.in_queue, ReportProcessingStatus.in_progress)
+            if not processed:
+                time.sleep(self.sleep_seconds)
 
-        is_done = report_payload.get("processingStatus") == "DONE"
-        is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
-        is_fatal = report_payload.get("processingStatus") == "FATAL"
+        processing_status = report_payload.get("processingStatus")
         report_end_date = pendulum.parse(report_payload.get("dataEndTime", stream_slice.get("dataEndTime")))
 
-        if is_done:
+        if processing_status == ReportProcessingStatus.done:
             # retrieve and decrypt the report document
             document_id = report_payload["reportDocumentId"]
             request_headers = self.request_headers()
@@ -345,35 +364,73 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                 if report_end_date:
                     record["dataEndTime"] = report_end_date.strftime(DATE_FORMAT)
                 yield record
-        elif is_fatal:
+        elif processing_status == ReportProcessingStatus.fatal:
             raise AirbyteTracedException(message=f"The report for stream '{self.name}' was not created - skip reading")
-        elif is_cancelled:
+        elif processing_status == ReportProcessingStatus.cancelled:
             logger.warning(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
-            raise Exception(f"Unknown response for stream `{self.name}`. Response body {report_payload}")
+            raise Exception(f"Unknown response for stream '{self.name}'. Response body {report_payload}")
 
 
-class MerchantListingsReports(ReportsAmazonSPStream):
+class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return "dataEndTime"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        latest_benchmark = latest_record[self.cursor_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
+
+
+class MerchantReports(IncrementalReportsAmazonSPStream, ABC):
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.transformer.registerCustomTransform(self.get_transform_function())
+
+    @staticmethod
+    def get_transform_function():
+        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+            if original_value and field_schema.get("format") == "date-time":
+                # open-date field is returned in format "2022-07-11 01:34:18 PDT"
+                transformed_value = dateparser.parse(original_value).isoformat()
+                return transformed_value
+            return original_value
+
+        return transform_function
+
+
+class MerchantListingsReports(MerchantReports):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
+    primary_key = "listing-id"
 
 
-class NetPureProductMarginReport(ReportsAmazonSPStream):
+class NetPureProductMarginReport(IncrementalReportsAmazonSPStream):
     name = "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"
 
 
-class RapidRetailAnalyticsInventoryReport(ReportsAmazonSPStream):
+class RapidRetailAnalyticsInventoryReport(IncrementalReportsAmazonSPStream):
     name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
 
 
-class FlatFileOrdersReports(ReportsAmazonSPStream):
+class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
     """
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+    primary_key = "amazon-order-id"
+    cursor_field = "last-updated-date"
 
 
-class FbaStorageFeesReports(ReportsAmazonSPStream):
+class FbaStorageFeesReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202086720
     """
@@ -381,7 +438,7 @@ class FbaStorageFeesReports(ReportsAmazonSPStream):
     name = "GET_FBA_STORAGE_FEE_CHARGES_DATA"
 
 
-class FulfilledShipmentsReports(ReportsAmazonSPStream):
+class FulfilledShipmentsReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
     """
@@ -391,19 +448,20 @@ class FulfilledShipmentsReports(ReportsAmazonSPStream):
     replication_start_date_limit_in_days = 30
 
 
-class FlatFileOpenListingsReports(ReportsAmazonSPStream):
+class FlatFileOpenListingsReports(IncrementalReportsAmazonSPStream):
     name = "GET_FLAT_FILE_OPEN_LISTINGS_DATA"
 
 
-class FbaOrdersReports(ReportsAmazonSPStream):
+class FbaOrdersReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110
     """
 
     name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
+    cursor_field = "last-updated-date"
 
 
-class FlatFileActionableOrderDataShipping(ReportsAmazonSPStream):
+class FlatFileActionableOrderDataShipping(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_flat_file_actionable_order_data_shipping
     """
@@ -411,7 +469,7 @@ class FlatFileActionableOrderDataShipping(ReportsAmazonSPStream):
     name = "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING"
 
 
-class OrderReportDataShipping(ReportsAmazonSPStream):
+class OrderReportDataShipping(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping
     """
@@ -433,7 +491,7 @@ class OrderReportDataShipping(ReportsAmazonSPStream):
         return result
 
 
-class FbaShipmentsReports(ReportsAmazonSPStream):
+class FbaShipmentsReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100
     """
@@ -441,7 +499,7 @@ class FbaShipmentsReports(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
 
 
-class FbaReplacementsReports(ReportsAmazonSPStream):
+class FbaReplacementsReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/200453300
     """
@@ -449,7 +507,7 @@ class FbaReplacementsReports(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA"
 
 
-class RestockInventoryReports(ReportsAmazonSPStream):
+class RestockInventoryReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: 	https://sellercentral.amazon.com/help/hub/reference/202105670
     """
@@ -457,7 +515,7 @@ class RestockInventoryReports(ReportsAmazonSPStream):
     name = "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT"
 
 
-class GetXmlBrowseTreeData(ReportsAmazonSPStream):
+class GetXmlBrowseTreeData(IncrementalReportsAmazonSPStream):
     def parse_document(self, document):
         try:
             parsed = xmltodict.parse(
@@ -470,33 +528,36 @@ class GetXmlBrowseTreeData(ReportsAmazonSPStream):
         return parsed.get("Result", {}).get("Node", [])
 
     name = "GET_XML_BROWSE_TREE_DATA"
+    primary_key = "browseNodeId"
 
 
-class FbaEstimatedFbaFeesTxtReport(ReportsAmazonSPStream):
+class FbaEstimatedFbaFeesTxtReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
 
 
-class FbaFulfillmentCustomerShipmentPromotionReport(ReportsAmazonSPStream):
+class FbaFulfillmentCustomerShipmentPromotionReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA"
 
 
-class FbaMyiUnsuppressedInventoryReport(ReportsAmazonSPStream):
+class FbaMyiUnsuppressedInventoryReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA"
 
 
-class MerchantListingsReport(ReportsAmazonSPStream):
+class MerchantListingsReport(MerchantReports):
     name = "GET_MERCHANT_LISTINGS_DATA"
+    primary_key = "listing-id"
 
 
-class MerchantListingsInactiveData(ReportsAmazonSPStream):
+class MerchantListingsInactiveData(MerchantReports):
     name = "GET_MERCHANT_LISTINGS_INACTIVE_DATA"
+    primary_key = "listing-id"
 
 
-class StrandedInventoryUiReport(ReportsAmazonSPStream):
+class StrandedInventoryUiReport(IncrementalReportsAmazonSPStream):
     name = "GET_STRANDED_INVENTORY_UI_DATA"
 
 
-class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
+class XmlAllOrdersDataByOrderDataGeneral(IncrementalReportsAmazonSPStream):
     def parse_document(self, document):
         try:
             parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message", "OrderItem"})
@@ -513,44 +574,62 @@ class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
         return result
 
     name = "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+    primary_key = "AmazonOrderID"
+    cursor_field = "LastUpdatedDate"
 
 
-class MerchantListingsReportBackCompat(ReportsAmazonSPStream):
+class MerchantListingsReportBackCompat(MerchantReports):
     name = "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT"
+    primary_key = "listing-id"
 
 
-class MerchantCancelledListingsReport(ReportsAmazonSPStream):
+class MerchantCancelledListingsReport(IncrementalReportsAmazonSPStream):
     name = "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
 
 
-class MerchantListingsFypReport(ReportsAmazonSPStream):
+class MerchantListingsFypReport(IncrementalReportsAmazonSPStream):
     name = "GET_MERCHANTS_LISTINGS_FYP_REPORT"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.transformer.registerCustomTransform(self.get_transform_function())
+
+    @staticmethod
+    def get_transform_function():
+        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+            if original_value and field_schema.get("format") == "date":
+                try:
+                    transformed_value = pendulum.from_format(original_value, "MMM D[,] YYYY").to_date_string()
+                    return transformed_value
+                except ValueError:
+                    pass
+            return original_value
+
+        return transform_function
 
 
-class FbaSnsForecastReport(ReportsAmazonSPStream):
+class FbaSnsForecastReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_SNS_FORECAST_DATA"
 
 
-class FbaSnsPerformanceReport(ReportsAmazonSPStream):
+class FbaSnsPerformanceReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_SNS_PERFORMANCE_DATA"
 
 
-class FlatFileArchivedOrdersDataByOrderDate(ReportsAmazonSPStream):
+class FlatFileArchivedOrdersDataByOrderDate(IncrementalReportsAmazonSPStream):
     name = "GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE"
+    cursor_field = "last-updated-date"
 
 
-class FlatFileReturnsDataByReturnDate(ReportsAmazonSPStream):
+class FlatFileReturnsDataByReturnDate(IncrementalReportsAmazonSPStream):
     name = "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE"
 
     replication_start_date_limit_in_days = 60
 
 
-class FbaInventoryPlaningReport(ReportsAmazonSPStream):
+class FbaInventoryPlaningReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_INVENTORY_PLANNING_DATA"
-
-
-class LedgerSummaryViewReport(ReportsAmazonSPStream):
-    name = "GET_LEDGER_SUMMARY_VIEW_DATA"
 
 
 class AnalyticsStream(ReportsAmazonSPStream):
@@ -604,310 +683,13 @@ class AnalyticsStream(ReportsAmazonSPStream):
         }
 
 
-class BrandAnalyticsMarketBasketReports(AnalyticsStream):
-    name = "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
-    result_key = "dataByAsin"
-
-
-class BrandAnalyticsSearchTermsReports(AnalyticsStream):
-    """
-    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
-    """
-
-    name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
-    result_key = "dataByDepartmentAndSearchTerm"
-
-
-class BrandAnalyticsRepeatPurchaseReports(AnalyticsStream):
-    name = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
-    result_key = "dataByAsin"
-
-
-class BrandAnalyticsAlternatePurchaseReports(AnalyticsStream):
-    name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
-    result_key = "dataByAsin"
-
-
-class BrandAnalyticsItemComparisonReports(AnalyticsStream):
-    name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
-    result_key = "dataByAsin"
-
-
-class VendorInventoryReports(AnalyticsStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
-    """
-
-    name = "GET_VENDOR_INVENTORY_REPORT"
-    result_key = "inventoryByAsin"
-    availability_sla_days = 3
-
-
-class VendorTrafficReport(AnalyticsStream):
-    name = "GET_VENDOR_TRAFFIC_REPORT"
-    result_key = "trafficByAsin"
-
-
-class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
-    @property
-    @abstractmethod
-    def cursor_field(self) -> Union[str, List[str]]:
-        pass
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
-
-
-class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202125660
-    """
-
-    # The list of MarketplaceIds can be found here https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
-    MARKETPLACE_DATE_FORMAT_MAP = dict(
-        # eu
-        A2VIGQ35RCS4UG="D/M/YY",  # AE
-        A1PA6795UKMFR9="D.M.YY",  # DE
-        A1C3SOZRARQ6R3="D/M/YY",  # PL
-        ARBP9OOSHTCHU="D/M/YY",  # EG
-        A1RKKUPIHCS9HS="D/M/YY",  # ES
-        A13V1IB3VIYZZH="D/M/YY",  # FR
-        A21TJRUUN4KGV="D/M/YY",  # IN
-        APJ6JRA9NG5V4="D/M/YY",  # IT
-        A1805IZSGTT6HS="D/M/YY",  # NL
-        A17E79C6D8DWNP="D/M/YY",  # SA
-        A2NODRKZP88ZB9="YYYY-MM-DD",  # SE
-        A33AVAJ2PDY3EV="D/M/YY",  # TR
-        A1F83G8C2ARO7P="D/M/YY",  # UK
-        AMEN7PMS3EDWL="D/M/YY",  # BE
-        # fe
-        A39IBJ37TRP1C6="D/M/YY",  # AU
-        A1VC38T7YXB528="YY/M/D",  # JP
-        A19VAU5U5O7RUS="D/M/YY",  # SG
-        # na
-        ATVPDKIKX0DER="M/D/YY",  # US
-        A2Q3Y263D00KWC="D/M/YY",  # BR
-        A2EUQ1WTGCTBG2="D/M/YY",  # CA
-        A1AM78C64UM0Y8="D/M/YY",  # MX
-    )
-
-    NORMALIZED_FIELD_NAMES = ["date", "rating", "comments", "response", "order_id", "rater_email"]
-
-    name = "GET_SELLER_FEEDBACK_DATA"
-    cursor_field = "date"
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.transformer.registerCustomTransform(self.get_transform_function())
-
-    def get_transform_function(self):
-        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-            if original_value and "format" in field_schema and field_schema["format"] == "date":
-                date_format = self.MARKETPLACE_DATE_FORMAT_MAP.get(self.marketplace_id)
-                if not date_format:
-                    raise KeyError(f"Date format not found for Markeplace ID: {self.marketplace_id}")
-                transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
-                return transformed_value
-
-            return original_value
-
-        return transform_function
-
-    # csv header field names for this report differ per marketplace (are localized to marketplace language)
-    # but columns come in the same order
-    # so we set fieldnames to our custom ones
-    # and raise error if original and custom header field count does not match
-    @staticmethod
-    def parse_document(document):
-        reader = csv.DictReader(StringIO(document), delimiter="\t", fieldnames=SellerFeedbackReports.NORMALIZED_FIELD_NAMES)
-        original_fieldnames = next(reader)
-        if len(original_fieldnames) != len(SellerFeedbackReports.NORMALIZED_FIELD_NAMES):
-            raise ValueError("Original and normalized header field count does not match")
-
-        return reader
-
-
-class FbaAfnInventoryReports(IncrementalReportsAmazonSPStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
-    Report has a long-running issue (fails when requested frequently): https://github.com/amzn/selling-partner-api-docs/issues/2231
-    """
-
-    name = "GET_AFN_INVENTORY_DATA"
-    cursor_field = "dataEndTime"
-
-
-class FbaAfnInventoryByCountryReports(IncrementalReportsAmazonSPStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
-    Report has a long-running issue (fails when requested frequently): https://github.com/amzn/selling-partner-api-docs/issues/2231
-    """
-
-    name = "GET_AFN_INVENTORY_DATA_BY_COUNTRY"
-    cursor_field = "dataEndTime"
-
-
-class FlatFileOrdersReportsByLastUpdate(IncrementalReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
-    """
-
-    name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL"
-    cursor_field = "last-updated-date"
-
-
-class Orders(IncrementalAmazonSPStream):
-    """
-    API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md
-    API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/orders-api-model/ordersV0.json
-    """
-
-    name = "Orders"
-    primary_key = "AmazonOrderId"
-    cursor_field = "LastUpdateDate"
-    replication_start_date_field = "LastUpdatedAfter"
-    replication_end_date_field = "LastUpdatedBefore"
-    next_page_token_field = "NextToken"
-    page_size_field = "MaxResultsPerPage"
-    default_backoff_time = 60
-    use_cache = True
-
-    def path(self, **kwargs) -> str:
-        return f"orders/{ORDERS_API_VERSION}/orders"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        params.update({"MarketplaceIds": self.marketplace_id})
-        return params
-
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping]:
-        yield from response.json().get(self.data_field, {}).get(self.name, [])
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
-        if rate_limit:
-            return 1 / float(rate_limit)
-        else:
-            return self.default_backoff_time
-
-
-class OrderItems(AmazonSPStream, ABC):
-    """
-    API docs: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems
-    API model: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#orderitemslist
-    """
-
-    name = "OrderItems"
-    primary_key = "OrderItemId"
-    cursor_field = "LastUpdateDate"
-    parent_cursor_field = "LastUpdateDate"
-    next_page_token_field = "NextToken"
-    stream_slice_cursor_field = "AmazonOrderId"
-    page_size_field = None
-    default_backoff_time = 10
-    default_stream_slice_delay_time = 1
-    cached_state: Dict = {}
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.stream_kwargs = kwargs
-
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"orders/{ORDERS_API_VERSION}/orders/{stream_slice[self.stream_slice_cursor_field]}/orderItems"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        if next_page_token:
-            return dict(next_page_token)
-        return {}
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        orders = Orders(**self.stream_kwargs)
-        for order_record in orders.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state):
-            self.cached_state[self.parent_cursor_field] = order_record[self.parent_cursor_field]
-            self.logger.info(f"OrderItems stream slice for order {order_record[self.stream_slice_cursor_field]}")
-            time.sleep(self.default_stream_slice_delay_time)
-            yield {
-                self.stream_slice_cursor_field: order_record[self.stream_slice_cursor_field],
-                self.parent_cursor_field: order_record[self.parent_cursor_field],
-            }
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_benchmark = self.cached_state[self.parent_cursor_field]
-        if current_stream_state.get(self.parent_cursor_field):
-            return {self.parent_cursor_field: max(latest_benchmark, current_stream_state[self.parent_cursor_field])}
-        return {self.parent_cursor_field: latest_benchmark}
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        stream_data = response.json()
-        next_page_token = stream_data.get("payload").get(self.next_page_token_field)
-        if next_page_token:
-            return {self.next_page_token_field: next_page_token}
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
-        if rate_limit:
-            return 1 / float(rate_limit)
-        else:
-            return self.default_backoff_time
-
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping]:
-        order_items_list = response.json().get(self.data_field, {})
-        self.logger.info(f"order_items_list efim {order_items_list}")
-        if order_items_list.get(self.next_page_token_field) is None:
-            self.cached_state[self.parent_cursor_field] = stream_slice[self.parent_cursor_field]
-        for order_item in order_items_list.get(self.name, []):
-            order_item[self.cursor_field] = stream_slice.get(self.parent_cursor_field)
-            order_item[self.stream_slice_cursor_field] = order_items_list.get(self.stream_slice_cursor_field)
-            yield order_item
-
-
-class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
-    """
-    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values
-    """
-
-    name = "GET_LEDGER_DETAIL_VIEW_DATA"
-    cursor_field = "Date"
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.transformer.registerCustomTransform(self.get_transform_function())
-
-    def get_transform_function(self):
-        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-            if original_value and field_schema.get("format") == "date":
-                transformed_value = pendulum.from_format(original_value, "MM/DD/YYYY").to_date_string()
-                return transformed_value
-            return original_value
-
-        return transform_function
-
-
 class IncrementalAnalyticsStream(AnalyticsStream):
 
     fixed_period_in_days = 0
 
     @property
-    @abstractmethod
     def cursor_field(self) -> Union[str, List[str]]:
-        pass
+        return "endDate"
 
     def _report_data(
         self,
@@ -967,7 +749,6 @@ class IncrementalAnalyticsStream(AnalyticsStream):
             start_date = pendulum.parse(state)
 
         start_date = min(start_date, end_date)
-        slices = []
 
         while start_date < end_date:
             # If request only returns data on day level
@@ -977,15 +758,56 @@ class IncrementalAnalyticsStream(AnalyticsStream):
                 slice_range = self.period_in_days
 
             end_date_slice = start_date.add(days=slice_range)
-            slices.append(
-                {
-                    "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
-                    "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
-                }
-            )
+            yield {
+                "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
+                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
+            }
             start_date = end_date_slice
 
-        return slices
+
+class BrandAnalyticsMarketBasketReports(IncrementalAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsSearchTermsReports(IncrementalAnalyticsStream):
+    """
+    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
+    """
+
+    name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+    result_key = "dataByDepartmentAndSearchTerm"
+    cursor_field = "queryEndDate"
+
+
+class BrandAnalyticsRepeatPurchaseReports(IncrementalAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsAlternatePurchaseReports(IncrementalAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsItemComparisonReports(IncrementalAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
+    result_key = "dataByAsin"
+
+
+class VendorInventoryReports(IncrementalAnalyticsStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
+    """
+
+    name = "GET_VENDOR_INVENTORY_REPORT"
+    result_key = "inventoryByAsin"
+    availability_sla_days = 3
+
+
+class VendorTrafficReport(IncrementalAnalyticsStream):
+    name = "GET_VENDOR_TRAFFIC_REPORT"
+    result_key = "trafficByAsin"
 
 
 class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
@@ -1002,11 +824,246 @@ class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
 class VendorSalesReports(IncrementalAnalyticsStream):
     name = "GET_VENDOR_SALES_REPORT"
     result_key = "salesByAsin"
-    cursor_field = "endDate"
     availability_sla_days = 4  # Data is only available after 4 days
 
 
-class VendorDirectFulfillmentShipping(AmazonSPStream):
+class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202125660
+    """
+
+    # The list of MarketplaceIds can be found here https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
+    MARKETPLACE_DATE_FORMAT_MAP = dict(
+        # eu
+        A2VIGQ35RCS4UG="D/M/YY",  # AE
+        A1PA6795UKMFR9="D.M.YY",  # DE
+        A1C3SOZRARQ6R3="D/M/YY",  # PL
+        ARBP9OOSHTCHU="D/M/YY",  # EG
+        A1RKKUPIHCS9HS="D/M/YY",  # ES
+        A13V1IB3VIYZZH="D/M/YY",  # FR
+        A21TJRUUN4KGV="D/M/YY",  # IN
+        APJ6JRA9NG5V4="D/M/YY",  # IT
+        A1805IZSGTT6HS="D/M/YY",  # NL
+        A17E79C6D8DWNP="D/M/YY",  # SA
+        A2NODRKZP88ZB9="YYYY-MM-DD",  # SE
+        A33AVAJ2PDY3EV="D/M/YY",  # TR
+        A1F83G8C2ARO7P="D/M/YY",  # UK
+        AMEN7PMS3EDWL="D/M/YY",  # BE
+        # fe
+        A39IBJ37TRP1C6="D/M/YY",  # AU
+        A1VC38T7YXB528="YY/M/D",  # JP
+        A19VAU5U5O7RUS="D/M/YY",  # SG
+        # na
+        ATVPDKIKX0DER="M/D/YY",  # US
+        A2Q3Y263D00KWC="D/M/YY",  # BR
+        A2EUQ1WTGCTBG2="D/M/YY",  # CA
+        A1AM78C64UM0Y8="D/M/YY",  # MX
+    )
+
+    NORMALIZED_FIELD_NAMES = ["date", "rating", "comments", "response", "order_id", "rater_email"]
+
+    name = "GET_SELLER_FEEDBACK_DATA"
+    cursor_field = "date"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.transformer.registerCustomTransform(self.get_transform_function())
+
+    def get_transform_function(self):
+        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+            if original_value and "format" in field_schema and field_schema["format"] == "date":
+                date_format = self.MARKETPLACE_DATE_FORMAT_MAP.get(self.marketplace_id)
+                if not date_format:
+                    raise KeyError(f"Date format not found for Markeplace ID: {self.marketplace_id}")
+                transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
+                return transformed_value
+
+            return original_value
+
+        return transform_function
+
+    # csv header field names for this report differ per marketplace (are localized to marketplace language)
+    # but columns come in the same order, so we set fieldnames to our custom ones
+    # and raise error if original and custom header field count does not match
+    @staticmethod
+    def parse_document(document):
+        reader = csv.DictReader(StringIO(document), delimiter="\t", fieldnames=SellerFeedbackReports.NORMALIZED_FIELD_NAMES)
+        original_fieldnames = next(reader)
+        if len(original_fieldnames) != len(SellerFeedbackReports.NORMALIZED_FIELD_NAMES):
+            raise ValueError("Original and normalized header field count does not match")
+
+        return reader
+
+
+class FbaAfnInventoryReports(IncrementalReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
+    Report has a long-running issue (fails when requested frequently): https://github.com/amzn/selling-partner-api-docs/issues/2231
+    """
+
+    name = "GET_AFN_INVENTORY_DATA"
+
+
+class FbaAfnInventoryByCountryReports(IncrementalReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
+    Report has a long-running issue (fails when requested frequently): https://github.com/amzn/selling-partner-api-docs/issues/2231
+    """
+
+    name = "GET_AFN_INVENTORY_DATA_BY_COUNTRY"
+
+
+class FlatFileOrdersReportsByLastUpdate(IncrementalReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
+    """
+
+    name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL"
+    primary_key = "amazon-order-id"
+    cursor_field = "last-updated-date"
+    replication_start_date_limit_in_days = 30
+
+
+class Orders(IncrementalAmazonSPStream):
+    """
+    API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md
+    API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/orders-api-model/ordersV0.json
+    """
+
+    name = "Orders"
+    primary_key = "AmazonOrderId"
+    cursor_field = "LastUpdateDate"
+    replication_start_date_field = "LastUpdatedAfter"
+    replication_end_date_field = "LastUpdatedBefore"
+    next_page_token_field = "NextToken"
+    page_size_field = "MaxResultsPerPage"
+    default_backoff_time = 60
+    use_cache = True
+
+    def path(self, **kwargs) -> str:
+        return f"orders/{ORDERS_API_VERSION}/orders"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        params["MarketplaceIds"] = self.marketplace_id
+        return params
+
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+        yield from response.json().get(self.data_field, {}).get(self.name, [])
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
+        if rate_limit:
+            return 1 / float(rate_limit)
+        else:
+            return self.default_backoff_time
+
+
+class OrderItems(IncrementalAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems
+    API model: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#orderitemslist
+    """
+
+    name = "OrderItems"
+    primary_key = "OrderItemId"
+    cursor_field = "LastUpdateDate"
+    parent_cursor_field = "LastUpdateDate"
+    next_page_token_field = "NextToken"
+    stream_slice_cursor_field = "AmazonOrderId"
+    replication_start_date_field = "LastUpdatedAfter"
+    replication_end_date_field = "LastUpdatedBefore"
+    page_size_field = None
+    default_backoff_time = 10
+    default_stream_slice_delay_time = 1
+    cached_state: Dict = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stream_kwargs = kwargs
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        return f"orders/{ORDERS_API_VERSION}/orders/{stream_slice[self.stream_slice_cursor_field]}/orderItems"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        if next_page_token:
+            return dict(next_page_token)
+        return {}
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        orders = Orders(**self.stream_kwargs)
+        for order_record in orders.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state):
+            self.cached_state[self.parent_cursor_field] = order_record[self.parent_cursor_field]
+            time.sleep(self.default_stream_slice_delay_time)
+            yield {
+                self.stream_slice_cursor_field: order_record[self.stream_slice_cursor_field],
+                self.parent_cursor_field: order_record[self.parent_cursor_field],
+            }
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        stream_data = response.json()
+        next_page_token = stream_data.get("payload").get(self.next_page_token_field)
+        if next_page_token:
+            return {self.next_page_token_field: next_page_token}
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
+        if rate_limit:
+            return 1 / float(rate_limit)
+        else:
+            return self.default_backoff_time
+
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+        order_items_list = response.json().get(self.data_field, {})
+        if order_items_list.get(self.next_page_token_field) is None:
+            self.cached_state[self.parent_cursor_field] = stream_slice[self.parent_cursor_field]
+        for order_item in order_items_list.get(self.name, []):
+            order_item[self.cursor_field] = stream_slice.get(self.parent_cursor_field)
+            order_item[self.stream_slice_cursor_field] = order_items_list.get(self.stream_slice_cursor_field)
+            yield order_item
+
+
+class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values
+    """
+
+    name = "GET_LEDGER_DETAIL_VIEW_DATA"
+    cursor_field = "Date"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.transformer.registerCustomTransform(self.get_transform_function())
+
+    @staticmethod
+    def get_transform_function():
+        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+            if original_value and field_schema.get("format") == "date":
+                try:
+                    transformed_value = pendulum.from_format(original_value, "MM/DD/YYYY").to_date_string()
+                    return transformed_value
+                except ValueError:
+                    pass
+            return original_value
+
+        return transform_function
+
+
+class LedgerSummaryViewReport(LedgerDetailedViewReports):
+    name = "GET_LEDGER_SUMMARY_VIEW_DATA"
+
+
+class VendorDirectFulfillmentShipping(IncrementalAmazonSPStream):
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/vendor-direct-fulfillment-shipping-api/vendorDirectFulfillmentShippingV1.md
     API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/vendor-direct-fulfillment-shipping-api-model/vendorDirectFulfillmentShippingV1.json
@@ -1017,12 +1074,13 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     """
 
     name = "VendorDirectFulfillmentShipping"
-    primary_key = None
+    primary_key = "purchaseOrderNumber"
     replication_start_date_field = "createdAfter"
     replication_end_date_field = "createdBefore"
     next_page_token_field = "nextToken"
     page_size_field = "limit"
     time_format = "%Y-%m-%dT%H:%M:%SZ"
+    cursor_field = "createdBefore"
 
     def path(self, **kwargs) -> str:
         return f"vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
@@ -1030,24 +1088,31 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        if not next_page_token:
-            end_date = pendulum.now("utc").strftime(self.time_format)
-            if self._replication_end_date:
-                end_date = self._replication_end_date
+        if next_page_token:
+            return dict(next_page_token)
 
-            start_date = max(pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=7, hours=1)).strftime(
-                self.time_format
-            )
+        end_date = pendulum.now("utc").strftime(self.time_format)
+        if self._replication_end_date:
+            end_date = self._replication_end_date
+        # The date range to search must not be more than 7 days - see docs
+        # https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference
+        start_date = max(pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=7, hours=1)).strftime(
+            self.time_format
+        )
+        if stream_state_value := stream_state.get(self.cursor_field):
+            start_date = max(stream_state_value, start_date)
+        return {self.replication_start_date_field: start_date, self.replication_end_date_field: end_date}
 
-            params.update({self.replication_start_date_field: start_date, self.replication_end_date_field: end_date})
-        return params
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+        params = self.request_params(stream_state)
+        for record in response.json().get(self.data_field, {}).get("shippingLabels", []):
+            record[self.replication_end_date_field] = params.get(self.replication_end_date_field)
+            yield record
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield from response.json().get(self.data_field, {}).get("shippingLabels", [])
 
-
-class FinanceStream(AmazonSPStream, ABC):
+class FinanceStream(IncrementalAmazonSPStream, ABC):
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
     page_size = 100
@@ -1080,6 +1145,10 @@ class FinanceStream(AmazonSPStream, ABC):
             DATE_TIME_FORMAT
         )
 
+        stream_state = stream_state or {}
+        if stream_state_value := stream_state.get(self.cursor_field):
+            start_date = max(stream_state_value, start_date)
+
         # logging to make sure user knows taken start date
         logger.info("start date used: %s", start_date)
 
@@ -1111,13 +1180,17 @@ class ListFinancialEventGroups(FinanceStream):
     """
 
     name = "ListFinancialEventGroups"
+    primary_key = "FinancialEventGroupId"
     replication_start_date_field = "FinancialEventGroupStartedAfter"
     replication_end_date_field = "FinancialEventGroupStartedBefore"
+    cursor_field = "FinancialEventGroupStart"
 
     def path(self, **kwargs) -> str:
         return f"finances/{FINANCES_API_VERSION}/financialEventGroups"
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
         yield from response.json().get(self.data_field, {}).get("FinancialEventGroupList", [])
 
 
@@ -1130,15 +1203,21 @@ class ListFinancialEvents(FinanceStream):
     name = "ListFinancialEvents"
     replication_start_date_field = "PostedAfter"
     replication_end_date_field = "PostedBefore"
+    cursor_field = "PostedBefore"
 
     def path(self, **kwargs) -> str:
         return f"finances/{FINANCES_API_VERSION}/financialEvents"
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield from [response.json().get(self.data_field, {}).get("FinancialEvents", {})]
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+        params = self.request_params(stream_state)
+        events = response.json().get(self.data_field, {}).get("FinancialEvents", {})
+        events[self.replication_end_date_field] = params.get(self.replication_end_date_field)
+        yield from [events]
 
 
-class FbaCustomerReturnsReports(ReportsAmazonSPStream):
+class FbaCustomerReturnsReports(IncrementalReportsAmazonSPStream):
 
     name = "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"
 
@@ -1146,7 +1225,20 @@ class FbaCustomerReturnsReports(ReportsAmazonSPStream):
 class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
 
     name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
-    cursor_field = "dataEndTime"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.transformer.registerCustomTransform(self.get_transform_function())
+
+    @staticmethod
+    def get_transform_function():
+        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+            if original_value == "" and field_schema.get("format") == "date-time":
+                return None
+            return original_value
+
+        return transform_function
 
     def _create_report(
         self,
@@ -1215,7 +1307,7 @@ class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
                 complete = True
 
 
-class FbaReimbursementsReports(ReportsAmazonSPStream):
+class FbaReimbursementsReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/G200732720
     """

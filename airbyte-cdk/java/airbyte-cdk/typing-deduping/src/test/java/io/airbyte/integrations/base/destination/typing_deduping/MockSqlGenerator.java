@@ -23,6 +23,11 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
+  public String createSchema(final String schema) {
+    return "CREATE SCHEMA " + schema;
+  }
+
+  @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
     return "CREATE TABLE " + stream.id().finalTableId("", suffix);
   }
@@ -57,6 +62,11 @@ class MockSqlGenerator implements SqlGenerator<String> {
   @Override
   public String prepareTablesForSoftReset(final StreamConfig stream) {
     return "PREPARE " + String.join(".", stream.id().originalNamespace(), stream.id().originalName()) + " FOR SOFT RESET";
+  }
+
+  @Override
+  public String clearLoadedAt(final StreamId streamId) {
+    return null;
   }
 
 }
