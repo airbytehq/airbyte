@@ -2,7 +2,7 @@
 
 ## Overview
 
-This tutorial will assume that you already have a working source. If you do not, feel free to refer to the [Building a Toy Connector](building-a-python-source.md) tutorial. This tutorial will build directly off the example from that article. We will also assume that you have a basic understanding of how Airbyte's Incremental-Append replication strategy works. We have a brief explanation of it [here](/using-airbyte/core-concepts/sync-modes/incremental-append.md).
+This tutorial will assume that you already have a working source. If you do not, feel free to refer to the [Building a Toy Connector](build-a-connector-the-hard-way.md) tutorial. This tutorial will build directly off the example from that article. We will also assume that you have a basic understanding of how Airbyte's Incremental-Append replication strategy works. We have a brief explanation of it [here](/using-airbyte/core-concepts/sync-modes/incremental-append.md).
 
 ## Update Catalog in `discover`
 
