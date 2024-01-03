@@ -83,7 +83,7 @@ curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-15T07:30:58Z<
 </pre>
 
 :::info
-	If the last record read has a datetime earlier than the end time of the stream interval, the end time of the interval will be stored in the state.
+If the last record read has a datetime earlier than the end time of the stream interval, the end time of the interval will be stored in the state.
 :::
 
 The `from-date` is set to the cutoff date of articles synced already and the `to-date` is set to the current date.
