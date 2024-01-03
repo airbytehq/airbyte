@@ -511,7 +511,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 #### Example
 
 `airbyte-ci test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests'`
-`airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test--poetry-run-command='pytest tests/unit_tests'`
+`airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --poetry-run-command='pytest tests/unit_tests'`
 
 ## Changelog
 
