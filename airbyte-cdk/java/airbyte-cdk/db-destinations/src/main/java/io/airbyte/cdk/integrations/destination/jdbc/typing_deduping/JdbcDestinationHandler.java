@@ -54,7 +54,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   @Override
   public boolean isFinalTableEmpty(final StreamId id) throws Exception {
-    return jdbcDatabase.queryBoolean(
+    return !jdbcDatabase.queryBoolean(
         DSL.select(
             DSL.field(DSL.exists(
                 DSL.selectOne()
