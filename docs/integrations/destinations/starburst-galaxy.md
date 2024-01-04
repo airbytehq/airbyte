@@ -111,5 +111,5 @@ Learn more about
 
 | Version | Date       | Pull Request                                               | Subject                           |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------- |
-| 0.0.2   | 2023-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924)  | Add new ap-southeast-3 AWS region |
+| 0.0.2   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924)  | Add new ap-southeast-3 AWS region |
 | 0.0.1   | 2023-03-28 | [\#24620](https://github.com/airbytehq/airbyte/pull/24620) | Initial public release.           |
