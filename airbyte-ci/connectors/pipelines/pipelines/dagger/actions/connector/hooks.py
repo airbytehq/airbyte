@@ -3,6 +3,7 @@
 #
 
 import importlib.util
+from importlib.abc import Loader
 
 from dagger import Container
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
@@ -19,6 +20,8 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
 
     # We don't want finalize scripts to override the entrypoint so we keep it in memory to reset it after finalization
     original_entrypoint = await connector_container.entrypoint()
+    if not original_entrypoint:
+        original_entrypoint = []
 
     has_finalize_bash_script = "finalize_build.sh" in finalize_scripts
     has_finalize_python_script = "finalize_build.py" in finalize_scripts
@@ -31,7 +34,11 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
         connector_finalize_module_spec = importlib.util.spec_from_file_location(
             f"{context.connector.code_directory.name}_finalize", module_path
         )
+        if connector_finalize_module_spec is None:
+            raise Exception("Connector has a finalize_build.py script but it can't be loaded.")
         connector_finalize_module = importlib.util.module_from_spec(connector_finalize_module_spec)
+        if not isinstance(connector_finalize_module_spec.loader, Loader):
+            raise Exception("Connector has a finalize_build.py script but it can't be loaded.")
         connector_finalize_module_spec.loader.exec_module(connector_finalize_module)
         try:
             connector_container = await connector_finalize_module.finalize_build(context, connector_container)

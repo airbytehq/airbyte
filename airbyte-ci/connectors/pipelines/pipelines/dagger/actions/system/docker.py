@@ -4,7 +4,7 @@
 
 import json
 import uuid
-from typing import Callable, Optional
+from typing import Callable, Dict, List, Optional, Union
 
 from dagger import Client, Container, File, Secret
 from pipelines import consts
@@ -20,7 +20,6 @@ from pipelines.consts import (
     TAILSCALE_AUTH_KEY,
 )
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.models.contexts.pipeline_context import PipelineContext
 
 
 def get_base_dockerd_container(dagger_client: Client) -> Container:
@@ -74,7 +73,7 @@ def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
     Returns:
         str: The json representation of the docker daemon config.
     """
-    daemon_config = {
+    daemon_config: Dict[str, Union[List[str], str]] = {
         "storage-driver": STORAGE_DRIVER,
     }
     if registry_mirror_url:
@@ -85,15 +84,15 @@ def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
 
 def docker_login(
     dockerd_container: Container,
-    docker_registry_username_secret: Optional[Secret],
-    docker_registry_password_secret: Optional[Secret],
+    docker_registry_username_secret: Secret,
+    docker_registry_password_secret: Secret,
 ) -> Container:
     """Login to a docker registry if the username and password secrets are provided.
 
     Args:
         dockerd_container (Container): The dockerd_container container to login to the registry.
-        docker_registry_username_secret (Optional[Secret]): The docker registry username secret.
-        docker_registry_password_secret (Optional[Secret]): The docker registry password secret.
+        docker_registry_username_secret (Secret): The docker registry username secret.
+        docker_registry_password_secret (Secret): The docker registry password secret.
         docker_registry_address (Optional[str]): The docker registry address to login to. Defaults to "docker.io" (DockerHub).
     Returns:
         Container: The container with the docker login command executed if the username and password secrets are provided. Noop otherwise.
@@ -142,8 +141,9 @@ def with_global_dockerd_service(
         daemon_config_json = get_daemon_config_json()
 
     dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", daemon_config_json)
-    # Docker login happens late because there's a cache buster in the docker login command.
-    dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
+    if docker_hub_username_secret and docker_hub_password_secret:
+        # Docker login happens late because there's a cache buster in the docker login command.
+        dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
     return dockerd_container.with_exec(
         ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
     )
@@ -161,6 +161,7 @@ def with_bound_docker_host(
     Returns:
         Container: The container bound to the docker host.
     """
+    assert context.dockerd_service is not None
     return (
         container.with_env_variable("DOCKER_HOST", f"tcp://{DOCKER_HOST_NAME}:{DOCKER_HOST_PORT}")
         .with_service_binding(DOCKER_HOST_NAME, context.dockerd_service)
@@ -188,7 +189,7 @@ def with_docker_cli(context: ConnectorContext) -> Container:
     return with_bound_docker_host(context, docker_cli)
 
 
-async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str):
+async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str) -> str:
     """Load a docker image tar archive to the docker host.
 
     Args:
@@ -210,7 +211,7 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
 
 
 def with_crane(
-    context: PipelineContext,
+    context: ConnectorContext,
 ) -> Container:
     """Crane is a tool to analyze and manipulate container images.
     We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
