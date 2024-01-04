@@ -223,6 +223,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.1   | 2024-01-03 | [33312](https://github.com/airbytehq/airbyte/pull/33312) | Adding count stats in AirbyteStateMessage |
 | 3.3.0   | 2023-12-19 | [33436](https://github.com/airbytehq/airbyte/pull/33436)   | Remove LEGACY state flag                                                                                                                        |
 | 3.2.4   | 2023-12-12 | [33356](https://github.com/airbytehq/airbyte/pull/33210)   | Support for better debugging tools..                                                                                                            |
 | 3.2.3   | 2023-12-08 | [33210](https://github.com/airbytehq/airbyte/pull/33210)   | Update MySql driver property value for zero date handling.                                                                                      |
