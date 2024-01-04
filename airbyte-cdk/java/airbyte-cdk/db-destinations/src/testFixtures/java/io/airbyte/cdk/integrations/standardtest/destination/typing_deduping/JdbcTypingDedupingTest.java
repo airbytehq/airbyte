@@ -32,7 +32,11 @@ public abstract class JdbcTypingDedupingTest extends BaseTypingDedupingTest {
   private JdbcDatabase database;
   private DataSource dataSource;
 
-  protected abstract String getConfigPath();
+  /**
+   * Get the config as declared in GSM (or directly from the testcontainer). This class will do
+   * further modification to the config to ensure test isolation.i
+   */
+  protected abstract JsonNode getBaseConfig();
 
   protected abstract DataSource getDataSource(JsonNode config);
 
@@ -70,7 +74,7 @@ public abstract class JdbcTypingDedupingTest extends BaseTypingDedupingTest {
 
   @Override
   protected JsonNode generateConfig() {
-    final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(getConfigPath())));
+    final JsonNode config = getBaseConfig();
     setDefaultSchema(config, "typing_deduping_default_schema" + getUniqueSuffix());
     dataSource = getDataSource(config);
     database = new DefaultJdbcDatabase(dataSource, getSourceOperations());
