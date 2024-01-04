@@ -1,37 +1,31 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from __future__ import annotations
 
 import os
 import re
-from typing import TYPE_CHECKING
 
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
+from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.helpers import git
 from pipelines.models.steps import Step, StepResult, StepStatus
 
-if TYPE_CHECKING:
-    from anyio import Semaphore
-
 
 class SetCDKVersion(Step):
-    context: ConnectorContext
     title = "Set CDK Version"
 
     def __init__(
         self,
         context: ConnectorContext,
         new_version: str,
-    ) -> None:
+    ):
         super().__init__(context)
         self.new_version = new_version
 
     async def _run(self) -> StepResult:
-        context = self.context
+        context: ConnectorContext = self.context
         og_connector_dir = await context.get_connector_dir()
-        if "setup.py" not in await og_connector_dir.entries():
+        if not "setup.py" in await og_connector_dir.entries():
             return self.skip("Connector does not have a setup.py file.")
         setup_py = og_connector_dir.file("setup.py")
         setup_py_content = await setup_py.contents()
@@ -69,16 +63,16 @@ class SetCDKVersion(Step):
 
 async def run_connector_cdk_upgrade_pipeline(
     context: ConnectorContext,
-    semaphore: Semaphore,
+    semaphore,
     target_version: str,
-) -> Report:
+) -> ConnectorReport:
     """Run a pipeline to upgrade the CDK version for a single connector.
 
     Args:
         context (ConnectorContext): The initialized connector context.
 
     Returns:
-        Report: The reports holding the CDK version set results.
+        ConnectorReport: The reports holding the CDK version set results.
     """
     async with semaphore:
         steps_results = []
@@ -89,6 +83,5 @@ async def run_connector_cdk_upgrade_pipeline(
             )
             set_cdk_version_result = await set_cdk_version.run()
             steps_results.append(set_cdk_version_result)
-            report = ConnectorReport(context, steps_results, name="CONNECTOR VERSION CDK UPGRADE RESULTS")
-            context.report = report
-    return report
+            context.report = ConnectorReport(context, steps_results, name="CONNECTOR VERSION CDK UPGRADE RESULTS")
+    return context.report

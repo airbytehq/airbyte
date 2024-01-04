@@ -6,7 +6,9 @@
 from __future__ import annotations
 
 import sys
+from glob import glob
 from pathlib import Path
+from typing import Any
 
 import asyncclick as click
 from dagger import DaggerError
@@ -19,12 +21,14 @@ from pipelines.helpers.utils import slugify
 
 class DaggerPipelineCommand(click.Command):
     @sentry_utils.with_command_context
-    async def invoke(self, ctx: click.Context) -> None:
+    async def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
         Args:
             ctx (click.Context): The invocation context.
         Raises:
             e: Raise whatever exception that was caught.
+        Returns:
+            Any: The invocation return value.
         """
         command_name = self.name
         main_logger.info(f"Running Dagger Command {command_name}...")

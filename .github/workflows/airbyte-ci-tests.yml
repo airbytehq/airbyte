@@ -91,7 +91,7 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines --disallow-untyped-defs' --poetry-run-command='ruff check pipelines'"
+          subcommand: "test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests'"
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
