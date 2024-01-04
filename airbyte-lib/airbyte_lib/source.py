@@ -7,10 +7,11 @@ from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Optional
 
 import jsonschema
-from airbyte_lib.cache import Cache, InMemoryCache
+from airbyte_lib import _util  # Internal utility functions
+from airbyte_lib.caches import InMemoryCache, SQLCacheBase
 from airbyte_lib.executor import Executor
-from airbyte_lib.sync_result import SyncResult
 from airbyte_lib.telemetry import track
+from airbyte_lib.sync_results import SyncResult
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -23,6 +24,10 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
+
+
+def _new_default_cache() -> SQLCacheBase:
+    return InMemoryCache()
 
 
 @contextmanager
@@ -58,6 +63,7 @@ class Source:
         self.name = name
         self.streams: Optional[List[str]] = None
         self.config: Optional[Dict[str, Any]] = None
+        self._processed_records = 0
         self._last_log_messages: List[str] = []
         if config is not None:
             self.set_config(config)
@@ -119,7 +125,36 @@ class Source:
                 return msg.spec
         raise Exception(f"Connector did not return a spec. Last logs: {self._last_log_messages}")
 
-    def read_stream(self, stream: str) -> Iterable[Dict[str, Any]]:
+    @property
+    @lru_cache(maxsize=1)
+    def raw_catalog(self) -> AirbyteCatalog:
+        """
+        Get the raw catalog for the given streams.
+        """
+        catalog = self._discover()
+        return catalog
+
+    @property
+    @lru_cache(maxsize=1)
+    def configured_catalog(self) -> ConfiguredAirbyteCatalog:
+        """
+        Get the configured catalog for the given streams.
+        """
+        catalog = self._discover()
+        configured_catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=s,
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
+                )
+                for s in catalog.streams
+                if self.streams is None or s.name in self.streams
+            ]
+        )
+        return configured_catalog
+
+    def get_stream_records(self, stream: str) -> Iterable[Dict[str, Any]]:
         """
         Read a stream from the connector.
 
@@ -145,8 +180,8 @@ class Source:
         )
         if len(configured_catalog.streams) == 0:
             raise Exception(f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}")
-        for message in self._read_catalog("stream", configured_catalog):
-            yield message.data
+
+        yield from _util.airbyte_messages_to_record_dicts(self._read_with_catalog(configured_catalog))
 
     def check(self):
         """
@@ -170,7 +205,7 @@ class Source:
     def install(self):
         self.executor.install()
 
-    def _read(self, target: str) -> Iterable[AirbyteRecordMessage]:
+    def _read(self) -> Iterable[AirbyteMessage]:
         """
         Call read on the connector.
 
@@ -193,9 +228,9 @@ class Source:
                 if self.streams is None or s.name in self.streams
             ]
         )
-        yield from self._read_catalog(target, configured_catalog)
+        yield from self._read_with_catalog(configured_catalog)
 
-    def _read_catalog(self, target: str, catalog: ConfiguredAirbyteCatalog) -> Iterable[AirbyteRecordMessage]:
+    def _read_with_catalog(self, catalog: ConfiguredAirbyteCatalog) -> Iterable[AirbyteMessage]:
         """
         Call read on the connector.
 
@@ -204,21 +239,12 @@ class Source:
         * execute the connector with read --config <config_file> --catalog <catalog_file>
         * Listen to the messages and return the AirbyteRecordMessages that come along.
         """
-        source_tracking_information = self.executor.get_tracking_information()
-        track(source_tracking_information, target, "started")
-        try:
-            with as_temp_files([self.config, catalog.json()]) as [
-                config_file,
-                catalog_file,
-            ]:
-                for msg in self._execute(["read", "--config", config_file, "--catalog", catalog_file]):
-                    if msg.type == Type.RECORD:
-                        yield msg.record
-        except Exception as e:
-            track(source_tracking_information, target, "failed", self._processed_records)
-            raise e
-        finally:
-            track(source_tracking_information, target, "succeeded", self._processed_records)
+        with as_temp_files([self.config, catalog.json()]) as [
+            config_file,
+            catalog_file,
+        ]:
+            for msg in self._execute(["read", "--config", config_file, "--catalog", catalog_file]):
+                yield msg
 
     def _add_to_logs(self, message: str):
         self._last_log_messages.append(message)
@@ -249,16 +275,18 @@ class Source:
         except Exception as e:
             raise Exception(f"{str(e)}. Last logs: {self._last_log_messages}")
 
-    def _process(self, messages: Iterable[AirbyteRecordMessage]):
-        self._processed_records = 0
+    def _tally_records(self, messages: Iterable[AirbyteRecordMessage]):
+        """This method simply tallies the number of records processed and yields the messages."""
+        self._processed_records = 0  # Reset the counter before we start
         for message in messages:
             self._processed_records += 1
             yield message
 
-    def read_all(self, cache: Optional[Cache] = None) -> SyncResult:
+    def read_all(self, cache: Optional[SQLCacheBase] = None) -> SyncResult:
         if cache is None:
-            cache = InMemoryCache()
-        cache.write(self._process(self._read("cache")))
+            cache = _new_default_cache()
+
+        cache.process_airbyte_messages(self._tally_records(self._read()))
 
         return SyncResult(
             processed_records=self._processed_records,

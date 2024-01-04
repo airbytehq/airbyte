@@ -11,8 +11,12 @@ import airbyte_lib as ab
 # In separate terminal:
 #   poetry run python examples/run_spacex.py
 
-source = ab.get_connector("source-spacex-api", config={"id": "605b4b6aaa5433645e37d03f"})
-cache = ab.get_in_memory_cache()
+source = ab.get_connector(
+    "source-spacex-api",
+    config={"id": "605b4b6aaa5433645e37d03f"},
+    install_if_missing=True,
+)
+cache = ab.new_local_cache(source_catalog=source.configured_catalog)
 
 source.check()
 
@@ -20,7 +24,7 @@ source.set_streams(["launches", "rockets", "capsules"])
 
 result = source.read_all(cache)
 
-print(islice(source.read_stream("capsules"), 10))
+print(islice(source.get_stream_records("capsules"), 10))
 
 for name, records in result.cache.streams.items():
     print(f"Stream {name}: {len(records)} records")

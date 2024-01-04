@@ -14,7 +14,7 @@ import airbyte_lib as ab
 os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/integration_tests/fixtures/registry.json"
 
 source = ab.get_connector("source-test", config={"apiKey": "test"})
-cache = ab.get_in_memory_cache()
+cache = ab.new_local_cache(source_catalog=source.configured_catalog)
 
 source.check()
 
