@@ -86,6 +86,11 @@ def _an_external_account_card() -> RecordBuilder:
 
 
 def _external_accounts_card_response() -> HttpResponseBuilder:
+    """
+    WARNING: this response will not fully match the template as external accounts card are queried by ID and the field "url" is not updated
+     to match that (it is currently hardcoded to "/v1/accounts/acct_1032D82eZvKYlo2C/external_accounts"). As this has no impact on the
+     tests, we will leave it as is for now.
+    """
     return create_response_builder(
         find_template(_ENDPOINT_TEMPLATE_NAME, __file__),
         FieldPath("data"),
