@@ -33,6 +33,9 @@ interface IProps {
   setLocalSortOrder?: any;
   destinationSortOrder?: any;
   setDestinationSortOrder?: any;
+  query?: any;
+  push?: any;
+  pageCurrent?: any;
 }
 
 const NameColums = styled.div`
@@ -50,9 +53,10 @@ const DestinationTable: React.FC<IProps> = ({
   setLocalSortOrder,
   destinationSortOrder,
   setDestinationSortOrder,
+  // pageCurrent,
 }) => {
   const { query, push } = useRouter();
-  const sortBy = query.sortBy || "entity";
+  const sortBy = query.sortBy;
   const sortOrder = query.order;
   const routerPath = entity === "destination" ? RoutePaths.Destination : RoutePaths.Destination;
   const clickEditRow = (destinationId: string) => push(`/${routerPath}/${destinationId}`);
@@ -76,6 +80,19 @@ const DestinationTable: React.FC<IProps> = ({
             ? ""
             : SortOrderEnum.ASC;
       }
+      /*
+       const newSearchParams: { sortBy?: string; order?: string,pageCurrent?:string|number} = {};
+      console.log(newSearchParams,'sortfunc')
+      if (newSortOrder !== "") {
+        newSearchParams.sortBy = field;
+        newSearchParams.order = newSortOrder;
+        newSearchParams.pageCurrent=pageCurrent
+      } else {
+        newSearchParams.sortBy = "";
+        newSearchParams.order = "";
+        newSearchParams.pageCurrent=pageCurrent
+      }
+     */
 
       const newSearchParams: { sortBy?: string; order?: string } = {};
       if (newSortOrder !== "") {
@@ -90,7 +107,7 @@ const DestinationTable: React.FC<IProps> = ({
         search: queryString.stringify(newSearchParams, { skipNull: true }),
       });
     },
-    [push, sortBy, sortOrder]
+    [push, sortBy, sortOrder, query]
   );
 
   const columns = useMemo(
@@ -108,8 +125,8 @@ const DestinationTable: React.FC<IProps> = ({
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
                   setSortDirection(newSortOrder);
                   setDestinationSortOrder("");
-                  onSelectFilter("sortFieldName", "name");
-                  onSelectFilter("sortDirection", newSortOrder);
+                  onSelectFilter("sortFieldName", "name", query);
+                  onSelectFilter("sortDirection", newSortOrder, query);
                   return newSortOrder;
                 });
               }}
@@ -147,8 +164,8 @@ const DestinationTable: React.FC<IProps> = ({
                   const newSortOrder =
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
                   setLocalSortOrder("");
-                  onSelectFilter("sortFieldName", "destinationName");
-                  onSelectFilter("sortDirection", newSortOrder);
+                  onSelectFilter("sortFieldName", "destinationName", query);
+                  onSelectFilter("sortDirection", newSortOrder, query);
                   return newSortOrder;
                 });
               }}

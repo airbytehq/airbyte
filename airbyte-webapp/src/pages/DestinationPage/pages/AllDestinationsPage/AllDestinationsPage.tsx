@@ -1,7 +1,7 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box } from "@mui/material";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -13,6 +13,7 @@ import PageTitle from "components/PageTitle";
 import { Pagination } from "components/Pagination";
 import { Separator } from "components/Separator";
 
+//  import queryString from "query-string";
 // import { FilterConnectionRequestBody } from "core/request/DaspireClient";
 import { FilterDestinationRequestBody } from "core/request/DaspireClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -77,34 +78,24 @@ const AllDestinationsPage: React.FC = () => {
   const [sortDirection, setSortDirection] = useState("");
   const [localSortOrder, setLocalSortOrder] = useState("");
   const [destinationSortOrder, setDestinationSortOrder] = useState("");
-  console.log(destinationSortOrder, "DestinationSort");
-  console.log(query, "Query");
+
   useTrackPage(PageTrackingCodes.DESTINATION_LIST);
   const workspace = useCurrentWorkspace();
   const { destinationOptions } = useConnectionFilterOptions(workspace?.workspaceId);
   const initialFiltersState = {
     workspaceId: workspace.workspaceId,
     pageSize: pageCurrent,
-    pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
+    pageCurrent: query.pageCurrent ?? 1,
     DestinationDefinitionId: destinationOptions[0].value,
     sortDetails: {
       sortFieldName,
       sortDirection,
     },
   };
-  useEffect(() => {
-    if (query) {
-      if (query.sortBy === "name") {
-        setLocalSortOrder(query.order);
-      }
-      if (query.sortBy === "destinationName") {
-        setDestinationSortOrder(query.order);
-      }
-    }
-  }, []);
+
   const [filters, setFilters] = useState<FilterDestinationRequestBody>(initialFiltersState);
   const { destinations, total, pageSize } = usePaginatedDestination(filters);
-
+  // const { destinations, total, pageSize,pageCurrent:paginatedPageCurrent } = usePaginatedDestination(filters);
   // const workspace = useCurrentWorkspace();
   // const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions();
 
@@ -134,9 +125,10 @@ const AllDestinationsPage: React.FC = () => {
   const onSelectFilter = useCallback(
     (
       filterType: "pageCurrent" | "DestinationDefinitionId" | "pageSize" | "sortDirection" | "sortFieldName",
-      filterValue: number | string
+      filterValue: number | string,
+      query: any
     ) => {
-      setFilters((prevFilters) => {
+      setFilters((prevFilters: any) => {
         if (filterType === "DestinationDefinitionId" || filterType === "pageSize") {
           return { ...prevFilters, [filterType]: filterValue };
         } else if (filterType === "sortDirection" || filterType === "sortFieldName") {
@@ -149,35 +141,40 @@ const AllDestinationsPage: React.FC = () => {
             pageCurrent: prevFilters.pageCurrent,
           };
         } else if (filterType === "pageCurrent") {
-          if (query && query.sortBy?.length > 0) {
-            if (query && query.sortBy === "name") {
-              setLocalSortOrder(query?.order);
-              setDestinationSortOrder("");
-            }
-            if (query && query.sortBy === "destinationName") {
-              setDestinationSortOrder(query?.order);
-              setLocalSortOrder("");
-            }
+          const querySortBy = query?.sortBy ?? "";
+          if (querySortBy === "name") {
+            // console.log("1");
+            setLocalSortOrder(query?.order ?? "");
+            setDestinationSortOrder("");
+          } else if (querySortBy === "destinationName") {
+            // console.log("2 hello");
+            setDestinationSortOrder(query?.order ?? "");
+            setLocalSortOrder("");
           } else {
+            // console.log("3");
             setLocalSortOrder("");
             setDestinationSortOrder("");
-          }
-          if (query && query.sortBy === "") {
-            setLocalSortOrder("");
-            setDestinationSortOrder("");
-          }
-          if (query) {
-            return {
-              ...filters,
-              [filterType]: filterValue as number,
-              sortDetails: { sortFieldName: query.sortBy, sortDirection: query.order },
-            };
           }
 
+          const sortOrder = querySortBy
+            ? { sortFieldName: querySortBy, sortDirection: query?.order }
+            : { sortFieldName: "", sortDirection: "" };
+          // const newSearchParams: {
+          //   pageCurrent?: number | string;
+          //   order?: string;
+          //   sortBy?: string;
+          // } = {
+          //   pageCurrent:paginatedPageCurrent,
+          //   order: sortOrder.sortDirection ,
+          //   sortBy: sortOrder.sortFieldName
+          // };
+          // push({
+          //   search: queryString.stringify(newSearchParams, { skipNull: true }),
+          // });
           return {
-            ...filters,
-            [filterType]: filterValue as number,
-            sortDetails: { sortFieldName: "", sortDirection: "" },
+            ...prevFilters,
+            [filterType]: filterValue,
+            sortDetails: sortOrder,
           };
         }
         return prevFilters;
@@ -189,7 +186,7 @@ const AllDestinationsPage: React.FC = () => {
     (size: number) => {
       setCurrentPageSize(size);
       updatePageSize("destination", size);
-      onSelectFilter("pageSize", size);
+      onSelectFilter("pageSize", size, query);
     },
     [onSelectFilter]
   );
@@ -223,7 +220,9 @@ const AllDestinationsPage: React.FC = () => {
               $background="white"
               value={filters.DestinationDefinitionId}
               options={destinationOptions}
-              onChange={(option: DropDownRow.IDataItem) => onSelectFilter("DestinationDefinitionId", option.value)}
+              onChange={(option: DropDownRow.IDataItem) =>
+                onSelectFilter("DestinationDefinitionId", option.value, query)
+              }
             />
           </DDContainer>
           <Separator height="10px" />
@@ -236,6 +235,7 @@ const AllDestinationsPage: React.FC = () => {
             setLocalSortOrder={setLocalSortOrder}
             destinationSortOrder={destinationSortOrder}
             setDestinationSortOrder={setDestinationSortOrder}
+            // pageCurrent={paginatedPageCurrent}
           />
           <Separator height="24px" />
           <Footer>
@@ -244,7 +244,7 @@ const AllDestinationsPage: React.FC = () => {
               <Pagination
                 pages={total / pageSize}
                 value={filters.pageCurrent}
-                onChange={(value: number) => onSelectFilter("pageCurrent", value)}
+                onChange={(value: number) => onSelectFilter("pageCurrent", value, query)}
               />
             </Box>
           </Footer>
