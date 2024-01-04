@@ -157,7 +157,7 @@ def _assert_not_available(output: EntrypointOutput) -> None:
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):
     @HttpMocker()
-    def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
+    def test_given_one_page_when_read_then_return_record(self, http_mocker: HttpMocker) -> None:
         _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
@@ -209,7 +209,7 @@ class FullRefreshTest(TestCase):
     def test_given_multiple_bank_accounts_pages_when_read_then_query_pagination_on_child(self, http_mocker: HttpMocker) -> None:
         _given_events_availability_check(http_mocker)
         http_mocker.get(
-            _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
+            _customers_request().with_expands(_EXPANDS).with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response()
             .with_record(
                 _a_customer()
@@ -520,7 +520,7 @@ class IncrementalTest(TestCase):
     @HttpMocker()
     def test_given_state_earlier_than_30_days_when_read_then_query_events_using_types_and_event_lower_boundary(self, http_mocker: HttpMocker) -> None:
         # this seems odd as we would miss some data between start_date and events_lower_boundary. In that case, we should hit the
-        # customer endpoint
+        # payment_methods endpoint
         _given_customers_availability_check(http_mocker)
         start_date = _NOW - timedelta(days=40)
         state_value = _NOW - timedelta(days=39)
