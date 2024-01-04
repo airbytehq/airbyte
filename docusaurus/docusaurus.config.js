@@ -10,6 +10,7 @@ const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
+const connectorList = require("./src/remark/connectorList");
 const productInformation = require("./src/remark/productInformation");
 
 const redirects = yaml.load(
@@ -93,7 +94,7 @@ const config = {
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
           exclude: ["**/*.inapp.md"],
-          remarkPlugins: [docsHeaderDecoration, productInformation],
+          remarkPlugins: [docsHeaderDecoration, productInformation, connectorList],
         },
         blog: false,
         theme: {

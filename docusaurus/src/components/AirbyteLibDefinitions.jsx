@@ -1,10 +1,17 @@
 import React from 'react';
-import docs from "../../../airbyte-lib/pdoc_docs/airbyte_lib.html";
+
+// Add additional modules here
+import main_docs from "../../../airbyte-lib/pdoc_docs/airbyte_lib.html";
+import caches_docs from "../../../airbyte-lib/pdoc_docs/airbyte_lib/caches.html";
+
+const docs = {
+  "airbyte_lib": main_docs,
+  "airbyte_lib.caches": caches_docs,
+}
 
 
-
-export default function AirbyteLibDefinitions() {
+export default function AirbyteLibDefinitions({ module }) {
   return <>
-    <div dangerouslySetInnerHTML={{ __html: docs }} />
+    <div dangerouslySetInnerHTML={{ __html: docs[module] }} />
   </>
 }
