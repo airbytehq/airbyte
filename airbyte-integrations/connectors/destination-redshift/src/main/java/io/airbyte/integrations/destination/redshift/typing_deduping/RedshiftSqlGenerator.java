@@ -203,6 +203,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
     // Check that the columns match, with special handling for the metadata columns.
+    // This is mostly identical to the redshift implementation, but swaps jsonb to super
     final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue()).getTypeName()),

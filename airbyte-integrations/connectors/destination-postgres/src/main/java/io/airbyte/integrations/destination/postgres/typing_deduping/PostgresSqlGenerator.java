@@ -12,6 +12,8 @@ import static org.jooq.impl.DSL.quotedName;
 import static org.jooq.impl.DSL.rowNumber;
 import static org.jooq.impl.DSL.val;
 
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
@@ -22,6 +24,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jooq.Condition;
@@ -34,6 +37,13 @@ import org.jooq.impl.SQLDataType;
 public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   public static final DataType<?> JSONB_TYPE = new DefaultDataType<>(null, Object.class, "jsonb");
+
+  private static final Map<String, String> POSTGRES_TYPE_NAME_TO_JDBC_TYPE = ImmutableMap.of(
+      "numeric", "decimal",
+      "int8", "bigint",
+      "bool", "boolean",
+      "timestamptz", "timestamp with time zone",
+      "timetz", "time with time zone");
 
   public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
@@ -125,8 +135,25 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
-    // TODO
-    return false;
+    // Check that the columns match, with special handling for the metadata columns.
+    // This is mostly identical to the redshift implementation, but swaps super to jsonb
+    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
+        .collect(LinkedHashMap::new,
+            (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue()).getTypeName()),
+            LinkedHashMap::putAll);
+    final LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
+        .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream()
+            .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
+        .collect(LinkedHashMap::new,
+            (map, column) -> map.put(column.getKey(), jdbcTypeNameFromPostgresTypeName(column.getValue().type())),
+            LinkedHashMap::putAll);
+
+    final boolean sameColumns = actualColumns.equals(intendedColumns)
+        && "varchar".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).type())
+        && "timestamptz".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT).type())
+        && "jsonb".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META).type());
+
+    return sameColumns;
   }
 
   /**
@@ -145,5 +172,9 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   private Field<String> jsonTypeof(final ColumnId column) {
     return function("JSONB_TYPEOF", SQLDataType.VARCHAR, extractColumnAsJson(column));
+  }
+
+  private static String jdbcTypeNameFromPostgresTypeName(final String redshiftType) {
+    return POSTGRES_TYPE_NAME_TO_JDBC_TYPE.getOrDefault(redshiftType, redshiftType);
   }
 }
