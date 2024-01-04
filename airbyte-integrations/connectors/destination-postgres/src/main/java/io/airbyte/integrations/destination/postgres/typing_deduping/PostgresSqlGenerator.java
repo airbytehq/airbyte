@@ -82,7 +82,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     if (useExpensiveSaferCasting) {
       return function("airbyte_safe_cast", dialectType, field).as(quotedName(alias));
     } else {
-      return cast(field, toDialectType(type)).as(quotedName(alias));
+      return cast(field, dialectType).as(quotedName(alias));
     }
   }
 
@@ -95,6 +95,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   protected Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
+    // TODO
     return cast("{}", JSONB_TYPE).as(COLUMN_NAME_AB_META);
   }
 

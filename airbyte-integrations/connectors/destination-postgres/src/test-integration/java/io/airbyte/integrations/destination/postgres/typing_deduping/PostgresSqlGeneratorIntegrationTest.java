@@ -142,5 +142,6 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
         () -> assertEquals("time", existingTable.get().columns().get("time_without_timezone").type()),
         () -> assertEquals("date", existingTable.get().columns().get("date").type()),
         () -> assertEquals("jsonb", existingTable.get().columns().get("unknown").type()));
+    // TODO assert on table indexing, etc.
   }
 }
