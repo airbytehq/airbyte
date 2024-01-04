@@ -64,13 +64,13 @@ def click_merge_args_into_context_obj(f: Callable) -> Callable:
     return wrapper
 
 
-def click_append_to_context_object(key: str, value: Callable | Any) -> Callable:
+def click_append_to_context_object(key: str, value: Callable) -> Callable:
     """
     Decorator to append a value to the click context object.
     """
 
     def decorator(f: Callable) -> Callable:
-        async def wrapper(*args: Any, **kwargs: Any) -> Any:
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
             ctx = click.get_current_context()
             ctx.ensure_object(dict)
 
@@ -107,7 +107,7 @@ class LazyPassDecorator:
         """
 
         @wraps(f)
-        def decorated_function(*args: Any, **kwargs: Any) -> Any:
+        def decorated_function(*args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
             # Check if the kwargs already contain the arguments being passed by the decorator
             decorator_kwargs = {k: v for k, v in self.kwargs.items() if k not in kwargs}
             # Create an instance of the class

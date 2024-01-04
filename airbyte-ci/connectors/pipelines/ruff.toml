@@ -1,6 +1,6 @@
 target-version = "py310"
 
-ignore = ["ANN101", "ANN002", "ANN003", "ANN401"]
+ignore = ["ANN101", "ANN002", "ANN003"]
 
   
 
@@ -17,3 +17,6 @@ extend-select = [
 [lint.pydocstyle]
 
 convention = "google"
+
+[lint.flake8-annotations]
+allow-star-arg-any = true

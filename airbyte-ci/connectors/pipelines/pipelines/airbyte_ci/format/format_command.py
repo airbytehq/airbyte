@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Any, Callable, List, Tuple
+from typing import Callable, List, Tuple
 
 import asyncclick as click
 import dagger
@@ -107,7 +107,7 @@ class FormatCommand(click.Command):
 
     @pass_pipeline_context
     @sentry_utils.with_command_context
-    async def invoke(self, ctx: click.Context, click_pipeline_context: ClickPipelineContext) -> Any:
+    async def invoke(self, ctx: click.Context, click_pipeline_context: ClickPipelineContext) -> CommandResult:
         """Run the command. If _exit_on_failure is True, exit the process with status code 1 if the command fails.
 
         Args:
