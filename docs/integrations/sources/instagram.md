@@ -6,13 +6,12 @@ This page contains the setup guide and reference information for the [Instagram]
 
 </HideInUI>
 
-</HideInUI>
-
 ## Prerequisites
 
 - [Meta for Developers account](https://developers.facebook.com)
 - [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your Facebook page
-- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte <!-- env:oss -->
+- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte
+<!-- env:oss -->
 - [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
 - [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
 <!-- /env:oss -->
