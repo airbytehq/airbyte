@@ -52,7 +52,7 @@ definitions:
     cursor_granularity: "PT0.000001S"
     lookback_window: "P31D"
     start_datetime:
-      datetime: "{{ config['start_date'] }}"
+      datetime: "{{ config.get('start_date', day_delta(-90, format='%Y-%m-%dT%H:%M:%SZ')) }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     end_datetime:
       datetime: "{{ today_utc() }}"

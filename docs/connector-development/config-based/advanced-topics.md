@@ -105,7 +105,7 @@ In this example, outer.inner.k2 will evaluate to "MyKey is MyValue"
 Strings can contain references to previously defined values.
 The parser will dereference these values to produce a complete object definition.
 
-References can be defined using a "#/{arg}" string.
+References can be defined using a `#/{arg}` string.
 
 ```yaml
 key: 1234
@@ -236,7 +236,7 @@ In addition to passing additional values through the $parameters argument, macro
 For example,
 `"{{ max(2, 3) }}" -> 3`
 
-The macros and variables available in all possible contexts are documented in the [YAML Reference](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L2154).
+The macros and variables available in all possible contexts are documented in the [YAML Reference](./understanding-the-yaml-file/reference.md#variables).
 
 Additional information on jinja templating can be found at [https://jinja.palletsprojects.com/en/3.1.x/templates/#](https://jinja.palletsprojects.com/en/3.1.x/templates/#)
 

@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase;
 import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsIgnoreCase;
 import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey;
+import static io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction.SOFT_RESET_SUFFIX;
 import static java.util.stream.Collectors.joining;
 
 import com.google.cloud.bigquery.Field;
@@ -219,15 +220,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
         "final_namespace", stream.id().finalNamespace(QUOTE),
-        "dataset_location", datasetLocation,
         "force_create_table", forceCreateTable,
         "final_table_id", stream.id().finalTableId(QUOTE, suffix),
         "column_declarations", columnDeclarations,
         "cluster_config", clusterConfig)).replace(
             """
-            CREATE SCHEMA IF NOT EXISTS ${project_id}.${final_namespace}
-            OPTIONS(location="${dataset_location}");
-
             CREATE ${force_create_table} TABLE ${project_id}.${final_table_id} (
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
@@ -362,21 +359,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String softReset(final StreamConfig stream) {
-    // If a previous sync failed to delete the soft reset temp table (unclear why this happens),
-    // AND this sync is trying to change the clustering config, then we need to manually drop the soft
-    // reset temp table.
-    // Even though we're using CREATE OR REPLACE TABLE, bigquery will still complain about the
-    // clustering config being changed.
-    // So we explicitly drop the soft reset temp table first.
-    final String dropTempTable = dropTableIfExists(stream, SOFT_RESET_SUFFIX);
-    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
-    final String clearLoadedAt = clearLoadedAt(stream.id());
-    // We just unset loaded_at on all raw records, so we need to process all of them (i.e. should not
-    // filter on extracted_at)
-    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, Optional.empty());
-    final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
-    return String.join("\n", dropTempTable, createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
+  public String prepareTablesForSoftReset(final StreamConfig stream) {
+    return String.join("\n", List.of(
+        // If a previous sync failed to delete the soft reset temp table (unclear why this happens),
+        // AND this sync is trying to change the clustering config, then we need to manually drop the soft
+        // reset temp table.
+        // Even though we're using CREATE OR REPLACE TABLE, bigquery will still complain about the
+        // clustering config being changed.
+        // So we explicitly drop the soft reset temp table first.
+        dropTableIfExists(stream, SOFT_RESET_SUFFIX),
+        createTable(stream, SOFT_RESET_SUFFIX, true),
+        clearLoadedAt(stream.id())));
   }
 
   public String dropTableIfExists(final StreamConfig stream, final String suffix) {
@@ -388,7 +381,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                      """);
   }
 
-  private String clearLoadedAt(final StreamId streamId) {
+  @Override
+  public String clearLoadedAt(final StreamId streamId) {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
         "raw_table_id", streamId.rawTableId(QUOTE)))
@@ -398,34 +392,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp) {
-    final var unsafeUpdate = updateTableQueryBuilder(stream, finalSuffix, false, minRawTimestamp);
-    final var safeUpdate = updateTableQueryBuilder(stream, finalSuffix, true, minRawTimestamp);
-    return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate)).replace(
-        """
-        BEGIN
-
-        ${unsafe_update}
-
-        EXCEPTION WHEN ERROR THEN
-        ROLLBACK TRANSACTION;
-
-        ${safe_update}
-
-        END;
-
-        """);
-  }
-
-  private String updateTableQueryBuilder(final StreamConfig stream,
-                                         final String finalSuffix,
-                                         final boolean forceSafeCasting,
-                                         final Optional<Instant> minRawTimestamp) {
+  public String updateTable(final StreamConfig stream,
+                            final String finalSuffix,
+                            final Optional<Instant> minRawTimestamp,
+                            final boolean useExpensiveSaferCasting) {
     final String handleNewRecords;
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      handleNewRecords = upsertNewRecords(stream, finalSuffix, forceSafeCasting, minRawTimestamp);
+      handleNewRecords = upsertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp);
     } else {
-      handleNewRecords = insertNewRecords(stream, finalSuffix, forceSafeCasting, minRawTimestamp);
+      handleNewRecords = insertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp);
     }
     final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
 
@@ -697,51 +672,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String dedupFinalTable(final StreamId id,
-                         final String finalSuffix,
-                         final List<ColumnId> primaryKey,
-                         final Optional<ColumnId> cursor) {
-    final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    final String cursorOrderClause = cursor
-        .map(cursorId -> cursorId.name(QUOTE) + " DESC NULLS LAST,")
-        .orElse("");
-
-    return new StringSubstitutor(Map.of(
-        "project_id", '`' + projectId + '`',
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix),
-        "pk_list", pkList,
-        "cursor_order_clause", cursorOrderClause)).replace(
-            """
-            DELETE FROM ${project_id}.${final_table_id}
-            WHERE
-              `_airbyte_raw_id` IN (
-                SELECT `_airbyte_raw_id` FROM (
-                  SELECT `_airbyte_raw_id`, row_number() OVER (
-                    PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} `_airbyte_extracted_at` DESC
-                  ) as row_number FROM ${project_id}.${final_table_id}
-                )
-                WHERE row_number != 1
-              )
-            ;""");
-  }
-
-  private String cdcDeletes(final StreamConfig stream, final String finalSuffix) {
-    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
-      return "";
-    }
-    if (!stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
-      return "";
-    }
-
-    return new StringSubstitutor(Map.of(
-        "project_id", '`' + projectId + '`',
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix))).replace(
-            """
-            DELETE FROM ${project_id}.${final_table_id}
-            WHERE _ab_cdc_deleted_at IS NOT NULL;""");
-  }
-
-  @VisibleForTesting
   String commitRawTable(final StreamId id, final Optional<Instant> minRawTimestamp) {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
@@ -775,17 +705,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
+  public String createSchema(final String schema) {
+    return new StringSubstitutor(Map.of("schema", StringUtils.wrap(schema, QUOTE),
+        "project_id", StringUtils.wrap(projectId, QUOTE),
+        "dataset_location", datasetLocation))
+            .replace("CREATE SCHEMA IF NOT EXISTS ${project_id}.${schema} OPTIONS(location=\"${dataset_location}\");");
+  }
+
+  @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
-        "raw_namespace", StringUtils.wrap(streamId.rawNamespace(), QUOTE),
-        "dataset_location", datasetLocation,
         "v2_raw_table", streamId.rawTableId(QUOTE),
         "v1_raw_table", wrapAndQuote(namespace, tableName))).replace(
             """
-            CREATE SCHEMA IF NOT EXISTS ${project_id}.${raw_namespace}
-            OPTIONS(location="${dataset_location}");
-
             CREATE OR REPLACE TABLE ${project_id}.${v2_raw_table} (
               _airbyte_raw_id STRING,
               _airbyte_data STRING,

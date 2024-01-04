@@ -74,6 +74,10 @@
       "type": ["object", "null"],
       "properties": {}
     },
+    "external_name": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
     "applicable_items": {
       "type": ["array", "null"],
       "items": {

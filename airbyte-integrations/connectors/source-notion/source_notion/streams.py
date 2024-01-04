@@ -79,13 +79,20 @@ class NotionStream(HttpStream, ABC):
             if message.startswith("The start_cursor provided is invalid: "):
                 return message
 
+    @staticmethod
+    def throttle_request_page_size(current_page_size):
+        """
+        Helper method to halve page_size when encountering a 504 Gateway Timeout error.
+        """
+        throttled_page_size = max(current_page_size // 2, 10)
+        return throttled_page_size
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
         Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
         For a 429 response, we can use the retry-header to determine how long to wait before retrying.
-        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 8.
+        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 5.
         Docs: https://developers.notion.com/reference/errors#rate-limiting
-
         """
         retry_after = response.headers.get("retry-after", "5")
         if response.status_code == 429:
@@ -95,6 +102,17 @@ class NotionStream(HttpStream, ABC):
         return super().backoff_time(response)
 
     def should_retry(self, response: requests.Response) -> bool:
+        # In the case of a 504 Gateway Timeout error, we can lower the page_size when retrying to reduce the load on the server.
+        if response.status_code == 504:
+            self.page_size = self.throttle_request_page_size(self.page_size)
+            self.logger.info(f"Encountered a server timeout. Reducing request page size to {self.page_size} and retrying.")
+
+        # If page_size has been reduced after encountering a 504 Gateway Timeout error,
+        # we increase it back to the default of 100 once a success response is achieved, for the following API calls.
+        if response.status_code == 200 and self.page_size != 100:
+            self.page_size = 100
+            self.logger.info(f"Successfully reconnected after a server timeout. Increasing request page size to {self.page_size}.")
+
         return response.status_code == 400 or super().should_retry(response)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:

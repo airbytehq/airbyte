@@ -5,8 +5,11 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "Order ID": { "type": ["null", "string"] },
-    "Order date": { "type": ["null", "string"] },
-    "Return request date": { "type": ["null", "string"] },
+    "Order date": { "type": ["null", "string"], "format": "date-time" },
+    "Return request date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "Return request status": { "type": ["null", "string"] },
     "Amazon RMA ID": { "type": ["null", "string"] },
     "Merchant RMA ID": { "type": ["null", "string"] },
@@ -27,14 +30,21 @@
     "Return type": { "type": ["null", "string"] },
     "Resolution": { "type": ["null", "string"] },
     "Invoice number": { "type": ["null", "string"] },
-    "Return delivery date": { "type": ["null", "string"] },
+    "Return delivery date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "Order Amount": { "type": ["null", "string"] },
     "Order quantity": { "type": ["null", "string"] },
     "SafeT Action reason": { "type": ["null", "string"] },
     "SafeT claim id": { "type": ["null", "string"] },
     "SafeT claim state": { "type": ["null", "string"] },
-    "SafeT claim creation time": { "type": ["null", "string"] },
+    "SafeT claim creation time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "SafeT claim reimbursement amount": { "type": ["null", "string"] },
-    "Refunded Amount": { "type": ["null", "string"] }
+    "Refunded Amount": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

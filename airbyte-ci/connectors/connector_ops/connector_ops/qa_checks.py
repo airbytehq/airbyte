@@ -170,7 +170,15 @@ IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {
     ".hypothesis",
 }
 
-IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java", "*.jar", "*.pyc", "*.gz", "*.svg"}
+IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {
+    "*Test.java",
+    "*.jar",
+    "*.pyc",
+    "*.gz",
+    "*.svg",
+    "expected_records.jsonl",
+    "expected_records.json",
+}
 IGNORED_URLS_PREFIX = {
     "http://json-schema.org",
     "http://localhost",
@@ -204,11 +212,15 @@ def check_connector_https_url_only(connector: Connector) -> bool:
         bool: Wether the connector code contains only https url.
     """
     files_with_http_url = set()
+    ignore_comment = "# ignore-https-check"  # Define the ignore comment pattern
+
     for filename, line in read_all_files_in_directory(
         connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS, IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS
     ):
         line = line.lower()
         if is_comment(line, filename):
+            continue
+        if ignore_comment in line:
             continue
         for prefix in IGNORED_URLS_PREFIX:
             line = line.replace(prefix, "")

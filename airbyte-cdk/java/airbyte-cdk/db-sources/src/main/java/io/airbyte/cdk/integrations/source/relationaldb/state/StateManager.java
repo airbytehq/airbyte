@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * @param <T> The type of the state maintained by the manager.
  * @param <S> The type of the stream(s) stored within the state maintained by the manager.
  */
-public interface StateManager<T, S> {
+public interface StateManager {
 
   Logger LOGGER = LoggerFactory.getLogger(StateManager.class);
 

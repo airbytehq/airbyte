@@ -46,7 +46,9 @@ public class StateManagerFactory {
       switch (supportedStateType) {
         case LEGACY:
           LOGGER.info("Legacy state manager selected to manage state object with type {}.", airbyteStateMessage.getType());
-          return new LegacyStateManager(Jsons.object(airbyteStateMessage.getData(), DbState.class), catalog);
+          @SuppressWarnings("deprecation")
+          StateManager retVal = new LegacyStateManager(Jsons.object(airbyteStateMessage.getData(), DbState.class), catalog);
+          return retVal;
         case GLOBAL:
           LOGGER.info("Global state manager selected to manage state object with type {}.", airbyteStateMessage.getType());
           return new GlobalStateManager(generateGlobalState(airbyteStateMessage), catalog);

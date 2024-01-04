@@ -628,3 +628,8 @@ def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, pa
     else:
         prepared_request = stream._create_prepared_request(path=path, params=params)
         assert prepared_request.url == expected_url
+
+
+def test_connection_pool():
+    stream = StubBasicReadHttpStream(authenticator=HttpTokenAuthenticator("test-token"))
+    assert stream._session.adapters["https://"]._pool_connections == 20

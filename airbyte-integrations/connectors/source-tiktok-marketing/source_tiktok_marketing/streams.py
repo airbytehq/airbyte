@@ -416,17 +416,17 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         """Additional data filtering"""
-        state = self.select_cursor_field_value(stream_state) or self._start_time
+        state_cursor_value = self.select_cursor_field_value(stream_state) or self._start_time
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
             record = self.unnest_cursor_and_pk(record)
-            updated = self.select_cursor_field_value(record, stream_slice)
-            if updated is None:
+            updated_cursor_value = self.select_cursor_field_value(record, stream_slice)
+            if updated_cursor_value is None:
                 yield record
-            elif updated <= state:
+            elif updated_cursor_value < state_cursor_value:
                 continue
             else:
-                if not self.max_cursor_date or self.max_cursor_date < updated:
-                    self.max_cursor_date = updated
+                if not self.max_cursor_date or self.max_cursor_date < updated_cursor_value:
+                    self.max_cursor_date = updated_cursor_value
                 yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:

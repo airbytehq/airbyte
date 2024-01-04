@@ -27,7 +27,6 @@ import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.db.mongodb.TreeNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.CommonField;

@@ -256,7 +256,13 @@
     "table_row": {
       "type": "object",
       "properties": {
-        "cells": { "type": "array", "items": { "$ref": "rich_text.json" } }
+        "cells": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "array"],
+            "items": { "$ref": "rich_text.json" }
+          }
+        }
       }
     },
     "template": {
