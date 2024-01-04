@@ -4,7 +4,7 @@
 
 from pathlib import Path
 
-import yaml  # type: ignore
+import yaml
 from dagger import Directory
 
 # Helpers

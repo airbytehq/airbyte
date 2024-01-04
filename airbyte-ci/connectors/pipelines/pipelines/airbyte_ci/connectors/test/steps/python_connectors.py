@@ -5,8 +5,10 @@
 """This module groups steps made to run tests for a specific Python connector given a test context."""
 
 from abc import ABC, abstractmethod
-from typing import List, Sequence, Tuple
+from dataclasses import dataclass
+from typing import Callable, Dict, Iterable, List, Tuple, Union
 
+import asyncer
 import pipelines.dagger.actions.python.common
 import pipelines.dagger.actions.system.docker
 from dagger import Container, File
@@ -16,14 +18,12 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
-from pipelines.helpers.run_steps import STEP_TREE, StepToRun
-from pipelines.models.steps import Step, StepResult
+from pipelines.helpers.run_steps import StepToRun
+from pipelines.models.steps import Step, StepResult, StepStatus
 
 
 class PytestStep(Step, ABC):
     """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
-
-    context: ConnectorContext
 
     PYTEST_INI_FILE_NAME = "pytest.ini"
     PYPROJECT_FILE_NAME = "pyproject.toml"
@@ -38,7 +38,7 @@ class PytestStep(Step, ABC):
         raise NotImplementedError("test_directory_name must be implemented in the child class.")
 
     @property
-    def extra_dependencies_names(self) -> Sequence[str]:
+    def extra_dependencies_names(self) -> Iterable[str]:
         if self.context.connector.is_using_poetry:
             return ("dev",)
         return ("dev", "tests")
@@ -130,15 +130,15 @@ class PytestStep(Step, ABC):
         built_connector_container: Container,
         test_config_file_name: str,
         test_config_file: File,
-        extra_dependencies_names: Sequence[str],
-    ) -> Container:
+        extra_dependencies_names: Iterable[str],
+    ) -> Callable:
         """Install the connector with the extra dependencies in /test_environment.
 
         Args:
-            extra_dependencies_names (List[str]): Extra dependencies to install.
+            extra_dependencies_names (Iterable[str]): Extra dependencies to install.
 
         Returns:
-            Container: The container with the test environment installed.
+            Callable: The decorator to use with the with_ method of a container.
         """
         secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets")
 
@@ -196,7 +196,7 @@ class IntegrationTests(PytestStep):
     bind_to_docker_host = True
 
 
-def get_test_steps(context: ConnectorContext) -> STEP_TREE:
+def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
     """
     Get all the tests steps for a Python connector.
     """

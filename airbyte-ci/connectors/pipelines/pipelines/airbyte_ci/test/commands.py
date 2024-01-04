@@ -46,7 +46,7 @@ async def run_poetry_command(container: dagger.Container, command: str) -> Tuple
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def test(pipeline_context: ClickPipelineContext) -> None:
+async def test(pipeline_context: ClickPipelineContext):
     """Runs the tests for the given airbyte-ci package
 
     Args:
