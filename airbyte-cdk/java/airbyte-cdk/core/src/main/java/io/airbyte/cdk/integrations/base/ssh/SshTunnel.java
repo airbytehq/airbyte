@@ -49,6 +49,14 @@ public class SshTunnel implements AutoCloseable {
   public static final String SSH_TIMEOUT_DISPLAY_MESSAGE =
       "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again.";
 
+  public static final String CONNECTION_OPTIONS_KEY = "ssh_connection_options";
+  public static final String SESSION_HEARTBEAT_INTERVAL_KEY = "session_heartbeat_interval";
+  public static final long SESSION_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS = 1000;
+  public static final String GLOBAL_HEARTBEAT_INTERVAL_KEY = "global_heartbeat_interval";
+  public static final long GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS = 2000;
+  public static final String IDLE_TIMEOUT_KEY = "idle_timeout";
+  public static final long IDLE_TIMEOUT_DEFAULT_INFINITE = 0;
+
   public enum TunnelMethod {
     NO_TUNNEL,
     SSH_PASSWORD_AUTH,
@@ -263,17 +271,17 @@ public class SshTunnel implements AutoCloseable {
   @NotNull
   private static Optional<SshConnectionOptions> getSshConnectionOptions(JsonNode config) {
     // piggybacking on JsonNode config to make it configurable at connector level.
-    Optional<JsonNode> connectionOptionConfig = Jsons.getOptional(config, "ssh_connection_options");
+    Optional<JsonNode> connectionOptionConfig = Jsons.getOptional(config, CONNECTION_OPTIONS_KEY);
     final Optional<SshConnectionOptions> connectionOptions;
     if (connectionOptionConfig.isPresent()) {
       JsonNode connectionOptionsNode = connectionOptionConfig.get();
-      Duration sessionHeartbeatInterval = Jsons.getOptional(connectionOptionsNode, "session_heartbeat_interval")
+      Duration sessionHeartbeatInterval = Jsons.getOptional(connectionOptionsNode, SESSION_HEARTBEAT_INTERVAL_KEY)
           .map(interval -> Duration.ofMillis(interval.asLong()))
           .orElse(Duration.ofSeconds(1));
-      Duration globalHeartbeatInterval = Jsons.getOptional(connectionOptionsNode, "global_heartbeat_interval")
+      Duration globalHeartbeatInterval = Jsons.getOptional(connectionOptionsNode, GLOBAL_HEARTBEAT_INTERVAL_KEY)
           .map(interval -> Duration.ofMillis(interval.asLong()))
           .orElse(Duration.ofSeconds(2));
-      Duration idleTimeout = Jsons.getOptional(connectionOptionsNode, "idle_timeout")
+      Duration idleTimeout = Jsons.getOptional(connectionOptionsNode, IDLE_TIMEOUT_KEY)
           .map(interval -> Duration.ofMillis(interval.asLong()))
           .orElse(Duration.ZERO);
       connectionOptions = Optional.of(
@@ -402,6 +410,7 @@ public class SshTunnel implements AutoCloseable {
   }
 
   private SshClient createClient(Duration sessionHeartbeatInterval, Duration globalHeartbeatInterval, Duration idleTimeout) {
+    LOGGER.info("Creating SSH client with Heartbeat and Keepalive enabled");
     final SshClient client = createClient();
     // Session level heartbeat using SSH_MSG_IGNORE every second.
     client.setSessionHeartbeat(SessionHeartbeatController.HeartbeatType.IGNORE, sessionHeartbeatInterval);
