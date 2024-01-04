@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MSSQL Source Spec",
     "type": "object",
-    "required": ["host", "port", "database", "username"],
+    "required": ["host", "port", "database", "username", "password"],
     "properties": {
       "host": {
         "description": "The hostname of the database.",
@@ -90,7 +90,7 @@
           {
             "title": "Encrypted (verify certificate)",
             "description": "Verify and use the certificate provided by the server.",
-            "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
+            "required": ["ssl_method"],
             "properties": {
               "ssl_method": {
                 "type": "string",
@@ -100,7 +100,15 @@
                 "title": "Host Name In Certificate",
                 "type": "string",
                 "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
-                "order": 7
+                "order": 0
+              },
+              "certificate": {
+                "title": "Certificate",
+                "type": "string",
+                "description": "certificate of the server, or of the CA that signed the server certificate",
+                "order": 1,
+                "airbyte_secret": true,
+                "multiline": true
               }
             }
           }
