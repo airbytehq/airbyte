@@ -334,7 +334,7 @@ class UserInsights(DatetimeTransformerMixin, InstagramIncrementalStream):
 
 class Media(DatetimeTransformerMixin, InstagramStream):
     """Children objects can only be of the media_type == "CAROUSEL_ALBUM".
-    And children object does not support INVALID_CHILDREN_FIELDS fields,
+    And children objects do not support INVALID_CHILDREN_FIELDS fields,
     so they are excluded when trying to get child objects to avoid the error
     """
 
@@ -465,7 +465,7 @@ class Stories(DatetimeTransformerMixin, InstagramStream):
 class StoryInsights(Stories):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights"""
 
-    metrics = ["exits", "impressions", "reach", "replies", "taps_forward", "taps_back"]
+    metrics = ["impressions", "reach", "replies"]
 
     def read_records(
         self,
