@@ -18,6 +18,10 @@ types-requests = "^2.31.0.10"
 types-jsonschema = "^4.20.0.0"
 pytest-mypy = "^0.10.3"
 
+
+[tool.poetry.group.docs.dependencies]
+pdoc = "^14.3.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -27,3 +31,6 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 addopts = "--mypy"
+
+[tool.poetry.scripts]
+build-docs = "build-docs.sh"

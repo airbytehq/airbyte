@@ -56,7 +56,7 @@ const config = {
       },
     ],
     () => ({
-      name: "Yaml loader",
+      name: "Yaml and html loader",
       configureWebpack() {
         return {
           module: {
@@ -64,6 +64,10 @@ const config = {
               {
                 test: /\.ya?ml$/,
                 use: "yaml-loader",
+              },
+              {
+                test: /\.html$/i,
+                loader: "html-loader",
               },
             ],
           },
