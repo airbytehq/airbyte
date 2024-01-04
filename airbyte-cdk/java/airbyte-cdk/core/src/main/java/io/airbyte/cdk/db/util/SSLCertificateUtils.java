@@ -97,7 +97,7 @@ public class SSLCertificateUtils {
   }
 
   public static URI keyStoreFromCertificate(final String certString,
-      final String keyStorePassword)
+                                            final String keyStorePassword)
       throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
     return keyStoreFromCertificate(fromPEMString(certString), keyStorePassword, null, null);
   }

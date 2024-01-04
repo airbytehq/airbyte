@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,7 +14,6 @@ import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.CertificateKey;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import java.net.InetAddress;
-import java.sql.SQLTransientConnectionException;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,7 +65,7 @@ public class MssqlSslSourceTest {
     try {
       AirbyteCatalog catalog = new MssqlSource().discover(config);
     } catch (ConnectionErrorException e) {
-      if(!e.getCause().getCause().getMessage().contains("PKIX path validation") &&
+      if (!e.getCause().getCause().getMessage().contains("PKIX path validation") &&
           !e.getCause().getCause().getMessage().contains("PKIX path building failed")) {
         throw e;
       }
