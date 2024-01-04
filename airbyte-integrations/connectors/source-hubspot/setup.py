@@ -27,4 +27,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        "console_scripts": [
+            "source-hubspot=source_hubspot.run:run",
+        ],
+    },
 )
