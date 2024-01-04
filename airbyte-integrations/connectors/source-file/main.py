@@ -3,11 +3,7 @@
 #
 
 
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_file import SourceFile
+from source_file.run import run
 
 if __name__ == "__main__":
-    source = SourceFile()
-    launch(source, sys.argv[1:])
+    run()

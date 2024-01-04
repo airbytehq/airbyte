@@ -37,4 +37,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        "console_scripts": [
+            "source-file=source_file.run:run",
+        ],
+    },
 )
