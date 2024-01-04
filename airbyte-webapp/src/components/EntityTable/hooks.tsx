@@ -6,11 +6,13 @@ import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnec
 
 import { ConnectionStatus, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 
-const useSyncActions = (): {
+const useSyncActions = (
+  rowId: string
+): {
   changeStatus: (connection: WebBackendConnectionRead) => Promise<void>;
   syncManualConnection: (connection: WebBackendConnectionRead) => Promise<void>;
 } => {
-  const { mutateAsync: updateConnection } = useUpdateConnection();
+  const { mutateAsync: updateConnection } = useUpdateConnection(rowId);
   const { mutateAsync: syncConnection } = useSyncConnection();
   const analyticsService = useAnalyticsService();
 

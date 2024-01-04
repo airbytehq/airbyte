@@ -6,10 +6,11 @@ import { CrossIcon } from "components/icons/CrossIcon";
 interface IProps {
   message?: string;
   formattedMessage?: React.ReactNode;
-  onClose: () => void;
+  onClose?: () => void;
+  bgColor?: any;
 }
 
-export const AlertContainer = styled.div`
+export const AlertContainer = styled.div<{ bgColor: any }>`
   width: 100%;
   max-width: 900px;
   height: 52px;
@@ -19,7 +20,7 @@ export const AlertContainer = styled.div`
   left: 50%;
   transform: translateX(-50%);
   z-index: 99;
-  background-color: #fef2f2;
+  background-color: ${({ bgColor }) => bgColor || "#fef2f2"};
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -41,14 +42,16 @@ export const CrossButton = styled.button`
   background-color: transparent;
 `;
 
-const Alert: React.FC<IProps> = ({ message, onClose, formattedMessage }) => {
+const Alert: React.FC<IProps> = ({ message, onClose, formattedMessage, bgColor }) => {
   if (message || formattedMessage) {
     return (
-      <AlertContainer>
+      <AlertContainer bgColor={bgColor}>
         <Message>{formattedMessage ? formattedMessage : message}</Message>
-        <CrossButton onClick={onClose}>
-          <CrossIcon color="#F87171" />
-        </CrossButton>
+        {onClose && (
+          <CrossButton onClick={onClose}>
+            <CrossIcon color="#F87171" />
+          </CrossButton>
+        )}
       </AlertContainer>
     );
   }

@@ -30,8 +30,8 @@ export class WebBackendConnectionService extends AirbyteRequestService {
   public getConnectionsStatus(payload: ConnectionData) {
     return webBackendListFilteredConnectionsStatus(payload, this.requestOptions);
   }
-  public update(payload: WebBackendConnectionUpdate) {
-    return webBackendUpdateConnection(payload, this.requestOptions);
+  public update(payload: WebBackendConnectionUpdate, connectionId: string) {
+    return webBackendUpdateConnection(payload, connectionId, this.requestOptions);
   }
 
   public create(payload: WebBackendConnectionCreate) {
