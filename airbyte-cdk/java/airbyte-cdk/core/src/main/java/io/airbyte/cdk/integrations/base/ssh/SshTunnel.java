@@ -263,7 +263,7 @@ public class SshTunnel implements AutoCloseable {
   @NotNull
   private static Optional<SshConnectionOptions> getSshConnectionOptions(JsonNode config) {
     // piggybacking on JsonNode config to make it configurable at connector level.
-    Optional<JsonNode> connectionOptionConfig = Jsons.getOptional(config, "connection_options");
+    Optional<JsonNode> connectionOptionConfig = Jsons.getOptional(config, "ssh_connection_options");
     final Optional<SshConnectionOptions> connectionOptions;
     if (connectionOptionConfig.isPresent()) {
       JsonNode connectionOptionsNode = connectionOptionConfig.get();
