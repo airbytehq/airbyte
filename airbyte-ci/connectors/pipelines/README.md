@@ -521,6 +521,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.14.2  | [#33954](https://github.com/airbytehq/airbyte/pull/33954)  | Revert mypy changes
 | 2.14.1  | [#33956](https://github.com/airbytehq/airbyte/pull/33956)  | Exclude pnpm lock files from auto-formatting
 | 2.14.0  | [#33941](https://github.com/airbytehq/airbyte/pull/33941)  | Enable in-connector normalization in destination-postgres                                                 |
 | 2.13.1  | [#33920](https://github.com/airbytehq/airbyte/pull/33920)  | Report different sentry environments                                                                      |

@@ -8,7 +8,7 @@ from pipelines.helpers.run_steps import RunStepOptions, StepToRun, run_steps
 from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult, StepStatus
 
-test_context = PipelineContext(pipeline_name="test", is_local=True, git_branch="test", git_revision="test", report_output_prefix="test")
+test_context = PipelineContext(pipeline_name="test", is_local=True, git_branch="test", git_revision="test")
 
 
 class TestStep(Step):
