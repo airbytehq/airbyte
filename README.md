@@ -62,7 +62,7 @@ Airbyte takes security issues very seriously. **Please do not file GitHub issues
 
 ### License
 
-See the [LICENSE](docs/project-overview/licenses/) file for licensing information, and our [FAQ](docs/project-overview/licenses/license-faq.md) for any questions you may have on that topic.
+See the [LICENSE](docs/project-overview/licenses/) file for licensing information, and our [FAQ](docs/project-overview/licenses/license-faq.md) for any questions you may have on that topic. yes baby
 
 ### Thank You
 
