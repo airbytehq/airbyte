@@ -22,7 +22,6 @@ def context(dagger_client):
         is_local=True,
         git_branch="test",
         git_revision="test",
-        report_output_prefix="test",
     )
     context.dagger_client = dagger_client
     return context

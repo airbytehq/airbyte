@@ -4,8 +4,6 @@
 
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
-from __future__ import annotations
-
 import logging
 import multiprocessing
 import os
@@ -14,7 +12,7 @@ from pathlib import Path
 from typing import Optional
 
 import asyncclick as click
-import docker  # type: ignore
+import docker
 import git
 from github import PullRequest
 from pipelines import main_logger
@@ -63,15 +61,12 @@ def get_airbyte_repo() -> git.Repo:
 def get_airbyte_repo_path_with_fallback() -> Path:
     """Get the path to the airbyte repo."""
     try:
-        repo_path = get_airbyte_repo().working_tree_dir
-        if repo_path is not None:
-            return Path(str(get_airbyte_repo().working_tree_dir))
+        return get_airbyte_repo().working_tree_dir
     except git.exc.InvalidGitRepositoryError:
-        pass
-    logging.warning("Could not find the airbyte repo, falling back to the current working directory.")
-    path = Path.cwd()
-    logging.warning(f"Using {path} as the airbyte repo path.")
-    return path
+        logging.warning("Could not find the airbyte repo, falling back to the current working directory.")
+        path = Path.cwd()
+        logging.warning(f"Using {path} as the airbyte repo path.")
+        return path
 
 
 def set_working_directory_to_root() -> None:
@@ -81,7 +76,7 @@ def set_working_directory_to_root() -> None:
     os.chdir(working_dir)
 
 
-def log_git_info(ctx: click.Context) -> None:
+def log_git_info(ctx: click.Context):
     main_logger.info("Running airbyte-ci in CI mode.")
     main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
     main_logger.info(f"CI Report Bucket Name: {ctx.obj['ci_report_bucket_name']}")
@@ -101,7 +96,7 @@ def _get_gha_workflow_run_url(ctx: click.Context) -> Optional[str]:
     return f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}"
 
 
-def _get_pull_request(ctx: click.Context) -> Optional[PullRequest.PullRequest]:
+def _get_pull_request(ctx: click.Context) -> PullRequest or None:
     pull_request_number = ctx.obj["pull_request_number"]
     ci_github_access_token = ctx.obj["ci_github_access_token"]
 
@@ -112,7 +107,7 @@ def _get_pull_request(ctx: click.Context) -> Optional[PullRequest.PullRequest]:
     return github.get_pull_request(pull_request_number, ci_github_access_token)
 
 
-def check_local_docker_configuration() -> None:
+def check_local_docker_configuration():
     try:
         docker_client = docker.from_env()
     except Exception as e:
@@ -141,7 +136,7 @@ def is_dagger_run_enabled_by_default() -> bool:
     return False
 
 
-def check_dagger_wrap() -> bool:
+def check_dagger_wrap():
     """
     Check if the command is already wrapped by dagger run.
     This is useful to avoid infinite recursion when calling dagger run from dagger run.
@@ -188,7 +183,7 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
     type=str,
 )
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
-@click.option("--ci-context", default=CIContext.MANUAL, envvar="CI_CONTEXT", type=click.Choice([c for c in CIContext]))
+@click.option("--ci-context", default=CIContext.MANUAL, envvar="CI_CONTEXT", type=click.Choice(CIContext))
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
 @click.option("--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str)
@@ -213,7 +208,7 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click_append_to_context_object("pull_request", _get_pull_request)
 @click.pass_context
 @click_ignore_unused_kwargs
-async def airbyte_ci(ctx: click.Context) -> None:  # noqa D103
+async def airbyte_ci(ctx: click.Context):  # noqa D103
     # Check that the command being run is not upgrade
     is_update_command = ctx.invoked_subcommand == "update"
     if ctx.obj["enable_update_check"] and ctx.obj["is_local"] and not is_update_command:

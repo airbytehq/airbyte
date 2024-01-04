@@ -4,25 +4,19 @@
 # Meaning, no external dependencies are allowed as we don't want users to have to run anything
 # other than this script to install the tool.
 
-from __future__ import annotations
-
 import os
 import shutil
 import ssl
 import sys
 import tempfile
 import urllib.request
-from typing import TYPE_CHECKING
 
 # !IMPORTANT! This constant is inline here instead of being imported from pipelines/consts.py
 # because we don't want to introduce any dependencies on other files in the repository.
 RELEASE_URL = os.getenv("RELEASE_URL", "https://connectors.airbyte.com/files/airbyte-ci/releases")
 
-if TYPE_CHECKING:
-    from typing import Optional
 
-
-def _get_custom_certificate_path() -> Optional[str]:
+def _get_custom_certificate_path():
     """
     Returns the path to the custom certificate file if certifi is installed, otherwise None.
 
@@ -47,10 +41,10 @@ def _get_custom_certificate_path() -> Optional[str]:
 
         return certifi.where()
     except ImportError:
-        return None
+        return
 
 
-def get_ssl_context() -> ssl.SSLContext:
+def get_ssl_context():
     """
     Returns an ssl.SSLContext object with the custom certificate file if certifi is installed, otherwise
     returns the default ssl.SSLContext object.
@@ -62,22 +56,22 @@ def get_ssl_context() -> ssl.SSLContext:
     return ssl.create_default_context(cafile=certifi_path)
 
 
-def get_airbyte_os_name() -> Optional[str]:
+def get_airbyte_os_name():
     """
     Returns 'ubuntu' if the system is Linux or 'macos' if the system is macOS.
     """
     OS = os.uname().sysname
     if OS == "Linux":
-        print("Linux based system detected.")
+        print(f"Linux based system detected.")
         return "ubuntu"
     elif OS == "Darwin":
-        print("macOS based system detected.")
+        print(f"macOS based system detected.")
         return "macos"
     else:
         return None
 
 
-def main(version: str = "latest") -> None:
+def main(version="latest"):
     # Determine the operating system
     os_name = get_airbyte_os_name()
     if os_name is None:
