@@ -8,7 +8,10 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.testutils.TestDatabase;
 import io.debezium.connector.sqlserver.Lsn;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,7 +44,8 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   public static enum ContainerModifier {
 
     NETWORK("withNetwork"),
-    AGENT("withAgent");
+    AGENT("withAgent"),
+    WITH_SSL_CERTIFICATES("withSslCertificates");
 
     private final String methodName;
 
@@ -201,6 +205,44 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     return SQLDialect.DEFAULT;
   }
 
+  public static enum CertificateKey {
+
+    CA(true),
+    DUMMY_CA(false),
+    SERVER(true),
+    DUMMY_SERVER(false),
+    SERVER_DUMMY_CA(false),
+    ;
+
+    public final boolean isValid;
+
+    CertificateKey(boolean isValid) {
+      this.isValid = isValid;
+    }
+
+  }
+
+  private Map<CertificateKey, String> cachedCerts;
+
+  public synchronized String getCertificate(CertificateKey certificateKey) {
+    if (cachedCerts == null) {
+      Map<CertificateKey, String> cachedCerts = new HashMap<>();
+      try {
+        for (CertificateKey key : CertificateKey.values()) {
+          String command = "cat /tmp/certs/" + key.name().toLowerCase() + ".crt";
+          String certificate = getContainer().execInContainer("bash", "-c", command).getStdout().trim();
+          cachedCerts.put(key, certificate);
+        }
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+      this.cachedCerts = cachedCerts;
+    }
+    return cachedCerts.get(certificateKey);
+  }
+
   @Override
   public MsSQLConfigBuilder configBuilder() {
     return new MsSQLConfigBuilder(this);
@@ -209,7 +251,10 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   static public class MsSQLConfigBuilder extends ConfigBuilder<MsSQLTestDatabase, MsSQLConfigBuilder> {
 
     protected MsSQLConfigBuilder(MsSQLTestDatabase testDatabase) {
+
       super(testDatabase);
+      with(JdbcUtils.JDBC_URL_PARAMS_KEY, "loginTimeout=2");
+
     }
 
     public MsSQLConfigBuilder withCdcReplication() {
