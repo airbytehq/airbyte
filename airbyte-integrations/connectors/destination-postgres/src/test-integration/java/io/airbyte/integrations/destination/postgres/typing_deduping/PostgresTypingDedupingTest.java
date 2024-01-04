@@ -1,6 +1,7 @@
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
@@ -26,13 +27,14 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
 
   @Override
   protected JsonNode getBaseConfig() {
-    return testContainer.configBuilder()
+    final ObjectNode config = (ObjectNode) testContainer.configBuilder()
         .with("schema", "public")
         .withDatabase()
         .withResolvedHostAndPort()
         .withCredentials()
         .withoutSsl()
         .build();
+    return config.put("use_1s1t_format", true);
   }
 
   @Override
@@ -42,7 +44,7 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-postgres";
+    return "airbyte/destination-postgres:dev";
   }
 
   @Override

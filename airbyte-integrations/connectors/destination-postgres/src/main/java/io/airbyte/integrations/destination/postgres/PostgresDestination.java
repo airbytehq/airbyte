@@ -20,6 +20,7 @@ import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -68,7 +69,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     if (encodedDatabase != null) {
       try {
         encodedDatabase = URLEncoder.encode(encodedDatabase, "UTF-8");
-      } catch (UnsupportedEncodingException e) {
+      } catch (final UnsupportedEncodingException e) {
         // Should never happen
         e.printStackTrace();
       }
@@ -96,7 +97,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   protected JdbcSqlGenerator getSqlGenerator() {
-    throw new UnsupportedOperationException("PostgresDestination#getSqlGenerator is not implemented");
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
   }
 
   public static void main(final String[] args) throws Exception {
