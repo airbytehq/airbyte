@@ -3,9 +3,11 @@
 #
 from __future__ import annotations
 
+import io
 import logging
 import sys
-from typing import Callable, List, Tuple
+import tempfile
+from typing import Any, Callable, List, Tuple
 
 import asyncclick as click
 import dagger
@@ -34,8 +36,10 @@ class FormatCommand(click.Command):
         get_format_container_fn: Callable,
         format_commands: List[str],
         export_formatted_code: bool,
+        *args,
         enable_logging: bool = True,
         exit_on_failure: bool = True,
+        **kwargs,
     ) -> None:
         """Initialize a FormatCommand.
 
@@ -48,7 +52,7 @@ class FormatCommand(click.Command):
             enable_logging (bool, optional): Make the command log its output. Defaults to True.
             exit_on_failure (bool, optional): Exit the process with status code 1 if the command fails. Defaults to True.
         """
-        super().__init__(formatter.value)
+        super().__init__(formatter.value, *args, **kwargs)
         self.formatter = formatter
         self.file_filter = file_filter
         self.get_format_container_fn = get_format_container_fn
@@ -72,7 +76,7 @@ class FormatCommand(click.Command):
             message = f"{message}."
         return message
 
-    def get_dir_to_format(self, dagger_client: dagger.Client) -> dagger.Directory:
+    def get_dir_to_format(self, dagger_client) -> dagger.Directory:
         """Get a directory with all the source code to format according to the file_filter.
         We mount the files to format in a git container and remove all gitignored files.
         It ensures we're not formatting files that are gitignored.
@@ -107,7 +111,7 @@ class FormatCommand(click.Command):
 
     @pass_pipeline_context
     @sentry_utils.with_command_context
-    async def invoke(self, ctx: click.Context, click_pipeline_context: ClickPipelineContext) -> CommandResult:
+    async def invoke(self, ctx: click.Context, click_pipeline_context: ClickPipelineContext) -> Any:
         """Run the command. If _exit_on_failure is True, exit the process with status code 1 if the command fails.
 
         Args:
