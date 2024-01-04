@@ -281,15 +281,21 @@ kind: Ingress
 metadata:
   name: enterprise-demo
   annotations:
+    # Specifies that the Ingress should use an AWS ALB.
     kubernetes.io/ingress.class: "alb"
+    # Redirects HTTP traffic to HTTPS.
     ingress.kubernetes.io/ssl-redirect: "true"
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    # Creates an internal ALB, which is only accessible within your VPC or through a VPN.
+    alb.ingress.kubernetes.io/scheme: internal
+    # Specifies the ARN of the SSL certificate managed by AWS ACM, essential for HTTPS.
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-x:xxxxxxxxx:certificate/xxxxxxxxx-xxxxx-xxxx-xxxx-xxxxxxxxxxx
+    # Sets the idle timeout value for the ALB.
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=30
+    # [Optional] Custom SSL policy for security settings and protocols. If not provided, a default will be used.
+    alb.ingress.kubernetes.io/ssl-policy:
+    # [Optional] Specifies the VPC subnets and security groups for the ALB
     alb.ingress.kubernetes.io/subnets: 'subnet-12345, subnet-67890'
     alb.ingress.kubernetes.io/security-groups: 'sg-12345678'
-    alb.ingress.kubernetes.io/healthcheck-path: /healthz
-    alb.ingress.kubernetes.io/success-codes: '200-499'
 spec:
   rules:
   - host: enterprise-demo.airbyte.com
