@@ -8,10 +8,12 @@ import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.countOfTypingDedupingThreads;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 
+import com.google.common.collect.Streams;
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -20,6 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
@@ -53,9 +56,21 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
+  private void prepareSchemas(ParsedCatalog parsedCatalog) throws Exception {
+    var rawSchema = parsedCatalog.streams().stream().map(stream -> stream.id().rawNamespace());
+    var finalSchema = parsedCatalog.streams().stream().map(stream -> stream.id().finalNamespace());
+    var createAllSchemasSql = Streams.concat(rawSchema, finalSchema)
+        .filter(Objects::nonNull)
+        .distinct()
+        .map(sqlGenerator::createSchema)
+        .collect(Collectors.joining("\n"));
+    destinationHandler.execute(createAllSchemasSql);
+  }
+
   @Override
   public void prepareTables() throws Exception {
-    log.info("executing NoOp prepareTables with V1V2 migrations");
+    log.info("ensuring schemas exist for prepareTables with V1V2 migrations");
+    prepareSchemas(parsedCatalog);
     final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
     for (final StreamConfig stream : parsedCatalog.streams()) {
       prepareTablesTasks.add(CompletableFuture.supplyAsync(() -> {
