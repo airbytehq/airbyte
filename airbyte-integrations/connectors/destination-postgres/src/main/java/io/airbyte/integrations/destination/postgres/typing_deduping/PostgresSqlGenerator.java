@@ -65,7 +65,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         .entrySet()
         .stream()
         .map(column -> castedField(
-            extractColumn(column.getKey()),
+            extractColumnAsText(column.getKey()),
             column.getValue(),
             column.getKey().name(),
             useExpensiveSaferCasting))
@@ -102,7 +102,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   @Override
   protected Condition cdcDeletedAtNotNullCondition() {
     return field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
-        .and(function("JSON_TYPEOF", SQLDataType.VARCHAR, extractColumn(cdcDeletedAtColumn))
+        .and(function("JSONB_TYPEOF", SQLDataType.VARCHAR, extractColumnAsJson(cdcDeletedAtColumn))
             .ne("null"));
   }
 
@@ -130,7 +130,17 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     return false;
   }
 
-  private Field<?> extractColumn(final ColumnId column) {
+  /**
+   * Extract a raw field and cast it to text
+   */
+  private Field<?> extractColumnAsText(final ColumnId column) {
     return field("{0} ->> {1}", name(COLUMN_NAME_DATA), val(column.originalName()));
+  }
+
+  /**
+   * Extract a raw field, leaving it as jsonb
+   */
+  private Field<?> extractColumnAsJson(final ColumnId column) {
+    return field("{0} -> {1}", name(COLUMN_NAME_DATA), val(column.originalName()));
   }
 }
