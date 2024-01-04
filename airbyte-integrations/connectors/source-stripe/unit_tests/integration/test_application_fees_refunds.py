@@ -494,7 +494,7 @@ class IncrementalTest(TestCase):
     @HttpMocker()
     def test_given_state_earlier_than_30_days_when_read_then_query_events_using_types_and_event_lower_boundary(self, http_mocker: HttpMocker) -> None:
         # this seems odd as we would miss some data between start_date and events_lower_boundary. In that case, we should hit the
-        # payment_methods endpoint
+        # application fees endpoint
         _given_application_fees_availability_check(http_mocker)
         start_date = _NOW - timedelta(days=40)
         state_value = _NOW - timedelta(days=39)
