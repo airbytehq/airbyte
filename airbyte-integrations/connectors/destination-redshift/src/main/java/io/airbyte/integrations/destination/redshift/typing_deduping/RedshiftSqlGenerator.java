@@ -152,7 +152,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   /**
-   * Redshift ARRAY_CONCAT supports only 2 arrays, recursively build ARRAY_CONCAT for n arrays.
+   * Redshift ARRAY_CONCAT supports only 2 arrays. Iteratively nest ARRAY_CONCAT to support more than
+   * 2
    *
    * @param arrays
    * @return
@@ -162,16 +163,14 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
       return field("ARRAY()"); // Return an empty string if the list is empty
     }
 
-    // Base case: if there's only one element, return it
-    if (arrays.size() == 1) {
-      return arrays.get(0);
+    Field<?> result = arrays.get(0);
+    String renderedSql = getDslContext().render(result);
+    for (int i = 1; i < arrays.size(); i++) {
+      // We lose some nice indentation but thats ok. Queryparts
+      // are intentionally rendered here to avoid deep stack for function sql rendering.
+      result = field(getDslContext().renderNamedOrInlinedParams(function("ARRAY_CONCAT", getSuperType(), result, arrays.get(i))));
     }
-
-    // Recursive case: construct ARRAY_CONCAT function call
-    Field<?> lastValue = arrays.get(arrays.size() - 1);
-    Field<?> recursiveCall = arrayConcatStmt(arrays.subList(0, arrays.size() - 1));
-
-    return function("ARRAY_CONCAT", getSuperType(), recursiveCall, lastValue);
+    return result;
   }
 
   Field<?> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {

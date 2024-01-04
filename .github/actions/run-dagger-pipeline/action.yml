@@ -101,6 +101,17 @@ runs:
           pipelines:
             - 'airbyte-ci/connectors/pipelines/**'
 
+    - name: Determine how Airbyte CI should be installed
+      shell: bash
+      id: determine-install-mode
+      run: |
+        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
+          echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
+          echo "install-mode=dev" >> $GITHUB_OUTPUT
+        else
+          echo "install-mode=production" >> $GITHUB_OUTPUT
+        fi
+
     - name: Docker login
       uses: docker/login-action@v1
       with:
@@ -114,7 +125,7 @@ runs:
 
     - name: Install airbyte-ci binary
       id: install-airbyte-ci
-      if: github.ref == 'refs/heads/master' || steps.changes.outputs.pipelines_any_changed == 'false'
+      if: steps.determine-install-mode.outputs.install-mode == 'production'
       shell: bash
       run: |
         curl -sSL ${{ inputs.airbyte_ci_binary_url }} --output airbyte-ci-bin
@@ -123,13 +134,13 @@ runs:
 
     - name: Install Python 3.10
       uses: actions/setup-python@v4
-      if: github.ref != 'refs/heads/master' && steps.changes.outputs.pipelines_any_changed == 'true'
+      if: steps.determine-install-mode.outputs.install-mode == 'dev'
       with:
         python-version: "3.10"
         token: ${{ inputs.github_token }}
 
     - name: Install ci-connector-ops package
-      if: github.ref != 'refs/heads/master' && steps.changes.outputs.pipelines_any_changed == 'true'
+      if: steps.determine-install-mode.outputs.install-mode == 'dev'
       shell: bash
       run: |
         pip install pipx
@@ -157,6 +168,7 @@ runs:
         PRODUCTION: ${{ inputs.production }}
         PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
         SENTRY_DSN: ${{ inputs.sentry_dsn }}
+        SENTRY_ENVIRONMENT: ${{ steps.determine-install-mode.outputs.install-mode }}
         SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
         SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
