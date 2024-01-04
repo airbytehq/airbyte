@@ -3,17 +3,16 @@
 #
 """This module groups factory like functions to dispatch tests steps according to the connector under test language."""
 
-from typing import List
 
 import anyio
-from connector_ops.utils import ConnectorLanguage
+from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.steps import java_connectors, python_connectors
 from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
 from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
-from pipelines.helpers.run_steps import StepToRun, run_steps
+from pipelines.helpers.run_steps import STEP_TREE, StepToRun, run_steps
 
 LANGUAGE_MAPPING = {
     "get_test_steps": {
@@ -24,7 +23,7 @@ LANGUAGE_MAPPING = {
 }
 
 
-def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
+def get_test_steps(context: ConnectorContext) -> STEP_TREE:
     """Get all the tests steps according to the connector language.
 
     Args:
@@ -40,7 +39,7 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
         return []
 
 
-async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore):
+async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
     """
     Compute the steps to run for a connector test pipeline.
     """
@@ -64,7 +63,8 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
                 options=context.run_step_options,
             )
 
-            results = result_dict.values()
-            context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
+            results = list(result_dict.values())
+            report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
+            context.report = report
 
-        return context.report
+        return report
