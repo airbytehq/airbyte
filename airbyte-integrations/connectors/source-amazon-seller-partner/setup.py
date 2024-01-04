@@ -20,4 +20,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        "console_scripts": [
+            "source-amazon-seller-partner=source_amazon_seller_partner.run:run",
+        ],
+    },
 )

@@ -155,6 +155,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version  | Date       | Pull Request                                                | Subject                                                                                                                                                                             |
 |:---------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `3.0.2` | 2024-01-04 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
 | `3.0.1`  | 2023-12-22 | [\#33741](https://github.com/airbytehq/airbyte/pull/33741)  | Improve report streams performance                                                                                                                                                  |
 | `3.0.0`  | 2023-12-12 | [\#32977](https://github.com/airbytehq/airbyte/pull/32977)  | Make all streams incremental                                                                                                                                                        |
 | `2.5.0`  | 2023-11-27 | [\#32505](https://github.com/airbytehq/airbyte/pull/32505)  | Make report options configurable via UI                                                                                                                                             |
