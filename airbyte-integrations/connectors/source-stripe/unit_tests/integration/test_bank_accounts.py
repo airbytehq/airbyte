@@ -157,7 +157,7 @@ def _assert_not_available(output: EntrypointOutput) -> None:
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):
     @HttpMocker()
-    def test_given_one_page_when_read_then_return_record(self, http_mocker: HttpMocker) -> None:
+    def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),

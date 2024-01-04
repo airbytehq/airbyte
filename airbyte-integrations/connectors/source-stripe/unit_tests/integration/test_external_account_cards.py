@@ -127,7 +127,7 @@ def _read(
 class FullRefreshTest(TestCase):
 
     @HttpMocker()
-    def test_given_one_page_when_read_then_return_record(self, http_mocker: HttpMocker) -> None:
+    def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         _given_events_availability_check(http_mocker)
         http_mocker.get(
             _external_accounts_request().with_object(_OBJECT).with_limit(100).build(),
