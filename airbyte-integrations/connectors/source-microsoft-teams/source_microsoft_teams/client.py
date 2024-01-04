@@ -260,7 +260,7 @@ class Client:
                 "isLisenced",
                 "reportPeriod",
             ]
-            
+
             reader = csv.DictReader(text_file, fieldnames=field_names)
             for row in reader:
                 yield [
