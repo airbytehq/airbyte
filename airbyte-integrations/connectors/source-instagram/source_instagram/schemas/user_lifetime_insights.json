@@ -10,9 +10,6 @@
     "breakdown": {
       "type": ["null", "string"]
     },
-    "period": {
-      "type": ["null", "string"]
-    },
     "metric": {
       "type": ["null", "string"]
     },
