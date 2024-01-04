@@ -4,7 +4,7 @@ displayed_sidebar: docs
 
 # Welcome to Airbyte Docs
 
-Whether you are an Airbyte user or contributor, we have docs for you!
+Whether you are a `yarn` user or `pnpm`, we have docs for you!
 
 ## For Airbyte Cloud users
 
