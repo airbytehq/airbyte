@@ -171,7 +171,6 @@ class UserLifetimeInsights(DatetimeTransformerMixin, InstagramStream):
                 "breakdown": stream_slice["breakdown"],
                 "business_account_id": ig_account.get("id"),
                 "metric": insight["name"],
-                "period": insight_data.get('period'),
                 "value": self._transform_breakdown_results(insight_data['total_value']['breakdowns'][0]['results']),
             }
 
@@ -380,7 +379,8 @@ class MediaInsights(Media):
     MEDIA_METRICS = ["total_interactions", "impressions", "reach", "saved", "video_views", "likes", "comments", "shares"]
     CAROUSEL_ALBUM_METRICS = ["total_interactions", "impressions", "reach", "saved", "video_views"]
 
-    REELS_METRICS = ["comments", "likes", "reach", "saved", "shares", "total_interactions", "plays"]
+    REELS_METRICS = ["comments", "ig_reels_avg_watch_time", "ig_reels_video_view_total_time",
+                     "likes", "plays", "reach", "saved", "shares", "total_interactions"]
 
     def read_records(
         self,
