@@ -3,14 +3,14 @@
 #
 
 import importlib.util
-from importlib.abc import Loader
 from importlib import metadata
+from importlib.abc import Loader
 
 from dagger import Container
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
-def get_sdk_version():
+def get_sdk_version() -> str:
     try:
         return metadata.version("dagger-io")
     except metadata.PackageNotFoundError:

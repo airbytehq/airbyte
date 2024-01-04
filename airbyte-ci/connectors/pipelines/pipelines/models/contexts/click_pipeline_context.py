@@ -99,7 +99,7 @@ class ClickPipelineContext(BaseModel, Singleton):
         assert self._dagger_client, "Error initializing Dagger client"
         return self._dagger_client.pipeline(pipeline_name) if pipeline_name else self._dagger_client
 
-    def get_log_output(self) -> Union[TextIO, io.FileIO]:
+    def get_log_output(self) -> TextIO:
         # This `show_dagger_logs` flag is likely going to be removed in the future.
         # See https://github.com/airbytehq/airbyte/issues/33487
         if self.params.get("show_dagger_logs", False):

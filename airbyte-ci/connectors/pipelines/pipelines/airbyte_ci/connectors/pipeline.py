@@ -16,7 +16,7 @@ from dagger import Config
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.steps.no_op import NoOpStep
-from pipelines.consts import DOCKER_CLI_IMAGE, DOCKER_HOST_NAME, DOCKER_HOST_PORT, ContextState
+from pipelines.consts import ContextState
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.utils import create_and_open_file
 from pipelines.models.reports import Report

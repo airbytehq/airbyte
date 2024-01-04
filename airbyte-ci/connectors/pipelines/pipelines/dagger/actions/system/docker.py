@@ -140,7 +140,7 @@ def with_global_dockerd_service(
     else:
         daemon_config_json = get_daemon_config_json()
 
-    dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", daemon_config_json)
+    dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", contents=daemon_config_json)
     if docker_hub_username_secret and docker_hub_password_secret:
         # Docker login happens late because there's a cache buster in the docker login command.
         dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
