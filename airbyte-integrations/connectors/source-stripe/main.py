@@ -14,9 +14,13 @@ from source_stripe import SourceStripe
 
 
 def _get_source(args: List[str]):
-    catalog = AirbyteEntrypoint.extract_catalog(args)
+    catalog_path = AirbyteEntrypoint.extract_catalog(args)
+    config_path = AirbyteEntrypoint.extract_config(args)
     try:
-        return SourceStripe(catalog)
+        return SourceStripe(
+            SourceStripe.read_catalog(catalog_path) if catalog_path else None,
+            SourceStripe.read_config(config_path) if config_path else None,
+        )
     except Exception as error:
         print(
             AirbyteMessage(

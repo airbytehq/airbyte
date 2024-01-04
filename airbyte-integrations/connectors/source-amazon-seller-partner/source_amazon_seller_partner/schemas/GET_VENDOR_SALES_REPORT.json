@@ -5,10 +5,12 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "startDate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "endDate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "asin": {
       "type": ["null", "string"]

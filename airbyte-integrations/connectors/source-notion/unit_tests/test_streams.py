@@ -277,3 +277,38 @@ def test_403_error_handling(
         assert expected_reason_substring in reason
     else:
         assert reason is None
+
+
+@pytest.mark.parametrize(
+    "initial_page_size, expected_page_size, mock_response",
+    [
+        (100, 50, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}),
+        (50, 25, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}),
+        (100, 100, {"status_code": 429, "json": {}, "headers": {"retry-after": "1"}}),
+        (50, 100, {"status_code": 200, "json": {"data": "success"}, "headers": {}}),
+    ],
+    ids=[
+        "504 error, page_size 100 -> 50",
+        "504 error, page_size 50 -> 25",
+        "429 error, page_size 100 -> 100",
+        "200 success, page_size 50 -> 100",
+    ],
+)
+def test_request_throttle(initial_page_size, expected_page_size, mock_response, requests_mock):
+    """
+    Tests that the request page_size is halved when a 504 error is encountered.
+    Once a 200 success is encountered, the page_size is reset to 100, for use in the next call.
+    """
+    requests_mock.register_uri(
+        "GET",
+        "https://api.notion.com/v1/users",
+        [{"status_code": mock_response["status_code"], "json": mock_response["json"], "headers": mock_response["headers"]}],
+    )
+
+    stream = Users(config={"authenticator": "auth"})
+    stream.page_size = initial_page_size
+    response = requests.get("https://api.notion.com/v1/users")
+
+    stream.should_retry(response=response)
+
+    assert stream.page_size == expected_page_size

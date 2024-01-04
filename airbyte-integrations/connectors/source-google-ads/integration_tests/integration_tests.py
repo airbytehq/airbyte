@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from google.ads.googleads.v13.services.types.google_ads_service import GoogleAdsRow
+from google.ads.googleads.v15.services.types.google_ads_service import GoogleAdsRow
 from source_google_ads.source import SourceGoogleAds
 
 
@@ -101,11 +101,11 @@ def create_google_ads_row_from_dict(data: dict) -> GoogleAdsRow:
                     "campaign.id": 11112,
                     "campaign.name": "Campaign 1",
                     "campaign.status": "UNKNOWN",
-                    "segments.product_bidding_category_level1": "Electronics",
-                    "segments.product_bidding_category_level2": "Mobile Phones",
-                    "segments.product_bidding_category_level3": "Smartphones",
-                    "segments.product_bidding_category_level4": "Android",
-                    "segments.product_bidding_category_level5": "Samsung",
+                    "segments.product_category_level1": "Electronics",
+                    "segments.product_category_level2": "Mobile Phones",
+                    "segments.product_category_level3": "Smartphones",
+                    "segments.product_category_level4": "Android",
+                    "segments.product_category_level5": "Samsung",
                     "segments.product_channel": "UNSPECIFIED",
                     "segments.product_channel_exclusivity": "SINGLE_CHANNEL",
                     "segments.click_type": "APP_DEEPLINK",
@@ -162,11 +162,11 @@ def create_google_ads_row_from_dict(data: dict) -> GoogleAdsRow:
                     "campaign.id": 11112,
                     "campaign.name": "Campaign 1",
                     "campaign.status": "UNKNOWN",
-                    "segments.product_bidding_category_level1": "Electronics",
-                    "segments.product_bidding_category_level2": "Mobile Phones",
-                    "segments.product_bidding_category_level3": "Smartphones",
-                    "segments.product_bidding_category_level4": "Android",
-                    "segments.product_bidding_category_level5": "Samsung",
+                    "segments.product_category_level1": "Electronics",
+                    "segments.product_category_level2": "Mobile Phones",
+                    "segments.product_category_level3": "Smartphones",
+                    "segments.product_category_level4": "Android",
+                    "segments.product_category_level5": "Samsung",
                     "segments.product_channel": "UNSPECIFIED",
                     "segments.product_channel_exclusivity": "SINGLE_CHANNEL",
                     "segments.click_type": "APP_DEEPLINK",

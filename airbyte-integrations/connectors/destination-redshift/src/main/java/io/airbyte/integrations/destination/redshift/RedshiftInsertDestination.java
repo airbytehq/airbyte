@@ -11,12 +11,18 @@ import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -49,12 +55,17 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         RedshiftInsertDestination.DRIVER_CLASS,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        SSL_JDBC_PARAMETERS);
+        SSL_JDBC_PARAMETERS,
+        Duration.ofMinutes(2));
   }
 
   @Override
   public JdbcDatabase getDatabase(final DataSource dataSource) {
     return new DefaultJdbcDatabase(dataSource);
+  }
+
+  public JdbcDatabase getDatabase(final DataSource dataSource, final JdbcSourceOperations sourceOperations) {
+    return new DefaultJdbcDatabase(dataSource, sourceOperations);
   }
 
   @Override
@@ -64,7 +75,7 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
     final String schema = Optional.ofNullable(redshiftConfig.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
-    Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    final Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
         .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:redshift://%s:%s/%s",
@@ -78,6 +89,16 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator() {
+    return new RedshiftSqlGenerator(super.getNamingResolver());
+  }
+
+  @Override
+  protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
+    return new RedshiftDestinationHandler(databaseName, database);
   }
 
 }

@@ -11,8 +11,16 @@ import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYN
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.debezium.internals.*;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
+import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordIterator;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumShutdownProcedure;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateDecoratingIterator;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.MoreIterators;
@@ -21,6 +29,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.engine.ChangeEvent;
+import io.debezium.engine.DebeziumEngine;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -47,18 +56,20 @@ public class AirbyteDebeziumHandler<T> {
   private final JsonNode config;
   private final CdcTargetPosition<T> targetPosition;
   private final boolean trackSchemaHistory;
-  private final Duration firstRecordWaitTime;
+  private final Duration firstRecordWaitTime, subsequentRecordWaitTime;
   private final OptionalInt queueSize;
 
   public AirbyteDebeziumHandler(final JsonNode config,
                                 final CdcTargetPosition<T> targetPosition,
                                 final boolean trackSchemaHistory,
                                 final Duration firstRecordWaitTime,
+                                final Duration subsequentRecordWaitTime,
                                 final OptionalInt queueSize) {
     this.config = config;
     this.targetPosition = targetPosition;
     this.trackSchemaHistory = trackSchemaHistory;
     this.firstRecordWaitTime = firstRecordWaitTime;
+    this.subsequentRecordWaitTime = subsequentRecordWaitTime;
     this.queueSize = queueSize;
   }
 
@@ -87,13 +98,14 @@ public class AirbyteDebeziumHandler<T> {
         targetPosition,
         tableSnapshotPublisher::hasClosed,
         new DebeziumShutdownProcedure<>(queue, tableSnapshotPublisher::close, tableSnapshotPublisher::hasClosed),
-        firstRecordWaitTime);
+        firstRecordWaitTime,
+        subsequentRecordWaitTime);
 
     return AutoCloseableIterators.concatWithEagerClose(AutoCloseableIterators
         .transform(
             eventIterator,
             (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, catalogContainingStreamsToSnapshot, emittedAt,
-                debeziumConnectorType)),
+                debeziumConnectorType, config)),
         AutoCloseableIterators
             .fromIterator(MoreIterators.singletonIteratorFromSupplier(cdcStateHandler::saveStateAfterCompletionOfSnapshotOfNewStreams)));
   }
@@ -107,23 +119,28 @@ public class AirbyteDebeziumHandler<T> {
                                                                        final Instant emittedAt,
                                                                        final boolean addDbNameToState) {
     LOGGER.info("Using CDC: {}", true);
-    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(queueSize.orElse(QUEUE_CAPACITY));
-    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(),
+    LOGGER.info("Using DBZ version: {}", DebeziumEngine.class.getPackage().getImplementationVersion());
+    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
+        cdcSavedInfoFetcher.getSavedOffset(),
         addDbNameToState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager =
-        trackSchemaHistory ? schemaHistoryManager(cdcSavedInfoFetcher.getSavedSchemaHistory(), cdcStateHandler.compressSchemaHistoryForState())
+        trackSchemaHistory ? schemaHistoryManager(
+            cdcSavedInfoFetcher.getSavedSchemaHistory(),
+            cdcStateHandler.compressSchemaHistoryForState())
             : Optional.empty();
-    final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties, config, catalog, offsetManager,
-        schemaHistoryManager, debeziumConnectorType);
-    publisher.start(queue);
 
+    final var publisher = new DebeziumRecordPublisher(
+        connectorProperties, config, catalog, offsetManager, schemaHistoryManager, debeziumConnectorType);
+    final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(queueSize.orElse(QUEUE_CAPACITY));
+    publisher.start(queue);
     // handle state machine around pub/sub logic.
     final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
         queue,
         targetPosition,
         publisher::hasClosed,
         new DebeziumShutdownProcedure<>(queue, publisher::close, publisher::hasClosed),
-        firstRecordWaitTime);
+        firstRecordWaitTime,
+        subsequentRecordWaitTime);
 
     final Duration syncCheckpointDuration =
         config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
@@ -142,7 +159,8 @@ public class AirbyteDebeziumHandler<T> {
         syncCheckpointDuration,
         syncCheckpointRecords,
         catalog,
-        debeziumConnectorType));
+        debeziumConnectorType,
+        config));
   }
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final SchemaHistory<Optional<JsonNode>> schemaHistory,

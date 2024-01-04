@@ -54,7 +54,7 @@ To fill out the required information:
 #### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
-our [Airbyte Security docs](../../../operator-guides/security#network-security-1).
+our [Airbyte Security docs](../../operating-airbyte/security#network-security-1).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
 <!-- /env:cloud -->
@@ -291,6 +291,20 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.0   | 2023-12-19 | [33437](https://github.com/airbytehq/airbyte/pull/33437) | Remove LEGACY state flag                                                                                                                                                   |
+| 3.2.27  | 2023-12-18 | [33605](https://github.com/airbytehq/airbyte/pull/33605) | Advance Postgres LSN for PG 14 & below.                                                                                                                                    |
+| 3.2.26  | 2023-12-11 | [33027](https://github.com/airbytehq/airbyte/pull/32961) | Support for better debugging tools.                                                                                                                                        |
+| 3.2.25  | 2023-11-29 | [32961](https://github.com/airbytehq/airbyte/pull/32961) | Bump debezium wait time default to 20 min.                                                                                                                                 |
+| 3.2.24  | 2023-11-28 | [32686](https://github.com/airbytehq/airbyte/pull/32686) | Better logging to understand dbz closing reason attribution.                                                                                                               |
+| 3.2.23  | 2023-11-28 | [32891](https://github.com/airbytehq/airbyte/pull/32891) | Fix CDK dependency in build.                                                                                                                                               |
+| 3.2.22  | 2023-11-22 | [32656](https://github.com/airbytehq/airbyte/pull/32656) | Adopt java CDK version 0.5.0.                                                                                                                                              |
+| 3.2.21  | 2023-11-07 | [31856](https://github.com/airbytehq/airbyte/pull/31856) | handle date/timestamp infinity values properly                                                                                                                             |
+| 3.2.20  | 2023-11-06 | [32193](https://github.com/airbytehq/airbyte/pull/32193) | Adopt java CDK version 0.4.1.                                                                                                                                              |
+| 3.2.19  | 2023-11-03 | [32050](https://github.com/airbytehq/airbyte/pull/32050) | Adopt java CDK version 0.4.0.                                                                                                                                              |
+| 3.2.18  | 2023-11-01 | [29038](https://github.com/airbytehq/airbyte/pull/29038) | Fix typo (s/Airbtye/Airbyte/)                                                                                                                                              |
+| 3.2.17  | 2023-11-01 | [32068](https://github.com/airbytehq/airbyte/pull/32068) | Bump Debezium 2.2.0Final -> 2.4.0Final                                                                                                                                     |
+| 3.2.16  | 2023-10-31 | [31976](https://github.com/airbytehq/airbyte/pull/31976) | Speed up tests involving Debezium                                                                                                                                          |
+| 3.2.15  | 2023-10-30 | [31960](https://github.com/airbytehq/airbyte/pull/31960) | Adopt java CDK version 0.2.0.                                                                                                                                              |
 | 3.2.14  | 2023-10-24 | [31792](https://github.com/airbytehq/airbyte/pull/31792) | Fix error message link on issue with standby                                                                                                                               |
 | 3.2.14  | 2023-10-24 | [31792](https://github.com/airbytehq/airbyte/pull/31792) | fail sync when debezeum fails to shutdown cleanly                                                                                                                          |
 | 3.2.13  | 2023-10-16 | [31029](https://github.com/airbytehq/airbyte/pull/31029) | Enforces encrypted traffic settings when env var DEPLOYMENT_MODE = CLOUD.                                                                                                  |

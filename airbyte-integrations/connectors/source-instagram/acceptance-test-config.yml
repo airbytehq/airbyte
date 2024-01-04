@@ -29,6 +29,8 @@ acceptance_tests:
             bypass_reason: Stories available only 24 hours
           - name: story_insights
             bypass_reason: Stories available only 24 hours, so do the insights
+          - name: user_lifetime_insights
+            bypass_reason: Not returned if the IG User has less than 100 followers.
         ignored_fields:
           users:
             - name: media_count
@@ -51,6 +53,8 @@ acceptance_tests:
               bypass_reason: Depend on each online user
           media:
             - name: media_url
+              bypass_reason: Contains auto generated hash
+            - name: thumbnail_url
               bypass_reason: Contains auto generated hash
           media_insights:
             - name: id

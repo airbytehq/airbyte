@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Union
 from unittest.mock import Mock
@@ -12,6 +11,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
@@ -19,6 +19,7 @@ from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 _A_CURSOR_FIELD = ["NESTED", "CURSOR"]
 _DEFAULT_INTERNAL_CONFIG = InternalConfig()
 _STREAM_NAME = "STREAM"
+_NO_STATE = None
 
 
 class _MockStream(Stream):
@@ -57,7 +58,7 @@ def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message
     source = Mock()
     source._slice_logger = slice_logger
     source.message_repository = message_repository
-    stream = StreamFacade.create_from_stream(stream, source, logger, 1)
+    stream = StreamFacade.create_from_stream(stream, source, logger, _NO_STATE, NoopCursor())
     stream.logger.setLevel(logger.level)
     return stream
 

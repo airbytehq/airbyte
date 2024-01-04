@@ -6,20 +6,22 @@
 
 from datetime import datetime
 from types import TracebackType
-from typing import Optional
+from typing import Iterable, List, Optional
 
 import yaml
 from anyio import Path
 from asyncer import asyncify
-from dagger import Directory, Secret
+from dagger import Directory, Platform, Secret
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.consts import BUILD_PLATFORMS
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.github import update_commit_status_check
+from pipelines.helpers.run_steps import RunStepOptions
 from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import METADATA_FILE_NAME
-from pipelines.models.contexts import PipelineContext
+from pipelines.models.contexts.pipeline_context import PipelineContext
 
 
 class ConnectorContext(PipelineContext):
@@ -49,17 +51,17 @@ class ConnectorContext(PipelineContext):
         reporting_slack_channel: Optional[str] = None,
         pull_request: PullRequest = None,
         should_save_report: bool = True,
-        fail_fast: bool = False,
-        fast_tests_only: bool = False,
         code_tests_only: bool = False,
         use_local_cdk: bool = False,
         use_host_gradle_dist_tar: bool = False,
-        open_report_in_browser: bool = True,
+        enable_report_auto_open: bool = True,
         docker_hub_username: Optional[str] = None,
         docker_hub_password: Optional[str] = None,
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
         concurrent_cat: Optional[bool] = False,
+        run_step_options: RunStepOptions = RunStepOptions(),
+        targeted_platforms: Optional[Iterable[Platform]] = BUILD_PLATFORMS,
     ):
         """Initialize a connector context.
 
@@ -78,16 +80,15 @@ class ConnectorContext(PipelineContext):
             slack_webhook (Optional[str], optional): The slack webhook to send messages to. Defaults to None.
             reporting_slack_channel (Optional[str], optional): The slack channel to send messages to. Defaults to None.
             pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
-            fail_fast (bool, optional): Whether to fail fast. Defaults to False.
-            fast_tests_only (bool, optional): Whether to run only fast tests. Defaults to False.
             code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
             use_host_gradle_dist_tar (bool, optional): Used when developing java connectors with gradle. Defaults to False.
-            open_report_in_browser (bool, optional): Open HTML report in browser window. Defaults to True.
+            enable_report_auto_open (bool, optional): Open HTML report in browser window. Defaults to True.
             docker_hub_username (Optional[str], optional): Docker Hub username to use to read registries. Defaults to None.
             docker_hub_password (Optional[str], optional): Docker Hub password to use to read registries. Defaults to None.
             s3_build_cache_access_key_id (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
             s3_build_cache_secret_key (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
             concurrent_cat (bool, optional): Whether to run the CAT tests in parallel. Defaults to False.
+            targeted_platforms (Optional[Iterable[Platform]], optional): The platforms to build the connector image for. Defaults to BUILD_PLATFORMS.
         """
 
         self.pipeline_name = pipeline_name
@@ -99,17 +100,17 @@ class ConnectorContext(PipelineContext):
         self._updated_secrets_dir = None
         self.cdk_version = None
         self.should_save_report = should_save_report
-        self.fail_fast = fail_fast
-        self.fast_tests_only = fast_tests_only
         self.code_tests_only = code_tests_only
         self.use_local_cdk = use_local_cdk
         self.use_host_gradle_dist_tar = use_host_gradle_dist_tar
-        self.open_report_in_browser = open_report_in_browser
+        self.enable_report_auto_open = enable_report_auto_open
         self.docker_hub_username = docker_hub_username
         self.docker_hub_password = docker_hub_password
         self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
         self.s3_build_cache_secret_key = s3_build_cache_secret_key
         self.concurrent_cat = concurrent_cat
+        self._connector_secrets = None
+        self.targeted_platforms = targeted_platforms
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -127,7 +128,8 @@ class ConnectorContext(PipelineContext):
             ci_gcs_credentials=ci_gcs_credentials,
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
-            open_report_in_browser=open_report_in_browser,
+            run_step_options=run_step_options,
+            enable_report_auto_open=enable_report_auto_open,
         )
 
     @property
@@ -205,6 +207,11 @@ class ConnectorContext(PipelineContext):
         if self.docker_hub_password is None:
             return None
         return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
+
+    async def get_connector_secrets(self):
+        if self._connector_secrets is None:
+            self._connector_secrets = await secrets.get_connector_secrets(self)
+        return self._connector_secrets
 
     async def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.

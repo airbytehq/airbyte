@@ -324,6 +324,15 @@
               "mininum": 1,
               "exclusiveMinimum": 0,
               "type": "integer"
+            },
+            "insights_job_timeout": {
+              "title": "Custom Insights Job Timeout",
+              "description": "The insights job timeout",
+              "default": 60,
+              "maximum": 60,
+              "mininum": 10,
+              "exclusiveMinimum": 0,
+              "type": "integer"
             }
           },
           "required": ["name"]
@@ -344,6 +353,16 @@
         "order": 8,
         "maximum": 28,
         "mininum": 1,
+        "exclusiveMinimum": 0,
+        "type": "integer"
+      },
+      "insights_job_timeout": {
+        "title": "Insights Job Timeout",
+        "description": "Insights Job Timeout establishes the maximum amount of time (in minutes) of waiting for the report job to complete. When timeout is reached the job is considered failed and we are trying to request smaller amount of data by breaking the job to few smaller ones. If you definitely know that 60 minutes is not enough for your report to be processed then you can decrease the timeout value, so we start breaking job to smaller parts faster.",
+        "default": 60,
+        "order": 9,
+        "maximum": 60,
+        "mininum": 10,
         "exclusiveMinimum": 0,
         "type": "integer"
       },
