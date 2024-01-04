@@ -506,6 +506,51 @@ class PersonsTest(TestCase):
         assert len(actual_messages.errors) == 1
 
     @HttpMocker()
+    def test_incremental_rate_limit_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
+        state_datetime = NOW - timedelta(days=5)
+        cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
+
+        http_mocker.get(
+            _create_request("accounts").with_limit(100).build(),
+            _create_response().with_record(record=_create_record("accounts")).build(),
+        )
+
+        http_mocker.get(
+            _create_request("persons").with_limit(100).build(),
+            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
+        )
+
+        # Mock when check_availability is run on the persons incremental stream
+        http_mocker.get(
+            _create_request("events").with_created_gte(NOW - timedelta(days=30)).with_created_lte(NOW).with_limit(100).with_types(
+                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_response().with_record(record=_create_record("persons_event_created")).with_record(
+                record=_create_record("persons_event_created")).build(),
+        )
+
+        http_mocker.get(
+            _create_request("events").with_created_gte(cursor_datetime).with_created_lte(NOW).with_limit(100).with_types(
+                ["person.created", "person.updated", "person.deleted"]).build(),
+            [
+                a_response_with_status(429),
+                a_response_with_status(429),
+                a_response_with_status(429),
+                a_response_with_status(429),
+                a_response_with_status(429),
+            ]
+        )
+
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental))
+        actual_messages = read(
+            source,
+            config=_CONFIG,
+            catalog=_create_catalog(sync_mode=SyncMode.incremental),
+            state=StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
+        )
+
+        assert len(actual_messages.errors) == 1
+
+    @HttpMocker()
     def test_server_error_parent_stream_accounts(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _create_request("accounts").with_limit(100).build(),
