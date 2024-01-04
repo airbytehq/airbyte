@@ -3,25 +3,36 @@
 #
 
 
-import re
 from inspect import isgeneratorfunction
 from io import TextIOWrapper
 from json import loads
 from typing import Any, Callable, Iterable, List, Mapping, Optional
 
-from .query import BULK_PARENT_KEY
-from .tools import BulkTools
+from .tools import BULK_PARENT_KEY, END_OF_FILE, BulkTools
 
 
 class ShopifyBulkRecord:
-    def __init__(self, custom_reader: Callable = None) -> None:
+    def __init__(self, query) -> None:
+        self.query = query
         self.tools: BulkTools = BulkTools()
-        # set custom reader, if initialized
-        self.record_reader: Callable = custom_reader if custom_reader else self.default_reader
 
-    def default_reader(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
+    def record_composer(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
         # default record reader generator
-        yield from [loads(line) for line in jsonl_file]
+        # add placeholder for complex record compositions
+        records_buffer: List[Mapping[str, Any]] = []
+        # process the json lines
+        for line in jsonl_file:
+            # we exit from the loop when receive <end_of_file> (file ends)
+            if line == END_OF_FILE:
+                break
+            elif line != "":
+                # the logic defining on how to compose the record, should be defined/overidden on the query lvl,
+                # in `compose_record()` method
+                yield from self.query.compose_record(loads(line), records_buffer)
+
+        if self.query.should_emit_compose_leftovers:
+            # emit what's left in the records_buffer, typically last record
+            yield from self.emit_collected(records_buffer)
 
     @staticmethod
     def check_type(record: Optional[Mapping[str, Any]] = None, type: Optional[str] = None) -> bool:
@@ -36,7 +47,6 @@ class ShopifyBulkRecord:
             for record in buffer:
                 yield record
 
-    # @staticmethod
     def record_resolve_id(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         The ids are fetched in the format of: " gid://shopify/Order/<Id> "
@@ -102,13 +112,7 @@ class ShopifyBulkRecord:
             # yield as is otherwise
             yield record
 
-    def produce_records(
-        self,
-        filename: str,
-        substream: Optional[bool] = False,
-        record_identifier: Optional[str] = None,
-        custom_transform: Optional[Callable] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    def produce_records(self, filename: str, custom_transform: Optional[Callable] = None) -> Iterable[Mapping[str, Any]]:
         """
         Read the JSONL content saved from `job.job_retrieve_result()` line-by-line to avoid OOM.
         The filename example: `bulk-4039263649981.jsonl`,
@@ -117,5 +121,10 @@ class ShopifyBulkRecord:
         """
 
         with open(filename, "r") as jsonl_file:
-            for record in self.record_reader(jsonl_file):
-                yield from self.record_resolver(record, substream, record_identifier, custom_transform)
+            for record in self.record_composer(jsonl_file):
+                yield from self.record_resolver(
+                    record,
+                    self.query.substream,
+                    self.query.record_identifier,
+                    custom_transform,
+                )

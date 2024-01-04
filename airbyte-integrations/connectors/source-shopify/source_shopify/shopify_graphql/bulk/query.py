@@ -5,12 +5,12 @@
 
 from abc import abstractmethod
 from enum import Enum
-from json import loads
 from string import Template
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
 
+from .record import ShopifyBulkRecord
 from .tools import BULK_PARENT_KEY, BulkTools
 
 
@@ -58,6 +58,9 @@ class ShopifyBulkTemplates:
 
 class ShopifyBulkQuery:
     tools: BulkTools = BulkTools()
+
+    def __init__(self, **kwargs) -> None:
+        self.kwargs = kwargs
 
     def get(self, filter_field: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> str:
         # define filter query string, if passed
@@ -112,6 +115,13 @@ class ShopifyBulkQuery:
         """
         return ["id"]
 
+    @property
+    def should_emit_compose_leftovers(self) -> bool:
+        """
+        Defines wether of not the record_buffer should checked for leftovers.
+        """
+        return True
+
     def query(self, filter_query: Optional[str] = None) -> Query:
         """
         Overide this method, if you need to customize query build logic.
@@ -152,7 +162,6 @@ class ShopifyBulkQuery:
         # return constucted query
         return Query(name=name, arguments=args, fields=fields)
 
-    @classmethod
     def resolve(self, query: Query) -> str:
         """
         Default query resolver from type(Operation) > type(str).
@@ -160,6 +169,17 @@ class ShopifyBulkQuery:
         """
         # return the constructed query operation
         return Operation(type="", queries=[query]).render()
+
+    def compose_record(
+        self,
+        record: Mapping[str, Any],
+        records_buffer: Optional[List[Mapping[str, Any]]] = None,
+    ) -> Optional[Iterable[Mapping[str, Any]]]:
+        """
+        Default record composition method - emit each line read.
+        Overrid if the data is complex and requires manual joining, see `FulfillmentOrder.compose_record()` for more info.
+        """
+        yield record
 
 
 class Metafield(ShopifyBulkQuery):
@@ -533,6 +553,7 @@ class DiscountCode(ShopifyBulkQuery):
             codeDiscountNodes(query: "updated_at:>='2023-12-07T00:00:00Z' AND updated_at:<='2023-12-30T00:00:00Z'", sortKey: UPDATED_AT) {
                 edges {
                     node {
+                        __typename
                         id
                         codeDiscount {
                             ... on DiscountCodeApp {
@@ -542,6 +563,7 @@ class DiscountCode(ShopifyBulkQuery):
                                 codes {
                                     edges {
                                         node {
+                                            __typename
                                             usageCount: asyncUsageCount
                                             code
                                             id
@@ -557,6 +579,7 @@ class DiscountCode(ShopifyBulkQuery):
                                 codes {
                                     edges {
                                         node {
+                                            __typename
                                             usageCount: asyncUsageCount
                                             code
                                             id
@@ -572,6 +595,7 @@ class DiscountCode(ShopifyBulkQuery):
                                 codes {
                                     edges {
                                         node {
+                                            __typename
                                             usageCount: asyncUsageCount
                                             code
                                             id
@@ -587,6 +611,7 @@ class DiscountCode(ShopifyBulkQuery):
                                 codes {
                                     edges {
                                         node {
+                                            __typename
                                             usageCount: asyncUsageCount
                                             code
                                             id
@@ -603,13 +628,27 @@ class DiscountCode(ShopifyBulkQuery):
 
     query_name = "codeDiscountNodes"
     sort_key = "UPDATED_AT"
+    should_emit_compose_leftovers = False
 
     code_discount_fields: List[Field] = [
         Field(name="discountClass", alias="discountType"),
         Field(
             name="codes",
             fields=[
-                Field(name="edges", fields=[Field(name="node", fields=[Field(name="asyncUsageCount", alias="usageCount"), "code", "id"])])
+                Field(
+                    name="edges",
+                    fields=[
+                        Field(
+                            name="node",
+                            fields=[
+                                "__typename",
+                                Field(name="asyncUsageCount", alias="usageCount"),
+                                "code",
+                                "id",
+                            ],
+                        )
+                    ],
+                )
             ],
         ),
     ]
@@ -623,9 +662,41 @@ class DiscountCode(ShopifyBulkQuery):
     ]
 
     query_nodes: List[Field] = [
+        "__typename",
         "id",
         Field(name="codeDiscount", fields=code_discount_fragments),
     ]
+
+    def compose_record(
+        self,
+        record: Mapping[str, Any],
+        records_buffer: Optional[List[Mapping[str, Any]]] = None,
+    ) -> Optional[Iterable[Mapping[str, Any]]]:
+        """
+        Overide to provide custom record reading functionality, here we need to:
+        - read the first record as `main`
+        - read all the subsequent record and join each the `main`
+        """
+
+        if ShopifyBulkRecord.check_type(record, "DiscountCodeNode"):
+            # clean up for the new parent record
+            records_buffer.clear()
+            records_buffer.append(record)
+            # move the id under `price_rule_id`
+            records_buffer[-1]["price_rule_id"] = record.get("id")
+            # by now, we have duplicated info
+            # remove the original id, so set the `id` from child record
+            records_buffer[-1].pop("id")
+            records_buffer[-1].pop("__typename")
+
+        elif ShopifyBulkRecord.check_type(record, "DiscountRedeemCode"):
+            record.pop("__typename")
+            # we know that the sub-records follow the parent one, so if there are more related to the main record,
+            # we should merge each of them together with the parent one to have a single record.
+            records_buffer[-1].update(**record)
+            records_buffer[-1].update(**records_buffer[-1].get("codeDiscount"))
+            # emit record
+            yield from ShopifyBulkRecord.emit_collected(records_buffer)
 
 
 class Collection(ShopifyBulkQuery):
@@ -634,6 +705,7 @@ class Collection(ShopifyBulkQuery):
         collections(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
             edges {
                 node {
+                    __typename
                     id
                     handle
                     title
@@ -642,6 +714,7 @@ class Collection(ShopifyBulkQuery):
                     publications {
                         edges {
                             node {
+                                __typename
                                 publishedAt: publishDate
                             }
                         }
@@ -657,12 +730,17 @@ class Collection(ShopifyBulkQuery):
 
     query_name = "collections"
     sort_key = "UPDATED_AT"
+    should_emit_compose_leftovers = False
+    # CollectionPublication could have more than 1 `published_at`,
+    # we need to take the very first occurance and skip the other ones.
+    has_publish_at: bool = False
 
     publications_fields: List[Field] = [
-        Field(name="edges", fields=[Field(name="node", fields=[Field(name="publishDate", alias="publishedAt")])])
+        Field(name="edges", fields=[Field(name="node", fields=["__typename", Field(name="publishDate", alias="publishedAt")])])
     ]
 
     query_nodes: List[Field] = [
+        "__typename",
         "id",
         Field(name="handle"),
         Field(name="title"),
@@ -673,6 +751,34 @@ class Collection(ShopifyBulkQuery):
         Field(name="templateSuffix"),
         Field(name="productsCount"),
     ]
+
+    def compose_record(
+        self,
+        record: Mapping[str, Any],
+        records_buffer: Optional[List[Mapping[str, Any]]] = None,
+    ) -> Optional[Iterable[Mapping[str, Any]]]:
+        """
+        Overide to provide custom record reading functionality, here we need to:
+        - read the first record as `main`
+        - read all the subsequent record to the fist occcurrence and join to the `main`
+        """
+        # register the parent record first
+        if ShopifyBulkRecord.check_type(record, "Collection"):
+            record.pop("__typename")
+            # clean up for the new parent record
+            records_buffer.clear()
+            records_buffer.append(record)
+            # marking the parent record as incomplete
+            self.has_publish_at = False
+        elif ShopifyBulkRecord.check_type(record, "CollectionPublication") and not self.has_publish_at:
+            record.pop("__typename")
+            # we know that the sub-records follow the parent one, so if there are more related to the main record,
+            # we should merge the very first occurrence with the parent part to have a single record, as we tarck the `published_at` here.
+            records_buffer[-1].update(**record)
+            # emit complete record
+            yield from ShopifyBulkRecord.emit_collected(records_buffer)
+            # flagging to skip subsequent, since we merged the neccessary parts already
+            self.has_publish_at = True
 
 
 class InventoryItem(ShopifyBulkQuery):
@@ -1049,6 +1155,29 @@ class FulfillmentOrder(ShopifyBulkQuery):
         # field names to snake case
         record = self.tools.fields_names_to_snake_case(record)
         return record
+
+    def compose_record(self, record: Mapping[str, Any], records_buffer: List[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+        """
+        Overide to provide custom record composition functionality, here we need to:
+        - read the first record as `main`
+        - read all the subsequent record to the fist occcurrence and join to the `main`
+        """
+
+        # process main entity record
+        if ShopifyBulkRecord.check_type(record, "Order"):
+            # yield previous record first, if present
+            yield from ShopifyBulkRecord.emit_collected(records_buffer)
+            # clean up for the new parent record
+            records_buffer.clear()
+        elif ShopifyBulkRecord.check_type(record, "FulfillmentOrder"):
+            # append the prepared record to the records_buffer
+            records_buffer.append(self.prep_fulfillment_order(record, self.kwargs.get("shop_id")))
+        elif ShopifyBulkRecord.check_type(record, "FulfillmentOrderLineItem"):
+            # append the prepared line item to the last element of the `records_buffer`
+            records_buffer[-1]["line_items"].append(self.prep_line_item(record, self.kwargs.get("shop_id")))
+        elif ShopifyBulkRecord.check_type(record, "FulfillmentOrderMerchantRequest"):
+            # append the prepared mechant request to the last element of the `records_buffer`
+            records_buffer[-1]["merchant_requests"].append(self.prep_merchant_request(record))
 
 
 class Transaction(ShopifyBulkQuery):

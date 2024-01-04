@@ -16,7 +16,7 @@ from source_shopify.utils import ShopifyRateLimiter as limiter
 
 from .exceptions import ShopifyBulkExceptions
 from .query import ShopifyBulkQuery, ShopifyBulkTemplates
-from .record import ShopifyBulkRecord
+from .record import END_OF_FILE, ShopifyBulkRecord
 from .tools import BulkTools
 
 
@@ -36,24 +36,15 @@ class ShopifyBulkJob:
     Class to create, check, retrieve the result for Shopify GraphQL Bulk Jobs.
     """
 
-    def __init__(
-        self,
-        session: requests.Session,
-        logger: AirbyteLogger,
-        custom_reader: Optional[Callable] = None,
-    ) -> None:
+    def __init__(self, session: requests.Session, logger: AirbyteLogger, query: ShopifyBulkQuery) -> None:
         self.session = session
         self.logger = logger
-        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord()
+        self.query = query
+        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
         self.tools: BulkTools = BulkTools()
-        # overide record reader, if passed
-        if custom_reader:
-            self.record_producer.record_reader: Callable = custom_reader
 
     # 5Mb chunk size to save the file
     retrieve_chunk_size = 1024 * 1024 * 5
-    # latest successful BULK job filesize
-    last_job_file_size: int = 0
 
     # time between job status checks
     job_check_interval_sec: int = 5
@@ -222,14 +213,13 @@ class ShopifyBulkJob:
             with open(filename, "wb") as file:
                 for chunk in response.iter_content(chunk_size=self.retrieve_chunk_size):
                     file.write(chunk)
-        # register latest job result filesize
-        self.last_job_file_size = self.tools.file_size(filename)
+                # add `<end_of_file>` line to the bottom  of the saved data for easy parsing
+                file.write(END_OF_FILE.encode())
         return filename
 
     def job_record_producer(
         self,
         job_result_url: str,
-        query: Optional[ShopifyBulkQuery] = None,
         custom_transform: Optional[Callable] = None,
         remove_file: Optional[bool] = True,
         **kwargs,
@@ -248,12 +238,10 @@ class ShopifyBulkJob:
         """
 
         try:
-            substream: Optional[bool] = query.substream if query else None
-            record_identifier: Optional[str] = query.record_identifier if query else None
             # save the content to the local file
             filename = self.job_retrieve_result(job_result_url)
             # produce records from saved result
-            yield from self.record_producer.produce_records(filename, substream, record_identifier, custom_transform)
+            yield from self.record_producer.produce_records(filename, custom_transform)
         except Exception as e:
             raise ShopifyBulkExceptions.BulkRecordProduceError(
                 f"An error occured while producing records from BULK Job result. Trace: {repr(e)}.",

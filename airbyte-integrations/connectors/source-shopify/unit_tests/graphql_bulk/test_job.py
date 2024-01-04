@@ -119,7 +119,7 @@ def test_metafield_orders_parse_response(mocker, requests_mock, metafield_jsonl_
     # patching the method to return the `jpb_result_url` 
     mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkJob.job_check", return_value=test_result_url)
     # mocking the result url with jsonl content
-    requests_mock.get(test_result_url, text=str(metafield_jsonl_content_example))
+    requests_mock.get(test_result_url, text=metafield_jsonl_content_example)
     # getting mock response
     test_bulk_response = requests.get(test_result_url)
     test_records = stream.parse_response(test_bulk_response)
@@ -161,7 +161,7 @@ def test_transactions_parse_response(
     # patching the method to return the `job_result_url` 
     mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkJob.job_check", return_value=test_result_url)
     # mocking the result url with jsonl content
-    requests_mock.get(test_result_url, text=str(transactions_jsonl_content_example))
+    requests_mock.get(test_result_url, text=transactions_jsonl_content_example)
     # getting mock response
     test_bulk_response = requests.get(test_result_url)
     test_records = stream.parse_response(test_bulk_response)

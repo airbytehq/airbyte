@@ -16,7 +16,7 @@ from source_shopify.shopify_graphql.bulk.record import ShopifyBulkRecord
     ],
 )
 def test_record_resolve_id(record, expected):
-    assert ShopifyBulkRecord().record_resolve_id(record) == expected
+    assert ShopifyBulkRecord(None).record_resolve_id(record) == expected
 
  
 @pytest.mark.parametrize(
@@ -133,7 +133,7 @@ def test_resolve_substream(record, identifier, expected):
 ) 
 def test_record_resolver(record, substream, identifier, use_custom_tranform, expected):
     
-    record_instance = ShopifyBulkRecord()
+    record_instance = ShopifyBulkRecord(None)
     
     def custom_transform(record) -> Iterable[Mapping[str, Any]]:
         record["new_field"] = "new_value"

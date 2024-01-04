@@ -3,9 +3,7 @@
 #
 
 
-from io import TextIOWrapper
-from json import loads
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.core import package_name_from_class
@@ -38,46 +36,10 @@ from .base_streams import (
     IncrementalShopifyStream,
     IncrementalShopifyStreamWithDeletedEvents,
     IncrementalShopifySubstream,
+    MetafieldShopifyGraphQlBulkStream,
+    MetafieldShopifySubstream,
     ShopifyStream,
 )
-
-
-class MetafieldShopifySubstream(IncrementalShopifySubstream):
-    slice_key = "id"
-    data_field = "metafields"
-
-    parent_stream_class: object = None
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        object_id = stream_slice[self.slice_key]
-        return f"{self.parent_stream_class.data_field}/{object_id}/{self.data_field}.json"
-
-
-class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
-    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        """
-        The dependent resources have `__parentId` key in record, which signifies about the parnt-to-child relation.
-        To match the existing JSON Schema for `Metafields` streams we need to:
-            -- move the `id` to the `owner_id` key and extract the actual `id` (INT) from the string
-            -- extract the parent resosurce from the `id` and add it to the `owner_resource` field
-
-        Input:
-            { "__parentId": "gid://shopify/Order/19435458986123", "owner_type": "ORDER" }
-        Output:
-            { "owner_id": 19435458986123, "owner_resource: "order"}
-
-        More info: https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
-        """
-        # resolve parent id from `str` to `int`
-        record["owner_id"] = self.bulk_job.tools.resolve_str_id(record.get(BULK_PARENT_KEY))
-        # add `owner_resource` field
-        record["owner_resource"] = self.bulk_job.tools.camel_to_snake(record.get(BULK_PARENT_KEY, "").split("/")[3])
-        # remove `__parentId` from record
-        record.pop(BULK_PARENT_KEY, None)
-        # convert dates from ISO-8601 to RFC-3339
-        record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
-        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
-        yield record
 
 
 class Articles(IncrementalShopifyStreamWithDeletedEvents):
@@ -285,37 +247,6 @@ class Collections(IncrementalShopifyGraphQlBulkStream):
 
         yield record
 
-    def custom_record_reader(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
-        """
-        Overide to provide custom record reading functionality, here we need to:
-        - read the first record as `main`
-        - read all the subsequent record to the fist occcurrence and join to the `main`
-        - clean-up and emit, before `custom_transform` is applied.
-        """
-
-        # the placeholder for joined record
-        collection_record = None
-        # default flag for complete record
-        should_skip_next = False
-        # process the json lines
-        for line in jsonl_file:
-            record = loads(line)
-            # register the parent record first
-            if not BULK_PARENT_KEY in record.keys():
-                collection_record = record
-                # marking the parent record as incomplete
-                should_skip_next = False
-            elif BULK_PARENT_KEY in record.keys() and not should_skip_next:
-                # we know that the sub-records follow the parent one, so if there are more related to the main record,
-                # we should merge the very first occurrence with the parent part to have a single record, as we tarck the `published_at` here.
-                record.update(**collection_record)
-                # emit complete record
-                yield record
-                # flagging to skip subsequent, since we merged the neccessary parts already
-                should_skip_next = True
-            else:
-                continue
-
 
 class MetafieldCollections(MetafieldShopifyGraphQlBulkStream):
     bulk_query: MetafieldCollection = MetafieldCollection
@@ -432,36 +363,6 @@ class DiscountCodes(IncrementalShopifyGraphQlBulkStream):
 
         yield record
 
-    def custom_record_reader(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
-        """
-        Overide to provide custom record reading functionality, here we need to:
-        - read the first record as `main`
-        - read all the subsequent record and join each the `main`
-        - clean-up and emit, before `custom_transform` is applied.
-        """
-        # the placeholder for joined record
-        discount_record = None
-        # process the json lines
-        for line in jsonl_file:
-            record = loads(line)
-            # register the parent record first
-            if not BULK_PARENT_KEY in record.keys():
-                discount_record = record
-                # move the id under `price_rule_id`
-                discount_record["price_rule_id"] = discount_record.get("id")
-                # by now, we have duplicated info, remove the original id,
-                # so set the `id` from child record
-                discount_record.pop("id", None)
-            elif BULK_PARENT_KEY in record.keys():
-                # we know that the sub-records follow the parent one, so if there are more related to the main record,
-                # we should merge each of them together with the parent one to have a single record.
-                record.update(**discount_record)
-                record.update(**record.get("codeDiscount"))
-                # emit record
-                yield record
-            else:
-                continue
-
 
 class Locations(ShopifyStream):
     """
@@ -543,52 +444,6 @@ class FulfillmentOrders(IncrementalShopifyGraphQlBulkStream):
             )
 
         yield record
-
-    def custom_record_reader(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
-        """
-        Overide to provide custom record reading functionality, here we need to:
-        - read the first record as `main`
-        - read all the subsequent record to the fist occcurrence and join to the `main`
-        - clean-up and emit, before `custom_transform` is applied.
-        """
-
-        # get the filesize for comparison
-        file_size: int = self.bulk_job.last_job_file_size
-        # get the `shop_id` from config
-        shop_id: int = self.config.get("shop_id")
-        # add placeholder for multiple `fulfillment orders`
-        buffer: List[Mapping[str, Any]] = []
-        # process the json lines
-        while jsonl_file.tell() <= file_size:
-            # read each line inside the loop
-            line: str = jsonl_file.readline()
-            # if no empty line
-            if line:
-                # read line as json
-                record: Mapping[str, Any] = loads(line)
-                # process main entity record
-                if self.bulk_job.record_producer.check_type(record, "Order"):
-                    # yield previous record first, if present
-                    yield from self.bulk_job.record_producer.emit_collected(buffer)
-                    # clean up for the new parent record
-                    buffer.clear()
-                elif self.bulk_job.record_producer.check_type(record, "FulfillmentOrder"):
-                    # append the prepared record to the buffer
-                    buffer.append(self.query.prep_fulfillment_order(record, shop_id))
-                elif self.bulk_job.record_producer.check_type(record, "FulfillmentOrderLineItem"):
-                    # append the prepared line item to the last element of the `buffer`
-                    buffer[-1]["line_items"].append(self.query.prep_line_item(record, shop_id))
-                elif self.bulk_job.record_producer.check_type(record, "FulfillmentOrderMerchantRequest"):
-                    # append the prepared mechant request to the last element of the `buffer`
-                    buffer[-1]["merchant_requests"].append(self.query.prep_merchant_request(record))
-
-                # check for the end of the file
-                if jsonl_file.tell() == file_size:
-                    # if we hit the end of the file, we yield what's collected
-                    yield from self.bulk_job.record_producer.emit_collected(buffer)
-            else:
-                # we exit from the loop when receive empty line (file ends)
-                break
 
 
 class Fulfillments(IncrementalShopifyNestedSubstream):

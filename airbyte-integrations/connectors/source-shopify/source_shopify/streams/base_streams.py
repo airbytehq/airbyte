@@ -14,7 +14,7 @@ import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkJob
-from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery, ShopifyBulkTemplates
+from source_shopify.shopify_graphql.bulk.query import BULK_PARENT_KEY, ShopifyBulkQuery, ShopifyBulkTemplates
 from source_shopify.transform import DataTypeEnforcer
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from source_shopify.utils import ShopifyNonRetryableErrors
@@ -559,15 +559,14 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     def __init__(self, config: Dict):
         super().__init__(config)
+        # init BULK Query instance, pass `shop_id` from config
+        self.query = self.bulk_query(shop_id=config.get("shop_id"))
         # define default BULK instance
         self.bulk_job: ShopifyBulkJob = ShopifyBulkJob(
             session=self._session,
             logger=self.logger,
-            # register `custom_record_reader` if defined in class.
-            custom_reader=self.custom_record_reader if self.custom_record_reader else None,
+            query=self.query,
         )
-        # init BULK Query instance
-        self.query = self.bulk_query()
 
     def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
@@ -671,6 +670,44 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # add `shop_url` field to each record produced
             records = self.add_shop_url_field(
                 # produce records from saved bulk job result
-                self.bulk_job.job_record_producer(job_result_url, self.query, self.custom_transform)
+                self.bulk_job.job_record_producer(job_result_url, self.custom_transform)
             )
             yield from self.filter_records_newer_than_state(stream_state, records)
+
+
+class MetafieldShopifySubstream(IncrementalShopifySubstream):
+    slice_key = "id"
+    data_field = "metafields"
+
+    parent_stream_class: object = None
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        object_id = stream_slice[self.slice_key]
+        return f"{self.parent_stream_class.data_field}/{object_id}/{self.data_field}.json"
+
+
+class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
+    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        """
+        The dependent resources have `__parentId` key in record, which signifies about the parnt-to-child relation.
+        To match the existing JSON Schema for `Metafields` streams we need to:
+            -- move the `id` to the `owner_id` key and extract the actual `id` (INT) from the string
+            -- extract the parent resosurce from the `id` and add it to the `owner_resource` field
+
+        Input:
+            { "__parentId": "gid://shopify/Order/19435458986123", "owner_type": "ORDER" }
+        Output:
+            { "owner_id": 19435458986123, "owner_resource: "order"}
+
+        More info: https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
+        """
+        # resolve parent id from `str` to `int`
+        record["owner_id"] = self.bulk_job.tools.resolve_str_id(record.get(BULK_PARENT_KEY))
+        # add `owner_resource` field
+        record["owner_resource"] = self.bulk_job.tools.camel_to_snake(record.get(BULK_PARENT_KEY, "").split("/")[3])
+        # remove `__parentId` from record
+        record.pop(BULK_PARENT_KEY, None)
+        # convert dates from ISO-8601 to RFC-3339
+        record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
+        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
+        yield record

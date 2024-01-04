@@ -347,7 +347,7 @@ def metafield_jsonl_content_example():
             "createdAt": "2023-01-01T01:01:01Z",
             "updatedAt": "2023-01-01T01:01:01Z",
         }
-    )
+    )+"\n"
     
     
 @pytest.fixture
@@ -398,7 +398,7 @@ def transactions_jsonl_content_example():
                 }
             ]
         }
-    )
+    )+"\n"
                     
     
 
