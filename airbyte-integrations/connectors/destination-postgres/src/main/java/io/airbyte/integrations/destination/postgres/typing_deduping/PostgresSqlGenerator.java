@@ -102,8 +102,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   @Override
   protected Condition cdcDeletedAtNotNullCondition() {
     return field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
-        .and(function("JSONB_TYPEOF", SQLDataType.VARCHAR, extractColumnAsJson(cdcDeletedAtColumn))
-            .ne("null"));
+        .and(jsonTypeof(cdcDeletedAtColumn).ne("null"));
   }
 
   @Override
@@ -142,5 +141,9 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
    */
   private Field<?> extractColumnAsJson(final ColumnId column) {
     return field("{0} -> {1}", name(COLUMN_NAME_DATA), val(column.originalName()));
+  }
+
+  private Field<String> jsonTypeof(final ColumnId column) {
+    return function("JSONB_TYPEOF", SQLDataType.VARCHAR, extractColumnAsJson(column));
   }
 }
