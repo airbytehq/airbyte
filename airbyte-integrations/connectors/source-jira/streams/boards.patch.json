@@ -1,0 +1,10 @@
+{
+    "properties": {
+    "projectKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
