@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -67,7 +66,7 @@ async def publish(
     metadata_service_gcs_credentials: str,
     slack_webhook: str,
     slack_channel: str,
-) -> bool:
+):
     ctx.obj["spec_cache_gcs_credentials"] = spec_cache_gcs_credentials
     ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
     ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
@@ -111,10 +110,11 @@ async def publish(
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
     )
+
     main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")
     ctx.obj["concurrency"] = 1
 
-    ran_publish_connector_contexts = await run_connectors_pipelines(
+    publish_connector_contexts = await run_connectors_pipelines(
         publish_connector_contexts,
         run_connector_publish_pipeline,
         "Publishing connectors",
@@ -122,4 +122,4 @@ async def publish(
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
     )
-    return all(context.state is ContextState.SUCCESSFUL for context in ran_publish_connector_contexts)
+    return all(context.state is ContextState.SUCCESSFUL for context in publish_connector_contexts)

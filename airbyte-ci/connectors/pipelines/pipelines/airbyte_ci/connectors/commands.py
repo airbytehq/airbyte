@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Optional, Set, Tuple
 
 import asyncclick as click
-from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
+from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
@@ -93,7 +93,7 @@ def get_selected_connectors_with_modified_files(
     return selected_connectors_with_modified_files
 
 
-def validate_environment(is_local: bool) -> None:
+def validate_environment(is_local: bool):
     """Check if the required environment variables exist."""
     if is_local:
         if not Path(".git").is_dir():
@@ -236,7 +236,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
 @click_ignore_unused_kwargs
 async def connectors(
     ctx: click.Context,
-) -> None:
+):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"])
 
