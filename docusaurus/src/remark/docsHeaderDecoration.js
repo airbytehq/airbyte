@@ -42,7 +42,7 @@ const plugin = () => {
         node.attributes = toAttributes({
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
-          isPypiPublished: Boolean(registryEntry.remoteRegistries?.pypi?.enabled),
+          isPypiPublished: Boolean(registryEntry.remoteRegistries?.pypi?.enabled) || registryEntry.name_oss === "Google Drive", // TODO: Remove debug example
           supportLevel: registryEntry.supportLevel_oss,
           dockerImageTag: registryEntry.dockerImageTag_oss,
           iconUrl: registryEntry.iconUrl_oss,
