@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 import static io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator.JSONB_TYPE;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -101,7 +102,7 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
 
   @Override
   protected JdbcSqlGenerator getSqlGenerator() {
-    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer(), DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
   }
 
   @Override

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.DISABLE;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
@@ -16,6 +17,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
@@ -96,8 +98,10 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator() {
-    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
+  protected JdbcSqlGenerator getSqlGenerator(JsonNode config) {
+    return new PostgresSqlGenerator(
+        new PostgresSQLNameTransformer(),
+        TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).orElse(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
   }
 
   public static void main(final String[] args) throws Exception {

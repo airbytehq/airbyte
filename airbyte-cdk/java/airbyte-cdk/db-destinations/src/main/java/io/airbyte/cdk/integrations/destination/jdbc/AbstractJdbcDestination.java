@@ -228,7 +228,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
-  protected abstract JdbcSqlGenerator getSqlGenerator();
+  protected abstract JdbcSqlGenerator getSqlGenerator(JsonNode config);
 
   protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
     return new JdbcDestinationHandler(databaseName, database);
@@ -268,7 +268,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
           stream.getStream().setNamespace(defaultNamespace);
         }
       }
-      final JdbcSqlGenerator sqlGenerator = getSqlGenerator();
+      final JdbcSqlGenerator sqlGenerator = getSqlGenerator(config);
       final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
           .map(override -> new CatalogParser(sqlGenerator, override))
           .orElse(new CatalogParser(sqlGenerator))
@@ -277,7 +277,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
       final var migrator = new JdbcV1V2Migrator(namingResolver, database, databaseName);
       final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
       final DestinationHandler<TableDefinition> destinationHandler = getDestinationHandler(databaseName, database);
-      boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
+      final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
       final TyperDeduper typerDeduper;
       if (disableTypeDedupe) {
         typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator,

@@ -54,7 +54,7 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
 
   @Override
   protected SqlGenerator<?> getSqlGenerator() {
-    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer(), getRawSchema());
   }
 
   @Override

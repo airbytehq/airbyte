@@ -11,6 +11,7 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DAT
 import static org.jooq.impl.DSL.array;
 import static org.jooq.impl.DSL.case_;
 import static org.jooq.impl.DSL.cast;
+import static org.jooq.impl.DSL.createSchemaIfNotExists;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.function;
 import static org.jooq.impl.DSL.name;
@@ -54,13 +55,17 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
       "timestamptz", "timestamp with time zone",
       "timetz", "time with time zone");
 
-  public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer) {
+  private final String defaultRawTableSchema;
+
+  public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer, final String defaultRawTableSchema) {
     super(namingTransformer);
+    this.defaultRawTableSchema = defaultRawTableSchema;
   }
 
   @Override
   public Sql setup() {
-    return Sql.of(
+    return Sql.separately(
+        createSchemaIfNotExists(defaultRawTableSchema).getSQL(),
         // safe_cast implementation copied from https://dba.stackexchange.com/a/203986
         // and wrapped in the idempotent function creation logic from https://stackoverflow.com/a/69547602
 
@@ -69,10 +74,15 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         // It's possible for two syncs to start running at the same time, and we can't coordinate
         // between destination-postgres instances, so we need to make sure that they can both successfully
         // run this function creation logic without failing.
+
+        // The string replace is _even more hacky_, but OSS jooq doesn't support CREATE FUNCTION
+        // so we'll just handle this ourselves.
+        // We just want to create our custom function inside the airbyte_internal schema
+        // rather than the default `public` schema.
         """
         do $$
         begin
-            CREATE FUNCTION airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
+            CREATE FUNCTION RAW_TABLE_SCHEMA_PLACEHOLDER.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
               LANGUAGE plpgsql AS
             $func$
             BEGIN
@@ -86,7 +96,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
             when duplicate_function then
             null;
         end; $$
-        """);
+        """.replace("RAW_TABLE_SCHEMA_PLACEHOLDER", defaultRawTableSchema));
   }
 
   @Override
@@ -166,7 +176,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
           .when(field.isNull().or(jsonTypeof(field).eq("null")), val((String) null))
           .else_(cast(field, SQLDataType.VARCHAR));
       if (useExpensiveSaferCasting) {
-        return function("airbyte_safe_cast", dialectType, extractAsText, cast(val((Object) null), dialectType));
+        return function(name(defaultRawTableSchema, "airbyte_safe_cast"), dialectType, extractAsText, cast(val((Object) null), dialectType));
       } else {
         return cast(extractAsText, dialectType);
       }
