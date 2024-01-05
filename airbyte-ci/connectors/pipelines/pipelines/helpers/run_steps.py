@@ -22,6 +22,10 @@ if TYPE_CHECKING:
     ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict], Awaitable[Dict]]
 
 
+class InvalidStepConfiguration(Exception):
+    pass
+
+
 @dataclass
 class RunStepOptions:
     """Options for the run_step function."""
@@ -80,13 +84,22 @@ def _skip_remaining_steps(remaining_steps: STEP_TREE) -> RESULTS_DICT:
     return skipped_results
 
 
-def _step_dependencies_succeeded(depends_on: List[str], results: RESULTS_DICT) -> bool:
+def _step_dependencies_succeeded(step_to_eval: StepToRun, results: RESULTS_DICT) -> bool:
     """
     Check if all dependencies of a step have succeeded.
     """
-    main_logger.info(f"Checking if dependencies {depends_on} have succeeded")
+    main_logger.info(f"Checking if dependencies {step_to_eval.depends_on} have succeeded")
 
-    return all(results[step_id] and results[step_id].status is StepStatus.SUCCESS for step_id in depends_on)
+    # Check if all depends_on keys are in the results dict
+    # If not, that means a step has not been run yet
+    # Implying that the order of the steps are not correct
+    for step_id in step_to_eval.depends_on:
+        if step_id not in results:
+            raise InvalidStepConfiguration(
+                f"Step {step_to_eval.id} depends on {step_id} which has not been run yet. This implies that the order of the steps is not correct. Please check that the steps are in the correct order."
+            )
+
+    return all(results[step_id] and results[step_id].status is StepStatus.SUCCESS for step_id in step_to_eval.depends_on)
 
 
 def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], results: RESULTS_DICT) -> Tuple[STEP_TREE, RESULTS_DICT]:
@@ -109,7 +122,7 @@ def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], r
             results[step_to_eval.id] = step_to_eval.step.skip("Skipped by user")
 
         # skip step if a dependency failed
-        elif not _step_dependencies_succeeded(step_to_eval.depends_on, results):
+        elif not _step_dependencies_succeeded(step_to_eval, results):
             main_logger.info(
                 f"Skipping step {step_to_eval.id} because one of the dependencies have not been met: {step_to_eval.depends_on}"
             )
