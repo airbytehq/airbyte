@@ -13,7 +13,7 @@ from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
 from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.common import with_pip_packages
 from pipelines.dagger.containers.python import with_python_base
-from pipelines.helpers.run_steps import STEP_TREE, StepToRun, run_steps
+from pipelines.helpers.run_steps import StepToRun, run_steps
 from pipelines.helpers.utils import DAGGER_CONFIG, get_secret_host_variable
 from pipelines.models.reports import Report
 from pipelines.models.steps import MountPath, Step, StepResult
@@ -22,7 +22,7 @@ from pipelines.models.steps import MountPath, Step, StepResult
 
 
 class MetadataValidation(SimpleDockerStep):
-    def __init__(self, context: ConnectorContext) -> None:
+    def __init__(self, context: ConnectorContext):
         super().__init__(
             title=f"Validate metadata for {context.connector.technical_name}",
             context=context,
@@ -64,7 +64,7 @@ class MetadataUpload(SimpleDockerStep):
         docker_hub_password_secret: dagger.Secret,
         pre_release: bool = False,
         pre_release_tag: Optional[str] = None,
-    ) -> None:
+    ):
         title = f"Upload metadata for {context.connector.technical_name} v{context.connector.version}"
         command_to_run = [
             "metadata_service",
@@ -74,7 +74,7 @@ class MetadataUpload(SimpleDockerStep):
             metadata_bucket_name,
         ]
 
-        if pre_release and pre_release_tag:
+        if pre_release:
             command_to_run += ["--prerelease", pre_release_tag]
 
         super().__init__(
@@ -131,7 +131,7 @@ class DeployOrchestrator(Step):
         container_to_run = (
             python_with_dependencies.with_mounted_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
-            .with_workdir("/src/orchestrator")
+            .with_workdir(f"/src/orchestrator")
             .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
             .with_exec(self.deploy_dagster_command)
         )
@@ -139,14 +139,16 @@ class DeployOrchestrator(Step):
 
 
 class TestOrchestrator(PoetryRunStep):
-    def __init__(self, context: PipelineContext) -> None:
+    def __init__(self, context: PipelineContext):
         super().__init__(
             context=context,
             title="Test Metadata Orchestrator",
             parent_dir_path="airbyte-ci/connectors/metadata_service",
             module_path="orchestrator",
-            poetry_run_args=["pytest"],
         )
+
+    async def _run(self) -> StepResult:
+        return await super()._run(["pytest"])
 
 
 # PIPELINES
@@ -156,7 +158,6 @@ async def run_metadata_orchestrator_deploy_pipeline(
     is_local: bool,
     git_branch: str,
     git_revision: str,
-    report_output_prefix: str,
     gha_workflow_run_url: Optional[str],
     dagger_logs_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
@@ -167,7 +168,6 @@ async def run_metadata_orchestrator_deploy_pipeline(
         is_local=is_local,
         git_branch=git_branch,
         git_revision=git_revision,
-        report_output_prefix=report_output_prefix,
         gha_workflow_run_url=gha_workflow_run_url,
         dagger_logs_url=dagger_logs_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
@@ -178,7 +178,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
 
         async with metadata_pipeline_context:
-            steps: STEP_TREE = [
+            steps = [
                 StepToRun(
                     id=CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR,
                     step=TestOrchestrator(context=metadata_pipeline_context),
@@ -191,8 +191,6 @@ async def run_metadata_orchestrator_deploy_pipeline(
             ]
             steps_results = await run_steps(steps)
             metadata_pipeline_context.report = Report(
-                pipeline_context=metadata_pipeline_context,
-                steps_results=list(steps_results.values()),
-                name="METADATA ORCHESTRATOR DEPLOY RESULTS",
+                pipeline_context=metadata_pipeline_context, steps_results=steps_results, name="METADATA ORCHESTRATOR DEPLOY RESULTS"
             )
     return metadata_pipeline_context.report.success

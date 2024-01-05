@@ -2,7 +2,7 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the Instagram source connector.
+This page contains the setup guide and reference information for the [Instagram](https://www.instagram.com/) source connector.
 
 </HideInUI>
 
@@ -10,7 +10,8 @@ This page contains the setup guide and reference information for the Instagram s
 
 - [Meta for Developers account](https://developers.facebook.com)
 - [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your Facebook page
-- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte <!-- env:oss -->
+- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte
+<!-- env:oss -->
 - [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
 - [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
 <!-- /env:oss -->
@@ -74,9 +75,9 @@ The Instagram source connector supports the following streams. For more informat
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
   - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 
-### Rate Limiting and Performance Considerations
-
-Instagram limits the number of requests that can be made at a time, but the Instagram connector gracefully handles rate limiting. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
+:::info
+The Instagram connector syncs data related to Users, Media, and Stories and their insights from the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). For performance data related to Instagram Ads, use the Facebook Marketing source.
+:::
 
 ## Data type map
 
@@ -88,6 +89,25 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 | `number`         | `number`     |
 | `array`          | `array`      |
 | `object`         | `object`     |
+
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Instagram connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+
+Instagram limits the number of requests that can be made at a time. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
+
+### Troubleshooting
+
+* Check out common troubleshooting issues for the Instagram source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
 
 ## Changelog
 
