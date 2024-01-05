@@ -4,6 +4,8 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
+import static org.jooq.impl.DSL.array;
+import static org.jooq.impl.DSL.case_;
 import static org.jooq.impl.DSL.cast;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.function;
@@ -19,8 +21,10 @@ import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
+import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -88,11 +92,18 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
       final AirbyteType type,
       final String alias,
       final boolean useExpensiveSaferCasting) {
+    return castedField(field, type, useExpensiveSaferCasting).as(quotedName(alias));
+  }
+
+  protected Field<?> castedField(
+      final Field<?> field,
+      final AirbyteType type,
+      final boolean useExpensiveSaferCasting) {
     final DataType<?> dialectType = toDialectType(type);
     if (useExpensiveSaferCasting) {
-      return function("airbyte_safe_cast", dialectType, field).as(quotedName(alias));
+      return function("airbyte_safe_cast", dialectType, field);
     } else {
-      return cast(field, dialectType).as(quotedName(alias));
+      return cast(field, dialectType);
     }
   }
 
@@ -105,8 +116,51 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   protected Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
-    // TODO
-    return cast("{}", JSONB_TYPE).as(COLUMN_NAME_AB_META);
+    final Field<?>[] dataFieldErrors = columns
+        .entrySet()
+        .stream()
+        .map(column -> toCastingErrorCaseStmt(column.getKey(), column.getValue()))
+        .toArray(Field<?>[]::new);
+    return function(
+        "JSONB_BUILD_OBJECT",
+        JSONB_TYPE,
+        val("errors"),
+        function("ARRAY_REMOVE", JSONB_TYPE, array(dataFieldErrors), val((String) null))
+    ).as(COLUMN_NAME_AB_META);
+  }
+
+  private Field<String> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
+    final Field<?> extract = extractColumnAsJson(column);
+    if (type instanceof Struct) {
+      // If this field is a struct, verify that the raw data is an object or null.
+      return case_()
+          .when(
+              extract.isNotNull()
+                  .and(jsonTypeof(column).notIn("object", "null")),
+              val("Problem with " + column.originalName())
+          ).else_(val((String) null));
+    } else if (type instanceof Array) {
+      // Do the same for arrays.
+      return case_()
+          .when(
+              extract.isNotNull()
+                  .and(jsonTypeof(column).notIn("array", "null")),
+              val("Problem with " + column.originalName())
+          ).else_(val((String) null));
+    } else if (type == AirbyteProtocolType.UNKNOWN) {
+      // Unknown types require no casting, so there's never an error.
+      return val((String) null);
+    } else {
+      // For other type: If the raw data is not NULL or 'null', but the casted data is NULL,
+      // then we have a typing error.
+      return case_()
+          .when(
+              extract.isNotNull()
+                  .and(jsonTypeof(column).isNotNull())
+                  .and(castedField(extractColumnAsText(column), type, true).isNull()),
+              val("Problem with " + column.originalName())
+          ).else_(val((String) null));
+    }
   }
 
   @Override
