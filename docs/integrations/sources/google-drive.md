@@ -243,7 +243,6 @@ One record will be emitted for each document. Keep in mind that large files can 
 
 Before parsing each document, the connector exports Google Document files to Docx format internally. Google Sheets, Google Slides, and drawings are internally exported and parsed by the connector as PDFs.
 
-
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
