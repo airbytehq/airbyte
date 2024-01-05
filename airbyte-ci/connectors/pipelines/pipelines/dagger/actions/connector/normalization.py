@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, Dict
+
 from dagger import Container, Platform
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
@@ -63,13 +65,13 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "yum_packages": [],
     },
 }
-DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
+DESTINATION_NORMALIZATION_BUILD_CONFIGURATION: Dict[str, Dict[str, Any]] = {
     **BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION,
     **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION.items()},
 }
 
 
 def with_normalization(context: ConnectorContext, build_platform: Platform) -> Container:
-    return context.dagger_client.container(platform=build_platform).from_(
-        DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["normalization_image"]
-    )
+    normalization_image_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["normalization_image"]
+    assert isinstance(normalization_image_name, str)
+    return context.dagger_client.container(platform=build_platform).from_(normalization_image_name)

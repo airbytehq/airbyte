@@ -512,7 +512,7 @@ def test_update_state_with_parent_state(mocker):
 
     # Set pendulum to return a consistent value
     now = pendulum.datetime(2023, 11, 2, 12, 53, 7)
-    pendulum.travel_to(now)
+    pendulum.set_test_now(now)
 
     # Call the _update_state method with the third stream_slice
     stream_slice_third = {"customer_id": "customer_id_3"}
@@ -529,7 +529,7 @@ def test_update_state_with_parent_state(mocker):
     assert stream._state == expected_state_third_call
 
     # Reset the pendulum mock to its original state
-    pendulum.travel_back()
+    pendulum.set_test_now()
 
 
 def test_update_state_without_parent_state(mocker):
@@ -537,14 +537,14 @@ def test_update_state_without_parent_state(mocker):
     Test the _update_state method when the parent_stream does not have a state.
     """
     # Reset any previous mock state for pendulum
-    pendulum.travel_back()
+    pendulum.set_test_now()
 
     # Mock instance setup
     stream = CampaignCriterion(api=MagicMock(), customers=[])
 
     # Mock pendulum call to return a consistent value
     now = pendulum.datetime(2023, 11, 2, 12, 53, 7)
-    pendulum.travel_to(now)
+    pendulum.set_test_now(now)
 
     # Call the _update_state method with the first stream_slice
     stream_slice_first = {"customer_id": "customer_id_1"}
@@ -568,4 +568,4 @@ def test_update_state_without_parent_state(mocker):
     assert stream._state == expected_state_second_call
 
     # Reset the pendulum mock to its original state
-    pendulum.travel_back()
+    pendulum.set_test_now()
