@@ -260,7 +260,7 @@ flowchart TD
 
 | Option              | Multiple | Default value | Description                                                                                                                                                                                              |
 | ------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--skip-step/-x`    | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                         |
+| `--skip-step/-x`    | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                                                                            |
 | `--fail-fast`       | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
 | `--code-tests-only` | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`  | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
@@ -401,9 +401,9 @@ Upgrade for source-openweather: `airbyte-ci connectors --name=source-openweather
 
 #### Arguments
 
-| Argument              | Description                                                            |
-| --------------------- | ---------------------------------------------------------------------- |
-| `CDK_VERSION`         | CDK version to set (default to the most recent version)                |
+| Argument      | Description                                             |
+| ------------- | ------------------------------------------------------- |
+| `CDK_VERSION` | CDK version to set (default to the most recent version) |
 
 ### <a id="connectors-upgrade_base_image"></a>`connectors upgrade_base_image` command
 
@@ -504,9 +504,9 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 #### Options
 
-| Option             | Required | Default | Mapped environment variable | Description                                                                                      |
-| ------------------ | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
-| `-c/--poetry-run-command` | True    | None   |                             | The command to run with `poetry run` |
+| Option                    | Required | Default | Mapped environment variable | Description                          |
+| ------------------------- | -------- | ------- | --------------------------- | ------------------------------------ |
+| `-c/--poetry-run-command` | True     | None    |                             | The command to run with `poetry run` |
 
 #### Examples
 You can pass multiple `-c/--poetry-run-command` options to run multiple commands.
@@ -519,110 +519,111 @@ E.G.: running `pytest` on a specific test folder:
 
 ## Changelog
 
-| Version | PR                                                         | Description                                                                                               |
-| ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 2.14.2  | [#33954](https://github.com/airbytehq/airbyte/pull/33954)  | Revert mypy changes
-| 2.14.1  | [#33956](https://github.com/airbytehq/airbyte/pull/33956)  | Exclude pnpm lock files from auto-formatting
-| 2.14.0  | [#33941](https://github.com/airbytehq/airbyte/pull/33941)  | Enable in-connector normalization in destination-postgres                                                 |
-| 2.13.1  | [#33920](https://github.com/airbytehq/airbyte/pull/33920)  | Report different sentry environments                                                                      |
-| 2.13.0  | [#33784](https://github.com/airbytehq/airbyte/pull/33784)  | Make `airbyte-ci test` able to run any poetry command                                                     |
-| 2.12.0  | [#33313](https://github.com/airbytehq/airbyte/pull/33313)  | Add upgrade CDK command                                                                                   |
-| 2.11.0  | [#32188](https://github.com/airbytehq/airbyte/pull/32188)  | Add -x option to connector test to allow for skipping steps                                               |
-| 2.10.12 | [#33419](https://github.com/airbytehq/airbyte/pull/33419)  | Make ClickPipelineContext handle dagger logging.                                                          |
-| 2.10.11 | [#33497](https://github.com/airbytehq/airbyte/pull/33497)  | Consider nested .gitignore rules in format.                                                               |
-| 2.10.10 | [#33449](https://github.com/airbytehq/airbyte/pull/33449)  | Add generated metadata models to the default format ignore list.                                          |
-| 2.10.9  | [#33370](https://github.com/airbytehq/airbyte/pull/33370)  | Fix bug that broke airbyte-ci test                                                                        |
-| 2.10.8  | [#33249](https://github.com/airbytehq/airbyte/pull/33249)  | Exclude git ignored files from formatting.                                                                |
-| 2.10.7  | [#33248](https://github.com/airbytehq/airbyte/pull/33248)  | Fix bug which broke airbyte-ci connectors tests when optional DockerHub credentials env vars are not set. |
-| 2.10.6  | [#33170](https://github.com/airbytehq/airbyte/pull/33170)  | Remove Dagger logs from console output of `format`.                                                       |
-| 2.10.5  | [#33097](https://github.com/airbytehq/airbyte/pull/33097)  | Improve `format` performances, exit with 1 status code when `fix` changes files.                          |
-| 2.10.4  | [#33206](https://github.com/airbytehq/airbyte/pull/33206)  | Add "-y/--yes" Flag to allow preconfirmation of prompts                                                   |
-| 2.10.3  | [#33080](https://github.com/airbytehq/airbyte/pull/33080)  | Fix update failing due to SSL error on install.                                                           |
-| 2.10.2  | [#33008](https://github.com/airbytehq/airbyte/pull/33008)  | Fix local `connector build`.                                                                              |
-| 2.10.1  | [#32928](https://github.com/airbytehq/airbyte/pull/32928)  | Fix BuildConnectorImages constructor.                                                                     |
-| 2.10.0  | [#32819](https://github.com/airbytehq/airbyte/pull/32819)  | Add `--tag` option to connector build.                                                                    |
-| 2.9.0   | [#32816](https://github.com/airbytehq/airbyte/pull/32816)  | Add `--architecture` option to connector build.                                                           |
-| 2.8.1   | [#32999](https://github.com/airbytehq/airbyte/pull/32999)  | Improve Java code formatting speed                                                                        |
-| 2.8.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Move pipx install to `airbyte-ci-dev`, and add auto-update feature targeting binary                       |
-| 2.7.3   | [#32847](https://github.com/airbytehq/airbyte/pull/32847)  | Improve --modified behaviour for pull requests.                                                           |
-| 2.7.2   | [#32839](https://github.com/airbytehq/airbyte/pull/32839)  | Revert changes in v2.7.1.                                                                                 |
-| 2.7.1   | [#32806](https://github.com/airbytehq/airbyte/pull/32806)  | Improve --modified behaviour for pull requests.                                                           |
-| 2.7.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Merge airbyte-ci-internal into airbyte-ci                                                                 |
-| 2.6.0   | [#31831](https://github.com/airbytehq/airbyte/pull/31831)  | Add `airbyte-ci format` commands, remove connector-specific formatting check                              |
-| 2.5.9   | [#32427](https://github.com/airbytehq/airbyte/pull/32427)  | Re-enable caching for source-postgres                                                                     |
-| 2.5.8   | [#32402](https://github.com/airbytehq/airbyte/pull/32402)  | Set Dagger Cloud token for airbyters only                                                                 |
-| 2.5.7   | [#31628](https://github.com/airbytehq/airbyte/pull/31628)  | Add ClickPipelineContext class                                                                            |
-| 2.5.6   | [#32139](https://github.com/airbytehq/airbyte/pull/32139)  | Test coverage report on Python connector UnitTest.                                                        |
-| 2.5.5   | [#32114](https://github.com/airbytehq/airbyte/pull/32114)  | Create cache mount for `/var/lib/docker` to store images in `dind` context.                               |
-| 2.5.4   | [#32090](https://github.com/airbytehq/airbyte/pull/32090)  | Do not cache `docker login`.                                                                              |
-| 2.5.3   | [#31974](https://github.com/airbytehq/airbyte/pull/31974)  | Fix latest CDK install and pip cache mount on connector install.                                          |
-| 2.5.2   | [#31871](https://github.com/airbytehq/airbyte/pull/31871)  | Deactivate PR comments, add HTML report links to the PR status when its ready.                            |
-| 2.5.1   | [#31774](https://github.com/airbytehq/airbyte/pull/31774)  | Add a docker configuration check on `airbyte-ci` startup.                                                 |
-| 2.5.0   | [#31766](https://github.com/airbytehq/airbyte/pull/31766)  | Support local connectors secrets.                                                                         |
-| 2.4.0   | [#31716](https://github.com/airbytehq/airbyte/pull/31716)  | Enable pre-release publish with local CDK.                                                                |
-| 2.3.1   | [#31748](https://github.com/airbytehq/airbyte/pull/31748)  | Use AsyncClick library instead of base Click.                                                             |
-| 2.3.0   | [#31699](https://github.com/airbytehq/airbyte/pull/31699)  | Support optional concurrent CAT execution.                                                                |
-| 2.2.6   | [#31752](https://github.com/airbytehq/airbyte/pull/31752)  | Only authenticate when secrets are available.                                                             |
-| 2.2.5   | [#31718](https://github.com/airbytehq/airbyte/pull/31718)  | Authenticate the sidecar docker daemon to DockerHub.                                                      |
-| 2.2.4   | [#31535](https://github.com/airbytehq/airbyte/pull/31535)  | Improve gradle caching when building java connectors.                                                     |
-| 2.2.3   | [#31688](https://github.com/airbytehq/airbyte/pull/31688)  | Fix failing `CheckBaseImageUse` step when not running on PR.                                              |
-| 2.2.2   | [#31659](https://github.com/airbytehq/airbyte/pull/31659)  | Support builds on x86_64 platform                                                                         |
-| 2.2.1   | [#31653](https://github.com/airbytehq/airbyte/pull/31653)  | Fix CheckBaseImageIsUsed failing on non certified connectors.                                             |
-| 2.2.0   | [#30527](https://github.com/airbytehq/airbyte/pull/30527)  | Add a new check for python connectors to make sure certified connectors use our base image.               |
-| 2.1.1   | [#31488](https://github.com/airbytehq/airbyte/pull/31488)  | Improve `airbyte-ci` start time with Click Lazy load                                                      |
-| 2.1.0   | [#31412](https://github.com/airbytehq/airbyte/pull/31412)  | Run airbyte-ci from any where in airbyte project                                                          |
-| 2.0.4   | [#31487](https://github.com/airbytehq/airbyte/pull/31487)  | Allow for third party connector selections                                                                |
-| 2.0.3   | [#31525](https://github.com/airbytehq/airbyte/pull/31525)  | Refactor folder structure                                                                                 |
-| 2.0.2   | [#31533](https://github.com/airbytehq/airbyte/pull/31533)  | Pip cache volume by python version.                                                                       |
-| 2.0.1   | [#31545](https://github.com/airbytehq/airbyte/pull/31545)  | Reword the changelog entry when using `migrate_to_base_image`.                                            |
-| 2.0.0   | [#31424](https://github.com/airbytehq/airbyte/pull/31424)  | Remove `airbyte-ci connectors format` command.                                                            |
-| 1.9.4   | [#31478](https://github.com/airbytehq/airbyte/pull/31478)  | Fix running tests for connector-ops package.                                                              |
-| 1.9.3   | [#31457](https://github.com/airbytehq/airbyte/pull/31457)  | Improve the connector documentation for connectors migrated to our base image.                            |
-| 1.9.2   | [#31426](https://github.com/airbytehq/airbyte/pull/31426)  | Concurrent execution of java connectors tests.                                                            |
-| 1.9.1   | [#31455](https://github.com/airbytehq/airbyte/pull/31455)  | Fix `None` docker credentials on publish.                                                                 |
-| 1.9.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump_version`, `upgrade_base_image`, `migrate_to_base_image`.                              |
-| 1.8.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump_version`, `upgrade_base_image`, `migrate_to_base_image`.                              |
-| 1.7.2   | [#31343](https://github.com/airbytehq/airbyte/pull/31343)  | Bind Pytest integration tests to a dockerhost.                                                            |
-| 1.7.1   | [#31332](https://github.com/airbytehq/airbyte/pull/31332)  | Disable Gradle step caching on source-postgres.                                                           |
-| 1.7.0   | [#30526](https://github.com/airbytehq/airbyte/pull/30526)  | Implement pre/post install hooks support.                                                                 |
-| 1.6.0   | [#30474](https://github.com/airbytehq/airbyte/pull/30474)  | Test connector inside their containers.                                                                   |
-| 1.5.1   | [#31227](https://github.com/airbytehq/airbyte/pull/31227)  | Use python 3.11 in amazoncorretto-bazed gradle containers, run 'test' gradle task instead of 'check'.     |
-| 1.5.0   | [#30456](https://github.com/airbytehq/airbyte/pull/30456)  | Start building Python connectors using our base images.                                                   |
-| 1.4.6   | [ #31087](https://github.com/airbytehq/airbyte/pull/31087) | Throw error if airbyte-ci tools is out of date                                                            |
-| 1.4.5   | [#31133](https://github.com/airbytehq/airbyte/pull/31133)  | Fix bug when building containers using `with_integration_base_java_and_normalization`.                    |
-| 1.4.4   | [#30743](https://github.com/airbytehq/airbyte/pull/30743)  | Add `--disable-report-auto-open` and `--use-host-gradle-dist-tar` to allow gradle integration.            |
-| 1.4.3   | [#30595](https://github.com/airbytehq/airbyte/pull/30595)  | Add --version and version check                                                                           |
-| 1.4.2   | [#30595](https://github.com/airbytehq/airbyte/pull/30595)  | Remove directory name requirement                                                                         |
-| 1.4.1   | [#30595](https://github.com/airbytehq/airbyte/pull/30595)  | Load base migration guide into QA Test container for strict encrypt variants                              |
-| 1.4.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330)  | Add support for pyproject.toml as the prefered entry point for a connector package                        |
-| 1.3.0   | [#30461](https://github.com/airbytehq/airbyte/pull/30461)  | Add `--use-local-cdk` flag to all connectors commands                                                     |
-| 1.2.3   | [#30477](https://github.com/airbytehq/airbyte/pull/30477)  | Fix a test regression introduced the previous version.                                                    |
-| 1.2.2   | [#30438](https://github.com/airbytehq/airbyte/pull/30438)  | Add workaround to always stream logs properly with --is-local.                                            |
-| 1.2.1   | [#30384](https://github.com/airbytehq/airbyte/pull/30384)  | Java connector test performance fixes.                                                                    |
-| 1.2.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330)  | Add `--metadata-query` option to connectors command                                                       |
-| 1.1.3   | [#30314](https://github.com/airbytehq/airbyte/pull/30314)  | Stop patching gradle files to make them work with airbyte-ci.                                             |
-| 1.1.2   | [#30279](https://github.com/airbytehq/airbyte/pull/30279)  | Fix correctness issues in layer caching by making atomic execution groupings                              |
-| 1.1.1   | [#30252](https://github.com/airbytehq/airbyte/pull/30252)  | Fix redundancies and broken logic in GradleTask, to speed up the CI runs.                                 |
-| 1.1.0   | [#29509](https://github.com/airbytehq/airbyte/pull/29509)  | Refactor the airbyte-ci test command to run tests on any poetry package.                                  |
-| 1.0.0   | [#28000](https://github.com/airbytehq/airbyte/pull/29232)  | Remove release stages in favor of support level from airbyte-ci.                                          |
-| 0.5.0   | [#28000](https://github.com/airbytehq/airbyte/pull/28000)  | Run connector acceptance tests with dagger-in-dagger.                                                     |
-| 0.4.7   | [#29156](https://github.com/airbytehq/airbyte/pull/29156)  | Improve how we check existence of requirement.txt or setup.py file to not raise early pip install errors. |
-| 0.4.6   | [#28729](https://github.com/airbytehq/airbyte/pull/28729)  | Use keyword args instead of positional argument for optional paramater in Dagger's API                    |
-| 0.4.5   | [#29034](https://github.com/airbytehq/airbyte/pull/29034)  | Disable Dagger terminal UI when running publish.                                                          |
-| 0.4.4   | [#29064](https://github.com/airbytehq/airbyte/pull/29064)  | Make connector modified files a frozen set.                                                               |
-| 0.4.3   | [#29033](https://github.com/airbytehq/airbyte/pull/29033)  | Disable dependency scanning for Java connectors.                                                          |
-| 0.4.2   | [#29030](https://github.com/airbytehq/airbyte/pull/29030)  | Make report path always have the same prefix: `airbyte-ci/`.                                              |
-| 0.4.1   | [#28855](https://github.com/airbytehq/airbyte/pull/28855)  | Improve the selected connectors detection for connectors commands.                                        |
-| 0.4.0   | [#28947](https://github.com/airbytehq/airbyte/pull/28947)  | Show Dagger Cloud run URLs in CI                                                                          |
-| 0.3.2   | [#28789](https://github.com/airbytehq/airbyte/pull/28789)  | Do not consider empty reports as successfull.                                                             |
-| 0.3.1   | [#28938](https://github.com/airbytehq/airbyte/pull/28938)  | Handle 5 status code on MetadataUpload as skipped                                                         |
-| 0.3.0   | [#28869](https://github.com/airbytehq/airbyte/pull/28869)  | Enable the Dagger terminal UI on local `airbyte-ci` execution                                             |
-| 0.2.3   | [#28907](https://github.com/airbytehq/airbyte/pull/28907)  | Make dagger-in-dagger work for `airbyte-ci tests` command                                                 |
-| 0.2.2   | [#28897](https://github.com/airbytehq/airbyte/pull/28897)  | Sentry: Ignore error logs without exceptions from reporting                                               |
-| 0.2.1   | [#28767](https://github.com/airbytehq/airbyte/pull/28767)  | Improve pytest step result evaluation to prevent false negative/positive.                                 |
-| 0.2.0   | [#28857](https://github.com/airbytehq/airbyte/pull/28857)  | Add the `airbyte-ci tests` command to run the test suite on any `airbyte-ci` poetry package.              |
-| 0.1.1   | [#28858](https://github.com/airbytehq/airbyte/pull/28858)  | Increase the max duration of Connector Package install to 20mn.                                           |
-| 0.1.0   |                                                            | Alpha version not in production yet. All the commands described in this doc are available.                |
+| Version | PR                                                         | Description                                                                                                       |
+| ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 2.14.3  | [#33964](https://github.com/airbytehq/airbyte/pull/33964)  | Reintroduce mypy with fixes for AssertionError on publish and missing report URL on connector test commit status. |
+| 2.14.2  | [#33954](https://github.com/airbytehq/airbyte/pull/33954)  | Revert mypy changes                                                                                               |
+| 2.14.1  | [#33956](https://github.com/airbytehq/airbyte/pull/33956)  | Exclude pnpm lock files from auto-formatting                                                                      |
+| 2.14.0  | [#33941](https://github.com/airbytehq/airbyte/pull/33941)  | Enable in-connector normalization in destination-postgres                                                         |
+| 2.13.1  | [#33920](https://github.com/airbytehq/airbyte/pull/33920)  | Report different sentry environments                                                                              |
+| 2.13.0  | [#33784](https://github.com/airbytehq/airbyte/pull/33784)  | Make `airbyte-ci test` able to run any poetry command                                                             |
+| 2.12.0  | [#33313](https://github.com/airbytehq/airbyte/pull/33313)  | Add upgrade CDK command                                                                                           |
+| 2.11.0  | [#32188](https://github.com/airbytehq/airbyte/pull/32188)  | Add -x option to connector test to allow for skipping steps                                                       |
+| 2.10.12 | [#33419](https://github.com/airbytehq/airbyte/pull/33419)  | Make ClickPipelineContext handle dagger logging.                                                                  |
+| 2.10.11 | [#33497](https://github.com/airbytehq/airbyte/pull/33497)  | Consider nested .gitignore rules in format.                                                                       |
+| 2.10.10 | [#33449](https://github.com/airbytehq/airbyte/pull/33449)  | Add generated metadata models to the default format ignore list.                                                  |
+| 2.10.9  | [#33370](https://github.com/airbytehq/airbyte/pull/33370)  | Fix bug that broke airbyte-ci test                                                                                |
+| 2.10.8  | [#33249](https://github.com/airbytehq/airbyte/pull/33249)  | Exclude git ignored files from formatting.                                                                        |
+| 2.10.7  | [#33248](https://github.com/airbytehq/airbyte/pull/33248)  | Fix bug which broke airbyte-ci connectors tests when optional DockerHub credentials env vars are not set.         |
+| 2.10.6  | [#33170](https://github.com/airbytehq/airbyte/pull/33170)  | Remove Dagger logs from console output of `format`.                                                               |
+| 2.10.5  | [#33097](https://github.com/airbytehq/airbyte/pull/33097)  | Improve `format` performances, exit with 1 status code when `fix` changes files.                                  |
+| 2.10.4  | [#33206](https://github.com/airbytehq/airbyte/pull/33206)  | Add "-y/--yes" Flag to allow preconfirmation of prompts                                                           |
+| 2.10.3  | [#33080](https://github.com/airbytehq/airbyte/pull/33080)  | Fix update failing due to SSL error on install.                                                                   |
+| 2.10.2  | [#33008](https://github.com/airbytehq/airbyte/pull/33008)  | Fix local `connector build`.                                                                                      |
+| 2.10.1  | [#32928](https://github.com/airbytehq/airbyte/pull/32928)  | Fix BuildConnectorImages constructor.                                                                             |
+| 2.10.0  | [#32819](https://github.com/airbytehq/airbyte/pull/32819)  | Add `--tag` option to connector build.                                                                            |
+| 2.9.0   | [#32816](https://github.com/airbytehq/airbyte/pull/32816)  | Add `--architecture` option to connector build.                                                                   |
+| 2.8.1   | [#32999](https://github.com/airbytehq/airbyte/pull/32999)  | Improve Java code formatting speed                                                                                |
+| 2.8.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Move pipx install to `airbyte-ci-dev`, and add auto-update feature targeting binary                               |
+| 2.7.3   | [#32847](https://github.com/airbytehq/airbyte/pull/32847)  | Improve --modified behaviour for pull requests.                                                                   |
+| 2.7.2   | [#32839](https://github.com/airbytehq/airbyte/pull/32839)  | Revert changes in v2.7.1.                                                                                         |
+| 2.7.1   | [#32806](https://github.com/airbytehq/airbyte/pull/32806)  | Improve --modified behaviour for pull requests.                                                                   |
+| 2.7.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Merge airbyte-ci-internal into airbyte-ci                                                                         |
+| 2.6.0   | [#31831](https://github.com/airbytehq/airbyte/pull/31831)  | Add `airbyte-ci format` commands, remove connector-specific formatting check                                      |
+| 2.5.9   | [#32427](https://github.com/airbytehq/airbyte/pull/32427)  | Re-enable caching for source-postgres                                                                             |
+| 2.5.8   | [#32402](https://github.com/airbytehq/airbyte/pull/32402)  | Set Dagger Cloud token for airbyters only                                                                         |
+| 2.5.7   | [#31628](https://github.com/airbytehq/airbyte/pull/31628)  | Add ClickPipelineContext class                                                                                    |
+| 2.5.6   | [#32139](https://github.com/airbytehq/airbyte/pull/32139)  | Test coverage report on Python connector UnitTest.                                                                |
+| 2.5.5   | [#32114](https://github.com/airbytehq/airbyte/pull/32114)  | Create cache mount for `/var/lib/docker` to store images in `dind` context.                                       |
+| 2.5.4   | [#32090](https://github.com/airbytehq/airbyte/pull/32090)  | Do not cache `docker login`.                                                                                      |
+| 2.5.3   | [#31974](https://github.com/airbytehq/airbyte/pull/31974)  | Fix latest CDK install and pip cache mount on connector install.                                                  |
+| 2.5.2   | [#31871](https://github.com/airbytehq/airbyte/pull/31871)  | Deactivate PR comments, add HTML report links to the PR status when its ready.                                    |
+| 2.5.1   | [#31774](https://github.com/airbytehq/airbyte/pull/31774)  | Add a docker configuration check on `airbyte-ci` startup.                                                         |
+| 2.5.0   | [#31766](https://github.com/airbytehq/airbyte/pull/31766)  | Support local connectors secrets.                                                                                 |
+| 2.4.0   | [#31716](https://github.com/airbytehq/airbyte/pull/31716)  | Enable pre-release publish with local CDK.                                                                        |
+| 2.3.1   | [#31748](https://github.com/airbytehq/airbyte/pull/31748)  | Use AsyncClick library instead of base Click.                                                                     |
+| 2.3.0   | [#31699](https://github.com/airbytehq/airbyte/pull/31699)  | Support optional concurrent CAT execution.                                                                        |
+| 2.2.6   | [#31752](https://github.com/airbytehq/airbyte/pull/31752)  | Only authenticate when secrets are available.                                                                     |
+| 2.2.5   | [#31718](https://github.com/airbytehq/airbyte/pull/31718)  | Authenticate the sidecar docker daemon to DockerHub.                                                              |
+| 2.2.4   | [#31535](https://github.com/airbytehq/airbyte/pull/31535)  | Improve gradle caching when building java connectors.                                                             |
+| 2.2.3   | [#31688](https://github.com/airbytehq/airbyte/pull/31688)  | Fix failing `CheckBaseImageUse` step when not running on PR.                                                      |
+| 2.2.2   | [#31659](https://github.com/airbytehq/airbyte/pull/31659)  | Support builds on x86_64 platform                                                                                 |
+| 2.2.1   | [#31653](https://github.com/airbytehq/airbyte/pull/31653)  | Fix CheckBaseImageIsUsed failing on non certified connectors.                                                     |
+| 2.2.0   | [#30527](https://github.com/airbytehq/airbyte/pull/30527)  | Add a new check for python connectors to make sure certified connectors use our base image.                       |
+| 2.1.1   | [#31488](https://github.com/airbytehq/airbyte/pull/31488)  | Improve `airbyte-ci` start time with Click Lazy load                                                              |
+| 2.1.0   | [#31412](https://github.com/airbytehq/airbyte/pull/31412)  | Run airbyte-ci from any where in airbyte project                                                                  |
+| 2.0.4   | [#31487](https://github.com/airbytehq/airbyte/pull/31487)  | Allow for third party connector selections                                                                        |
+| 2.0.3   | [#31525](https://github.com/airbytehq/airbyte/pull/31525)  | Refactor folder structure                                                                                         |
+| 2.0.2   | [#31533](https://github.com/airbytehq/airbyte/pull/31533)  | Pip cache volume by python version.                                                                               |
+| 2.0.1   | [#31545](https://github.com/airbytehq/airbyte/pull/31545)  | Reword the changelog entry when using `migrate_to_base_image`.                                                    |
+| 2.0.0   | [#31424](https://github.com/airbytehq/airbyte/pull/31424)  | Remove `airbyte-ci connectors format` command.                                                                    |
+| 1.9.4   | [#31478](https://github.com/airbytehq/airbyte/pull/31478)  | Fix running tests for connector-ops package.                                                                      |
+| 1.9.3   | [#31457](https://github.com/airbytehq/airbyte/pull/31457)  | Improve the connector documentation for connectors migrated to our base image.                                    |
+| 1.9.2   | [#31426](https://github.com/airbytehq/airbyte/pull/31426)  | Concurrent execution of java connectors tests.                                                                    |
+| 1.9.1   | [#31455](https://github.com/airbytehq/airbyte/pull/31455)  | Fix `None` docker credentials on publish.                                                                         |
+| 1.9.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump_version`, `upgrade_base_image`, `migrate_to_base_image`.                                      |
+| 1.8.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump_version`, `upgrade_base_image`, `migrate_to_base_image`.                                      |
+| 1.7.2   | [#31343](https://github.com/airbytehq/airbyte/pull/31343)  | Bind Pytest integration tests to a dockerhost.                                                                    |
+| 1.7.1   | [#31332](https://github.com/airbytehq/airbyte/pull/31332)  | Disable Gradle step caching on source-postgres.                                                                   |
+| 1.7.0   | [#30526](https://github.com/airbytehq/airbyte/pull/30526)  | Implement pre/post install hooks support.                                                                         |
+| 1.6.0   | [#30474](https://github.com/airbytehq/airbyte/pull/30474)  | Test connector inside their containers.                                                                           |
+| 1.5.1   | [#31227](https://github.com/airbytehq/airbyte/pull/31227)  | Use python 3.11 in amazoncorretto-bazed gradle containers, run 'test' gradle task instead of 'check'.             |
+| 1.5.0   | [#30456](https://github.com/airbytehq/airbyte/pull/30456)  | Start building Python connectors using our base images.                                                           |
+| 1.4.6   | [ #31087](https://github.com/airbytehq/airbyte/pull/31087) | Throw error if airbyte-ci tools is out of date                                                                    |
+| 1.4.5   | [#31133](https://github.com/airbytehq/airbyte/pull/31133)  | Fix bug when building containers using `with_integration_base_java_and_normalization`.                            |
+| 1.4.4   | [#30743](https://github.com/airbytehq/airbyte/pull/30743)  | Add `--disable-report-auto-open` and `--use-host-gradle-dist-tar` to allow gradle integration.                    |
+| 1.4.3   | [#30595](https://github.com/airbytehq/airbyte/pull/30595)  | Add --version and version check                                                                                   |
+| 1.4.2   | [#30595](https://github.com/airbytehq/airbyte/pull/30595)  | Remove directory name requirement                                                                                 |
+| 1.4.1   | [#30595](https://github.com/airbytehq/airbyte/pull/30595)  | Load base migration guide into QA Test container for strict encrypt variants                                      |
+| 1.4.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330)  | Add support for pyproject.toml as the prefered entry point for a connector package                                |
+| 1.3.0   | [#30461](https://github.com/airbytehq/airbyte/pull/30461)  | Add `--use-local-cdk` flag to all connectors commands                                                             |
+| 1.2.3   | [#30477](https://github.com/airbytehq/airbyte/pull/30477)  | Fix a test regression introduced the previous version.                                                            |
+| 1.2.2   | [#30438](https://github.com/airbytehq/airbyte/pull/30438)  | Add workaround to always stream logs properly with --is-local.                                                    |
+| 1.2.1   | [#30384](https://github.com/airbytehq/airbyte/pull/30384)  | Java connector test performance fixes.                                                                            |
+| 1.2.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330)  | Add `--metadata-query` option to connectors command                                                               |
+| 1.1.3   | [#30314](https://github.com/airbytehq/airbyte/pull/30314)  | Stop patching gradle files to make them work with airbyte-ci.                                                     |
+| 1.1.2   | [#30279](https://github.com/airbytehq/airbyte/pull/30279)  | Fix correctness issues in layer caching by making atomic execution groupings                                      |
+| 1.1.1   | [#30252](https://github.com/airbytehq/airbyte/pull/30252)  | Fix redundancies and broken logic in GradleTask, to speed up the CI runs.                                         |
+| 1.1.0   | [#29509](https://github.com/airbytehq/airbyte/pull/29509)  | Refactor the airbyte-ci test command to run tests on any poetry package.                                          |
+| 1.0.0   | [#28000](https://github.com/airbytehq/airbyte/pull/29232)  | Remove release stages in favor of support level from airbyte-ci.                                                  |
+| 0.5.0   | [#28000](https://github.com/airbytehq/airbyte/pull/28000)  | Run connector acceptance tests with dagger-in-dagger.                                                             |
+| 0.4.7   | [#29156](https://github.com/airbytehq/airbyte/pull/29156)  | Improve how we check existence of requirement.txt or setup.py file to not raise early pip install errors.         |
+| 0.4.6   | [#28729](https://github.com/airbytehq/airbyte/pull/28729)  | Use keyword args instead of positional argument for optional paramater in Dagger's API                            |
+| 0.4.5   | [#29034](https://github.com/airbytehq/airbyte/pull/29034)  | Disable Dagger terminal UI when running publish.                                                                  |
+| 0.4.4   | [#29064](https://github.com/airbytehq/airbyte/pull/29064)  | Make connector modified files a frozen set.                                                                       |
+| 0.4.3   | [#29033](https://github.com/airbytehq/airbyte/pull/29033)  | Disable dependency scanning for Java connectors.                                                                  |
+| 0.4.2   | [#29030](https://github.com/airbytehq/airbyte/pull/29030)  | Make report path always have the same prefix: `airbyte-ci/`.                                                      |
+| 0.4.1   | [#28855](https://github.com/airbytehq/airbyte/pull/28855)  | Improve the selected connectors detection for connectors commands.                                                |
+| 0.4.0   | [#28947](https://github.com/airbytehq/airbyte/pull/28947)  | Show Dagger Cloud run URLs in CI                                                                                  |
+| 0.3.2   | [#28789](https://github.com/airbytehq/airbyte/pull/28789)  | Do not consider empty reports as successfull.                                                                     |
+| 0.3.1   | [#28938](https://github.com/airbytehq/airbyte/pull/28938)  | Handle 5 status code on MetadataUpload as skipped                                                                 |
+| 0.3.0   | [#28869](https://github.com/airbytehq/airbyte/pull/28869)  | Enable the Dagger terminal UI on local `airbyte-ci` execution                                                     |
+| 0.2.3   | [#28907](https://github.com/airbytehq/airbyte/pull/28907)  | Make dagger-in-dagger work for `airbyte-ci tests` command                                                         |
+| 0.2.2   | [#28897](https://github.com/airbytehq/airbyte/pull/28897)  | Sentry: Ignore error logs without exceptions from reporting                                                       |
+| 0.2.1   | [#28767](https://github.com/airbytehq/airbyte/pull/28767)  | Improve pytest step result evaluation to prevent false negative/positive.                                         |
+| 0.2.0   | [#28857](https://github.com/airbytehq/airbyte/pull/28857)  | Add the `airbyte-ci tests` command to run the test suite on any `airbyte-ci` poetry package.                      |
+| 0.1.1   | [#28858](https://github.com/airbytehq/airbyte/pull/28858)  | Increase the max duration of Connector Package install to 20mn.                                                   |
+| 0.1.0   |                                                            | Alpha version not in production yet. All the commands described in this doc are available.                        |
 
 ## More info
 
