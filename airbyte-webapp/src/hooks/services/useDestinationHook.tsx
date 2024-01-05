@@ -54,6 +54,7 @@ interface PaginatedDestinationList {
   destinations: DestinationRead[];
   total: number;
   pageSize: number;
+  pageCurrent?: number;
 }
 
 const useDestinationList = (): DestinationList => {

@@ -1,5 +1,6 @@
 import { Box, IconButton, Tooltip } from "@mui/material";
-import { useMemo } from "react";
+import queryString from "query-string";
+import { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import styled from "styled-components";
@@ -83,9 +84,42 @@ const ConnectionTable: React.FC<IProps> = ({
   statusSortOrder,
   setStatusSortOrder,
 }) => {
-  const { push } = useRouter();
+  const { query, push } = useRouter();
+  const sortBy = query.sortBy;
+  const sortOrder = query.order;
   const allowSync = useFeature(FeatureItem.AllowSync);
+  const onSortClick = useCallback(
+    (field: string) => {
+      let newSortOrder: SortOrderEnum | "" = "";
 
+      if (sortBy !== field) {
+        // Clicking on a new column
+        newSortOrder = SortOrderEnum.ASC;
+      } else {
+        // Clicking on the same column
+        newSortOrder =
+          sortOrder === SortOrderEnum.ASC
+            ? SortOrderEnum.DESC
+            : sortOrder === SortOrderEnum.DESC
+            ? ""
+            : SortOrderEnum.ASC;
+      }
+
+      const newSearchParams: { sortBy?: string; order?: string } = {};
+      if (newSortOrder !== "") {
+        newSearchParams.sortBy = field;
+        newSearchParams.order = newSortOrder;
+      } else {
+        newSearchParams.sortBy = "";
+        newSearchParams.order = "";
+      }
+
+      push({
+        search: queryString.stringify(newSearchParams, { skipNull: true }),
+      });
+    },
+    [push, sortBy, sortOrder, query]
+  );
   const onClickRows = (connectionId: string) => push(`/${RoutePaths.Connections}/${connectionId}`);
 
   const columns = useMemo(
@@ -176,6 +210,7 @@ const ConnectionTable: React.FC<IProps> = ({
             <IconButton
               onClick={() => {
                 setSortFieldName("name");
+                onSortClick("name");
                 setLocalSortOrder((prev: any) => {
                   const newSortOrder =
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
@@ -183,8 +218,8 @@ const ConnectionTable: React.FC<IProps> = ({
                   setConnectorSortOrder("");
                   setEntitySortOrder("");
                   setStatusSortOrder("");
-                  onSelectFilter("sortFieldName", "name");
-                  onSelectFilter("sortDirection", newSortOrder);
+                  onSelectFilter("sortFieldName", "name", query);
+                  onSelectFilter("sortDirection", newSortOrder, query);
                   return newSortOrder;
                 });
               }}
@@ -223,14 +258,15 @@ const ConnectionTable: React.FC<IProps> = ({
             <IconButton
               onClick={() => {
                 setSortFieldName("connectorName");
+                onSortClick("connectorName");
                 setConnectorSortOrder((prev: any) => {
                   const newSortOrder =
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
                   setLocalSortOrder("");
                   setEntitySortOrder("");
                   setStatusSortOrder("");
-                  onSelectFilter("sortFieldName", "connectorName");
-                  onSelectFilter("sortDirection", newSortOrder);
+                  onSelectFilter("sortFieldName", "connectorName", query);
+                  onSelectFilter("sortDirection", newSortOrder, query);
                   return newSortOrder;
                 });
               }}
@@ -254,11 +290,12 @@ const ConnectionTable: React.FC<IProps> = ({
             <IconButton
               onClick={() => {
                 setSortFieldName("entityName");
+                onSortClick("entityName");
                 setEntitySortOrder((prev: any) => {
                   const newSortOrder =
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
-                  onSelectFilter("sortFieldName", "entityName");
-                  onSelectFilter("sortDirection", newSortOrder);
+                  onSelectFilter("sortFieldName", "entityName", query);
+                  onSelectFilter("sortDirection", newSortOrder, query);
                   setLocalSortOrder("");
                   setConnectorSortOrder("");
                   setStatusSortOrder("");
@@ -287,14 +324,15 @@ const ConnectionTable: React.FC<IProps> = ({
             <IconButton
               onClick={() => {
                 setSortFieldName("status");
+                onSortClick("status");
                 setStatusSortOrder((prev: any) => {
                   const newSortOrder =
                     prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
                   setLocalSortOrder("");
                   setEntitySortOrder("");
                   setConnectorSortOrder("");
-                  onSelectFilter("sortFieldName", "status");
-                  onSelectFilter("sortDirection", newSortOrder);
+                  onSelectFilter("sortFieldName", "status", query);
+                  onSelectFilter("sortDirection", newSortOrder, query);
                   return newSortOrder;
                 });
               }}

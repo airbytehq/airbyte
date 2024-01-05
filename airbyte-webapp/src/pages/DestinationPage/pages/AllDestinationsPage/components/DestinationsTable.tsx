@@ -20,6 +20,7 @@ interface DestinationsTableProps {
   setLocalSortOrder?: any;
   destinationSortOrder?: any;
   setDestinationSortOrder?: any;
+  // pageCurrent:any
 
   // connections: WebBackendConnectionRead[];
 }
@@ -32,8 +33,8 @@ const DestinationsTable: React.FC<DestinationsTableProps> = ({
   localSortOrder,
   setLocalSortOrder,
   destinationSortOrder,
-
   setDestinationSortOrder,
+  // pageCurrent
 }) => {
   const { push } = useRouter();
   // const { connections } = useConnectionList();
@@ -55,6 +56,7 @@ const DestinationsTable: React.FC<DestinationsTableProps> = ({
       setLocalSortOrder={setLocalSortOrder}
       destinationSortOrder={destinationSortOrder}
       setDestinationSortOrder={setDestinationSortOrder}
+      // pageCurrent={pageCurrent}
     />
   );
 };
