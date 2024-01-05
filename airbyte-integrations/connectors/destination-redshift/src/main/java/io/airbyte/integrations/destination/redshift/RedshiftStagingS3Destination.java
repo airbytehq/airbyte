@@ -159,7 +159,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     // Do aggressive keepAlive with minimum allowed value, this only applies to connection sitting idle
     // in the pool.
     connectionOptions.put("keepaliveTime", Long.toString(Duration.ofSeconds(30).toMillis()));
-    connectionOptions.put("connectionInitSql", "SET enable_case_sensitive_identifier to TRUE;");
     connectionOptions.putAll(SSL_JDBC_PARAMETERS);
     return connectionOptions;
   }
