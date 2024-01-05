@@ -86,6 +86,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         Stream.of("_ab_cdc_deleted_at")).toList();
   }
 
+  private static final Object SETUP_LOCK = new Object();
+  private static boolean setupSqlCompleted = false;
+
   protected RecordDiffer DIFFER;
 
   /**
@@ -195,7 +198,17 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     generator = getSqlGenerator();
     destinationHandler = getDestinationHandler();
 
-    destinationHandler.execute(generator.setup());
+    // In a real sync, we only execute the setup code once.
+    // We're doing this here instead of in a BeforeAll method for two reasons:
+    // 1. destinationhandler/sqlgenerator are instance variables
+    // 2. Implementing classes might have their own BeforeAll methods, and junit doesn't guarantee
+    //    execution order between BeforeAll methods.
+    synchronized(SETUP_LOCK) {
+      if (!setupSqlCompleted) {
+        destinationHandler.execute(generator.setup());
+        setupSqlCompleted = true;
+      }
+    }
 
     final ColumnId id1 = generator.buildColumnId("id1");
     final ColumnId id2 = generator.buildColumnId("id2");

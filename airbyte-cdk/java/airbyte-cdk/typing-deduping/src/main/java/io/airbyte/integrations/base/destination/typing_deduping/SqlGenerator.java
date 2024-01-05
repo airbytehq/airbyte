@@ -26,6 +26,9 @@ public interface SqlGenerator<DialectTableDefinition> {
    * any {@code CREATE FUNCTION} calls should happen here.
    * <p>
    * It's expected that most implementations do not need to override this method.
+   * <p>
+   * This SQL MUST be idempotent, but MAY be non-thread-safe. Callers MUST guarantee that this method
+   * is invoked exactly once per sync, before any other typing/deduping-related operations happen.
    */
   default Sql setup() {
     return new Sql(emptyList());

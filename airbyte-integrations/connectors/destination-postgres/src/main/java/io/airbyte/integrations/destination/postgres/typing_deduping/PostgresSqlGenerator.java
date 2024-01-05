@@ -99,7 +99,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         .entrySet()
         .stream()
         .map(column -> castedField(
-            extractColumnAsText(column.getKey()),
+            extractColumnAsJson(column.getKey()),
             column.getValue(),
             column.getKey().name(),
             useExpensiveSaferCasting))
@@ -119,11 +119,34 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
       final Field<?> field,
       final AirbyteType type,
       final boolean useExpensiveSaferCasting) {
-    final DataType<?> dialectType = toDialectType(type);
-    if (useExpensiveSaferCasting) {
-      return function("airbyte_safe_cast", dialectType, field, cast(val((Object) null), dialectType));
+    if (type instanceof Struct) {
+      // If this field is a struct, verify that the raw data is an object.
+      return cast(
+          case_()
+              .when(field.isNull().or(jsonTypeof(field).ne("object")), val((Object) null))
+              .else_(field),
+          JSONB_TYPE);
+    } else if (type instanceof Array) {
+      // Do the same for arrays.
+      return cast(
+          case_()
+              .when(field.isNull().or(jsonTypeof(field).ne("array")), val((Object) null))
+              .else_(field),
+          JSONB_TYPE);
+    } else if (type == AirbyteProtocolType.UNKNOWN) {
+      return cast(field, JSONB_TYPE);
+    } else if (type == AirbyteProtocolType.STRING) {
+      // we need to render the jsonb to a normal string. For strings, this is the difference between "\"foo\"" and "foo".
+      // postgres provides the #>> operator, which takes a json path and returns that extraction as a string.
+      // '{}' is an empty json path (it's an empty array literal), so it just stringifies the json value.
+      return field("{0} #>> '{}'", String.class, field);
     } else {
-      return cast(field, dialectType);
+      final DataType<?> dialectType = toDialectType(type);
+      if (useExpensiveSaferCasting) {
+        return function("airbyte_safe_cast", dialectType, cast(field, SQLDataType.VARCHAR), cast(val((Object) null), dialectType));
+      } else {
+        return cast(field, dialectType);
+      }
     }
   }
 
@@ -157,7 +180,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
           .when(
               extract.isNotNull()
                   .and(jsonTypeof(column).notIn("object", "null")),
-              val("Problem with " + column.originalName())
+              val("Problem with `" + column.originalName() + "`")
           ).else_(val((String) null));
     } else if (type instanceof Array) {
       // Do the same for arrays.
@@ -165,7 +188,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
           .when(
               extract.isNotNull()
                   .and(jsonTypeof(column).notIn("array", "null")),
-              val("Problem with " + column.originalName())
+              val("Problem with `" + column.originalName() + "`")
           ).else_(val((String) null));
     } else if (type == AirbyteProtocolType.UNKNOWN) {
       // Unknown types require no casting, so there's never an error.
@@ -177,8 +200,8 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
           .when(
               extract.isNotNull()
                   .and(jsonTypeof(column).isNotNull())
-                  .and(castedField(extractColumnAsText(column), type, true).isNull()),
-              val("Problem with " + column.originalName())
+                  .and(castedField(extractColumnAsJson(column), type, true).isNull()),
+              val("Problem with `" + column.originalName() + "`")
           ).else_(val((String) null));
     }
   }
@@ -231,13 +254,6 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   }
 
   /**
-   * Extract a raw field and cast it to text
-   */
-  private Field<?> extractColumnAsText(final ColumnId column) {
-    return field("{0} ->> {1}", name(COLUMN_NAME_DATA), val(column.originalName()));
-  }
-
-  /**
    * Extract a raw field, leaving it as jsonb
    */
   private Field<?> extractColumnAsJson(final ColumnId column) {
@@ -245,7 +261,11 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   }
 
   private Field<String> jsonTypeof(final ColumnId column) {
-    return function("JSONB_TYPEOF", SQLDataType.VARCHAR, extractColumnAsJson(column));
+    return jsonTypeof(extractColumnAsJson(column));
+  }
+
+  private Field<String> jsonTypeof(final Field<?> field) {
+    return function("JSONB_TYPEOF", SQLDataType.VARCHAR, field);
   }
 
   private static String jdbcTypeNameFromPostgresTypeName(final String redshiftType) {
