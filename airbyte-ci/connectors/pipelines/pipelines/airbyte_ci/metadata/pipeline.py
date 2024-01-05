@@ -179,15 +179,15 @@ async def run_metadata_orchestrator_deploy_pipeline(
 
         async with metadata_pipeline_context:
             steps: STEP_TREE = [
-                StepToRun(
+                [StepToRun(
                     id=CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR,
                     step=TestOrchestrator(context=metadata_pipeline_context),
-                ),
-                StepToRun(
+                )],
+                [StepToRun(
                     id=CONNECTOR_TEST_STEP_ID.DEPLOY_ORCHESTRATOR,
                     step=DeployOrchestrator(context=metadata_pipeline_context),
                     depends_on=[CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR],
-                ),
+                )],
             ]
             steps_results = await run_steps(steps)
             metadata_pipeline_context.report = Report(
