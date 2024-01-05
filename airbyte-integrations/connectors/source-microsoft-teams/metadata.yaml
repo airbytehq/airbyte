@@ -17,8 +17,8 @@ data:
     breakingChanges:
       1.0.0:
         message:
-          Version 1.0.0 introduces breaking schema changes to all streams. 
-          A full schema refresh is required to upgrade to this version. 
+          Version 1.0.0 introduces breaking schema changes to all streams.
+          A full schema refresh is required to upgrade to this version.
           For more details, see our <a href='https://docs.airbyte.io/integrations/sources/microsoft-teams-migrations'>migration guide</a>.
         upgradeDeadline: "2024-01-22"
   releaseStage: alpha
