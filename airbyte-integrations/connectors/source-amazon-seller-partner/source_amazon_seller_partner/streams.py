@@ -8,6 +8,7 @@ import gzip
 import json as json_lib
 import time
 from abc import ABC, abstractmethod
+from enum import Enum
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -136,6 +137,14 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         return {self.cursor_field: latest_benchmark}
 
 
+class ReportProcessingStatus(str, Enum):
+    cancelled = "CANCELLED"
+    done = "DONE"
+    fatal = "FATAL"
+    in_progress = "IN_PROGRESS"
+    in_queue = "IN_QUEUE"
+
+
 class ReportsAmazonSPStream(HttpStream, ABC):
     max_wait_seconds = 3600
     """
@@ -161,6 +170,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     availability_sla_days = (
         1  # see data availability sla at https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
     )
+    availability_strategy = None
 
     def __init__(
         self,
@@ -311,7 +321,6 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         """
         report_payload = {}
         stream_slice = stream_slice or {}
-        is_processed = False
         start_time = pendulum.now("utc")
         seconds_waited = 0
         try:
@@ -319,20 +328,29 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         except DefaultBackoffException as e:
             logger.warning(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
             return []
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == requests.codes.FORBIDDEN:
+                logger.warning(
+                    f"The endpoint {e.response.url} returned {e.response.status_code}: {e.response.reason}. "
+                    "This is most likely due to insufficient permissions on the credentials in use. "
+                    "Try to grant required permissions/scopes or re-authenticate."
+                )
+                return []
+            raise e
 
         # create and retrieve the report
-        while not is_processed and seconds_waited < self.max_wait_seconds:
+        processed = False
+        while not processed and seconds_waited < self.max_wait_seconds:
             report_payload = self._retrieve_report(report_id=report_id)
             seconds_waited = (pendulum.now("utc") - start_time).seconds
-            is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
-            time.sleep(self.sleep_seconds)
+            processed = report_payload.get("processingStatus") not in (ReportProcessingStatus.in_queue, ReportProcessingStatus.in_progress)
+            if not processed:
+                time.sleep(self.sleep_seconds)
 
-        is_done = report_payload.get("processingStatus") == "DONE"
-        is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
-        is_fatal = report_payload.get("processingStatus") == "FATAL"
+        processing_status = report_payload.get("processingStatus")
         report_end_date = pendulum.parse(report_payload.get("dataEndTime", stream_slice.get("dataEndTime")))
 
-        if is_done:
+        if processing_status == ReportProcessingStatus.done:
             # retrieve and decrypt the report document
             document_id = report_payload["reportDocumentId"]
             request_headers = self.request_headers()
@@ -346,12 +364,12 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                 if report_end_date:
                     record["dataEndTime"] = report_end_date.strftime(DATE_FORMAT)
                 yield record
-        elif is_fatal:
+        elif processing_status == ReportProcessingStatus.fatal:
             raise AirbyteTracedException(message=f"The report for stream '{self.name}' was not created - skip reading")
-        elif is_cancelled:
+        elif processing_status == ReportProcessingStatus.cancelled:
             logger.warning(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
-            raise Exception(f"Unknown response for stream `{self.name}`. Response body {report_payload}")
+            raise Exception(f"Unknown response for stream '{self.name}'. Response body {report_payload}")
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
@@ -731,7 +749,6 @@ class IncrementalAnalyticsStream(AnalyticsStream):
             start_date = pendulum.parse(state)
 
         start_date = min(start_date, end_date)
-        slices = []
 
         while start_date < end_date:
             # If request only returns data on day level
@@ -741,15 +758,11 @@ class IncrementalAnalyticsStream(AnalyticsStream):
                 slice_range = self.period_in_days
 
             end_date_slice = start_date.add(days=slice_range)
-            slices.append(
-                {
-                    "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
-                    "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
-                }
-            )
+            yield {
+                "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
+                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
+            }
             start_date = end_date_slice
-
-        return slices
 
 
 class BrandAnalyticsMarketBasketReports(IncrementalAnalyticsStream):
