@@ -1,13 +1,15 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import json
 import webbrowser
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from anyio import Path
-from connector_ops.utils import console
+from connector_ops.utils import console  # type: ignore
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 from pipelines.helpers.utils import format_duration
@@ -19,25 +21,33 @@ from rich.style import Style
 from rich.table import Table
 from rich.text import Text
 
+if TYPE_CHECKING:
+    from typing import List
+
+    from pipelines.airbyte_ci.connectors.context import ConnectorContext
+    from rich.tree import RenderableType
+
 
 @dataclass(frozen=True)
 class ConnectorReport(Report):
     """A dataclass to build connector test reports to share pipelines executions results with the user."""
 
+    pipeline_context: ConnectorContext
+
     @property
-    def report_output_prefix(self) -> str:  # noqa D102
+    def report_output_prefix(self) -> str:
         return f"{self.pipeline_context.report_output_prefix}/{self.pipeline_context.connector.technical_name}/{self.pipeline_context.connector.version}"
 
     @property
-    def html_report_file_name(self) -> str:  # noqa D102
+    def html_report_file_name(self) -> str:
         return self.filename + ".html"
 
     @property
-    def html_report_remote_storage_key(self) -> str:  # noqa D102
+    def html_report_remote_storage_key(self) -> str:
         return f"{self.report_output_prefix}/{self.html_report_file_name}"
 
     @property
-    def html_report_url(self) -> str:  # noqa D102
+    def html_report_url(self) -> str:
         return f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
 
     def to_json(self) -> str:
@@ -46,6 +56,8 @@ class ConnectorReport(Report):
         Returns:
             str: The JSON representation of the report.
         """
+        assert self.pipeline_context.pipeline_start_timestamp is not None, "The pipeline start timestamp must be set to save reports."
+
         return json.dumps(
             {
                 "connector_technical_name": self.pipeline_context.connector.technical_name,
@@ -53,9 +65,9 @@ class ConnectorReport(Report):
                 "run_timestamp": self.created_at.isoformat(),
                 "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
-                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
-                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
-                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],
+                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],  # type: ignore
+                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],  # type: ignore
+                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],  # type: ignore
                 "gha_workflow_run_url": self.pipeline_context.gha_workflow_run_url,
                 "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
                 "pipeline_end_timestamp": round(self.created_at.timestamp()),
@@ -117,7 +129,7 @@ class ConnectorReport(Report):
             self.pipeline_context.logger.info(f"HTML report uploaded to {self.html_report_url}")
         await super().save()
 
-    def print(self):
+    def print(self) -> None:
         """Print the test report to the console in a nice way."""
         connector_name = self.pipeline_context.connector.technical_name
         main_panel_title = Text(f"{connector_name.upper()} - {self.name}")
@@ -136,7 +148,7 @@ class ConnectorReport(Report):
             step_results_table.add_row(step, result, format_duration(step_result.step.run_duration))
 
         details_instructions = Text("ℹ️  You can find more details with step executions logs in the saved HTML report.")
-        to_render = [step_results_table, details_instructions]
+        to_render: List[RenderableType] = [step_results_table, details_instructions]
 
         if self.pipeline_context.dagger_cloud_url:
             self.pipeline_context.logger.info(f"🔗 View runs for commit in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}")

@@ -13,15 +13,17 @@ import sys
 import unicodedata
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING
 
 import anyio
+import asyncclick as click
 import asyncer
-import click
 from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, Platform, QueryError, Secret
 from more_itertools import chunked
 
 if TYPE_CHECKING:
+    from typing import Any, Callable, Generator, List, Optional, Set, Tuple
+
     from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
@@ -52,7 +54,7 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
         return False
 
 
-def secret_host_variable(client: Client, name: str, default: str = ""):
+def secret_host_variable(client: Client, name: str, default: str = "") -> Callable[[Container], Container]:
     """Add a host environment variable as a secret in a container.
 
     Example:
@@ -68,7 +70,7 @@ def secret_host_variable(client: Client, name: str, default: str = ""):
         Callable[[Container], Container]: A function that can be used in a `Container.with_()` method.
     """
 
-    def _secret_host_variable(container: Container):
+    def _secret_host_variable(container: Container) -> Container:
         return container.with_secret_variable(name, get_secret_host_variable(client, name, default))
 
     return _secret_host_variable
@@ -109,7 +111,7 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
 
 
 @contextlib.contextmanager
-def catch_exec_error_group():
+def catch_exec_error_group() -> Generator:
     try:
         yield
     except anyio.ExceptionGroup as eg:
@@ -197,7 +199,7 @@ def get_current_epoch_time() -> int:  # noqa D103
     return round(datetime.datetime.utcnow().timestamp())
 
 
-def slugify(value: Any, allow_unicode: bool = False):
+def slugify(value: object, allow_unicode: bool = False) -> str:
     """
     Taken from https://github.com/django/django/blob/master/django/utils/text.py.
 
@@ -257,7 +259,7 @@ def create_and_open_file(file_path: Path) -> TextIOWrapper:
     return file_path.open("w")
 
 
-async def execute_concurrently(steps: List[Callable], concurrency=5):
+async def execute_concurrently(steps: List[Callable], concurrency: int = 5) -> List[Any]:
     tasks = []
     # Asyncer does not have builtin semaphore, so control concurrency via chunks of steps
     # Anyio has semaphores but does not have the soonify method which allow access to results via the value task attribute.
@@ -322,7 +324,7 @@ def transform_strs_to_paths(str_paths: Set[str]) -> List[Path]:
     return sorted([Path(str_path) for str_path in str_paths])
 
 
-def fail_if_missing_docker_hub_creds(ctx: click.Context):
+def fail_if_missing_docker_hub_creds(ctx: click.Context) -> None:
     if ctx.obj["docker_hub_username"] is None or ctx.obj["docker_hub_password"] is None:
         raise click.UsageError(
             "You need to be logged to DockerHub registry to run this command. Please set DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables."

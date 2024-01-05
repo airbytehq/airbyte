@@ -8,18 +8,18 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Tuple, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Tuple, Union
 
 import anyio
 import asyncer
 from pipelines import main_logger
-from pipelines.models.steps import StepResult, StepStatus
-
-RESULTS_DICT = Dict[str, StepResult]
-ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict], Awaitable[Dict]]
+from pipelines.models.steps import StepStatus
 
 if TYPE_CHECKING:
     from pipelines.models.steps import Step, StepResult
+
+    RESULTS_DICT = Dict[str, StepResult]
+    ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict], Awaitable[Dict]]
 
 
 @dataclass
@@ -63,7 +63,7 @@ async def evaluate_run_args(args: ARGS_TYPE, results: RESULTS_DICT) -> Dict:
     raise TypeError(f"Unexpected args type: {type(args)}")
 
 
-def _skip_remaining_steps(remaining_steps: STEP_TREE) -> bool:
+def _skip_remaining_steps(remaining_steps: STEP_TREE) -> RESULTS_DICT:
     """
     Skip all remaining steps.
     """
@@ -72,7 +72,7 @@ def _skip_remaining_steps(remaining_steps: STEP_TREE) -> bool:
         if isinstance(runnable_step, StepToRun):
             skipped_results[runnable_step.id] = runnable_step.step.skip()
         elif isinstance(runnable_step, list):
-            nested_skipped_results = _skip_remaining_steps(runnable_step)
+            nested_skipped_results = _skip_remaining_steps(list(runnable_step))
             skipped_results = {**skipped_results, **nested_skipped_results}
         else:
             raise Exception(f"Unexpected step type: {type(runnable_step)}")
@@ -85,7 +85,8 @@ def _step_dependencies_succeeded(depends_on: List[str], results: RESULTS_DICT) -
     Check if all dependencies of a step have succeeded.
     """
     main_logger.info(f"Checking if dependencies {depends_on} have succeeded")
-    return all(results.get(step_id) and results.get(step_id).status is StepStatus.SUCCESS for step_id in depends_on)
+
+    return all(results[step_id] and results[step_id].status is StepStatus.SUCCESS for step_id in depends_on)
 
 
 def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], results: RESULTS_DICT) -> Tuple[STEP_TREE, RESULTS_DICT]:
@@ -94,7 +95,7 @@ def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], r
 
     Either because they are in the skip list or because one of their dependencies failed.
     """
-    steps_to_run = []
+    steps_to_run: STEP_TREE = []
     for step_to_eval in steps_to_evaluate:
 
         # ignore nested steps
@@ -128,13 +129,13 @@ def _get_next_step_group(steps: STEP_TREE) -> Tuple[STEP_TREE, STEP_TREE]:
         return [], []
 
     if isinstance(steps[0], list):
-        return steps[0], steps[1:]
+        return list(steps[0]), list(steps[1:])
     else:
         # Termination case: if the next step is not a list that means we have reached the max depth
         return steps, []
 
 
-def _log_step_tree(step_tree: STEP_TREE, options: RunStepOptions, depth: int = 0):
+def _log_step_tree(step_tree: STEP_TREE, options: RunStepOptions, depth: int = 0) -> None:
     """
     Log the step tree to the console.
 
@@ -150,7 +151,7 @@ def _log_step_tree(step_tree: STEP_TREE, options: RunStepOptions, depth: int = 0
     indent = "    "
     for steps in step_tree:
         if isinstance(steps, list):
-            _log_step_tree(steps, options, depth + 1)
+            _log_step_tree(list(steps), options, depth + 1)
         else:
             if steps.id in options.skip_steps:
                 main_logger.info(f"{indent * depth}- {steps.id} (skip)")
@@ -226,14 +227,14 @@ async def run_steps(
             for step_to_run in steps_to_run:
                 # if the step to run is a list, run it in parallel
                 if isinstance(step_to_run, list):
-                    tasks.append(task_group.soonify(run_steps)(step_to_run, results, options))
+                    tasks.append(task_group.soonify(run_steps)(list(step_to_run), results, options))
                 else:
                     step_args = await evaluate_run_args(step_to_run.args, results)
                     main_logger.info(f"QUEUING STEP {step_to_run.id}")
                     tasks.append(task_group.soonify(step_to_run.step.run)(**step_args))
 
     # Apply new results
-    new_results = {}
+    new_results: Dict[str, Any] = {}
     for i, task in enumerate(tasks):
         step_to_run = steps_to_run[i]
         if isinstance(step_to_run, list):
