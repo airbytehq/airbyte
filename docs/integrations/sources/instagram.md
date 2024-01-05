@@ -93,6 +93,7 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 3.0.0   | 2024-01-05 | [33930](https://github.com/airbytehq/airbyte/pull/33930) | Upgrade to API v18.0                                                                                                      |
 | 2.0.1   | 2024-01-03 | [33889](https://github.com/airbytehq/airbyte/pull/33889) | Change requested metrics for stream `media_insights`                                                                      |
 | 2.0.0   | 2023-11-17 | [32500](https://github.com/airbytehq/airbyte/pull/32500) | Add primary keys for UserLifetimeInsights and UserInsights; add airbyte_type to timestamp fields                          |
 | 1.0.16  | 2023-11-17 | [32627](https://github.com/airbytehq/airbyte/pull/32627) | Fix start_date type; fix docs                                                                                             |
