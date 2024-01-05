@@ -23,6 +23,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import java.util.ArrayList;
@@ -51,6 +52,25 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
+  }
+
+  @Override
+  public Sql setup() {
+    return Sql.separately(
+        // Copied from https://dba.stackexchange.com/a/203986
+        """
+            CREATE OR REPLACE FUNCTION airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
+              LANGUAGE plpgsql AS
+            $func$
+            BEGIN
+               EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
+               INTO  _out;
+            EXCEPTION WHEN others THEN
+               -- do nothing: _out already carries default
+            END
+            $func$;
+            """
+    );
   }
 
   @Override
@@ -101,7 +121,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
       final boolean useExpensiveSaferCasting) {
     final DataType<?> dialectType = toDialectType(type);
     if (useExpensiveSaferCasting) {
-      return function("airbyte_safe_cast", dialectType, field);
+      return function("airbyte_safe_cast", dialectType, field, cast(val((Object) null), dialectType));
     } else {
       return cast(field, dialectType);
     }
