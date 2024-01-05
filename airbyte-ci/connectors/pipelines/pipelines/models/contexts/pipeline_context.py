@@ -14,8 +14,9 @@ from types import TracebackType
 from typing import TYPE_CHECKING
 
 from asyncer import asyncify
-from dagger import Client, Container, Directory, File, GitRepository, Secret
+from dagger import Client, Directory, File, GitRepository, Secret, Service
 from github import PullRequest
+from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import CIContext, ContextState
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.github import update_commit_status_check
@@ -27,15 +28,13 @@ from pipelines.models.reports import Report
 if TYPE_CHECKING:
     from typing import List, Optional
 
-    from pipelines.airbyte_ci.connectors.reports import ConnectorReport
-
 
 class PipelineContext:
     """The pipeline context is used to store configuration for a specific pipeline run."""
 
     _dagger_client: Optional[Client]
     _report: Optional[Report | ConnectorReport]
-    dockerd_service: Optional[Container]
+    dockerd_service: Optional[Service]
     started_at: Optional[datetime]
     stopped_at: Optional[datetime]
 
@@ -171,7 +170,11 @@ class PipelineContext:
     @property
     def github_commit_status(self) -> dict:
         """Build a dictionary used as kwargs to the update_commit_status_check function."""
-        target_url = self.gha_workflow_run_url
+        target_url: Optional[str] = self.gha_workflow_run_url
+
+        if self.state not in [ContextState.RUNNING, ContextState.INITIALIZED] and isinstance(self.report, ConnectorReport):
+            target_url = self.report.html_report_url
+
         return {
             "sha": self.git_revision,
             "state": self.state.value["github_state"],
