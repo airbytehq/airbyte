@@ -17,7 +17,7 @@ Any detected schema changes will be listed for your review. Select **OK** when y
 4. At the bottom of the page, select **Save changes**.
 
 :::caution
-You will be prompted to **Reset all streams**. Although this step is not required to proceed, it is highly recommended for users who have selected `Full Refresh | Append` sync mode, as the updated schema may lead to inconsistencies in the data structure within the destination.
+Depending on your destination, you may be prompted to **Reset all streams**. Although this step is not required to proceed, it is highly recommended for users who have selected `Full Refresh | Append` sync mode, as the updated schema may lead to inconsistencies in the data structure within the destination.
 :::
 
 5. Select **Save connection**. This will reset the data in your destination (if applicable) and initiate a fresh sync.
@@ -31,6 +31,6 @@ You will be prompted to **Reset all streams**. Although this step is not require
 
 With the update to "camelCase", fields that may have been unrecognized or omitted in earlier versions will now be properly mapped and included in the data synchronization process, enhancing the accuracy and completeness of your data.
 
-- The `team_device_usage_report` stream contained a fatal bug that could lead to crashes during syncs. You should now be able to reliably use this stream without experiencing crashes during syncs.
+- The `team_device_usage_report` stream contained a fatal bug that could lead to crashes during syncs. You should now be able to reliably use this stream during syncs.
 
-- `Date` and `date-time` fields have been typed as Airbyte `date` and `timestamp_without_timezone`, respectively.
+- `Date` and `date-time` fields have been typed as airbyte_type `date` and `timestamp_without_timezone`, respectively.
