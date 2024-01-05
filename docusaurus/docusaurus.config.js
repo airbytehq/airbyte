@@ -12,6 +12,7 @@ const darkCodeTheme = themes.dracula;
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
 const connectorList = require("./src/remark/connectorList");
 const productInformation = require("./src/remark/productInformation");
+const specDecoration = require("./src/remark/specDecoration");
 
 const redirects = yaml.load(
   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
@@ -22,7 +23,7 @@ const config = {
   markdown: {
     mermaid: true,
   },
-  themes: ['@docusaurus/theme-mermaid'],
+  themes: ['@docusaurus/theme-mermaid', 'docusaurus-json-schema-plugin'],
   title: "Airbyte Documentation",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",
@@ -94,7 +95,7 @@ const config = {
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
           exclude: ["**/*.inapp.md"],
-          remarkPlugins: [docsHeaderDecoration, productInformation, connectorList],
+          remarkPlugins: [docsHeaderDecoration, productInformation, specDecoration, connectorList],
         },
         blog: false,
         theme: {

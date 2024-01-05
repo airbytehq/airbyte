@@ -5,6 +5,8 @@ import { AppliesTo } from "@site/src/components/AppliesTo";
 import { FieldAnchor } from "@site/src/components/FieldAnchor";
 import { HideInUI } from "@site/src/components/HideInUI";
 import { HeaderDecoration } from "@site/src/components/HeaderDecoration";
+import { SpecSchema } from "@site/src/components/SpecSchema";
+import { AirbyteLibExample } from "@site/src/components/AirbyteLibExample";
 import { ProductInformation } from "@site/src/components/ProductInformation";
 
 export default {
@@ -14,5 +16,7 @@ export default {
   FieldAnchor,
   HideInUI,
   HeaderDecoration,
+  SpecSchema,
+  AirbyteLibExample,
   ProductInformation,
 };
