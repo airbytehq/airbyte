@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 import anyio
 import asyncclick as click
 import asyncer
-from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, Platform, QueryError, Secret
+from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, Platform, Secret
 from more_itertools import chunked
 
 if TYPE_CHECKING:
