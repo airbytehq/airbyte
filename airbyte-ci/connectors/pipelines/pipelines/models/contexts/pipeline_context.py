@@ -14,7 +14,7 @@ from types import TracebackType
 from typing import TYPE_CHECKING
 
 from asyncer import asyncify
-from dagger import Client, Container, Directory, File, GitRepository, Secret
+from dagger import Client, Directory, File, GitRepository, Secret, Service
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import CIContext, ContextState
@@ -34,7 +34,7 @@ class PipelineContext:
 
     _dagger_client: Optional[Client]
     _report: Optional[Report | ConnectorReport]
-    dockerd_service: Optional[Container]
+    dockerd_service: Optional[Service]
     started_at: Optional[datetime]
     stopped_at: Optional[datetime]
 

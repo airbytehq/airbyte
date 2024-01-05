@@ -292,7 +292,7 @@ class AcceptanceTests(Step):
             cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
             .with_exec(["mkdir", "/dagger_share"], skip_entrypoint=True)
             .with_env_variable("CACHEBUSTER", await self.get_cache_buster())
-            .with_new_file("/tmp/container_id.txt", str(connector_container_id))
+            .with_new_file("/tmp/container_id.txt", contents=str(connector_container_id))
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
             .with_(await secrets.mounted_connector_secrets(self.context, self.CONTAINER_SECRETS_DIRECTORY))

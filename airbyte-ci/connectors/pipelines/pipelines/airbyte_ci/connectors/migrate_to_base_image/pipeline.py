@@ -158,7 +158,7 @@ class AddBuildInstructionsToReadme(Step):
                 stdout=str(e),
                 output_artifact=self.repo_dir,
             )
-        updated_repo_dir = await self.repo_dir.with_new_file(str(readme_path), updated_readme)
+        updated_repo_dir = await self.repo_dir.with_new_file(str(readme_path), contents=updated_readme)
         return StepResult(
             self,
             StepStatus.SUCCESS,

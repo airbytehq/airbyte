@@ -170,7 +170,9 @@ async def mounted_connector_secrets(context: ConnectorContext, secret_directory_
         def with_secrets_mounted_as_regular_files(container: Container) -> Container:
             container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
             for secret_file_name, secret_content_str in contents.items():
-                container = container.with_new_file(f"{secret_directory_path}/{secret_file_name}", secret_content_str, permissions=0o600)
+                container = container.with_new_file(
+                    f"{secret_directory_path}/{secret_file_name}", contents=secret_content_str, permissions=0o600
+                )
             return container
 
         return with_secrets_mounted_as_regular_files
