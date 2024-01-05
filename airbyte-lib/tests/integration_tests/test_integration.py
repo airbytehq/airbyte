@@ -58,6 +58,21 @@ def test_check_fail():
         source.check()
 
 
+@pytest.mark.parametrize(
+    "method_call",
+    [
+        pytest.param(lambda source: source.check(), id="check"),
+        pytest.param(lambda source: list(source.read_stream("stream1")), id="read_stream"),
+        pytest.param(lambda source: source.read_all(), id="read_all"),
+    ],
+)
+def test_check_fail_on_missing_config(method_call):
+    source = ab.get_connector("source-test")
+
+    with pytest.raises(Exception, match="Config is not set, either set in get_connector or via source.set_config"):
+        method_call(source)
+
+
 def test_sync():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = ab.get_in_memory_cache()
