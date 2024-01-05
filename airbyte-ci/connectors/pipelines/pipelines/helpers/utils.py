@@ -101,7 +101,7 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
     Returns:
         Optional[str]: The file content if the file exists in the container, None otherwise.
     """
-    dir_name, file_name = os.path.split(os.path.abspath(path))
+    dir_name, file_name = os.path.split(path)
     if file_name not in set(await container.directory(dir_name).entries()):
         return None
     return await container.file(path).contents()
