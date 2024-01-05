@@ -270,8 +270,8 @@ dependencies:
     specifier: 6.1.1
     version: 6.1.1
   docusaurus-json-schema-plugin:
-    specifier: ^1.7.0
-    version: 1.7.0(@docusaurus/core@3.0.1)(@docusaurus/theme-classic@3.0.1)(@types/react@18.2.46)(react@18.2.0)(webpack@5.89.0)
+    specifier: ^1.10.0
+    version: 1.10.0(@docusaurus/core@3.0.1)(@docusaurus/theme-classic@3.0.1)(@types/react@18.2.46)(react@18.2.0)(webpack@5.89.0)
   docusaurus-plugin-hubspot:
     specifier: ^1.0.0
     version: 1.0.0
@@ -5600,8 +5600,8 @@ packages:
       '@leichtgewicht/ip-codec': 2.0.4
     dev: false
 
-  /docusaurus-json-schema-plugin@1.7.0(@docusaurus/core@3.0.1)(@docusaurus/theme-classic@3.0.1)(@types/react@18.2.46)(react@18.2.0)(webpack@5.89.0):
-    resolution: {integrity: sha512-Q9m6kIcCzA3CEtzaWBsgXbve8dWHInhO2XRvmJfFM6PYxcabGnmYBgJ13gI3PaIrt8SdBebc9v2ewj2Y0XfpLQ==}
+  /docusaurus-json-schema-plugin@1.10.0(@docusaurus/core@3.0.1)(@docusaurus/theme-classic@3.0.1)(@types/react@18.2.46)(react@18.2.0)(webpack@5.89.0):
+    resolution: {integrity: sha512-RshMfUsxQQZojCw2GYjJM3q2Ri4nNrruFR1An0HHHybG5/PSKXdUPcDlM3BX5k4MZrPcS2smTRRnFyRV+WHVlA==}
     peerDependencies:
       '@docusaurus/core': ^3.0.0
       '@docusaurus/theme-classic': ^3.0.0
@@ -5610,10 +5610,10 @@ packages:
       '@docusaurus/core': 3.0.1(@docusaurus/types@3.0.1)(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.3)
       '@docusaurus/theme-classic': 3.0.1(@types/react@18.2.46)(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.3)
       '@stoplight/json-ref-resolver': 3.1.6
-      monaco-editor: 0.39.0
-      monaco-editor-webpack-plugin: 7.1.0(monaco-editor@0.39.0)(webpack@5.89.0)
+      monaco-editor: 0.44.0
+      monaco-editor-webpack-plugin: 7.1.0(monaco-editor@0.44.0)(webpack@5.89.0)
       react: 18.2.0
-      react-monaco-editor: 0.54.0(@types/react@18.2.46)(monaco-editor@0.39.0)(react@18.2.0)
+      react-monaco-editor: 0.55.0(@types/react@18.2.46)(monaco-editor@0.44.0)(react@18.2.0)
     transitivePeerDependencies:
       - '@types/react'
       - webpack
@@ -8335,19 +8335,19 @@ packages:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
     dev: false
 
-  /monaco-editor-webpack-plugin@7.1.0(monaco-editor@0.39.0)(webpack@5.89.0):
+  /monaco-editor-webpack-plugin@7.1.0(monaco-editor@0.44.0)(webpack@5.89.0):
     resolution: {integrity: sha512-ZjnGINHN963JQkFqjjcBtn1XBtUATDZBMgNQhDQwd78w2ukRhFXAPNgWuacaQiDZsUr4h1rWv5Mv6eriKuOSzA==}
     peerDependencies:
       monaco-editor: '>= 0.31.0'
       webpack: ^4.5.0 || 5.x
     dependencies:
       loader-utils: 2.0.4
-      monaco-editor: 0.39.0
+      monaco-editor: 0.44.0
       webpack: 5.89.0
     dev: false
 
-  /monaco-editor@0.39.0:
-    resolution: {integrity: sha512-zhbZ2Nx93tLR8aJmL2zI1mhJpsl87HMebNBM6R8z4pLfs8pj604pIVIVwyF1TivcfNtIPpMXL+nb3DsBmE/x6Q==}
+  /monaco-editor@0.44.0:
+    resolution: {integrity: sha512-5SmjNStN6bSuSE5WPT2ZV+iYn1/yI9sd4Igtk23ChvqB7kDk9lZbB9F5frsuvpB+2njdIeGGFf2G4gbE6rCC9Q==}
     dev: false
 
   /mri@1.2.0:
@@ -9837,15 +9837,15 @@ packages:
       - supports-color
     dev: false
 
-  /react-monaco-editor@0.54.0(@types/react@18.2.46)(monaco-editor@0.39.0)(react@18.2.0):
-    resolution: {integrity: sha512-9JwO69851mfpuhYLHlKbae7omQWJ/2ICE2lbL0VHyNyZR8rCOH7440u+zAtDgiOMpLwmYdY1sEZCdRefywX6GQ==}
+  /react-monaco-editor@0.55.0(@types/react@18.2.46)(monaco-editor@0.44.0)(react@18.2.0):
+    resolution: {integrity: sha512-GdEP0Q3Rn1dczfKEEyY08Nes5plWwIYU4sWRBQO0+jsQWQsKMHKCC6+hPRwR7G/4aA3V/iU9jSmWPzVJYMVFSQ==}
     peerDependencies:
       '@types/react': '>=16 <= 18'
-      monaco-editor: ^0.39.0
+      monaco-editor: ^0.44.0
       react: '>=16 <= 18'
     dependencies:
       '@types/react': 18.2.46
-      monaco-editor: 0.39.0
+      monaco-editor: 0.44.0
       prop-types: 15.8.1
       react: 18.2.0
     dev: false
