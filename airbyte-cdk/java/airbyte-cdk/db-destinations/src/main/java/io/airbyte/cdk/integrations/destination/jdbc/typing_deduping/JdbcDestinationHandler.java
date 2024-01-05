@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
                 selectOne()
                     .from(name(id.finalNamespace(), id.finalName()))
                     .limit(1))))
-            .getSQL());
+            .getSQL(ParamType.INLINED));
   }
 
   @Override
