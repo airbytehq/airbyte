@@ -4,7 +4,7 @@
 
 import json
 
-import requests  # type: ignore
+import requests
 from pipelines import main_logger
 
 
