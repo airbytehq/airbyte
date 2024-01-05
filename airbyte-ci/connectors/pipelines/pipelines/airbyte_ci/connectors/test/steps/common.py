@@ -8,31 +8,35 @@ import datetime
 import os
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import ClassVar, List, Optional
+from typing import Any, ClassVar, List, Optional
 
-import requests
+import requests  # type: ignore
 import semver
-import yaml
-from connector_ops.utils import Connector
+import yaml  # type: ignore
+from connector_ops.utils import Connector  # type: ignore
 from dagger import Container, Directory
 from pipelines import hacks
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.containers import internal_tools
 from pipelines.helpers.utils import METADATA_FILE_NAME
-from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
 class VersionCheck(Step, ABC):
     """A step to validate the connector version was bumped if files were modified"""
 
+    context: ConnectorContext
     GITHUB_URL_PREFIX_FOR_CONNECTORS = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
     failure_message: ClassVar
-    should_run = True
 
     @property
-    def github_master_metadata_url(self):
+    def should_run(self) -> bool:
+        return True
+
+    @property
+    def github_master_metadata_url(self) -> str:
         return f"{self.GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
 
     @cached_property
@@ -80,6 +84,7 @@ class VersionCheck(Step, ABC):
 
 
 class VersionIncrementCheck(VersionCheck):
+    context: ConnectorContext
     title = "Connector version increment check"
 
     BYPASS_CHECK_FOR = [
@@ -115,6 +120,7 @@ class VersionIncrementCheck(VersionCheck):
 
 
 class VersionFollowsSemverCheck(VersionCheck):
+    context: ConnectorContext
     title = "Connector version semver check"
 
     @property
@@ -133,6 +139,7 @@ class VersionFollowsSemverCheck(VersionCheck):
 class QaChecks(Step):
     """A step to run QA checks for a connector."""
 
+    context: ConnectorContext
     title = "QA checks"
 
     async def _run(self) -> StepResult:
@@ -181,6 +188,7 @@ class QaChecks(Step):
 class AcceptanceTests(Step):
     """A step to run acceptance tests for a connector if it has an acceptance test config file."""
 
+    context: ConnectorContext
     title = "Acceptance tests"
     CONTAINER_TEST_INPUT_DIRECTORY = "/test_input"
     CONTAINER_SECRETS_DIRECTORY = "/test_input/secrets"
@@ -204,11 +212,11 @@ class AcceptanceTests(Step):
             command += ["--numprocesses=auto"]  # Using pytest-xdist to run tests in parallel, auto means using all available cores
         return command
 
-    def __init__(self, context: PipelineContext, concurrent_test_run: Optional[bool] = False) -> None:
+    def __init__(self, context: ConnectorContext, concurrent_test_run: Optional[bool] = False) -> None:
         """Create a step to run acceptance tests for a connector if it has an acceptance test config file.
 
         Args:
-            context (PipelineContext): The current test context, providing a connector object, a dagger client and a repository directory.
+            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
             concurrent_test_run (Optional[bool], optional): Whether to run acceptance tests in parallel. Defaults to False.
         """
         super().__init__(context)
@@ -284,10 +292,10 @@ class AcceptanceTests(Step):
             cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
             .with_exec(["mkdir", "/dagger_share"], skip_entrypoint=True)
             .with_env_variable("CACHEBUSTER", await self.get_cache_buster())
-            .with_new_file("/tmp/container_id.txt", str(connector_container_id))
+            .with_new_file("/tmp/container_id.txt", contents=str(connector_container_id))
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
-            .with_(await secrets.mounted_connector_secrets(self.context, "/test_input/secrets"))
+            .with_(await secrets.mounted_connector_secrets(self.context, self.CONTAINER_SECRETS_DIRECTORY))
         )
         if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
             self.context.logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")
@@ -301,9 +309,10 @@ class AcceptanceTests(Step):
 
 
 class CheckBaseImageIsUsed(Step):
+    context: ConnectorContext
     title = "Check our base image is used"
 
-    async def _run(self, *args, **kwargs) -> StepResult:
+    async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
         is_certified = self.context.connector.metadata.get("supportLevel") == "certified"
         if not is_certified:
             return self.skip("Connector is not certified, it does not require the use of our base image.")
@@ -316,7 +325,7 @@ class CheckBaseImageIsUsed(Step):
                 StepStatus.FAILURE,
                 stdout=f"Connector is certified but does not use our base image. {migration_hint}",
             )
-        has_dockerfile = "Dockerfile" in await (await self.context.get_connector_dir(include="Dockerfile")).entries()
+        has_dockerfile = "Dockerfile" in await (await self.context.get_connector_dir(include=["Dockerfile"])).entries()
         if has_dockerfile:
             return StepResult(
                 self,

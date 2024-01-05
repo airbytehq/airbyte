@@ -130,6 +130,28 @@ def test_bulk_stream_stream_state(mocked_client, config):
     assert stream.state == {"some_account_id": {"Modified Time": "2023-05-27T18:00:14.970+00:00"}}
     stream.state = {"Account Id": "some_account_id", "Modified Time": "05/25/2023 18:00:14.970"}
     assert stream.state == {"some_account_id": {"Modified Time": "2023-05-27T18:00:14.970+00:00"}}
+    # stream state saved to connection state
+    stream.state = {
+        "120342748234": {
+            "Modified Time": "2022-11-05T12:07:29.360+00:00"
+        },
+        "27364572345": {
+            "Modified Time": "2022-11-05T12:07:29.360+00:00"
+        },
+        "732645723": {
+            "Modified Time": "2022-11-05T12:07:29.360+00:00"
+        },
+        "837563864": {
+            "Modified Time": "2022-11-05T12:07:29.360+00:00"
+        }
+    }
+    assert stream.state == {
+        "120342748234": {"Modified Time": "2022-11-05T12:07:29.360+00:00"},
+        "27364572345": {"Modified Time": "2022-11-05T12:07:29.360+00:00"},
+        "732645723": {"Modified Time": "2022-11-05T12:07:29.360+00:00"},
+        "837563864": {"Modified Time": "2022-11-05T12:07:29.360+00:00"},
+        "some_account_id": {"Modified Time": "2023-05-27T18:00:14.970+00:00"},
+    }
 
 
 @patch.object(source_bing_ads.source, "Client")

@@ -5,22 +5,25 @@
 """This module groups steps made to run tests for a specific Python connector given a test context."""
 
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, List, Tuple
+from typing import List, Sequence, Tuple
 
-import asyncer
 import pipelines.dagger.actions.python.common
 import pipelines.dagger.actions.system.docker
 from dagger import Container, File
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
-from pipelines.models.steps import Step, StepResult, StepStatus
+from pipelines.helpers.run_steps import STEP_TREE, StepToRun
+from pipelines.models.steps import Step, StepResult
 
 
 class PytestStep(Step, ABC):
     """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
+
+    context: ConnectorContext
 
     PYTEST_INI_FILE_NAME = "pytest.ini"
     PYPROJECT_FILE_NAME = "pyproject.toml"
@@ -35,7 +38,7 @@ class PytestStep(Step, ABC):
         raise NotImplementedError("test_directory_name must be implemented in the child class.")
 
     @property
-    def extra_dependencies_names(self) -> Iterable[str]:
+    def extra_dependencies_names(self) -> Sequence[str]:
         if self.context.connector.is_using_poetry:
             return ("dev",)
         return ("dev", "tests")
@@ -127,15 +130,15 @@ class PytestStep(Step, ABC):
         built_connector_container: Container,
         test_config_file_name: str,
         test_config_file: File,
-        extra_dependencies_names: Iterable[str],
-    ) -> Callable:
+        extra_dependencies_names: Sequence[str],
+    ) -> Container:
         """Install the connector with the extra dependencies in /test_environment.
 
         Args:
-            extra_dependencies_names (Iterable[str]): Extra dependencies to install.
+            extra_dependencies_names (List[str]): Extra dependencies to install.
 
         Returns:
-            Callable: The decorator to use with the with_ method of a container.
+            Container: The container with the test environment installed.
         """
         secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets")
 
@@ -193,35 +196,37 @@ class IntegrationTests(PytestStep):
     bind_to_docker_host = True
 
 
-async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
-    """Run all tests for a Python connector.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[StepResult]: The results of all the steps that ran or were skipped.
+def get_test_steps(context: ConnectorContext) -> STEP_TREE:
     """
-    step_results = []
-    build_connector_image_results = await BuildConnectorImages(context).run()
-    if build_connector_image_results.status is StepStatus.FAILURE:
-        return [build_connector_image_results]
-    step_results.append(build_connector_image_results)
-
-    connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
-
-    context.connector_secrets = await secrets.get_connector_secrets(context)
-
-    unit_test_results = await UnitTests(context).run(connector_container)
-
-    if unit_test_results.status is StepStatus.FAILURE:
-        return step_results + [unit_test_results]
-    step_results.append(unit_test_results)
-    async with asyncer.create_task_group() as task_group:
-        tasks = [
-            task_group.soonify(IntegrationTests(context).run)(connector_container),
-            task_group.soonify(AcceptanceTests(context, context.concurrent_cat).run)(connector_container),
-            task_group.soonify(CheckBaseImageIsUsed(context).run)(),
-        ]
-
-    return step_results + [task.value for task in tasks]
+    Get all the tests steps for a Python connector.
+    """
+    return [
+        [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context))],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.UNIT,
+                step=UnitTests(context),
+                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            )
+        ],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
+                step=IntegrationTests(context),
+                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            ),
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
+                step=AcceptanceTests(context, context.concurrent_cat),
+                args=lambda results: {
+                    "connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]
+                },
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            ),
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.CHECK_BASE_IMAGE, step=CheckBaseImageIsUsed(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD]
+            ),
+        ],
+    ]

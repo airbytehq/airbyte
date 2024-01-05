@@ -31,7 +31,6 @@ class HourlyReportTransformerMixin:
     @transformer.registerCustomTransform
     def custom_transform_datetime_rfc3339(original_value, field_schema):
         if original_value and "format" in field_schema and field_schema["format"] == "date-time":
-            print(original_value)
             transformed_value = transform_report_hourly_datetime_format_to_rfc_3339(original_value)
             return transformed_value
         return original_value

@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Namespaces
 
 ## High-Level Overview

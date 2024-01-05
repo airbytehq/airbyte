@@ -1,6 +1,8 @@
-# Transformations with Airbyte (Part 3/3)
+---
+products: oss-*
+---
 
-## Overview
+# Transformations with Airbyte (Part 3/3)
 
 This tutorial will describe how to push a custom dbt transformation project back to Airbyte to use during syncs.
 
