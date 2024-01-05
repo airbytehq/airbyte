@@ -57,6 +57,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -143,6 +144,19 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    // The following properties can be overriden through jdbcUrlParameters in the config.
+    Map<String, String> connectionOptions = new HashMap<>();
+    // Redshift properties
+    // https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-configuration-options.html#jdbc20-connecttimeout-option
+    // connectTimeout is different from Hikari pool's connectionTimout, driver defaults to 10seconds so
+    // increase it to match hikari's default
+    connectionOptions.put("connectTimeout", "60");
+    // HikariPool properties
+    // https://github.com/brettwooldridge/HikariCP?tab=readme-ov-file#frequently-used
+    // connectionTimeout defaults to 60s in JdbcConnector.java
+    // Do aggressive keepAlive with minimum allowed value, this only applies to connection sitting idle
+    // in the pool.
+    connectionOptions.put("keepaliveTime", Long.toString(Duration.ofSeconds(30).toMillis()));
     return SSL_JDBC_PARAMETERS;
   }
 
