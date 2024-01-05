@@ -207,7 +207,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   }
 
   private Field<String> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
-    final Field<?> extract = extractColumnAsJson(column);
+    final Field<Object> extract = extractColumnAsJson(column);
     if (type instanceof Struct) {
       // If this field is a struct, verify that the raw data is an object or null.
       return case_()
@@ -235,7 +235,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
           .when(
               extract.isNotNull()
                   .and(jsonTypeof(extract).ne("null"))
-                  .and(castedField(extractColumnAsJson(column), type, true).isNull()),
+                  .and(castedField(extract, type, true).isNull()),
               val("Problem with `" + column.originalName() + "`"))
           .else_(val((String) null));
     }
@@ -291,7 +291,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   /**
    * Extract a raw field, leaving it as jsonb
    */
-  private Field<?> extractColumnAsJson(final ColumnId column) {
+  private Field<Object> extractColumnAsJson(final ColumnId column) {
     return field("{0} -> {1}", name(COLUMN_NAME_DATA), val(column.originalName()));
   }
 
