@@ -27,8 +27,9 @@ public interface SqlGenerator<DialectTableDefinition> {
    * <p>
    * It's expected that most implementations do not need to override this method.
    * <p>
-   * This SQL MUST be idempotent, but MAY be non-thread-safe. Callers MUST guarantee that this method
-   * is invoked exactly once per sync, before any other typing/deduping-related operations happen.
+   * This SQL MUST be idempotent and threadsafe. Callers SHOULD guarantee this method is only called
+   * once per sync, but subsequent syncs will run this code again, and concurrent syncs may run this
+   * code in parallel.
    */
   default Sql setup() {
     return new Sql(emptyList());

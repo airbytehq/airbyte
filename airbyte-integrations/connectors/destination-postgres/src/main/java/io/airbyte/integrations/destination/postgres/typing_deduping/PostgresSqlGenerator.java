@@ -57,18 +57,31 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   @Override
   public Sql setup() {
     return Sql.separately(
-        // Copied from https://dba.stackexchange.com/a/203986
+        // safe_cast implementation copied from https://dba.stackexchange.com/a/203986
+        // and wrapped in the idempotent function creation logic from https://stackoverflow.com/a/69547602
+
+        // This is pretty hacky. It's to handle the fact that postgres disallows concurrent
+        // `CREATE OR REPLACE FUNCTION airbyte_safe_cast` calls.
+        // It's possible for two syncs to start running at the same time, and we can't coordinate
+        // between destination-postgres instances, so we need to make sure that they can both successfully
+        // run this function creation logic without failing.
         """
-            CREATE OR REPLACE FUNCTION airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
-              LANGUAGE plpgsql AS
-            $func$
-            BEGIN
-               EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
-               INTO  _out;
-            EXCEPTION WHEN others THEN
-               -- do nothing: _out already carries default
-            END
-            $func$;
+            do $$
+            begin
+                CREATE FUNCTION airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
+                  LANGUAGE plpgsql AS
+                $func$
+                BEGIN
+                    EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
+                    INTO  _out;
+                EXCEPTION WHEN others THEN
+                    -- do nothing: _out already carries default
+                END
+                $func$;
+              exception
+                when duplicate_function then
+                null;
+            end; $$
             """
     );
   }
