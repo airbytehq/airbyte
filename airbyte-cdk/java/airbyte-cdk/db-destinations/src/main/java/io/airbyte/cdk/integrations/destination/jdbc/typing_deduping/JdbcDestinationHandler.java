@@ -4,6 +4,12 @@
 
 package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping;
 
+import static org.jooq.impl.DSL.exists;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.select;
+import static org.jooq.impl.DSL.selectOne;
+
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
@@ -52,10 +58,11 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
   @Override
   public boolean isFinalTableEmpty(final StreamId id) throws Exception {
     return !jdbcDatabase.queryBoolean(
-        DSL.select(
-            DSL.field(DSL.exists(
-                DSL.selectOne()
-                    .from(DSL.name(id.finalNamespace(), id.finalName())))))
+        select(
+            field(exists(
+                selectOne()
+                    .from(name(id.finalNamespace(), id.finalName()))
+                    .limit(1))))
             .getSQL());
   }
 
@@ -77,8 +84,8 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
     // but it's also the only method in the JdbcDatabase interface to return non-string/int types
     try (final Stream<Timestamp> timestampStream = jdbcDatabase.unsafeQuery(
         conn -> conn.prepareStatement(
-            DSL.select(DSL.field("MIN(_airbyte_extracted_at)").as("min_timestamp"))
-                .from(DSL.name(id.rawNamespace(), id.rawName()))
+            select(field("MIN(_airbyte_extracted_at)").as("min_timestamp"))
+                .from(name(id.rawNamespace(), id.rawName()))
                 .where(DSL.condition("_airbyte_loaded_at IS NULL"))
                 .getSQL()),
         record -> record.getTimestamp("min_timestamp"))) {
@@ -96,8 +103,8 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
     // This second query just finds the newest raw record.
     try (final Stream<Timestamp> timestampStream = jdbcDatabase.unsafeQuery(
         conn -> conn.prepareStatement(
-            DSL.select(DSL.field("MAX(_airbyte_extracted_at)").as("min_timestamp"))
-                .from(DSL.name(id.rawNamespace(), id.rawName()))
+            select(field("MAX(_airbyte_extracted_at)").as("min_timestamp"))
+                .from(name(id.rawNamespace(), id.rawName()))
                 .getSQL()),
         record -> record.getTimestamp("min_timestamp"))) {
       // Filter for nonNull values in case the query returned NULL (i.e. no raw records at all).
