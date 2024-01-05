@@ -60,7 +60,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   public Sql setup() {
-    return Sql.separately(
+    return Sql.of(
         // safe_cast implementation copied from https://dba.stackexchange.com/a/203986
         // and wrapped in the idempotent function creation logic from https://stackoverflow.com/a/69547602
 
