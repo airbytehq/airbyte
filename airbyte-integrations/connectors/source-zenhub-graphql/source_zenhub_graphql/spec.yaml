@@ -1,0 +1,35 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Zenhub Graphql Spec
+  type: object
+  required:
+    - workspace_name
+    - access_token
+  properties:
+      base_url:
+        type: string
+        description: Zenhub Graphql URL. By deafult we use https://api.zenhub.com/public/graphql, if you want to change it, please put your Base URL
+        examples:
+          - "https://api.zenhub.com/public/graphql" 
+      access_token:
+        type: string
+        airbyte_secret: true
+        description: Zenhub API access token.
+        examples:
+          - "zh_xxxxxxxxxxxxxxx" 
+      workspace_name:
+        type: string
+        description: Name of the Zenhub workspace.
+        examples:
+          - "Cinematic Universes"
+      repo_names:
+        type: array
+        description: Name of the repository.
+        items:
+          type: string
+        minItems: 1
+        examples:
+          - ["DC Tasks to survive", "Marvel Infinity Phases"]
+      
+      
