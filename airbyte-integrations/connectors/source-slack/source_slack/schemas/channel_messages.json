@@ -19,17 +19,6 @@
     "bot_id": {
       "type": ["null", "string"]
     },
-    "edited": {
-      "properties": {
-        "ts": {
-          "type": ["null", "number"]
-        },
-        "user": {
-          "type": ["null", "string"]
-        }
-      },
-      "type": ["null", "object"]
-    },
     "bot_profile": {
       "additionalProperties": true,
       "properties": {
@@ -218,6 +207,17 @@
     },
     "username": {
       "type": ["null", "string"]
+    },
+    "edited": {
+      "properties": {
+        "ts": {
+          "type": ["null", "number"]
+        },
+        "user": {
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["null", "object"]
     }
   },
   "type": ["null", "object"]
