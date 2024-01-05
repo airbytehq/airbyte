@@ -179,7 +179,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
       return case_()
           .when(
               extract.isNotNull()
-                  .and(jsonTypeof(column).notIn("object", "null")),
+                  .and(jsonTypeof(extract).notIn("object", "null")),
               val("Problem with `" + column.originalName() + "`")
           ).else_(val((String) null));
     } else if (type instanceof Array) {
@@ -187,7 +187,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
       return case_()
           .when(
               extract.isNotNull()
-                  .and(jsonTypeof(column).notIn("array", "null")),
+                  .and(jsonTypeof(extract).notIn("array", "null")),
               val("Problem with `" + column.originalName() + "`")
           ).else_(val((String) null));
     } else if (type == AirbyteProtocolType.UNKNOWN || type == AirbyteProtocolType.STRING) {
@@ -200,7 +200,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
       return case_()
           .when(
               extract.isNotNull()
-                  .and(jsonTypeof(column).ne("null"))
+                  .and(jsonTypeof(extract).ne("null"))
                   .and(castedField(extractColumnAsJson(column), type, true).isNull()),
               val("Problem with `" + column.originalName() + "`")
           ).else_(val((String) null));
@@ -210,7 +210,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   @Override
   protected Condition cdcDeletedAtNotNullCondition() {
     return field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
-        .and(jsonTypeof(cdcDeletedAtColumn).ne("null"));
+        .and(jsonTypeof(extractColumnAsJson(cdcDeletedAtColumn)).ne("null"));
   }
 
   @Override
@@ -259,10 +259,6 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
    */
   private Field<?> extractColumnAsJson(final ColumnId column) {
     return field("{0} -> {1}", name(COLUMN_NAME_DATA), val(column.originalName()));
-  }
-
-  private Field<String> jsonTypeof(final ColumnId column) {
-    return jsonTypeof(extractColumnAsJson(column));
   }
 
   private Field<String> jsonTypeof(final Field<?> field) {
