@@ -17,6 +17,10 @@ detect_profile() {
         if [ -f "$HOME/.zshrc" ]; then
         DETECTED_PROFILE="$HOME/.zshrc"
         fi
+    elif [ "${SHELL#*fish}" != "$SHELL" ]; then
+        if [ -f "$HOME/.config/fish/config.fish" ]; then
+        DETECTED_PROFILE="$HOME/.config/fish/config.fish"
+        fi
     fi
 
     if [ -z "${DETECTED_PROFILE}" ]; then
@@ -50,18 +54,30 @@ add_octavia_comment_to_profile() {
 }
 
 create_octavia_env_file() {
-    echo "OCTAVIA_ENV_FILE=${OCTAVIA_ENV_FILE}"  >> ${DETECTED_PROFILE}
+    if [ "${SHELL#*fish}" != "$SHELL" ]; then
+        echo "set OCTAVIA_ENV_FILE ${OCTAVIA_ENV_FILE}"  >> ${DETECTED_PROFILE}
+    else
+        echo "OCTAVIA_ENV_FILE=${OCTAVIA_ENV_FILE}"  >> ${DETECTED_PROFILE}
+    fi
     touch ${OCTAVIA_ENV_FILE}
     echo "🐙 - 💾 The octavia env file was created at ${OCTAVIA_ENV_FILE}"
 }
 
 enable_telemetry() {
-    echo "export OCTAVIA_ENABLE_TELEMETRY=$1"  >> ${DETECTED_PROFILE}
+    if [ "${SHELL#*fish}" != "$SHELL" ]; then
+        echo "set -x OCTAVIA_ENABLE_TELEMETRY $1"  >> ${DETECTED_PROFILE}
+    else
+        echo "export OCTAVIA_ENABLE_TELEMETRY=$1"  >> ${DETECTED_PROFILE}
+    fi
     echo "OCTAVIA_ENABLE_TELEMETRY=$1"  >> ${OCTAVIA_ENV_FILE}
 }
 
 add_alias() {
-    echo 'alias octavia="docker run -i --rm -v \$(pwd):/home/octavia-project --network host --env-file \${OCTAVIA_ENV_FILE} --user \$(id -u):\$(id -g) airbyte/octavia-cli:'${VERSION}'"'  >> ${DETECTED_PROFILE}
+    if [ "${SHELL#*fish}" != "$SHELL" ]; then
+        echo 'alias octavia="docker run -i --rm -v $(pwd):/home/octavia-project --network host --env-file $OCTAVIA_ENV_FILE --user $(id -u):$(id -g) airbyte/octavia-cli:'${VERSION}'"'  >> ${DETECTED_PROFILE}
+    else
+        echo 'alias octavia="docker run -i --rm -v \$(pwd):/home/octavia-project --network host --env-file \${OCTAVIA_ENV_FILE} --user \$(id -u):\$(id -g) airbyte/octavia-cli:'${VERSION}'"'  >> ${DETECTED_PROFILE}
+    fi
     echo "🐙 - 🎉 octavia alias was added to ${DETECTED_PROFILE}!"
     echo "🐙 - Please open a new terminal window or run source ${DETECTED_PROFILE}"
 }

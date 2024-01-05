@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict
+
 from unittest.mock import patch
 
 import pendulum
@@ -10,7 +10,12 @@ import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
-from source_amazon_seller_partner.streams import IncrementalReportsAmazonSPStream, ReportsAmazonSPStream, VendorDirectFulfillmentShipping
+from source_amazon_seller_partner.streams import (
+    IncrementalReportsAmazonSPStream,
+    ReportProcessingStatus,
+    ReportsAmazonSPStream,
+    VendorDirectFulfillmentShipping,
+)
 
 
 class SomeReportStream(ReportsAmazonSPStream):
@@ -64,7 +69,10 @@ class TestReportsAmazonSPStream:
             (
                 "2022-10-01T00:00:00Z",
                 None,
-                [{"dataStartTime": "2022-10-03T00:00:00Z", "dataEndTime": "2022-12-31T23:59:59Z"}],
+                [
+                    {"dataStartTime": "2022-10-01T00:00:00Z", "dataEndTime": "2022-12-29T23:59:59Z"},
+                    {"dataStartTime": "2022-12-30T00:00:00Z", "dataEndTime": "2023-01-01T00:00:00Z"}
+                ],
             ),
             (
                 "2022-11-01T00:00:00Z",
@@ -114,7 +122,7 @@ class TestReportsAmazonSPStream:
             "GET",
             f"https://test.url/reports/2021-06-30/reports/{report_id}",
             status_code=200,
-            json={"processingStatus": "FATAL", "dataEndTime": "2022-10-03T00:00:00Z"},
+            json={"processingStatus": ReportProcessingStatus.fatal, "dataEndTime": "2022-10-03T00:00:00Z"},
         )
 
         stream = SomeReportStream(**report_init_kwargs)
@@ -142,7 +150,7 @@ class TestReportsAmazonSPStream:
             "GET",
             f"https://test.url/reports/2021-06-30/reports/{report_id}",
             status_code=200,
-            json={"processingStatus": "CANCELLED", "dataEndTime": "2022-10-03T00:00:00Z"},
+            json={"processingStatus": ReportProcessingStatus.cancelled, "dataEndTime": "2022-10-03T00:00:00Z"},
         )
 
         stream = SomeReportStream(**report_init_kwargs)
@@ -170,7 +178,7 @@ class TestReportsAmazonSPStream:
             "GET",
             f"https://test.url/reports/2021-06-30/reports/{report_id}",
             status_code=200,
-            json={"processingStatus": "DONE", "dataEndTime": "2022-10-03T00:00:00Z", "reportDocumentId": document_id},
+            json={"processingStatus": ReportProcessingStatus.done, "dataEndTime": "2022-10-03T00:00:00Z", "reportDocumentId": document_id},
         )
         requests_mock.register_uri(
             "GET",
@@ -183,6 +191,32 @@ class TestReportsAmazonSPStream:
         with patch.object(stream, "parse_response", return_value=[{"some_key": "some_value"}]):
             records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
         assert records[0] == {"some_key": "some_value", "dataEndTime": "2022-10-03"}
+
+    def test_read_records_retrieve_forbidden(self, report_init_kwargs, mocker, requests_mock, caplog):
+        mocker.patch("time.sleep", lambda x: None)
+        requests_mock.register_uri(
+            "POST",
+            "https://api.amazon.com/auth/o2/token",
+            status_code=200,
+            json={"access_token": "access_token", "expires_in": "3600"},
+        )
+
+        report_id = "some_report_id"
+        requests_mock.register_uri(
+            "POST",
+            "https://test.url/reports/2021-06-30/reports",
+            status_code=403,
+            json={"reportId": report_id},
+            reason="Forbidden"
+        )
+
+        stream = SomeReportStream(**report_init_kwargs)
+        assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == []
+        assert (
+            "The endpoint https://test.url/reports/2021-06-30/reports returned 403: Forbidden. "
+            "This is most likely due to insufficient permissions on the credentials in use. "
+            "Try to grant required permissions/scopes or re-authenticate."
+        ) in caplog.messages[-1]
 
 
 class TestVendorDirectFulfillmentShipping:

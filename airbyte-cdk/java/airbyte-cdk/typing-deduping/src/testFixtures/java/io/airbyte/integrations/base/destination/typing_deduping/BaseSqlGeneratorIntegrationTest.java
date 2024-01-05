@@ -226,7 +226,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         Pair.of(id2, AirbyteProtocolType.INTEGER),
         Pair.of(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
 
-    namespace = Strings.addRandomSuffix("sql_generator_test", "_", 5);
+    namespace = Strings.addRandomSuffix("sql_generator_test", "_", 10);
     // This is not a typical stream ID would look like, but SqlGenerator isn't allowed to make any
     // assumptions about StreamId structure.
     // In practice, the final table would be testDataset.users, and the raw table would be
@@ -277,7 +277,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void detectNoSchemaChange() throws Exception {
-    final String createTable = generator.createTable(incrementalDedupStream, "", false);
+    final Sql createTable = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(createTable);
 
     final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
@@ -295,7 +295,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void detectColumnAdded() throws Exception {
-    final String createTable = generator.createTable(incrementalDedupStream, "", false);
+    final Sql createTable = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(createTable);
 
     final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
@@ -317,7 +317,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void detectColumnRemoved() throws Exception {
-    final String createTable = generator.createTable(incrementalDedupStream, "", false);
+    final Sql createTable = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(createTable);
 
     final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
@@ -337,7 +337,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void detectColumnChanged() throws Exception {
-    final String createTable = generator.createTable(incrementalDedupStream, "", false);
+    final Sql createTable = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(createTable);
 
     final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(streamId);
@@ -427,12 +427,12 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void minTimestampBehavesCorrectly() throws Exception {
-    // When the raw table doesn't exist, there is no timestamp
-    assertEquals(Optional.empty(), destinationHandler.getMinTimestampForSync(streamId));
+    // When the raw table doesn't exist, there are no unprocessed records and no timestamp
+    assertEquals(new DestinationHandler.InitialRawTableState(false, Optional.empty()), destinationHandler.getInitialRawTableState(streamId));
 
-    // When the raw table is empty, there is no timestamp
+    // When the raw table is empty, there are still no unprocessed records and no timestamp
     createRawTable(streamId);
-    assertEquals(Optional.empty(), destinationHandler.getMinTimestampForSync(streamId));
+    assertEquals(new DestinationHandler.InitialRawTableState(false, Optional.empty()), destinationHandler.getInitialRawTableState(streamId));
 
     // If we insert some raw records with null loaded_at, we should get the min extracted_at
     insertRawTableRecords(
@@ -454,20 +454,22 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                   "_airbyte_data": {}
                 }
                 """)));
-    Instant actualTimestamp = destinationHandler.getMinTimestampForSync(streamId).get();
+    DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(streamId);
+    assertTrue(tableState.hasUnprocessedRecords(),
+        "When all raw records have null loaded_at, we should recognize that there are unprocessed records");
     assertTrue(
-        actualTimestamp.isBefore(Instant.parse("2023-01-01T00:00:00Z")),
+        tableState.maxProcessedTimestamp().get().isBefore(Instant.parse("2023-01-01T00:00:00Z")),
         "When all raw records have null loaded_at, the min timestamp should be earlier than all of their extracted_at values (2023-01-01). Was actually "
-            + actualTimestamp);
+            + tableState.maxProcessedTimestamp().get());
 
     // Execute T+D to set loaded_at on the records
     createFinalTable(incrementalAppendStream, "");
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalAppendStream, Optional.empty(), "");
 
     assertEquals(
-        Instant.parse("2023-01-02T00:00:00Z"),
-        destinationHandler.getMinTimestampForSync(streamId).get(),
-        "When all raw records have non-null loaded_at, the min timestamp should be equal to the latest extracted_at");
+        destinationHandler.getInitialRawTableState(streamId),
+        new DestinationHandler.InitialRawTableState(false, Optional.of(Instant.parse("2023-01-02T00:00:00Z"))),
+        "When all raw records have non-null loaded_at, we should recognize that there are no unprocessed records, and the min timestamp should be equal to the latest extracted_at");
 
     // If we insert another raw record with older extracted_at than the typed records, we should fetch a
     // timestamp earlier than this new record.
@@ -484,7 +486,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
               "_airbyte_data": {}
             }
             """)));
-    actualTimestamp = destinationHandler.getMinTimestampForSync(streamId).get();
+    tableState = destinationHandler.getInitialRawTableState(streamId);
     // this is a pretty confusing pair of assertions. To explain them in more detail: There are three
     // records in the raw table:
     // * loaded_at not null, extracted_at = 2023-01-01 00:00Z
@@ -493,14 +495,16 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     // We should have a timestamp which is older than the second record, but newer than or equal to
     // (i.e. not before) the first record. This allows us to query the raw table using
     // `_airbyte_extracted_at > ?`, which will include the second record and exclude the first record.
+    assertTrue(tableState.hasUnprocessedRecords(),
+        "When some raw records have null loaded_at, we should recognize that there are unprocessed records");
     assertTrue(
-        actualTimestamp.isBefore(Instant.parse("2023-01-01T12:00:00Z")),
+        tableState.maxProcessedTimestamp().get().isBefore(Instant.parse("2023-01-01T12:00:00Z")),
         "When some raw records have null loaded_at, the min timestamp should be earlier than the oldest unloaded record (2023-01-01 12:00Z). Was actually "
-            + actualTimestamp);
+            + tableState);
     assertFalse(
-        actualTimestamp.isBefore(Instant.parse("2023-01-01T00:00:00Z")),
+        tableState.maxProcessedTimestamp().get().isBefore(Instant.parse("2023-01-01T00:00:00Z")),
         "When some raw records have null loaded_at, the min timestamp should be later than the newest loaded record older than the oldest unloaded record (2023-01-01 00:00Z). Was actually "
-            + actualTimestamp);
+            + tableState);
   }
 
   /**
@@ -516,10 +520,13 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
 
-    final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(streamId);
-    assertTrue(minTimestampForSync.isPresent(), "After writing some raw records, the min timestamp should be present.");
+    final DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(streamId);
+    assertAll(
+        () -> assertTrue(tableState.hasUnprocessedRecords(),
+            "After writing some raw records, we should recognize that there are unprocessed records"),
+        () -> assertTrue(tableState.maxProcessedTimestamp().isPresent(), "After writing some raw records, the min timestamp should be present."));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, minTimestampForSync, "");
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, tableState.maxProcessedTimestamp(), "");
 
     verifyRecords(
         "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
@@ -535,15 +542,17 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void handleNoPreexistingRecords() throws Exception {
     createRawTable(streamId);
-    final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(streamId);
-    assertEquals(Optional.empty(), minTimestampForSync);
+    final DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(streamId);
+    assertAll(
+        () -> assertFalse(tableState.hasUnprocessedRecords(), "With an empty raw table, we should recognize that there are no unprocessed records"),
+        () -> assertEquals(Optional.empty(), tableState.maxProcessedTimestamp(), "With an empty raw table, the min timestamp should be empty"));
 
     createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, minTimestampForSync, "");
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, tableState.maxProcessedTimestamp(), "");
 
     verifyRecords(
         "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
@@ -745,7 +754,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "_tmp",
         records);
 
-    final String sql = generator.overwriteFinalTable(streamId, "_tmp");
+    final Sql sql = generator.overwriteFinalTable(streamId, "_tmp");
     destinationHandler.execute(sql);
 
     assertEquals(1, dumpFinalTableRecords(streamId, "").size());
@@ -858,8 +867,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_updateafterdelete_inputrecords.jsonl"));
 
-    final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(cdcIncrementalDedupStream.id());
-    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, cdcIncrementalDedupStream, minTimestampForSync, "");
+    final DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(cdcIncrementalDedupStream.id());
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, cdcIncrementalDedupStream, tableState.maxProcessedTimestamp(), "");
 
     verifyRecordCounts(
         2,
@@ -895,8 +904,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "",
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_insertafterdelete_inputrecords_final.jsonl"));
 
-    final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(cdcIncrementalAppendStream.id());
-    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, cdcIncrementalDedupStream, minTimestampForSync, "");
+    final DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(cdcIncrementalAppendStream.id());
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, cdcIncrementalDedupStream, tableState.maxProcessedTimestamp(), "");
     verifyRecordCounts(
         2,
         dumpRawTableRecords(streamId),
@@ -984,7 +993,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
         });
 
-    final String createTable = generator.createTable(stream, "", false);
+    final Sql createTable = generator.createTable(stream, "", false);
     destinationHandler.execute(createTable);
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, stream, Optional.empty(), "");
 
@@ -1032,7 +1041,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
           });
 
-      final String createTable = generator.createTable(stream, "", false);
+      final Sql createTable = generator.createTable(stream, "", false);
       destinationHandler.execute(createTable);
       // Not verifying anything about the data; let's just make sure we don't crash.
       TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, stream, Optional.empty(), "");
@@ -1066,7 +1075,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
         });
 
-    final String createTable = generator.createTable(stream, "", false);
+    final Sql createTable = generator.createTable(stream, "", false);
     destinationHandler.execute(createTable);
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, stream, Optional.empty(), "");
 
@@ -1100,7 +1109,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         Optional.empty(),
         new LinkedHashMap<>());
 
-    final String createTable = generator.createTable(stream, "", false);
+    final Sql createTable = generator.createTable(stream, "", false);
     destinationHandler.execute(createTable);
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, stream, Optional.empty(), "");
 
@@ -1119,11 +1128,22 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     createV1RawTable(v1RawTableStreamId);
     insertV1RawTableRecords(v1RawTableStreamId, BaseTypingDedupingTest.readRecords(
         "sqlgenerator/all_types_v1_inputrecords.jsonl"));
-    final String migration = generator.migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
+    final Sql migration = generator.migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
     destinationHandler.execute(migration);
     final List<JsonNode> v1RawRecords = dumpV1RawTableRecords(v1RawTableStreamId);
     final List<JsonNode> v2RawRecords = dumpRawTableRecords(streamId);
     migrationAssertions(v1RawRecords, v2RawRecords);
+
+    // And then run T+D on the migrated raw data
+    final Sql createTable = generator.createTable(incrementalDedupStream, "", false);
+    destinationHandler.execute(createTable);
+    final Sql updateTable = generator.updateTable(incrementalDedupStream, "", Optional.empty(), true);
+    destinationHandler.execute(updateTable);
+    verifyRecords(
+        "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
+        dumpRawTableRecords(streamId),
+        "sqlgenerator/alltypes_expectedrecords_final.jsonl",
+        dumpFinalTableRecords(streamId, ""));
   }
 
   /**
@@ -1137,7 +1157,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     // Create a soft reset table. Use incremental append mode, in case the destination connector uses
     // different
     // indexing/partitioning/etc.
-    final String createOldTempTable = generator.createTable(incrementalAppendStream, TypeAndDedupeTransaction.SOFT_RESET_SUFFIX, false);
+    final Sql createOldTempTable = generator.createTable(incrementalAppendStream, TypeAndDedupeTransaction.SOFT_RESET_SUFFIX, false);
     destinationHandler.execute(createOldTempTable);
 
     // Execute a soft reset. This should not crash.
@@ -1177,8 +1197,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
   @Test
   public void testCreateTableForce() throws Exception {
-    final String createTableNoForce = generator.createTable(incrementalDedupStream, "", false);
-    final String createTableForce = generator.createTable(incrementalDedupStream, "", true);
+    final Sql createTableNoForce = generator.createTable(incrementalDedupStream, "", false);
+    final Sql createTableForce = generator.createTable(incrementalDedupStream, "", true);
 
     destinationHandler.execute(createTableNoForce);
     assertThrows(Exception.class, () -> destinationHandler.execute(createTableNoForce));
@@ -1189,7 +1209,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   protected void createFinalTable(final StreamConfig stream, final String suffix) throws Exception {
-    final String createTable = generator.createTable(stream, suffix, false);
+    final Sql createTable = generator.createTable(stream, suffix, false);
     destinationHandler.execute(createTable);
   }
 

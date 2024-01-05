@@ -6,15 +6,17 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from anyio import Path
 from dagger import Secret
 from pipelines.helpers.utils import get_file_contents, get_secret_host_variable
 
 if TYPE_CHECKING:
+    from typing import Callable, Dict
+
     from dagger import Container
-    from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
+    from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
 async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container) -> list[str]:
@@ -32,7 +34,7 @@ async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container)
     return secrets_to_mask
 
 
-async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> dict[str, Secret]:
+async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> Dict[str, Secret]:
     """Use the ci-credentials tool to download the secrets stored for a specific connector to a Directory.
 
     Args:
@@ -68,7 +70,7 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
     return connector_secrets
 
 
-async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS"):
+async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> Container:
     """Use the ci-credentials tool to upload the secrets stored in the context's updated_secrets-dir.
 
     Args:
@@ -81,6 +83,7 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     Raises:
         ExecError: If the command returns a non-zero exit code.
     """
+    assert context.updated_secrets_dir is not None, "The context's updated_secrets_dir must be set to upload secrets."
     # temp - fix circular import
     from pipelines.dagger.containers.internal_tools import with_ci_credentials
 
@@ -94,7 +97,7 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     )
 
 
-async def load_from_local(context: ConnectorContext) -> dict[str, Secret]:
+async def load_from_local(context: ConnectorContext) -> Dict[str, Secret]:
     """Load the secrets from the local secrets directory for a connector.
 
     Args:
@@ -103,7 +106,7 @@ async def load_from_local(context: ConnectorContext) -> dict[str, Secret]:
     Returns:
         dict[str, Secret]: A dict mapping the secret file name to the dagger Secret object.
     """
-    connector_secrets = {}
+    connector_secrets: Dict[str, Secret] = {}
     local_secrets_path = Path(context.connector.code_directory / "secrets")
     if not await local_secrets_path.is_dir():
         context.logger.warning(f"Local secrets directory {local_secrets_path} does not exist, no secrets will be loaded.")
@@ -133,7 +136,7 @@ async def get_connector_secrets(context: ConnectorContext) -> dict[str, Secret]:
     return connector_secrets
 
 
-async def mounted_connector_secrets(context: PipelineContext, secret_directory_path: str) -> Callable[[Container], Container]:
+async def mounted_connector_secrets(context: ConnectorContext, secret_directory_path: str) -> Callable[[Container], Container]:
     # By default, mount the secrets properly as dagger secret files.
     #
     # This will cause the contents of these files to be scrubbed from the logs. This scrubbing comes at the cost of
@@ -156,24 +159,27 @@ async def mounted_connector_secrets(context: PipelineContext, secret_directory_p
     # [3] https://github.com/dagger/dagger/blob/v0.6.4/cmd/shim/main.go#L294
     # [4] https://github.com/airbytehq/airbyte/issues/30394
     #
+    connector_secrets = await context.get_connector_secrets()
     if context.is_local:
         # Special case for local development.
         # Query dagger for the contents of the secrets and mount these strings as files in the container.
         contents = {}
-        for secret_file_name, secret in context.connector_secrets.items():
+        for secret_file_name, secret in connector_secrets.items():
             contents[secret_file_name] = await secret.plaintext()
 
         def with_secrets_mounted_as_regular_files(container: Container) -> Container:
             container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
             for secret_file_name, secret_content_str in contents.items():
-                container = container.with_new_file(f"{secret_directory_path}/{secret_file_name}", secret_content_str, permissions=0o600)
+                container = container.with_new_file(
+                    f"{secret_directory_path}/{secret_file_name}", contents=secret_content_str, permissions=0o600
+                )
             return container
 
         return with_secrets_mounted_as_regular_files
 
     def with_secrets_mounted_as_dagger_secrets(container: Container) -> Container:
         container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
-        for secret_file_name, secret in context.connector_secrets.items():
+        for secret_file_name, secret in connector_secrets.items():
             container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
         return container
 

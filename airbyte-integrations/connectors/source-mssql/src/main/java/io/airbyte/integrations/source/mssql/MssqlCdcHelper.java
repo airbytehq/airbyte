@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.debezium.internals.mssql.MSSQLConverter;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -145,7 +144,7 @@ public class MssqlCdcHelper {
     return DataToSync.EXISTING_AND_NEW;
   }
 
-  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) {
+  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final boolean isSnapshot) {
     final JsonNode config = database.getSourceConfig();
     final JsonNode dbConfig = database.getDatabaseConfig();
 
@@ -158,9 +157,18 @@ public class MssqlCdcHelper {
     props.setProperty("provide.transaction.metadata", "false");
 
     props.setProperty("converters", "mssql_converter");
-    props.setProperty("mssql_converter.type", MSSQLConverter.class.getName());
 
-    props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
+    props.setProperty("mssql_converter.type", MssqlDebeziumConverter.class.getName());
+
+    // If new stream(s) are added after a previously successful sync,
+    // the snapshot.mode needs to be initial_only since we don't want to continue streaming changes
+    // https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-mode
+    if (isSnapshot) {
+      props.setProperty("snapshot.mode", "initial_only");
+    } else {
+      props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
+    }
+
     props.setProperty("snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
 
     props.setProperty("schema.include.list", getSchema(catalog));
@@ -184,16 +192,17 @@ public class MssqlCdcHelper {
         props.setProperty("driver.trustServerCertificate", "true");
       } else if ("encrypted_verify_certificate".equals(sslMethod)) {
         props.setProperty("driver.encrypt", "true");
+        props.setProperty("driver.trustServerCertificate", "false");
         if (dbConfig.has("trustStore") && !dbConfig.get("trustStore").asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore", dbConfig.get("trustStore").asText());
+          props.setProperty("database.trustStore", dbConfig.get("trustStore").asText());
         }
 
         if (dbConfig.has("trustStorePassword") && !dbConfig.get("trustStorePassword").asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore.password", dbConfig.get("trustStorePassword").asText());
+          props.setProperty("database.trustStorePassword", dbConfig.get("trustStorePassword").asText());
         }
 
         if (dbConfig.has("hostNameInCertificate") && !dbConfig.get("hostNameInCertificate").asText().isEmpty()) {
-          props.setProperty("driver.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
+          props.setProperty("database.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
         }
       }
     }

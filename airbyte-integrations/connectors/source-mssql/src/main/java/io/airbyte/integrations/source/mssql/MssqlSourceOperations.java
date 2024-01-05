@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.cdk.db.DataTypeUtils.OFFSETDATETIME_FORMATTER;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
@@ -17,12 +18,17 @@ import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
-import java.nio.charset.Charset;
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import microsoft.sql.DateTimeOffset;
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +128,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
                            final int index)
       throws SQLException {
     final byte[] bytes = resultSet.getBytes(index);
-    final String value = new String(bytes, Charset.defaultCharset());
+    final String value = Base64.encodeBase64String(bytes);
     node.put(columnName, value);
   }
 
@@ -162,6 +168,23 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
       case DATE -> JsonSchemaType.STRING_DATE;
       default -> JsonSchemaType.STRING;
     };
+  }
+
+  @Override
+  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
+    try {
+      final OffsetDateTime offsetDateTime = OffsetDateTime.parse(value, OFFSETDATETIME_FORMATTER);
+      final Timestamp timestamp = Timestamp.valueOf(offsetDateTime.atZoneSameInstant(offsetDateTime.getOffset()).toLocalDateTime());
+      // Final step of conversion from
+      // OffsetDateTime (a Java construct) object -> Timestamp (a Java construct) ->
+      // DateTimeOffset (a Microsoft.sql specific construct)
+      // and provide the offset in minutes to the converter
+      final DateTimeOffset datetimeoffset = DateTimeOffset.valueOf(timestamp, offsetDateTime.getOffset().getTotalSeconds() / 60);
+      preparedStatement.setObject(parameterIndex, datetimeoffset);
+    } catch (final DateTimeParseException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }
