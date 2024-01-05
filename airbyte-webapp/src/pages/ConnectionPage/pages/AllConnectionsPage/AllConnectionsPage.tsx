@@ -4,6 +4,7 @@ import { Box } from "@mui/material";
 import _ from "lodash";
 import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 
 import { Button, LoadingPage, NewMainPageWithScroll, PageTitle, DropDown, DropDownRow } from "components";
@@ -69,7 +70,8 @@ const Footer = styled.div`
 
 const AllConnectionsPage: React.FC = () => {
   // const CONNECTION_PAGE_SIZE = 10;
-  const { push, query } = useRouter();
+  const { push, pathname, query } = useRouter();
+  const location = useLocation();
   // const { push, pathname, query } = useRouter();
   const [messageId, setMessageId] = useState<string | undefined>("");
   const [pageConfig, updatePageSize] = usePageConfig();
@@ -92,13 +94,13 @@ const AllConnectionsPage: React.FC = () => {
     sourceDefinitionId: sourceOptions[0].value,
     destinationDefinitionId: destinationOptions[0].value,
     sortDetails: {
-      sortFieldName,
-      sortDirection,
+      sortFieldName: query.sortBy ?? sortFieldName,
+      sortDirection: query.order ?? sortDirection,
     },
   };
 
   const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
-
+  console.log(query, "query");
   const { connections, total, pageSize } = useFilteredConnectionList(filters);
   // const connectionIds = connections?.map((con: any) => con?.connectionId);
   // const apiData = {
@@ -218,6 +220,26 @@ const AllConnectionsPage: React.FC = () => {
   );
   useEffect(() => {
     if (hasConnections()) {
+      const queryParams = new URLSearchParams(location.search);
+
+      // Add or update the sortBy, order, and pageCurrent parameters
+      queryParams.set("sortBy", query.sortBy ?? "");
+      queryParams.set("order", query.order ?? "");
+      queryParams.set("pageCurrent", `${filters.pageCurrent}`);
+
+      // Preserve existing query parameters
+      const existingParams = new URLSearchParams(location.search);
+      existingParams.forEach((value, key) => {
+        if (key !== "sortBy" && key !== "order" && key !== "pageCurrent") {
+          queryParams.set(key, value);
+        }
+      });
+
+      // Update the URL with the new parameters
+      push({
+        pathname,
+        search: queryParams.toString(),
+      });
     }
   }, [filters.pageCurrent]);
 
@@ -227,11 +249,18 @@ const AllConnectionsPage: React.FC = () => {
   //   }
   // }, [filters.pageCurrent]);
 
-  // useEffect(() => {
-  //   if (Object.keys(query).length > 2 && query?.pageCurrent !== undefined) {
-  //     setFilters({ ...filters, pageCurrent: JSON.parse(query.pageCurrent) });
-  //   }
-  // }, [query]);
+  useEffect(() => {
+    if (Object.keys(query).length > 2 && query?.pageCurrent !== undefined) {
+      setFilters({
+        ...filters,
+        pageCurrent: JSON.parse(query.pageCurrent),
+        sortDetails: {
+          sortDirection: query.order,
+          sortFieldName: query.sortBy,
+        },
+      });
+    }
+  }, [query]);
 
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
@@ -312,6 +341,7 @@ const AllConnectionsPage: React.FC = () => {
               setEntitySortOrder={setEntitySortOrder}
               statusSortOrder={statusSortOrder}
               setStatusSortOrder={setStatusSortOrder}
+              pageCurrent={filters.pageCurrent}
               // connectionStatus={connectionStatusList as any}
             />
             <Separator height="24px" />
