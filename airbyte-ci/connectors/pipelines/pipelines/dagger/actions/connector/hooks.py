@@ -10,7 +10,7 @@ from dagger import Container
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
-def get_sdk_version() -> str:
+def get_dagger_sdk_version() -> str:
     try:
         return metadata.version("dagger-io")
     except metadata.PackageNotFoundError:
@@ -19,7 +19,7 @@ def get_sdk_version() -> str:
 
 async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:
     """Finalize build by adding dagger engine version label and running finalize_build.sh or finalize_build.py if present in the connector directory."""
-    connector_container = connector_container.with_label("io.dagger.engine_version", get_sdk_version())
+    connector_container = connector_container.with_label("io.dagger.engine_version", get_dagger_sdk_version())
     connector_dir_with_finalize_script = await context.get_connector_dir(include=["finalize_build.sh", "finalize_build.py"])
     finalize_scripts = await connector_dir_with_finalize_script.entries()
     if not finalize_scripts:
