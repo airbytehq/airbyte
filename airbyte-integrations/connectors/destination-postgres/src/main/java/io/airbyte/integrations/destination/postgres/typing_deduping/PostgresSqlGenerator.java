@@ -160,10 +160,12 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
       return field("{0} #>> '{}'", String.class, field);
     } else {
       final DataType<?> dialectType = toDialectType(type);
+      // jsonb can't directly cast to most types, so convert to text first.
+      final Field<String> extractAsText = cast(field, SQLDataType.VARCHAR);
       if (useExpensiveSaferCasting) {
-        return function("airbyte_safe_cast", dialectType, cast(field, SQLDataType.VARCHAR), cast(val((Object) null), dialectType));
+        return function("airbyte_safe_cast", dialectType, extractAsText, cast(val((Object) null), dialectType));
       } else {
-        return cast(field, dialectType);
+        return cast(extractAsText, dialectType);
       }
     }
   }
