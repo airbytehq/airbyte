@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
-  dockerImageTag: 0.5.6
+  dockerImageTag: 0.5.8
   dockerRepository: airbyte/destination-s3
   githubIssueLabel: destination-s3
   icon: s3.svg
@@ -11,10 +11,8 @@ data:
   registries:
     cloud:
       enabled: true
-      dockerImageTag: 0.5.1
     oss:
       enabled: true
-      dockerImageTag: 0.5.1
   releaseStage: generally_available
   resourceRequirements:
     jobSpecific:

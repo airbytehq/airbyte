@@ -4,21 +4,28 @@
 
 import textwrap
 from copy import deepcopy
-from typing import Optional
+from typing import TYPE_CHECKING
 
-from base_images import version_registry
-from connector_ops.utils import ConnectorLanguage
+from base_images import version_registry  # type: ignore
+from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
 from jinja2 import Template
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.helpers import git
 from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
 
+if TYPE_CHECKING:
+    from typing import Optional
+
+    from anyio import Semaphore
+
 
 class UpgradeBaseImageMetadata(Step):
+    context: ConnectorContext
+
     title = "Upgrade the base image to the latest version in metadata.yaml"
 
     def __init__(
@@ -26,7 +33,7 @@ class UpgradeBaseImageMetadata(Step):
         context: ConnectorContext,
         repo_dir: Directory,
         set_if_not_exists: bool = True,
-    ):
+    ) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
         self.set_if_not_exists = set_if_not_exists
@@ -91,16 +98,18 @@ class UpgradeBaseImageMetadata(Step):
 
 
 class DeleteConnectorFile(Step):
+    context: ConnectorContext
+
     def __init__(
         self,
         context: ConnectorContext,
         file_to_delete: str,
-    ):
+    ) -> None:
         super().__init__(context)
         self.file_to_delete = file_to_delete
 
     @property
-    def title(self):
+    def title(self) -> str:
         return f"Delete {self.file_to_delete}"
 
     async def _run(self) -> StepResult:
@@ -122,6 +131,8 @@ class DeleteConnectorFile(Step):
 
 
 class AddBuildInstructionsToReadme(Step):
+    context: ConnectorContext
+
     title = "Add build instructions to README.md"
 
     def __init__(self, context: PipelineContext, repo_dir: Directory) -> None:
@@ -147,7 +158,7 @@ class AddBuildInstructionsToReadme(Step):
                 stdout=str(e),
                 output_artifact=self.repo_dir,
             )
-        updated_repo_dir = await self.repo_dir.with_new_file(str(readme_path), updated_readme)
+        updated_repo_dir = await self.repo_dir.with_new_file(str(readme_path), contents=updated_readme)
         return StepResult(
             self,
             StepStatus.SUCCESS,
@@ -155,7 +166,7 @@ class AddBuildInstructionsToReadme(Step):
             output_artifact=updated_repo_dir,
         )
 
-    def add_build_instructions(self, og_doc_content) -> str:
+    def add_build_instructions(self, og_doc_content: str) -> str:
 
         build_instructions_template = Template(
             textwrap.dedent(
@@ -252,7 +263,7 @@ class AddBuildInstructionsToReadme(Step):
         return new_doc
 
 
-async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, semaphore, set_if_not_exists: bool) -> ConnectorReport:
+async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, semaphore: Semaphore, set_if_not_exists: bool) -> Report:
     """Run a pipeline to upgrade for a single connector to use our base image."""
     async with semaphore:
         steps_results = []
@@ -267,11 +278,14 @@ async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, s
             steps_results.append(update_base_image_in_metadata_result)
             final_repo_dir = update_base_image_in_metadata_result.output_artifact
             await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
-            context.report = ConnectorReport(context, steps_results, name="BASE IMAGE UPGRADE RESULTS")
-    return context.report
+            report = ConnectorReport(context, steps_results, name="BASE IMAGE UPGRADE RESULTS")
+            context.report = report
+    return report
 
 
-async def run_connector_migration_to_base_image_pipeline(context: ConnectorContext, semaphore, pull_request_number: str):
+async def run_connector_migration_to_base_image_pipeline(
+    context: ConnectorContext, semaphore: Semaphore, pull_request_number: str
+) -> Report:
     async with semaphore:
         steps_results = []
         async with context:
@@ -338,6 +352,6 @@ async def run_connector_migration_to_base_image_pipeline(context: ConnectorConte
             # EXPORT MODIFIED FILES BACK TO HOST
             final_repo_dir = add_build_instructions_to_doc_results.output_artifact
             await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
-
-            context.report = ConnectorReport(context, steps_results, name="MIGRATE TO BASE IMAGE RESULTS")
-    return context.report
+            report = ConnectorReport(context, steps_results, name="MIGRATE TO BASE IMAGE RESULTS")
+            context.report = report
+    return report

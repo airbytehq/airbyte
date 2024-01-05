@@ -22,6 +22,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -54,7 +55,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         RedshiftInsertDestination.DRIVER_CLASS,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        SSL_JDBC_PARAMETERS);
+        SSL_JDBC_PARAMETERS,
+        Duration.ofMinutes(2));
   }
 
   @Override

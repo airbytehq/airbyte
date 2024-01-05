@@ -1,17 +1,20 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 import datetime
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 import semver
-from dagger import Container
+from dagger import Container, Directory
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.helpers import git
 from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
+
+if TYPE_CHECKING:
+    from anyio import Semaphore
 
 
 def get_bumped_version(version: str, bump_type: str) -> str:
@@ -28,6 +31,7 @@ def get_bumped_version(version: str, bump_type: str) -> str:
 
 
 class AddChangelogEntry(Step):
+    context: ConnectorContext
     title = "Add changelog entry"
 
     def __init__(
@@ -37,7 +41,7 @@ class AddChangelogEntry(Step):
         new_version: str,
         changelog_entry: str,
         pull_request_number: str,
-    ):
+    ) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
         self.new_version = new_version
@@ -60,9 +64,9 @@ class AddChangelogEntry(Step):
                 self,
                 StepStatus.FAILURE,
                 stdout=f"Could not add changelog entry: {e}",
-                output_artifact=self.container_with_airbyte_repo,
+                output_artifact=self.repo_dir,
             )
-        updated_repo_dir = self.repo_dir.with_new_file(str(doc_path), updated_doc)
+        updated_repo_dir = self.repo_dir.with_new_file(str(doc_path), contents=updated_doc)
         return StepResult(
             self,
             StepStatus.SUCCESS,
@@ -70,14 +74,14 @@ class AddChangelogEntry(Step):
             output_artifact=updated_repo_dir,
         )
 
-    def find_line_index_for_new_entry(self, markdown_text) -> int:
+    def find_line_index_for_new_entry(self, markdown_text: str) -> int:
         lines = markdown_text.splitlines()
         for line_index, line in enumerate(lines):
             if "version" in line.lower() and "date" in line.lower() and "pull request" in line.lower() and "subject" in line.lower():
                 return line_index + 2
         raise Exception("Could not find the changelog section table in the documentation file.")
 
-    def add_changelog_entry(self, og_doc_content) -> str:
+    def add_changelog_entry(self, og_doc_content: str) -> str:
         today = datetime.date.today().strftime("%Y-%m-%d")
         lines = og_doc_content.splitlines()
         line_index_for_new_entry = self.find_line_index_for_new_entry(og_doc_content)
@@ -87,14 +91,15 @@ class AddChangelogEntry(Step):
 
 
 class BumpDockerImageTagInMetadata(Step):
+    context: ConnectorContext
     title = "Upgrade the dockerImageTag to the latest version in metadata.yaml"
 
     def __init__(
         self,
         context: ConnectorContext,
-        repo_dir: Container,
+        repo_dir: Directory,
         new_version: str,
-    ):
+    ) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
         self.new_version = new_version
@@ -134,18 +139,18 @@ class BumpDockerImageTagInMetadata(Step):
 
 async def run_connector_version_bump_pipeline(
     context: ConnectorContext,
-    semaphore,
+    semaphore: Semaphore,
     bump_type: str,
     changelog_entry: str,
     pull_request_number: str,
-) -> ConnectorReport:
+) -> Report:
     """Run a pipeline to upgrade for a single connector.
 
     Args:
         context (ConnectorContext): The initialized connector context.
 
     Returns:
-        ConnectorReport: The reports holding the base image version upgrade results.
+        Report: The reports holding the base image version upgrade results.
     """
     async with semaphore:
         steps_results = []
@@ -172,5 +177,6 @@ async def run_connector_version_bump_pipeline(
             steps_results.append(add_changelog_entry_result)
             final_repo_dir = add_changelog_entry_result.output_artifact
             await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
-            context.report = ConnectorReport(context, steps_results, name="CONNECTOR VERSION BUMP RESULTS")
-    return context.report
+            report = ConnectorReport(context, steps_results, name="CONNECTOR VERSION BUMP RESULTS")
+            context.report = report
+    return report
