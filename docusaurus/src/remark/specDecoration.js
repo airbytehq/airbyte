@@ -7,7 +7,7 @@ const plugin = () => {
     const registry = await catalog;
 
     visit(ast, "mdxJsxFlowElement", (node) => {
-      if (node.name !== "SpecSchema" && node.name !== "AirbyteLibSourceExample" && node.name !== "AirbyteLibDestinationExample") return;
+      if (node.name !== "SpecSchema" && node.name !== "AirbyteLibExample") return;
 
       const connectorName = node.attributes.find((attr) => attr.name === "connector").value;
       const connectorSpec = registry.find( (c) => c.dockerRepository_oss === `airbyte/${connectorName}`).spec_oss.connectionSpecification;

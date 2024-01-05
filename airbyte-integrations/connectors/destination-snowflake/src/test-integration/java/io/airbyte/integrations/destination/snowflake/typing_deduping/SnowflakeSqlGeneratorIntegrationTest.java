@@ -9,7 +9,9 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -20,6 +22,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
@@ -27,6 +30,7 @@ import io.airbyte.integrations.destination.snowflake.SnowflakeTestSourceOperatio
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -240,7 +244,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    final String sql = generator.createTable(incrementalDedupStream, "", false);
+    final Sql sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
     // Note that USERS_FINAL is uppercased here. This is intentional, because snowflake upcases unquoted
@@ -380,6 +384,48 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
       // diffRawTableRecords makes some assumptions about the structure of the blob.
       DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
     });
+  }
+
+  /**
+   * Verify that the final table does not include NON-NULL PKs (after
+   * https://github.com/airbytehq/airbyte/pull/31082)
+   */
+  @Test
+  public void ensurePKsAreIndexedUnique() throws Exception {
+    createRawTable(streamId);
+    insertRawTableRecords(
+        streamId,
+        List.of(Jsons.deserialize(
+            """
+            {
+              "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {
+                "id1": 1,
+                "id2": 2
+              }
+            }
+            """)));
+
+    final Sql createTable = generator.createTable(incrementalDedupStream, "", false);
+
+    // should be OK with new tables
+    destinationHandler.execute(createTable);
+    final Optional<SnowflakeTableDefinition> existingTableA = destinationHandler.findExistingTable(streamId);
+    assertTrue(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableA.get()));
+    destinationHandler.execute(Sql.of("DROP TABLE " + streamId.finalTableId("")));
+
+    // Hack the create query to add NOT NULLs to emulate the old behavior
+    List<List<String>> createTableModified = createTable.transactions().stream().map(transaction -> transaction.stream()
+        .map(statement -> Arrays.stream(statement.split(System.lineSeparator())).map(
+            line -> !line.contains("CLUSTER") && (line.contains("id1") || line.contains("id2") || line.contains("ID1") || line.contains("ID2"))
+                ? line.replace(",", " NOT NULL,")
+                : line)
+            .collect(joining("\r\n")))
+        .toList()).toList();
+    destinationHandler.execute(new Sql(createTableModified));
+    final Optional<SnowflakeTableDefinition> existingTableB = destinationHandler.findExistingTable(streamId);
+    assertFalse(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableB.get()));
   }
 
 }

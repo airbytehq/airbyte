@@ -1,6 +1,6 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import {SnowflakeMigrationGenerator, BigQueryMigrationGenerator} from './destinations_v2.js'
+import {SnowflakeMigrationGenerator, BigQueryMigrationGenerator, RedshiftMigrationGenerator} from './destinations_v2.js'
 
 # Upgrading to Destinations V2
 
@@ -32,7 +32,7 @@ Note that Destinations V2 also removes the option to _only_ replicate raw data. 
 The following table details the delivered data modified by Destinations V2:
 
 | Current Normalization Setting | Source Type                           | Impacted Data (Breaking Changes)                         |
-|-------------------------------|---------------------------------------|----------------------------------------------------------|
+| ----------------------------- | ------------------------------------- | -------------------------------------------------------- |
 | Raw JSON                      | All                                   | `_airbyte` metadata columns, raw table location          |
 | Normalized tabular data       | API Source                            | Unnested tables, `_airbyte` metadata columns, SCD tables |
 | Normalized tabular data       | Tabular Source (database, file, etc.) | `_airbyte` metadata columns, SCD tables                  |
@@ -43,13 +43,13 @@ Whenever possible, we've taken this opportunity to use the best data type for st
 
 ## Quick Start to Upgrading
 
+**The quickest path to upgrading is to click upgrade on any out-of-date connection in the UI**. The advanced options later in this document will allow you to test out the upgrade in more detail if you choose.
+
 :::caution
 
 **[Airbyte Open Source Only]** You should upgrade to 0.50.24+ of the Airbyte Platform _before_ updating to Destinations V2. Failure to do so may cause upgraded connections to fail.
 
 :::
-
-The quickest path to upgrading is to click upgrade on any out-of-date connection in the UI:
 
 ![Upgrade Path](./assets/airbyte_destinations_v2_upgrade_prompt.png)
 
@@ -106,6 +106,9 @@ These steps allow you to dual-write for connections incrementally syncing data w
   <TabItem value="snowflake" label="Snowflake">
     <SnowflakeMigrationGenerator />
   </TabItem>
+  <TabItem value="redshift" label="Redshift">
+    <RedshiftMigrationGenerator />
+  </TabItem>
 </Tabs>
 
 2. Navigate to the existing connection you are duplicating, and navigate to the `Settings` tab. Open the `Advanced` settings to see the connection state (which manages incremental syncs). Copy the state to your clipboard.
@@ -131,7 +134,7 @@ If you have written downstream transformations directly from the output of raw t
 
 - Multiple column names are being updated (from `airbyte_ab_id` to `airbyte_raw_id`, and `airbyte_emitted_at` to `airbyte_extracted_at`).
 - The location of raw tables will from now on default to an `airbyte` schema in your destination.
-- When you upgrade to a [Destinations V2 compatible version](#destinations-v2-effective-versions) of your destination, we will leave a copy of your existing raw tables as they are, and new syncs will work from a new copy we make in the new `airbyte_internal` schema. Although existing downstream dashboards will go stale, they will not be broken.  
+- When you upgrade to a [Destinations V2 compatible version](#destinations-v2-effective-versions) of your destination, we will leave a copy of your existing raw tables as they are, and new syncs will work from a new copy we make in the new `airbyte_internal` schema. Although existing downstream dashboards will go stale, they will not be broken.
 - You can dual write by following the [steps above](#upgrading-connections-one-by-one-with-dual-writing) and copying your raw data to the schema of your newly created connection.
 
 We may make further changes to raw tables in the future, as these tables are intended to be a staging ground for Airbyte to optimize the performance of your syncs. We cannot guarantee the same level of stability as for final tables in your destination schema, nor will features like error handling be implemented in the raw tables.
@@ -143,7 +146,7 @@ As a user previously not running Normalization, Upgrading to Destinations V2 wil
 For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) source connector, we recommend the following:
 
 | CDC Source | Recommendation                                               | Notes                                                                                                                                                                                                                                                |
-|------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Postgres   | [Upgrade connection in place](#quick-start-to-upgrading)     | You can optionally dual write, but this requires resyncing historical data from the source. You must create a new Postgres source with a different replication slot than your existing source to preserve the integrity of your existing connection. |
 | MySQL      | [All above upgrade paths supported](#advanced-upgrade-paths) | You can upgrade the connection in place, or dual write. When dual writing, Airbyte can leverage the state of an existing, active connection to ensure historical data is not re-replicated from MySQL.                                               |
 
@@ -152,12 +155,12 @@ For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) sou
 For each destination connector, Destinations V2 is effective as of the following versions:
 
 | Destination Connector | Safe Rollback Version | Destinations V2 Compatible | Upgrade Deadline         |
-|-----------------------|-----------------------|----------------------------|--------------------------|
-| BigQuery              | 1.4.4                 | 2.0.6+                     | November 7, 2023         |
-| Snowflake             | 2.0.0                 | 3.1.0+                     | November 7, 2023         |
-| Redshift              | 0.4.8                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| --------------------- | --------------------- | -------------------------- | ------------------------ |
+| BigQuery              | 1.10.2                | 2.0.6+                     | November 7, 2023         |
+| Snowflake             | 2.1.7                 | 3.1.0+                     | November 7, 2023         |
+| Redshift              | 0.6.11                | [coming soon] 2.0.0+       | [coming soon] early 2024 |
 | Postgres              | 0.4.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
-| MySQL                 | 0.1.20                | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| MySQL                 | 0.2.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
 
 Note that legacy normalization will be deprecated for ClickHouse, DuckDB, MSSQL, TiDB, and Oracle DB in early 2024. If you wish to add Destinations V2 capability to these destinations, please reference our implementation guide (coming soon).
 

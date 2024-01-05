@@ -10,17 +10,19 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
+from typing import TYPE_CHECKING
 
 import anyio
 import asyncer
 import click
-from dagger import Container, DaggerError
+from dagger import Client, Container, DaggerError
 from pipelines import main_logger
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.utils import format_duration, get_exec_result
 
 if TYPE_CHECKING:
+    from typing import Any, ClassVar, Optional, Union
+    from pipelines.airbyte_ci.format.format_command import FormatCommand
     from pipelines.models.contexts.pipeline_context import PipelineContext
 
 from abc import ABC
@@ -30,38 +32,41 @@ from rich.style import Style
 
 @dataclass
 class MountPath:
-    path: Path
+    path: Union[Path, str]
     optional: bool = False
 
-    def _cast_fields(self):
+    def _cast_fields(self) -> None:
         self.path = Path(self.path)
         self.optional = bool(self.optional)
 
-    def _check_exists(self):
-        if not self.path.exists():
+    def _check_exists(self) -> None:
+        if not self.get_path().exists():
             message = f"{self.path} does not exist."
             if self.optional:
                 main_logger.warning(message)
             else:
                 raise FileNotFoundError(message)
 
-    def __post_init__(self):
+    def get_path(self) -> Path:
+        return Path(self.path)
+
+    def __post_init__(self) -> None:
         self._cast_fields()
         self._check_exists()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.path)
 
     @property
     def is_file(self) -> bool:
-        return self.path.is_file()
+        return self.get_path().is_file()
 
 
 @dataclass(frozen=True)
 class StepResult:
     """A dataclass to capture the result of a step."""
 
-    step: Union[Step, click.command]
+    step: Step
     status: StepStatus
     created_at: datetime = field(default_factory=datetime.utcnow)
     stderr: Optional[str] = None
@@ -75,7 +80,7 @@ class StepResult:
     def __str__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}\n\nSTDOUT:\n{self.stdout}\n\nSTDERR:\n{self.stderr}"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.stderr:
             super().__setattr__("stderr", self.redact_secrets_from_string(self.stderr))
         if self.stdout:
@@ -91,18 +96,23 @@ class StepResult:
 class CommandResult:
     """A dataclass to capture the result of a command."""
 
-    command: click.command
+    command: click.Command | FormatCommand
     status: StepStatus
     created_at: datetime = field(default_factory=datetime.utcnow)
     stderr: Optional[str] = None
     stdout: Optional[str] = None
     exc_info: Optional[Exception] = None
+    output_artifact: Any = None
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.command.name}: {self.status.value}"
 
     def __str__(self) -> str:  # noqa D105
         return f"{self.command.name}: {self.status.value}\n\nSTDOUT:\n{self.stdout}\n\nSTDERR:\n{self.stderr}"
+
+    @property
+    def success(self) -> bool:
+        return self.status is StepStatus.SUCCESS
 
 
 class StepStatus(Enum):
@@ -137,12 +147,11 @@ class StepStatus(Enum):
 class Step(ABC):
     """An abstract class to declare and run pipeline step."""
 
-    title: ClassVar[str]
     max_retries: ClassVar[int] = 0
     max_dagger_error_retries: ClassVar[int] = 3
     should_log: ClassVar[bool] = True
     success_exit_code: ClassVar[int] = 0
-    skipped_exit_code: ClassVar[int] = None
+    skipped_exit_code: ClassVar[Optional[int]] = None
     # The max duration of a step run. If the step run for more than this duration it will be considered as timed out.
     # The default of 5 hours is arbitrary and can be changed if needed.
     max_duration: ClassVar[timedelta] = timedelta(hours=5)
@@ -152,8 +161,13 @@ class Step(ABC):
     def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
         self.retry_count = 0
-        self.started_at = None
-        self.stopped_at = None
+        self.started_at: Optional[datetime] = None
+        self.stopped_at: Optional[datetime] = None
+
+    @property
+    def title(self) -> str:
+        """The title of the step."""
+        raise NotImplementedError("Steps must define a 'title' attribute.")
 
     @property
     def run_duration(self) -> timedelta:
@@ -172,19 +186,20 @@ class Step(ABC):
             return disabled_logger
 
     @property
-    def dagger_client(self) -> Container:
+    def dagger_client(self) -> Client:
         return self.context.dagger_client.pipeline(self.title)
 
     async def log_progress(self, completion_event: anyio.Event) -> None:
         """Log the step progress every 30 seconds until the step is done."""
         while not completion_event.is_set():
+            assert self.started_at is not None, "The step must be started before logging its progress."
             duration = datetime.utcnow() - self.started_at
             elapsed_seconds = duration.total_seconds()
             if elapsed_seconds > 30 and round(elapsed_seconds) % 30 == 0:
                 self.logger.info(f"⏳ Still running... (duration: {format_duration(duration)})")
             await anyio.sleep(1)
 
-    async def run_with_completion(self, completion_event: anyio.Event, *args, **kwargs) -> StepResult:
+    async def run_with_completion(self, completion_event: anyio.Event, *args: Any, **kwargs: Any) -> StepResult:
         """Run the step with a timeout and set the completion event when the step is done."""
         try:
             with anyio.fail_after(self.max_duration.total_seconds()):
@@ -198,7 +213,7 @@ class Step(ABC):
             return self._get_timed_out_step_result()
 
     @sentry_utils.with_step_context
-    async def run(self, *args, **kwargs) -> StepResult:
+    async def run(self, *args: Any, **kwargs: Any) -> StepResult:
         """Public method to run the step. It output a step result.
 
         If an unexpected dagger error happens it outputs a failed step result with the exception payload.
@@ -232,7 +247,7 @@ class Step(ABC):
         max_retries = self.max_dagger_error_retries if step_result.exc_info else self.max_retries
         return self.retry_count < max_retries and max_retries > 0
 
-    async def retry(self, step_result, *args, **kwargs) -> StepResult:
+    async def retry(self, step_result: StepResult, *args: Any, **kwargs: Any) -> StepResult:
         self.retry_count += 1
         self.logger.warn(
             f"Failed with error: {step_result.stderr}.\nRetry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds..."
@@ -255,7 +270,7 @@ class Step(ABC):
             self.logger.info(f"{result.status.get_emoji()} was successful (duration: {duration})")
 
     @abstractmethod
-    async def _run(self, *args, **kwargs) -> StepResult:
+    async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
         """Implement the execution of the step and return a step result.
 
         Returns:
@@ -263,7 +278,7 @@ class Step(ABC):
         """
         raise NotImplementedError("Steps must define a '_run' attribute.")
 
-    def skip(self, reason: str = None) -> StepResult:
+    def skip(self, reason: Optional[str] = None) -> StepResult:
         """Declare a step as skipped.
 
         Args:

@@ -9,9 +9,8 @@ const { themes } = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
-
-
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
+const productInformation = require("./src/remark/productInformation");
 const specDecoration = require("./src/remark/specDecoration");
 
 const redirects = yaml.load(
@@ -20,6 +19,10 @@ const redirects = yaml.load(
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid', 'docusaurus-json-schema-plugin'],
   title: "Airbyte Documentation",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",
@@ -70,7 +73,10 @@ const config = {
     }),
   ],
 
-  clientModules: [require.resolve("./src/scripts/cloudStatus.js")],
+  clientModules: [
+    require.resolve("./src/scripts/fontAwesomeIcons.js"),
+    require.resolve("./src/scripts/cloudStatus.js"),
+  ],
 
   presets: [
     [
@@ -84,7 +90,7 @@ const config = {
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
           exclude: ["**/*.inapp.md"],
-          remarkPlugins: [docsHeaderDecoration, specDecoration],
+          remarkPlugins: [docsHeaderDecoration, productInformation, specDecoration],
         },
         blog: false,
         theme: {
@@ -94,7 +100,6 @@ const config = {
     ],
   ],
 
-  themes: ["docusaurus-json-schema-plugin"],
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({

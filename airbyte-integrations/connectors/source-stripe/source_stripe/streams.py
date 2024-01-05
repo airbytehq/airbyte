@@ -700,6 +700,20 @@ class StripeLazySubStream(StripeStream, HttpSubStream):
             items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
         yield from chain(items, items_next_pages)
 
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                self.logger.info(f"Fetching parent stream slices for stream {self.name}.")
+                yield {"parent": record}
+
 
 class IncrementalStripeLazySubStreamSelector(IStreamSelector):
     def __init__(self, updated_cursor_incremental_stream: UpdatedCursorIncrementalStripeStream, lazy_sub_stream: StripeLazySubStream):

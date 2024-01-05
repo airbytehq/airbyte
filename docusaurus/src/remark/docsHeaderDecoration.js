@@ -1,10 +1,11 @@
 const visit = require("unist-util-visit").visit;
 const catalog = require("../connector_registry");
 
-const toAttributes = (props) => Object.entries(props).map(([key, value]) => ({
-      type: "mdxJsxAttribute",
-      name: key,
-      value: value
+const toAttributes = (props) =>
+  Object.entries(props).map(([key, value]) => ({
+    type: "mdxJsxAttribute",
+    name: key,
+    value: value,
   }));
 
 const plugin = () => {
@@ -27,11 +28,14 @@ const plugin = () => {
 
     if (!registryEntry) return;
 
+    let firstHeading = true;
+
     visit(ast, "heading", (node) => {
-      if (node.depth === 1 && node.children.length === 1) {
+      if (firstHeading && node.depth === 1 && node.children.length === 1) {
         const originalTitle = node.children[0].value;
         const originalId = node.data.hProperties.id;
 
+        firstHeading = false;
         node.children = [];
         node.type = "mdxJsxFlowElement";
         node.name = "HeaderDecoration";
@@ -41,8 +45,10 @@ const plugin = () => {
           supportLevel: registryEntry.supportLevel_oss,
           dockerImageTag: registryEntry.dockerImageTag_oss,
           iconUrl: registryEntry.iconUrl_oss,
+          github_url: registryEntry.github_url,
+          issue_url: registryEntry.issue_url,
           originalTitle,
-          originalId
+          originalId,
         });
       }
     });

@@ -6,7 +6,8 @@ import { FieldAnchor } from "@site/src/components/FieldAnchor";
 import { HideInUI } from "@site/src/components/HideInUI";
 import { HeaderDecoration } from "@site/src/components/HeaderDecoration";
 import { SpecSchema } from "@site/src/components/SpecSchema";
-import { AirbyteLibSourceExample, AirbyteLibDestinationExample } from "@site/src/components/AirbyteLibExample";
+import { AirbyteLibExample } from "@site/src/components/AirbyteLibExample";
+import { ProductInformation } from "@site/src/components/ProductInformation";
 
 export default {
   // Re-use the default mapping
@@ -16,6 +17,6 @@ export default {
   HideInUI,
   HeaderDecoration,
   SpecSchema,
-  AirbyteLibSourceExample,
-  AirbyteLibDestinationExample
+  AirbyteLibExample,
+  ProductInformation,
 };

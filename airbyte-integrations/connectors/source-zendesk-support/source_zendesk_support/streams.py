@@ -55,6 +55,10 @@ class BaseZendeskSupportStream(HttpStream, ABC):
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
 
+    @property
+    def max_retries(self) -> Union[int, None]:
+        return 10
+
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
         The rate limit is 700 requests per minute
@@ -606,7 +610,7 @@ class TicketAudits(IncrementalZendeskSupportStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
     # can request a maximum of 1,000 results
-    page_size = 1000
+    page_size = 200
     # ticket audits doesn't have the 'updated_by' field
     cursor_field = "created_at"
 

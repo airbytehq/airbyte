@@ -2,21 +2,23 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-- [Developing with the Java CDK](#developing-with-the-java-cdk)
-  - [Intro to the Java CDK](#intro-to-the-java-cdk)
-    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-    - [How is the CDK published?](#how-is-the-cdk-published)
-  - [Using the Java CDK](#using-the-java-cdk)
-    - [Building the CDK](#building-the-cdk)
-    - [Bumping the CDK version](#bumping-the-cdk-version)
-    - [Publishing the CDK](#publishing-the-cdk)
-  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-  - [Common Debugging Tips](#common-debugging-tips)
-  - [Changelog](#changelog)
-    - [Java CDK](#java-cdk)
+* [Developing with the Java CDK](#developing-with-the-java-cdk)
+   * [Intro to the Java CDK](#intro-to-the-java-cdk)
+      * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+      * [How is the CDK published?](#how-is-the-cdk-published)
+   * [Using the Java CDK](#using-the-java-cdk)
+      * [Building the CDK](#building-the-cdk)
+      * [Bumping the CDK version](#bumping-the-cdk-version)
+      * [Publishing the CDK](#publishing-the-cdk)
+   * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+      * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+      * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+      * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
+      * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
+      * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+   * [Common Debugging Tips](#common-debugging-tips)
+   * [Changelog](#changelog)
+      * [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -121,6 +123,8 @@ When modifying the CDK and a connector in the same PR or branch, please use the 
 
 After the above, you can build and test your connector as usual. Gradle will automatically use the local CDK code files while you are working on the connector.
 
+### Publishing the CDK and switching to a pinned CDK reference
+
 Once you are done developing and testing your CDK changes:
 
 1. Publish the CDK using the instructions here in this readme.
@@ -128,6 +132,12 @@ Once you are done developing and testing your CDK changes:
 3. You can optionally run `./gradlew :airbyte-integrations:connectors:<connector-name>:assertNotUsingLocalCdk` to ensure that the project is not using a local CDK reference.
 
 _Note: You can also use `./gradlew assertNotUsingLocalCdk` or `./gradlew disableLocalCdkRefs` to run these tasks on **all** connectors simultaneously._
+
+### Troubleshooting CDK Dependency Caches
+
+Note: after switching between a local and a pinned CDK reference, you may need to refresh dependency caches in Gradle and/or your IDE.
+
+In Gradle, you can use the CLI arg `--refresh-dependencies` the next time you build or test your connector, which will ensure that the correct version of the CDK is used after toggling the `useLocalCdk` value.
 
 ### Developing a connector against a pinned CDK version
 
@@ -155,9 +165,26 @@ MavenLocal debugging steps:
 ### Java CDK
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
-|:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.11.0  | 2024-01-04 | [\#33730](https://github.com/airbytehq/airbyte/pull/33730) | DV2 T+D uses Sql struct to represent transactions; other T+D-related changes                                                                                   |
+| 0.10.4  | 2023-12-20 | [\#33071](https://github.com/airbytehq/airbyte/pull/33071) | Add the ability to parse JDBC parameters with another delimiter than '&'                                                                                       |
+| 0.10.3  | 2024-01-03 | [\#33312](https://github.com/airbytehq/airbyte/pull/33312) | Send out count in AirbyteStateMessage                                                                                                                          |
+| 0.10.1  | 2023-12-21 | [\#33723](https://github.com/airbytehq/airbyte/pull/33723) | Make memory-manager log message less scary                                                                                                                     |
+| 0.10.0  | 2023-12-20 | [\#33704](https://github.com/airbytehq/airbyte/pull/33704) | JdbcDestinationHandler now properly implements `getInitialRawTableState`; reenable SqlGenerator test                                                           |
+| 0.9.0   | 2023-12-18 | [\#33124](https://github.com/airbytehq/airbyte/pull/33124) | Make Schema Creation Separate from Table Creation, exclude the T&D module from the CDK                                                                         |
+| 0.8.0   | 2023-12-18 | [\#33506](https://github.com/airbytehq/airbyte/pull/33506) | Improve async destination shutdown logic; more JDBC async migration work; improve DAT test schema handling                                                     |
+| 0.7.9   | 2023-12-18 | [\#33549](https://github.com/airbytehq/airbyte/pull/33549) | Improve MongoDB logging.                                                                                                                                       |
+| 0.7.8   | 2023-12-18 | [\#33365](https://github.com/airbytehq/airbyte/pull/33365) | Emit stream statuses more consistently                                                                                                                         |
+| 0.7.7   | 2023-12-18 | [\#33434](https://github.com/airbytehq/airbyte/pull/33307) | Remove LEGACY state                                                                                                                                            |
+| 0.7.6   | 2023-12-14 | [\#32328](https://github.com/airbytehq/airbyte/pull/33307) | Add schema less mode for mongodb CDC. Fixes for non standard mongodb id type.                                                                                  |
+| 0.7.4   | 2023-12-13 | [\#33232](https://github.com/airbytehq/airbyte/pull/33232) | Track stream record count during sync; only run T+D if a stream had nonzero records or the previous sync left unprocessed records.                             |
+| 0.7.3   | 2023-12-13 | [\#33369](https://github.com/airbytehq/airbyte/pull/33369) | Extract shared JDBC T+D code.                                                                                                                                  |
+| 0.7.2   | 2023-12-11 | [\#33307](https://github.com/airbytehq/airbyte/pull/33307) | Fix DV2 JDBC type mappings (code changes in [\#33307](https://github.com/airbytehq/airbyte/pull/33307)).                                                       |
+| 0.7.1   | 2023-12-01 | [\#33027](https://github.com/airbytehq/airbyte/pull/33027) | Add the abstract DB source debugger.                                                                                                                           |
+| 0.7.0   | 2023-12-07 | [\#32326](https://github.com/airbytehq/airbyte/pull/32326) | Destinations V2 changes for JDBC destinations                                                                                                                  |
+| 0.6.4   | 2023-12-06 | [\#33082](https://github.com/airbytehq/airbyte/pull/33082) | Improvements to schema snapshot error handling + schema snapshot history scope (scoped to configured DB).                                                      |
 | 0.6.2   | 2023-11-30 | [\#32573](https://github.com/airbytehq/airbyte/pull/32573) | Update MSSQLConverter to enforce 6-digit microsecond precision for timestamp fields                                                                            |
-| 0.6.1   | 2023-11-30 | [\#32610](https://github.com/airbytehq/airbyte/pull/32610) | Support DB inital sync using binary as primary key.                                                                                                            |
+| 0.6.1   | 2023-11-30 | [\#32610](https://github.com/airbytehq/airbyte/pull/32610) | Support DB initial sync using binary as primary key.                                                                                                           |
 | 0.6.0   | 2023-11-30 | [\#32888](https://github.com/airbytehq/airbyte/pull/32888) | JDBC destinations now use the async framework                                                                                                                  |
 | 0.5.3   | 2023-11-28 | [\#32686](https://github.com/airbytehq/airbyte/pull/32686) | Better attribution of debezium engine shutdown due to heartbeat.                                                                                               |
 | 0.5.1   | 2023-11-27 | [\#32662](https://github.com/airbytehq/airbyte/pull/32662) | Debezium initialization wait time will now read from initial setup time.                                                                                       |
@@ -166,7 +193,7 @@ MavenLocal debugging steps:
 | 0.4.10  | 2023-11-13 | [\#32285](https://github.com/airbytehq/airbyte/pull/32285) | Fix UUID codec ordering for MongoDB connector                                                                                                                  |
 | 0.4.9   | 2023-11-13 | [\#32468](https://github.com/airbytehq/airbyte/pull/32468) | Further error grouping improvements for DV2 connectors                                                                                                         |
 | 0.4.8   | 2023-11-09 | [\#32377](https://github.com/airbytehq/airbyte/pull/32377) | source-postgres tests: skip dropping database                                                                                                                  |
-| 0.4.7   | 2023-11-08 | [\#31856](https://github.com/airbytehq/airbyte/pull/31856) | source-postgres: support for inifinty date and timestamps                                                                                                      |
+| 0.4.7   | 2023-11-08 | [\#31856](https://github.com/airbytehq/airbyte/pull/31856) | source-postgres: support for infinity date and timestamps                                                                                                      |
 | 0.4.5   | 2023-11-07 | [\#32112](https://github.com/airbytehq/airbyte/pull/32112) | Async destinations framework: Allow configuring the queue flush threshold                                                                                      |
 | 0.4.4   | 2023-11-06 | [\#32119](https://github.com/airbytehq/airbyte/pull/32119) | Add STANDARD UUID codec to MongoDB debezium handler                                                                                                            |
 | 0.4.2   | 2023-11-06 | [\#32190](https://github.com/airbytehq/airbyte/pull/32190) | Improve error deinterpolation                                                                                                                                  |
