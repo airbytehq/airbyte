@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,6 +17,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
 public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
+
   private static PostgresTestDatabase testContainer;
 
   @BeforeAll
@@ -56,4 +61,5 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
   protected JdbcCompatibleSourceOperations<?> getSourceOperations() {
     return new PostgresSqlGeneratorIntegrationTest.PostgresSourceOperations();
   }
+
 }

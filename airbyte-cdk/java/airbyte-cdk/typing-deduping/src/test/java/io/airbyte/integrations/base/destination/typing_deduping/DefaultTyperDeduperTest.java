@@ -179,7 +179,8 @@ public class DefaultTyperDeduperTest {
     verify(destinationHandler)
         .execute(Sql.of("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z"));
     typerDeduper.typeAndDedupe("append_ns", "append_stream", false);
-    verify(destinationHandler).execute(Sql.of("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z"));
+    verify(destinationHandler)
+        .execute(Sql.of("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z"));
     typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
     verify(destinationHandler).execute(Sql.of("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z"));
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
@@ -266,8 +267,10 @@ public class DefaultTyperDeduperTest {
         new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new StreamSyncSummary(Optional.of(0L)),
         new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new StreamSyncSummary(Optional.of(1L))));
 
-    verify(destinationHandler).execute(Sql.of("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z"));
-    verify(destinationHandler).execute(Sql.of("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z"));
+    verify(destinationHandler)
+        .execute(Sql.of("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z"));
+    verify(destinationHandler)
+        .execute(Sql.of("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z"));
     verify(destinationHandler).execute(Sql.of("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z"));
   }
 

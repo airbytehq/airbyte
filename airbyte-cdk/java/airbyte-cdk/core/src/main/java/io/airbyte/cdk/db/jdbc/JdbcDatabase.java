@@ -176,8 +176,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
   public int queryInt(final String sql, final String... params) throws SQLException {
     try (final Stream<Integer> stream = unsafeQuery(
         c -> getPreparedStatement(sql, params, c),
-        rs -> rs.getInt(1)
-    )) {
+        rs -> rs.getInt(1))) {
       return stream.findFirst().get();
     }
   }
@@ -185,8 +184,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
   public boolean queryBoolean(final String sql, final String... params) throws SQLException {
     try (final Stream<Boolean> stream = unsafeQuery(
         c -> getPreparedStatement(sql, params, c),
-        rs -> rs.getBoolean(1)
-    )) {
+        rs -> rs.getBoolean(1))) {
       return stream.findFirst().get();
     }
   }
@@ -222,8 +220,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
   public ResultSetMetaData queryMetadata(final String sql, final String... params) throws SQLException {
     try (final Stream<ResultSetMetaData> q = unsafeQuery(
         c -> getPreparedStatement(sql, params, c),
-        ResultSet::getMetaData
-    )) {
+        ResultSet::getMetaData)) {
       return q.findFirst().orElse(null);
     }
   }
@@ -239,4 +236,5 @@ public abstract class JdbcDatabase extends SqlDatabase {
     }
     return statement;
   }
+
 }

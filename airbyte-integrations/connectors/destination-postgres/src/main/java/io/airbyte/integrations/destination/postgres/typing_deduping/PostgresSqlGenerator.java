@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
@@ -66,24 +70,23 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         // between destination-postgres instances, so we need to make sure that they can both successfully
         // run this function creation logic without failing.
         """
-            do $$
-            begin
-                CREATE FUNCTION airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
-                  LANGUAGE plpgsql AS
-                $func$
-                BEGIN
-                    EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
-                    INTO  _out;
-                EXCEPTION WHEN others THEN
-                    -- do nothing: _out already carries default
-                END
-                $func$;
-              exception
-                when duplicate_function then
-                null;
-            end; $$
-            """
-    );
+        do $$
+        begin
+            CREATE FUNCTION airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
+              LANGUAGE plpgsql AS
+            $func$
+            BEGIN
+                EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
+                INTO  _out;
+            EXCEPTION WHEN others THEN
+                -- do nothing: _out already carries default
+            END
+            $func$;
+          exception
+            when duplicate_function then
+            null;
+        end; $$
+        """);
   }
 
   @Override
@@ -121,17 +124,17 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   protected Field<?> castedField(
-      final Field<?> field,
-      final AirbyteType type,
-      final String alias,
-      final boolean useExpensiveSaferCasting) {
+                                 final Field<?> field,
+                                 final AirbyteType type,
+                                 final String alias,
+                                 final boolean useExpensiveSaferCasting) {
     return castedField(field, type, useExpensiveSaferCasting).as(quotedName(alias));
   }
 
   protected Field<?> castedField(
-      final Field<?> field,
-      final AirbyteType type,
-      final boolean useExpensiveSaferCasting) {
+                                 final Field<?> field,
+                                 final AirbyteType type,
+                                 final boolean useExpensiveSaferCasting) {
     if (type instanceof Struct) {
       // If this field is a struct, verify that the raw data is an object.
       return cast(
@@ -149,8 +152,10 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     } else if (type == AirbyteProtocolType.UNKNOWN) {
       return cast(field, JSONB_TYPE);
     } else if (type == AirbyteProtocolType.STRING) {
-      // we need to render the jsonb to a normal string. For strings, this is the difference between "\"foo\"" and "foo".
-      // postgres provides the #>> operator, which takes a json path and returns that extraction as a string.
+      // we need to render the jsonb to a normal string. For strings, this is the difference between
+      // "\"foo\"" and "foo".
+      // postgres provides the #>> operator, which takes a json path and returns that extraction as a
+      // string.
       // '{}' is an empty json path (it's an empty array literal), so it just stringifies the json value.
       return field("{0} #>> '{}'", String.class, field);
     } else {
@@ -181,8 +186,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         "JSONB_BUILD_OBJECT",
         JSONB_TYPE,
         val("errors"),
-        function("ARRAY_REMOVE", JSONB_TYPE, array(dataFieldErrors), val((String) null))
-    ).as(COLUMN_NAME_AB_META);
+        function("ARRAY_REMOVE", JSONB_TYPE, array(dataFieldErrors), val((String) null))).as(COLUMN_NAME_AB_META);
   }
 
   private Field<String> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
@@ -193,16 +197,16 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
           .when(
               extract.isNotNull()
                   .and(jsonTypeof(extract).notIn("object", "null")),
-              val("Problem with `" + column.originalName() + "`")
-          ).else_(val((String) null));
+              val("Problem with `" + column.originalName() + "`"))
+          .else_(val((String) null));
     } else if (type instanceof Array) {
       // Do the same for arrays.
       return case_()
           .when(
               extract.isNotNull()
                   .and(jsonTypeof(extract).notIn("array", "null")),
-              val("Problem with `" + column.originalName() + "`")
-          ).else_(val((String) null));
+              val("Problem with `" + column.originalName() + "`"))
+          .else_(val((String) null));
     } else if (type == AirbyteProtocolType.UNKNOWN || type == AirbyteProtocolType.STRING) {
       // Unknown types require no casting, so there's never an error.
       // Similarly, everything can cast to string without error.
@@ -215,8 +219,8 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
               extract.isNotNull()
                   .and(jsonTypeof(extract).ne("null"))
                   .and(castedField(extractColumnAsJson(column), type, true).isNull()),
-              val("Problem with `" + column.originalName() + "`")
-          ).else_(val((String) null));
+              val("Problem with `" + column.originalName() + "`"))
+          .else_(val((String) null));
     }
   }
 
@@ -281,4 +285,5 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   private static String jdbcTypeNameFromPostgresTypeName(final String redshiftType) {
     return POSTGRES_TYPE_NAME_TO_JDBC_TYPE.getOrDefault(redshiftType, redshiftType);
   }
+
 }

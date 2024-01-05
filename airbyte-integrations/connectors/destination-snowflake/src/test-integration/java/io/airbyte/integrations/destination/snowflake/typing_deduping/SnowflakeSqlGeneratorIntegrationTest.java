@@ -421,9 +421,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             line -> !line.contains("CLUSTER") && (line.contains("id1") || line.contains("id2") || line.contains("ID1") || line.contains("ID2"))
                 ? line.replace(",", " NOT NULL,")
                 : line)
-            .collect(joining("\r\n"))
-        ).toList()
-    ).toList();
+            .collect(joining("\r\n")))
+        .toList()).toList();
     destinationHandler.execute(new Sql(createTableModified));
     final Optional<SnowflakeTableDefinition> existingTableB = destinationHandler.findExistingTable(streamId);
     assertFalse(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableB.get()));

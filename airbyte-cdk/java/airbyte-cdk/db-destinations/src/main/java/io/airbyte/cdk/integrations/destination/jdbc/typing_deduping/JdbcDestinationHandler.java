@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping;
 
-import static java.util.stream.Collectors.joining;
-
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
@@ -26,7 +24,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.impl.DSL;
@@ -58,10 +55,8 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
         DSL.select(
             DSL.field(DSL.exists(
                 DSL.selectOne()
-                    .from(DSL.name(id.finalNamespace(), id.finalName()))
-            ))
-        ).getSQL()
-    );
+                    .from(DSL.name(id.finalNamespace(), id.finalName())))))
+            .getSQL());
   }
 
   @Override

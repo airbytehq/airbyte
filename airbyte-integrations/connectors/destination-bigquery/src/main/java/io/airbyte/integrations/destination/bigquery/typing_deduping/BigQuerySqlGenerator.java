@@ -397,9 +397,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public Sql updateTable(final StreamConfig stream,
-                            final String finalSuffix,
-                            final Optional<Instant> minRawTimestamp,
-                            final boolean useExpensiveSaferCasting) {
+                         final String finalSuffix,
+                         final Optional<Instant> minRawTimestamp,
+                         final boolean useExpensiveSaferCasting) {
     final String handleNewRecords;
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       handleNewRecords = upsertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp);
@@ -690,8 +690,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "real_final_table", streamId.finalName(QUOTE)));
     return separately(
         substitutor.replace("DROP TABLE IF EXISTS ${project_id}.${final_table_id};"),
-        substitutor.replace("ALTER TABLE ${project_id}.${tmp_final_table} RENAME TO ${real_final_table};")
-    );
+        substitutor.replace("ALTER TABLE ${project_id}.${tmp_final_table} RENAME TO ${real_final_table};"));
   }
 
   private String wrapAndQuote(final String namespace, final String tableName) {

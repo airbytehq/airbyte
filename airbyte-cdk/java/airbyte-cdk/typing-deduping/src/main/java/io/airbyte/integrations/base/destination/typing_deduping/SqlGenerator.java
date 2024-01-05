@@ -8,7 +8,6 @@ import static io.airbyte.integrations.base.destination.typing_deduping.TypeAndDe
 import static java.util.Collections.emptyList;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Optional;
 
 public interface SqlGenerator<DialectTableDefinition> {
@@ -22,8 +21,8 @@ public interface SqlGenerator<DialectTableDefinition> {
   ColumnId buildColumnId(String name, String suffix);
 
   /**
-   * Implementations which need to perform catalog-agnostic setup may override this method. For example,
-   * any {@code CREATE FUNCTION} calls should happen here.
+   * Implementations which need to perform catalog-agnostic setup may override this method. For
+   * example, any {@code CREATE FUNCTION} calls should happen here.
    * <p>
    * It's expected that most implementations do not need to override this method.
    * <p>

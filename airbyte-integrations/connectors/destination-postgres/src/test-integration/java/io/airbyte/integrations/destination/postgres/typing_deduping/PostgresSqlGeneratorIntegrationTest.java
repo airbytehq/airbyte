@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import static io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator.JSONB_TYPE;
@@ -40,7 +44,8 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   private static JdbcDatabase database;
 
   /**
-   * See {@link io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGeneratorIntegrationTest.RedshiftSourceOperations}.
+   * See
+   * {@link io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGeneratorIntegrationTest.RedshiftSourceOperations}.
    * Copied here to avoid weird dependencies.
    */
   public static class PostgresSourceOperations extends JdbcSourceOperations {
@@ -144,4 +149,5 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
         () -> assertEquals("jsonb", existingTable.get().columns().get("unknown").type()));
     // TODO assert on table indexing, etc.
   }
+
 }
