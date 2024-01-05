@@ -521,7 +521,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| 3.0.1   | [#33972](https://github.com/airbytehq/airbyte/pull/33972)  | Remove secrets scrubbing hack for --is-local, remove spurious error during container file detection.              |
+| 3.0.1   | [#33972](https://github.com/airbytehq/airbyte/pull/33972)  | Remove secrets scrubbing hack for --is-local and other small tweaks. |
 | 3.0.0  | [#33582](https://github.com/airbytehq/airbyte/pull/33582)  | Upgrade to Dagger 0.9.5 |
 | 2.14.3  | [#33964](https://github.com/airbytehq/airbyte/pull/33964)  | Reintroduce mypy with fixes for AssertionError on publish and missing report URL on connector test commit status. |
 | 2.14.2  | [#33954](https://github.com/airbytehq/airbyte/pull/33954)  | Revert mypy changes                                                                                               |
