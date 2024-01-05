@@ -122,6 +122,18 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
+  protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
+    return List.of(
+        getDslContext().createIndex().on(
+            name(stream.id().finalNamespace(), stream.id().finalName()),
+            stream.primaryKey().stream()
+                .map(pk -> quotedName(pk.name()))
+                .toList()
+        ).getSQL()
+    );
+  }
+
+  @Override
   protected List<Field<?>> extractRawDataFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final boolean useExpensiveSaferCasting) {
     return columns
         .entrySet()
