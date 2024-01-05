@@ -190,8 +190,9 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
                   .and(jsonTypeof(column).notIn("array", "null")),
               val("Problem with `" + column.originalName() + "`")
           ).else_(val((String) null));
-    } else if (type == AirbyteProtocolType.UNKNOWN) {
+    } else if (type == AirbyteProtocolType.UNKNOWN || type == AirbyteProtocolType.STRING) {
       // Unknown types require no casting, so there's never an error.
+      // Similarly, everything can cast to string without error.
       return val((String) null);
     } else {
       // For other type: If the raw data is not NULL or 'null', but the casted data is NULL,
@@ -199,7 +200,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
       return case_()
           .when(
               extract.isNotNull()
-                  .and(jsonTypeof(column).isNotNull())
+                  .and(jsonTypeof(column).ne("null"))
                   .and(castedField(extractColumnAsJson(column), type, true).isNull()),
               val("Problem with `" + column.originalName() + "`")
           ).else_(val((String) null));
