@@ -263,16 +263,13 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     if (!force) {
       return transactionally(Stream.concat(
           Stream.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
-          createIndexSql(stream, suffix).stream()
-      ).toList());
+          createIndexSql(stream, suffix).stream()).toList());
     }
     return transactionally(Stream.concat(
         Stream.of(
             dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
-            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())
-        ),
-        createIndexSql(stream, suffix).stream()
-    ).toList());
+            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
+        createIndexSql(stream, suffix).stream()).toList());
   }
 
   @Override

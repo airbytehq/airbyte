@@ -128,9 +128,8 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
             name(stream.id().finalNamespace(), stream.id().finalName()),
             stream.primaryKey().stream()
                 .map(pk -> quotedName(pk.name()))
-                .toList()
-        ).getSQL()
-    );
+                .toList())
+            .getSQL());
   }
 
   @Override
