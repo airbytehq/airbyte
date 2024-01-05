@@ -17,6 +17,12 @@ Connector will be upgraded to API v18. Affected Streams and their corresponding 
   | carousel_album_video_views | video_views        |
   | engagement                 | total_interactions |
 
+:::note
+
+You may see different results: `engagement` includes likes, comments and saves count while `total_interactions` includes likes, comments, saved and shares count.
+
+:::
+
   New metrics for Reels: `ig_reels_avg_watch_time`, `ig_reels_video_view_total_time`
 
 - `User Lifetime Insights`
