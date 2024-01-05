@@ -425,6 +425,26 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
+   * Run a basic test to verify that we don't throw an exception on basic data values.
+   */
+  @Test
+  public void allTypesUnsafe() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(incrementalDedupStream, "");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_unsafe_inputrecords.jsonl"));
+
+    assertTrue(destinationHandler.isFinalTableEmpty(streamId), "Final table should be empty before T+D");
+
+    // Instead of using the full T+D transaction, explicitly run with useSafeCasting=false.
+    final Sql unsafeSql = generator.updateTable(incrementalDedupStream, "", Optional.empty(), false);
+    destinationHandler.execute(unsafeSql);
+
+    assertFalse(destinationHandler.isFinalTableEmpty(streamId), "Final table should not be empty after T+D");
+  }
+
+  /**
    * Run through some plausible T+D scenarios to verify that we correctly identify the min raw
    * timestamp.
    */
