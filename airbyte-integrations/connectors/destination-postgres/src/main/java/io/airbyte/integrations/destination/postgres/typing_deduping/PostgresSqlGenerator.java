@@ -93,7 +93,9 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
             END
             $func$;
           exception
-            when duplicate_function then
+            -- sometimes postgres returns a PK-uniqueness violation instead of duplicate_function
+            -- so we catch that error also
+            when duplicate_function OR unique_violation then
             null;
         end; $$
         """.replace("RAW_TABLE_SCHEMA_PLACEHOLDER", defaultRawTableSchema));
