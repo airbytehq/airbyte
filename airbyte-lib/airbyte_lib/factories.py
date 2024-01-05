@@ -24,7 +24,7 @@ def get_connector(
     """
     Get a connector by name and version.
     :param name: connector name
-    :param version: connector version - if not provided, the currently installed version will be used. If no version is installed, the latest available version will be used.
+    :param version: connector version - if not provided, the currently installed version will be used. If no version is installed, the latest available version will be used. The version can also be set to "latest" to force the use of the latest available version.
     :param pip_url: connector pip URL - if not provided, the pip url will be inferred from the connector name.
     :param config: connector config - if not provided, you need to set it later via the set_config method.
     :param use_local_install: whether to use a virtual environment to run the connector. If True, the connector is expected to be available on the path (e.g. installed via pip). If False, the connector will be installed automatically in a virtual environment.
