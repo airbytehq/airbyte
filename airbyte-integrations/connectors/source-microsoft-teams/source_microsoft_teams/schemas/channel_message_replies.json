@@ -25,6 +25,11 @@
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
+    "lastEditedDateTime": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
     "deletedDateTime": {
       "type": ["null", "string"],
       "format": "date-time",
@@ -75,6 +80,9 @@
               "type": ["null", "string"]
             },
             "userIdentityType": {
+              "type": ["null", "string"]
+            },
+            "tenantId": {
               "type": ["null", "string"]
             }
           }
@@ -204,7 +212,7 @@
               "conversation": {
                 "type": ["null", "string"]
               },
-               "user": {
+              "user": {
                 "type": ["null", "object"],
                 "additionalProperties": true,
                 "properties": {
