@@ -11,7 +11,12 @@ import org.elasticsearch.common.Strings;
 
 /**
  * Represents a list of SQL transactions, where each transaction consists of one or more SQL
- * statements. Each transaction MUST NOT contain the BEGIN/COMMIT statements.
+ * statements. Each transaction MUST NOT contain the BEGIN/COMMIT statements. Each inner list is a
+ * single transaction, and each String is a single statement within that transaction.
+ * <p>
+ * Most callers likely only need a single transaction, but e.g. BigQuery disallows running DDL
+ * inside transactions, and so needs to run sequential "CREATE SCHEMA", "CREATE TABLE" as separate
+ * transactions.
  * <p>
  * Callers are encouraged to use the static factory methods instead of the public constructor.
  */
