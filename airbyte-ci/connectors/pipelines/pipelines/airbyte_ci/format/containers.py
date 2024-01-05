@@ -100,9 +100,11 @@ def format_java_container(dagger_client: dagger.Client, java_code: dagger.Direct
 
 def format_js_container(dagger_client: dagger.Client, js_code: dagger.Directory, prettier_version: str = "3.0.3") -> dagger.Container:
     """Create a Node container with prettier installed with mounted code to format and a cache volume."""
+    warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.JS], exclude=DEFAULT_FORMAT_IGNORE_LIST)
     return build_container(
         dagger_client,
         base_image=NODE_IMAGE,
+        warmup_dir=warmup_dir,
         dir_to_format=js_code,
         install_commands=[f"npm install -g npm@10.1.0 prettier@{prettier_version}"],
         cache_volume=dagger_client.cache_volume(cache_keys.get_prettier_cache_key(prettier_version)),

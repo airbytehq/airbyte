@@ -32,7 +32,6 @@ DEFAULT_FORMAT_IGNORE_LIST = [
     "**/dbt-project-template-tidb",
     "**/dbt-project-template",
     "**/node_modules",
-    "**/pnpm-lock.yaml",  # This file is generated and should not be formatted
     "**/normalization_test_output",
     "**/source-amplitude/unit_tests/api_data/zipped.json",  # Zipped file presents as non-UTF-8 making spotless sad
     "**/tools/git_hooks/tests/test_spec_linter.py",
@@ -64,4 +63,5 @@ WARM_UP_INCLUSIONS = {
     ],
     Formatter.PYTHON: ["pyproject.toml", "poetry.lock"],
     Formatter.LICENSE: [LICENSE_FILE_NAME],
+    Formatter.JS: [".prettierrc", ".prettierignore"],
 }
