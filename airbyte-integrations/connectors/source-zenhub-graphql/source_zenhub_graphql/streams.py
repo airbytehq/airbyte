@@ -1,11 +1,13 @@
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-import requests
+
+import requests, json
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 
 from sgqlc.endpoint.http import HTTPEndpoint 
 from sgqlc.operation import Operation
@@ -26,9 +28,14 @@ from .graphql import (
     , Priority
 )
 
+# Define the global logger function
+def log(level: Level, message: str):
+    log_message = AirbyteLogMessage(level=level, message=message)
+    print(AirbyteMessage(type="LOG", log=log_message).json(exclude_unset=True))
+
 # Basic full refresh stream
-#class ZenhubGraphqlStream(HttpStream, ABC):
-class ZenhubGraphqlStream(HTTPEndpoint, ABC):
+class ZenhubGraphqlStream(HttpStream, ABC):
+#class ZenhubGraphqlStream(HTTPEndpoint, ABC):
 
     url_base = "https://api.zenhub.com/public/graphql"
 
@@ -50,18 +57,24 @@ class ZenhubGraphqlStream(HTTPEndpoint, ABC):
     `class Employees(ZenhubGraphqlStream)` contains behavior to pull data for employees using v1/employees
     """
     #WITH sgqlc method HTTPEndpoint
-    def __init__(self,api_key: str, url_base: str="https://api.zenhub.com/public/graphql", **kwargs):
-        self.headers = {'Authorization': f'Bearer {api_key}'}
-        super().__init__(url_base, self.headers, **kwargs) 
+    #def __init__(self,api_key: str, url_base: str="https://api.zenhub.com/public/graphql", **kwargs):
+    #    self.headers = {'Authorization': f'Bearer {api_key}'}
+    #    super().__init__(url_base, self.headers, **kwargs) 
 
      
-    #def __init__(self, api, **kwargs):
-    #    self.headers = {'Authorization': f'Bearer {api}'}
-    #    super().__init__(**kwargs) 
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(authenticator=TokenAuthenticator(token=api_key),**kwargs) 
 
-    def execute_query(self, query):
-        return self(query)
-    
+    #def execute_query(self, query):
+    #    return self(query)
+    def request_headers(self, *args, **kwargs) -> Mapping[str, Any]:
+        return { "Content-Type": "application/json"
+                , **super().request_headers(*args, **kwargs)
+                }
+
+    def request_body_json(self, *args, **kwargs) -> Optional[Mapping]:
+        pass
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
@@ -70,14 +83,26 @@ class ZenhubGraphqlStream(HTTPEndpoint, ABC):
     ) -> MutableMapping[str, Any]:
        
         return {}
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any],**kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        print("RESPONSE", response)
-        return None
+    
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        log(Level.INFO, f"Sending request to URL: {request.url}")
+        log(Level.INFO, f"Request headers: {request.headers}")
+        log(Level.INFO, f"Request body: {request.body}")
+        
+        response = super()._send_request(request, request_kwargs)
+        
+        log(Level.INFO, f"Response status code: {response.status_code}")
+        log(Level.INFO, f"Response text: {response.text}")
+        
+        return response
+        
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any],**kwargs) -> Iterable[Mapping]:
+        if response.status_code != 200:
+            raise Exception(f"Query failed with status code {response.status_code}: {response.text}")
+        else:
+            json_response = response.json()
+            data = json_response.get("data", [])
+        return data
 
 
 class ZenhubWorkspace(ZenhubGraphqlStream):
@@ -97,18 +122,26 @@ class ZenhubWorkspace(ZenhubGraphqlStream):
         repository_node = workspace_node.repositoriesConnection.nodes.__as__(Repository)
         repository_node.id()
         repository_node.name()
+        return str(ws_op)
 
-        return ws_op
 
-
-    def fetch_data(self):
-        query = self.get_ws_query()
-        try: 
-            response = self.execute_query(query)
-            return response, 200
-        except Exception as e:
-            return {"error": str(e)}, 500
+    #def fetch_data(self):
+    #    query = self.get_ws_query()
+    #    try: 
+    #        response = self.execute_query(query)
+    #        return response, 200
+    #    except Exception as e:
+    #        return {"error": str(e)}, 500
     
+    def request_body_json(self, *args, **kwargs) -> Optional[Mapping]:
+        query = self.get_ws_query()
+        
+        #query_json = json.dumps({"query": str(query)})
+        #log(Level.INFO, f"Raw Qeury: {query_json}")
+        log(Level.INFO, f"Raw Query: {query}")
+
+        #return json.loads(query_json)
+        return {"query": str(query)}
      
 
     def path(

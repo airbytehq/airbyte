@@ -5,9 +5,11 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+import logging
 
 import requests
 import json, os
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -15,6 +17,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .streams import ZenhubWorkspace
 
+logging.basicConfig(level=logging.INFO)
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -34,43 +37,31 @@ There are additional required TODOs in the files within the integration_tests fo
 # Source
 class SourceZenhubGraphql(AbstractSource):
     
-    def _get_workspace(self, config):
+    #def _get_workspace(self, config):
         
         #Get Ids
-        ws_repo_ids = ZenhubWorkspace(api_key=config["access_token"]
-            , workspace_name=config["workspace_name"]
-            ) 
-        response, status_code = ws_query_body.fetch_data()
+        #ws_repo_ids = ZenhubWorkspace(api_key=config["access_token"]
+        #    , workspace_name=config["workspace_name"]
+        #    ) 
+        #response, status_code = ws_query_body.fetch_data()
 
-        return response
+        #return response
+    
+    @property
+    def http_method(self) -> str:
+        return "POST"
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-
-        ws_query_body = ZenhubWorkspace(
-            api_key=config["access_token"]
-            , workspace_name=config["workspace_name"]
-            )
-        
-        #repsonse has the actual data because we are using sgqlc HTTPEndpoint method.
-        #TODO: CHeck if SGQLC method is better than HttpStream. I was getting the headers error
-        response, status_code = ws_query_body.fetch_data()
-        
-        if status_code == 200:
-        #if response.status_code == 200:
-            result = {"status": "SUCCEEDED"}
-        elif status_code == 403:
-        #elif response.status_code == 403:
-            # HTTP code 403 means authorization failed so the API key is incorrect
-            result = {"status": "FAILED", "message": "API Key is incorrect."}
-        else:
-            result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify your valid config file."}
-
-        output_message = {"type": "CONNECTION_STATUS", "connectionStatus": result}
-        print(json.dumps(output_message))
-
-        #return True, None    
-        return status_code == 200, None
-    
+        try:
+            ws_query_body = ZenhubWorkspace(
+                api_key=config["access_token"]
+                , workspace_name=config["workspace_name"]
+                )
+            #repsonse has the actual data because we are using sgqlc HTTPEndpoint method.
+            next(ws_query_body.read_records(sync_mode= SyncMode.full_refresh))
+            return True, None
+        except Exception as error:
+            return False, str(error)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
