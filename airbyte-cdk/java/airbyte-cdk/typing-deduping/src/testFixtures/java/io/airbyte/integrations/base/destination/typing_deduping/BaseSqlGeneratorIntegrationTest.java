@@ -403,6 +403,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void allTypes() throws Exception {
+    // Add case-sensitive columnName to test json path querying
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("IamACaseSensitiveColumnName"),
+        AirbyteProtocolType.STRING);
     createRawTable(streamId);
     createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
