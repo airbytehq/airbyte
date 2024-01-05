@@ -2,7 +2,7 @@
 
 ## Upgrading to 3.0.0
 
-Connector will be upgraded to API v18. Affected Streams and their corresponding changes are listed below:
+The Instagram connector has been upgrade to API v18 (following the deprecation of v11). Connector will be upgraded to API v18. Affected Streams and their corresponding changes are listed below:
 
 - `Media Insights`
   
@@ -19,7 +19,7 @@ Connector will be upgraded to API v18. Affected Streams and their corresponding 
 
 :::note
 
-You may see different results: `engagement` includes likes, comments and saves count while `total_interactions` includes likes, comments, saved and shares count.
+You may see different results: `engagement` count includes likes, comments, and saves while `total_interactions` count includes likes, comments, and saves, as well as shares.
 
 :::
 
