@@ -9,6 +9,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
@@ -19,6 +20,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -111,22 +113,23 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
   }
 
   @Override
-  public void execute(final String sql) throws Exception {
-    if (sql == null || sql.isEmpty()) {
-      return;
-    }
+  public void execute(final Sql sql) throws Exception {
+    final List<List<String>> transactions = sql.transactions();
     final UUID queryId = UUID.randomUUID();
-    LOGGER.info("Executing sql {}: {}", queryId, sql);
-    final long startTime = System.currentTimeMillis();
+    for (final List<String> transaction : transactions) {
+      final UUID transactionId = UUID.randomUUID();
+      LOGGER.info("Executing sql {}-{}: {}", queryId, transactionId, String.join("\n", transaction));
+      final long startTime = System.currentTimeMillis();
 
-    try {
-      jdbcDatabase.execute(sql);
-    } catch (final SQLException e) {
-      LOGGER.error("Sql {} failed", queryId, e);
-      throw e;
+      try {
+        jdbcDatabase.executeWithinTransaction(transaction);
+      } catch (final SQLException e) {
+        LOGGER.error("Sql {}-{} failed", queryId, transactionId, e);
+        throw e;
+      }
+
+      LOGGER.info("Sql {}-{} completed in {} ms", queryId, transactionId, System.currentTimeMillis() - startTime);
     }
-
-    LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
   }
 
   public static Optional<TableDefinition> findExistingTable(final JdbcDatabase jdbcDatabase,

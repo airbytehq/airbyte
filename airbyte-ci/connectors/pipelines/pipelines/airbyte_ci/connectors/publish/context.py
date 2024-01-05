@@ -6,6 +6,7 @@
 
 from typing import Optional
 
+import asyncclick as click
 from dagger import Secret
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -16,6 +17,9 @@ from pipelines.helpers.utils import format_duration
 
 
 class PublishConnectorContext(ConnectorContext):
+    docker_hub_username_secret: Secret
+    docker_hub_password_secret: Secret
+
     def __init__(
         self,
         connector: ConnectorWithModifiedFiles,
@@ -31,18 +35,18 @@ class PublishConnectorContext(ConnectorContext):
         ci_report_bucket: str,
         report_output_prefix: str,
         is_local: bool,
-        git_branch: bool,
-        git_revision: bool,
+        git_branch: str,
+        git_revision: str,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
-        ci_gcs_credentials: str = None,
-        pull_request: PullRequest = None,
+        ci_gcs_credentials: Optional[str] = None,
+        pull_request: Optional[PullRequest.PullRequest] = None,
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
-        use_local_cdk: Optional[bool] = False,
-    ):
+        use_local_cdk: bool = False,
+    ) -> None:
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
         self.metadata_bucket_name = metadata_bucket_name
@@ -86,7 +90,7 @@ class PublishConnectorContext(ConnectorContext):
         return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
 
     @property
-    def docker_image_tag(self):
+    def docker_image_tag(self) -> str:
         # get the docker image tag from the parent class
         metadata_tag = super().docker_image_tag
         if self.pre_release:
@@ -95,6 +99,7 @@ class PublishConnectorContext(ConnectorContext):
             return metadata_tag
 
     def create_slack_message(self) -> str:
+
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
         message = f"*Publish <{docker_hub_url}|{self.docker_image}>*\n"
         if self.is_ci:

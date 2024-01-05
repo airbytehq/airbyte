@@ -2,21 +2,23 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-- [Developing with the Java CDK](#developing-with-the-java-cdk)
-  - [Intro to the Java CDK](#intro-to-the-java-cdk)
-    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-    - [How is the CDK published?](#how-is-the-cdk-published)
-  - [Using the Java CDK](#using-the-java-cdk)
-    - [Building the CDK](#building-the-cdk)
-    - [Bumping the CDK version](#bumping-the-cdk-version)
-    - [Publishing the CDK](#publishing-the-cdk)
-  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-  - [Common Debugging Tips](#common-debugging-tips)
-  - [Changelog](#changelog)
-    - [Java CDK](#java-cdk)
+* [Developing with the Java CDK](#developing-with-the-java-cdk)
+   * [Intro to the Java CDK](#intro-to-the-java-cdk)
+      * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+      * [How is the CDK published?](#how-is-the-cdk-published)
+   * [Using the Java CDK](#using-the-java-cdk)
+      * [Building the CDK](#building-the-cdk)
+      * [Bumping the CDK version](#bumping-the-cdk-version)
+      * [Publishing the CDK](#publishing-the-cdk)
+   * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+      * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+      * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+      * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
+      * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
+      * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+   * [Common Debugging Tips](#common-debugging-tips)
+   * [Changelog](#changelog)
+      * [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -162,10 +164,11 @@ MavenLocal debugging steps:
 
 ### Java CDK
 
-| Version | Date       | Pull Request                                               | Subject                               |
-|:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------|
-| 0.10.4  | 2023-12-20 | [\#33071](https://github.com/airbytehq/airbyte/pull/33071) | Add the ability to parse JDBC parameters with another delimiter than '&'                                                     |
-| 0.10.3  | 2024-01-03 | [\#33312](https://github.com/airbytehq/airbyte/pull/33312) | Send out count in AirbyteStateMessage |
+| Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
+| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.11.0  | 2024-01-04 | [\#33730](https://github.com/airbytehq/airbyte/pull/33730) | DV2 T+D uses Sql struct to represent transactions; other T+D-related changes                                                                                   |
+| 0.10.4  | 2023-12-20 | [\#33071](https://github.com/airbytehq/airbyte/pull/33071) | Add the ability to parse JDBC parameters with another delimiter than '&'                                                                                       |
+| 0.10.3  | 2024-01-03 | [\#33312](https://github.com/airbytehq/airbyte/pull/33312) | Send out count in AirbyteStateMessage                                                                                                                          |
 | 0.10.1  | 2023-12-21 | [\#33723](https://github.com/airbytehq/airbyte/pull/33723) | Make memory-manager log message less scary                                                                                                                     |
 | 0.10.0  | 2023-12-20 | [\#33704](https://github.com/airbytehq/airbyte/pull/33704) | JdbcDestinationHandler now properly implements `getInitialRawTableState`; reenable SqlGenerator test                                                           |
 | 0.9.0   | 2023-12-18 | [\#33124](https://github.com/airbytehq/airbyte/pull/33124) | Make Schema Creation Separate from Table Creation, exclude the T&D module from the CDK                                                                         |
