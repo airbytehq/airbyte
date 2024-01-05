@@ -134,7 +134,7 @@ public class AbstractJdbcDestinationTest {
     }
 
     @Override
-    protected JdbcSqlGenerator getSqlGenerator() {
+    protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
       // TODO do we need to populate this?
       return null;
     }
