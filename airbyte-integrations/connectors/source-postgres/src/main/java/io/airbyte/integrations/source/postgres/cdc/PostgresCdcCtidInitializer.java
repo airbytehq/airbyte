@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres.cdc;
 
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.isDebugMode;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,6 +18,7 @@ import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresDebeziumS
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -73,6 +75,11 @@ public class PostgresCdcCtidInitializer {
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
       LOGGER.info("Queue size: {}", queueSize.getAsInt());
 
+      if (isDebugMode(sourceConfig) && !PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
+        throw new ConfigErrorException("WARNING: The config indicates that we are clearing the WAL while reading data. This will mutate the WAL" +
+            " associated with the source being debugged and is not advised.");
+      }
+
       final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
 
       final JsonNode initialDebeziumState = postgresDebeziumStateUtil.constructInitialDebeziumState(database,
@@ -105,7 +112,8 @@ public class PostgresCdcCtidInitializer {
 
       if (!savedOffsetAfterReplicationSlotLSN) {
         LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
-      } else if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
+      } else if (!isDebugMode(sourceConfig) && PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
+        // We do not want to acknowledge the WAL logs in debug mode.
         postgresDebeziumStateUtil.commitLSNToPostgresDatabase(database.getDatabaseConfig(),
             savedOffset,
             sourceConfig.get("replication_method").get("replication_slot").asText(),
@@ -162,6 +170,7 @@ public class PostgresCdcCtidInitializer {
         LOGGER.info("No streams will be synced via ctid");
       }
 
+      // Gets the target position.
       final var targetPosition = PostgresCdcTargetPosition.targetPosition(database);
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
           targetPosition, false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
