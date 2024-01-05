@@ -133,7 +133,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         RedshiftInsertDestination.DRIVER_CLASS,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        SSL_JDBC_PARAMETERS,
+        getDefaultConnectionProperties(config),
         Duration.ofMinutes(2));
   }
 
@@ -144,20 +144,24 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    // TODO: Pull common code from RedshiftInsertDestination and RedshiftStagingS3Destination into a
+    // base class.
     // The following properties can be overriden through jdbcUrlParameters in the config.
     Map<String, String> connectionOptions = new HashMap<>();
     // Redshift properties
     // https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-configuration-options.html#jdbc20-connecttimeout-option
     // connectTimeout is different from Hikari pool's connectionTimout, driver defaults to 10seconds so
     // increase it to match hikari's default
-    connectionOptions.put("connectTimeout", "60");
+    connectionOptions.put("connectTimeout", "120");
     // HikariPool properties
     // https://github.com/brettwooldridge/HikariCP?tab=readme-ov-file#frequently-used
-    // connectionTimeout defaults to 60s in JdbcConnector.java
+    // connectionTimeout is set explicitly to 2 minutes when creating data source.
     // Do aggressive keepAlive with minimum allowed value, this only applies to connection sitting idle
     // in the pool.
     connectionOptions.put("keepaliveTime", Long.toString(Duration.ofSeconds(30).toMillis()));
-    return SSL_JDBC_PARAMETERS;
+    connectionOptions.put("connectionInitSql", "SET enable_case_sensitive_identifier to TRUE;");
+    connectionOptions.putAll(SSL_JDBC_PARAMETERS);
+    return connectionOptions;
   }
 
   // this is a no op since we override getDatabase.

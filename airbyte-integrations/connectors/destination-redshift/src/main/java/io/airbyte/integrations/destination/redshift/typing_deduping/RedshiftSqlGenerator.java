@@ -25,13 +25,11 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -195,12 +193,6 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
         .collect(Collectors.toList());
     return function("OBJECT", getSuperType(), val(AIRBYTE_META_COLUMN_ERRORS_KEY), arrayConcatStmt(dataFields)).as(COLUMN_NAME_AB_META);
 
-  }
-
-  @Override
-  public Sql updateTable(StreamConfig streamConfig, String finalSuffix, Optional<Instant> minRawTimestamp, boolean useExpensiveSaferCasting) {
-    return Sql.concat(Sql.of("SET enable_case_sensitive_identifier to TRUE;"),
-                      super.updateTable(streamConfig, finalSuffix, minRawTimestamp, useExpensiveSaferCasting));
   }
 
   @Override
