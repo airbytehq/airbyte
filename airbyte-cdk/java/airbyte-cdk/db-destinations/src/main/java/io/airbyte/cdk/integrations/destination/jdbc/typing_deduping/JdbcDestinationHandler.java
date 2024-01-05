@@ -64,7 +64,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
                 selectOne()
                     .from(name(id.finalNamespace(), id.finalName()))
                     .limit(1))))
-            .getSQL(ParamType.INLINED));
+                        .getSQL(ParamType.INLINED));
   }
 
   @Override

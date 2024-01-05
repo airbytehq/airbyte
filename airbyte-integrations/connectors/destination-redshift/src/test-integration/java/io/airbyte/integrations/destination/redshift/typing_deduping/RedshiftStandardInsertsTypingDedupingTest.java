@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.nio.file.Path;
@@ -12,8 +12,8 @@ import java.nio.file.Path;
 public class RedshiftStandardInsertsTypingDedupingTest extends AbstractRedshiftTypingDedupingTest {
 
   @Override
-  protected JsonNode getBaseConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/1s1t_config.json")));
+  protected ObjectNode getBaseConfig() {
+    return (ObjectNode) Jsons.deserialize(IOs.readFile(Path.of("secrets/1s1t_config.json")));
   }
 
 }

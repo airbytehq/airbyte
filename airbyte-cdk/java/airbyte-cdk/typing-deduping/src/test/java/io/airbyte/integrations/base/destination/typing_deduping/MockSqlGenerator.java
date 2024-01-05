@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static java.util.Collections.emptyList;
-
 import java.time.Instant;
 import java.util.Optional;
 
