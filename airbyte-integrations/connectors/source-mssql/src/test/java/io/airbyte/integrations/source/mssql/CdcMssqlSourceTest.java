@@ -30,6 +30,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -47,9 +48,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
+@TestInstance(Lifecycle.PER_CLASS)
 public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestDatabase> {
 
   static private final String CDC_ROLE_NAME = "cdc_selector";
@@ -58,30 +62,37 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   // Deliberately do not share this test container, as we're going to mutate the global SQL Server
   // state.
-  static private final MSSQLServerContainer<?> UNSHARED_CONTAINER = new MsSQLContainerFactory()
-      .createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
-  private static final Duration CONNECTION_TIME = Duration.ofSeconds(60);
+  protected final MSSQLServerContainer<?> privateContainer;
 
   private DataSource testDataSource;
 
+  CdcMssqlSourceTest() {
+    this.privateContainer = createContainer();
+  }
+
+  protected MSSQLServerContainer<?> createContainer() {
+    return new MsSQLContainerFactory()
+        .createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
+  }
+
   @BeforeAll
-  static public void beforeAll() {
-    new MsSQLContainerFactory().withAgent(UNSHARED_CONTAINER);
-    UNSHARED_CONTAINER.start();
+  public void beforeAll() {
+    new MsSQLContainerFactory().withAgent(privateContainer);
+    privateContainer.start();
   }
 
   @AfterAll
-  static void afterAll() {
-    UNSHARED_CONTAINER.close();
+  void afterAll() {
+    privateContainer.close();
   }
 
-  private String testUserName() {
+  protected final String testUserName() {
     return testdb.withNamespace(TEST_USER_NAME_PREFIX);
   }
 
   @Override
   protected MsSQLTestDatabase createTestDatabase() {
-    final var testdb = new MsSQLTestDatabase(UNSHARED_CONTAINER);
+    final var testdb = new MsSQLTestDatabase(privateContainer);
     return testdb
         .withConnectionProperty("encrypt", "false")
         .withConnectionProperty("databaseName", testdb.getDatabaseName())
@@ -139,13 +150,17 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         .with("USE [%s]", testdb.getDatabaseName())
         .with("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testUserName());
 
-    testDataSource = DataSourceFactory.create(
+    testDataSource = createTestDataSource();
+  }
+
+  protected DataSource createTestDataSource() {
+    return DataSourceFactory.create(
         testUserName(),
         testdb.getPassword(),
         testdb.getDatabaseDriver().getDriverClassName(),
         testdb.getJdbcUrl(),
         Map.of("encrypt", "false"),
-        CONNECTION_TIME);
+        JdbcConnector.CONNECT_TIMEOUT_DEFAULT);
   }
 
   @Override
