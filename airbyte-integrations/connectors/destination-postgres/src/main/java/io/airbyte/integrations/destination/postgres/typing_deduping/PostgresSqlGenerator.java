@@ -161,7 +161,10 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     } else {
       final DataType<?> dialectType = toDialectType(type);
       // jsonb can't directly cast to most types, so convert to text first.
-      final Field<String> extractAsText = cast(field, SQLDataType.VARCHAR);
+      // also convert jsonb null to proper sql null.
+      final Field<String> extractAsText = case_()
+          .when(field.isNull().or(jsonTypeof(field).eq("null")), val((String) null))
+          .else_(cast(field, SQLDataType.VARCHAR));
       if (useExpensiveSaferCasting) {
         return function("airbyte_safe_cast", dialectType, extractAsText, cast(val((Object) null), dialectType));
       } else {
