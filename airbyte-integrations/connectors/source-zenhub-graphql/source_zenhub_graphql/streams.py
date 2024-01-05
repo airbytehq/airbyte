@@ -4,7 +4,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-#from airbyte_cdk.sources.streams.http import HttpStream as CDK_Stream
+from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from sgqlc.endpoint.http import HTTPEndpoint 
@@ -30,7 +30,7 @@ from .graphql import (
 #class ZenhubGraphqlStream(HttpStream, ABC):
 class ZenhubGraphqlStream(HTTPEndpoint, ABC):
 
-    #url_base = "https://api.zenhub.com/public/graphql"
+    url_base = "https://api.zenhub.com/public/graphql"
 
     """
     This class represents a stream output by the connector.
@@ -49,10 +49,16 @@ class ZenhubGraphqlStream(HTTPEndpoint, ABC):
     `class Customers(ZenhubGraphqlStream)` contains behavior to pull data for customers using v1/customers
     `class Employees(ZenhubGraphqlStream)` contains behavior to pull data for employees using v1/employees
     """
+    #WITH sgqlc method HTTPEndpoint
     def __init__(self,api_key: str, url_base: str="https://api.zenhub.com/public/graphql", **kwargs):
         self.headers = {'Authorization': f'Bearer {api_key}'}
         super().__init__(url_base, self.headers, **kwargs) 
+
      
+    #def __init__(self, api, **kwargs):
+    #    self.headers = {'Authorization': f'Bearer {api}'}
+    #    super().__init__(**kwargs) 
+
     def execute_query(self, query):
         return self(query)
     
@@ -65,12 +71,13 @@ class ZenhubGraphqlStream(HTTPEndpoint, ABC):
        
         return {}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any],**kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
+        print("RESPONSE", response)
+        return None
 
 
 class ZenhubWorkspace(ZenhubGraphqlStream):
@@ -102,6 +109,8 @@ class ZenhubWorkspace(ZenhubGraphqlStream):
         except Exception as e:
             return {"error": str(e)}, 500
     
+     
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:

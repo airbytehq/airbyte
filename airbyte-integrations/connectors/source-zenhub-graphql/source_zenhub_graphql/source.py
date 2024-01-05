@@ -34,6 +34,16 @@ There are additional required TODOs in the files within the integration_tests fo
 # Source
 class SourceZenhubGraphql(AbstractSource):
     
+    def _get_workspace(self, config):
+        
+        #Get Ids
+        ws_repo_ids = ZenhubWorkspace(api_key=config["access_token"]
+            , workspace_name=config["workspace_name"]
+            ) 
+        response, status_code = ws_query_body.fetch_data()
+
+        return response
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
 
         ws_query_body = ZenhubWorkspace(
@@ -69,5 +79,6 @@ class SourceZenhubGraphql(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        api_key = config["access_token"]  # Oauth2Authenticator is also available if you need oauth support
+        workspace_name = config["workspace_name"]
+        return [ZenhubWorkspace(api_key, workspace_name)]
