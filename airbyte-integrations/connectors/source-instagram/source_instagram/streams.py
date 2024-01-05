@@ -144,12 +144,12 @@ class UserLifetimeInsights(DatetimeTransformerMixin, InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
 
     primary_key = ["business_account_id", "breakdown"]
-    BREAKDOWNS = ['city', 'country', 'age,gender']
-    BASE_METRIC = ['follower_demographics']
+    BREAKDOWNS = ["city", "country", "age,gender"]
+    BASE_METRIC = ["follower_demographics"]
     period = "lifetime"
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for slice in super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
             for breakdown in self.BREAKDOWNS:
@@ -171,7 +171,7 @@ class UserLifetimeInsights(DatetimeTransformerMixin, InstagramStream):
                 "breakdown": stream_slice["breakdown"],
                 "business_account_id": ig_account.get("id"),
                 "metric": insight["name"],
-                "value": self._transform_breakdown_results(insight_data['total_value']['breakdowns'][0]['results']),
+                "value": self._transform_breakdown_results(insight_data["total_value"]["breakdowns"][0]["results"]),
             }
 
     def request_params(
@@ -180,17 +180,14 @@ class UserLifetimeInsights(DatetimeTransformerMixin, InstagramStream):
         stream_state: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_slice=stream_slice, stream_state=stream_state)
-        params.update({
-            "metric": self.BASE_METRIC,
-            "metric_type": "total_value",
-            "period": self.period,
-            "breakdown": stream_slice['breakdown']
-        })
+        params.update(
+            {"metric": self.BASE_METRIC, "metric_type": "total_value", "period": self.period, "breakdown": stream_slice["breakdown"]}
+        )
         return params
 
     @staticmethod
     def _transform_breakdown_results(breakdown_results: Iterable[Mapping[str, Any]]) -> Mapping[str, Any]:
-        return {res.get('dimension_values')[0]: res.get('value') for res in breakdown_results}
+        return {res.get("dimension_values")[0]: res.get("value") for res in breakdown_results}
 
 
 class UserInsights(DatetimeTransformerMixin, InstagramIncrementalStream):
@@ -379,8 +376,17 @@ class MediaInsights(Media):
     MEDIA_METRICS = ["total_interactions", "impressions", "reach", "saved", "video_views", "likes", "comments", "shares"]
     CAROUSEL_ALBUM_METRICS = ["total_interactions", "impressions", "reach", "saved", "video_views"]
 
-    REELS_METRICS = ["comments", "ig_reels_avg_watch_time", "ig_reels_video_view_total_time",
-                     "likes", "plays", "reach", "saved", "shares", "total_interactions"]
+    REELS_METRICS = [
+        "comments",
+        "ig_reels_avg_watch_time",
+        "ig_reels_video_view_total_time",
+        "likes",
+        "plays",
+        "reach",
+        "saved",
+        "shares",
+        "total_interactions",
+    ]
 
     def read_records(
         self,

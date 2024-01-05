@@ -14,7 +14,7 @@
       "type": ["null", "string"]
     },
     "value": {
-      "type": ["object", "null"]
+      "type": ["null", "object"]
     }
   }
 }
