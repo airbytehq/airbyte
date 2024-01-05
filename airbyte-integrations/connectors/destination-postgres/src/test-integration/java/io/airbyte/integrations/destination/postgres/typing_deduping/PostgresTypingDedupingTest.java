@@ -18,7 +18,7 @@ import org.junit.jupiter.api.BeforeAll;
 
 public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
 
-  private static PostgresTestDatabase testContainer;
+  protected static PostgresTestDatabase testContainer;
 
   @BeforeAll
   public static void setupPostgres() {
@@ -31,7 +31,7 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
   }
 
   @Override
-  protected JsonNode getBaseConfig() {
+  protected ObjectNode getBaseConfig() {
     final ObjectNode config = (ObjectNode) testContainer.configBuilder()
         .with("schema", "public")
         .withDatabase()

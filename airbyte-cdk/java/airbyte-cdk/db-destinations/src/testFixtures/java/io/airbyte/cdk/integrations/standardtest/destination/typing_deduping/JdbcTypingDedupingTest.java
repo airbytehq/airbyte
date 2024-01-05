@@ -33,7 +33,7 @@ public abstract class JdbcTypingDedupingTest extends BaseTypingDedupingTest {
    * Get the config as declared in GSM (or directly from the testcontainer). This class will do
    * further modification to the config to ensure test isolation.i
    */
-  protected abstract JsonNode getBaseConfig();
+  protected abstract ObjectNode getBaseConfig();
 
   protected abstract DataSource getDataSource(JsonNode config);
 
