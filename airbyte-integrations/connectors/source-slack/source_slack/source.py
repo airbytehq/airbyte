@@ -168,8 +168,9 @@ class IncrementalMessageStream(ChanneledStream, ABC):
     cursor_field = "float_ts"
     primary_key = ["channel_id", "ts"]
 
-    def __init__(self, default_start_date: DateTime, end_date: Optional[DateTime] = None, **kwargs):
+    def __init__(self, default_start_date: DateTime, lookback_window: Mapping[str, int] = pendulum.Duration(days=0), end_date: Optional[DateTime] = None, **kwargs):
         self._start_ts = default_start_date.timestamp()
+        self.messages_lookback_window = lookback_window
         self._end_ts = end_date and end_date.timestamp()
         self.set_sub_primary_key()
         super().__init__(**kwargs)
@@ -225,7 +226,7 @@ class ChannelMessages(HttpSubStream, IncrementalMessageStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
-        start_date = pendulum.from_timestamp(stream_state.get(self.cursor_field, self._start_ts))
+        start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window if self.cursor_field in stream_state else pendulum.from_timestamp(self._start_ts)
         end_date = self._end_ts and pendulum.from_timestamp(self._end_ts)
         slice_yielded = False
         for parent_slice in super().stream_slices(sync_mode=SyncMode.full_refresh):
@@ -239,10 +240,6 @@ class ChannelMessages(HttpSubStream, IncrementalMessageStream):
 
 
 class Threads(IncrementalMessageStream):
-    def __init__(self, lookback_window: Mapping[str, int], **kwargs):
-        self.messages_lookback_window = lookback_window
-        super().__init__(**kwargs)
-
     def path(self, **kwargs) -> str:
         return "conversations.replies"
 
@@ -267,17 +264,7 @@ class Threads(IncrementalMessageStream):
 
         stream_state = stream_state or {}
         channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
-
-        if self.cursor_field in stream_state:
-            # Since new messages can be posted to threads continuously after the parent message has been posted,
-            # we get messages from the latest date
-            # found in the state minus X days to pick up any new messages in threads.
-            # If there is state always use lookback
-            messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window
-        else:
-            # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages
-            # from the default start date
-            messages_start_date = pendulum.from_timestamp(self._start_ts)
+        messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window if self.cursor_field in stream_state else pendulum.from_timestamp(self._start_ts)
 
         messages_stream = ChannelMessages(
             parent=channels_stream,
@@ -363,7 +350,8 @@ class SourceSlack(AbstractSource):
         # this field is not exposed to spec, used only for testing purposes
         end_date = config.get("end_date")
         end_date = end_date and pendulum.parse(end_date)
-        threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
+        threads_lookback_window = pendulum.Duration(days=config["threads_lookback_window"])
+        messages_lookback_window = pendulum.Duration(days=config["messages_lookback_window"])
         channel_filter = config.get("channel_filter", [])
 
         channels = Channels(authenticator=authenticator, channel_filter=channel_filter)
@@ -375,6 +363,7 @@ class SourceSlack(AbstractSource):
                 authenticator=authenticator,
                 default_start_date=default_start_date,
                 end_date=end_date,
+                lookback_window=messages_lookback_window,
                 channel_filter=channel_filter,
             ),
             Threads(
