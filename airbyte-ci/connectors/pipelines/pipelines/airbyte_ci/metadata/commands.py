@@ -25,6 +25,7 @@ def deploy(ctx: click.Context) -> None:
 async def deploy_orchestrator(ctx: click.Context) -> None:
     # Import locally to speed up CLI.
     from pipelines.airbyte_ci.metadata.pipeline import run_metadata_orchestrator_deploy_pipeline
+
     await run_metadata_orchestrator_deploy_pipeline(
         ctx.obj["is_local"],
         ctx.obj["git_branch"],
