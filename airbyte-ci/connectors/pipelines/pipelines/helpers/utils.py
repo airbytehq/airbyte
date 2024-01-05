@@ -101,13 +101,8 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
     Returns:
         Optional[str]: The file content if the file exists in the container, None otherwise.
     """
-    try:
-        return await container.file(path).contents()
-    except QueryError as e:
-        if "no such file or directory" not in str(e):
-            # this error could come from a network issue
-            raise
-    return None
+    nonexistence = await container.with_exec(["sh", "-c", f"[ -f '{path}' ] || echo '{path} does not exist'"]).stdout()
+    return None if nonexistence else await container.file(path).contents()
 
 
 @contextlib.contextmanager
