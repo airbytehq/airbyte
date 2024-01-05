@@ -30,7 +30,12 @@ You may see different results: `engagement` includes likes, comments and saves c
     - Metric `audience_locale` will become unavailable.
     - Metrics `audience_city`, `audience_country`, and `audience_gender_age` will be consolidated into a single metric named `follower_demographics`, featuring respective breakdowns for `city`, `country`, and `age,gender`.
     - Primary key will be changed to `["business_account_id", "breakdown"]`.
-    - The metric type will be set to 'total_value'. For more information, refer to the [docs](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights#metric-type) for more info.
+
+:::note
+
+Due to Instagram limitations, the "Metric Type" will be set to `total_value` for `follower_demographics` metric. Refer to the [docs](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights#metric-type) for more info.
+
+:::
 
 
 - `Story Insights`
