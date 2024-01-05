@@ -20,7 +20,7 @@
       "type": ["string", "null"]
     },
     "dateCreated": {
-      "type": ["string","null"],
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "features": {

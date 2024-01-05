@@ -91,7 +91,7 @@
           "type": ["integer", "null"]
         },
         "data": {
-          "type":[ "object", "null"]
+          "type": ["object", "null"]
         },
         "dateCreated": {
           "type": ["string", "null"]
