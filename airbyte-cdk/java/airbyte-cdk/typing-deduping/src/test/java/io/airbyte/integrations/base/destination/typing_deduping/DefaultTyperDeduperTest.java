@@ -77,6 +77,7 @@ public class DefaultTyperDeduperTest {
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.empty());
 
     typerDeduper.prepareTables();
+    verify(destinationHandler).execute(Sql.of("SETUP"));
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
     verify(destinationHandler).execute(Sql.of("CREATE TABLE overwrite_ns.overwrite_stream"));
     verify(destinationHandler).execute(Sql.of("CREATE TABLE append_ns.append_stream"));
@@ -107,6 +108,7 @@ public class DefaultTyperDeduperTest {
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
     when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(false);
     typerDeduper.prepareTables();
+    verify(destinationHandler).execute(Sql.of("SETUP"));
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
     verify(destinationHandler).execute(Sql.of("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp"));
     verify(destinationHandler).execute(Sql.of("PREPARE append_ns.append_stream FOR SOFT RESET"));
@@ -160,6 +162,7 @@ public class DefaultTyperDeduperTest {
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
 
     typerDeduper.prepareTables();
+    verify(destinationHandler).execute(Sql.of("SETUP"));
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
     // NB: We only create a tmp table for the overwrite stream, and do _not_ soft reset the existing
     // overwrite stream's table.
@@ -203,6 +206,7 @@ public class DefaultTyperDeduperTest {
     when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);
 
     typerDeduper.prepareTables();
+    verify(destinationHandler).execute(Sql.of("SETUP"));
     // NB: We only create one tmp table here.
     // Also, we need to alter the existing _real_ table, not the tmp table!
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));

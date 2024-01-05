@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static java.util.Collections.emptyList;
+
 import java.time.Instant;
 import java.util.Optional;
 
@@ -11,6 +13,11 @@ import java.util.Optional;
  * Basic SqlGenerator mock. See {@link DefaultTyperDeduperTest} for example usage.
  */
 class MockSqlGenerator implements SqlGenerator<String> {
+
+  @Override
+  public Sql setup() {
+    return Sql.of("SETUP");
+  }
 
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
