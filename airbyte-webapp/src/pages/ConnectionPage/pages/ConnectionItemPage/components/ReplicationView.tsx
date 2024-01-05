@@ -258,7 +258,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       {healthData?.available &&
       healthData?.connectionUpdate &&
       healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId) ? (
-        <Box mt={2}>
+        <Box mt={4}>
           <Alert
             formattedMessage={
               healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
@@ -273,6 +273,11 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
               healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status === "SUCCESS"
                 ? "#EFF6FF"
                 : "#FEF2F2"
+            }
+            color={
+              healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status === "SUCCESS"
+                ? "#1E40AF"
+                : "#991b1b"
             }
           />
         </Box>
