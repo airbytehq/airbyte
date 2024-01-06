@@ -61,12 +61,13 @@ class ZenhubGraphqlStream(HttpStream, ABC):
     #    self.headers = {'Authorization': f'Bearer {api_key}'}
     #    super().__init__(url_base, self.headers, **kwargs) 
 
-     
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
     def __init__(self, api_key: str, **kwargs):
         super().__init__(authenticator=TokenAuthenticator(token=api_key),**kwargs) 
 
-    #def execute_query(self, query):
-    #    return self(query)
     def request_headers(self, *args, **kwargs) -> Mapping[str, Any]:
         return { "Content-Type": "application/json"
                 , **super().request_headers(*args, **kwargs)
@@ -85,8 +86,9 @@ class ZenhubGraphqlStream(HttpStream, ABC):
         return {}
     
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        #log(Level.INFO, f"Full Request Object: {request.__dict__}")
         log(Level.INFO, f"Sending request to URL: {request.url}")
-        log(Level.INFO, f"Request headers: {request.headers}")
+        #log(Level.INFO, f"Request headers: {request.headers}")
         log(Level.INFO, f"Request body: {request.body}")
         
         response = super()._send_request(request, request_kwargs)
@@ -96,7 +98,7 @@ class ZenhubGraphqlStream(HttpStream, ABC):
         
         return response
         
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any],**kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any] = None,**kwargs) -> Iterable[Mapping]:
         if response.status_code != 200:
             raise Exception(f"Query failed with status code {response.status_code}: {response.text}")
         else:
@@ -135,15 +137,10 @@ class ZenhubWorkspace(ZenhubGraphqlStream):
     
     def request_body_json(self, *args, **kwargs) -> Optional[Mapping]:
         query = self.get_ws_query()
-        
-        #query_json = json.dumps({"query": str(query)})
-        #log(Level.INFO, f"Raw Qeury: {query_json}")
+
         log(Level.INFO, f"Raw Query: {query}")
-
-        #return json.loads(query_json)
-        return {"query": str(query)}
-     
-
+        return {"query": query}
+        
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:

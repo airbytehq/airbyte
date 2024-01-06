@@ -37,19 +37,18 @@ There are additional required TODOs in the files within the integration_tests fo
 # Source
 class SourceZenhubGraphql(AbstractSource):
     
-    #def _get_workspace(self, config):
-        
-        #Get Ids
-        #ws_repo_ids = ZenhubWorkspace(api_key=config["access_token"]
-        #    , workspace_name=config["workspace_name"]
-        #    ) 
-        #response, status_code = ws_query_body.fetch_data()
-
-        #return response
-    
-    @property
-    def http_method(self) -> str:
-        return "POST"
+    def _get_workspace(self, config):
+        try:
+            #Get Ids
+            ws_repo_ids = ZenhubWorkspace(
+                api_key=config["access_token"]
+                , workspace_name=config["workspace_name"]
+            ) 
+            next(ws_repo_ids.read_records(sync_mode= SyncMode.full_refresh))
+            
+            return True, None
+        except Exception as error:
+            return False, str(error)
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
