@@ -624,6 +624,7 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
     loop.run_until_complete(stream._session.close())
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "api_response, expected_message",
     [
@@ -645,36 +646,28 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
         ({}, None),
     ],
 )
-def test_default_parse_response_error_message(api_response: dict, expected_message: Optional[str]):
+async def test_default_parse_response_error_message(api_response: dict, expected_message: Optional[str]):
     stream = StubBasicReadHttpStream()
-    loop = asyncio.get_event_loop()
     response = MagicMock()
-    response.json.return_value = _get_response(api_response)
+    response._response_error = api_response
 
-    message = loop.run_until_complete(stream.parse_response_error_message(response))
+    message = await stream.parse_response_error_message(response)
     assert message == expected_message
 
 
-async def _get_response(response):
-    return response
-
-
-def test_default_parse_response_error_message_not_json():
+@pytest.mark.asyncio
+async def test_default_parse_response_error_message_not_json():
     stream = StubBasicReadHttpStream()
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(stream.ensure_session())
-
-    req = aiohttp.ClientRequest("GET", URL("mock://test.com/not_json"))
-
-    def callback(url, **kwargs):
-        return CallbackResult(body="this is not json")
+    await stream.ensure_session()
+    url = "mock://test.com/not_json"
 
     with aioresponses() as m:
-        m.get("mock://test.com/not_json", callback=callback)
-        response = loop.run_until_complete(stream._send_request(req, {}))
-        message = loop.run_until_complete(stream.parse_response_error_message(response))
-    assert message is None
-    loop.run_until_complete(stream._session.close())
+        m.get(url, callback=lambda *_, **__: CallbackResult(status=400, body="this is not json"))
+        with pytest.raises(aiohttp.ClientResponseError):
+            response = await stream._send_request(aiohttp.ClientRequest("GET", URL(url)), {})
+            message = await stream.parse_response_error_message(response)
+            assert message is None
+    await stream._session.close()
 
 
 def test_default_get_error_display_message_handles_http_error(mocker):

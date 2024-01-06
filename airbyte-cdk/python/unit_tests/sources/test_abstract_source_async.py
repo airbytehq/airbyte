@@ -312,7 +312,7 @@ async def read_records_with_error(*args, **kwargs):
     raise RuntimeError("oh no!")
 
 
-def test_read_stream_with_error_no_display_message(mocker):
+def test_read_stream_with_error_gets_display_message(mocker):
     stream = MockStream(name="my_stream")
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
     stream.read_records = read_records_with_error
@@ -320,18 +320,11 @@ def test_read_stream_with_error_no_display_message(mocker):
     source = MockSource(streams=[stream])
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])
 
+    # without get_error_display_message
     with pytest.raises(RuntimeError, match="oh no!"):
         list(source.read(logger, {}, catalog))
 
-
-def test_read_stream_with_error_with_display_message(mocker):
-    stream = MockStream(name="my_stream")
-    mocker.patch.object(MockStream, "get_json_schema", return_value={})
-    stream.read_records = read_records_with_error
     stream.get_error_display_message = AsyncMock(return_value="my message")
-
-    source = MockSource(streams=[stream])
-    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])
 
     with pytest.raises(AirbyteTracedException, match="oh no!") as exc:
         list(source.read(logger, {}, catalog))

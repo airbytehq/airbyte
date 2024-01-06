@@ -383,9 +383,9 @@ class BulkSalesforceStream(SalesforceStream):
                 #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
                 #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
                 #    And the main problem is these subqueries doesn't support CSV response format.
-                if not hasattr(error, "_error_json"):
+                if not hasattr(error, "_response_error"):
                     raise NotImplementedError("!!!!!!!!!!!!! this didn't use `handle_response_with_error`")
-                error_data = error._error_json or {}
+                error_data = error._response_error or {}
                 error_code = error_data.get("errorCode")
                 error_message = error_data.get("message", "")
                 if error_message == "Selecting compound data not supported in Bulk Query" or (
@@ -439,7 +439,7 @@ class BulkSalesforceStream(SalesforceStream):
             try:
                 job_info = await (await self._send_http_request("GET", url=url)).json()
             except aiohttp.ClientResponseError as error:
-                error_data = error._error_json
+                error_data = error._response_error
                 error_code = error_data.get("errorCode")
                 error_message = error_data.get("message", "")
                 if (

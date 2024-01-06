@@ -292,7 +292,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         return await send()
 
     @classmethod
-    async def parse_response_error_message(cls, response: aiohttp.ClientResponse) -> Optional[str]:
+    async def parse_response_error_message(cls, exception: aiohttp.ClientResponseError) -> Optional[str]:
         """
         Parses the raw response object from a failed request into a user-friendly error message.
         By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
@@ -321,13 +321,10 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
             return None
 
         try:
-            if hasattr(response, "_response_json"):
-                return response._response_json
-            try:
-                body = await response.json()
-                return _try_get_error(body)
-            except AttributeError:
-                pass
+            if hasattr(exception, "_response_error"):
+                return _try_get_error(exception._response_error)
+            else:
+                raise NotImplementedError("`_response_error` is expected but was not set on the response; `handle_response_with_error` should be used prior to processing the exception")
         except json.JSONDecodeError:
             return None
 
@@ -416,7 +413,11 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         try:
             error_json = await response.json()
         except (json.JSONDecodeError, aiohttp.ContentTypeError):
-            error_json = {}
+            error_json = None
+        except Exception as exc:
+            raise NotImplementedError(f"Unexpected!!!!!!!! {exc}")  # TODO
+            self.logger.error(f"Unable to get error json from response: {exc}")
+            error_json = None
 
         exc = aiohttp.ClientResponseError(
             response.request_info,
@@ -425,8 +426,8 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
             message=response.reason,
             headers=response.headers,
         )
-        exc._error_json = error_json  # https://github.com/aio-libs/aiohttp/issues/3248
         text = await response.text()
+        exc._response_error = error_json or text  # https://github.com/aio-libs/aiohttp/issues/3248
         self.logger.error(text)
         raise exc
 
