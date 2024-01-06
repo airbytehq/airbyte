@@ -226,7 +226,7 @@ class SourceSalesforce(AsyncAbstractSource):
             async for record in super()._read_stream(logger, stream_instance, configured_stream, state_manager, internal_config):
                 yield record
         except aiohttp.ClientResponseError as error:
-            error_data = error._error_json if hasattr(error, "_error_json") else {}
+            error_data = error._response_error if hasattr(error, "_response_error") else {}
             error_code = error_data.get("errorCode")
             url = error.request_info.url
             if error.status == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":

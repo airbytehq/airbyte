@@ -495,8 +495,6 @@ async def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
 
     state_record = [item for item in result if item.type == Type.STATE][0]
     assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-10-05T00:00:00+00:00"  # state checkpoint interval is 5.
-    await stream_1._session.close()
-    await stream_2._session.close()
 
 
 @pytest.mark.asyncio
@@ -588,8 +586,6 @@ async def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
 
     state_record = [item for item in result if item.type == Type.STATE][0]
     assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17T00:00:00+00:00"
-    await stream_1._session.close()
-    await stream_2._session.close()
 
 
 @pytest.mark.asyncio

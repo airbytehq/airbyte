@@ -236,7 +236,8 @@ class AsyncAbstractSource(AbstractSource, ABC):
             logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
             self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE))
         except AirbyteTracedException as e:
-            raise stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
+            self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE))
+            raise e
         except Exception as e:
             for message in self._emit_queued_messages():
                 self.queue.put(message)
