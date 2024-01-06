@@ -32,5 +32,4 @@ async def get_first_record_for_slice(stream: AsyncStream, stream_slice: Optional
     # We wrap the return output of read_records() because some implementations return types that are iterable,
     # but not iterators such as lists or tuples
     async for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-        return record
-    raise StopIteration(f"No records in stream {stream.name}")
+        yield record

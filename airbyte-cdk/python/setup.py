@@ -65,6 +65,7 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
+        "aiohttp~=3.8.6"
         "aiohttp-client-cache[aiosqlite]",
         "aiosqlite",
         "airbyte-protocol-models==0.5.1",
@@ -94,6 +95,7 @@ setup(
             "freezegun",
             "mypy",
             "pytest",
+            "pytest-asyncio",
             "pytest-cov",
             "pytest-mock",
             "requests-mock",

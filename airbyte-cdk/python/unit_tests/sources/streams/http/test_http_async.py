@@ -68,7 +68,7 @@ def test_request_kwargs_used(mocker):
         m.assert_any_call(stream.url_base, "GET", **request_kwargs)
         m.assert_called_once()
 
-    loop.run_until_complete(stream._session.close())
+    loop.run_until_complete(stream._session.close())  # TODO - find a way to not manually close after each test
 
 
 async def read_records(stream, sync_mode=SyncMode.full_refresh, stream_slice=None):

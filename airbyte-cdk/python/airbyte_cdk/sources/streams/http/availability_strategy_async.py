@@ -47,8 +47,8 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
             return is_available, reason
 
         try:
-            await get_first_record_for_slice(stream, stream_slice)
-            return True, None
+            async for _ in get_first_record_for_slice(stream, stream_slice):
+                return True, None
         except StopIteration:
             logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
             return True, None

@@ -65,28 +65,35 @@ class SourceReader(Iterator):
                 self.error = (e, traceback.format_exc())
 
     def __next__(self):
-        with self.error_lock:
-            if self.error:
-                exception, traceback_str = self.error
-                self.logger.error(f"An error occurred in the async thread: {traceback_str}")
-                raise exception
-        item = self.queue.get(timeout=DEFAULT_TIMEOUT)
-        if isinstance(item, Sentinel):
-            # Sessions can only be closed once items in the stream have all been dequeued
-            if session := self.sessions.pop(item.name, None):
-                loop = asyncio.get_event_loop()
-                loop.create_task(session.close())
-            try:
-                self.sentinels.pop(item.name)
-            except KeyError:
-                raise RuntimeError(f"The sentinel for stream {item.name} was already dequeued. This is unexpected and indicates a possible problem with the connector. Please contact Support.")
-            if not self.sentinels:
-                self.thread.join()
-                raise StopIteration
+        loop = asyncio.get_event_loop()
+        try:
+            with self.error_lock:
+                if self.error:
+                    exception, traceback_str = self.error
+                    self.logger.error(f"An error occurred in the async thread: {traceback_str}")
+                    raise exception
+            item = self.queue.get(timeout=DEFAULT_TIMEOUT)
+            if isinstance(item, Sentinel):
+                # Sessions can only be closed once items in the stream have all been dequeued
+                if session := self.sessions.pop(item.name, None):
+                    loop.create_task(session.close())  # TODO: this can be done better
+                try:
+                    self.sentinels.pop(item.name)
+                except KeyError:
+                    raise RuntimeError(f"The sentinel for stream {item.name} was already dequeued. This is unexpected and indicates a possible problem with the connector. Please contact Support.")
+                if not self.sentinels:
+                    self.thread.join()
+                    raise StopIteration
+                else:
+                    return self.__next__()
             else:
-                return self.__next__()
-        else:
-            return item
+                return item
+        finally:
+            loop.create_task(self.cleanup())
+
+    async def cleanup(self):
+        for session in self.sessions.values():
+            await session.close()
 
 
 class AsyncAbstractSource(AbstractSource, ABC):
@@ -151,7 +158,7 @@ class AsyncAbstractSource(AbstractSource, ABC):
                 n_records += 1
                 yield record
 
-        # print(f"_______________________-ASYNCIO SOURCE N RECORDS == {n_records}")
+        print(f"_______________________-ASYNCIO SOURCE N RECORDS == {n_records}")
         logger.info(f"Finished syncing {self.name}")
 
     def _do_read(self, catalog: ConfiguredAirbyteCatalog, stream_instances: Dict[str, AsyncStream], timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
@@ -177,9 +184,10 @@ class AsyncAbstractSource(AbstractSource, ABC):
         pending_tasks = set()
         n_started, n_streams = 0, len(catalog.streams)
         streams_iterator = iter(catalog.streams)
+        exceptions = []
 
-        while pending_tasks or n_started < n_streams:
-            while len(pending_tasks) <= self.session_limit and (configured_stream := next(streams_iterator, None)):
+        while (pending_tasks or n_started < n_streams) and not exceptions:
+            while len(pending_tasks) < self.session_limit and (configured_stream := next(streams_iterator, None)):
                 if configured_stream is None:
                     break
                 # stream_instance = stream_instances.get("Account")  # TODO
@@ -194,8 +202,11 @@ class AsyncAbstractSource(AbstractSource, ABC):
             for task in done:
                 if task.exception():
                     for remaining_task in pending_tasks:
-                        remaining_task.cancel()
-                    raise task.exception()
+                        await remaining_task.cancel()
+                    exceptions.append(task.exception())
+
+        if exceptions:
+            pass
 
     async def _do_async_read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_instance: AsyncStream, timer: Any, logger: logging.Logger, state_manager: ConnectorStateManager, internal_config: InternalConfig):
         try:
@@ -226,7 +237,6 @@ class AsyncAbstractSource(AbstractSource, ABC):
             self.queue.put(stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE))
             with self.reader.error_lock:
                 self.reader.error = (e, traceback.format_exc())
-            raise e
         except Exception as e:
             for message in self._emit_queued_messages():
                 self.queue.put(message)
@@ -238,10 +248,8 @@ class AsyncAbstractSource(AbstractSource, ABC):
                 exc = AirbyteTracedException.from_exception(e, message=display_message)
                 with self.reader.error_lock:
                     self.reader.error = (exc, traceback.format_exc())
-                raise exc from e
             with self.reader.error_lock:
                 self.reader.error = (e, traceback.format_exc())
-            raise e
         finally:
             timer.finish_event()
             logger.info(f"Finished syncing {configured_stream.stream.name}")

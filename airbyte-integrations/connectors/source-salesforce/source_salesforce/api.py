@@ -283,7 +283,7 @@ class Salesforce:
 
         if catalog:
             return {
-                configured_stream.stream.name: stream_objects["Account"]
+                configured_stream.stream.name: stream_objects[configured_stream.stream.name]
                 for configured_stream in catalog.streams
                 if configured_stream.stream.name in stream_objects
             }

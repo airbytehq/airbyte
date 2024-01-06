@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk~=0.55.2", "pandas"]
 
-TEST_REQUIREMENTS = ["freezegun", "pytest~=6.1", "pytest-mock~=3.6", "requests-mock~=1.9.3", "pytest-timeout"]
+TEST_REQUIREMENTS = ["aioresponses", "freezegun", "pytest~=6.1", "pytest-asyncio", "pytest-mock~=3.6", "requests-mock~=1.9.3", "pytest-timeout"]
 
 setup(
     name="source_salesforce",

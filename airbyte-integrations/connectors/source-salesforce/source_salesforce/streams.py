@@ -108,7 +108,7 @@ class SalesforceStream(AsyncHttpStream, ABC):
         return self.schema
 
     async def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        if isinstance(exception, exceptions.ConnectionError):
+        if isinstance(exception, aiohttp.ClientResponseError):
             return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
         return await super().get_error_display_message(exception)
 
@@ -268,7 +268,7 @@ class RestSalesforceStream(SalesforceStream):
                 continue
 
             # stick together different parts of records by their primary key and emit if a record is complete
-            for record in chunk_page_records:
+            async for record in records_generator_fn(request, response, stream_state, stream_slice):
                 property_chunk.record_counter += 1
                 record_id = record[self.primary_key]
                 if record_id not in records_by_primary_key:
@@ -320,15 +320,16 @@ class RestSalesforceStream(SalesforceStream):
 class BatchedSubStream(AsyncHttpSubStream):
     SLICE_BATCH_SIZE = 200
 
-    def stream_slices(
+    async def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Instead of yielding one parent record at a time, make stream slice contain a batch of parent records.
 
         It allows to get <SLICE_BATCH_SIZE> records by one requests (instead of only one).
         """
+        await self.ensure_session()  # TODO: should this be self or super?
         batched_slice = []
-        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
+        async for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
             if len(batched_slice) == self.SLICE_BATCH_SIZE:
                 yield {"parents": batched_slice}
                 batched_slice = []
@@ -352,13 +353,12 @@ class BulkSalesforceStream(SalesforceStream):
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
     @default_backoff_handler(max_tries=5, factor=15)
-    async def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream=False) -> aiohttp.ClientResponse:
+    async def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream=False) -> aiohttp.ClientResponse:  # TODO: how to handle the stream argument
         headers = self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
         response = await self._session.request(method, url=url, headers=headers, json=json)
         if response.status not in [200, 204]:
             self.logger.error(f"error body: {await response.text()}, sobject options: {self.sobject_options}")
-        response.raise_for_status()
-        return response  # TODO: how to handle the stream argument
+        return await self.handle_response_with_error(response)
 
     async def create_stream_job(self, query: str, url: str) -> Optional[str]:
         """
@@ -369,8 +369,8 @@ class BulkSalesforceStream(SalesforceStream):
             response = await self._send_http_request("POST", url, json=json)
             job_id: str = (await response.json())["id"]
             return job_id
-        except exceptions.HTTPError as error:  # TODO: which errors?
-            if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+        except aiohttp.ClientResponseError as error:  # TODO: which errors?
+            if error.status in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 # A part of streams can't be used by BULK API. Every API version can have a custom list of
                 # these sobjects. Another part of them can be generated dynamically. That's why we can't track
                 # them preliminarily and there is only one way is to except error with necessary messages about
@@ -383,7 +383,9 @@ class BulkSalesforceStream(SalesforceStream):
                 #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
                 #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
                 #    And the main problem is these subqueries doesn't support CSV response format.
-                error_data = error.response.json()[0]
+                if not hasattr(error, "_error_json"):
+                    raise NotImplementedError("!!!!!!!!!!!!! this didn't use `handle_response_with_error`")
+                error_data = error._error_json or {}
                 error_code = error_data.get("errorCode")
                 error_message = error_data.get("message", "")
                 if error_message == "Selecting compound data not supported in Bulk Query" or (
@@ -393,29 +395,29 @@ class BulkSalesforceStream(SalesforceStream):
                         f"Cannot receive data for stream '{self.name}' using BULK API, "
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
-                elif error.response.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
+                elif error.status == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
                     self.logger.error(
                         f"Cannot receive data for stream '{self.name}' ,"
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
-                elif error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                elif error.status == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                     self.logger.error(
                         f"Cannot receive data for stream '{self.name}' ,"
                         f"sobject options: {self.sobject_options}, Error message: '{error_data.get('message')}'"
                     )
-                elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
+                elif error.status == codes.BAD_REQUEST and error_message.endswith("does not support query"):
                     self.logger.error(
                         f"The stream '{self.name}' is not queryable, "
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
                 elif (
-                    error.response.status_code == codes.BAD_REQUEST
+                    error.status == codes.BAD_REQUEST
                     and error_code == "API_ERROR"
                     and error_message.startswith("Implementation restriction")
                 ):
                     message = f"Unable to sync '{self.name}'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."
                     raise AirbyteTracedException(message=message, failure_type=FailureType.config_error, exception=error)
-                elif error.response.status_code == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
+                elif error.status == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
                     message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
                     self.logger.error(message)
                 else:
@@ -436,8 +438,8 @@ class BulkSalesforceStream(SalesforceStream):
         while pendulum.now() < expiration_time:
             try:
                 job_info = await (await self._send_http_request("GET", url=url)).json()
-            except exceptions.HTTPError as error:
-                error_data = error.response.json()[0]
+            except aiohttp.ClientResponseError as error:
+                error_data = error._error_json
                 error_code = error_data.get("errorCode")
                 error_message = error_data.get("message", "")
                 if (

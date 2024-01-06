@@ -173,7 +173,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         data: Optional[Union[str, Mapping[str, Any]]] = None,
     ) -> aiohttp.ClientRequest:
         str_url = self._join_url(self.url_base, path)
-        str_url = "http://localhost:8000"  # TODO
+        # str_url = "http://localhost:8000"  # TODO
         url = URL(str_url)
         if self.must_deduplicate_query_params():
             query_params = self.deduplicate_query_params(str_url, params)
@@ -240,11 +240,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
                 raise DefaultBackoffException(response=response, error_message=error_message)
         elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
-            try:
-                response.raise_for_status()
-            except aiohttp.ClientResponseError as exc:
-                self.logger.error(response.text)
-                raise exc
+            return await self.handle_response_with_error(response)
         return response
 
     async def ensure_session(self) -> aiohttp.ClientSession:
@@ -325,8 +321,13 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
             return None
 
         try:
-            body = await response.json()
-            return _try_get_error(body)
+            if hasattr(response, "_response_json"):
+                return response._response_json
+            try:
+                body = await response.json()
+                return _try_get_error(body)
+            except AttributeError:
+                pass
         except json.JSONDecodeError:
             return None
 
@@ -404,6 +405,31 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         response = await self._send_request(request, request_kwargs)
         return request, response
 
+    async def handle_response_with_error(self, response: aiohttp.ClientResponse) -> aiohttp.ClientResponse:
+        """
+        If the response has a non-ok status code, raise an exception, otherwise return the response.
+
+        When raising an exception, attach response json data to exception object.
+        """
+        if response.ok:
+            return response
+        try:
+            error_json = await response.json()
+        except (json.JSONDecodeError, aiohttp.ContentTypeError):
+            error_json = {}
+
+        exc = aiohttp.ClientResponseError(
+            response.request_info,
+            response.history,
+            status=response.status,
+            message=response.reason,
+            headers=response.headers,
+        )
+        exc._error_json = error_json  # https://github.com/aio-libs/aiohttp/issues/3248
+        text = await response.text()
+        self.logger.error(text)
+        raise exc
+
 
 class AsyncHttpSubStream(AsyncHttpStream, ABC):
     def __init__(self, parent: AsyncHttpStream, **kwargs: Any):
@@ -416,6 +442,7 @@ class AsyncHttpSubStream(AsyncHttpStream, ABC):
     async def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        await self.parent.ensure_session()
         # iterate over all parent stream_slices
         async for stream_slice in self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state

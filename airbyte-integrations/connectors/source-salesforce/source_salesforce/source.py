@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+import aiohttp
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.logger import AirbyteLogFormatter
@@ -224,11 +225,11 @@ class SourceSalesforce(AsyncAbstractSource):
         try:
             async for record in super()._read_stream(logger, stream_instance, configured_stream, state_manager, internal_config):
                 yield record
-        except exceptions.HTTPError as error:
-            error_data = error.response.json()[0]
+        except aiohttp.ClientResponseError as error:
+            error_data = error._error_json if hasattr(error, "_error_json") else {}
             error_code = error_data.get("errorCode")
-            url = error.response.url
-            if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+            url = error.request_info.url
+            if error.status == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                 logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
                 raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
             raise error

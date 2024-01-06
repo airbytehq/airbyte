@@ -39,7 +39,7 @@ def _get_source(args: List[str]):
 
 
 if __name__ == "__main__":
-    _args = sys.argv[1:]
+    _args = ['read', '--config', 'secrets/config.json', '--catalog', 'integration_tests/configured_catalog.json']
     source = _get_source(_args)
     if source:
         launch(source, _args)
