@@ -113,6 +113,7 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 3.0.1   | 2024-01-08 | [33989](https://github.com/airbytehq/airbyte/pull/33989) | Remove metrics from video feed                                                                                            |
 | 3.0.0   | 2024-01-05 | [33930](https://github.com/airbytehq/airbyte/pull/33930) | Upgrade to API v18.0                                                                                                      |
 | 2.0.1   | 2024-01-03 | [33889](https://github.com/airbytehq/airbyte/pull/33889) | Change requested metrics for stream `media_insights`                                                                      |
 | 2.0.0   | 2023-11-17 | [32500](https://github.com/airbytehq/airbyte/pull/32500) | Add primary keys for UserLifetimeInsights and UserInsights; add airbyte_type to timestamp fields                          |
