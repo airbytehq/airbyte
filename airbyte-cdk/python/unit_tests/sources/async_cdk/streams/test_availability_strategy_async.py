@@ -8,8 +8,8 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.async_cdk.streams.availability_strategy_async import AsyncAvailabilityStrategy
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy_async import AsyncAvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 
 logger = logging.getLogger("airbyte")

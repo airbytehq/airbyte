@@ -8,7 +8,7 @@ from unittest import mock
 
 import pytest
 from airbyte_cdk.models import AirbyteStream, SyncMode
-from airbyte_cdk.sources.streams import AsyncStream
+from airbyte_cdk.sources.async_cdk.streams.core_async import AsyncStream
 
 
 class StreamStubFullRefresh(AsyncStream):

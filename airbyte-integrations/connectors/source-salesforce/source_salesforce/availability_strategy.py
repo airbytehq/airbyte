@@ -6,8 +6,8 @@ import logging
 import typing
 from typing import Optional, Tuple
 
+from airbyte_cdk.sources.async_cdk.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
 from requests import HTTPError, codes
 
 if typing.TYPE_CHECKING:

@@ -8,10 +8,10 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple
 import aiohttp
 import pytest
 from aioresponses import aioresponses
-from airbyte_cdk.sources.abstract_source_async import AsyncAbstractSource
+from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
+from airbyte_cdk.sources.async_cdk.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
+from airbyte_cdk.sources.async_cdk.streams.http.http_async import AsyncHttpStream
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
-from airbyte_cdk.sources.streams.http.http_async import AsyncHttpStream
 
 logger = logging.getLogger("airbyte")
 

@@ -19,10 +19,10 @@ import aiohttp
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
+from airbyte_cdk.sources.async_cdk.streams.http.http_async import AsyncHttpStream, AsyncHttpSubStream
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http.http_async import AsyncHttpStream, AsyncHttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan

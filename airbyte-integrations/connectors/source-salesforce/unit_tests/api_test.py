@@ -19,7 +19,7 @@ import pytest
 import requests_mock
 from aioresponses import CallbackResult, aioresponses
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
-from airbyte_cdk.sources import abstract_source_async
+from airbyte_cdk.sources.async_cdk import abstract_source_async
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.utils import AirbyteTracedException

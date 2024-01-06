@@ -14,10 +14,10 @@ import aiohttp
 import pytest
 from aioresponses import CallbackResult, aioresponses
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.async_cdk.streams.http.http_async import AsyncHttpStream, AsyncHttpSubStream
+from airbyte_cdk.sources.async_cdk.streams.http.exceptions_async import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator as HttpTokenAuthenticator
-from airbyte_cdk.sources.streams.http.http_async import AsyncHttpStream, AsyncHttpSubStream
-from airbyte_cdk.sources.streams.http.exceptions_async import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 
 
 class StubBasicReadHttpStream(AsyncHttpStream):

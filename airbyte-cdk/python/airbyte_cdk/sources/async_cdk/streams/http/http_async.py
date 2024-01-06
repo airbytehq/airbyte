@@ -13,18 +13,18 @@ from yarl import URL
 import aiohttp
 import aiohttp_client_cache
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.async_cdk.streams.async_call_rate import AsyncCachedLimiterSession, AsyncLimiterSession
+from airbyte_cdk.sources.async_cdk.streams.core_async import AsyncStream
+from airbyte_cdk.sources.async_cdk.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
+from airbyte_cdk.sources.async_cdk.streams.http.exceptions_async import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
-from airbyte_cdk.sources.streams import AsyncStream
-from airbyte_cdk.sources.streams.async_call_rate import AsyncCachedLimiterSession, AsyncLimiterSession
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from airbyte_cdk.sources.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.http_base import BaseHttpStream
-from airbyte_cdk.sources.streams.http.exceptions_async import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 
-from .auth.core import HttpAuthenticator
 from .rate_limiting_async import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies

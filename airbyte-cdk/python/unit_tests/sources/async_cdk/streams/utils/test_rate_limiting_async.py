@@ -4,7 +4,7 @@
 
 import aiohttp
 import pytest
-from airbyte_cdk.sources.streams.http.rate_limiting_async import default_backoff_handler
+from airbyte_cdk.sources.async_cdk.streams.http.rate_limiting_async import default_backoff_handler
 
 
 def helper_with_exceptions(exception_type):

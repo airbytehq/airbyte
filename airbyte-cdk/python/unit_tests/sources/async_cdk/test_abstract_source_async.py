@@ -37,10 +37,11 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources import AsyncAbstractSource
+from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
+from airbyte_cdk.sources.async_cdk.streams.core_async import AsyncStream
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams import AsyncStream, IncrementalMixin
+from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture
