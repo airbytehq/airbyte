@@ -83,7 +83,7 @@ class SourceReader(Iterator):
                     raise RuntimeError(f"The sentinel for stream {item.name} was already dequeued. This is unexpected and indicates a possible problem with the connector. Please contact Support.")
                 if not self.sentinels:
                     self.thread.join()
-                    raise StopAsyncIteration
+                    raise StopIteration
                 else:
                     return self.__next__()
             else:
@@ -92,8 +92,9 @@ class SourceReader(Iterator):
             loop.create_task(self.cleanup())
 
     async def cleanup(self):
-        for session in self.sessions.values():
-            await session.close()
+        pass
+        # for session in self.sessions.values():
+        #     await session.close()
 
 
 class AsyncAbstractSource(AbstractSource, ABC):
