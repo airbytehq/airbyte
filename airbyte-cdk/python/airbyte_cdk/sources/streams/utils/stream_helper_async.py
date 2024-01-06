@@ -9,16 +9,14 @@ from airbyte_cdk.sources.streams import AsyncStream
 from airbyte_cdk.sources.streams.core import StreamData
 
 
-async def get_first_stream_slice(stream: AsyncStream) -> Optional[Mapping[str, Any]]:
+async def get_first_stream_slice(stream: AsyncStream) -> Mapping[str, Any]:
     """
     Gets the first stream_slice from a given stream's stream_slices.
     :param stream: stream
-    :raises StopIteration: if there is no first slice to return (the stream_slices generator is empty)
+    :raises StopAsyncIteration: if there is no first slice to return (the stream_slices generator is empty)
     :return: first stream slice from 'stream_slices' generator (`None` is a valid stream slice)
     """
-    async for stream_slice in stream.stream_slices(cursor_field=stream.cursor_field, sync_mode=SyncMode.full_refresh):
-        return stream_slice
-    raise StopIteration(f"No slices in stream {stream.name}")
+    return await anext(stream.stream_slices(cursor_field=stream.cursor_field, sync_mode=SyncMode.full_refresh))
 
 
 async def get_first_record_for_slice(stream: AsyncStream, stream_slice: Optional[Mapping[str, Any]]) -> StreamData:
@@ -26,7 +24,7 @@ async def get_first_record_for_slice(stream: AsyncStream, stream_slice: Optional
     Gets the first record for a stream_slice of a stream.
     :param stream: stream
     :param stream_slice: stream_slice
-    :raises StopIteration: if there is no first record to return (the read_records generator is empty)
+    :raises StopAsyncIteration: if there is no first record to return (the read_records generator is empty)
     :return: StreamData containing the first record in the slice
     """
     # We wrap the return output of read_records() because some implementations return types that are iterable,

@@ -83,7 +83,7 @@ class SourceReader(Iterator):
                     raise RuntimeError(f"The sentinel for stream {item.name} was already dequeued. This is unexpected and indicates a possible problem with the connector. Please contact Support.")
                 if not self.sentinels:
                     self.thread.join()
-                    raise StopIteration
+                    raise StopAsyncIteration
                 else:
                     return self.__next__()
             else:

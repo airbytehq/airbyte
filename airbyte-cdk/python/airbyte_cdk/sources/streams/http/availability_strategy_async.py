@@ -34,7 +34,7 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
             # Some streams need a stream slice to read records (e.g. if they have a SubstreamPartitionRouter)
             # Streams that don't need a stream slice will return `None` as their first stream slice.
             stream_slice = await get_first_stream_slice(stream)
-        except StopIteration:
+        except StopAsyncIteration:
             # If stream_slices has no `next()` item (Note - this is different from stream_slices returning [None]!)
             # This can happen when a substream's `stream_slices` method does a `for record in parent_records: yield <something>`
             # without accounting for the case in which the parent stream is empty.
@@ -49,7 +49,7 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
         try:
             async for _ in get_first_record_for_slice(stream, stream_slice):
                 return True, None
-        except StopIteration:
+        except StopAsyncIteration:
             logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
             return True, None
         except ClientResponseError as error:
@@ -57,6 +57,8 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
             if not is_available:
                 reason = f"Unable to read {stream.name} stream. {reason}"
             return is_available, reason
+
+        return True, None
 
     async def _handle_http_error(
         self, stream: AsyncStream, logger: logging.Logger, source: Optional["Source"], error: ClientResponseError
