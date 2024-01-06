@@ -2,21 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import abc
-import datetime
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import aiohttp
 import aiohttp_client_cache
 
 from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget
 
-# prevents mypy from complaining about missing session attributes in LimiterMixin
-if TYPE_CHECKING:
-    MIXIN_BASE = aiohttp.ClientSession
-else:
-    MIXIN_BASE = object
+MIXIN_BASE = aiohttp.ClientSession
 
 logger = logging.getLogger("airbyte")
 
