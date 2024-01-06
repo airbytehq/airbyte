@@ -1,91 +1,82 @@
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
-import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
-import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.debezium.engine.ChangeEvent;
-import java.time.Duration;
+import io.debezium.connector.sqlserver.Lsn;
+import java.sql.SQLException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
-  public JsonNode constructInitialDebeziumState(final Properties properties,
-      final ConfiguredAirbyteCatalog catalog,
+
+public class MssqlDebeziumStateUtil {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MssqlDebeziumStateUtil.class);
+
+  public JsonNode constructInitialDebeziumState(
       final JdbcDatabase database) {
-// https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
-    // We use the schema_only_recovery property cause using this mode will instruct Debezium to
-    // construct the db schema history.
-    properties.setProperty("snapshot.mode", "schema_only_recovery");
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
-        constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
+        constructLsnSnapshotState(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
         Optional.empty());
-    final AirbyteSchemaHistoryStorage schemaHistoryStorage =
-        AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), COMPRESSION_ENABLED);
-    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
-    try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties,
-        database.getSourceConfig(),
-        catalog,
-        offsetManager,
-        Optional.of(schemaHistoryStorage),
-        DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB)) {
-      publisher.start(queue);
-      final Instant engineStartTime = Instant.now();
-      while (!publisher.hasClosed()) {
-        final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
-        if (event == null) {
-          Duration initialWaitingDuration = Duration.ofMinutes(5L);
-          // If initial waiting seconds is configured and it's greater than 5 minutes, use that value instead
-          // of the default value
-          final Duration configuredDuration = RecordWaitTimeUtil.getFirstRecordWaitTime(database.getSourceConfig());
-          if (configuredDuration.compareTo(initialWaitingDuration) > 0) {
-            initialWaitingDuration = configuredDuration;
-          }
-          if (Duration.between(engineStartTime, Instant.now()).compareTo(initialWaitingDuration) > 0) {
-            LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", initialWaitingDuration.getSeconds());
-            publisher.close();
-            throw new RuntimeException(
-                "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
-          }
-          continue;
-        }
-        LOGGER.info("A record is returned, closing the engine since the state is constructed");
-        publisher.close();
-        break;
-      }
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
+    final Map<String, Object> state = new HashMap<>();
+    state.put(MssqlSource.MSSQL_CDC_OFFSET, offsetManager.read());
+    return Jsons.jsonNode(state);
+  }
 
-    final Map<String, String> offset = offsetManager.read();
-    final SchemaHistory schemaHistory = schemaHistoryStorage.read();
+  public static MssqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
+  try (final Stream<MssqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(
+      connection -> connection.createStatement().executeQuery("select sys.fn_cdc_get_max_lsn()"),
+      resultSet -> {
+        final byte[] lsnBinary = resultSet.getBytes(1);
+        Lsn lsn = Lsn.valueOf(lsnBinary);
+        return new MssqlDebeziumStateAttributes(lsn);
+      })) {
+    final List<MssqlDebeziumStateAttributes> stateAttributes = stream.toList();
+    assert stateAttributes.size() == 1;
+    return stateAttributes.get(0);
+  } catch (final SQLException e) {
+    throw new RuntimeException(e);
+  }
+}
 
-    assert !offset.isEmpty();
-    assert Objects.nonNull(schemaHistory);
-    assert Objects.nonNull(schemaHistory.schema());
+public static record MssqlDebeziumStateAttributes(Lsn lsn) {}
 
-    final JsonNode asJson = serialize(offset, schemaHistory);
-    LOGGER.info("Initial Debezium state constructed: {}", asJson);
 
-    if (asJson.get(MysqlCdcStateConstants.MYSQL_DB_HISTORY).asText().isBlank()) {
-      throw new RuntimeException("Schema history snapshot returned empty history.");
-    }
-    return asJson;
+  /**
+   * Method to construct initial Debezium state which can be passed onto Debezium engine to make it
+   * process binlogs from a specific file and position and skip snapshot phase
+   * Example:
+   * ["test",{"server":"test","database":"test"}]" : "{"transaction_id":null,"event_serial_no":1,"commit_lsn":"00000644:00002ff8:0099","change_lsn":"0000062d:00017ff0:016d"}"
+   */
+  private JsonNode constructLsnSnapshotState(final JdbcDatabase database, final String dbName) {
+    return format(getStateAttributesFromDB(database), dbName, Instant.now());
+  }
 
+  @VisibleForTesting
+  public JsonNode format(final MssqlDebeziumStateAttributes attributes, final String dbName, final Instant time) {
+    final String key = "[\"" + dbName + "\",{\"server\":\"" + dbName + "\"}]";
+    final String value =
+        "{\"transaction_id\":null,\"event_serial_no\":1,\"commit_lsn\":\"" + attributes.lsn.toString() + "\",\"change_lsn\":"
+            + attributes.lsn.toString()
+            + "}";
+
+    final Map<String, String> result = new HashMap<>();
+    result.put(key, value);
+
+    final JsonNode jsonNode = Jsons.jsonNode(result);
+    LOGGER.info("Initial Debezium state offset constructed: {}", jsonNode);
+
+    return jsonNode;
   }
 }
