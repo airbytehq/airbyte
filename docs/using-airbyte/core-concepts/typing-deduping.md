@@ -60,7 +60,7 @@ Consider the following [source schema](/integrations/sources/faker) for stream `
 
 The data from one stream will now be mapped to one table in your schema as below:
 
-#### Destination Table Name: _public.users_
+#### Final Destination Table Name: _public.users_
 
 | _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_extracted_at | \_airbyte_meta                                               | id  | first_name | age  | address                                 |
 | -------------------------------------------- | ---------------- | ---------------------- | ------------------------------------------------------------ | --- | ---------- | ---- | --------------------------------------- |
@@ -70,7 +70,7 @@ The data from one stream will now be mapped to one table in your schema as below
 
 In legacy normalization, columns of [Airbyte type](/understanding-airbyte/supported-data-types/#the-types) `Object` in the Destination were "unnested" into separate tables. In this example, with Destinations V2, the previously unnested `public.users_address` table with columns `city` and `zip` will no longer be generated.
 
-#### Destination Table Name: _airbyte.raw_public_users_ (`airbyte.{namespace}_{stream}`)
+#### Raw Destination Table Name: _airbyte_internal.raw_public__users_ (`airbyte_internal.raw_{namespace}__{stream}`)
 
 | _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_data﻿                                                                           | \_airbyte_loaded_at  | \_airbyte_extracted_at |
 | -------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------- | -------------------- | ---------------------- |
