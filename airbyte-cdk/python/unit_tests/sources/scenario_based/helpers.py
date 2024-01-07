@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 import math
 from pathlib import Path, PosixPath
 from typing import Any, Dict, List, Mapping, Optional, Union
@@ -12,6 +13,7 @@ from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import get_source_iter
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -190,3 +192,8 @@ def get_error_message_from_exc(exc: ExceptionInfo[Any]) -> str:
     if isinstance(exc.value, AirbyteTracedException):
         return exc.value.message
     return str(exc.value.args[0])
+
+
+class NeverLogSliceLogger(SliceLogger):
+    def should_log_slice_message(self, logger: logging.Logger) -> bool:
+        return False

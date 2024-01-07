@@ -2,15 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
-from airbyte_cdk.sources.abstract_source_async import AsyncAbstractSource
+from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
+from airbyte_cdk.sources.async_cdk.source_dispatcher import SourceDispatcher
+from airbyte_cdk.sources.async_cdk.streams.core_async import AsyncStream
+from airbyte_cdk.sources.async_cdk.streams.availability_strategy_async import AsyncAvailabilityStrategy
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams.core_async import AsyncStream
-from airbyte_cdk.sources.streams.availability_strategy_async import AsyncAvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_protocol.models import ConfiguredAirbyteStream
+from unit_tests.sources.scenario_based.helpers import NeverLogSliceLogger
 from unit_tests.sources.scenario_based.scenario_builder import SourceBuilder
 
 
@@ -23,7 +25,7 @@ class AsyncConcurrentCdkSource(AsyncAbstractSource):
         # Check is not verified because it is up to the source to implement this method
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[AsyncStream]:
+    async def streams(self, config: Mapping[str, Any]) -> List[AsyncStream]:
         return self._streams
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
@@ -47,8 +49,12 @@ class ConcurrentSourceBuilder(SourceBuilder[AsyncConcurrentCdkSource]):
         self._streams: List[AsyncStream] = []
         self._message_repository = None
 
-    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> AsyncConcurrentCdkSource:
-        return AsyncConcurrentCdkSource(self._streams)
+    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> SourceDispatcher:
+        async_source = AsyncConcurrentCdkSource(self._streams)
+        async_source._streams = self._streams
+        async_source._message_repository = self._message_repository
+        async_source._slice_logger = NeverLogSliceLogger()
+        return SourceDispatcher(async_source)
 
     def set_streams(self, streams: List[AsyncStream]) -> "ConcurrentSourceBuilder":
         self._streams = streams

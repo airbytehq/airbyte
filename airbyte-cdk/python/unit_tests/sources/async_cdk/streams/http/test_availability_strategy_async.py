@@ -9,6 +9,7 @@ import aiohttp
 import pytest
 from aioresponses import aioresponses
 from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
+from airbyte_cdk.sources.async_cdk.source_dispatcher import SourceDispatcher
 from airbyte_cdk.sources.async_cdk.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
 from airbyte_cdk.sources.async_cdk.streams.http.http_async import AsyncHttpStream
 from airbyte_cdk.sources.streams import Stream
@@ -39,6 +40,7 @@ class MockHttpStream(AsyncHttpStream):
         return 0.01
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("status_code", "expected_is_available", "expected_messages"),
     [
@@ -59,7 +61,7 @@ class MockHttpStream(AsyncHttpStream):
         (False, ["Please visit the connector's documentation to learn more."]),
     ],
 )
-def test_default_http_availability_strategy(
+async def test_default_http_availability_strategy(
     status_code,
     expected_is_available,
     expected_messages,
@@ -82,22 +84,21 @@ def test_default_http_availability_strategy(
         async def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
             return True, ""
 
-        def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        async def streams(self, config: Mapping[str, Any]) -> List[Stream]:
             if not self._streams:
                 raise Exception("Stream is not set")
             return self._streams
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(http_stream.ensure_session())
+    await http_stream.ensure_session()
 
     with aioresponses() as m:
         m.get(http_stream.url_base, status=status_code)
 
         if include_source:
-            source = MockSource(streams=[http_stream])
-            actual_is_available, reason = loop.run_until_complete(http_stream.check_availability(logger, source))
+            source = SourceDispatcher(MockSource(streams=[http_stream]))
+            actual_is_available, reason = await http_stream.check_availability(logger, source.async_source)
         else:
-            actual_is_available, reason = loop.run_until_complete(http_stream.check_availability(logger))
+            actual_is_available, reason = await http_stream.check_availability(logger)
 
         assert expected_is_available == actual_is_available
         if expected_is_available:
@@ -107,7 +108,7 @@ def test_default_http_availability_strategy(
             for message in all_expected_messages:
                 assert message in reason
 
-    loop.run_until_complete(http_stream._session.close())
+    await http_stream._session.close()
 
 
 def test_http_availability_raises_unhandled_error(mocker):

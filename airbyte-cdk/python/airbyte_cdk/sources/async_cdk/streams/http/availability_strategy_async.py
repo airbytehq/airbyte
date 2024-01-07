@@ -8,6 +8,7 @@ from typing import Dict, Optional, Tuple
 
 import requests
 from aiohttp import ClientResponseError
+from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
 from airbyte_cdk.sources.async_cdk.streams.core_async import AsyncStream
 from airbyte_cdk.sources.async_cdk.streams.utils.stream_helper_async import get_first_record_for_slice, get_first_stream_slice
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
@@ -62,7 +63,7 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
         return True, None
 
     async def _handle_http_error(
-        self, stream: AsyncStream, logger: logging.Logger, source: Optional["Source"], error: ClientResponseError
+        self, stream: AsyncStream, logger: logging.Logger, source: Optional["AsyncAbstractSource"], error: ClientResponseError
     ) -> Tuple[bool, Optional[str]]:
         """
         Override this method to define error handling for various `HTTPError`s

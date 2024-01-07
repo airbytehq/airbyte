@@ -17,7 +17,7 @@ from unit_tests.sources.scenario_based.scenario_builder import TestScenario
 #     test_incremental_stream_without_slice_boundaries_with_concurrent_state,
 #     test_incremental_stream_without_slice_boundaries_with_legacy_state,
 # )
-from unit_tests.sources.concurrent_source.async_concurrent_stream_scenarios import (
+from unit_tests.sources.async_cdk.scenario_based.async_concurrent_stream_scenarios import (
     test_concurrent_cdk_multiple_streams,
     test_concurrent_cdk_partition_raises_exception,
     test_concurrent_cdk_single_stream,

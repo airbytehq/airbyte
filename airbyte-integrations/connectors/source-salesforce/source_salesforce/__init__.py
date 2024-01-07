@@ -2,6 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from .source import SourceSalesforce
+from .source import SourceSalesforce, SalesforceSourceDispatcher
 
-__all__ = ["SourceSalesforce"]
+__all__ = ["SourceSalesforce", "SalesforceSourceDispatcher"]

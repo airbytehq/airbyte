@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import asyncio
 import csv
 import io
 import logging
@@ -19,14 +18,14 @@ import pytest
 import requests_mock
 from aioresponses import CallbackResult, aioresponses
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
-from airbyte_cdk.sources.async_cdk import abstract_source_async
+from airbyte_cdk.sources.async_cdk import source_dispatcher
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
 from source_salesforce.api import Salesforce
 from source_salesforce.exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
-from source_salesforce.source import SourceSalesforce
+from source_salesforce.source import SalesforceSourceDispatcher, SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
     BulkIncrementalSalesforceStream,
@@ -66,7 +65,7 @@ _ANY_CONFIG = {}
 def test_login_authentication_error_handler(
     stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error
 ):
-    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+    source = SalesforceSourceDispatcher(SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
     logger = logging.getLogger("airbyte")
     requests_mock.register_uri(
         "POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code
@@ -84,7 +83,7 @@ def test_login_authentication_error_handler(
 
 @pytest.mark.asyncio
 async def test_bulk_sync_creation_failed(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
     await stream.ensure_session()
 
     def callback(*args, **kwargs):
@@ -106,7 +105,7 @@ async def test_bulk_stream_fallback_to_rest(stream_config, stream_api):
     On the other hand, we mock REST API for this same entity with a successful response.
     After having instantiated a BulkStream, sync should succeed in case it falls back to REST API. Otherwise it would throw an error.
     """
-    stream = generate_stream("CustomEntity", stream_config, stream_api)
+    stream = await generate_stream("CustomEntity", stream_config, stream_api)
     await stream.ensure_session()
 
     def callback(*args, **kwargs):
@@ -133,28 +132,30 @@ async def test_bulk_stream_fallback_to_rest(stream_config, stream_api):
     await stream._session.close()
 
 
-def test_stream_unsupported_by_bulk(stream_config, stream_api):
+@pytest.mark.asyncio
+async def test_stream_unsupported_by_bulk(stream_config, stream_api):
     """
     Stream `AcceptedEventRelation` is not supported by BULK API, so that REST API stream will be used for it.
     """
     stream_name = "AcceptedEventRelation"
-    stream = generate_stream(stream_name, stream_config, stream_api)
+    stream = await generate_stream(stream_name, stream_config, stream_api)
     assert not isinstance(stream, BulkSalesforceStream)
 
 
-def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_api_v2):
+@pytest.mark.asyncio
+async def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_api_v2):
     """
     Stream `Account` contains compound field such as BillingAddress, which is not supported by BULK API (csv),
     in that case REST API stream will be used for it.
     """
     stream_name = "Account"
-    stream = generate_stream(stream_name, stream_config, stream_api_v2)
+    stream = await generate_stream(stream_name, stream_config, stream_api_v2)
     assert not isinstance(stream, BulkSalesforceStream)
 
 
 @pytest.mark.asyncio
 async def test_bulk_sync_pagination(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
     await stream.ensure_session()
     job_id = "fake_job"
     call_counter = 0
@@ -211,7 +212,7 @@ async def _get_result_id(stream):
 
 @pytest.mark.asyncio
 async def test_bulk_sync_successful(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
     await stream.ensure_session()
     base_url = f"{stream.sf_api.instance_url}{stream.path()}"
 
@@ -226,7 +227,7 @@ async def test_bulk_sync_successful(stream_config, stream_api):
 
 @pytest.mark.asyncio
 async def test_bulk_sync_successful_long_response(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
     await stream.ensure_session()
     base_url = f"{stream.sf_api.instance_url}{stream.path()}"
 
@@ -243,7 +244,7 @@ async def test_bulk_sync_successful_long_response(stream_config, stream_api):
 @pytest.mark.asyncio
 @pytest.mark.timeout(17)
 async def test_bulk_sync_successful_retry(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
     stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     await stream.ensure_session()
     base_url = f"{stream.sf_api.instance_url}{stream.path()}"
@@ -264,7 +265,7 @@ async def test_bulk_sync_successful_retry(stream_config, stream_api):
 @pytest.mark.asyncio
 @pytest.mark.timeout(30)
 async def test_bulk_sync_failed_retry(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
     stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     await stream.ensure_session()
     base_url = f"{stream.sf_api.instance_url}{stream.path()}"
@@ -280,6 +281,8 @@ async def test_bulk_sync_failed_retry(stream_config, stream_api):
 
     await stream._session.close()
 
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "start_date_provided,stream_name,expected_start_date",
     [
@@ -287,7 +290,7 @@ async def test_bulk_sync_failed_retry(stream_config, stream_api):
         (True, "ActiveFeatureLicenseMetric", "2010-01-18T21:18:20Z"),
     ],
 )
-def test_stream_start_date(
+async def test_stream_start_date(
     start_date_provided,
     stream_name,
     expected_start_date,
@@ -296,27 +299,29 @@ def test_stream_start_date(
     stream_config_without_start_date,
 ):
     if start_date_provided:
-        stream = generate_stream(stream_name, stream_config, stream_api)
+        stream = await generate_stream(stream_name, stream_config, stream_api)
         assert stream.start_date == expected_start_date
     else:
-        stream = generate_stream(stream_name, stream_config_without_start_date, stream_api)
+        stream = await generate_stream(stream_name, stream_config_without_start_date, stream_api)
         assert datetime.strptime(stream.start_date, "%Y-%m-%dT%H:%M:%SZ").year == datetime.now().year - 2
 
 
-def test_stream_start_date_should_be_converted_to_datetime_format(stream_config_date_format, stream_api):
-    stream: IncrementalRestSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config_date_format, stream_api)
+@pytest.mark.asyncio
+async def test_stream_start_date_should_be_converted_to_datetime_format(stream_config_date_format, stream_api):
+    stream: IncrementalRestSalesforceStream = await generate_stream("ActiveFeatureLicenseMetric", stream_config_date_format, stream_api)
     assert stream.start_date == "2010-01-18T00:00:00Z"
 
 
-def test_stream_start_datetime_format_should_not_changed(stream_config, stream_api):
-    stream: IncrementalRestSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config, stream_api)
+@pytest.mark.asyncio
+async def test_stream_start_datetime_format_should_not_changed(stream_config, stream_api):
+    stream: IncrementalRestSalesforceStream = await generate_stream("ActiveFeatureLicenseMetric", stream_config, stream_api)
     assert stream.start_date == "2010-01-18T21:18:20Z"
 
 
 @pytest.mark.asyncio
 async def test_download_data_filter_null_bytes(stream_config, stream_api):
     job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
     await stream.ensure_session()
 
     with aioresponses() as m:
@@ -334,7 +339,7 @@ async def test_download_data_filter_null_bytes(stream_config, stream_api):
 @pytest.mark.asyncio
 async def test_read_with_chunks_should_return_only_object_data_type(stream_config, stream_api):
     job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
     await stream.ensure_session()
 
     with aioresponses() as m:
@@ -347,7 +352,7 @@ async def test_read_with_chunks_should_return_only_object_data_type(stream_confi
 @pytest.mark.asyncio
 async def test_read_with_chunks_should_return_a_string_when_a_string_with_only_digits_is_provided(stream_config, stream_api):
     job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
     await stream.ensure_session()
 
     with aioresponses() as m:
@@ -360,7 +365,7 @@ async def test_read_with_chunks_should_return_a_string_when_a_string_with_only_d
 @pytest.mark.asyncio
 async def test_read_with_chunks_should_return_null_value_when_no_data_is_provided(stream_config, stream_api):
     job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
     await stream.ensure_session()
 
     with aioresponses() as m:
@@ -378,7 +383,7 @@ async def test_read_with_chunks_should_return_null_value_when_no_data_is_provide
 )
 async def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_header, content, expected_result):
     job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
     await stream.ensure_session()
 
     with aioresponses() as m:
@@ -425,32 +430,32 @@ def configure_request_params_mock(stream_1, stream_2):
     stream_2.request_params.return_value = {"q": "query"}
 
 
-@pytest.mark.asyncio
-async def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
+def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
     """
     Connector should stop the sync if one stream reached rate limit
     stream_1, stream_2, stream_3, ...
     While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
     Next streams should not be executed.
     """
-    abstract_source_async.DEFAULT_SESSION_LIMIT = 1  # ensure that only one stream runs at a time
+    source_dispatcher.DEFAULT_SESSION_LIMIT = 1  # ensure that only one stream runs at a time
     stream_config.update({"start_date": "2021-10-01"})
-    stream_1: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
-    stream_2: BulkIncrementalSalesforceStream = generate_stream("Asset", stream_config, stream_api)
+    loop = asyncio.get_event_loop()
+    stream_1: BulkIncrementalSalesforceStream = loop.run_until_complete(generate_stream("Account", stream_config, stream_api))
+    stream_2: BulkIncrementalSalesforceStream = loop.run_until_complete(generate_stream("Asset", stream_config, stream_api))
     streams = [stream_1, stream_2]
     configure_request_params_mock(stream_1, stream_2)
 
     stream_1.page_size = 6
     stream_1.state_checkpoint_interval = 5
 
-    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+    source = SalesforceSourceDispatcher(SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
     source.streams = Mock()
     source.streams.return_value = streams
     logger = logging.getLogger("airbyte")
 
     json_response = {"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}
 
-    orig_read_stream = source._read_stream
+    orig_read_stream = source.async_source.read_stream
 
     async def patched_read_stream(*args, **kwargs):
         base_url = f"{stream_1.sf_api.instance_url}{stream_1.path()}"
@@ -482,7 +487,7 @@ async def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
             async for r in orig_read_stream(**kwargs):
                 yield r
 
-    source._read_stream = patched_read_stream
+    source.async_source.read_stream = patched_read_stream
 
     result = [i for i in source.read(logger=logger, config=stream_config, catalog=bulk_catalog, state=state)]
     assert stream_1.request_params.called
@@ -499,14 +504,14 @@ async def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
 
 @pytest.mark.asyncio
 async def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
-    abstract_source_async.DEFAULT_SESSION_LIMIT = 1  # ensure that only one stream runs at a time
+    source_dispatcher.DEFAULT_SESSION_LIMIT = 1  # ensure that only one stream runs at a time
     stream_config.update({"start_date": "2021-11-01"})
-    stream_1: IncrementalRestSalesforceStream = generate_stream("KnowledgeArticle", stream_config, stream_api)
-    stream_2: IncrementalRestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    stream_1: IncrementalRestSalesforceStream = await generate_stream("KnowledgeArticle", stream_config, stream_api)
+    stream_2: IncrementalRestSalesforceStream = await generate_stream("AcceptedEventRelation", stream_config, stream_api)
     stream_1.state_checkpoint_interval = 3
     configure_request_params_mock(stream_1, stream_2)
 
-    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+    source = SalesforceSourceDispatcher(SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
     source.streams = Mock()
     source.streams.return_value = [stream_1, stream_2]
 
@@ -591,7 +596,7 @@ async def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
 @pytest.mark.asyncio
 async def test_pagination_rest(stream_config, stream_api):
     stream_name = "AcceptedEventRelation"
-    stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api)
+    stream: RestSalesforceStream = await generate_stream(stream_name, stream_config, stream_api)
     stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     next_page_url = "/services/data/v57.0/query/012345"
     await stream.ensure_session()
@@ -807,22 +812,24 @@ def test_csv_field_size_limit():
         pass
 
 
-def test_convert_to_standard_instance(stream_config, stream_api):
-    bulk_stream = generate_stream("Account", stream_config, stream_api)
+@pytest.mark.asyncio
+async def test_convert_to_standard_instance(stream_config, stream_api):
+    bulk_stream = await generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
     assert isinstance(rest_stream, IncrementalRestSalesforceStream)
 
 
-def test_rest_stream_init_with_too_many_properties(stream_config, stream_api_v2_too_many_properties):
+@pytest.mark.asyncio
+async def test_rest_stream_init_with_too_many_properties(stream_config, stream_api_v2_too_many_properties):
     with pytest.raises(AssertionError):
         # v2 means the stream is going to be a REST stream.
         # A missing primary key is not allowed
-        generate_stream("Account", stream_config, stream_api_v2_too_many_properties)
+        await generate_stream("Account", stream_config, stream_api_v2_too_many_properties)
 
 
 @pytest.mark.asyncio
 async def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties, requests_mock):
-    stream = generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
+    stream = await generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
     await stream.ensure_session()
     chunks = list(stream.chunk_properties())
     for chunk in chunks:
@@ -864,7 +871,7 @@ async def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_prop
 
 @pytest.mark.asyncio
 async def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_many_properties):
-    stream = generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
+    stream = await generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
     chunks = list(stream.chunk_properties())
     for chunk in chunks:
         assert stream.primary_key in chunk
@@ -899,7 +906,7 @@ async def test_stream_with_no_records_in_response(stream_config, stream_api_v2_p
     ],
 )
 async def test_bulk_stream_error_in_logs_on_create_job(stream_config, stream_api, status_code, response_json, log_message, caplog):
-    stream = generate_stream("Account", stream_config, stream_api)
+    stream = await generate_stream("Account", stream_config, stream_api)
     await stream.ensure_session()
     url = f"{stream.sf_api.instance_url}/services/data/{stream.sf_api.version}/jobs/query"
 
@@ -928,7 +935,7 @@ async def test_bulk_stream_error_in_logs_on_create_job(stream_config, stream_api
     ],
 )
 async def test_bulk_stream_error_on_wait_for_job(stream_config, stream_api, status_code, response_json, error_message):
-    stream = generate_stream("Account", stream_config, stream_api)
+    stream = await generate_stream("Account", stream_config, stream_api)
     await stream.ensure_session()
     url = f"{stream.sf_api.instance_url}/services/data/{stream.sf_api.version}/jobs/query/queryJobId"
 
@@ -943,7 +950,7 @@ async def test_bulk_stream_error_on_wait_for_job(stream_config, stream_api, stat
 @pytest.mark.asyncio()
 @freezegun.freeze_time("2023-01-01")
 async def test_bulk_stream_slices(stream_config_date_format, stream_api):
-    stream: BulkIncrementalSalesforceStream = generate_stream("FakeBulkStream", stream_config_date_format, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("FakeBulkStream", stream_config_date_format, stream_api)
     stream_slices = [s async for s in stream.stream_slices(sync_mode=SyncMode.full_refresh)]
     expected_slices = []
     today = pendulum.today(tz="UTC")
@@ -963,10 +970,10 @@ async def test_bulk_stream_slices(stream_config_date_format, stream_api):
 @freezegun.freeze_time("2023-04-01")
 async def test_bulk_stream_request_params_states(stream_config_date_format, stream_api, bulk_catalog):
     stream_config_date_format.update({"start_date": "2023-01-01"})
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config_date_format, stream_api)
     await stream.ensure_session()
 
-    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+    source = SalesforceSourceDispatcher(SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
     source.streams = Mock()
     source.streams.return_value = [stream]
     base_url = f"{stream.sf_api.instance_url}{stream.path()}"
@@ -1024,15 +1031,17 @@ async def test_bulk_stream_request_params_states(stream_config_date_format, stre
     assert actual_state_values == expected_state_values
 
 
-def test_request_params_incremental(stream_config_date_format, stream_api):
-    stream = generate_stream("ContentDocument", stream_config_date_format, stream_api)
+@pytest.mark.asyncio
+async def test_request_params_incremental(stream_config_date_format, stream_api):
+    stream = await generate_stream("ContentDocument", stream_config_date_format, stream_api)
     params = stream.request_params(stream_state={}, stream_slice={'start_date': '2020', 'end_date': '2021'})
 
     assert params == {'q': 'SELECT LastModifiedDate, Id FROM ContentDocument WHERE LastModifiedDate >= 2020 AND LastModifiedDate < 2021'}
 
 
-def test_request_params_substream(stream_config_date_format, stream_api):
-    stream = generate_stream("ContentDocumentLink", stream_config_date_format, stream_api)
+@pytest.mark.asyncio
+async def test_request_params_substream(stream_config_date_format, stream_api):
+    stream = await generate_stream("ContentDocumentLink", stream_config_date_format, stream_api)
     params = stream.request_params(stream_state={}, stream_slice={'parents': [{'Id': 1}, {'Id': 2}]})
 
     assert params == {"q": "SELECT LastModifiedDate, Id FROM ContentDocumentLink WHERE ContentDocumentId IN ('1','2')"}
@@ -1042,7 +1051,7 @@ def test_request_params_substream(stream_config_date_format, stream_api):
 @freezegun.freeze_time("2023-03-20")
 async def test_stream_slices_for_substream(stream_config, stream_api):
     stream_config['start_date'] = '2023-01-01'
-    stream: BulkSalesforceSubStream = generate_stream("ContentDocumentLink", stream_config, stream_api)
+    stream: BulkSalesforceSubStream = await generate_stream("ContentDocumentLink", stream_config, stream_api)
     stream.SLICE_BATCH_SIZE = 2  # each ContentDocumentLink should contain 2 records from parent ContentDocument stream
     await stream.ensure_session()
 

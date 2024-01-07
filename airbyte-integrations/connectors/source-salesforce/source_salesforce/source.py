@@ -12,6 +12,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Level, SyncMode
 from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
+from airbyte_cdk.sources.async_cdk.source_dispatcher import SourceDispatcher
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
@@ -58,14 +59,14 @@ class SourceSalesforce(AsyncAbstractSource):
         super().__init__()
 
     @staticmethod
-    def _get_sf_object(config: Mapping[str, Any]) -> Salesforce:
+    async def _get_sf_object(config: Mapping[str, Any]) -> Salesforce:
         sf = Salesforce(**config)
         sf.login()
         return sf
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
+    async def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         try:
-            salesforce = self._get_sf_object(config)
+            salesforce = await self._get_sf_object(config)
             salesforce.describe()
         except exceptions.HTTPError as error:
             error_msg = f"An error occurred: {error.response.text}"
@@ -145,7 +146,7 @@ class SourceSalesforce(AsyncAbstractSource):
         return stream_class, stream_kwargs
 
     @classmethod
-    def generate_streams(
+    async def generate_streams(
         cls,
         config: Mapping[str, Any],
         stream_objects: Mapping[str, Any],
@@ -180,12 +181,12 @@ class SourceSalesforce(AsyncAbstractSource):
             streams.append(stream)
         return streams
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    async def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not config.get("start_date"):
             config["start_date"] = (datetime.now() - relativedelta(years=self.START_DATE_OFFSET_IN_YEARS)).strftime(self.DATETIME_FORMAT)
-        sf = self._get_sf_object(config)
+        sf = await self._get_sf_object(config)
         stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
-        streams = self.generate_streams(config, stream_objects, sf)
+        streams = await self.generate_streams(config, stream_objects, sf)
         streams.append(Describe(sf_api=sf, catalog=self.catalog))
         # TODO: incorporate state & ConcurrentCursor when we support incremental
         configured_streams = []
@@ -200,6 +201,28 @@ class SourceSalesforce(AsyncAbstractSource):
                     return catalog_stream.sync_mode
         return None
 
+    async def read_stream(
+        self,
+        logger: logging.Logger,
+        stream_instance: Stream,
+        configured_stream: ConfiguredAirbyteStream,
+        state_manager: ConnectorStateManager,
+        internal_config: InternalConfig,
+    ) -> Iterator[AirbyteMessage]:
+        try:
+            async for record in super().read_stream(logger, stream_instance, configured_stream, state_manager, internal_config):
+                yield record
+        except aiohttp.ClientResponseError as error:
+            error_data = error._response_error if hasattr(error, "_response_error") else {}
+            error_code = error_data.get("errorCode")
+            url = error.request_info.url
+            if error.status == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
+                raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
+            raise error
+
+
+class SalesforceSourceDispatcher(SourceDispatcher):
     def read(
         self,
         logger: logging.Logger,
@@ -212,24 +235,4 @@ class SourceSalesforce(AsyncAbstractSource):
         try:
             yield from super().read(logger, config, catalog, state)
         except AirbyteStopSync:
-            logger.info(f"Finished syncing {self.name}")
-
-    async def _read_stream(
-        self,
-        logger: logging.Logger,
-        stream_instance: Stream,
-        configured_stream: ConfiguredAirbyteStream,
-        state_manager: ConnectorStateManager,
-        internal_config: InternalConfig,
-    ) -> Iterator[AirbyteMessage]:
-        try:
-            async for record in super()._read_stream(logger, stream_instance, configured_stream, state_manager, internal_config):
-                yield record
-        except aiohttp.ClientResponseError as error:
-            error_data = error._response_error if hasattr(error, "_response_error") else {}
-            error_code = error_data.get("errorCode")
-            url = error.request_info.url
-            if error.status == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
-                raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
-            raise error
+            logger.info(f"Finished syncing {self.async_source.name}")

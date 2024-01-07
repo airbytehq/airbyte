@@ -1,11 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import logging
 
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from unit_tests.sources.scenario_based.scenario_builder import TestScenarioBuilder
-from unit_tests.sources.streams.concurrent.scenarios.async_concurrent_stream_source_builder import (
+from unit_tests.sources.async_cdk.scenario_based.async_concurrent_stream_source_builder import (
     AlwaysAvailableAvailabilityStrategy,
     ConcurrentSourceBuilder,
     LocalAsyncStream,

@@ -38,6 +38,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
+from airbyte_cdk.sources.async_cdk.source_dispatcher import SourceDispatcher
 from airbyte_cdk.sources.async_cdk.streams.core_async import AsyncStream
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
@@ -70,7 +71,7 @@ class MockSource(AsyncAbstractSource):
             return self.check_lambda()
         return False, "Missing callable."
 
-    def streams(self, config: Mapping[str, Any]) -> List[AsyncStream]:
+    async def streams(self, config: Mapping[str, Any]) -> List[AsyncStream]:
         if not self._streams:
             raise Exception("Stream is not set")
         return self._streams
@@ -242,7 +243,7 @@ def test_discover(mocker):
     mocker.patch.object(stream2, "as_airbyte_stream", return_value=airbyte_stream2)
 
     expected = AirbyteCatalog(streams=[airbyte_stream1, airbyte_stream2])
-    src = MockSource(check_lambda=lambda: (True, None), streams=[stream1, stream2])
+    src = SourceDispatcher(MockSource(check_lambda=lambda: (True, None), streams=[stream1, stream2]))
 
     assert expected == src.discover(logger, {})
 
@@ -254,7 +255,7 @@ def test_read_nonexistent_stream_raises_exception(mocker):
 
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
 
-    src = MockSource(streams=[s1])
+    src = SourceDispatcher(MockSource(streams=[s1]))
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
     with pytest.raises(KeyError):
         list(src.read(logger, {}, catalog))
@@ -267,7 +268,7 @@ def test_read_nonexistent_stream_without_raises_exception(mocker):
 
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
 
-    src = MockSource(streams=[s1], exception_on_missing_stream=False)
+    src = SourceDispatcher(MockSource(streams=[s1], exception_on_missing_stream=False))
 
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
     messages = list(src.read(logger, {}, catalog))
@@ -286,7 +287,7 @@ def test_read_stream_emits_repository_message_before_record(mocker, message_repo
     mocker.patch.object(MockStream, "read_records", fake_read_records)
     message_repository.consume_queue.side_effect = [[message for message in [MESSAGE_FROM_REPOSITORY]], []]
 
-    source = MockSource(streams=[stream], message_repository=message_repository)
+    source = SourceDispatcher(MockSource(streams=[stream], message_repository=message_repository))
 
     messages = list(source.read(logger, {}, ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])))
 
@@ -301,7 +302,7 @@ def test_read_stream_emits_repository_message_on_error(mocker, message_repositor
     mocker.patch.object(MockStream, "read_records", side_effect=RuntimeError("error"))
     message_repository.consume_queue.return_value = [message for message in [MESSAGE_FROM_REPOSITORY]]
 
-    source = MockSource(streams=[stream], message_repository=message_repository)
+    source = SourceDispatcher(MockSource(streams=[stream], message_repository=message_repository))
     with pytest.raises(RuntimeError):
         messages = list(source.read(logger, {}, ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])))
         assert MESSAGE_FROM_REPOSITORY in messages
@@ -318,7 +319,7 @@ def test_read_stream_with_error_gets_display_message(mocker):
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
     stream.read_records = read_records_with_error
 
-    source = MockSource(streams=[stream])
+    source = SourceDispatcher(MockSource(streams=[stream]))
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])
 
     # without get_error_display_message
@@ -399,7 +400,7 @@ def test_valid_full_refresh_read_no_slices(mocker):
 
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
 
-    src = MockSource(streams=[s1, s2])
+    src = SourceDispatcher(MockSource(streams=[s1, s2]))
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             _configured_stream(s1, SyncMode.full_refresh),
@@ -444,7 +445,7 @@ def test_valid_full_refresh_read_with_slices(mocker):
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
     mocker.patch.object(MockStream, "stream_slices", _fake_stream_slices)
 
-    src = MockSource(streams=[s1, s2])
+    src = SourceDispatcher(MockSource(streams=[s1, s2]))
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             _configured_stream(s1, SyncMode.full_refresh),
@@ -495,7 +496,7 @@ def test_read_full_refresh_with_slices_sends_slice_messages(mocker, slices):
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
     mocker.patch.object(MockStream, "stream_slices", _fake_stream_slices)
 
-    src = MockSource(streams=[stream])
+    src = SourceDispatcher(MockSource(streams=[stream]))
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             _configured_stream(stream, SyncMode.full_refresh),
@@ -524,7 +525,7 @@ def test_read_incremental_with_slices_sends_slice_messages(mocker):
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
     mocker.patch.object(MockStream, "stream_slices", _fake_stream_slices)
 
-    src = MockSource(streams=[stream])
+    src = SourceDispatcher(MockSource(streams=[stream]))
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             _configured_stream(stream, SyncMode.incremental),
@@ -589,7 +590,7 @@ class TestIncrementalRead:
             return_value=new_state_from_connector,
         )
         mocker.patch.object(MockStreamWithState, "get_json_schema", return_value={})
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = SourceDispatcher(MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled))
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -670,7 +671,7 @@ class TestIncrementalRead:
             return_value=1,
         )
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = SourceDispatcher(MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled))
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -739,7 +740,7 @@ class TestIncrementalRead:
         mocker.patch.object(MockStream, "supports_incremental", return_value=True)
         mocker.patch.object(MockStream, "get_json_schema", return_value={})
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = SourceDispatcher(MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled))
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -828,7 +829,7 @@ class TestIncrementalRead:
         mocker.patch.object(MockStream, "get_json_schema", return_value={})
         mocker.patch.object(MockStream, "stream_slices", _fake_stream_slices)
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = SourceDispatcher(MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled))
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -935,7 +936,7 @@ class TestIncrementalRead:
             return_value=2,
         )
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = SourceDispatcher(MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled))
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -1029,7 +1030,7 @@ class TestIncrementalRead:
             return_value=2,
         )
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = SourceDispatcher(MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled))
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -1146,7 +1147,7 @@ class TestIncrementalRead:
             return_value=2,
         )
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = SourceDispatcher(MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled))
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),

@@ -119,8 +119,8 @@ def stream_api_v2_pk_too_many_properties(stream_config):
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 
-def generate_stream(stream_name, stream_config, stream_api):
-    return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api)[0]
+async def generate_stream(stream_name, stream_config, stream_api):
+    return (await SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api))[0]
 
 
 def encoding_symbols_parameters():
