@@ -7,16 +7,36 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple, TypeVar, Union
+from typing import (
+    Any,
+    AsyncGenerator,
+    Callable,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
 from yarl import URL
 
 import aiohttp
 import aiohttp_client_cache
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.async_cdk.streams.async_call_rate import AsyncCachedLimiterSession, AsyncLimiterSession
+from airbyte_cdk.sources.async_cdk.streams.async_call_rate import (
+    AsyncCachedLimiterSession,
+    AsyncLimiterSession,
+)
 from airbyte_cdk.sources.async_cdk.streams.core_async import AsyncStream
-from airbyte_cdk.sources.async_cdk.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
-from airbyte_cdk.sources.async_cdk.streams.http.exceptions_async import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.async_cdk.streams.http.availability_strategy_async import (
+    AsyncHttpAvailabilityStrategy,
+)
+from airbyte_cdk.sources.async_cdk.streams.http.exceptions_async import (
+    DefaultBackoffException,
+    RequestBodyException,
+    UserDefinedBackoffException,
+)
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.auth import NoAuth
@@ -29,7 +49,27 @@ from .rate_limiting_async import default_backoff_handler, user_defined_backoff_h
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
-T = TypeVar("T")
+T1 = TypeVar("T1")
+T2 = TypeVar("T2")
+T3 = TypeVar("T3")
+T4 = TypeVar("T4")
+RecordsGeneratorFunction = Callable[
+    [
+        aiohttp.ClientRequest,
+        aiohttp.ClientResponse,
+        Mapping[str, Any],
+        Optional[Mapping[str, Any]],
+    ],
+    AsyncGenerator[StreamData, None],
+]
+
+
+"""
+        records_generator_fn: Callable[
+            ,
+            Iterable[StreamData],
+        ],
+"""
 
 
 class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
@@ -39,10 +79,12 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
     Basic building block for users building an Airbyte source for an async HTTP API.
     """
 
-    def __init__(self, authenticator: Optional[Union[HttpAuthenticator, NoAuth]] = NoAuth()):
+    def __init__(
+        self, authenticator: Optional[Union[HttpAuthenticator, NoAuth]] = NoAuth()
+    ):
         # TODO: wire in rate limiting via ApiBudget
         self._api_budget = None
-        self._session: aiohttp.ClientSession = None
+        self._session: Optional[aiohttp.ClientSession] = None
         # TODO: HttpStream handles other authentication codepaths, which may need to be added later
         self._authenticator = authenticator
 
@@ -69,7 +111,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         kwargs = {}
 
         if self._authenticator:
-            kwargs['headers'] = self._authenticator.get_auth_header()
+            kwargs["headers"] = self._authenticator.get_auth_header()
 
         if self.use_cache:
             cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
@@ -79,10 +121,25 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
                 sqlite_path = str(Path(cache_dir) / self.cache_filename)
             else:
                 sqlite_path = "file::memory:?cache=shared"
-            cache = aiohttp_client_cache.SQLiteBackend(cache_name=sqlite_path, allowed_methods=("get", "post", "put", "patch", "options", "delete", "list"))
-            return AsyncCachedLimiterSession(cache=cache, connector=connector, api_budget=self._api_budget)
+            cache = aiohttp_client_cache.SQLiteBackend(
+                cache_name=sqlite_path,
+                allowed_methods=(
+                    "get",
+                    "post",
+                    "put",
+                    "patch",
+                    "options",
+                    "delete",
+                    "list",
+                ),
+            )
+            return AsyncCachedLimiterSession(
+                cache=cache, connector=connector, api_budget=self._api_budget
+            )
         else:
-            return AsyncLimiterSession(connector=connector, api_budget=self._api_budget, **kwargs)
+            return AsyncLimiterSession(
+                connector=connector, api_budget=self._api_budget, **kwargs
+            )
 
     async def clear_cache(self) -> None:
         """
@@ -92,7 +149,9 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
             await self._session.cache.clear()
 
     @abstractmethod
-    async def next_page_token(self, response: aiohttp.ClientResponse) -> Optional[Mapping[str, Any]]:
+    async def next_page_token(
+        self, response: aiohttp.ClientResponse
+    ) -> Optional[Mapping[str, Any]]:
         """
         Override this method to define a pagination strategy.
 
@@ -109,7 +168,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         stream_state: Mapping[str, Any],
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> List[Mapping[str, Any]]:
+    ) -> AsyncGenerator[Mapping[str, Any], None]:
         """
         Parses the raw response object into a list of records.
         By default, this returns an iterable containing the input. Override to parse differently.
@@ -119,6 +178,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         :param next_page_token:
         :return: An iterable containing the parsed response
         """
+        ...
 
     # TODO move all the retry logic to a functor/decorator which is input as an init parameter
     def should_retry(self, response: aiohttp.ClientResponse) -> bool:
@@ -157,7 +217,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
     def _create_prepared_request(
         self,
         path: str,
-        headers: Optional[Mapping[str, str]] = None,
+        headers: Optional[Dict[str, str]] = None,
         params: Optional[Mapping[str, str]] = None,
         json: Optional[Mapping[str, Any]] = None,
         data: Optional[Union[str, Mapping[str, Any]]] = None,
@@ -167,7 +227,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
     def _create_aiohttp_client_request(
         self,
         path: str,
-        headers: Optional[Mapping[str, str]] = None,
+        headers: Optional[Dict[str, str]] = None,
         params: Optional[Mapping[str, str]] = None,
         json_data: Optional[Mapping[str, Any]] = None,
         data: Optional[Union[str, Mapping[str, Any]]] = None,
@@ -186,14 +246,18 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
                 )
             elif json_data:
                 headers = headers or {}
-                headers.update({'Content-Type': 'application/json'})
+                headers.update({"Content-Type": "application/json"})
                 data = json.dumps(json_data)
 
-        client_request = aiohttp.ClientRequest(self.http_method, url, headers=headers, params=query_params, data=data)
+        client_request = aiohttp.ClientRequest(
+            self.http_method, url, headers=headers, params=query_params, data=data
+        )
 
         return client_request
 
-    async def _send(self, request: aiohttp.ClientRequest, request_kwargs: Mapping[str, Any]) -> aiohttp.ClientResponse:
+    async def _send(
+        self, request: aiohttp.ClientRequest, request_kwargs: Mapping[str, Any]
+    ) -> aiohttp.ClientResponse:
         """
         Wraps sending the request in rate limit and error handlers.
         Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
@@ -213,11 +277,21 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
         self.logger.debug(
-            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
+            "Making outbound API request",
+            extra={
+                "headers": request.headers,
+                "url": request.url,
+                "request_body": request.body,
+            },
         )
+        if self._session is None:
+            raise AssertionError(
+                "The session was not set before attempting to make a request. This is unexpected. Please contact Support."
+            )
 
         response = await self._session.request(
-            request.method, request.url,
+            request.method,
+            request.url,
             headers=request.headers,
             auth=request.auth,
             **request_kwargs,
@@ -227,17 +301,26 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         # Do it only in debug mode
         if self.logger.isEnabledFor(logging.DEBUG):
             self.logger.debug(
-                "Receiving response", extra={"headers": response.headers, "status": response.status, "body": response.text}
+                "Receiving response",
+                extra={
+                    "headers": response.headers,
+                    "status": response.status,
+                    "body": response.text,
+                },
             )
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
             error_message = self.error_message(response)
             if custom_backoff_time:
                 raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time, response=response, error_message=error_message
+                    backoff=custom_backoff_time,
+                    response=response,
+                    error_message=error_message,
                 )
             else:
-                raise DefaultBackoffException(response=response, error_message=error_message)
+                raise DefaultBackoffException(
+                    response=response, error_message=error_message
+                )
         elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
             return await self.handle_response_with_error(response)
@@ -248,7 +331,9 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
             self._session = self.request_session()
         return self._session
 
-    async def _send_request(self, request: aiohttp.ClientRequest, request_kwargs: Mapping[str, Any]) -> aiohttp.ClientResponse:
+    async def _send_request(
+        self, request: aiohttp.ClientRequest, request_kwargs: Mapping[str, Any]
+    ) -> aiohttp.ClientResponse:
         """
         Creates backoff wrappers which are responsible for retry logic
         """
@@ -284,15 +369,18 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
 
-        @default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self.retry_factor)
-        @user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)
-        async def send():
-            return await self._send(request, request_kwargs)
-
-        return await send()
+        user_backoff_handler = user_defined_backoff_handler(
+            max_tries=max_tries, max_time=max_time
+        )(self._send)
+        backoff_handler = default_backoff_handler(
+            max_tries=max_tries, max_time=max_time, factor=self.retry_factor
+        )
+        return await backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     @classmethod
-    async def parse_response_error_message(cls, exception: aiohttp.ClientResponseError) -> Optional[str]:
+    async def parse_response_error_message(
+        cls, exception: aiohttp.ClientResponseError
+    ) -> Optional[str]:
         """
         Parses the raw response object from a failed request into a user-friendly error message.
         By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
@@ -300,6 +388,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         :param response:
         :return: A user-friendly message that indicates the cause of the error
         """
+
         # default logic to grab error from common fields
         def _try_get_error(value: Optional[JsonType]) -> Optional[str]:
             if isinstance(value, str):
@@ -322,13 +411,17 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
 
         try:
             if hasattr(exception, "_response_error"):
-                return _try_get_error(exception._response_error)
+                return _try_get_error(exception._response_error)  # type: ignore  # https://github.com/aio-libs/aiohttp/issues/3248
             else:
-                raise NotImplementedError("`_response_error` is expected but was not set on the response; `handle_response_with_error` should be used prior to processing the exception")
+                raise NotImplementedError(
+                    "`_response_error` is expected but was not set on the response; `handle_response_with_error` should be used prior to processing the exception"
+                )
         except json.JSONDecodeError:
             return None
 
-    async def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+    async def get_error_display_message(
+        self, exception: BaseException
+    ) -> Optional[str]:
         """
         Retrieves the user-friendly display message that corresponds to an exception.
         This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
@@ -339,7 +432,10 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         :param exception: The exception that was raised
         :return: A user-friendly message that indicates the cause of the error
         """
-        if isinstance(exception, aiohttp.ClientResponseError) and exception.message is not None:
+        if (
+            isinstance(exception, aiohttp.ClientResponseError)
+            and exception.message is not None
+        ):
             return await self.parse_response_error_message(exception)
         return None
 
@@ -349,35 +445,48 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        async def _records_generator_fn(req, res, state, _slice):
-            async for record in self.parse_response(res, stream_slice=_slice, stream_state=state):
+    ) -> AsyncGenerator[StreamData, None]:
+        async def _records_generator_fn(
+            req, res, state, _slice
+        ) -> AsyncGenerator[StreamData, None]:
+            async for record in self.parse_response(
+                res, stream_slice=_slice, stream_state=state
+            ):
                 yield record
 
-        async for record in self._read_pages(_records_generator_fn, stream_slice, stream_state):
+        async for record in self._read_pages(
+            _records_generator_fn, stream_slice, stream_state
+        ):
             yield record
 
     async def _read_pages(
         self,
-        records_generator_fn: Callable[
-            [aiohttp.ClientRequest, aiohttp.ClientResponse, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
-        ],
+        records_generator_fn: RecordsGeneratorFunction,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
+    ) -> AsyncGenerator[StreamData, None]:
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
         while not pagination_complete:
-            async def f():
+
+            async def f() -> Tuple[
+                aiohttp.ClientRequest,
+                aiohttp.ClientResponse,
+                Optional[Mapping[str, Any]],
+            ]:
                 nonlocal next_page_token
-                request, response = await self._fetch_next_page(stream_slice, stream_state, next_page_token)
+                request, response = await self._fetch_next_page(
+                    stream_slice, stream_state, next_page_token
+                )
                 next_page_token = await self.next_page_token(response)
                 return request, response, next_page_token
 
             request, response, next_page_token = await f()
 
-            async for record in records_generator_fn(request, response, stream_state, stream_slice):
+            async for record in records_generator_fn(
+                request, response, stream_state, stream_slice
+            ):
                 yield record
 
             if not next_page_token:
@@ -389,20 +498,49 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Tuple[aiohttp.ClientRequest, aiohttp.ClientResponse]:
-        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
-            params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        request_headers = self.request_headers(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
         )
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request = self._create_prepared_request(
+            path=self.path(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
+            headers=dict(
+                request_headers,
+                **self.authenticator.get_auth_header() if self.authenticator else {},
+            ),
+            params=self.request_params(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
+            json=self.request_body_json(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
+            data=self.request_body_data(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
+        )
+        request_kwargs = self.request_kwargs(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
 
         response = await self._send_request(request, request_kwargs)
         return request, response
 
-    async def handle_response_with_error(self, response: aiohttp.ClientResponse) -> aiohttp.ClientResponse:
+    async def handle_response_with_error(
+        self, response: aiohttp.ClientResponse
+    ) -> aiohttp.ClientResponse:
         """
         If the response has a non-ok status code, raise an exception, otherwise return the response.
 
@@ -423,11 +561,13 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
             response.request_info,
             response.history,
             status=response.status,
-            message=response.reason,
+            message=response.reason or "",
             headers=response.headers,
         )
         text = await response.text()
-        exc._response_error = error_json or text  # https://github.com/aio-libs/aiohttp/issues/3248
+        exc._response_error = (  # type: ignore  # https://github.com/aio-libs/aiohttp/issues/3248
+            error_json or text
+        )
         self.logger.error(text)
         raise exc
 
@@ -441,15 +581,23 @@ class AsyncHttpSubStream(AsyncHttpStream, ABC):
         self.parent = parent
 
     async def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> AsyncGenerator[Optional[Mapping[str, Any]], None]:
         await self.parent.ensure_session()
         # iterate over all parent stream_slices
         async for stream_slice in self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+            sync_mode=SyncMode.full_refresh,
+            cursor_field=cursor_field,
+            stream_state=stream_state,
         ):
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh,
+                cursor_field=cursor_field,
+                stream_slice=stream_slice,
+                stream_state=stream_state,
             )
 
             # iterate over all parent records with current stream_slice

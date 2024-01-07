@@ -23,32 +23,41 @@ TRANSIENT_EXCEPTIONS = (
     aiohttp.ServerTimeoutError,
     aiohttp.ServerConnectionError,
     aiohttp.ServerDisconnectedError,
-
 )
 
 logger = logging.getLogger("airbyte")
 
 
-SendRequestCallableType = Callable[[aiohttp.ClientRequest, Mapping[str, Any]], Coroutine[Any, Any, aiohttp.ClientResponse]]
+SendRequestCallableType = Callable[
+    [aiohttp.ClientRequest, Mapping[str, Any]],
+    Coroutine[Any, Any, aiohttp.ClientResponse],
+]
 TOO_MANY_REQUESTS_CODE = 429
 
+
 def default_backoff_handler(
-    max_tries: Optional[int], factor: float, max_time: Optional[int] = None, **kwargs: Any
+    max_tries: Optional[int],
+    factor: float,
+    max_time: Optional[int] = None,
+    **kwargs: Any,
 ) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
     def log_retry_attempt(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
         if isinstance(exc, aiohttp.ClientResponseError) and exc.history:
-            logger.info(f"Status code: {exc.status}, Response Content: {'FIX ME'}")  # TODO
+            logger.info(
+                f"Status code: {exc.status}, Response Content: {'FIX ME'}"
+            )  # TODO
         logger.info(
             f"Caught retryable error '{str(exc)}' after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         )
 
     def should_give_up(exc: Exception) -> bool:
-        from requests import codes
         # If a non-rate-limiting related 4XX error makes it this far, it means it was unexpected and probably consistent, so we shouldn't back off
         if isinstance(exc, aiohttp.ClientResponseError):
             give_up: bool = (
-                exc.history is not None and exc.status != TOO_MANY_REQUESTS_CODE and 400 <= exc.status < 500
+                exc.history is not None
+                and exc.status != TOO_MANY_REQUESTS_CODE
+                and 400 <= exc.status < 500
             )
             if give_up:
                 logger.info(f"Giving up for returned HTTP status: {exc.status}")
@@ -76,7 +85,9 @@ def user_defined_backoff_handler(
         _, exc, _ = sys.exc_info()
         if isinstance(exc, UserDefinedBackoffException):
             if exc.history:
-                logger.info(f"Status code: {exc.status}, Response Content: {'FIX ME'}")  # TODO
+                logger.info(
+                    f"Status code: {exc.status}, Response Content: {'FIX ME'}"  # TODO
+                )  # TODO
             retry_after = exc.backoff
             logger.info(f"Retrying. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
@@ -84,7 +95,9 @@ def user_defined_backoff_handler(
     def log_give_up(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
         if isinstance(exc, aiohttp.ClientResponseError):
-            logger.error(f"Max retry limit reached. Request: {exc.request_info}, Response: {exc.history}")  # TODO: how does history get printed out
+            logger.error(
+                f"Max retry limit reached. Request: {exc.request_info}, Response: {exc.history}"
+            )  # TODO: how does history get printed out
         else:
             logger.error("Max retry limit reached for unknown request and response")
 

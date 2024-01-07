@@ -3,14 +3,11 @@
 #
 
 import logging
-import typing
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple
 
-from airbyte_cdk.sources.streams import Stream
-
-if typing.TYPE_CHECKING:
-    from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
+from airbyte_cdk.sources.async_cdk.streams.core_async import AsyncStream
 
 
 class AsyncAvailabilityStrategy(ABC):
@@ -19,7 +16,12 @@ class AsyncAvailabilityStrategy(ABC):
     """
 
     @abstractmethod
-    async def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, Optional[str]]:
+    async def check_availability(
+        self,
+        stream: AsyncStream,
+        logger: logging.Logger,
+        source: Optional["AsyncAbstractSource"],
+    ) -> Tuple[bool, Optional[str]]:
         """
         Checks stream availability.
 

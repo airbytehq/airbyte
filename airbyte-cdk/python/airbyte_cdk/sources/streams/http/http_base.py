@@ -22,8 +22,13 @@ class BaseHttpStream(Stream, ABC):
     Base abstract class for an Airbyte Stream using the HTTP protocol. Basic building block for users building an Airbyte source for a HTTP API.
     """
 
-    source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
-    page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
+    page_size: Optional[
+        int
+    ] = None  # Use this variable to define page size for API http requests with pagination support
+
+    @property
+    def source_defined_cursor(self) -> bool:
+        return True
 
     @property
     def cache_filename(self) -> str:
@@ -102,7 +107,9 @@ class BaseHttpStream(Stream, ABC):
         ...
 
     @abstractmethod
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
         """
         Override this method to define a pagination strategy.
 
@@ -245,7 +252,9 @@ class BaseHttpStream(Stream, ABC):
     def must_deduplicate_query_params(self) -> bool:
         return False
 
-    def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
+    def deduplicate_query_params(
+        self, url: str, params: Optional[Mapping[str, Any]]
+    ) -> Mapping[str, Any]:
         """
         Remove query parameters from params mapping if they are already encoded in the URL.
         :param url: URL with
@@ -257,8 +266,12 @@ class BaseHttpStream(Stream, ABC):
         query_string = urllib.parse.urlparse(url).query
         query_dict = {k: v[0] for k, v in urllib.parse.parse_qs(query_string).items()}
 
-        duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
-        return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
+        duplicate_keys_with_same_value = {
+            k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])
+        }
+        return {
+            k: v for k, v in params.items() if k not in duplicate_keys_with_same_value
+        }
 
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:

@@ -5,27 +5,44 @@
 
 import logging
 import os
-import urllib
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from urllib.parse import urljoin
+from typing import (
+    Any,
+    Callable,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    Union,
+)
 
 import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
-from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.call_rate import (
+    APIBudget,
+    CachedLimiterSession,
+    LimiterSession,
+)
+from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.http.availability_strategy import (
+    HttpAvailabilityStrategy,
+)
 from airbyte_cdk.sources.streams.http.http_base import BaseHttpStream
 from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from requests.auth import AuthBase
 
 from .auth.core import HttpAuthenticator, NoAuth
-from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from .exceptions import (
+    DefaultBackoffException,
+    RequestBodyException,
+    UserDefinedBackoffException,
+)
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
@@ -37,15 +54,24 @@ class HttpStream(BaseHttpStream, ABC):
     Base abstract class for an Airbyte Stream using the HTTP protocol. Basic building block for users building an Airbyte source for a HTTP API.
     """
 
-    source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
-    page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
+    page_size: Optional[
+        int
+    ] = None  # Use this variable to define page size for API http requests with pagination support
 
     # TODO: remove legacy HttpAuthenticator authenticator references
-    def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
+    def __init__(
+        self,
+        authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None,
+        api_budget: Optional[APIBudget] = None,
+    ):
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
         self._session = self.request_session()
         self._session.mount(
-            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+            "https://",
+            requests.adapters.HTTPAdapter(
+                pool_connections=MAX_CONNECTION_POOL_SIZE,
+                pool_maxsize=MAX_CONNECTION_POOL_SIZE,
+            ),
         )
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
@@ -86,7 +112,9 @@ class HttpStream(BaseHttpStream, ABC):
         return HttpAvailabilityStrategy()
 
     @abstractmethod
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
         """
         Override this method to define a pagination strategy.
 
@@ -173,7 +201,12 @@ class HttpStream(BaseHttpStream, ABC):
             query_params = self.deduplicate_query_params(url, params)
         else:
             query_params = params or {}
-        args = {"method": self.http_method, "url": url, "headers": headers, "params": query_params}
+        args = {
+            "method": self.http_method,
+            "url": url,
+            "headers": headers,
+            "params": query_params,
+        }
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -183,11 +216,15 @@ class HttpStream(BaseHttpStream, ABC):
                 args["json"] = json
             elif data:
                 args["data"] = data
-        prepared_request: requests.PreparedRequest = self._session.prepare_request(requests.Request(**args))
+        prepared_request: requests.PreparedRequest = self._session.prepare_request(
+            requests.Request(**args)
+        )
 
         return prepared_request
 
-    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    def _send(
+        self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]
+    ) -> requests.Response:
         """
         Wraps sending the request in rate limit and error handlers.
         Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
@@ -207,7 +244,12 @@ class HttpStream(BaseHttpStream, ABC):
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
         self.logger.debug(
-            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
+            "Making outbound API request",
+            extra={
+                "headers": request.headers,
+                "url": request.url,
+                "request_body": request.body,
+            },
         )
         response: requests.Response = self._session.send(request, **request_kwargs)
 
@@ -215,17 +257,27 @@ class HttpStream(BaseHttpStream, ABC):
         # Do it only in debug mode
         if self.logger.isEnabledFor(logging.DEBUG):
             self.logger.debug(
-                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+                "Receiving response",
+                extra={
+                    "headers": response.headers,
+                    "status": response.status_code,
+                    "body": response.text,
+                },
             )
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
             error_message = self.error_message(response)
             if custom_backoff_time:
                 raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time, request=request, response=response, error_message=error_message
+                    backoff=custom_backoff_time,
+                    request=request,
+                    response=response,
+                    error_message=error_message,
                 )
             else:
-                raise DefaultBackoffException(request=request, response=response, error_message=error_message)
+                raise DefaultBackoffException(
+                    request=request, response=response, error_message=error_message
+                )
         elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
             try:
@@ -235,7 +287,9 @@ class HttpStream(BaseHttpStream, ABC):
                 raise exc
         return response
 
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    def _send_request(
+        self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]
+    ) -> requests.Response:
         """
         Creates backoff wrappers which are responsible for retry logic
         """
@@ -271,8 +325,12 @@ class HttpStream(BaseHttpStream, ABC):
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
 
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
-        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self.retry_factor)
+        user_backoff_handler = user_defined_backoff_handler(
+            max_tries=max_tries, max_time=max_time
+        )(self._send)
+        backoff_handler = default_backoff_handler(
+            max_tries=max_tries, max_time=max_time, factor=self.retry_factor
+        )
         return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     @classmethod
@@ -334,13 +392,23 @@ class HttpStream(BaseHttpStream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
+            lambda req, res, state, _slice: self.parse_response(
+                res, stream_slice=_slice, stream_state=state
+            ),
+            stream_slice,
+            stream_state,
         )
 
     def _read_pages(
         self,
         records_generator_fn: Callable[
-            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+            [
+                requests.PreparedRequest,
+                requests.Response,
+                Mapping[str, Any],
+                Optional[Mapping[str, Any]],
+            ],
+            Iterable[StreamData],
         ],
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
@@ -349,8 +417,12 @@ class HttpStream(BaseHttpStream, ABC):
         pagination_complete = False
         next_page_token = None
         while not pagination_complete:
-            request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token)
-            yield from records_generator_fn(request, response, stream_state, stream_slice)
+            request, response = self._fetch_next_page(
+                stream_slice, stream_state, next_page_token
+            )
+            yield from records_generator_fn(
+                request, response, stream_state, stream_slice
+            )
 
             next_page_token = self.next_page_token(response)
             if not next_page_token:
@@ -365,15 +437,39 @@ class HttpStream(BaseHttpStream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
-        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
-            params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        request_headers = self.request_headers(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
         )
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request = self._create_prepared_request(
+            path=self.path(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params=self.request_params(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
+            json=self.request_body_json(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
+            data=self.request_body_data(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
+        )
+        request_kwargs = self.request_kwargs(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
 
         response = self._send_request(request, request_kwargs)
         return request, response
@@ -388,16 +484,24 @@ class HttpSubStream(HttpStream, ABC):
         self.parent = parent
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+            sync_mode=SyncMode.full_refresh,
+            cursor_field=cursor_field,
+            stream_state=stream_state,
         )
 
         # iterate over all parent stream_slices
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh,
+                cursor_field=cursor_field,
+                stream_slice=stream_slice,
+                stream_state=stream_state,
             )
 
             # iterate over all parent records with current stream_slice
