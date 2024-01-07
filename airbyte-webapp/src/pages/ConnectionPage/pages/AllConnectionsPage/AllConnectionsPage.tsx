@@ -88,7 +88,7 @@ const AllConnectionsPage: React.FC = () => {
 
   const initialFiltersState = {
     workspaceId: workspace.workspaceId,
-    pageSize: currentPageSize,
+    pageSize: query.pageSize ? JSON.parse(query.pageSize) : pageConfig.connection.pageSize,
     pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
     status: statusOptions[0].value,
     sourceDefinitionId: sourceOptions[0].value,
@@ -226,22 +226,22 @@ const AllConnectionsPage: React.FC = () => {
       queryParams.set("sortBy", query.sortBy ?? "");
       queryParams.set("order", query.order ?? "");
       queryParams.set("pageCurrent", `${filters.pageCurrent}`);
+      queryParams.set("pageSize", `${filters.pageSize}`);
 
       // Preserve existing query parameters
       const existingParams = new URLSearchParams(location.search);
       existingParams.forEach((value, key) => {
-        if (key !== "sortBy" && key !== "order" && key !== "pageCurrent") {
+        if (key !== "sortBy" && key !== "order" && key !== "pageCurrent" && key !== "pageSize") {
           queryParams.set(key, value);
         }
       });
-
       // Update the URL with the new parameters
       push({
         pathname,
         search: queryParams.toString(),
       });
     }
-  }, [filters.pageCurrent]);
+  }, [filters.pageCurrent, filters.pageSize]);
 
   // useEffect(() => {
   //   if (hasConnections()) {
@@ -250,10 +250,11 @@ const AllConnectionsPage: React.FC = () => {
   // }, [filters.pageCurrent]);
 
   useEffect(() => {
-    if (Object.keys(query).length > 2 && query?.pageCurrent !== undefined) {
+    if (Object.keys(query).length > 2 && query?.pageCurrent !== undefined && query?.pageSize !== undefined) {
       setFilters({
         ...filters,
         pageCurrent: JSON.parse(query.pageCurrent),
+        pageSize: JSON.parse(query.pageSize),
         sortDetails: {
           sortDirection: query.order,
           sortFieldName: query.sortBy,
@@ -342,6 +343,7 @@ const AllConnectionsPage: React.FC = () => {
               statusSortOrder={statusSortOrder}
               setStatusSortOrder={setStatusSortOrder}
               pageCurrent={filters.pageCurrent}
+              pageSize={filters.pageSize}
               // connectionStatus={connectionStatusList as any}
             />
             <Separator height="24px" />

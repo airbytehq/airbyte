@@ -32,6 +32,7 @@ interface IProps {
   statusSortOrder?: any;
   setStatusSortOrder?: any;
   pageCurrent?: any;
+  pageSize?: any;
 }
 
 const NewConnectionsTable: React.FC<IProps> = ({
@@ -48,6 +49,7 @@ const NewConnectionsTable: React.FC<IProps> = ({
   statusSortOrder,
   setStatusSortOrder,
   pageCurrent,
+  pageSize,
 }) => {
   const [statusList, setStatusList] = useState([]);
   const user = getUser();
@@ -112,6 +114,7 @@ const NewConnectionsTable: React.FC<IProps> = ({
         statusSortOrder={statusSortOrder}
         setStatusSortOrder={setStatusSortOrder}
         pageCurrent={pageCurrent}
+        pageSize={pageSize}
       />
     </Content>
   );
