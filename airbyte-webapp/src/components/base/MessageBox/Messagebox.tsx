@@ -80,9 +80,11 @@ export const MessageBox: React.FC<IProps> = ({ message, onClose, type, position,
       <Message type={type} position={position}>
         {isString ? message : <FormattedMessage id={message} />}
       </Message>
-      <CrossButton onClick={onClose}>
-        <CrossIcon color={type === "error" ? "#991B1B" : "currentColor"} />
-      </CrossButton>
+      {message === "connection.configuration.inprogress" ? null : (
+        <CrossButton onClick={onClose}>
+          <CrossIcon color={type === "error" ? "#991B1B" : "currentColor"} />
+        </CrossButton>
+      )}
     </Container>
   );
 };

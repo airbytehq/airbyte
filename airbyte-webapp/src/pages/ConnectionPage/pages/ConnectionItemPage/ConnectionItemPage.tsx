@@ -10,6 +10,7 @@ import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useHealth } from "hooks/services/Health";
 import { connectionsKeys, useGetConnection } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
@@ -22,10 +23,12 @@ import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 
 const ConnectionItemPage: React.FC = () => {
   const { push, pathname } = useRouter();
+  const { healthData } = useHealth();
   const params = useParams<{
     connectionId: string;
     "*": ConnectionSettingsRoutes;
   }>();
+
   const connectionId = params.connectionId || "";
   const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
   const connection = useGetConnection(connectionId);
@@ -50,7 +53,7 @@ const ConnectionItemPage: React.FC = () => {
       frequency: getFrequencyType(connection.scheduleData?.basicSchedule),
     });
 
-    onOpenMessageBox("connection.messagebox.saveChange");
+    onOpenMessageBox("connection.configuration.inprogress");
   };
   const isConnectionDeleted = connection?.status === ConnectionStatus.deprecated;
 
@@ -106,7 +109,12 @@ const ConnectionItemPage: React.FC = () => {
         <LoadingPage />
       ) : (
         <>
-          <MessageBox message={messageId} onClose={() => setMessageId("")} type="info" position="center" />
+          <MessageBox
+            message={messageId}
+            onClose={() => setMessageId("")}
+            type={messageId === "connection.configuration.inprogress" ? "error" : "info"}
+            position="center"
+          />
           <HeadTitle
             titles={[
               { id: "connection.pageTitle" },
@@ -146,7 +154,13 @@ const ConnectionItemPage: React.FC = () => {
               />
               <Route
                 path={ConnectionSettingsRoutes.CONFIGURATIONS}
-                element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
+                element={
+                  <ReplicationView
+                    onAfterSaveSchema={onAfterSaveSchema}
+                    connectionId={connectionId}
+                    healthData={healthData}
+                  />
+                }
               />
               <Route
                 path={ConnectionSettingsRoutes.DANGERZONE}

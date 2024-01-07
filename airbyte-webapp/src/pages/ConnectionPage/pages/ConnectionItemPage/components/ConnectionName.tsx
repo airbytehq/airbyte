@@ -28,7 +28,7 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
   const [loading, setLoading] = useState(false);
   const [connectionName, setConnectionName] = useState<string | undefined>(connection.name);
   const [connectionNameBackup, setConnectionNameBackup] = useState(connectionName);
-  const { mutateAsync: updateConnection } = useUpdateConnection();
+  const { mutateAsync: updateConnection } = useUpdateConnection(connection?.connectionId);
   // const isSmallScreen = theme.breakpoints.up("sm");
 
   const inputChange = ({ currentTarget: { value } }: ChangeEvent<HTMLInputElement>) => setConnectionName(value);

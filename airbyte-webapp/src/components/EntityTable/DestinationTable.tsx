@@ -1,9 +1,11 @@
 import { IconButton } from "@mui/material";
-import { useMemo } from "react";
+import queryString from "query-string";
+import { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
+import { SortDescIcon } from "components/icons/SortDescIcon";
 import { SortDownIcon } from "components/icons/SortDownIcon";
 import { SortUpIcon } from "components/icons/SortUpIcon";
 import Table from "components/Table";
@@ -31,6 +33,9 @@ interface IProps {
   setLocalSortOrder?: any;
   destinationSortOrder?: any;
   setDestinationSortOrder?: any;
+  query?: any;
+  push?: any;
+  pageCurrent?: any;
 }
 
 const NameColums = styled.div`
@@ -48,15 +53,62 @@ const DestinationTable: React.FC<IProps> = ({
   setLocalSortOrder,
   destinationSortOrder,
   setDestinationSortOrder,
+  // pageCurrent,
 }) => {
-  const { push } = useRouter();
-
+  const { query, push } = useRouter();
+  const sortBy = query.sortBy;
+  const sortOrder = query.order;
   const routerPath = entity === "destination" ? RoutePaths.Destination : RoutePaths.Destination;
   const clickEditRow = (destinationId: string) => push(`/${routerPath}/${destinationId}`);
 
   const clickCopyRow = (destinationId: string) => {
     push(`${destinationId}/copy`, {});
   };
+  const onSortClick = useCallback(
+    (field: string) => {
+      let newSortOrder: SortOrderEnum | "" = "";
+
+      if (sortBy !== field) {
+        // Clicking on a new column
+        newSortOrder = SortOrderEnum.ASC;
+      } else {
+        // Clicking on the same column
+        newSortOrder =
+          sortOrder === SortOrderEnum.ASC
+            ? SortOrderEnum.DESC
+            : sortOrder === SortOrderEnum.DESC
+            ? ""
+            : SortOrderEnum.ASC;
+      }
+      /*
+       const newSearchParams: { sortBy?: string; order?: string,pageCurrent?:string|number} = {};
+      console.log(newSearchParams,'sortfunc')
+      if (newSortOrder !== "") {
+        newSearchParams.sortBy = field;
+        newSearchParams.order = newSortOrder;
+        newSearchParams.pageCurrent=pageCurrent
+      } else {
+        newSearchParams.sortBy = "";
+        newSearchParams.order = "";
+        newSearchParams.pageCurrent=pageCurrent
+      }
+     */
+
+      const newSearchParams: { sortBy?: string; order?: string } = {};
+      if (newSortOrder !== "") {
+        newSearchParams.sortBy = field;
+        newSearchParams.order = newSortOrder;
+      } else {
+        newSearchParams.sortBy = "";
+        newSearchParams.order = "";
+      }
+
+      push({
+        search: queryString.stringify(newSearchParams, { skipNull: true }),
+      });
+    },
+    [push, sortBy, sortOrder, query]
+  );
 
   const columns = useMemo(
     () => [
@@ -67,17 +119,26 @@ const DestinationTable: React.FC<IProps> = ({
             <IconButton
               onClick={() => {
                 setSortFieldName("name");
+                onSortClick("name");
                 setLocalSortOrder((prev: any) => {
-                  const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
+                  const newSortOrder =
+                    prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
                   setSortDirection(newSortOrder);
-                  onSelectFilter("sortFieldName", "name");
-                  onSelectFilter("sortDirection", newSortOrder);
+                  setDestinationSortOrder("");
+                  onSelectFilter("sortFieldName", "name", query);
+                  onSelectFilter("sortDirection", newSortOrder, query);
                   return newSortOrder;
                 });
               }}
               sx={{ paddingTop: "1px" }}
             >
-              {localSortOrder === SortOrderEnum.ASC ? <SortDownIcon /> : <SortUpIcon />}
+              {localSortOrder === "" ? (
+                <SortUpIcon />
+              ) : localSortOrder === SortOrderEnum.ASC ? (
+                <SortDownIcon />
+              ) : (
+                <SortDescIcon />
+              )}
             </IconButton>
           </div>
         ),
@@ -98,16 +159,25 @@ const DestinationTable: React.FC<IProps> = ({
             <IconButton
               onClick={() => {
                 setSortFieldName("destinationName");
+                onSortClick("destinationName");
                 setDestinationSortOrder((prev: any) => {
-                  const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
-                  onSelectFilter("sortFieldName", "destinationName");
-                  onSelectFilter("sortDirection", newSortOrder);
+                  const newSortOrder =
+                    prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
+                  setLocalSortOrder("");
+                  onSelectFilter("sortFieldName", "destinationName", query);
+                  onSelectFilter("sortDirection", newSortOrder, query);
                   return newSortOrder;
                 });
               }}
               sx={{ paddingTop: "1px" }}
             >
-              {destinationSortOrder === SortOrderEnum.ASC ? <SortDownIcon /> : <SortUpIcon />}
+              {destinationSortOrder === "" ? (
+                <SortUpIcon />
+              ) : destinationSortOrder === SortOrderEnum.ASC ? (
+                <SortDownIcon />
+              ) : (
+                <SortDescIcon />
+              )}
             </IconButton>
           </div>
         ),

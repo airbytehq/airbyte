@@ -1,5 +1,6 @@
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Box } from "@mui/material";
 import React, { useCallback, useRef, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useQueryClient } from "react-query";
@@ -32,6 +33,7 @@ import { ConnectionForm, ConnectionFormSubmitResult } from "views/Connection/Con
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
   connectionId: string;
+  healthData?: any;
 }
 
 interface ResetWarningModalProps {
@@ -105,7 +107,7 @@ const TryArrow = styled(FontAwesomeIcon)`
   font-size: 14px;
 `;
 
-export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
+export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId, healthData }) => {
   const { formatMessage } = useIntl();
   const { push } = useRouter();
   const { openModal, closeModal } = useModalService();
@@ -117,7 +119,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const connectionService = useConnectionService();
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
 
-  const { mutateAsync: updateConnection } = useUpdateConnection();
+  const { mutateAsync: updateConnection } = useUpdateConnection(connectionId);
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
 
@@ -253,6 +255,28 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   return (
     <Content>
+      {healthData?.available &&
+      healthData?.connectionUpdate &&
+      healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId) ? (
+        <Box mt={2}>
+          <Alert
+            formattedMessage={
+              healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
+              "SUCCESS" ? (
+                <FormattedMessage id="connection.configuration.success" />
+              ) : healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status ===
+                "FAILURE" ? (
+                <FormattedMessage id="connection.configuration.failure" />
+              ) : null
+            }
+            bgColor={
+              healthData?.connectionUpdate.find((item: any) => item.connectionId === connectionId).status === "SUCCESS"
+                ? "#EFF6FF"
+                : "#FEF2F2"
+            }
+          />
+        </Box>
+      ) : null}
       {errorMessage?.length > 0 && (
         <Alert
           formattedMessage={<FormattedMessage id="connection.sync.error" />}
@@ -265,9 +289,11 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         <ConnectionForm
           mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
           connection={connection}
+          connectionId={connectionId}
           onSubmit={onSubmitForm}
           onCancel={onCancelConnectionFormEdit}
           canSubmitUntouchedForm={activeUpdatingSchemaMode}
+          healthData={healthData}
           additionalSchemaControl={
             <Tooltip
               placement="top"

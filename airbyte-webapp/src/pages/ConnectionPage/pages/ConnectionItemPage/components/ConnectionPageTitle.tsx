@@ -8,9 +8,9 @@ import StepsMenu from "components/StepsMenu";
 import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import useRouter from "hooks/useRouter";
 
-import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 import styles from "./ConnectionPageTitle.module.scss";
 import { StatusMainInfo } from "./StatusMainInfo";
+import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 
 interface ConnectionPageTitleProps {
   source: SourceRead;
@@ -34,7 +34,6 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
   onSync,
 }) => {
   const { push } = useRouter<{ id: string }>();
-
   const steps = useMemo(() => {
     const steps = [
       {

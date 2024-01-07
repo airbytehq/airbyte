@@ -1,9 +1,11 @@
 import { IconButton } from "@mui/material";
-import { useMemo } from "react";
+import queryString from "query-string";
+import { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
+import { SortDescIcon } from "components/icons/SortDescIcon";
 import { SortDownIcon } from "components/icons/SortDownIcon";
 import { SortUpIcon } from "components/icons/SortUpIcon";
 import Table from "components/Table";
@@ -48,8 +50,54 @@ const SourceTable: React.FC<IProps> = ({
   sourceSortOrder,
   setSourceSortOrder,
 }) => {
-  const { push } = useRouter();
+  const { query, push } = useRouter();
+  const sortBy = query.sortBy;
+  const sortOrder = query.order;
+  const onSortClick = useCallback(
+    (field: string) => {
+      let newSortOrder: SortOrderEnum | "" = "";
 
+      if (sortBy !== field) {
+        // Clicking on a new column
+        newSortOrder = SortOrderEnum.ASC;
+      } else {
+        // Clicking on the same column
+        newSortOrder =
+          sortOrder === SortOrderEnum.ASC
+            ? SortOrderEnum.DESC
+            : sortOrder === SortOrderEnum.DESC
+            ? ""
+            : SortOrderEnum.ASC;
+      }
+      /*
+       const newSearchParams: { sortBy?: string; order?: string,pageCurrent?:string|number} = {};
+      console.log(newSearchParams,'sortfunc')
+      if (newSortOrder !== "") {
+        newSearchParams.sortBy = field;
+        newSearchParams.order = newSortOrder;
+        newSearchParams.pageCurrent=pageCurrent
+      } else {
+        newSearchParams.sortBy = "";
+        newSearchParams.order = "";
+        newSearchParams.pageCurrent=pageCurrent
+      }
+     */
+
+      const newSearchParams: { sortBy?: string; order?: string } = {};
+      if (newSortOrder !== "") {
+        newSearchParams.sortBy = field;
+        newSearchParams.order = newSortOrder;
+      } else {
+        newSearchParams.sortBy = "";
+        newSearchParams.order = "";
+      }
+
+      push({
+        search: queryString.stringify(newSearchParams, { skipNull: true }),
+      });
+    },
+    [push, sortBy, sortOrder, query]
+  );
   const routerPath = entity === "source" ? RoutePaths.Source : RoutePaths.Destination;
   const clickEditRow = (sourceId: string) => push(`/${routerPath}/${sourceId}`);
 
@@ -66,17 +114,27 @@ const SourceTable: React.FC<IProps> = ({
             <IconButton
               onClick={() => {
                 setSortFieldName("name");
+                onSortClick("name");
                 setLocalSortOrder((prev: any) => {
-                  const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
+                  const newSortOrder =
+                    prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
+                  // const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
                   setSortDirection(newSortOrder);
-                  onSelectFilter("sortFieldName", "name");
+                  setSourceSortOrder("");
+                  onSelectFilter("sortFieldName", "name", query);
                   onSelectFilter("sortDirection", newSortOrder);
                   return newSortOrder;
                 });
               }}
               sx={{ paddingTop: "1px" }}
             >
-              {localSortOrder === SortOrderEnum.ASC ? <SortDownIcon /> : <SortUpIcon />}
+              {localSortOrder === "" ? (
+                <SortUpIcon />
+              ) : localSortOrder === SortOrderEnum.ASC ? (
+                <SortDownIcon />
+              ) : (
+                <SortDescIcon />
+              )}
             </IconButton>
           </div>
         ),
@@ -98,16 +156,25 @@ const SourceTable: React.FC<IProps> = ({
             <IconButton
               onClick={() => {
                 setSortFieldName("sourceName");
+                onSortClick("sourceName");
                 setSourceSortOrder((prev: any) => {
-                  const newSortOrder = prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
-                  onSelectFilter("sortFieldName", "sourceName");
+                  const newSortOrder =
+                    prev === "" ? SortOrderEnum.ASC : prev === SortOrderEnum.ASC ? SortOrderEnum.DESC : "";
+                  setLocalSortOrder("");
+                  onSelectFilter("sortFieldName", "sourceName", query);
                   onSelectFilter("sortDirection", newSortOrder);
                   return newSortOrder;
                 });
               }}
               sx={{ paddingTop: "1px" }}
             >
-              {sourceSortOrder === SortOrderEnum.ASC ? <SortDownIcon /> : <SortUpIcon />}
+              {sourceSortOrder === "" ? (
+                <SortUpIcon />
+              ) : sourceSortOrder === SortOrderEnum.ASC ? (
+                <SortDownIcon />
+              ) : (
+                <SortDescIcon />
+              )}
             </IconButton>
           </div>
         ),

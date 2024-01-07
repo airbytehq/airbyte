@@ -9,7 +9,6 @@ import styled from "styled-components";
 import { Button, LoadingPage, NewMainPageWithScroll, PageTitle, DropDown, DropDownRow } from "components";
 import MessageBox from "components/base/MessageBox";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
-import { SortOrderEnum } from "components/EntityTable/types";
 import HeadTitle from "components/HeadTitle";
 import { PageSize } from "components/PageSize";
 import { Pagination } from "components/Pagination";
@@ -70,16 +69,17 @@ const Footer = styled.div`
 
 const AllConnectionsPage: React.FC = () => {
   // const CONNECTION_PAGE_SIZE = 10;
-  const { push, pathname, query } = useRouter();
+  const { push, query } = useRouter();
+  // const { push, pathname, query } = useRouter();
   const [messageId, setMessageId] = useState<string | undefined>("");
   const [pageConfig, updatePageSize] = usePageConfig();
   const [currentPageSize, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
   const [sortFieldName, setSortFieldName] = useState("");
   const [sortDirection, setSortDirection] = useState("");
-  const [localSortOrder, setLocalSortOrder] = useState(SortOrderEnum.DESC);
-  const [connectorSortOrder, setConnectorSortOrder] = useState(SortOrderEnum.DESC);
-  const [entitySortOrder, setEntitySortOrder] = useState(SortOrderEnum.DESC);
-  const [statusSortOrder, setStatusSortOrder] = useState(SortOrderEnum.DESC);
+  const [localSortOrder, setLocalSortOrder] = useState("");
+  const [connectorSortOrder, setConnectorSortOrder] = useState("");
+  const [entitySortOrder, setEntitySortOrder] = useState("");
+  const [statusSortOrder, setStatusSortOrder] = useState("");
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const workspace = useCurrentWorkspace();
   const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions(workspace.workspaceId);
@@ -96,15 +96,7 @@ const AllConnectionsPage: React.FC = () => {
       sortDirection,
     },
   };
-  useEffect(() => {
-    // Set initial sort order to DESC when the component mounts
-    setSortFieldName("name");
-    onSelectFilter("sortFieldName", "name");
-    setLocalSortOrder(SortOrderEnum.DESC);
-    setConnectorSortOrder(SortOrderEnum.DESC);
-    setStatusSortOrder(SortOrderEnum.DESC);
-    setEntitySortOrder(SortOrderEnum.DESC);
-  }, []);
+
   const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
 
   const { connections, total, pageSize } = useFilteredConnectionList(filters);
@@ -144,9 +136,10 @@ const AllConnectionsPage: React.FC = () => {
         | "pageSize"
         | "sortDirection"
         | "sortFieldName",
-      filterValue: number | string
+      filterValue: number | string,
+      query?: any
     ) => {
-      setFilters((prevFilters) => {
+      setFilters((prevFilters: any) => {
         if (
           filterType === "destinationDefinitionId" ||
           filterType === "pageSize" ||
@@ -164,14 +157,42 @@ const AllConnectionsPage: React.FC = () => {
             pageCurrent: prevFilters.pageCurrent,
           };
         } else if (filterType === "pageCurrent") {
-          setLocalSortOrder(SortOrderEnum.DESC);
-          setConnectorSortOrder(SortOrderEnum.DESC);
-          setStatusSortOrder(SortOrderEnum.DESC);
-          setEntitySortOrder(SortOrderEnum.DESC);
+          const querySortBy = query?.sortBy ?? "";
+          if (querySortBy === "name") {
+            setLocalSortOrder(query?.order ?? "");
+            setConnectorSortOrder("");
+            setStatusSortOrder("");
+            setEntitySortOrder("");
+          } else if (querySortBy === "connectorName") {
+            setConnectorSortOrder(query?.order ?? "");
+            setLocalSortOrder("");
+            setStatusSortOrder("");
+            setEntitySortOrder("");
+          } else if (querySortBy === "entityName") {
+            setEntitySortOrder(query?.order ?? "");
+            setLocalSortOrder("");
+            setStatusSortOrder("");
+            setConnectorSortOrder("");
+          } else if (querySortBy === "status") {
+            setStatusSortOrder(query?.order ?? "");
+            setLocalSortOrder("");
+            setConnectorSortOrder("");
+            setEntitySortOrder("");
+          } else {
+            setEntitySortOrder("");
+            setStatusSortOrder("");
+            setConnectorSortOrder("");
+            setLocalSortOrder("");
+          }
+
+          const sortOrder = querySortBy
+            ? { sortFieldName: querySortBy, sortDirection: query?.order }
+            : { sortFieldName: "", sortDirection: "" };
+
           return {
-            ...filters,
-            [filterType]: filterValue as number,
-            sortDetails: { sortFieldName: "", sortDirection: "" },
+            ...prevFilters,
+            [filterType]: filterValue,
+            sortDetails: sortOrder,
           };
         }
         return prevFilters;
@@ -191,22 +212,26 @@ const AllConnectionsPage: React.FC = () => {
     (size: number) => {
       setCurrentPageSize(size);
       updatePageSize("connection", size);
-      onSelectFilter("pageSize", size);
+      onSelectFilter("pageSize", size, query);
     },
     [onSelectFilter]
   );
-
   useEffect(() => {
     if (hasConnections()) {
-      push({ pathname, search: `?pageCurrent=${filters.pageCurrent}` });
     }
   }, [filters.pageCurrent]);
 
-  useEffect(() => {
-    if (Object.keys(query).length > 2 && query?.pageCurrent !== undefined) {
-      setFilters({ ...filters, pageCurrent: JSON.parse(query.pageCurrent) });
-    }
-  }, [query]);
+  // useEffect(() => {
+  //   if (hasConnections()) {
+  //     push({ pathname, search: `?pageCurrent=${filters.pageCurrent}` });
+  //   }
+  // }, [filters.pageCurrent]);
+
+  // useEffect(() => {
+  //   if (Object.keys(query).length > 2 && query?.pageCurrent !== undefined) {
+  //     setFilters({ ...filters, pageCurrent: JSON.parse(query.pageCurrent) });
+  //   }
+  // }, [query]);
 
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
@@ -244,7 +269,7 @@ const AllConnectionsPage: React.FC = () => {
                   $background="white"
                   value={filters.status}
                   options={statusOptions}
-                  onChange={(option: DropDownRow.IDataItem) => onSelectFilter("status", option.value)}
+                  onChange={(option: DropDownRow.IDataItem) => onSelectFilter("status", option.value, query)}
                 />
               </DDContainer>
               <DDContainer margin="0 24px 0 0">
@@ -253,7 +278,9 @@ const AllConnectionsPage: React.FC = () => {
                   $background="white"
                   value={filters.sourceDefinitionId}
                   options={sourceOptions}
-                  onChange={(option: DropDownRow.IDataItem) => onSelectFilter("sourceDefinitionId", option.value)}
+                  onChange={(option: DropDownRow.IDataItem) =>
+                    onSelectFilter("sourceDefinitionId", option.value, query)
+                  }
                 />
               </DDContainer>
               <DDContainer>
@@ -262,7 +289,9 @@ const AllConnectionsPage: React.FC = () => {
                   $background="white"
                   value={filters.destinationDefinitionId}
                   options={destinationOptions}
-                  onChange={(option: DropDownRow.IDataItem) => onSelectFilter("destinationDefinitionId", option.value)}
+                  onChange={(option: DropDownRow.IDataItem) =>
+                    onSelectFilter("destinationDefinitionId", option.value, query)
+                  }
                 />
               </DDContainer>
             </DDsContainer>
@@ -292,7 +321,7 @@ const AllConnectionsPage: React.FC = () => {
                 <Pagination
                   pages={total / pageSize}
                   value={filters.pageCurrent}
-                  onChange={(value: number) => onSelectFilter("pageCurrent", value)}
+                  onChange={(value: number) => onSelectFilter("pageCurrent", value, query)}
                 />
               </Box>
             </Footer>
