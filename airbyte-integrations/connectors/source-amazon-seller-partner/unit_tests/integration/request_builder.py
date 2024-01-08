@@ -8,7 +8,20 @@ from __future__ import annotations
 from abc import ABC
 from typing import Any, Dict, Optional
 
+import pendulum
 from airbyte_cdk.test.mock_http import HttpRequest
+
+
+auth_request = HttpRequest(
+    url="https://api.amazon.com/auth/o2/token",
+    headers={"Content-Type": "application/x-www-form-urlencoded"},
+    body={
+        "grant_type": "refresh_token",
+        "client_id": "self.client_id",
+        "client_secret": "self.client_secret",
+        "refresh_token": "self.refresh_token",
+    }
+)
 
 
 class RequestBuilder(ABC):
@@ -17,6 +30,7 @@ class RequestBuilder(ABC):
     def vendor_direct_fulfillment_shipping_endpoint(cls):
         return cls("vendor/directFulfillment/shipping/v1/shippingLabels")
 
+    _ACCESS_TOKEN = "test_access_token"
     _BASE_URL = "https://sellingpartnerapi-na.amazon.com"
 
     def __init__(self, resource: str) -> None:
@@ -28,8 +42,13 @@ class RequestBuilder(ABC):
 
     @property
     def headers(self) -> Dict[str, Any]:
-        # TODO: add auth headers
-        return {"content-type": "application/json"}
+        return {
+            "content-type": "application/json",
+            "host": self._BASE_URL.replace("https://", ""),
+            "user-agent": "python-requests",
+            "x-amz-access-token": self._ACCESS_TOKEN,
+            "x-amz-date": pendulum.now("utc").strftime("%Y%m%dT%H%M%SZ"),
+        }
 
     @property
     def body(self) -> Optional[Dict[str, Any]]:
@@ -69,7 +88,7 @@ class ReportBasedStreamRequestBuilder(RequestBuilder):
 
     @property
     def body(self) -> Optional[Dict[str, Any]]:
-        # TODO: need to pass stream slice or what?
+        # TODO: need to pass stream slice or what? Maybe with_stream_slice method?
         return {"reportType": self._report_name, "marketplaceIds": [self._MARKETPLACE_ID], "dataStartTime": "", "dataEndTime": ""}
 
     def __init__(self, resource: str, report_name: str) -> None:
