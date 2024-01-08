@@ -95,11 +95,14 @@ connection only. S3 is secured through public HTTPS access only.
    [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
    staging S3 bucket \(for the COPY strategy\).
 6. Create a user with at least create table permissions for the schema. If the schema does not exist
-   you need to add permissions for that, too. Something like this:
+   you need to add permissions for that, too. The user also needs select permissions on
+   [SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html). Something 
+   like this:
 
 ```
-GRANT CREATE ON DATABASE database_name TO airflow_user; -- add create schema permission
-GRANT usage, create on schema my_schema TO airflow_user; -- add create table permission
+GRANT CREATE ON DATABASE database_name TO airbyte_user; -- add create schema permission
+GRANT usage, create on schema my_schema TO airbyte_user; -- add create table permission
+GRANT SELECT ON TABLE svv_table_info TO airbyte_user; -- add svv_table_info table permission
 ```
 
 ### Optional Use of SSH Bastion Host
