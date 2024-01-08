@@ -61,5 +61,6 @@ class SourceReader(Iterator):
         self.thread.join()
 
     async def cleanup(self):
-        for session in self.sessions.values():
-            await session.close()
+        pass
+        # for session in self.sessions.values():
+        #     await session.close()

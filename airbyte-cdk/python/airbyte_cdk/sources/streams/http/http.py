@@ -33,7 +33,7 @@ from airbyte_cdk.sources.streams.http.availability_strategy import (
     HttpAvailabilityStrategy,
 )
 from airbyte_cdk.sources.streams.http.http_base import BaseHttpStream
-from airbyte_cdk.sources.utils.types import JsonType
+from airbyte_cdk.sources.streams.http.utils import HttpError
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from requests.auth import AuthBase
 
@@ -335,39 +335,7 @@ class HttpStream(BaseHttpStream, ABC):
 
     @classmethod
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
-        """
-        Parses the raw response object from a failed request into a user-friendly error message.
-        By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
-
-        :param response:
-        :return: A user-friendly message that indicates the cause of the error
-        """
-
-        # default logic to grab error from common fields
-        def _try_get_error(value: Optional[JsonType]) -> Optional[str]:
-            if isinstance(value, str):
-                return value
-            elif isinstance(value, list):
-                errors_in_value = [_try_get_error(v) for v in value]
-                return ", ".join(v for v in errors_in_value if v is not None)
-            elif isinstance(value, dict):
-                new_value = (
-                    value.get("message")
-                    or value.get("messages")
-                    or value.get("error")
-                    or value.get("errors")
-                    or value.get("failures")
-                    or value.get("failure")
-                    or value.get("detail")
-                )
-                return _try_get_error(new_value)
-            return None
-
-        try:
-            body = response.json()
-            return _try_get_error(body)
-        except requests.exceptions.JSONDecodeError:
-            return None
+        return HttpError.parse_response_error_message(response)
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         """
@@ -380,7 +348,7 @@ class HttpStream(BaseHttpStream, ABC):
         :param exception: The exception that was raised
         :return: A user-friendly message that indicates the cause of the error
         """
-        if isinstance(exception, requests.HTTPError) and exception.response is not None:
+        if isinstance(exception, HttpError) and exception.response is not None:
             return self.parse_response_error_message(exception.response)
         return None
 

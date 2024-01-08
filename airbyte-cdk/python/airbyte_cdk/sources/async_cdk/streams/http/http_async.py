@@ -16,7 +16,6 @@ from typing import (
     Mapping,
     Optional,
     Tuple,
-    TypeVar,
     Union,
 )
 from yarl import URL
@@ -42,17 +41,13 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.http_base import BaseHttpStream
-from airbyte_cdk.sources.utils.types import JsonType
+from airbyte_cdk.sources.streams.http.utils import HttpError
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 
 from .rate_limiting_async import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
-T1 = TypeVar("T1")
-T2 = TypeVar("T2")
-T3 = TypeVar("T3")
-T4 = TypeVar("T4")
 RecordsGeneratorFunction = Callable[
     [
         aiohttp.ClientRequest,
@@ -62,14 +57,6 @@ RecordsGeneratorFunction = Callable[
     ],
     AsyncGenerator[StreamData, None],
 ]
-
-
-"""
-        records_generator_fn: Callable[
-            ,
-            Iterable[StreamData],
-        ],
-"""
 
 
 class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
@@ -377,68 +364,6 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         )
         return await backoff_handler(user_backoff_handler)(request, request_kwargs)
 
-    @classmethod
-    async def parse_response_error_message(
-        cls, exception: aiohttp.ClientResponseError
-    ) -> Optional[str]:
-        """
-        Parses the raw response object from a failed request into a user-friendly error message.
-        By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
-
-        :param response:
-        :return: A user-friendly message that indicates the cause of the error
-        """
-
-        # default logic to grab error from common fields
-        def _try_get_error(value: Optional[JsonType]) -> Optional[str]:
-            if isinstance(value, str):
-                return value
-            elif isinstance(value, list):
-                errors_in_value = [_try_get_error(v) for v in value]
-                return ", ".join(v for v in errors_in_value if v is not None)
-            elif isinstance(value, dict):
-                new_value = (
-                    value.get("message")
-                    or value.get("messages")
-                    or value.get("error")
-                    or value.get("errors")
-                    or value.get("failures")
-                    or value.get("failure")
-                    or value.get("detail")
-                )
-                return _try_get_error(new_value)
-            return None
-
-        try:
-            if hasattr(exception, "_response_error"):
-                return _try_get_error(exception._response_error)  # type: ignore  # https://github.com/aio-libs/aiohttp/issues/3248
-            else:
-                raise NotImplementedError(
-                    "`_response_error` is expected but was not set on the response; `handle_response_with_error` should be used prior to processing the exception"
-                )
-        except json.JSONDecodeError:
-            return None
-
-    async def get_error_display_message(
-        self, exception: BaseException
-    ) -> Optional[str]:
-        """
-        Retrieves the user-friendly display message that corresponds to an exception.
-        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
-
-        The default implementation of this method only handles HTTPErrors by passing the response to self.parse_response_error_message().
-        The method should be overriden as needed to handle any additional exception types.
-
-        :param exception: The exception that was raised
-        :return: A user-friendly message that indicates the cause of the error
-        """
-        if (
-            isinstance(exception, aiohttp.ClientResponseError)
-            and exception.message is not None
-        ):
-            return await self.parse_response_error_message(exception)
-        return None
-
     async def read_records(
         self,
         sync_mode: SyncMode,
@@ -548,26 +473,19 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         """
         if response.ok:
             return response
-        try:
-            error_json = await response.json()
-        except (json.JSONDecodeError, aiohttp.ContentTypeError):
-            error_json = None
-        except Exception as exc:
-            raise NotImplementedError(f"Unexpected!!!!!!!! {exc}")  # TODO
-            self.logger.error(f"Unable to get error json from response: {exc}")
-            error_json = None
 
-        exc = aiohttp.ClientResponseError(
-            response.request_info,
-            response.history,
-            status=response.status,
-            message=response.reason or "",
-            headers=response.headers,
+        exc = HttpError(
+            aiohttp.ClientResponseError(
+                response.request_info,
+                response.history,
+                status=response.status,
+                message=response.reason or "",
+                headers=response.headers,
+            ),
+            response,
         )
+        await exc.set_response_error()
         text = await response.text()
-        exc._response_error = (  # type: ignore  # https://github.com/aio-libs/aiohttp/issues/3248
-            error_json or text
-        )
         self.logger.error(text)
         raise exc
 
