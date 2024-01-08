@@ -107,7 +107,7 @@ def test_refresh_expired_access_token_on_error(oauth_config, requests_mock):
         # (7200 + 1735689600).timestamp().to_rfc3339_string() = "2025-01-01T02:00:00+00:00"
         "refresh_token": "new_refresh_token",
     }
-    expected_token_expiry_date = "2025-01-01 02:00:00+00:00"
+    expected_token_expiry_date = "2025-01-01T02:00:00+00:00"
     requests_mock.post("https://gitlab.com/oauth/token", status_code=200, json=test_response)
     requests_mock.get("https://gitlab.com/api/v4/groups?per_page=50", status_code=200, json=[])
     source = SourceGitlab()

@@ -19,6 +19,9 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "organization_id": {
+      "type": ["null", "integer"]
+    },
     "default_branch_protection_defaults": {
       "type": ["null", "object"],
       "properties": {
