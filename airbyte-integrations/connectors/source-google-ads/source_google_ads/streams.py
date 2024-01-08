@@ -40,12 +40,8 @@ class GoogleAdsStream(Stream, ABC):
         for result in response:
             try:
                 yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
-            except Unauthenticated:
-                raise AirbyteTracedException(
-                    internal_message="authentication error",
-                    failure_type=FailureType.config_error,
-                    message="Authentication failed. Please try to Re-authenticate your credentials on set up Google Ads page."
-                )
+            except Unauthenticated as exception:
+                traced_exception(exception, "", self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
 
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
