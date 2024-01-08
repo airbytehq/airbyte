@@ -29,10 +29,10 @@ RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
-COPY source_sentry ./source_sentry
+COPY destination_vectara ./destination_vectara
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.3.0
-LABEL io.airbyte.name=airbyte/source-sentry
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/destination-vectara

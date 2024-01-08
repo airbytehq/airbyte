@@ -7,7 +7,7 @@ import uuid
 from typing import List, Tuple
 
 import anyio
-from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification
+from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
 from dagger import Container, ExecError, File, ImageLayerCompression, QueryError
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
@@ -25,6 +25,7 @@ class InvalidSpecOutputError(Exception):
 
 
 class CheckConnectorImageDoesNotExist(Step):
+    context: PublishConnectorContext
     title = "Check if the connector docker image does not exist on the registry."
 
     async def _run(self) -> StepResult:
@@ -52,10 +53,11 @@ class CheckConnectorImageDoesNotExist(Step):
 
 
 class PushConnectorImageToRegistry(Step):
+    context: PublishConnectorContext
     title = "Push connector image to registry"
 
     @property
-    def latest_docker_image_name(self):
+    def latest_docker_image_name(self) -> str:
         return f"{self.context.docker_repository}:latest"
 
     async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:
@@ -82,6 +84,7 @@ class PushConnectorImageToRegistry(Step):
 
 
 class PullConnectorImageFromRegistry(Step):
+    context: PublishConnectorContext
     title = "Pull connector image from registry"
 
     async def check_if_image_only_has_gzip_layers(self) -> bool:
@@ -91,6 +94,7 @@ class PullConnectorImageFromRegistry(Step):
         We want to make sure that the image we are about to release is compatible with all docker versions.
         We use crane to inspect the manifest of the image and check if it only has gzip layers.
         """
+        has_only_gzip_layers = True
         for platform in consts.BUILD_PLATFORMS:
             inspect = docker.with_crane(self.context).with_exec(
                 ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image}"]
@@ -102,10 +106,11 @@ class PullConnectorImageFromRegistry(Step):
             try:
                 for layer in json.loads(inspect_stdout)["layers"]:
                     if not layer["mediaType"].endswith("gzip"):
-                        return False
-                return True
+                        has_only_gzip_layers = False
+                        break
             except (KeyError, json.JSONDecodeError) as e:
                 raise Exception(f"Failed to parse manifest for {self.context.docker_image}: {inspect_stdout}") from e
+        return has_only_gzip_layers
 
     async def _run(self, attempt: int = 3) -> StepResult:
         try:
@@ -137,20 +142,21 @@ class PullConnectorImageFromRegistry(Step):
 
 
 class UploadSpecToCache(Step):
+    context: PublishConnectorContext
     title = "Upload connector spec to spec cache bucket"
     default_spec_file_name = "spec.json"
     cloud_spec_file_name = "spec.cloud.json"
 
     @property
-    def spec_key_prefix(self):
+    def spec_key_prefix(self) -> str:
         return "specs/" + self.context.docker_image.replace(":", "/")
 
     @property
-    def cloud_spec_key(self):
+    def cloud_spec_key(self) -> str:
         return f"{self.spec_key_prefix}/{self.cloud_spec_file_name}"
 
     @property
-    def oss_spec_key(self):
+    def oss_spec_key(self) -> str:
         return f"{self.spec_key_prefix}/{self.default_spec_file_name}"
 
     def _parse_spec_output(self, spec_output: str) -> str:
@@ -176,7 +182,7 @@ class UploadSpecToCache(Step):
         spec_output = await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"]).stdout()
         return self._parse_spec_output(spec_output)
 
-    async def _get_spec_as_file(self, spec: str, name="spec_to_cache.json") -> File:
+    async def _get_spec_as_file(self, spec: str, name: str = "spec_to_cache.json") -> File:
         return (await self.context.get_connector_dir()).with_new_file(name, contents=spec).file(name)
 
     async def _run(self, built_connector: Container) -> StepResult:
@@ -302,8 +308,8 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
             metadata_upload_results = await metadata_upload_step.run()
             results.append(metadata_upload_results)
-
-            return create_connector_report(results)
+            connector_report = create_connector_report(results)
+    return connector_report
 
 
 def reorder_contexts(contexts: List[PublishConnectorContext]) -> List[PublishConnectorContext]:
