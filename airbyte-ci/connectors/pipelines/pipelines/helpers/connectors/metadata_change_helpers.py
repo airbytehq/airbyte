@@ -4,7 +4,7 @@
 
 from pathlib import Path
 
-import yaml
+import yaml  # type: ignore
 from dagger import Directory
 
 # Helpers
@@ -15,7 +15,7 @@ async def get_current_metadata(repo_dir: Directory, metadata_path: Path) -> dict
 
 
 def get_repo_dir_with_updated_metadata(repo_dir: Directory, metadata_path: Path, updated_metadata: dict) -> Directory:
-    return repo_dir.with_new_file(str(metadata_path), yaml.safe_dump(updated_metadata))
+    return repo_dir.with_new_file(str(metadata_path), contents=yaml.safe_dump(updated_metadata))
 
 
 def get_current_version(current_metadata: dict) -> str:
