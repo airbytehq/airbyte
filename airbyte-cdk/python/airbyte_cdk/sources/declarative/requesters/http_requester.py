@@ -59,7 +59,7 @@ class HttpRequester(Requester):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     authenticator: Optional[DeclarativeAuthenticator] = None
-    http_method: HttpMethod = HttpMethod.GET
+    http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
     error_handler: Optional[ErrorHandler] = None
     disable_retries: bool = False
@@ -80,6 +80,7 @@ class HttpRequester(Requester):
         else:
             self._request_options_provider = self.request_options_provider
         self._authenticator = self.authenticator or NoAuth(parameters=parameters)
+        self.http_method = HttpMethod[self.http_method] if isinstance(self.http_method, str) else self.http_method
         self.error_handler = self.error_handler
         self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
