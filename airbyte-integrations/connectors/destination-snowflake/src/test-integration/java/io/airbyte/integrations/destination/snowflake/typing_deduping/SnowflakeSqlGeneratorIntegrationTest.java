@@ -367,8 +367,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         record -> record.get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).asText(),
         Function.identity()));
     assertAll(
-        () -> assertEquals(5, v1RawRecords.size()),
-        () -> assertEquals(5, v2RawRecords.size()));
+        () -> assertEquals(6, v1RawRecords.size()),
+        () -> assertEquals(6, v2RawRecords.size()));
     v1RawRecords.forEach(v1Record -> {
       final var v1id = v1Record.get(JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase()).asText();
       assertAll(
