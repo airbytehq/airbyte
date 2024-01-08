@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.58.2
+Integration tests: adding debug mode to improve logging
+
 ## 0.58.1
 Add schema normalization to declarative stream
 

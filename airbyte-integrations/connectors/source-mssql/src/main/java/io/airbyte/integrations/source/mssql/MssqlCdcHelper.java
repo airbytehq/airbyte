@@ -192,16 +192,17 @@ public class MssqlCdcHelper {
         props.setProperty("driver.trustServerCertificate", "true");
       } else if ("encrypted_verify_certificate".equals(sslMethod)) {
         props.setProperty("driver.encrypt", "true");
+        props.setProperty("driver.trustServerCertificate", "false");
         if (dbConfig.has("trustStore") && !dbConfig.get("trustStore").asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore", dbConfig.get("trustStore").asText());
+          props.setProperty("database.trustStore", dbConfig.get("trustStore").asText());
         }
 
         if (dbConfig.has("trustStorePassword") && !dbConfig.get("trustStorePassword").asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore.password", dbConfig.get("trustStorePassword").asText());
+          props.setProperty("database.trustStorePassword", dbConfig.get("trustStorePassword").asText());
         }
 
         if (dbConfig.has("hostNameInCertificate") && !dbConfig.get("hostNameInCertificate").asText().isEmpty()) {
-          props.setProperty("driver.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
+          props.setProperty("database.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
         }
       }
     }
