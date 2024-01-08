@@ -1,6 +1,5 @@
 import { faHome, faGear, faInbox, faDatabase } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box } from "@mui/material";
 import classnames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
@@ -61,7 +60,11 @@ const MenuItemIcon = styled(FontAwesomeIcon)`
   line-height: 16px;
   font-weight: normal;
 `;
-
+const MenuItemIconDoc = styled.div`
+  font-size: 16px;
+  line-height: 16px;
+  font-weight: normal;
+`;
 const UserDetail = styled.div`
   font-weight: 500;
   font-size: 12px;
@@ -164,10 +167,14 @@ const SideBar: React.FC = () => {
           rel="noreferrer"
           className={useCalculateSidebarItemStyles(RoutePaths.Documentation)}
         >
-          <DocumentationIcon width={18} height={18} />
-          <Box ml={1}>
+          <MenuItemIconDoc>
+            {" "}
+            <DocumentationIcon width={18} height={18} />
+          </MenuItemIconDoc>
+
+          <Text>
             <FormattedMessage id="sidebar.documentation" />
-          </Box>
+          </Text>
           <DocumentationArrowIconContainer>
             <NewTabSecondIcon />
           </DocumentationArrowIconContainer>

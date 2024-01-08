@@ -21,6 +21,8 @@ interface SourcesTableProps {
   setLocalSortOrder?: any;
   sourceSortOrder?: any;
   setSourceSortOrder?: any;
+  pageSize?: any;
+  pageCurrent?: any;
 }
 
 const SourcesTable: React.FC<SourcesTableProps> = ({
@@ -32,6 +34,8 @@ const SourcesTable: React.FC<SourcesTableProps> = ({
   setLocalSortOrder,
   sourceSortOrder,
   setSourceSortOrder,
+  pageSize,
+  pageCurrent,
 }) => {
   const { push } = useRouter();
 
@@ -54,6 +58,8 @@ const SourcesTable: React.FC<SourcesTableProps> = ({
       setLocalSortOrder={setLocalSortOrder}
       sourceSortOrder={sourceSortOrder}
       setSourceSortOrder={setSourceSortOrder}
+      pageSize={pageSize}
+      pageCurrent={pageCurrent}
     />
   );
 };
