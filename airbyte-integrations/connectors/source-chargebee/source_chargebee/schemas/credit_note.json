@@ -130,6 +130,9 @@
       "type": ["boolean", "null"],
       "$comment": "Only available for accounts which have enabled taxes for EU Region for taxes."
     },
+    "customer_notes": {
+      "type": ["string", "null"]
+    },
     "line_items": {
       "type": ["array", "null"],
       "items": {
@@ -459,6 +462,126 @@
           "invoice_status": {
             "type": ["string", "null"]
           }
+        }
+      }
+    },
+    "shipping_address": {
+      "type": ["object", "null"],
+      "properties": {
+        "first_name": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "last_name": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "email": {
+          "type": ["string", "null"],
+          "maxLength": 70
+        },
+        "company": {
+          "type": ["string", "null"],
+          "maxLength": 250
+        },
+        "phone": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "line1": {
+          "type": ["string", "null"],
+          "maxLength": 180
+        },
+        "line2": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "line3": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "city": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "state_code": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "state": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "country": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "zip": {
+          "type": ["string", "null"],
+          "maxLength": 20
+        },
+        "validation_status": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "billing_address": {
+      "type": ["object", "null"],
+      "properties": {
+        "first_name": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "last_name": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "email": {
+          "type": ["string", "null"],
+          "maxLength": 70
+        },
+        "company": {
+          "type": ["string", "null"],
+          "maxLength": 250
+        },
+        "phone": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "line1": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "line2": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "line3": {
+          "type": ["string", "null"],
+          "maxLength": 150
+        },
+        "city": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "state_code": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "state": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "country": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "zip": {
+          "type": ["string", "null"],
+          "maxLength": 20
+        },
+        "validation_status": {
+          "type": ["string", "null"]
         }
       }
     },
