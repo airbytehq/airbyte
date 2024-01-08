@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.8.1'
+    cdkVersionRequired = '0.11.1'
     features = [
             'db-sources', // required for tests
             'db-destinations'
