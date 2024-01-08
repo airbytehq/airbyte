@@ -478,6 +478,17 @@ module.exports = {
         "operator-guides/using-custom-connectors",
       ]
     },
+    {
+      type: "category",
+      label: "airbyte-lib",
+      link: {
+        type: "doc",
+        id: "using-airbyte/airbyte-lib/getting-started",
+      },
+      items: [
+        { type: "doc", id: "using-airbyte/airbyte-lib/reference", label: "Reference" },
+      ],
+    },
     sectionHeader("Managing Airbyte"),
     deployAirbyte,
     {
