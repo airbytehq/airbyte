@@ -135,7 +135,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  protected List<Field<?>> extractRawDataFields(LinkedHashMap<ColumnId, AirbyteType> columns) {
+  protected List<Field<?>> extractRawDataFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final boolean useExpensiveSaferCasting) {
     return columns
         .entrySet()
         .stream()
@@ -152,26 +152,25 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   /**
-   * Redshift ARRAY_CONCAT supports only 2 arrays, recursively build ARRAY_CONCAT for n arrays.
+   * Redshift ARRAY_CONCAT supports only 2 arrays. Iteratively nest ARRAY_CONCAT to support more than
+   * 2
    *
    * @param arrays
    * @return
    */
-  Field<?> arrayConcatStmt(List<Field<?>> arrays) {
+  Field<?> arrayConcatStmt(final List<Field<?>> arrays) {
     if (arrays.isEmpty()) {
       return field("ARRAY()"); // Return an empty string if the list is empty
     }
 
-    // Base case: if there's only one element, return it
-    if (arrays.size() == 1) {
-      return arrays.get(0);
+    Field<?> result = arrays.get(0);
+    String renderedSql = getDslContext().render(result);
+    for (int i = 1; i < arrays.size(); i++) {
+      // We lose some nice indentation but thats ok. Queryparts
+      // are intentionally rendered here to avoid deep stack for function sql rendering.
+      result = field(getDslContext().renderNamedOrInlinedParams(function("ARRAY_CONCAT", getSuperType(), result, arrays.get(i))));
     }
-
-    // Recursive case: construct ARRAY_CONCAT function call
-    Field<?> lastValue = arrays.get(arrays.size() - 1);
-    Field<?> recursiveCall = arrayConcatStmt(arrays.subList(0, arrays.size() - 1));
-
-    return function("ARRAY_CONCAT", getSuperType(), recursiveCall, lastValue);
+    return result;
   }
 
   Field<?> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
@@ -227,7 +226,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * @return
    */
   @Override
-  protected Field<Integer> getRowNumber(List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
+  protected Field<Integer> getRowNumber(final List<ColumnId> primaryKeys, final Optional<ColumnId> cursor) {
     final List<Field<?>> primaryKeyFields =
         primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList())
             : new ArrayList<>();
@@ -255,7 +254,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  public boolean shouldRetry(Exception e) {
+  public boolean shouldRetry(final Exception e) {
     return false;
   }
 

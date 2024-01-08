@@ -10,7 +10,7 @@ on:
 jobs:
   connector_metadata_service_deploy_orchestrator:
     name: Connector metadata service deploy orchestrator
-    runs-on: ci-runner-connector-test-large-dagger-0-6-4
+    runs-on: ci-runner-connector-test-large-dagger-0-9-5
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -20,6 +20,7 @@ jobs:
         with:
           subcommand: "metadata deploy orchestrator"
           context: "master"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}

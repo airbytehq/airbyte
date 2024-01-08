@@ -3,14 +3,14 @@
 #
 
 from abc import ABC
-from typing import ClassVar, List
+from typing import Any, ClassVar, List
 
 import pipelines.dagger.actions.system.docker
 from dagger import CacheSharingMode, CacheVolume
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult
 
 
@@ -25,6 +25,8 @@ class GradleTask(Step, ABC):
         mount_connector_secrets (bool): Whether to mount connector secrets.
     """
 
+    context: ConnectorContext
+
     DEFAULT_GRADLE_TASK_OPTIONS = ("--no-daemon", "--no-watch-fs", "--scan", "--build-cache", "--console=plain")
     LOCAL_MAVEN_REPOSITORY_PATH = "/root/.m2"
     GRADLE_DEP_CACHE_PATH = "/root/gradle-cache"
@@ -33,9 +35,6 @@ class GradleTask(Step, ABC):
     gradle_task_name: ClassVar[str]
     bind_to_docker_host: ClassVar[bool] = False
     mount_connector_secrets: ClassVar[bool] = False
-
-    def __init__(self, context: PipelineContext) -> None:
-        super().__init__(context)
 
     @property
     def dependency_cache_volume(self) -> CacheVolume:
@@ -56,10 +55,10 @@ class GradleTask(Step, ABC):
             for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
 
-    def _get_gradle_command(self, task: str, *args) -> str:
+    def _get_gradle_command(self, task: str, *args: Any) -> str:
         return f"./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS + args)} {task}"
 
-    async def _run(self) -> StepResult:
+    async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
         include = [
             ".root",
             ".env",
@@ -123,11 +122,11 @@ class GradleTask(Step, ABC):
         )
 
         # Augment the base container with S3 build cache secrets when available.
-        if self.context.s3_build_cache_access_key_id:
+        if self.context.s3_build_cache_access_key_id_secret:
             gradle_container_base = gradle_container_base.with_secret_variable(
                 "S3_BUILD_CACHE_ACCESS_KEY_ID", self.context.s3_build_cache_access_key_id_secret
             )
-            if self.context.s3_build_cache_secret_key:
+            if self.context.s3_build_cache_secret_key_secret:
                 gradle_container_base = gradle_container_base.with_secret_variable(
                     "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key_secret
                 )
