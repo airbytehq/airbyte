@@ -482,7 +482,7 @@
     },
     "plan_unit_price": {
       "type": ["integer", "null"],
-      "minimum": 1
+      "minimum": 0
     },
     "setup_fee": {
       "type": ["integer", "null"],
