@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.integrations.source.mysql.MySQLContainerFactory;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -19,11 +17,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
-
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
 
   @Override
   protected JsonNode getConfig() {

@@ -106,6 +106,30 @@
       "type": ["string", "null"],
       "maxLength": 10
     },
+    "base_currency_code": {
+      "type": ["string", "null"],
+      "maxLength": 3
+    },
+    "business_entity_id": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "channel": {
+      "type": ["string", "null"]
+    },
+    "exchange_rate": {
+      "type": ["number", "null"]
+    },
+    "is_digital": {
+      "type": ["boolean", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "is_vat_moss_registered": {
+      "type": ["boolean", "null"],
+      "$comment": "Only available for accounts which have enabled taxes for EU Region for taxes."
+    },
     "line_items": {
       "type": ["array", "null"],
       "items": {

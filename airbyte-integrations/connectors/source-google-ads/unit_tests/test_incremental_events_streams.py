@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from copy import deepcopy
 from unittest.mock import DEFAULT, MagicMock, Mock, call
 
@@ -319,7 +320,7 @@ def test_query_limit_hit_exception(config, customers):
             )
         )
 
-    expected_message = "More then limit 2 records with same cursor field. Incremental sync is not possible for this stream."
+    expected_message = "More than limit 2 records with same cursor field. Incremental sync is not possible for this stream."
     assert e.value.message == expected_message
 
 
