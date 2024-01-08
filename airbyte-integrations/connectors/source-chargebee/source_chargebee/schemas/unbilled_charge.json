@@ -109,6 +109,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "name": {
             "type": ["null", "string"]
