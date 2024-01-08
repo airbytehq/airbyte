@@ -34,15 +34,12 @@ import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest {
 
-  private static PostgresTestDatabase testContainer;
-  private static String databaseName;
-  private static JdbcDatabase database;
+  private String databaseName;
+  private JdbcDatabase database;
 
   /**
    * See
@@ -68,30 +65,9 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
 
   }
 
-  @BeforeAll
-  public static void setupPostgres() {
-    testContainer = PostgresTestDatabase.in(PostgresTestDatabase.BaseImage.POSTGRES_13);
-    final JsonNode config = testContainer.configBuilder()
-        .with("schema", "public")
-        .withDatabase()
-        .withResolvedHostAndPort()
-        .withCredentials()
-        .withoutSsl()
-        .build();
-
-    databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-    final PostgresDestination postgresDestination = new PostgresDestination();
-    final DataSource dataSource = postgresDestination.getDataSource(config);
-    database = new DefaultJdbcDatabase(dataSource, new PostgresSourceOperations());
-  }
-
-  @AfterAll
-  public static void teardownPostgres() {
-    testContainer.close();
-  }
-
   @Override
   protected JdbcDatabase getDatabase() {
+    initialize();
     return database;
   }
 
@@ -107,6 +83,7 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
 
   @Override
   protected DestinationHandler<TableDefinition> getDestinationHandler() {
+    initialize();
     return new JdbcDestinationHandler(databaseName, database);
   }
 
@@ -149,6 +126,25 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
         () -> assertEquals("date", existingTable.get().columns().get("date").type()),
         () -> assertEquals("jsonb", existingTable.get().columns().get("unknown").type()));
     // TODO assert on table indexing, etc.
+  }
+
+  private void initialize() {
+    if (database == null) {
+      // This creates/gets a singleton container.
+      final PostgresTestDatabase testContainer = PostgresTestDatabase.in(PostgresTestDatabase.BaseImage.POSTGRES_13);
+      final JsonNode config = testContainer.configBuilder()
+          .with("schema", "public")
+          .withDatabase()
+          .withResolvedHostAndPort()
+          .withCredentials()
+          .withoutSsl()
+          .build();
+
+      databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
+      final PostgresDestination postgresDestination = new PostgresDestination();
+      final DataSource dataSource = postgresDestination.getDataSource(config);
+      database = new DefaultJdbcDatabase(dataSource, new PostgresSourceOperations());
+    }
   }
 
 }
