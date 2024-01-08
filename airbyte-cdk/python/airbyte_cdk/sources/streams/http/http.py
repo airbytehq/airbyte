@@ -337,21 +337,6 @@ class HttpStream(BaseHttpStream, ABC):
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
         return HttpError.parse_response_error_message(response)
 
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        """
-        Retrieves the user-friendly display message that corresponds to an exception.
-        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
-
-        The default implementation of this method only handles HTTPErrors by passing the response to self.parse_response_error_message().
-        The method should be overriden as needed to handle any additional exception types.
-
-        :param exception: The exception that was raised
-        :return: A user-friendly message that indicates the cause of the error
-        """
-        if isinstance(exception, HttpError) and exception.response is not None:
-            return self.parse_response_error_message(exception.response)
-        return None
-
     def read_records(
         self,
         sync_mode: SyncMode,

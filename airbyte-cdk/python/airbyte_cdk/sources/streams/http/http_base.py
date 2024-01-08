@@ -10,6 +10,7 @@ from urllib.parse import urljoin
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.streams.http.utils import HttpError
 
 from .auth.core import HttpAuthenticator
 
@@ -288,7 +289,10 @@ class BaseHttpStream(Stream, ABC):
         :return: A user-friendly message that indicates the cause of the error
         """
 
-    @abstractmethod
+    @classmethod
+    def parse_error_message(cls, error: HttpError) -> Optional[str]:
+        return error.parse_error_message()
+
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         """
         Retrieves the user-friendly display message that corresponds to an exception.
@@ -300,6 +304,9 @@ class BaseHttpStream(Stream, ABC):
         :param exception: The exception that was raised
         :return: A user-friendly message that indicates the cause of the error
         """
+        if isinstance(exception, HttpError):
+            return self.parse_error_message(exception)
+        return None
 
     @abstractmethod
     def read_records(

@@ -17,6 +17,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.utils import HttpError
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from dateutil.relativedelta import relativedelta
@@ -212,11 +213,11 @@ class SourceSalesforce(AsyncAbstractSource):
         try:
             async for record in super().read_stream(logger, stream_instance, configured_stream, state_manager, internal_config):
                 yield record
-        except aiohttp.ClientResponseError as error:
-            error_data = error._response_error if hasattr(error, "_response_error") else {}
+        except HttpError as error:
+            error_data = error.json()
             error_code = error_data.get("errorCode")
-            url = error.request_info.url
-            if error.status == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+            url = error.url
+            if error.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                 logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
                 raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
             raise error

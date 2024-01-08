@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Union
+from typing import Optional
 
 import aiohttp
 import requests
@@ -10,49 +10,68 @@ from airbyte_cdk.sources.utils.types import JsonType
 class HttpError(Exception):
     def __init__(
         self,
-        error: Union[requests.HTTPError, aiohttp.ClientResponseError],
-        response: Optional[aiohttp.ClientResponse] = None,
+        requests_error: Optional[requests.HTTPError] = None,
+        aiohttp_error: Optional[aiohttp.ClientResponseError] = None,
     ):
-        self.error = error
-
-        self.response = (
-            response if isinstance(response, aiohttp.ClientResponse) else error.response
-        )
-        self._response_error: Optional[JsonType] = None
+        assert (
+            requests_error or aiohttp_error and not (requests_error and aiohttp_error)
+        ), "requests_error xor aiohttp_error must be supplied"
+        self._requests_error = requests_error
+        self._aiohttp_error = aiohttp_error
+        self._aiohttp_response_json = None
+        self._aiohttp_response_content = None
+        self._aiohttp_response_text = None
 
     @property
     def status_code(self) -> Optional[int]:
-        if isinstance(self.error, requests.HTTPError):
-            return self.error.response.status_code if self.error.response else None
-        elif isinstance(self.error, aiohttp.ClientResponseError):
-            return self.error.status
+        if self._requests_error and self._requests_error.response:
+            return self._requests_error.response.status_code
+        elif self._aiohttp_error:
+            return self._aiohttp_error.status
+        return 0
 
     @property
     def message(self) -> str:
-        if isinstance(self.error, requests.HTTPError):
-            return str(self.error)
-        elif isinstance(self.error, aiohttp.ClientResponseError):
-            return self.error.message
+        if self._requests_error:
+            return str(self._requests_error)
+        elif self._aiohttp_error:
+            return self._aiohttp_error.message
+        else:
+            return ""
 
     @property
-    def error_response(self) -> JsonType:
-        # This returns a uniform response object for further introspection
-        if isinstance(self.error, requests.HTTPError):
-            return self.error.response.json()
-        elif isinstance(self.error, aiohttp.ClientResponseError):
-            return self._response_error
+    def content(self) -> Optional[bytes]:
+        if self._requests_error and self._requests_error.response:
+            return self._requests_error.response.content
+        elif self._aiohttp_error:
+            return self._aiohttp_response_content
+        return b""
+
+    @property
+    def text(self) -> Optional[str]:
+        if self._requests_error and self._requests_error.response:
+            return self._requests_error.response.text
+        elif self._aiohttp_error:
+            return self._aiohttp_response_text
+        return ""
+
+    def json(self) -> Optional[JsonType]:
+        if self._requests_error and self._requests_error.response:
+            return self._requests_error.response.json()
+        elif self._aiohttp_error:
+            return self._aiohttp_response_json
+        return ""
+
+    @property
+    def url(self) -> str:
+        if self._requests_error and self._requests_error.request:
+            return self._requests_error.request.url or ""
+        elif self._aiohttp_error:
+            return str(self._aiohttp_error.request_info.url)
+        return ""
 
     @classmethod
-    def parse_response_error_message(
-        cls, response: Union[requests.Response, aiohttp.ClientResponseError]
-    ) -> Optional[str]:
-        if isinstance(response, requests.Response):
-            return cls._parse_sync_response_error(response)
-        else:
-            return cls._parse_async_response_error(response)
-
-    @classmethod
-    def _parse_sync_response_error(cls, response: requests.Response) -> Optional[str]:
+    def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
         """
         Parses the raw response object from a failed request into a user-friendly error message.
         By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
@@ -65,22 +84,22 @@ class HttpError(Exception):
         except requests.exceptions.JSONDecodeError:
             return None
 
-    @classmethod
-    def _parse_async_response_error(
-        cls, response: aiohttp.ClientResponseError
-    ) -> Optional[str]:
-        try:
-            if (
-                hasattr(response, "_response_error")
-                and response._response_error is not None
-            ):
-                return cls._try_get_error(response)  # type: ignore  # https://github.com/aio-libs/aiohttp/issues/3248
-            else:
-                raise NotImplementedError(
-                    "`_response_error` is expected but was not set on the response; `set_response_error` should be used prior to processing the exception"
-                )
-        except json.JSONDecodeError:
-            return None
+    def parse_error_message(self) -> Optional[str]:
+        """
+        Parses the raw response object from a failed request into a user-friendly error message.
+        By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
+
+        :param response:
+        :return: A user-friendly message that indicates the cause of the error
+        """
+        if self._requests_error and self._requests_error.response:
+            return self.parse_response_error_message(self._requests_error.response)
+        elif self._aiohttp_error:
+            try:
+                return self._try_get_error(self._aiohttp_response_json)
+            except requests.exceptions.JSONDecodeError:
+                return None
+        return None
 
     @classmethod
     def _try_get_error(cls, value: Optional[JsonType]) -> Optional[str]:
@@ -105,19 +124,17 @@ class HttpError(Exception):
 
     # Async utils
 
-    async def set_response_error(self):
-        if self._response is None:
-            return
+    async def set_response_data(self, response: aiohttp.ClientResponse):
         try:
-            error_json = await self._response.json()
+            response_json = await response.json()
         except (json.JSONDecodeError, aiohttp.ContentTypeError):
-            error_json = None
+            response_json = None
         except Exception as exc:
             raise NotImplementedError(f"Unexpected!!!!!!!! {exc}")  # TODO
             self.logger.error(f"Unable to get error json from response: {exc}")
-            error_json = None
+            response_json = None
 
-        text = await self._response.text()
-        exception._response_error = (  # type: ignore  # https://github.com/aio-libs/aiohttp/issues/3248
-            error_json or text
-        )
+        text = await response.text()  # This fixed a test
+        self._aiohttp_response_json = response_json or text
+        self._aiohttp_response_content = await response.content.read()
+        self._aiohttp_response_text = text

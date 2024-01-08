@@ -7,17 +7,27 @@ import asyncio
 import json
 from http import HTTPStatus
 from typing import Any, Iterable, Mapping, Optional
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from yarl import URL
 
 import aiohttp
 import pytest
 from aioresponses import CallbackResult, aioresponses
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.async_cdk.streams.http.http_async import AsyncHttpStream, AsyncHttpSubStream
-from airbyte_cdk.sources.async_cdk.streams.http.exceptions_async import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.async_cdk.streams.http.http_async import (
+    AsyncHttpStream,
+    AsyncHttpSubStream,
+)
+from airbyte_cdk.sources.async_cdk.streams.http.exceptions_async import (
+    DefaultBackoffException,
+    RequestBodyException,
+    UserDefinedBackoffException,
+)
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator as HttpTokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import (
+    TokenAuthenticator as HttpTokenAuthenticator,
+)
+from airbyte_cdk.sources.streams.http.utils import HttpError
 
 
 class StubBasicReadHttpStream(AsyncHttpStream):
@@ -29,13 +39,17 @@ class StubBasicReadHttpStream(AsyncHttpStream):
         self.resp_counter = 1
         self._deduplicate_query_params = deduplicate_query_params
 
-    async def next_page_token(self, response: aiohttp.ClientResponse) -> Optional[Mapping[str, Any]]:
+    async def next_page_token(
+        self, response: aiohttp.ClientResponse
+    ) -> Optional[Mapping[str, Any]]:
         return None
 
     def path(self, **kwargs) -> str:
         return ""
 
-    async def parse_response(self, response: aiohttp.ClientResponse, **kwargs) -> Iterable[Mapping]:
+    async def parse_response(
+        self, response: aiohttp.ClientResponse, **kwargs
+    ) -> Iterable[Mapping]:
         stubResp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stubResp
@@ -68,12 +82,16 @@ def test_request_kwargs_used(mocker):
         m.assert_any_call(stream.url_base, "GET", **request_kwargs)
         m.assert_called_once()
 
-    loop.run_until_complete(stream._session.close())  # TODO - find a way to not manually close after each test
+    loop.run_until_complete(
+        stream._session.close()
+    )  # TODO - find a way to not manually close after each test
 
 
 async def read_records(stream, sync_mode=SyncMode.full_refresh, stream_slice=None):
     records = []
-    async for record in stream.read_records(sync_mode=sync_mode, stream_slice=stream_slice):
+    async for record in stream.read_records(
+        sync_mode=sync_mode, stream_slice=stream_slice
+    ):
         records.append(record)
     return records
 
@@ -81,8 +99,12 @@ async def read_records(stream, sync_mode=SyncMode.full_refresh, stream_slice=Non
 def test_stub_basic_read_http_stream_read_records(mocker):
     loop = asyncio.get_event_loop()
     stream = StubBasicReadHttpStream()
-    blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
-    mocker.patch.object(StubBasicReadHttpStream, "_send_request", return_value=blank_response)
+    blank_response = (
+        {}
+    )  # Send a blank response is fine as we ignore the response in `parse_response anyway.
+    mocker.patch.object(
+        StubBasicReadHttpStream, "_send_request", return_value=blank_response
+    )
 
     records = loop.run_until_complete(read_records(stream))
 
@@ -96,7 +118,9 @@ class StubNextPageTokenHttpStream(StubBasicReadHttpStream):
         super().__init__()
         self._pages = pages
 
-    async def next_page_token(self, response: aiohttp.ClientResponse) -> Optional[Mapping[str, Any]]:
+    async def next_page_token(
+        self, response: aiohttp.ClientResponse
+    ) -> Optional[Mapping[str, Any]]:
         while self.current_page < self._pages:
             page_token = {"page": self.current_page}
             self.current_page += 1
@@ -108,8 +132,12 @@ def test_next_page_token_is_input_to_other_methods(mocker):
     """Validates that the return value from next_page_token is passed into other methods that need it like request_params, headers, body, etc.."""
     pages = 5
     stream = StubNextPageTokenHttpStream(pages=pages)
-    blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
-    mocker.patch.object(StubNextPageTokenHttpStream, "_send_request", return_value=blank_response)
+    blank_response = (
+        {}
+    )  # Send a blank response is fine as we ignore the response in `parse_response anyway.
+    mocker.patch.object(
+        StubNextPageTokenHttpStream, "_send_request", return_value=blank_response
+    )
 
     methods = ["request_params", "request_headers", "request_body_json"]
     for method in methods:
@@ -123,12 +151,23 @@ def test_next_page_token_is_input_to_other_methods(mocker):
     expected_next_page_tokens = [{"page": i} for i in range(pages)]
     for method in methods:
         # First assert that they were called with no next_page_token. This is the first call in the pagination loop.
-        getattr(stream, method).assert_any_call(next_page_token=None, stream_slice=None, stream_state={})
+        getattr(stream, method).assert_any_call(
+            next_page_token=None, stream_slice=None, stream_state={}
+        )
         for token in expected_next_page_tokens:
             # Then verify that each method
-            getattr(stream, method).assert_any_call(next_page_token=token, stream_slice=None, stream_state={})
+            getattr(stream, method).assert_any_call(
+                next_page_token=token, stream_slice=None, stream_state={}
+            )
 
-    expected = [{"data": 1}, {"data": 2}, {"data": 3}, {"data": 4}, {"data": 5}, {"data": 6}]
+    expected = [
+        {"data": 1},
+        {"data": 2},
+        {"data": 3},
+        {"data": 4},
+        {"data": 5},
+        {"data": 6},
+    ]
 
     assert expected == records
 
@@ -218,6 +257,7 @@ def test_stub_custom_backoff_http_stream_endless_retries(mocker):
     call_counter = 0
 
     with aioresponses() as m:
+
         def request_callback(*args, **kwargs):
             nonlocal call_counter
             call_counter += 1
@@ -226,7 +266,12 @@ def test_stub_custom_backoff_http_stream_endless_retries(mocker):
                 # to stop the infinite retries
                 raise RuntimeError("End of retries")
 
-        m.get(stream.url_base, status=HTTPStatus.TOO_MANY_REQUESTS, repeat=True, callback=request_callback)
+        m.get(
+            stream.url_base,
+            status=HTTPStatus.TOO_MANY_REQUESTS,
+            repeat=True,
+            callback=request_callback,
+        )
 
         # Expecting mock object to raise a RuntimeError when the end of side_effect list parameter reached.
         with pytest.raises(RuntimeError):
@@ -245,7 +290,7 @@ def test_4xx_error_codes_http_stream(http_code):
     with aioresponses() as m:
         m.get(stream.url_base, status=http_code, repeat=True)
 
-        with pytest.raises(aiohttp.ClientResponseError):
+        with pytest.raises(HttpError):
             loop.run_until_complete(read_records(stream))
 
     loop.run_until_complete(stream._session.close())
@@ -282,7 +327,9 @@ def test_raise_on_http_errors_off_5xx(status_code):
         call_counter += 1
 
     with aioresponses() as m:
-        m.get(stream.url_base, status=status_code, repeat=True, callback=request_callback)
+        m.get(
+            stream.url_base, status=status_code, repeat=True, callback=request_callback
+        )
         with pytest.raises(DefaultBackoffException):
             loop.run_until_complete(read_records(stream))
 
@@ -298,7 +345,9 @@ def test_raise_on_http_errors_off_non_retryable_4xx(status_code):
 
     with aioresponses() as m:
         m.get(stream.url_base, status=status_code, repeat=True)
-        response = loop.run_until_complete(stream._send_request(aiohttp.ClientRequest("GET", URL(stream.url_base)), {}))
+        response = loop.run_until_complete(
+            stream._send_request(aiohttp.ClientRequest("GET", URL(stream.url_base)), {})
+        )
 
     assert response.status == status_code
     loop.run_until_complete(stream._session.close())
@@ -324,7 +373,9 @@ def test_raise_on_http_errors(error):
         call_counter += 1
 
     with aioresponses() as m:
-        m.get(stream.url_base, repeat=True, callback=request_callback, exception=error())
+        m.get(
+            stream.url_base, repeat=True, callback=request_callback, exception=error()
+        )
 
         with pytest.raises(error):
             loop.run_until_complete(read_records(stream))
@@ -336,7 +387,9 @@ def test_raise_on_http_errors(error):
 class PostHttpStream(StubBasicReadHttpStream):
     http_method = "POST"
 
-    async def parse_response(self, response: aiohttp.ClientResponse, **kwargs) -> Iterable[Mapping]:
+    async def parse_response(
+        self, response: aiohttp.ClientResponse, **kwargs
+    ) -> Iterable[Mapping]:
         """Returns response data as is"""
         yield response.json()
 
@@ -355,7 +408,7 @@ class TestRequestBody:
         headers = kwargs.get("headers", {})
         return {
             "body": json.dumps(body) if isinstance(body, dict) else body,
-            "content_type": headers.get("Content-Type")
+            "content_type": headers.get("Content-Type"),
         }
 
     def test_json_body(self, mocker):
@@ -365,7 +418,12 @@ class TestRequestBody:
         loop.run_until_complete(stream.ensure_session())
 
         with aioresponses() as m:
-            m.post(stream.url_base, payload=self.request2response(data=self.json_body, headers={"Content-Type": "application/json"}))
+            m.post(
+                stream.url_base,
+                payload=self.request2response(
+                    data=self.json_body, headers={"Content-Type": "application/json"}
+                ),
+            )
 
             response = []
             for r in loop.run_until_complete(read_records(stream)):
@@ -427,7 +485,9 @@ class TestRequestBody:
         }
         for method, with_body in methods.items():
             stream.http_method = method
-            mocker.patch.object(stream, "request_body_data", return_value=self.data_body)
+            mocker.patch.object(
+                stream, "request_body_data", return_value=self.data_body
+            )
 
             with aioresponses() as m:
                 if method == "POST":
@@ -443,7 +503,9 @@ class TestRequestBody:
                 elif method == "OPTIONS":
                     request = m.options
 
-                request(stream.url_base, payload=self.request2response(data=self.data_body))
+                request(
+                    stream.url_base, payload=self.request2response(data=self.data_body)
+                )
 
                 response = []
                 for r in loop.run_until_complete(read_records(stream)):
@@ -467,10 +529,14 @@ class CacheHttpSubStream(AsyncHttpSubStream):
     def __init__(self, parent):
         super().__init__(parent=parent)
 
-    async def parse_response(self, response: aiohttp.ClientResponse, **kwargs) -> Iterable[Mapping]:
+    async def parse_response(
+        self, response: aiohttp.ClientResponse, **kwargs
+    ) -> Iterable[Mapping]:
         yield None
 
-    def next_page_token(self, response: aiohttp.ClientResponse) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: aiohttp.ClientResponse
+    ) -> Optional[Mapping[str, Any]]:
         return None
 
     def path(self, **kwargs) -> str:
@@ -534,7 +600,9 @@ class CacheHttpStreamWithSlices(CacheHttpStream):
         for path in self.paths:
             yield {"path": path}
 
-    async def parse_response(self, response: aiohttp.ClientResponse, **kwargs) -> Iterable[Mapping]:
+    async def parse_response(
+        self, response: aiohttp.ClientResponse, **kwargs
+    ) -> Iterable[Mapping]:
         yield {"value": len(await response.text())}
 
 
@@ -554,6 +622,7 @@ def test_using_cache(mocker):
     mocker.patch.object(parent_stream, "url_base", "https://google.com/")
 
     call_counter = 0
+
     def request_callback(*args, **kwargs):
         nonlocal call_counter
         call_counter += 1
@@ -566,7 +635,9 @@ def test_using_cache(mocker):
 
     with aioresponses() as m:
         # Set up the mocks
-        slices = loop.run_until_complete(stream_slices(parent_stream, sync_mode=SyncMode.full_refresh))
+        slices = loop.run_until_complete(
+            stream_slices(parent_stream, sync_mode=SyncMode.full_refresh)
+        )
         m.get(parent_stream.url_base, callback=request_callback)
         m.get(f"{parent_stream.url_base}search", callback=request_callback)
 
@@ -586,7 +657,9 @@ def test_using_cache(mocker):
 
         # child_stream.stream_slices will call `parent.read_records`, however this shouldn't
         # result in a new request to the 3rd party since the response has been cached
-        loop.run_until_complete(stream_slices(child_stream, sync_mode=SyncMode.full_refresh))
+        loop.run_until_complete(
+            stream_slices(child_stream, sync_mode=SyncMode.full_refresh)
+        )
 
         assert call_counter == 2
         urls = loop.run_until_complete(get_urls(parent_stream))
@@ -605,7 +678,9 @@ class AutoFailTrueHttpStream(StubBasicReadHttpStream):
 @pytest.mark.parametrize("status_code", range(400, 600))
 def test_send_raise_on_http_errors_logs(mocker, status_code):
     mocker.patch.object(AutoFailTrueHttpStream, "logger")
-    mocker.patch.object(AutoFailTrueHttpStream, "should_retry", mocker.Mock(return_value=False))
+    mocker.patch.object(
+        AutoFailTrueHttpStream, "should_retry", mocker.Mock(return_value=False)
+    )
 
     stream = AutoFailTrueHttpStream()
     loop = asyncio.get_event_loop()
@@ -616,7 +691,7 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
     with aioresponses() as m:
         m.get(stream.url_base, status=status_code, repeat=True, payload="text")
 
-        with pytest.raises(aiohttp.ClientResponseError):
+        with pytest.raises(HttpError):
             response = loop.run_until_complete(stream._send_request(req, {}))
             stream.logger.error.assert_called_with("text")
             assert response.status == status_code
@@ -632,13 +707,42 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
         ({"error": {"message": "something broke"}}, "something broke"),
         ({"error": "err-001", "message": "something broke"}, "something broke"),
         ({"failure": {"message": "something broke"}}, "something broke"),
-        ({"error": {"errors": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}}, "one, two, three"),
+        (
+            {
+                "error": {
+                    "errors": [
+                        {"message": "one"},
+                        {"message": "two"},
+                        {"message": "three"},
+                    ]
+                }
+            },
+            "one, two, three",
+        ),
         ({"errors": ["one", "two", "three"]}, "one, two, three"),
         ({"messages": ["one", "two", "three"]}, "one, two, three"),
-        ({"errors": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
-        ({"error": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
-        ({"errors": [{"error": "one"}, {"error": "two"}, {"error": "three"}]}, "one, two, three"),
-        ({"failures": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
+        (
+            {"errors": [{"message": "one"}, {"message": "two"}, {"message": "three"}]},
+            "one, two, three",
+        ),
+        (
+            {"error": [{"message": "one"}, {"message": "two"}, {"message": "three"}]},
+            "one, two, three",
+        ),
+        (
+            {"errors": [{"error": "one"}, {"error": "two"}, {"error": "three"}]},
+            "one, two, three",
+        ),
+        (
+            {
+                "failures": [
+                    {"message": "one"},
+                    {"message": "two"},
+                    {"message": "three"},
+                ]
+            },
+            "one, two, three",
+        ),
         (["one", "two", "three"], "one, two, three"),
         ([{"error": "one"}, {"error": "two"}, {"error": "three"}], "one, two, three"),
         ({"error": True}, None),
@@ -646,13 +750,31 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
         ({}, None),
     ],
 )
-async def test_default_parse_response_error_message(api_response: dict, expected_message: Optional[str]):
+async def test_default_parse_response_error_message(
+    api_response: dict, expected_message: Optional[str]
+):
     stream = StubBasicReadHttpStream()
     response = MagicMock()
-    response._response_error = api_response
+    response.ok = False
+    response.json = AsyncMock(return_value=api_response)
+    response.text = AsyncMock()
+    response.content = AsyncMock()
+    exc_message = None
+    try:
+        await stream.handle_response_with_error(response)
+    except HttpError as exc:
+        exc_message = stream.get_error_display_message(exc)
 
-    message = await stream.parse_response_error_message(response)
+    assert exc_message == expected_message
+
+"""
+    stream = StubBasicReadHttpStream()
+    response = MagicMock()
+    response.json.return_value = api_response
+
+    message = stream.parse_response_error_message(response)
     assert message == expected_message
+"""
 
 
 @pytest.mark.asyncio
@@ -662,9 +784,16 @@ async def test_default_parse_response_error_message_not_json():
     url = "mock://test.com/not_json"
 
     with aioresponses() as m:
-        m.get(url, callback=lambda *_, **__: CallbackResult(status=400, body="this is not json"))
-        with pytest.raises(aiohttp.ClientResponseError):
-            response = await stream._send_request(aiohttp.ClientRequest("GET", URL(url)), {})
+        m.get(
+            url,
+            callback=lambda *_, **__: CallbackResult(
+                status=400, body="this is not json"
+            ),
+        )
+        with pytest.raises(HttpError):
+            response = await stream._send_request(
+                aiohttp.ClientRequest("GET", URL(url)), {}
+            )
             message = await stream.parse_response_error_message(response)
             assert message is None
     await stream._session.close()
@@ -672,41 +801,66 @@ async def test_default_parse_response_error_message_not_json():
 
 def test_default_get_error_display_message_handles_http_error(mocker):
     stream = StubBasicReadHttpStream()
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(stream.ensure_session())
 
-    mocker.patch.object(stream, "parse_response_error_message", return_value="my custom message")
+    mocker.patch.object(
+        stream, "parse_error_message", return_value="my custom message"
+    )
 
-    non_http_err_msg = loop.run_until_complete(stream.get_error_display_message(RuntimeError("not me")))
+    non_http_err_msg = stream.get_error_display_message(RuntimeError("not me"))
     assert non_http_err_msg is None
 
-    req = aiohttp.ClientRequest("GET", URL("mock://test.com/not_json"))
+    req = aiohttp.ClientRequest("GET", URL(stream.url_base))
 
-    with aioresponses() as m:
-        m.get("mock://test.com/not_json")
-        response = loop.run_until_complete(stream._send_request(req, {}))
-        http_exception = aiohttp.ClientResponseError(request_info=None, history=None, message=response)
-
-    http_err_msg = loop.run_until_complete(stream.get_error_display_message(http_exception))
+    error = HttpError(aiohttp_error=aiohttp.ClientResponseError(request_info=req.request_info, history=(), status=400, message="", headers={}))
+    http_err_msg = stream.get_error_display_message(error)
     assert http_err_msg == "my custom message"
-    loop.run_until_complete(stream._session.close())
 
 
 @pytest.mark.parametrize(
     "test_name, base_url, path, expected_full_url",
     [
-        ("test_no_slashes", "https://airbyte.io", "my_endpoint", "https://airbyte.io/my_endpoint"),
-        ("test_trailing_slash_on_base_url", "https://airbyte.io/", "my_endpoint", "https://airbyte.io/my_endpoint"),
+        (
+            "test_no_slashes",
+            "https://airbyte.io",
+            "my_endpoint",
+            "https://airbyte.io/my_endpoint",
+        ),
+        (
+            "test_trailing_slash_on_base_url",
+            "https://airbyte.io/",
+            "my_endpoint",
+            "https://airbyte.io/my_endpoint",
+        ),
         (
             "test_trailing_slash_on_base_url_and_leading_slash_on_path",
             "https://airbyte.io/",
             "/my_endpoint",
             "https://airbyte.io/my_endpoint",
         ),
-        ("test_leading_slash_on_path", "https://airbyte.io", "/my_endpoint", "https://airbyte.io/my_endpoint"),
-        ("test_trailing_slash_on_path", "https://airbyte.io", "/my_endpoint/", "https://airbyte.io/my_endpoint/"),
-        ("test_nested_path_no_leading_slash", "https://airbyte.io", "v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
-        ("test_nested_path_with_leading_slash", "https://airbyte.io", "/v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
+        (
+            "test_leading_slash_on_path",
+            "https://airbyte.io",
+            "/my_endpoint",
+            "https://airbyte.io/my_endpoint",
+        ),
+        (
+            "test_trailing_slash_on_path",
+            "https://airbyte.io",
+            "/my_endpoint/",
+            "https://airbyte.io/my_endpoint/",
+        ),
+        (
+            "test_nested_path_no_leading_slash",
+            "https://airbyte.io",
+            "v1/my_endpoint",
+            "https://airbyte.io/v1/my_endpoint",
+        ),
+        (
+            "test_nested_path_with_leading_slash",
+            "https://airbyte.io",
+            "/v1/my_endpoint",
+            "https://airbyte.io/v1/my_endpoint",
+        ),
     ],
 )
 def test_join_url(test_name, base_url, path, expected_full_url):
@@ -718,12 +872,26 @@ def test_join_url(test_name, base_url, path, expected_full_url):
     "deduplicate_query_params, path, params, expected_url",
     [
         pytest.param(
-            True, "v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"
+            True,
+            "v1/endpoint?param1=value1",
+            {},
+            "https://test_base_url.com/v1/endpoint?param1=value1",
+            id="test_params_only_in_path",
         ),
         pytest.param(
-            True, "v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"
+            True,
+            "v1/endpoint",
+            {"param1": "value1"},
+            "https://test_base_url.com/v1/endpoint?param1=value1",
+            id="test_params_only_in_path",
         ),
-        pytest.param(True, "v1/endpoint", None, "https://test_base_url.com/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
+        pytest.param(
+            True,
+            "v1/endpoint",
+            None,
+            "https://test_base_url.com/v1/endpoint",
+            id="test_params_is_none_and_no_params_in_path",
+        ),
         pytest.param(
             True,
             "v1/endpoint?param1=value1",
@@ -775,7 +943,9 @@ def test_join_url(test_name, base_url, path, expected_full_url):
         ),
     ],
 )
-def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, params, expected_url):
+def test_duplicate_request_params_are_deduped(
+    deduplicate_query_params, path, params, expected_url
+):
     stream = StubBasicReadHttpStream(deduplicate_query_params)
 
     if expected_url is None:

@@ -7,13 +7,16 @@ from typing import Union
 
 import aiohttp
 
+from airbyte_cdk.sources.streams.http.utils import HttpError
 
-class BaseBackoffException(aiohttp.ClientResponseError):
-    def __init__(self, response: aiohttp.ClientResponse, error_message: str = ""):
-        error_message = (
-            error_message or f"Request URL: {response.request_info.url}, Response Code: {response.status}, Response Text: {response.text}"
+
+class BaseBackoffException(HttpError):
+    def __init__(self, error: HttpError, error_message: str = ""):
+        error._aiohttp_error.message = (
+            error_message
+            or f"Request URL: {error.url}, Response Code: {error.status_code}, Response Text: {error.text}"
         )
-        super().__init__(request_info=response.request_info, history=(response,), status=response.status, message=error_message, headers=response.headers)
+        super().__init__(aiohttp_error=error._aiohttp_error)  # TODO
 
 
 class RequestBodyException(Exception):
@@ -27,14 +30,19 @@ class UserDefinedBackoffException(BaseBackoffException):
     An exception that exposes how long it attempted to backoff
     """
 
-    def __init__(self, backoff: Union[int, float], response: aiohttp.ClientResponse, error_message: str = ""):
+    def __init__(
+        self,
+        backoff: Union[int, float],
+        error: HttpError,
+        error_message: str = "",
+    ):
         """
         :param backoff: how long to backoff in seconds
         :param request: the request that triggered this backoff exception
         :param response: the response that triggered the backoff exception
         """
         self.backoff = backoff
-        super().__init__(response=response, error_message=error_message)
+        super().__init__(error, error_message=error_message)
 
 
 class DefaultBackoffException(BaseBackoffException):

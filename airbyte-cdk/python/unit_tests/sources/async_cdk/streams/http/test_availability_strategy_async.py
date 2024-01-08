@@ -10,9 +10,12 @@ import pytest
 from aioresponses import aioresponses
 from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
 from airbyte_cdk.sources.async_cdk.source_dispatcher import SourceDispatcher
-from airbyte_cdk.sources.async_cdk.streams.http.availability_strategy_async import AsyncHttpAvailabilityStrategy
+from airbyte_cdk.sources.async_cdk.streams.http.availability_strategy_async import (
+    AsyncHttpAvailabilityStrategy,
+)
 from airbyte_cdk.sources.async_cdk.streams.http.http_async import AsyncHttpStream
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.utils import HttpError
 
 logger = logging.getLogger("airbyte")
 
@@ -25,13 +28,17 @@ class MockHttpStream(AsyncHttpStream):
         super().__init__(**kwargs)
         self.resp_counter = 1
 
-    async def next_page_token(self, response: aiohttp.ClientResponse) -> Optional[Mapping[str, Any]]:
+    async def next_page_token(
+        self, response: aiohttp.ClientResponse
+    ) -> Optional[Mapping[str, Any]]:
         return None
 
     def path(self, **kwargs) -> str:
         return ""
 
-    async def parse_response(self, response: aiohttp.ClientResponse, **kwargs) -> Iterable[Mapping]:
+    async def parse_response(
+        self, response: aiohttp.ClientResponse, **kwargs
+    ) -> Iterable[Mapping]:
         stub_resp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stub_resp
@@ -57,7 +64,12 @@ class MockHttpStream(AsyncHttpStream):
 @pytest.mark.parametrize(
     ("include_source", "expected_docs_url_messages"),
     [
-        (True, ["Please visit https://docs.airbyte.com/integrations/sources/MockSource to learn more."]),
+        (
+            True,
+            [
+                "Please visit https://docs.airbyte.com/integrations/sources/MockSource to learn more."
+            ],
+        ),
         (False, ["Please visit the connector's documentation to learn more."]),
     ],
 )
@@ -81,7 +93,9 @@ async def test_default_http_availability_strategy(
             self._streams = streams
             super().__init__()
 
-        async def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        async def check_connection(
+            self, logger: logging.Logger, config: Mapping[str, Any]
+        ) -> Tuple[bool, Optional[Any]]:
             return True, ""
 
         async def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -96,7 +110,9 @@ async def test_default_http_availability_strategy(
 
         if include_source:
             source = SourceDispatcher(MockSource(streams=[http_stream]))
-            actual_is_available, reason = await http_stream.check_availability(logger, source.async_source)
+            actual_is_available, reason = await http_stream.check_availability(
+                logger, source.async_source
+            )
         else:
             actual_is_available, reason = await http_stream.check_availability(logger)
 
@@ -121,7 +137,7 @@ def test_http_availability_raises_unhandled_error(mocker):
     with aioresponses() as m:
         m.get(http_stream.url_base, status=404)
 
-        with pytest.raises(aiohttp.ClientResponseError):
+        with pytest.raises(HttpError):
             loop.run_until_complete(http_stream.check_availability(logger))
 
 
@@ -144,16 +160,23 @@ def test_send_handles_retries_when_checking_availability(caplog):
         m.get(http_stream.url_base, status=200, callback=request_callback)
 
         with caplog.at_level(logging.INFO):
-            stream_is_available, _ = loop.run_until_complete(http_stream.check_availability(logger))
+            stream_is_available, _ = loop.run_until_complete(
+                http_stream.check_availability(logger)
+            )
 
     assert stream_is_available
     assert call_counter == 3
-    for message in ["Caught retryable error", "Response Code: 429", "Response Code: 503"]:
+    for message in [
+        "Caught retryable error",
+        "Response Code: 429",
+        "Response Code: 503",
+    ]:
         assert message in caplog.text
 
 
 def test_http_availability_strategy_on_empty_stream(mocker):
     empty_stream_called = False
+
     async def empty_aiter(*args, **kwargs):
         nonlocal empty_stream_called
         empty_stream_called = True
@@ -170,7 +193,9 @@ def test_http_availability_strategy_on_empty_stream(mocker):
 
     logger = logging.getLogger("airbyte.test-source")
     loop = asyncio.get_event_loop()
-    stream_is_available, _ = loop.run_until_complete(empty_stream.check_availability(logger))
+    stream_is_available, _ = loop.run_until_complete(
+        empty_stream.check_availability(logger)
+    )
 
     assert stream_is_available
     assert empty_stream_called

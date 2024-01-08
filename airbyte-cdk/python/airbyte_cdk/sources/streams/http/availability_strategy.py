@@ -9,7 +9,10 @@ from typing import Dict, Optional, Tuple
 import requests
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record_for_slice, get_first_stream_slice
+from airbyte_cdk.sources.streams.utils.stream_helper import (
+    get_first_record_for_slice,
+    get_first_stream_slice,
+)
 from requests import HTTPError
 
 if typing.TYPE_CHECKING:
@@ -17,7 +20,9 @@ if typing.TYPE_CHECKING:
 
 
 class HttpAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, Optional[str]]:
+    def check_availability(
+        self, stream: Stream, logger: logging.Logger, source: Optional["Source"]
+    ) -> Tuple[bool, Optional[str]]:
         """
         Check stream availability by attempting to read the first record of the
         stream.
@@ -41,7 +46,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             reason = f"Cannot attempt to connect to stream {stream.name} - no stream slices were found, likely because the parent stream is empty."
             return False, reason
         except HTTPError as error:
-            is_available, reason = self.handle_http_error(stream, logger, source, error)
+            is_available, reason = self._handle_http_error(stream, logger, source, error)
             if not is_available:
                 reason = f"Unable to get slices for {stream.name} stream, because of error in parent stream. {reason}"
             return is_available, reason
@@ -50,16 +55,22 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             get_first_record_for_slice(stream, stream_slice)
             return True, None
         except StopIteration:
-            logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
+            logger.info(
+                f"Successfully connected to stream {stream.name}, but got 0 records."
+            )
             return True, None
         except HTTPError as error:
-            is_available, reason = self.handle_http_error(stream, logger, source, error)
+            is_available, reason = self._handle_http_error(stream, logger, source, error)
             if not is_available:
                 reason = f"Unable to read {stream.name} stream. {reason}"
             return is_available, reason
 
-    def handle_http_error(
-        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
+    def _handle_http_error(
+        self,
+        stream: Stream,
+        logger: logging.Logger,
+        source: Optional["Source"],
+        error: HTTPError,
     ) -> Tuple[bool, Optional[str]]:
         """
         Override this method to define error handling for various `HTTPError`s
@@ -78,7 +89,9 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           resolve the unavailability, if possible.
         """
         status_code = error.response.status_code
-        known_status_codes = self.reasons_for_unavailable_status_codes(stream, logger, source, error)
+        known_status_codes = self.reasons_for_unavailable_status_codes(
+            stream, logger, source, error
+        )
         known_reason = known_status_codes.get(status_code)
         if not known_reason:
             # If the HTTPError is not in the dictionary of errors we know how to handle, don't except
@@ -86,13 +99,17 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
 
         doc_ref = self._visit_docs_message(logger, source)
         reason = f"The endpoint {error.response.url} returned {status_code}: {error.response.reason}. {known_reason}. {doc_ref} "
-        response_error_message = stream.parse_response_error_message(error.response)
+        response_error_message = stream.parse_error_message(error)
         if response_error_message:
             reason += response_error_message
         return False, reason
 
     def reasons_for_unavailable_status_codes(
-        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
+        self,
+        stream: Stream,
+        logger: logging.Logger,
+        source: Optional["Source"],
+        error: HTTPError,
     ) -> Dict[int, str]:
         """
         Returns a dictionary of HTTP status codes that indicate stream
@@ -134,9 +151,13 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             else:
                 return "Please visit the connector's documentation to learn more. "
 
-        except FileNotFoundError:  # If we are unit testing without implementing spec() method in source
+        except (
+            FileNotFoundError
+        ):  # If we are unit testing without implementing spec() method in source
             if source:
-                docs_url = f"https://docs.airbyte.com/integrations/sources/{source.name}"
+                docs_url = (
+                    f"https://docs.airbyte.com/integrations/sources/{source.name}"
+                )
             else:
                 docs_url = "https://docs.airbyte.com/integrations/sources/test"
 

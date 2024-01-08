@@ -292,7 +292,7 @@ class SourceDispatcher(AbstractSource, ABC):
                     configured_stream.stream, AirbyteStreamStatus.INCOMPLETE
                 )
             )
-            display_message = await stream_instance.get_error_display_message(e)
+            display_message = stream_instance.get_error_display_message(e)
             if display_message:
                 raise AirbyteTracedException.from_exception(e, message=display_message)
             else:

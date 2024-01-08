@@ -22,6 +22,7 @@ from yarl import URL
 
 import aiohttp
 import aiohttp_client_cache
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.async_cdk.streams.async_call_rate import (
     AsyncCachedLimiterSession,
@@ -295,23 +296,26 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
                     "body": response.text,
                 },
             )
-        if self.should_retry(response):
-            custom_backoff_time = self.backoff_time(response)
-            error_message = self.error_message(response)
-            if custom_backoff_time:
-                raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time,
-                    response=response,
-                    error_message=error_message,
-                )
-            else:
-                raise DefaultBackoffException(
-                    response=response, error_message=error_message
-                )
-        elif self.raise_on_http_errors:
-            # Raise any HTTP exceptions that happened in case there were unexpected ones
+        try:
             return await self.handle_response_with_error(response)
-        return response
+        except HttpError as exc:
+            if self.should_retry(response):
+                custom_backoff_time = self.backoff_time(response)
+                error_message = self.error_message(response)
+                if custom_backoff_time:
+                    raise UserDefinedBackoffException(
+                        backoff=custom_backoff_time,
+                        error=exc,
+                        error_message=error_message,
+                    )
+                else:
+                    raise DefaultBackoffException(
+                        error=exc, error_message=error_message
+                    )
+            elif self.raise_on_http_errors:
+                # Raise any HTTP exceptions that happened in case there were unexpected ones
+                raise exc
+            return response
 
     async def ensure_session(self) -> aiohttp.ClientSession:
         if self._session is None:
@@ -363,6 +367,12 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
             max_tries=max_tries, max_time=max_time, factor=self.retry_factor
         )
         return await backoff_handler(user_backoff_handler)(request, request_kwargs)
+
+    @classmethod
+    def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
+        raise NotImplementedError(
+            "Async streams should use HttpError.parse_error_message"
+        )
 
     async def read_records(
         self,
@@ -475,16 +485,15 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
             return response
 
         exc = HttpError(
-            aiohttp.ClientResponseError(
+            aiohttp_error=aiohttp.ClientResponseError(
                 response.request_info,
                 response.history,
                 status=response.status,
                 message=response.reason or "",
                 headers=response.headers,
             ),
-            response,
         )
-        await exc.set_response_error()
+        await exc.set_response_data(response)
         text = await response.text()
         self.logger.error(text)
         raise exc

@@ -11,7 +11,6 @@ from typing import List
 from unittest.mock import Mock
 from yarl import URL
 
-import aiohttp
 import freezegun
 import pendulum
 import pytest
@@ -21,6 +20,7 @@ from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, Configur
 from airbyte_cdk.sources.async_cdk import source_dispatcher
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.http.utils import HttpError
 from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
 from source_salesforce.api import Salesforce
@@ -91,7 +91,7 @@ async def test_bulk_sync_creation_failed(stream_config, stream_api):
 
     with aioresponses() as m:
         m.post("https://fase-account.salesforce.com/services/data/v57.0/jobs/query", status=400, callback=callback)
-        with pytest.raises(aiohttp.ClientResponseError) as err:
+        with pytest.raises(HttpError) as err:
             stream_slices = await anext(stream.stream_slices(sync_mode=SyncMode.incremental))
             [r async for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices)]
     assert err.value.message == "test_error"

@@ -3,12 +3,10 @@
 #
 
 import logging
-from typing import Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
 import requests
-from aiohttp import ClientResponseError
 from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
-from airbyte_cdk.sources.async_cdk.streams.core_async import AsyncStream
 from airbyte_cdk.sources.async_cdk.streams.utils.stream_helper_async import (
     get_first_record_for_slice,
     get_first_stream_slice,
@@ -16,12 +14,16 @@ from airbyte_cdk.sources.async_cdk.streams.utils.stream_helper_async import (
 from airbyte_cdk.sources.streams.http.availability_strategy import (
     HttpAvailabilityStrategy,
 )
+from airbyte_cdk.sources.streams.http.utils import HttpError
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.async_cdk.streams.http.http_async import AsyncHttpStream
 
 
 class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
     async def check_availability(
         self,
-        stream: AsyncStream,
+        stream: "AsyncHttpStream",
         logger: logging.Logger,
         source: Optional["AsyncAbstractSource"],
     ) -> Tuple[bool, Optional[str]]:
@@ -47,7 +49,7 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
             # without accounting for the case in which the parent stream is empty.
             reason = f"Cannot attempt to connect to stream {stream.name} - no stream slices were found, likely because the parent stream is empty."
             return False, reason
-        except ClientResponseError as error:
+        except HttpError as error:
             is_available, reason = await self._handle_http_error(
                 stream, logger, source, error
             )
@@ -63,7 +65,7 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
                 f"Successfully connected to stream {stream.name}, but got 0 records."
             )
             return True, None
-        except ClientResponseError as error:
+        except HttpError as error:
             is_available, reason = await self._handle_http_error(
                 stream, logger, source, error
             )
@@ -75,10 +77,10 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
 
     async def _handle_http_error(
         self,
-        stream: AsyncStream,
+        stream: "AsyncHttpStream",
         logger: logging.Logger,
         source: Optional["AsyncAbstractSource"],
-        error: ClientResponseError,
+        error: HttpError,
     ) -> Tuple[bool, Optional[str]]:
         """
         Override this method to define error handling for various `HTTPError`s
@@ -96,7 +98,7 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
           for some reason and the str should describe what went wrong and how to
           resolve the unavailability, if possible.
         """
-        status_code = error.status
+        status_code = error.status_code
         known_status_codes = self.reasons_for_unavailable_status_codes(
             stream, logger, source, error
         )
@@ -106,15 +108,16 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
             raise error
 
         doc_ref = self._visit_docs_message(logger, source)
-        reason = f"The endpoint {error.request_info.url} returned {status_code}: {error.message}. {known_reason}. {doc_ref} "
+        reason = f"The endpoint {error.url} returned {status_code}: {error.message}. {known_reason}. {doc_ref} "
+        response_error_message = stream.parse_error_message(error)
         return False, reason
 
     def reasons_for_unavailable_status_codes(
         self,
-        stream: AsyncStream,
+        stream: "AsyncHttpStream",
         logger: logging.Logger,
         source: Optional["AsyncAbstractSource"],
-        error: ClientResponseError,
+        error: HttpError,
     ) -> Dict[int, str]:
         """
         Returns a dictionary of HTTP status codes that indicate stream

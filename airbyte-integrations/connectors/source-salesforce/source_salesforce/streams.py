@@ -19,10 +19,11 @@ import aiohttp
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
-from airbyte_cdk.sources.async_cdk.streams.http.http_async import AsyncHttpStream, AsyncHttpSubStream
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.sources.async_cdk.streams.http.http_async import AsyncHttpStream, AsyncHttpSubStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.streams.http.utils import HttpError
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
@@ -107,10 +108,10 @@ class SalesforceStream(AsyncHttpStream, ABC):
             self.schema = self.sf_api.generate_schema(self.name)
         return self.schema
 
-    async def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        if isinstance(exception, aiohttp.ClientResponseError):
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        if isinstance(exception, HttpError):
             return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
-        return await super().get_error_display_message(exception)
+        return super().get_error_display_message(exception)
 
 
 class PropertyChunk:
@@ -369,8 +370,8 @@ class BulkSalesforceStream(SalesforceStream):
             response = await self._send_http_request("POST", url, json=json)
             job_id: str = (await response.json())["id"]
             return job_id
-        except aiohttp.ClientResponseError as error:  # TODO: which errors?
-            if error.status in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+        except HttpError as error:  # TODO: which errors?
+            if error.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 # A part of streams can't be used by BULK API. Every API version can have a custom list of
                 # these sobjects. Another part of them can be generated dynamically. That's why we can't track
                 # them preliminarily and there is only one way is to except error with necessary messages about
@@ -383,9 +384,7 @@ class BulkSalesforceStream(SalesforceStream):
                 #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
                 #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
                 #    And the main problem is these subqueries doesn't support CSV response format.
-                if not hasattr(error, "_response_error"):
-                    raise NotImplementedError("!!!!!!!!!!!!! this didn't use `handle_response_with_error`")
-                error_data = error._response_error or {}
+                error_data = error.json() or {}
                 error_code = error_data.get("errorCode")
                 error_message = error_data.get("message", "")
                 if error_message == "Selecting compound data not supported in Bulk Query" or (
@@ -395,29 +394,29 @@ class BulkSalesforceStream(SalesforceStream):
                         f"Cannot receive data for stream '{self.name}' using BULK API, "
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
-                elif error.status == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
+                elif error.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
                     self.logger.error(
                         f"Cannot receive data for stream '{self.name}' ,"
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
-                elif error.status == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                elif error.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                     self.logger.error(
                         f"Cannot receive data for stream '{self.name}' ,"
                         f"sobject options: {self.sobject_options}, Error message: '{error_data.get('message')}'"
                     )
-                elif error.status == codes.BAD_REQUEST and error_message.endswith("does not support query"):
+                elif error.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
                     self.logger.error(
                         f"The stream '{self.name}' is not queryable, "
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
                 elif (
-                    error.status == codes.BAD_REQUEST
+                    error.status_code == codes.BAD_REQUEST
                     and error_code == "API_ERROR"
                     and error_message.startswith("Implementation restriction")
                 ):
                     message = f"Unable to sync '{self.name}'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."
                     raise AirbyteTracedException(message=message, failure_type=FailureType.config_error, exception=error)
-                elif error.status == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
+                elif error.status_code == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
                     message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
                     self.logger.error(message)
                 else:
@@ -438,8 +437,8 @@ class BulkSalesforceStream(SalesforceStream):
         while pendulum.now() < expiration_time:
             try:
                 job_info = await (await self._send_http_request("GET", url=url)).json()
-            except aiohttp.ClientResponseError as error:
-                error_data = error._response_error
+            except HttpError as error:
+                error_data = error.json()
                 error_code = error_data.get("errorCode")
                 error_message = error_data.get("message", "")
                 if (

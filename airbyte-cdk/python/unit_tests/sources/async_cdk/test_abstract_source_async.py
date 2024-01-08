@@ -326,7 +326,7 @@ def test_read_stream_with_error_gets_display_message(mocker):
     with pytest.raises(RuntimeError, match="oh no!"):
         list(source.read(logger, {}, catalog))
 
-    stream.get_error_display_message = AsyncMock(return_value="my message")
+    mocker.patch.object(MockStream, "get_error_display_message", return_value="my message")
 
     with pytest.raises(AirbyteTracedException, match="oh no!") as exc:
         list(source.read(logger, {}, catalog))

@@ -186,7 +186,7 @@ class AsyncStream(Stream, ABC):
             )
         return True, None
 
-    async def get_error_display_message(
+    def get_error_display_message(
         self, exception: BaseException
     ) -> Optional[str]:
         """
