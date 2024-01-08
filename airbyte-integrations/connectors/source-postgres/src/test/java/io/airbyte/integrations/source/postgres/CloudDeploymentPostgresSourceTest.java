@@ -38,7 +38,7 @@ public class CloudDeploymentPostgresSourceTest {
 
   @BeforeAll
   static void setupContainers() {
-    DB_NO_SSL_WITH_NETWORK = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, ContainerModifier.NETWORK);
+    DB_NO_SSL_WITH_NETWORK = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.NETWORK);
     NETWORK_NO_SSL = DB_NO_SSL_WITH_NETWORK.getContainer().getNetwork();
     BASTION_NO_SSL = new SshBastionContainer();
     BASTION_NO_SSL.initAndStartBastion(NETWORK_NO_SSL);
@@ -67,10 +67,7 @@ public class CloudDeploymentPostgresSourceTest {
     PostgresSource source = new PostgresSource();
     source.setFeatureFlags(
         FeatureFlagsWrapper.overridingDeploymentMode(
-            FeatureFlagsWrapper.overridingUseStreamCapableState(
-                new EnvVariableFeatureFlags(),
-                true),
-            AdaptiveSourceRunner.CLOUD_MODE));
+            new EnvVariableFeatureFlags(), AdaptiveSourceRunner.CLOUD_MODE));
     return PostgresSource.sshWrappedSource(source);
   }
 

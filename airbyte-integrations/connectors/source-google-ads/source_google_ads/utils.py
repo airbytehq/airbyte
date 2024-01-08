@@ -2,7 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import functools
+import queue
 import re
+import threading
 import time
 from dataclasses import dataclass
 from datetime import datetime
@@ -12,10 +15,10 @@ import pendulum
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v13.errors.types.authentication_error import AuthenticationErrorEnum
-from google.ads.googleads.v13.errors.types.authorization_error import AuthorizationErrorEnum
-from google.ads.googleads.v13.errors.types.quota_error import QuotaErrorEnum
-from google.ads.googleads.v13.errors.types.request_error import RequestErrorEnum
+from google.ads.googleads.v15.errors.types.authentication_error import AuthenticationErrorEnum
+from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v15.errors.types.quota_error import QuotaErrorEnum
+from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
 from source_google_ads.google_ads import logger
 
 
@@ -177,6 +180,123 @@ def generator_backoff(
         return wrapper
 
     return decorator
+
+
+class RunAsThread:
+    """
+    The `RunAsThread` decorator is designed to run a generator function in a separate thread with a specified timeout.
+    This is particularly useful when dealing with functions that involve potentially time-consuming operations,
+    and you want to enforce a time limit for their execution.
+    """
+
+    def __init__(self, timeout_minutes):
+        """
+        :param timeout_minutes: The maximum allowed time (in minutes) for the generator function to idle.
+                                If the timeout is reached, a TimeoutError is raised.
+        """
+        self._timeout_seconds = timeout_minutes * 60
+
+    def __call__(self, generator_func):
+        @functools.wraps(generator_func)
+        def wrapper(*args, **kwargs):
+            """
+            The wrapper function sets up threading components, starts a separate thread to run the generator function.
+            It uses events and a queue for communication and synchronization between the main thread and the thread running the generator function.
+            """
+            # Event and Queue initialization
+            write_event = threading.Event()
+            exit_event = threading.Event()
+            the_queue = queue.Queue()
+
+            # Thread initialization and start
+            thread = threading.Thread(
+                target=self.target, args=(the_queue, write_event, exit_event, generator_func, args, kwargs), daemon=True
+            )
+            thread.start()
+
+            # Records the starting time for the timeout calculation.
+            start_time = time.time()
+            while thread.is_alive() or not the_queue.empty():
+                # The main thread waits for the `write_event` to be set or until the specified timeout.
+                if the_queue.empty():
+                    write_event.wait(self._timeout_seconds)
+                try:
+                    # The main thread yields the result obtained from reading the queue.
+                    yield self.read(the_queue)
+                    # The timer is reset since a new result has been received, preventing the timeout from occurring.
+                    start_time = time.time()
+                except queue.Empty:
+                    # If exit_event is set it means that the generator function in the thread has completed its execution.
+                    if exit_event.is_set():
+                        break
+                    # Check if the timeout has been reached without new results.
+                    if time.time() - start_time > self._timeout_seconds:
+                        # The thread may continue to run for some time after reaching a timeout and even come to life and continue working.
+                        # That is why the exit event is set to signal the generator function to stop producing data.
+                        exit_event.set()
+                        raise TimeoutError(f"Method '{generator_func.__name__}' timed out after {self._timeout_seconds / 60.0} minutes")
+                    # The write event is cleared to reset it for the next iteration.
+                    write_event.clear()
+
+        return wrapper
+
+    def target(self, the_queue, write_event, exit_event, func, args, kwargs):
+        """
+        This is a target function for the thread.
+        It runs the actual generator function, writing its results to a queue.
+        Exceptions raised during execution are also written to the queue.
+        :param the_queue: A queue used for communication between the main thread and the thread running the generator function.
+        :param write_event: An event signaling the availability of new data in the queue.
+        :param exit_event: An event indicating whether the generator function should stop producing data due to a timeout.
+        :param func: The generator function to be executed.
+        :param args: Positional arguments for the generator function.
+        :param kwargs: Keyword arguments for the generator function.
+        :return: None
+        """
+        try:
+            for value in func(*args, **kwargs):
+                # If the timeout has been reached we must stop producing any data
+                if exit_event.is_set():
+                    break
+                self.write(the_queue, value, write_event)
+            else:
+                # Notify the main thread that the generator function has completed its execution.
+                exit_event.set()
+                # Notify the main thread (even if the generator didn't produce any data) to prevent waiting for no reason.
+                if not write_event.is_set():
+                    write_event.set()
+        except Exception as e:
+            self.write(the_queue, e, write_event)
+
+    @staticmethod
+    def write(the_queue, value, write_event):
+        """
+        Puts a value into the queue and sets a write event to notify the main thread that new data is available.
+        :param the_queue: A queue used for communication between the main thread and the thread running the generator function.
+        :param value: The value to be put into the communication queue.
+                      This can be any type of data produced by the generator function, including results or exceptions.
+        :param write_event: An event signaling the availability of new data in the queue.
+        :return: None
+        """
+        the_queue.put(value)
+        write_event.set()
+
+    @staticmethod
+    def read(the_queue, timeout=0.001):
+        """
+        Retrieves a value from the queue, handling the case where the value is an exception, and raising it.
+        :param the_queue: A queue used for communication between the main thread and the thread running the generator function.
+        :param timeout: A time in seconds to wait for a value to be available in the queue.
+                        If the timeout is reached and no new data is available, a `queue.Empty` exception is raised.
+        :return: a value retrieved from the queue
+        """
+        value = the_queue.get(block=True, timeout=timeout)
+        if isinstance(value, Exception):
+            raise value
+        return value
+
+
+detached = RunAsThread
 
 
 def parse_dates(stream_slice):

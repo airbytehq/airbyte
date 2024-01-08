@@ -1,15 +1,19 @@
+---
+products: oss-enterprise
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Implementation Guide
 
-[Airbyte Enterprise](./README.md) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Enterprise license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
+[Airbyte Self-Managed Enterprise](./README.md) is in an early access stage for select priority users. Once you [are qualified for a Self-Managed Enterprise license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
 
-Airbyte Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
+Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
 
 ## Prerequisites
 
-There are three prerequisites to deploying Enterprise: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
+There are three prerequisites to deploying: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
 
 For production, we recommend deploying to EKS, GKE or AKS. If you are doing some local testing, follow the cluster setup instructions outlined [here](/deploying-airbyte/on-kubernetes-via-helm.md#cluster-setup).
 
@@ -49,7 +53,6 @@ Follow these instructions to add the Airbyte helm repository:
 
 ### Clone & Configure Airbyte
 
-
 1. `git clone` the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
 
 2. Create a new `airbyte.yml` file in the `configs` directory of the `airbyte-platform` folder. You may also copy `airbyte.sample.yml` to use as a template:
@@ -58,7 +61,7 @@ Follow these instructions to add the Airbyte helm repository:
 cp configs/airbyte.sample.yml configs/airbyte.yml
 ```
 
-3. Add your Airbyte Enterprise license key to your `airbyte.yml`. 
+3. Add your Airbyte Self-Managed Enterprise license key to your `airbyte.yml`. 
 
 4. Add your [auth details](/enterprise-setup/sso) to your `airbyte.yml`. Auth configurations aren't easy to modify after Airbyte is installed, so please double check them to make sure they're accurate before proceeding.
 
@@ -83,9 +86,12 @@ To configure basic auth (deploy without SSO), remove the entire `auth:` section 
 
 #### Configuring the Airbyte Database
 
-For Self-Managed Enterprise deployments, we advise against using the default Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster. For production, you should instead use a dedicated instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL).
+For Self-Managed Enterprise deployments, we recommend using a dedicated database instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL) instead of the default internal Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster.
 
 We assume in the following that you've already configured a Postgres instance:
+
+<details>
+<summary>External database setup steps</summary>
 
 1. In the `charts/airbyte/values.yaml` file, disable the default Postgres database (`airbyte/db`):
 
@@ -117,23 +123,14 @@ externalDatabase:
 
 The optional `jdbcUrl` field should be entered in the following format: `jdbc:postgresql://localhost:5432/db-airbyte`. We recommend against using this unless you need to add additional extra arguments can be passed to the JDBC driver at this time (e.g. to handle SSL).
 
-3. Finally, add this configuration into the `global` section of the `charts/airbyte/values.yaml` as well:
-
-```yaml
-global:
-  ...
-  database:
-    secretName: "airbyte-enterprise-airbyte-secrets" ## The name of the existing Kubernetes secret entered above.
-    secretValue: "DATABASE_PASSWORD" ## The Kubernetes secret key entered above.
-    host: "localhost" ## Database host entered above.
-    port: "5432" ## Database port entered above.
-```
-
-If you've used `password` or `jdbcUrl` above instead using a pre-existing Kubernetes secret, then your `secretName` will be `{release-name}-airbyte-secrets`, and `secretValue` will be `DATABASE_PASSWORD`.
+</details>
 
 #### Configuring External Logging
 
-For Self-Managed Enterprise deployments, we advise against using the default Minio storage (`airbyte/minio`) that Airbyte spins up within the Kubernetes cluster. For production, we recommend spinning up standalone log storage for additional reliability using tools such as S3 and GCS. It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
+For Self-Managed Enterprise deployments, we recommend spinning up standalone log storage for additional reliability using tools such as S3 and GCS instead of against using the defaul internal Minio storage (`airbyte/minio`). It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
+
+<details>
+<summary>External log storage setup steps</summary>
 
 1. In the `charts/airbyte/values.yaml` file, disable the default Minio instance (`airbyte/minio`):
 
@@ -142,12 +139,11 @@ minio:
   enabled: false
 ```
 
-How critical is the reliability of the state storage? Is it critical, does it need to be durable? Or is it just a fallback?
-
 2. In the `charts/airbyte/values.yaml` file, enable and configure external log storage:
 
+
 <Tabs>
-    <TabItem value="S3" label="S3">
+<TabItem value="S3" label="S3">
 
 ```yaml
 global:
@@ -193,7 +189,7 @@ global:
             
         gcs:
             bucket: airbyte-dev-logs # GCS bucket name that you've created.
-            credentials: "" ## ???
+            credentials: ""
             credentialsJson: "" ## Base64 encoded json GCP credentials file contents
 ```
 
@@ -201,6 +197,8 @@ Note that the `credentials` and `credentialsJson` fields are mutually exclusive.
 
 </TabItem>
 </Tabs>
+</details>
+
 
 #### Configuring Ingress
 
@@ -208,26 +206,32 @@ To access the Airbyte UI, you will need to manually attach an ingress configurat
 
 ```yaml
 apiVersion: networking.k8s.io/v1
- kind: Ingress
- spec:
-   rules:
-   - host: enterprise-demo.airbyte.com
-     http:
-       paths:
-       - backend:
-           service:
-             name: airbyte-pro-airbyte-webapp-svc
-             port:
-               number: 30080
-         path: /
-         pathType: Prefix
-       - backend:
-           service:
-             name: airbyte-pro-airbyte-keycloak-svc
-             port:
-               number: 30081
-         path: /auth
-         pathType: Prefix
+kind: Ingress
+metadata:
+  name: # ingress name, example: enterprise-demo
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  - host: # host, example: enterprise-demo.airbyte.com
+    http:
+      paths:
+      - backend:
+          service:
+            # format is ${RELEASE_NAME}-airbyte-webapp-svc
+            name: airbyte-pro-airbyte-webapp-svc 
+            port:
+              number: # service port, example: 8080
+        path: /
+        pathType: Prefix
+      - backend:
+          service:
+            # format is ${RELEASE_NAME}-airbyte-keycloak-svc
+            name: airbyte-pro-airbyte-keycloak-svc
+            port:
+              number: # service port, example: 8180
+        path: /auth
+        pathType: Prefix
 ```
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.

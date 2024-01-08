@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.6.0'
+    cdkVersionRequired = '0.11.0'
     features = ['db-destinations', 's3-destinations']
     useLocalCdk = false
 }
@@ -28,7 +28,9 @@ application {
 dependencies {
 
     implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
-    implementation 'com.amazon.redshift:redshift-jdbc42-no-awssdk:1.2.51.1078' // use the no-sdk library to avoid aws classpath conflicts
+    // TODO: Verify no aws sdk code is pulled by this dependency causing classpath conflicts
+    // https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-jdbc10-driver-differences.html
+    implementation 'com.amazon.redshift:redshift-jdbc42:2.1.0.23'
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 
@@ -41,4 +43,10 @@ dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
     integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
+}
+
+configurations.all {
+    resolutionStrategy {
+        force libs.jooq
+    }
 }

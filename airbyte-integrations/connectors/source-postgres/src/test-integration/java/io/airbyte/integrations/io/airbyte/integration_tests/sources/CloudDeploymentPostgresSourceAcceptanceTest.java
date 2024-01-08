@@ -43,15 +43,13 @@ public class CloudDeploymentPostgresSourceAcceptanceTest extends SourceAcceptanc
   @Override
   protected FeatureFlags featureFlags() {
     return FeatureFlagsWrapper.overridingDeploymentMode(
-        FeatureFlagsWrapper.overridingUseStreamCapableState(
-            super.featureFlags(),
-            true),
+        super.featureFlags(),
         AdaptiveSourceRunner.CLOUD_MODE);
   }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, ContainerModifier.CERT);
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.CERT);
     testdb.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
@@ -121,11 +119,6 @@ public class CloudDeploymentPostgresSourceAcceptanceTest extends SourceAcceptanc
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }

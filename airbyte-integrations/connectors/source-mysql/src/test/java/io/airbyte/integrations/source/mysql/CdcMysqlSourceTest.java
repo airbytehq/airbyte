@@ -34,11 +34,11 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -77,14 +77,12 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
   @Override
   protected MySQLTestDatabase createTestDatabase() {
-    return MySQLTestDatabase.in("mysql:8.0", "withInvalidTimezoneCEST").withCdcPermissions();
+    return MySQLTestDatabase.in(BaseImage.MYSQL_8, ContainerModifier.INVALID_TIMEZONE_CEST).withCdcPermissions();
   }
 
   @Override
   protected MySqlSource source() {
-    final var source = new MySqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new MySqlSource();
   }
 
   @Override
@@ -355,7 +353,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertEquals(7, stateMessages.size());
     for (int i = 0; i <= 4; i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
-      assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessage.getType());
+      assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());
       assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
           stateMessage.getGlobal().getSharedState());
       final Set<StreamDescriptor> streamsInSnapshotState = stateMessage.getGlobal().getStreamStates()
@@ -380,7 +378,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     }
 
     final AirbyteStateMessage secondLastSateMessage = stateMessages.get(5);
-    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, secondLastSateMessage.getType());
+    assertEquals(AirbyteStateType.GLOBAL, secondLastSateMessage.getType());
     assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
         secondLastSateMessage.getGlobal().getSharedState());
     final Set<StreamDescriptor> streamsInSnapshotState = secondLastSateMessage.getGlobal().getStreamStates()
@@ -397,7 +395,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     });
 
     final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateMessages.get(6);
-    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
+    assertEquals(AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
     assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
         stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
     final Set<StreamDescriptor> streamsInSyncCompletionState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()

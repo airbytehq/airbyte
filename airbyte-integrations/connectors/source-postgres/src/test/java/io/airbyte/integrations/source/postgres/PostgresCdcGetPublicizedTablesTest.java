@@ -28,7 +28,7 @@ class PostgresCdcGetPublicizedTablesTest {
 
   @BeforeEach
   void setup() {
-    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, ContainerModifier.CONF)
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.CONF)
         .with("create table table_1 (id serial primary key, text_column text);")
         .with("create table table_2 (id serial primary key, text_column text);")
         .with("create table table_irrelevant (id serial primary key, text_column text);")

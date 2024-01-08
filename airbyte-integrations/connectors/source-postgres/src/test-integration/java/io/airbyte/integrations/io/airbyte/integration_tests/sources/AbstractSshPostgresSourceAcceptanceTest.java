@@ -13,8 +13,6 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
@@ -77,16 +75,11 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
-
   // todo (cgardens) - dynamically create data by generating a database with a random name instead of
   // requiring data to already be in place.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, ContainerModifier.NETWORK);
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.NETWORK);
     bastion.initAndStartBastion(testdb.getContainer().getNetwork());
     populateDatabaseTestData();
   }
@@ -139,11 +132,6 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }
