@@ -152,7 +152,7 @@
         },
         "funding_type": {
           "type": ["string", "null"],
-          "enum": ["credit", "dedit", "prepaid", "not_known", "not_applicable"]
+          "enum": ["credit", "debit", "prepaid", "not_known", "not_applicable"]
         },
         "expiry_month": {
           "type": ["integer", "null"]
