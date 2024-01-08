@@ -158,8 +158,16 @@ public class CdcStateCompressionTest {
         .with(JdbcUtils.USERNAME_KEY, testUserName())
         .with(JdbcUtils.PASSWORD_KEY, testdb.getPassword())
         .withSchemas(TEST_SCHEMA)
-        .withCdcReplication()
         .withoutSsl()
+        // Configure for CDC replication but with a higher timeout than usual.
+        // This is because Debezium requires more time than usual to build the initial snapshot.
+        .with("is_test", true)
+        .with("replication_method", Map.of(
+            "method", "CDC",
+            "data_to_sync", "Existing and New",
+            "initial_waiting_seconds", 60,
+            "snapshot_isolation", "Snapshot"))
+
         .build();
   }
 
