@@ -61,10 +61,10 @@ class WebflowStream(HttpStream, ABC):
 
 class CollectionSchema(WebflowStream):
     """
-    Gets the schema of the current collection - see: https://developers.webflow.com/#get-collection-with-full-schema, and
+    Gets the schema of the current collection - see: https://docs.developers.webflow.com/v1.0.0/reference/get-collection, and
     then converts that schema to a json-schema.org-compatible schema that uses supported Airbyte types.
 
-    More info about Webflow schema: https://developers.webflow.com/#get-collection-with-full-schema
+    More info about Webflow schema: https://docs.developers.webflow.com/v1.0.0/reference/get-collection
     Airbyte data types: https://docs.airbyte.com/understanding-airbyte/supported-data-types/
     """
 
@@ -77,8 +77,8 @@ class CollectionSchema(WebflowStream):
 
     def path(self, **kwargs) -> str:
         """
-        See: https://developers.webflow.com/#list-collections
-        Returns a list which contains high-level information about each collection.
+        See: https://docs.developers.webflow.com/v1.0.0/reference/get-collection
+        Returns a collection with full schema by collection_id
         """
 
         path = f"collections/{self.collection_id}"
@@ -243,6 +243,7 @@ class CollectionContents(WebflowStream):
         extra_fields = {
             "_id": {"type": ["null", "string"]},
             "_cid": {"type": ["null", "string"]},
+            "_locale": {"type": ["null", "string"]},
         }
         json_schema.update(extra_fields)
 
@@ -283,7 +284,7 @@ class SourceWebflow(AbstractSource):
         which overloads that standard authentication to include additional headers that are required by Webflow.
         """
         api_key = config.get("api_key", None)
-        accept_version = WEBFLOW_ACCEPT_VERSION
+        accept_version = config.get("accept_version", WEBFLOW_ACCEPT_VERSION)
         if not api_key:
             raise Exception("Config validation error: 'api_key' is a required property")
 
