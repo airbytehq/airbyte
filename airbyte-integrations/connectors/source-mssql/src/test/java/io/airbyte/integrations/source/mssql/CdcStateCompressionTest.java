@@ -85,6 +85,7 @@ public class CdcStateCompressionTest {
       testdb
           .with("CREATE TABLE %s.test_table_%d (id INT IDENTITY(1,1) PRIMARY KEY);", TEST_SCHEMA, i)
           .with(enableCdcSqlFmt, TEST_SCHEMA, i, CDC_ROLE_NAME, i, 1)
+          .withShortenedCapturePollingInterval()
           .with("INSERT INTO %s.test_table_%d DEFAULT VALUES", TEST_SCHEMA, i);
     }
 
@@ -122,7 +123,8 @@ public class CdcStateCompressionTest {
       testdb
           .with(sb.toString())
           .with(enableCdcSqlFmt, TEST_SCHEMA, i, CDC_ROLE_NAME, i, 2)
-          .with(disableCdcSqlFmt, TEST_SCHEMA, i, i, 1);
+          .with(disableCdcSqlFmt, TEST_SCHEMA, i, i, 1)
+          .withShortenedCapturePollingInterval();
     }
   }
 
@@ -156,8 +158,16 @@ public class CdcStateCompressionTest {
         .with(JdbcUtils.USERNAME_KEY, testUserName())
         .with(JdbcUtils.PASSWORD_KEY, testdb.getPassword())
         .withSchemas(TEST_SCHEMA)
-        .withCdcReplication()
         .withoutSsl()
+        // Configure for CDC replication but with a higher timeout than usual.
+        // This is because Debezium requires more time than usual to build the initial snapshot.
+        .with("is_test", true)
+        .with("replication_method", Map.of(
+            "method", "CDC",
+            "data_to_sync", "Existing and New",
+            "initial_waiting_seconds", 60,
+            "snapshot_isolation", "Snapshot"))
+
         .build();
   }
 
