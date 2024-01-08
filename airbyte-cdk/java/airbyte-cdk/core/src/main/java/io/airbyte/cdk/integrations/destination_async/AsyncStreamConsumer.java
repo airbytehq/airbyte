@@ -151,7 +151,6 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
      */
     final var message = deserializeAirbyteMessage(messageString);
     if (Type.RECORD.equals(message.getType())) {
-      // TODO: This might be the cause of the bug
       if (Strings.isNullOrEmpty(message.getRecord().getNamespace())) {
         message.getRecord().setNamespace(defaultNamespace);
       }
