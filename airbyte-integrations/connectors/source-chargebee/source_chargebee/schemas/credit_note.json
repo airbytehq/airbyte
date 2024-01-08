@@ -94,7 +94,8 @@
     },
     "fractional_correction": {
       "type": ["integer", "null"],
-      "minimum": 0
+      "minimum": -50000,
+      "maximum": 50000
     },
     "deleted": {
       "type": ["boolean", "null"]
