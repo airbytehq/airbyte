@@ -16,6 +16,7 @@ class HttpRequest:
         url: str,
         query_params: Optional[Union[str, Mapping[str, Union[str, List[str]]]]] = None,
         headers: Optional[Mapping[str, str]] = None,
+        body: Optional[Union[str, Mapping[str, Any]]] = None,
     ) -> None:
         self._parsed_url = urlparse(url)
         self._query_params = query_params
@@ -25,8 +26,10 @@ class HttpRequest:
             raise ValueError("If query params are provided as part of the url, `query_params` should be empty")
 
         self._headers = headers or {}
+        self._body = body or {}
 
-    def _encode_qs(self, query_params: Union[str, Mapping[str, Union[str, List[str]]]]) -> str:
+    @staticmethod
+    def _encode_qs(query_params: Union[str, Mapping[str, Union[str, List[str]]]]) -> str:
         if isinstance(query_params, str):
             return query_params
         return urlencode(query_params, doseq=True)
@@ -41,15 +44,16 @@ class HttpRequest:
                 and self._parsed_url.hostname == other._parsed_url.hostname
                 and self._parsed_url.path == other._parsed_url.path
                 and (
-                    ANY_QUERY_PARAMS in [self._query_params, other._query_params]
+                    ANY_QUERY_PARAMS in (self._query_params, other._query_params)
                     or parse_qs(self._parsed_url.query) == parse_qs(other._parsed_url.query)
                 )
                 and _is_subdict(other._headers, self._headers)
+                and other._body == self._body
             )
         return False
 
     def __str__(self) -> str:
-        return f"{self._parsed_url} with headers {self._headers})"
+        return f"{self._parsed_url} with headers {self._headers} and body {self._body})"
 
     def __repr__(self) -> str:
-        return f"HttpRequest(request={self._parsed_url}, headers={self._headers})"
+        return f"HttpRequest(request={self._parsed_url}, headers={self._headers}, body={self._body})"
