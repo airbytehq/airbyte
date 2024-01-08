@@ -8,6 +8,7 @@ interface IProps {
   formattedMessage?: React.ReactNode;
   onClose?: () => void;
   bgColor?: any;
+  color?: any;
 }
 
 export const AlertContainer = styled.div<{ bgColor: any }>`
@@ -28,12 +29,12 @@ export const AlertContainer = styled.div<{ bgColor: any }>`
   padding: 0px 20px;
 `;
 
-export const Message = styled.div`
+export const Message = styled.div<{ color: any }>`
   width: 100%;
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
-  color: #991b1b;
+  color: ${({ color }) => color || "#991b1b"};
 `;
 
 export const CrossButton = styled.button`
@@ -42,11 +43,11 @@ export const CrossButton = styled.button`
   background-color: transparent;
 `;
 
-const Alert: React.FC<IProps> = ({ message, onClose, formattedMessage, bgColor }) => {
+const Alert: React.FC<IProps> = ({ message, onClose, formattedMessage, bgColor, color }) => {
   if (message || formattedMessage) {
     return (
       <AlertContainer bgColor={bgColor}>
-        <Message>{formattedMessage ? formattedMessage : message}</Message>
+        <Message color={color}>{formattedMessage ? formattedMessage : message}</Message>
         {onClose && (
           <CrossButton onClick={onClose}>
             <CrossIcon color="#F87171" />
