@@ -175,6 +175,12 @@
     "object": {
       "type": ["string", "null"]
     },
+    "mrr": {
+      "type": ["integer", "null"]
+    },
+    "tax_providers_fields": {
+      "type": ["array", "null"]
+    },
     "billing_address": {
       "type": ["object", "null"],
       "properties": {
