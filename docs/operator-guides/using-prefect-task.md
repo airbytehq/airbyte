@@ -1,5 +1,6 @@
 ---
 description: Start triggering Airbyte jobs with Prefect in minutes
+products: oss-*
 ---
 
 # Using the Prefect Airbyte Task

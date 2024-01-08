@@ -56,6 +56,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.time.Duration;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -131,7 +132,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         RedshiftInsertDestination.DRIVER_CLASS,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        SSL_JDBC_PARAMETERS);
+        SSL_JDBC_PARAMETERS,
+        Duration.ofMinutes(2));
   }
 
   @Override

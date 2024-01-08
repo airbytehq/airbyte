@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Sync Schedules
 
 For each connection, you can select between three options that allow a sync to run. The three options for `Replication Frequency` are:
