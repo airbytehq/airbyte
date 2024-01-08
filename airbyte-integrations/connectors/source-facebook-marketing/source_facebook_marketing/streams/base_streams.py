@@ -118,7 +118,7 @@ class FBMarketingStream(Stream, ABC):
                     {"field": f"{self.entity_prefix}.{self.status_field}", "operator": "IN", "value": self._filter_statuses},
                 ],
             }
-            if self._filter_statuses and self.status_field
+            if self._filter_statuses and not ("ALL" in self._filter_statuses) and self.status_field
             else {}
         )
 

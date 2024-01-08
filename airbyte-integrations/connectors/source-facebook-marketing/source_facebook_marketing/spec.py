@@ -21,10 +21,10 @@ logger = logging.getLogger("airbyte")
 ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
-ValidCampaignStatuses = Enum("ValidCampaignStatuses", Campaign.EffectiveStatus.__dict__)
-ValidAdSetStatuses = Enum("ValidAdSetStatuses", AdSet.EffectiveStatus.__dict__)
-ValidAdStatuses = Enum("ValidAdStatuses", Ad.EffectiveStatus.__dict__)
-ValidAdCreativeStatuses = Enum("ValidAdCreativeStatuses", AdCreative.Status.__dict__)
+ValidCampaignStatuses = Enum("ValidCampaignStatuses", {"ALL": "ALL"} | Campaign.EffectiveStatus.__dict__)
+ValidAdSetStatuses = Enum("ValidAdSetStatuses", {"ALL": "ALL"} | AdSet.EffectiveStatus.__dict__)
+ValidAdStatuses = Enum("ValidAdStatuses", {"ALL": "ALL"} | Ad.EffectiveStatus.__dict__)
+ValidAdCreativeStatuses = Enum("ValidAdCreativeStatuses", {"ALL": "ALL"} | AdCreative.Status.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 EMPTY_PATTERN = "^$"
 
@@ -168,28 +168,28 @@ class ConnectorConfig(BaseConfig):
         title="Campaign Statuses",
         order=4,
         description="Select statuses you want to to be loaded in the stream. Empty means all available.",
-        default=[],
+        default=["ALL"],
     )
 
     adset_statuses: Optional[List[ValidAdSetStatuses]] = Field(
         title="AdSet Statuses",
         order=5,
         description="Select statuses you want to to be loaded in the stream. Empty means all available.",
-        default=[],
+        default=["ALL"],
     )
 
     ad_statuses: Optional[List[ValidAdStatuses]] = Field(
         title="Ad Statuses",
         order=6,
         description="Select statuses you want to to be loaded in the stream. Empty means all available.",
-        default=[],
+        default=["ALL"],
     )
 
     adcreative_statuses: Optional[List[ValidAdCreativeStatuses]] = Field(
         title="AdCreative Statuses",
         order=7,
         description="Select statuses you want to to be loaded in the stream. Empty means all available.",
-        default=[],
+        default=["ALL"],
     )
 
     fetch_thumbnail_images: bool = Field(
