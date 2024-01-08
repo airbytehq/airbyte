@@ -6,7 +6,7 @@
 from enum import Enum
 from os import remove
 from time import sleep, time
-from typing import Any, Callable, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -39,8 +39,7 @@ class ShopifyBulkJob:
     def __init__(self, session: requests.Session, logger: AirbyteLogger, query: ShopifyBulkQuery) -> None:
         self.session = session
         self.logger = logger
-        self.query = query
-        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
+        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(query)
         self.tools: BulkTools = BulkTools()
 
     # 5Mb chunk size to save the file
@@ -217,31 +216,12 @@ class ShopifyBulkJob:
                 file.write(END_OF_FILE.encode())
         return filename
 
-    def job_record_producer(
-        self,
-        job_result_url: str,
-        custom_transform: Optional[Callable] = None,
-        remove_file: Optional[bool] = True,
-        **kwargs,
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        @ custom_transform:
-            Example method:
-            Adds the new field to the record during the processing.
-
-            ```python
-            @staticmethod
-            def custom_transform(record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-                record["MY_CUSTTOM_FIELD"] = "MY_VALUE"
-                yield record
-            ```
-        """
-
+    def job_record_producer(self, job_result_url: str, remove_file: Optional[bool] = True) -> Iterable[Mapping[str, Any]]:
         try:
             # save the content to the local file
             filename = self.job_retrieve_result(job_result_url)
             # produce records from saved result
-            yield from self.record_producer.produce_records(filename, custom_transform)
+            yield from self.record_producer.produce_records(filename)
         except Exception as e:
             raise ShopifyBulkExceptions.BulkRecordProduceError(
                 f"An error occured while producing records from BULK Job result. Trace: {repr(e)}.",

@@ -381,6 +381,17 @@ class IncrementalShopifySubstream(IncrementalShopifyStream):
         yield from self.filter_records_newer_than_state(stream_state=cached_substream_state, records_slice=records)
 
 
+class MetafieldShopifySubstream(IncrementalShopifySubstream):
+    slice_key = "id"
+    data_field = "metafields"
+
+    parent_stream_class: object = None
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        object_id = stream_slice[self.slice_key]
+        return f"{self.parent_stream_class.data_field}/{object_id}/{self.data_field}.json"
+
+
 class IncrementalShopifyNestedSubstream(IncrementalShopifyStream):
     """
     IncrementalShopifyNestedSubstream - provides slicing functionality for streams using parts of data from parent stream.
@@ -550,12 +561,8 @@ class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
 class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     filter_field = "updated_at"
     cursor_field = "updated_at"
-
     data_field = "graphql"
     http_method = "POST"
-
-    # default custom record reader, overide if needed.
-    custom_record_reader: Optional[Callable] = None
 
     def __init__(self, config: Dict):
         super().__init__(config)
@@ -567,12 +574,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             logger=self.logger,
             query=self.query,
         )
-
-    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        """
-        Defines any custom record transformations. Yield record `as is` by default.
-        """
-        yield record
 
     @property
     def slice_interval_in_days(self) -> int:
@@ -593,12 +594,13 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         and should be instantiated from the `ShopifyBulkQuery` class.
         """
 
-    def add_shop_url_field(self, records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+    def add_shop_url_field(self, records: Optional[Iterable[Mapping[str, Any]]] = []) -> Iterable[Mapping[str, Any]]:
         # ! Mandatory, add shop_url to the record to make querying easy
         # more info: https://github.com/airbytehq/airbyte/issues/25110
         for record in records:
-            record["shop_url"] = self.config["shop"]
-            yield record
+            if record:
+                record["shop_url"] = self.config["shop"]
+                yield record
 
     # CDK OVERIDES
     @property
@@ -670,44 +672,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # add `shop_url` field to each record produced
             records = self.add_shop_url_field(
                 # produce records from saved bulk job result
-                self.bulk_job.job_record_producer(job_result_url, self.custom_transform)
+                self.bulk_job.job_record_producer(job_result_url)
             )
             yield from self.filter_records_newer_than_state(stream_state, records)
-
-
-class MetafieldShopifySubstream(IncrementalShopifySubstream):
-    slice_key = "id"
-    data_field = "metafields"
-
-    parent_stream_class: object = None
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        object_id = stream_slice[self.slice_key]
-        return f"{self.parent_stream_class.data_field}/{object_id}/{self.data_field}.json"
-
-
-class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
-    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        """
-        The dependent resources have `__parentId` key in record, which signifies about the parnt-to-child relation.
-        To match the existing JSON Schema for `Metafields` streams we need to:
-            -- move the `id` to the `owner_id` key and extract the actual `id` (INT) from the string
-            -- extract the parent resosurce from the `id` and add it to the `owner_resource` field
-
-        Input:
-            { "__parentId": "gid://shopify/Order/19435458986123", "owner_type": "ORDER" }
-        Output:
-            { "owner_id": 19435458986123, "owner_resource: "order"}
-
-        More info: https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
-        """
-        # resolve parent id from `str` to `int`
-        record["owner_id"] = self.bulk_job.tools.resolve_str_id(record.get(BULK_PARENT_KEY))
-        # add `owner_resource` field
-        record["owner_resource"] = self.bulk_job.tools.camel_to_snake(record.get(BULK_PARENT_KEY, "").split("/")[3])
-        # remove `__parentId` from record
-        record.pop(BULK_PARENT_KEY, None)
-        # convert dates from ISO-8601 to RFC-3339
-        record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
-        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
-        yield record

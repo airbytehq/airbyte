@@ -342,6 +342,7 @@ def bulk_job_unknown_status_response():
 def metafield_jsonl_content_example():
     return dumps(
         {
+            "__typename": "Metafield",
             "id": "gid://shopify/Metafield/123",
             "__parentId": "gid://shopify/Order/1234567",
             "createdAt": "2023-01-01T01:01:01Z",
@@ -362,6 +363,7 @@ def filfillment_order_jsonl_content_example():
 def transactions_jsonl_content_example():
     return dumps(
         {
+            "__typename": "Order",
             "id":"gid://shopify/Order/1",
             "currency":"USD",
             "transactions":[
@@ -442,14 +444,14 @@ def fulfillment_orders_response_expected_result():
         'fulfill_at': '2023-04-13T12:00:00+00:00', 
         'fulfill_by': None, 
         'international_duties': None, 
-        'fulfillment_holds': [None], 
+        'fulfillment_holds': [], 
         'created_at': '2023-04-13T12:09:45+00:00', 
         'updated_at': '2023-04-13T12:09:46+00:00', 
         'request_status': 'UNSUBMITTED', 
         'status': 'CLOSED', 
-        'supported_actions': [None], 
+        'supported_actions': [], 
         'shop_id': None, 
-        'order_id': 1, 
+        'order_id': 1,
         'assigned_location_id': 123, 
         'line_items': [
             {

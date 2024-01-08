@@ -118,7 +118,7 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                             Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
                             Argument(name="sortKey", value="UPDATED_AT"),    
                         ], 
-                        fields=[Field(name='edges', fields=[Field(name='node', fields=['id', Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])]
+                        fields=[Field(name='edges', fields=[Field(name='node', fields=['__typename', 'id', Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])]
                     )
                 ]
             ),
@@ -137,7 +137,7 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                             Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
                             Argument(name="sortKey", value="UPDATED_AT"),    
                         ], 
-                        fields=[Field(name='edges', fields=[Field(name='node', fields=['id',Field(name="images", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])])])])]
+                        fields=[Field(name='edges', fields=[Field(name='node', fields=['__typename','id',Field(name="images", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])])])])]
                     )
                 ]
             ),
@@ -159,6 +159,7 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                                     Field(
                                         name='node', 
                                         fields=[
+                                            '__typename',
                                             'id',
                                             Query(
                                                 name="inventoryLevels", 
@@ -172,6 +173,7 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                                                             Field(
                                                                 name="node", 
                                                                 fields=[
+                                                                  "__typename",
                                                                   "id",
                                                                   Field(name="available"),
                                                                   Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),

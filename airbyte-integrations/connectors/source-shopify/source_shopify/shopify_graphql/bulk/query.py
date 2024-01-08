@@ -10,7 +10,6 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
 
-from .record import ShopifyBulkRecord
 from .tools import BULK_PARENT_KEY, BulkTools
 
 
@@ -78,27 +77,17 @@ class ShopifyBulkQuery:
         """
 
     @property
-    def record_identifier(self) -> Optional[str]:
+    def record_composition(self) -> Optional[Mapping[str, Any]]:
         """
-        Defines the record identifier to fetch only records related to the choosen stream.
         Example:
-            { "admin_graphql_api_id": "gid://shopify/Metafield/22533588451517" }
-            In this example the record could be identified by it's reference = ".../Metafield/..."
-        The property should be defined like:
-            record_identifier = "Metafield"
-        IF
-            record_indetifier = None :
-                The resulted file would be read as is line by line  without matching records.
+            {
+                "new_record": "Collection", // the GQL Typename of the parernt entity
+                "record_components": [
+                    "CollectionPublication" // each `collection` has List `publications`
+                ],
+            }
         """
-        return None
-
-    @property
-    def substream(self) -> bool:
-        """
-        Defines, if the full JSONL content would be emitted or just a subset of the records,
-        depending on `record_identifier` property.
-        """
-        return False
+        return {}
 
     @property
     def sort_key(self) -> Optional[str]:
@@ -113,14 +102,7 @@ class ShopifyBulkQuery:
         Defines the fields for final graph selection.
         https://shopify.dev/docs/api/admin-graphql
         """
-        return ["id"]
-
-    @property
-    def should_emit_compose_leftovers(self) -> bool:
-        """
-        Defines wether of not the record_buffer should checked for leftovers.
-        """
-        return True
+        return ["__typename", "id"]
 
     def query(self, filter_query: Optional[str] = None) -> Query:
         """
@@ -136,7 +118,6 @@ class ShopifyBulkQuery:
                 }
             }
         """
-
         # return the constructed query operation
         return self.build(self.query_name, self.query_nodes, filter_query)
 
@@ -170,16 +151,12 @@ class ShopifyBulkQuery:
         # return the constructed query operation
         return Operation(type="", queries=[query]).render()
 
-    def compose_record(
-        self,
-        record: Mapping[str, Any],
-        records_buffer: Optional[List[Mapping[str, Any]]] = None,
-    ) -> Optional[Iterable[Mapping[str, Any]]]:
+    def record_process_components(self, record: Optional[Mapping[str, Any]] = None) -> Optional[Iterable[Mapping[str, Any]]]:
         """
-        Default record composition method - emit each line read.
-        Overrid if the data is complex and requires manual joining, see `FulfillmentOrder.compose_record()` for more info.
+        Defiines how to process collected components, default `as is`.
         """
-        yield record
+        if record:
+            yield record
 
 
 class Metafield(ShopifyBulkQuery):
@@ -193,10 +170,12 @@ class Metafield(ShopifyBulkQuery):
         ) {
             edges {
                 node {
+                    __typename
                     id
                     metafields {
                         edges {
                             node {
+                                __typename
                                 id
                                 namespace
                                 value
@@ -224,11 +203,11 @@ class Metafield(ShopifyBulkQuery):
         COLLECTIONS = "collections"
         LOCATIONS = "locations"
 
-    record_identifier = "Metafield"
     sort_key = "UPDATED_AT"
-    substream = True
+    record_composition = {"new_record": "Metafield"}
 
     metafield_fields: List[Field] = [
+        "__typename",
         "id",
         "namespace",
         "value",
@@ -272,11 +251,25 @@ class Metafield(ShopifyBulkQuery):
         metafield_node = self.get_edge_node("metafields", self.metafield_fields)
 
         if isinstance(self.type, list):
-            return ["id", self.get_edge_node(self.type[1], ["id", metafield_node])]
+            return ["__typename", "id", self.get_edge_node(self.type[1], ["__typename", "id", metafield_node])]
         elif isinstance(self.type, str):
-            return ["id", metafield_node]
+            return ["__typename", "id", metafield_node]
         else:
             raise Exception(f"Invalid type for `query_nodes`: {self.type}.")
+
+    def record_process_components(self, record: Optional[Mapping[str, Any]] = None) -> Optional[Iterable[Mapping[str, Any]]]:
+        if record:
+            # resolve parent id from `str` to `int`
+            record["owner_id"] = self.tools.resolve_str_id(record.get(BULK_PARENT_KEY))
+            # add `owner_resource` field
+            record["owner_resource"] = self.tools.camel_to_snake(record.get(BULK_PARENT_KEY, "").split("/")[3])
+            # remove `__parentId` from record
+            record.pop(BULK_PARENT_KEY, None)
+            # convert dates from ISO-8601 to RFC-3339
+            record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+            record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+            record = self.tools.fields_names_to_snake_case(record)
+        yield record
 
 
 class MetafieldCollection(Metafield):
@@ -628,7 +621,6 @@ class DiscountCode(ShopifyBulkQuery):
 
     query_name = "codeDiscountNodes"
     sort_key = "UPDATED_AT"
-    should_emit_compose_leftovers = False
 
     code_discount_fields: List[Field] = [
         Field(name="discountClass", alias="discountType"),
@@ -667,36 +659,36 @@ class DiscountCode(ShopifyBulkQuery):
         Field(name="codeDiscount", fields=code_discount_fragments),
     ]
 
-    def compose_record(
-        self,
-        record: Mapping[str, Any],
-        records_buffer: Optional[List[Mapping[str, Any]]] = None,
-    ) -> Optional[Iterable[Mapping[str, Any]]]:
-        """
-        Overide to provide custom record reading functionality, here we need to:
-        - read the first record as `main`
-        - read all the subsequent record and join each the `main`
-        """
+    record_composition = {
+        "new_record": "DiscountCodeNode",
+        # each DiscountCodeNode has `DiscountRedeemCode`
+        "record_components": ["DiscountRedeemCode"],
+    }
 
-        if ShopifyBulkRecord.check_type(record, "DiscountCodeNode"):
-            # clean up for the new parent record
-            records_buffer.clear()
-            records_buffer.append(record)
-            # move the id under `price_rule_id`
-            records_buffer[-1]["price_rule_id"] = record.get("id")
-            # by now, we have duplicated info
-            # remove the original id, so set the `id` from child record
-            records_buffer[-1].pop("id")
-            records_buffer[-1].pop("__typename")
-
-        elif ShopifyBulkRecord.check_type(record, "DiscountRedeemCode"):
-            record.pop("__typename")
-            # we know that the sub-records follow the parent one, so if there are more related to the main record,
-            # we should merge each of them together with the parent one to have a single record.
-            records_buffer[-1].update(**record)
-            records_buffer[-1].update(**records_buffer[-1].get("codeDiscount"))
-            # emit record
-            yield from ShopifyBulkRecord.emit_collected(records_buffer)
+    def record_process_components(self, record: Optional[Mapping[str, Any]] = None) -> Optional[Iterable[Mapping[str, Any]]]:
+        """
+        Defiines how to process collected components.
+        """
+        if record:
+            record_components = record.get("record_components", {})
+            if record_components:
+                discounts = record_components.get("DiscountRedeemCode", [])
+                if len(discounts) > 0:
+                    for discount in discounts:
+                        # resolve parent id from `str` to `int`
+                        discount["admin_graphql_api_id"] = discount.get("id")
+                        discount["price_rule_id"] = self.tools.resolve_str_id(discount.get(BULK_PARENT_KEY))
+                        discount["id"] = self.tools.resolve_str_id(discount.get("id"))
+                        code_discount = record.get("codeDiscount", {})
+                        if code_discount:
+                            discount.update(**code_discount)
+                            discount.pop(BULK_PARENT_KEY, None)
+                            # field names to snake case for discount
+                            discount = self.tools.fields_names_to_snake_case(discount)
+                            # convert dates from ISO-8601 to RFC-3339
+                            discount["created_at"] = self.tools.from_iso8601_to_rfc3339(discount, "created_at")
+                            discount["updated_at"] = self.tools.from_iso8601_to_rfc3339(discount, "updated_at")
+                        yield discount
 
 
 class Collection(ShopifyBulkQuery):
@@ -730,10 +722,6 @@ class Collection(ShopifyBulkQuery):
 
     query_name = "collections"
     sort_key = "UPDATED_AT"
-    should_emit_compose_leftovers = False
-    # CollectionPublication could have more than 1 `published_at`,
-    # we need to take the very first occurance and skip the other ones.
-    has_publish_at: bool = False
 
     publications_fields: List[Field] = [
         Field(name="edges", fields=[Field(name="node", fields=["__typename", Field(name="publishDate", alias="publishedAt")])])
@@ -752,33 +740,29 @@ class Collection(ShopifyBulkQuery):
         Field(name="productsCount"),
     ]
 
-    def compose_record(
-        self,
-        record: Mapping[str, Any],
-        records_buffer: Optional[List[Mapping[str, Any]]] = None,
-    ) -> Optional[Iterable[Mapping[str, Any]]]:
+    record_composition = {
+        "new_record": "Collection",
+        # each collection has `publications`
+        "record_components": ["CollectionPublication"],
+    }
+
+    def record_process_components(self, record: Optional[Mapping[str, Any]] = None) -> Optional[Iterable[Mapping[str, Any]]]:
         """
-        Overide to provide custom record reading functionality, here we need to:
-        - read the first record as `main`
-        - read all the subsequent record to the fist occcurrence and join to the `main`
+        Defiines how to process collected components.
         """
-        # register the parent record first
-        if ShopifyBulkRecord.check_type(record, "Collection"):
-            record.pop("__typename")
-            # clean up for the new parent record
-            records_buffer.clear()
-            records_buffer.append(record)
-            # marking the parent record as incomplete
-            self.has_publish_at = False
-        elif ShopifyBulkRecord.check_type(record, "CollectionPublication") and not self.has_publish_at:
-            record.pop("__typename")
-            # we know that the sub-records follow the parent one, so if there are more related to the main record,
-            # we should merge the very first occurrence with the parent part to have a single record, as we tarck the `published_at` here.
-            records_buffer[-1].update(**record)
-            # emit complete record
-            yield from ShopifyBulkRecord.emit_collected(records_buffer)
-            # flagging to skip subsequent, since we merged the neccessary parts already
-            self.has_publish_at = True
+        if record:
+            record_components = record.get("record_components", {})
+            if record_components:
+                publications = record_components.get("CollectionPublication", [])
+                if len(publications) > 0:
+                    record["published_at"] = publications[0].get("publishedAt")
+                    record.pop("record_components")
+            # convert dates from ISO-8601 to RFC-3339
+            record["published_at"] = self.tools.from_iso8601_to_rfc3339(record, "published_at")
+            record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+            # remove leftovers
+            record.pop(BULK_PARENT_KEY, None)
+        yield record
 
 
 class InventoryItem(ShopifyBulkQuery):
@@ -787,6 +771,7 @@ class InventoryItem(ShopifyBulkQuery):
         inventoryItems(query: "updated_at:>='2022-04-13T00:00:00+00:00' AND updated_at:<='2023-02-07T00:00:00+00:00'") {
             edges {
                 node {
+                    __typename
                     unitCost {
                         cost: amount
                     }
@@ -815,10 +800,11 @@ class InventoryItem(ShopifyBulkQuery):
     query_name = "inventoryItems"
 
     country_harmonizedS_system_codes: List[Field] = [
-        Field(name="edges", fields=[Field(name="node", fields=["harmonizedSystemCode", "countryCode"])])
+        Field(name="edges", fields=[Field(name="node", fields=["__typename", "harmonizedSystemCode", "countryCode"])])
     ]
 
     query_nodes: List[Field] = [
+        "__typename",
         "id",
         Field(name="unitCost", fields=[Field(name="amount", alias="cost")]),
         Field(name="countryCodeOfOrigin"),
@@ -832,6 +818,28 @@ class InventoryItem(ShopifyBulkQuery):
         Field(name="requiresShipping"),
     ]
 
+    record_composition = {
+        "new_record": "InventoryItem",
+    }
+
+    def record_process_components(self, record: Optional[Mapping[str, Any]] = None) -> Optional[Iterable[Mapping[str, Any]]]:
+        """
+        Defiines how to process collected components.
+        """
+        if record:
+            # resolve `cost` to root lvl as `number`
+            record["cost"] = float(record.get("unitCost", {}).get("cost"))
+            # clean up
+            record.pop("unitCost", None)
+            # add empty `country_harmonized_system_codes` array, if missing for record
+            if "countryHarmonizedSystemCodes" not in record.keys():
+                record["country_harmonized_system_codes"] = []
+            # convert dates from ISO-8601 to RFC-3339
+            record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+            record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+            record = self.tools.fields_names_to_snake_case(record)
+        yield record
+
 
 class InventoryLevel(ShopifyBulkQuery):
     """
@@ -840,10 +848,12 @@ class InventoryLevel(ShopifyBulkQuery):
             locations {
                 edges {
                     node {
+                        __typename
                         id
                         inventoryLevels(query: "updated_at:>='2023-04-14T00:00:00+00:00'") {
                             edges {
                                 node {
+                                    __typename
                                     id
                                     available
                                     item {
@@ -860,10 +870,12 @@ class InventoryLevel(ShopifyBulkQuery):
     """
 
     query_name = "locations"
-    record_identifier = "InventoryLevel"
-    substream = True
+    record_composition = {
+        "new_record": "InventoryLevel",
+    }
 
     inventory_levels_fields: List[Field] = [
+        "__typename",
         "id",
         Field(name="available"),
         Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
@@ -876,6 +888,25 @@ class InventoryLevel(ShopifyBulkQuery):
         # build the main query around previous
         # return the constructed query operation
         return self.build(self.query_name, self.query_nodes + inventory_levels)
+
+    def record_process_components(self, record: Optional[Mapping[str, Any]] = None) -> Optional[Iterable[Mapping[str, Any]]]:
+        """
+        Defiines how to process collected components.
+        """
+        if record:
+            # resolve `inventory_item_id` to root lvl +  resolve to int
+            record["inventory_item_id"] = self.tools.resolve_str_id(record.get("item", {}).get("inventory_item_id"))
+            # add `location_id` from `__parentId`
+            record["location_id"] = self.tools.resolve_str_id(record[BULK_PARENT_KEY])
+            # make composite `id` from `location_id|inventory_item_id`
+            record["id"] = "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))
+            # convert dates from ISO-8601 to RFC-3339
+            record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+            # remove leftovers
+            record.pop("item", None)
+            record.pop(BULK_PARENT_KEY, None)
+            record = self.tools.fields_names_to_snake_case(record)
+        yield record
 
 
 class FulfillmentOrder(ShopifyBulkQuery):
@@ -1064,19 +1095,27 @@ class FulfillmentOrder(ShopifyBulkQuery):
         Field(name="fulfillmentOrders", fields=[Field(name="edges", fields=[Field(name="node", fields=fulfillment_order_fields)])]),
     ]
 
-    def prep_fulfillment_order(self, record: Mapping[str, Any], shop_id: Optional[int] = 0) -> Mapping[str, Any]:
+    record_composition = {
+        "new_record": "FulfillmentOrder",
+        # each FulfillmentOrder has multiple `FulfillmentOrderLineItem` and `FulfillmentOrderMerchantRequest`
+        "record_components": [
+            "FulfillmentOrderLineItem",
+            "FulfillmentOrderMerchantRequest",
+        ],
+    }
+
+    def process_fulfillment_order(self, record: Mapping[str, Any], shop_id: Optional[int] = 0) -> Mapping[str, Any]:
         # addings
         record["shop_id"] = shop_id
         record["order_id"] = record.get(BULK_PARENT_KEY)
         # unnest nested locationId to the `assignedLocation`
         location_id = record.get("assignedLocation", {}).get("location", {}).get("locationId")
         record["assignedLocation"]["locationId"] = location_id
-        record["assignedLocationId"] = location_id
+        record["assigned_location_id"] = location_id
         # create nested placeholders for other parts
         record["line_items"] = []
         record["merchant_requests"] = []
         # cleaning
-        record.pop("__typename")
         record.pop(BULK_PARENT_KEY)
         record.get("assignedLocation").pop("location", None)
         # resolve ids from `str` to `int`
@@ -1087,7 +1126,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
             if location_id:
                 record["assignedLocation"]["locationId"] = self.tools.resolve_str_id(location_id)
         # assigned_location_id
-        record["assignedLocationId"] = self.tools.resolve_str_id(record.get("assignedLocationId"))
+        record["assigned_location_id"] = self.tools.resolve_str_id(record.get("assigned_location_id"))
         # destination id
         destination = record.get("destination", {})
         if destination:
@@ -1110,12 +1149,12 @@ class FulfillmentOrder(ShopifyBulkQuery):
         # `destination`(object) field names to snake case
         record["destination"] = self.tools.fields_names_to_snake_case(record.get("destination"))
         # `fulfillmentHolds`(list[object]) field names to snake case
-        record["fulfillmentHolds"] = [self.tools.fields_names_to_snake_case(el) for el in record.get("fulfillmentHolds", [])]
+        record["fulfillment_holds"] = [self.tools.fields_names_to_snake_case(el) for el in record.get("fulfillment_holds", [])]
         # `supportedActions`(list[object]) field names to snake case
-        record["supportedActions"] = [self.tools.fields_names_to_snake_case(el) for el in record.get("supportedActions", [])]
+        record["supported_actions"] = [self.tools.fields_names_to_snake_case(el) for el in record.get("supported_actions", [])]
         return record
 
-    def prep_line_item(self, record: Mapping[str, Any], shop_id: Optional[int] = 0) -> Mapping[str, Any]:
+    def process_line_item(self, record: Mapping[str, Any], shop_id: Optional[int] = 0) -> Mapping[str, Any]:
         # addings
         record["shop_id"] = shop_id
         record["fulfillmentOrderId"] = record.get(BULK_PARENT_KEY)
@@ -1129,7 +1168,6 @@ class FulfillmentOrder(ShopifyBulkQuery):
             if variant:
                 record["variantId"] = variant.get("variantId")
         # cleaning
-        record.pop("__typename")
         record.pop(BULK_PARENT_KEY)
         record.pop("lineItem")
         # resolve ids from `str` to `int`
@@ -1146,9 +1184,8 @@ class FulfillmentOrder(ShopifyBulkQuery):
         record = self.tools.fields_names_to_snake_case(record)
         return record
 
-    def prep_merchant_request(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def process_merchant_request(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         # cleaning
-        record.pop("__typename")
         record.pop(BULK_PARENT_KEY)
         # resolve ids from `str` to `int`
         record["id"] = self.tools.resolve_str_id(record.get("id"))
@@ -1156,28 +1193,39 @@ class FulfillmentOrder(ShopifyBulkQuery):
         record = self.tools.fields_names_to_snake_case(record)
         return record
 
-    def compose_record(self, record: Mapping[str, Any], records_buffer: List[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+    def record_process_components(self, record: Optional[Mapping[str, Any]] = None) -> Optional[Iterable[Mapping[str, Any]]]:
         """
-        Overide to provide custom record composition functionality, here we need to:
-        - read the first record as `main`
-        - read all the subsequent record to the fist occcurrence and join to the `main`
+        Defiines how to process collected components.
         """
-
-        # process main entity record
-        if ShopifyBulkRecord.check_type(record, "Order"):
-            # yield previous record first, if present
-            yield from ShopifyBulkRecord.emit_collected(records_buffer)
-            # clean up for the new parent record
-            records_buffer.clear()
-        elif ShopifyBulkRecord.check_type(record, "FulfillmentOrder"):
-            # append the prepared record to the records_buffer
-            records_buffer.append(self.prep_fulfillment_order(record, self.kwargs.get("shop_id")))
-        elif ShopifyBulkRecord.check_type(record, "FulfillmentOrderLineItem"):
-            # append the prepared line item to the last element of the `records_buffer`
-            records_buffer[-1]["line_items"].append(self.prep_line_item(record, self.kwargs.get("shop_id")))
-        elif ShopifyBulkRecord.check_type(record, "FulfillmentOrderMerchantRequest"):
-            # append the prepared mechant request to the last element of the `records_buffer`
-            records_buffer[-1]["merchant_requests"].append(self.prep_merchant_request(record))
+        if record:
+            record = self.process_fulfillment_order(record, self.kwargs.get("shop_id"))
+            record_components = record.get("record_components", {})
+            if record_components:
+                line_items = record_components.get("FulfillmentOrderLineItem", [])
+                if len(line_items) > 0:
+                    for line_item in line_items:
+                        record["line_items"].append(self.process_line_item(line_item, self.kwargs.get("shop_id")))
+                merchant_requests = record_components.get("FulfillmentOrderMerchantRequest", [])
+                if len(merchant_requests) > 0:
+                    for merchant_request in merchant_requests:
+                        record["merchant_requests"].append(self.process_merchant_request(merchant_request))
+                record.pop("record_components")
+            # convert dates from ISO-8601 to RFC-3339
+            record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+            # convert dates from ISO-8601 to RFC-3339
+            record["fulfillAt"] = self.tools.from_iso8601_to_rfc3339(record, "fulfillAt")
+            record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+            record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+            # delivery method
+            delivery_method = record.get("deliveryMethod", {})
+            if delivery_method:
+                record["deliveryMethod"]["min_delivery_date_time"] = self.tools.from_iso8601_to_rfc3339(
+                    delivery_method, "min_delivery_date_time"
+                )
+                record["deliveryMethod"]["max_delivery_date_time"] = self.tools.from_iso8601_to_rfc3339(
+                    delivery_method, "max_delivery_date_time"
+                )
+        yield record
 
 
 class Transaction(ShopifyBulkQuery):
@@ -1187,6 +1235,7 @@ class Transaction(ShopifyBulkQuery):
             orders(query: "updated_at:>='2021-05-23T00:00:00+00:00' AND updated_at:<'2021-12-22T00:00:00+00:00'", sortKey:UPDATED_AT) {
                 edges {
                     node {
+                        __typename
                         id
                         currency: currencyCode
                         transactions {
@@ -1261,6 +1310,7 @@ class Transaction(ShopifyBulkQuery):
     ]
 
     query_nodes: List[Field] = [
+        "__typename",
         "id",
         Field(name="currencyCode", alias="currency"),
         Field(
@@ -1285,7 +1335,11 @@ class Transaction(ShopifyBulkQuery):
         ),
     ]
 
-    def prep_transaction(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    record_composition = {
+        "new_record": "Order",
+    }
+
+    def process_transaction(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         # save the id before it's resolved
         record["admin_graphql_api_id"] = record.get("id")
         # unnest nested fields
@@ -1314,6 +1368,20 @@ class Transaction(ShopifyBulkQuery):
         payment_details = record.get("paymentDetails", {})
         if payment_details:
             record["paymentDetails"] = self.tools.fields_names_to_snake_case(payment_details)
-        # field names to snake case for oot level
+        # field names to snake case for root level
         record = self.tools.fields_names_to_snake_case(record)
         return record
+
+    def record_process_components(self, record: Optional[Mapping[str, Any]] = None) -> Optional[Iterable[Mapping[str, Any]]]:
+        """
+        Defiines how to process collected components.
+        """
+        if record:
+            if "transactions" in record.keys():
+                transactions = record.get("transactions")
+                if len(transactions) > 0:
+                    for transaction in transactions:
+                        # populate parent record keys
+                        transaction["order_id"] = record.get("id")
+                        transaction["currency"] = record.get("currency")
+                        yield self.process_transaction(transaction)

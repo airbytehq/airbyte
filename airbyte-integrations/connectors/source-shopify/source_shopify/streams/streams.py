@@ -10,7 +10,6 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.query import (
-    BULK_PARENT_KEY,
     Collection,
     DiscountCode,
     FulfillmentOrder,
@@ -36,7 +35,6 @@ from .base_streams import (
     IncrementalShopifyStream,
     IncrementalShopifyStreamWithDeletedEvents,
     IncrementalShopifySubstream,
-    MetafieldShopifyGraphQlBulkStream,
     MetafieldShopifySubstream,
     ShopifyStream,
 )
@@ -70,7 +68,7 @@ class Customers(IncrementalShopifyStream):
     data_field = "customers"
 
 
-class MetafieldCustomers(MetafieldShopifyGraphQlBulkStream):
+class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldCustomer = MetafieldCustomer
 
 
@@ -97,7 +95,7 @@ class Disputes(IncrementalShopifyStream):
         return f"shopify_payments/{self.data_field}.json"
 
 
-class MetafieldOrders(MetafieldShopifyGraphQlBulkStream):
+class MetafieldOrders(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldOrder = MetafieldOrder
 
 
@@ -105,7 +103,7 @@ class DraftOrders(IncrementalShopifyStream):
     data_field = "draft_orders"
 
 
-class MetafieldDraftOrders(MetafieldShopifyGraphQlBulkStream):
+class MetafieldDraftOrders(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldDraftOrder = MetafieldDraftOrder
 
 
@@ -164,7 +162,7 @@ class ProductsGraphQl(IncrementalShopifyStream):
                 self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
 
 
-class MetafieldProducts(MetafieldShopifyGraphQlBulkStream):
+class MetafieldProducts(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldProduct = MetafieldProduct
 
 
@@ -175,7 +173,7 @@ class ProductImages(IncrementalShopifyNestedSubstream):
     mutation_map = {"product_id": "id"}
 
 
-class MetafieldProductImages(MetafieldShopifyGraphQlBulkStream):
+class MetafieldProductImages(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldProductImage = MetafieldProductImage
 
 
@@ -186,7 +184,7 @@ class ProductVariants(IncrementalShopifyNestedSubstream):
     mutation_map = {"product_id": "id"}
 
 
-class MetafieldProductVariants(MetafieldShopifyGraphQlBulkStream):
+class MetafieldProductVariants(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldProductVariant = MetafieldProductVariant
 
 
@@ -235,20 +233,8 @@ class Collects(IncrementalShopifyStream):
 class Collections(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Collection = Collection
 
-    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        """
-        Custom transformation for produced records.
-        """
-        # convert dates from ISO-8601 to RFC-3339
-        record["published_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "published_at")
-        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
-        # remove leftovers
-        record.pop(BULK_PARENT_KEY, None)
 
-        yield record
-
-
-class MetafieldCollections(MetafieldShopifyGraphQlBulkStream):
+class MetafieldCollections(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldCollection = MetafieldCollection
 
 
@@ -312,18 +298,6 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
         """
         return ResourceSchemaLoader(package_name_from_class(Transactions)).get_schema("transactions")
 
-    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        """
-        Custom transformation for produced records.
-        """
-        transactions_key = "transactions"
-        if transactions_key in record.keys():
-            for transaction in record.get(transactions_key):
-                # populate parent record keys
-                transaction["order_id"] = record.get("id")
-                transaction["currency"] = record.get("currency")
-                yield self.query.prep_transaction(transaction)
-
 
 class TenderTransactions(IncrementalShopifyStream):
     data_field = "tender_transactions"
@@ -348,21 +322,6 @@ class PriceRules(IncrementalShopifyStreamWithDeletedEvents):
 class DiscountCodes(IncrementalShopifyGraphQlBulkStream):
     bulk_query: DiscountCode = DiscountCode
 
-    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        """
-        Custom transformation for produced records.
-        """
-        # resolve parent id from `str` to `int`
-        record["price_rule_id"] = self.bulk_job.tools.resolve_str_id(record.get("price_rule_id"))
-        # convert dates from ISO-8601 to RFC-3339
-        record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
-        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
-        # remove leftovers
-        record.pop("code_discount", None)
-        record.pop(BULK_PARENT_KEY, None)
-
-        yield record
-
 
 class Locations(ShopifyStream):
     """
@@ -375,7 +334,7 @@ class Locations(ShopifyStream):
     data_field = "locations"
 
 
-class MetafieldLocations(MetafieldShopifyGraphQlBulkStream):
+class MetafieldLocations(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldLocation = MetafieldLocation
     filter_field = None
 
@@ -383,67 +342,13 @@ class MetafieldLocations(MetafieldShopifyGraphQlBulkStream):
 class InventoryLevels(IncrementalShopifyGraphQlBulkStream):
     bulk_query: InventoryLevel = InventoryLevel
 
-    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        """
-        Custom transformation for produced records.
-        """
-        # resolve `inventory_item_id` to root lvl +  resolve to int
-        record["inventory_item_id"] = self.bulk_job.tools.resolve_str_id(record.get("item", {}).get("inventory_item_id"))
-        # add `location_id` from `__parentId`
-        record["location_id"] = self.bulk_job.tools.resolve_str_id(record[BULK_PARENT_KEY])
-        # make composite `id` from `location_id|inventory_item_id`
-        record["id"] = "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))
-        # convert dates from ISO-8601 to RFC-3339
-        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
-        # remove leftovers
-        record.pop("item", None)
-        record.pop(BULK_PARENT_KEY, None)
-        yield record
-
 
 class InventoryItems(IncrementalShopifyGraphQlBulkStream):
     bulk_query: InventoryItem = InventoryItem
 
-    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        """
-        Custom transformation for produced records.
-        """
-        # resolve `cost` to root lvl as `number`
-        record["cost"] = float(record.get("unit_cost", {}).get("cost"))
-        # add empty `country_harmonized_system_codes` array, if missing for record
-        if "country_harmonized_system_codes" not in record.keys():
-            record["country_harmonized_system_codes"] = []
-        # convert dates from ISO-8601 to RFC-3339
-        record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
-        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
-        # remove leftovers
-        record.pop("unit_cost", None)
-
-        yield record
-
 
 class FulfillmentOrders(IncrementalShopifyGraphQlBulkStream):
     bulk_query: FulfillmentOrder = FulfillmentOrder
-
-    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        """
-        Custom transformation for produced records.
-        """
-        # convert dates from ISO-8601 to RFC-3339
-        record["fulfill_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "fulfill_at")
-        record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
-        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
-        # delivery method
-        delivery_method = record.get("delivery_method", {})
-        if delivery_method:
-            record["delivery_method"]["min_delivery_date_time"] = self.bulk_job.tools.from_iso8601_to_rfc3339(
-                delivery_method, "min_delivery_date_time"
-            )
-            record["delivery_method"]["max_delivery_date_time"] = self.bulk_job.tools.from_iso8601_to_rfc3339(
-                delivery_method, "max_delivery_date_time"
-            )
-
-        yield record
 
 
 class Fulfillments(IncrementalShopifyNestedSubstream):

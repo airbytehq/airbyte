@@ -3,49 +3,88 @@
 #
 
 
-from inspect import isgeneratorfunction
 from io import TextIOWrapper
 from json import loads
-from typing import Any, Callable, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
-from .tools import BULK_PARENT_KEY, END_OF_FILE, BulkTools
+from .query import ShopifyBulkQuery
+from .tools import END_OF_FILE, BulkTools
 
 
 class ShopifyBulkRecord:
-    def __init__(self, query) -> None:
-        self.query = query
+    def __init__(self, query: ShopifyBulkQuery) -> None:
+        self.composition = query.record_composition
+        self.record_process_components = query.record_process_components
+        self.components: List[str] = self.composition.get("record_components", []) if self.composition else []
+        self.buffer: List[Mapping[str, Any]] = []
         self.tools: BulkTools = BulkTools()
 
-    def record_composer(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
-        # default record reader generator
-        # add placeholder for complex record compositions
-        records_buffer: List[Mapping[str, Any]] = []
+    @staticmethod
+    def check_type(record: Optional[Mapping[str, Any]] = None, types: Optional[Union[set[str], str]] = None) -> bool:
+        if record:
+            record_type = record.get("__typename")
+            if isinstance(types, list):
+                return any(record_type == t for t in types)
+            else:
+                return record_type == types
+        else:
+            return False
+
+    def record_new(self, record: Mapping[str, Any]) -> None:
+        record = self.component_prepare(record)
+        record.pop("__typename")
+        self.buffer.append(record)
+
+    def record_new_component(self, record: Mapping[str, Any]) -> None:
+        component = record.get("__typename")
+        record.pop("__typename")
+        # add compponent to it's placeholder in the components list
+        self.buffer[-1]["record_components"][component].append(record)
+
+    def component_prepare(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        if self.components:
+            record["record_components"] = {}
+            for component in self.components:
+                record["record_components"][component] = []
+        return record
+
+    def buffer_flush(self) -> Iterable[Mapping[str, Any]]:
+        if len(self.buffer) > 0:
+            for record in self.buffer:
+                # resolve id from `str` to `int`
+                record = self.record_resolve_id(record)
+                # process record components
+                yield from self.record_process_components(record)
+            # clean the buffer
+            self.buffer.clear()
+
+    def record_compose(self, record: Mapping[str, Any]) -> Optional[Iterable[Mapping[str, Any]]]:
+        """
+        Step 1: register the new record by it's `__typename`
+        Step 2: check for `components` by their `__typename` and add to the placeholder
+        Step 3: repeat until the `<END_OF_FILE>`.
+        """
+
+        if self.check_type(record, self.composition.get("new_record")):
+            # emit from previous iteration, if present
+            yield from self.buffer_flush()
+            # register the record
+            self.record_new(record)
+        # components check
+        elif self.check_type(record, self.components):
+            self.record_new_component(record)
+
+    def process_line(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
         # process the json lines
         for line in jsonl_file:
             # we exit from the loop when receive <end_of_file> (file ends)
             if line == END_OF_FILE:
                 break
             elif line != "":
-                # the logic defining on how to compose the record, should be defined/overidden on the query lvl,
-                # in `compose_record()` method
-                yield from self.query.compose_record(loads(line), records_buffer)
+                yield from self.record_compose(loads(line))
 
-        if self.query.should_emit_compose_leftovers:
-            # emit what's left in the records_buffer, typically last record
-            yield from self.emit_collected(records_buffer)
-
-    @staticmethod
-    def check_type(record: Optional[Mapping[str, Any]] = None, type: Optional[str] = None) -> bool:
-        if record:
-            return True if record.get("__typename") == type else False
-        else:
-            return False
-
-    @staticmethod
-    def emit_collected(buffer: Optional[List[Mapping[str, Any]]] = []) -> Iterable[Mapping[str, Any]]:
-        if len(buffer) > 0:
-            for record in buffer:
-                yield record
+        # emit what's left in the buffer, typically last record
+        yield from self.buffer_flush()
 
     def record_resolve_id(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -60,59 +99,14 @@ class ShopifyBulkRecord:
         # while resolving the `id` in `record_resolve_id`,
         # we re-assign the original id like `"gid://shopify/Order/19435458986123"`,
         # into `admin_graphql_api_id` have the ability to identify the record oigin correctly in subsequent actions.
-        record["admin_graphql_api_id"] = record.get("id")
-        # extracting the int(id) and reassign
-        record["id"] = self.tools.resolve_str_id(record.get("id"))
+        id = record.get("id")
+        if id and isinstance(id, str):
+            record["admin_graphql_api_id"] = id
+            # extracting the int(id) and reassign
+            record["id"] = self.tools.resolve_str_id(id)
         return record
 
-    @staticmethod
-    def resolve_substream(record: Mapping[str, Any], record_identifier: Optional[str] = None) -> Optional[Mapping[str, Any]]:
-        # return records based on `record_identifier` filter.
-        if record_identifier:
-            # resolving record by it's identifier, saved in `record_reesolve_id` method.
-            return record if record_identifier in record.get("admin_graphql_api_id", "") else None
-        else:
-            # return records related to substream, by checking for the `__parentId` field
-            # more info: https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
-            return record if BULK_PARENT_KEY in record.keys() else None
-
-    @staticmethod
-    def resolve_with_custom_transformer(record: Mapping[str, Any], custom_transform: Callable) -> Iterable[Mapping[str, Any]]:
-        if isgeneratorfunction(custom_transform):
-            yield from custom_transform(record)
-        else:
-            yield custom_transform(record)
-
-    def record_resolver(
-        self,
-        record: Mapping[str, Any],
-        substream: Optional[bool] = False,
-        record_identifier: Optional[str] = None,
-        custom_transform: Optional[Callable] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        # transforming record field names from camel to snake case
-        # resolve the id to int
-        record = self.record_resolve_id(self.tools.fields_names_to_snake_case(record))
-        # the substream_record is `None`, when parent record takes place
-        substream_record = self.resolve_substream(record, record_identifier)
-
-        # resolution
-        if custom_transform and substream:
-            # process substream with external function, if passed
-            if substream_record:
-                yield from self.resolve_with_custom_transformer(substream_record, custom_transform)
-        elif custom_transform and not substream:
-            # process record with external function, if passed
-            yield from self.resolve_with_custom_transformer(record, custom_transform)
-        elif not custom_transform and substream:
-            # yield substream record as is
-            if substream_record:
-                yield substream_record
-        else:
-            # yield as is otherwise
-            yield record
-
-    def produce_records(self, filename: str, custom_transform: Optional[Callable] = None) -> Iterable[Mapping[str, Any]]:
+    def produce_records(self, filename: str) -> Iterable[Mapping[str, Any]]:
         """
         Read the JSONL content saved from `job.job_retrieve_result()` line-by-line to avoid OOM.
         The filename example: `bulk-4039263649981.jsonl`,
@@ -121,10 +115,5 @@ class ShopifyBulkRecord:
         """
 
         with open(filename, "r") as jsonl_file:
-            for record in self.record_composer(jsonl_file):
-                yield from self.record_resolver(
-                    record,
-                    self.query.substream,
-                    self.query.record_identifier,
-                    custom_transform,
-                )
+            for record in self.process_line(jsonl_file):
+                yield self.tools.fields_names_to_snake_case(record)
