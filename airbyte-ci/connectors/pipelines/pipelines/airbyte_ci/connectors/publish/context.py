@@ -99,7 +99,6 @@ class PublishConnectorContext(ConnectorContext):
             return metadata_tag
 
     def create_slack_message(self) -> str:
-        assert self.report and self.report.run_duration is not None, "The report must be set to create a slack message."
 
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
         message = f"*Publish <{docker_hub_url}|{self.docker_image}>*\n"
