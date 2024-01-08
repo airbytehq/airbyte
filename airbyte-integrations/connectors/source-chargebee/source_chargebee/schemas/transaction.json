@@ -64,7 +64,7 @@
     "initiator_type": {
       "type": ["string", "null"]
     },
-    "three_d_source": {
+    "three_d_secure": {
       "type": ["boolean", "null"]
     },
     "authorization_reason": {

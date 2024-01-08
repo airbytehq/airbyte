@@ -129,6 +129,9 @@
     "is_gifted": {
       "type": ["boolean", "null"]
     },
+    "is_digital": {
+      "type": ["boolean", "null"]
+    },
     "generated_at": {
       "type": ["integer", "null"]
     },
