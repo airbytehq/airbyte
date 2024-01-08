@@ -31,7 +31,7 @@ class ThreadPoolManager:
         self._threadpool = threadpool
         self._logger = logger
         self._max_concurrent_tasks = max_concurrent_tasks
-        self._max_concurrent_tasks = 20_000 #FIXME: revert this!
+        self._max_concurrent_tasks = 50_000 #FIXME: revert this!
         self._sleep_time = sleep_time
         self._futures: List[Future[Any]] = []
 
