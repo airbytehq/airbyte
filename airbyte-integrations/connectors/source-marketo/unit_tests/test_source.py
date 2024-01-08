@@ -10,8 +10,19 @@ from unittest.mock import ANY, Mock, patch
 
 import pendulum
 import pytest
+import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from source_marketo.source import Activities, Campaigns, IncrementalMarketoStream, Leads, MarketoStream, Programs, SourceMarketo
+from airbyte_cdk.utils import AirbyteTracedException
+from source_marketo.source import (
+    Activities,
+    Campaigns,
+    IncrementalMarketoStream,
+    Leads,
+    MarketoExportCreate,
+    MarketoStream,
+    Programs,
+    SourceMarketo,
+)
 
 
 def test_create_export_job(mocker, send_email_stream, caplog):
@@ -24,6 +35,28 @@ def test_create_export_job(mocker, send_email_stream, caplog):
         {"endAt": ANY, "id": "232aafb4", "startAt": ANY},
     ]
     assert "Failed to create export job! Status is failed!" in caplog.records[-1].message
+
+
+def test_should_retry_quota_exceeded(config, requests_mock):
+    create_job_url = "https://602-euo-598.mktorest.com/rest/v1/leads/export/create.json?batchSize=300"
+    response_json = {
+        "requestId": "d2ca#18c0b9833bf",
+        "success": False,
+        "errors": [
+            {
+                "code": "1029",
+                "message": "Export daily quota 500MB exceeded."
+            }
+        ]
+    }
+    requests_mock.register_uri("GET", create_job_url, status_code=200, json=response_json)
+
+    response = requests.get(create_job_url)
+    with pytest.raises(AirbyteTracedException) as e:
+        MarketoExportCreate(config).should_retry(response)
+
+    assert e.value.message == "Daily limit for job extractions has been reached (resets daily at 12:00AM CST)."
+
 
 
 @pytest.mark.parametrize(
