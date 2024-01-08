@@ -194,7 +194,8 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
     last_stream_slice = None
     last_record = None
     def isLastSlice(self,currentSlice):
-        return self.last_stream_slice == currentSlice
+        return self.last_stream_slice["created[lte]"] == currentSlice["created[lte]"]
+
     def setLastSlice(self,stream_state):
         if(self.last_stream_slice==None):
             *_, last = self.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state)
