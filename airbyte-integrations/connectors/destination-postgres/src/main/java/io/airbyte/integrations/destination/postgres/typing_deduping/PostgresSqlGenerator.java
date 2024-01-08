@@ -125,7 +125,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
     return List.of(
         getDslContext().createIndex().on(
-            name(stream.id().finalNamespace(), stream.id().finalName()),
+            name(stream.id().finalNamespace(), stream.id().finalName() + suffix),
             stream.primaryKey().stream()
                 .map(pk -> quotedName(pk.name()))
                 .toList())
