@@ -82,12 +82,15 @@ def _stream_from_subprocess(args: List[str]) -> Generator[Iterable[str], None, N
 
 
 class VenvExecutor(Executor):
+    """Executor that runs the connector in a virtual environment."""
+
     def __init__(
         self,
         metadata: ConnectorMetadata,
         target_version: str | None = None,
         install_if_missing: bool = False,
         pip_url: str | None = None,
+        install_root: str | None = None,
     ) -> None:
         super().__init__(metadata, target_version)
         self.install_if_missing = install_if_missing
@@ -98,12 +101,18 @@ class VenvExecutor(Executor):
         self.pip_url = (
             pip_url or f"../airbyte-integrations/connectors/{self.metadata.name}"
         )
+        self.install_root = install_root or "."
 
-    def _get_venv_name(self):
+    @property
+    def venv_name(self) -> str:
         return f".venv-{self.metadata.name}"
 
+    @property
+    def venv_path(self) -> Path:
+        return Path(self.install_root, self.venv_name)
+
     def _get_connector_path(self):
-        return Path(self._get_venv_name(), "bin", self.metadata.name)
+        return Path(self.venv_name, "bin", self.metadata.name)
 
     def _run_subprocess_and_raise_on_failure(self, args: List[str]):
         result = subprocess.run(
@@ -119,26 +128,27 @@ class VenvExecutor(Executor):
             raise RuntimeError(error_message)
 
     def install(self):
-        venv_name = self._get_venv_name()
         self._run_subprocess_and_raise_on_failure(
-            [sys.executable, "-m", "venv", venv_name]
+            [sys.executable, "-m", "venv", str(self.venv_path.absolute())]
         )
 
-        pip_path = os.path.join(venv_name, "bin", "pip")
+        pip_path = os.path.join(self.venv_path, "bin", "pip")
+        pip_cmd = [pip_path, "install"]
+        if "/" in self.pip_url and "git+" not in self.pip_url:
+            # If the pip url is a local path, add the --editable flag
+            pip_cmd += ["-e"]
+        pip_cmd += [self.pip_url]
 
-        self._run_subprocess_and_raise_on_failure(
-            [pip_path, "install", "-e", self.pip_url]
-        )
+        self._run_subprocess_and_raise_on_failure(pip_cmd)
 
     def _get_installed_version(self):
         """
         In the venv, run the following: python -c "from importlib.metadata import version; print(version('<connector-name>'))"
         """
-        venv_name = self._get_venv_name()
         connector_name = self.metadata.name
         return subprocess.check_output(
             [
-                os.path.join(venv_name, "bin", "python"),
+                os.path.join(self.venv_name, "bin", "python"),
                 "-c",
                 f"from importlib.metadata import version; print(version('{connector_name}'))",
             ],
@@ -159,7 +169,7 @@ class VenvExecutor(Executor):
         local path.
         """
         venv_name = f".venv-{self.metadata.name}"
-        venv_path = Path(venv_name)
+        venv_path = self.venv_path
         if not venv_path.exists():
             if not self.install_if_missing:
                 raise Exception(
