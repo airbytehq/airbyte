@@ -9,7 +9,7 @@
     },
     "name": {
       "type": ["string", "null"],
-      "maxLength": 50
+      "maxLength": 100
     },
     "description": {
       "type": ["string", "null"],
