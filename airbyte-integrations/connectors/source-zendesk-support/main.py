@@ -2,7 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from source_zendesk_support.run import run
+
+import sys
+
+from airbyte_cdk.entrypoint import launch
+from source_zendesk_support import SourceZendeskSupport
 
 if __name__ == "__main__":
-    run()
+    source = SourceZendeskSupport()
+    launch(source, sys.argv[1:])
