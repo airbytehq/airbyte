@@ -42,6 +42,10 @@ data:
       - products
       - purchases
   supportLevel: community
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-faker
   tags:
     - language:python
 metadataSpecVersion: "1.0"
