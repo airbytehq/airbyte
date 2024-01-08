@@ -5,9 +5,9 @@ data:
       - "vectara-prod-${self.customer_id}.auth.us-west-2.amazoncognito.com"
   registries:
     oss:
-      enabled: false
+      enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 102900e7-a236-4c94-83e4-a4189b99adc2
