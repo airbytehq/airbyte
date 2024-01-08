@@ -4,7 +4,7 @@ import time
 
 import anyio
 import pytest
-from pipelines.helpers.run_steps import RunStepOptions, StepToRun, run_steps
+from pipelines.helpers.run_steps import InvalidStepConfiguration, RunStepOptions, StepToRun, run_steps
 from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult, StepStatus
 
@@ -178,12 +178,11 @@ class TestStep(Step):
         (
             "step is skipped if the dependency fails",
             [
-                StepToRun(id="step1", step=TestStep(test_context)),
-                StepToRun(id="step2", step=TestStep(test_context), args={"result_status": StepStatus.FAILURE}),
-                StepToRun(id="step3", step=TestStep(test_context)),
-                StepToRun(id="step4", step=TestStep(test_context), depends_on=["step2"]),
+                [StepToRun(id="step1", step=TestStep(test_context))],
+                [StepToRun(id="step2", step=TestStep(test_context), args={"result_status": StepStatus.FAILURE})],
+                [StepToRun(id="step3", step=TestStep(test_context), depends_on=["step2"])],
             ],
-            {"step1": StepStatus.SUCCESS, "step2": StepStatus.FAILURE, "step3": StepStatus.SUCCESS, "step4": StepStatus.SKIPPED},
+            {"step1": StepStatus.SUCCESS, "step2": StepStatus.FAILURE, "step3": StepStatus.SKIPPED},
             RunStepOptions(fail_fast=False),
         ),
     ],
@@ -193,6 +192,17 @@ async def test_run_steps_output(desc, steps, expected_results, options):
 
     for step_id, expected_status in expected_results.items():
         assert results[step_id].status == expected_status, desc
+
+
+@pytest.mark.anyio
+async def test_run_steps_throws_on_invalid_order():
+    concurrent_steps = [
+        StepToRun(id="step1", step=TestStep(test_context)),
+        StepToRun(id="step2", step=TestStep(test_context), depends_on=["step1"]),
+    ]
+
+    with pytest.raises(InvalidStepConfiguration):
+        await run_steps(concurrent_steps)
 
 
 @pytest.mark.anyio
