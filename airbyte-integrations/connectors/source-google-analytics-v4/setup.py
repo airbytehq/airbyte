@@ -15,6 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-google-analytics-v4=source_google_analytics_v4.run:run",
+        ],
+    },
     name="source_google_analytics_v4",
     description="Source implementation for Google Analytics V4.",
     author="Airbyte",
