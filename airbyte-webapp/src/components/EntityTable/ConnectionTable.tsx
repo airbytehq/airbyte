@@ -63,6 +63,8 @@ interface IProps {
   setEntitySortOrder?: any;
   statusSortOrder?: any;
   setStatusSortOrder?: any;
+  pageCurrent?: any;
+  pageSize?: any;
 }
 //
 const ConnectionTable: React.FC<IProps> = ({
@@ -83,6 +85,8 @@ const ConnectionTable: React.FC<IProps> = ({
   setEntitySortOrder,
   statusSortOrder,
   setStatusSortOrder,
+  pageCurrent,
+  pageSize,
 }) => {
   const { query, push } = useRouter();
   const sortBy = query.sortBy;
@@ -105,13 +109,17 @@ const ConnectionTable: React.FC<IProps> = ({
             : SortOrderEnum.ASC;
       }
 
-      const newSearchParams: { sortBy?: string; order?: string } = {};
+      const newSearchParams: { sortBy?: string; order?: string; pageCurrent?: any; pageSize?: any } = {};
       if (newSortOrder !== "") {
         newSearchParams.sortBy = field;
         newSearchParams.order = newSortOrder;
+        newSearchParams.pageCurrent = pageCurrent;
+        newSearchParams.pageSize = pageSize;
       } else {
         newSearchParams.sortBy = "";
         newSearchParams.order = "";
+        newSearchParams.pageCurrent = pageCurrent;
+        newSearchParams.pageSize = pageSize;
       }
 
       push({

@@ -1,16 +1,21 @@
 import { faCalendarAlt } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IconButton } from "@mui/material";
 import en from "date-fns/locale/en-US";
 import dayjs from "dayjs";
+import { range } from "lodash";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import ReactDatePicker, { registerLocale } from "react-datepicker";
+import ReactDatePicker, { registerLocale, ReactDatePickerCustomHeaderProps } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useIntl } from "react-intl";
 
 import { Input } from "components/base";
+import { LeftCalendarIcon } from "components/icons/LeftCalendarIcon";
+import { RightCalendarIcon } from "components/icons/RightCalendarIcon";
 import { NewButton } from "components/NewButton";
 
 import styles from "./DatePicker.module.scss";
+
 // Date Picker
 /**
  * Converts a UTC string into a JS Date object with the same local time.
@@ -65,6 +70,66 @@ interface DatePickerButtonTriggerProps {
   onClick?: () => void;
 }
 
+const CustomDatePickerHeader: React.FC<ReactDatePickerCustomHeaderProps> = ({
+  date,
+  decreaseMonth,
+  increaseMonth,
+  prevMonthButtonDisabled,
+  nextMonthButtonDisabled,
+  changeYear,
+  changeMonth,
+}) => {
+  const years = range(1990, dayjs().year() + 1);
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  return (
+    <div className={styles.customDatePickerHeader}>
+      <IconButton onClick={decreaseMonth} disabled={prevMonthButtonDisabled} sx={{ padding: "5px !important" }}>
+        <LeftCalendarIcon />
+      </IconButton>
+
+      <select
+        value={months[dayjs(date).month()]}
+        onChange={(e) => changeMonth(months.indexOf(e.target.value))}
+        style={{ borderRadius: "3px", backgroundColor: "#FFFF" }}
+      >
+        {months.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+      <select
+        value={dayjs(date).year()}
+        onChange={(e) => changeYear(parseInt(e.target.value, 10))}
+        style={{ marginLeft: "4px", borderRadius: "3px", backgroundColor: "#FFFF" }}
+      >
+        {years.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+      <IconButton onClick={increaseMonth} disabled={nextMonthButtonDisabled} sx={{ padding: "5px !important" }}>
+        <RightCalendarIcon />
+      </IconButton>
+    </div>
+  );
+};
+
 const DatepickerButton = React.forwardRef<HTMLButtonElement, DatePickerButtonTriggerProps>(({ onClick }, ref) => {
   const { formatMessage } = useIntl();
 
@@ -91,6 +156,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   withTime = false,
 }) => {
   const { locale, formatMessage } = useIntl();
+
   const datepickerRef = useRef<ReactDatePicker>(null);
   console.log(datepickerRef.current, "Current");
 
@@ -156,6 +222,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           ref={datepickerRef}
           showPopperArrow={false}
           showTimeSelect={withTime}
+          renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
           disabled={disabled}
           locale={locale}
           selected={localDate}

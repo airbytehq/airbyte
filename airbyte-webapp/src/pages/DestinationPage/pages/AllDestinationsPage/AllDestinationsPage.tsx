@@ -1,9 +1,10 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box } from "@mui/material";
-import { useState, useCallback } from "react";
+import _ from "lodash";
+import { useState, useCallback, useEffect } from "react";
 import { FormattedMessage } from "react-intl";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { Button, DropDown, DropDownRow, NewMainPageWithScroll } from "components";
@@ -62,8 +63,8 @@ const DDContainer = styled.div<{
 `;
 
 const AllDestinationsPage: React.FC = () => {
-  const { push, query } = useRouter();
-
+  const { push, query, pathname } = useRouter();
+  const location = useLocation();
   const navigate = useNavigate();
 
   // const { push } = useRouter();
@@ -84,8 +85,8 @@ const AllDestinationsPage: React.FC = () => {
   const { destinationOptions } = useConnectionFilterOptions(workspace?.workspaceId);
   const initialFiltersState = {
     workspaceId: workspace.workspaceId,
-    pageSize: pageCurrent,
-    pageCurrent: query.pageCurrent ?? 1,
+    pageSize: query.pageSize ? JSON.parse(query.pageSize) : pageConfig?.destination?.pageSize,
+    pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
     DestinationDefinitionId: destinationOptions[0].value,
     sortDetails: {
       sortFieldName,
@@ -182,6 +183,36 @@ const AllDestinationsPage: React.FC = () => {
     },
     []
   );
+  const hasDestination = useCallback((): boolean => {
+    if (_.isEqual(initialFiltersState, filters) && total === 0) {
+      return false;
+    }
+    return true;
+  }, [filters, total]);
+  useEffect(() => {
+    if (hasDestination()) {
+      const queryParams = new URLSearchParams(location.search);
+
+      // Add or update the sortBy, order, and pageCurrent parameters
+      queryParams.set("sortBy", query.sortBy ?? "");
+      queryParams.set("order", query.order ?? "");
+      queryParams.set("pageCurrent", `${filters.pageCurrent}`);
+      queryParams.set("pageSize", `${filters.pageSize}`);
+
+      // Preserve existing query parameters
+      const existingParams = new URLSearchParams(location.search);
+      existingParams.forEach((value, key) => {
+        if (key !== "sortBy" && key !== "order" && key !== "pageCurrent" && key !== "pageSize") {
+          queryParams.set(key, value);
+        }
+      });
+      // Update the URL with the new parameters
+      push({
+        pathname,
+        search: queryParams.toString(),
+      });
+    }
+  }, [filters.pageCurrent, filters.pageSize]);
   const onChangePageSize = useCallback(
     (size: number) => {
       setCurrentPageSize(size);
@@ -235,7 +266,8 @@ const AllDestinationsPage: React.FC = () => {
             setLocalSortOrder={setLocalSortOrder}
             destinationSortOrder={destinationSortOrder}
             setDestinationSortOrder={setDestinationSortOrder}
-            // pageCurrent={paginatedPageCurrent}
+            pageCurrent={filters.pageCurrent}
+            pageSize={filters.pageSize}
           />
           <Separator height="24px" />
           <Footer>

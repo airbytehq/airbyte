@@ -1,9 +1,11 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box } from "@mui/material";
+import _ from "lodash";
+import { useEffect } from "react";
 import { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { Button, DropDown, DropDownRow, NewMainPageWithScroll } from "components";
@@ -61,7 +63,8 @@ const DDContainer = styled.div<{
 `;
 
 const AllSourcesPage: React.FC = () => {
-  const { query } = useRouter();
+  const { push, pathname, query } = useRouter();
+  const location = useLocation();
   // const { push } = useRouter();
   const navigate = useNavigate();
   const [pageConfig, updatePageSize] = usePageConfig();
@@ -78,7 +81,7 @@ const AllSourcesPage: React.FC = () => {
   const { sourceOptions } = useConnectionFilterOptions(workspace.workspaceId);
   const initialFiltersState = {
     workspaceId: workspace.workspaceId,
-    pageSize: pageCurrent,
+    pageSize: query.pageSize ? JSON.parse(query.pageSize) : pageConfig?.source?.pageSize,
     pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
     SourceDefinitionId: sourceOptions[0].value,
     sortDetails: {
@@ -117,6 +120,37 @@ const AllSourcesPage: React.FC = () => {
   //   },
   //   [filters,sortDirection,sortFieldName]
   // );
+  const hasSources = useCallback((): boolean => {
+    if (_.isEqual(initialFiltersState, filters) && total === 0) {
+      return false;
+    }
+    return true;
+  }, [filters, total]);
+  useEffect(() => {
+    if (hasSources()) {
+      const queryParams = new URLSearchParams(location.search);
+
+      // Add or update the sortBy, order, and pageCurrent parameters
+      queryParams.set("sortBy", query.sortBy ?? "");
+      queryParams.set("order", query.order ?? "");
+      queryParams.set("pageCurrent", `${filters.pageCurrent}`);
+      queryParams.set("pageSize", `${filters.pageSize}`);
+
+      // Preserve existing query parameters
+      const existingParams = new URLSearchParams(location.search);
+      existingParams.forEach((value, key) => {
+        if (key !== "sortBy" && key !== "order" && key !== "pageCurrent" && key !== "pageSize") {
+          queryParams.set(key, value);
+        }
+      });
+      // Update the URL with the new parameters
+      push({
+        pathname,
+        search: queryParams.toString(),
+      });
+    }
+  }, [filters.pageCurrent, filters.pageSize]);
+
   const onSelectFilter = useCallback(
     (
       filterType: "pageCurrent" | "SourceDefinitionId" | "pageSize" | "sortDirection" | "sortFieldName",
@@ -215,6 +249,8 @@ const AllSourcesPage: React.FC = () => {
             setLocalSortOrder={setLocalSortOrder}
             sourceSortOrder={sourceSortOrder}
             setSourceSortOrder={setSourceSortOrder}
+            pageSize={filters.pageSize}
+            pageCurrent={filters.pageCurrent}
           />
           <Separator height="24px" />
           <Footer>

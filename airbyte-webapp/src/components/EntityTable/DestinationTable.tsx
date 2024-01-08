@@ -36,6 +36,7 @@ interface IProps {
   query?: any;
   push?: any;
   pageCurrent?: any;
+  pageSize?: any;
 }
 
 const NameColums = styled.div`
@@ -53,7 +54,8 @@ const DestinationTable: React.FC<IProps> = ({
   setLocalSortOrder,
   destinationSortOrder,
   setDestinationSortOrder,
-  // pageCurrent,
+  pageCurrent,
+  pageSize,
 }) => {
   const { query, push } = useRouter();
   const sortBy = query.sortBy;
@@ -94,13 +96,17 @@ const DestinationTable: React.FC<IProps> = ({
       }
      */
 
-      const newSearchParams: { sortBy?: string; order?: string } = {};
+      const newSearchParams: { sortBy?: string; order?: string; pageSize?: any; pageCurrent?: any } = {};
       if (newSortOrder !== "") {
         newSearchParams.sortBy = field;
         newSearchParams.order = newSortOrder;
+        newSearchParams.pageCurrent = pageCurrent;
+        newSearchParams.pageSize = pageSize;
       } else {
         newSearchParams.sortBy = "";
         newSearchParams.order = "";
+        newSearchParams.pageCurrent = pageCurrent;
+        newSearchParams.pageSize = pageSize;
       }
 
       push({
