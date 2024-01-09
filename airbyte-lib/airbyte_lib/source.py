@@ -26,7 +26,7 @@ from airbyte_lib import _util  # Internal utility functions
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.executor import Executor
 from airbyte_lib.factories._cache_factories import get_default_cache
-from airbyte_lib.sync_results import SyncResult
+from airbyte_lib.sync_results import ReadResult
 
 
 @contextmanager
@@ -169,7 +169,7 @@ class Source:
         )
         return configured_catalog
 
-    def get_stream_records(self, stream: str) -> Iterable[dict[str, Any]]:
+    def get_records(self, stream: str) -> Iterable[dict[str, Any]]:
         """
         Read a stream from the connector.
 
@@ -310,13 +310,13 @@ class Source:
             self._processed_records += 1
             yield message
 
-    def read_all(self, cache: Optional[SQLCacheBase] = None) -> SyncResult:
+    def read(self, cache: Optional[SQLCacheBase] = None) -> ReadResult:
         if cache is None:
             cache = get_default_cache(source_catalog=self.configured_catalog)
 
         cache.process_airbyte_messages(self._tally_records(self._read()))
 
-        return SyncResult(
+        return ReadResult(
             processed_records=self._processed_records,
             cache=cache,
         )

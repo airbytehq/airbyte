@@ -201,7 +201,7 @@ class SQLCacheBase(RecordProcessor):
 
     # Read methods:
 
-    def get_stream_records(
+    def get_records(
         self,
         stream_name: str,
     ) -> Iterable[dict[str, Any]]:

@@ -7,7 +7,7 @@ import airbyte_lib as ab
 import pandas as pd
 import pytest
 from airbyte_lib.caches import DuckDBCache, DuckDBCacheConfig, InMemoryCache, InMemoryCacheConfig, PostgresCache, PostgresCacheConfig
-from airbyte_lib.sync_results import SyncResult
+from airbyte_lib.sync_results import ReadResult
 from airbyte_lib.registry import _update_cache
 
 
@@ -104,7 +104,7 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache(source_catalog=source.configured_catalog)
 
-    result: SyncResult = source.read_all(cache)
+    result: ReadResult = source.read(cache)
 
     assert result.processed_records == 3
     for stream_name, expected_data in expected_test_stream_data.items():
@@ -118,8 +118,8 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
     "method_call",
     [
         pytest.param(lambda source: source.check(), id="check"),
-        pytest.param(lambda source: list(source.get_stream_records("stream1")), id="read_stream"),
-        pytest.param(lambda source: source.read_all(), id="read_all"),
+        pytest.param(lambda source: list(source.get_records("stream1")), id="read_stream"),
+        pytest.param(lambda source: source.read(), id="read"),
     ],
 )
 def test_check_fail_on_missing_config(method_call):
@@ -135,7 +135,7 @@ def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_tes
         source_catalog=source.configured_catalog,
     )
 
-    result: SyncResult = source.read_all(cache)
+    result: ReadResult = source.read(cache)
 
     assert result.processed_records == 3
     for stream_name, expected_data in expected_test_stream_data.items():
@@ -153,7 +153,7 @@ def test_sync_to_inmemory(expected_test_stream_data: dict[str, list[dict[str, st
         source_catalog=source.configured_catalog,
     )
 
-    result: SyncResult = source.read_all(cache)
+    result: ReadResult = source.read(cache)
 
     assert result.processed_records == 3
     for stream_name, expected_data in expected_test_stream_data.items():
@@ -173,7 +173,7 @@ def test_sync_limited_streams(expected_test_stream_data):
 
     source.set_streams(["stream2"])
 
-    result = source.read_all(cache)
+    result = source.read(cache)
 
     assert result.processed_records == 1
     pd.testing.assert_frame_equal(
@@ -186,14 +186,14 @@ def test_sync_limited_streams(expected_test_stream_data):
 def test_read_stream():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
 
-    assert list(source.get_stream_records("stream1")) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
+    assert list(source.get_records("stream1")) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
 
 
 def test_read_stream_nonexisting():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
 
     with pytest.raises(Exception):
-        list(source.get_stream_records("non-existing"))
+        list(source.get_records("non-existing"))
 
 def test_failing_path_connector():
     with pytest.raises(Exception):

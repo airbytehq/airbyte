@@ -15,7 +15,7 @@ class Dataset:
         self._stream = stream
 
     def __iter__(self) -> Iterable[dict[str, Any]]:
-        return self._cache.get_stream_records(self._stream)
+        return self._cache.get_records(self._stream)
 
     def to_pandas(self) -> DataFrame:
         return self._cache.get_pandas_dataframe(self._stream)

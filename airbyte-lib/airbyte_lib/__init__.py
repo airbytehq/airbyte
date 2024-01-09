@@ -8,6 +8,6 @@ __all__ = [
     "get_default_cache",
     "new_local_cache",
     "Dataset",
-    "SyncResult",
+    "ReadResult",
     "Source",
 ]

@@ -18,9 +18,9 @@ source.check()
 streams = ["stream1", "stream2", "stream3"]
 # source.set_streams(["launches", "rockets", "capsules"])
 
-result = source.read_all(cache)
+result = source.read(cache)
 
-print(islice(source.get_stream_records(streams[0]), 10))
+print(islice(source.get_records(streams[0]), 10))
 
 for name, records in result.cache.streams.items():
     print(f"Stream {name}: {len(records)} records")

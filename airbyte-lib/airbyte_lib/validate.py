@@ -51,7 +51,7 @@ def tests(connector_name, sample_config):
     for stream in streams:
         try:
             print(f"Trying to read from stream {stream}...")
-            record = next(source.get_stream_records(stream))
+            record = next(source.get_records(stream))
             assert record, "No record returned"
             break
         except Exception as e:

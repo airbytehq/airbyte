@@ -6,7 +6,7 @@ from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.datasets import Dataset
 
 
-class SyncResult:
+class ReadResult:
     def __init__(self, processed_records: int, cache: SQLCacheBase) -> None:
         self.processed_records = processed_records
         self._cache = cache
