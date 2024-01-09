@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import platform
 from enum import Enum
 
@@ -37,6 +38,10 @@ MAVEN_IMAGE = "maven:3.9.5-amazoncorretto-17-al2023"
 DOCKER_VERSION = "24.0.2"
 DOCKER_DIND_IMAGE = f"docker:{DOCKER_VERSION}-dind"
 DOCKER_CLI_IMAGE = f"docker:{DOCKER_VERSION}-cli"
+DOCKER_REGISTRY_MIRROR_URL = os.getenv("DOCKER_REGISTRY_MIRROR_URL")
+DOCKER_REGISTRY_ADDRESS = "docker.io"
+DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache"
+GIT_IMAGE = "alpine/git:latest"
 GRADLE_CACHE_PATH = "/root/.gradle/caches"
 GRADLE_BUILD_CACHE_PATH = f"{GRADLE_CACHE_PATH}/build-cache-1"
 GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH = "/root/gradle_dependency_cache"
@@ -53,6 +58,8 @@ PIP_CACHE_VOLUME_NAME = "pip_cache"
 PIP_CACHE_PATH = "/root/.cache/pip"
 POETRY_CACHE_VOLUME_NAME = "poetry_cache"
 POETRY_CACHE_PATH = "/root/.cache/pypoetry"
+STORAGE_DRIVER = "fuse-overlayfs"
+TAILSCALE_AUTH_KEY = os.getenv("TAILSCALE_AUTH_KEY")
 
 
 class CIContext(str, Enum):

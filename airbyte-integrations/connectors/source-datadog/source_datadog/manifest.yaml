@@ -83,6 +83,14 @@ definitions:
     end_datetime:
       datetime: "{{ config['end_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: filter[from]
+      inject_into: request_parameter
+    end_time_option:
+      type: RequestOption
+      field_name: filter[to]
+      inject_into: request_parameter
     step: "P1M"
 
   dashboards_stream:
@@ -120,6 +128,36 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["tests"]
+
+  monitors_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "monitors"
+      primary_key: "id"
+      path: "monitor"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+
+  service_level_objectives_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "service_level_objectives"
+      primary_key: "id"
+      path: "slo"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["data"]
 
   audit_logs_stream:
     $ref: "#/definitions/base_stream"
@@ -196,25 +234,29 @@ definitions:
         $ref: "#/definitions/base_paginator"
 
 streams:
+  - "#/definitions/audit_logs_stream"
   - "#/definitions/dashboards_stream"
   - "#/definitions/downtimes_stream"
-  - "#/definitions/synthetic_tests_stream"
-  - "#/definitions/audit_logs_stream"
+  - "#/definitions/incident_teams_stream"
+  - "#/definitions/incidents_stream"
   - "#/definitions/logs_stream"
   - "#/definitions/metrics_stream"
-  - "#/definitions/incidents_stream"
-  - "#/definitions/incident_teams_stream"
+  - "#/definitions/monitors_stream"
+  - "#/definitions/service_level_objectives_stream"
+  - "#/definitions/synthetic_tests_stream"
   - "#/definitions/users_stream"
 
 check:
   type: CheckStream
   stream_names:
+    - "audit_logs"
     - "dashboards"
     - "downtimes"
-    - "synthetic_tests"
-    - "audit_logs"
+    - "incident_teams"
+    - "incidents"
     - "logs"
     - "metrics"
-    - "incidents"
-    - "incident_teams"
+    - "monitors"
+    - "service_level_objectives"
+    - "synthetic_tests"
     - "users"

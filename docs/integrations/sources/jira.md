@@ -124,6 +124,10 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.14.1  | 2023-12-19 | [33625](https://github.com/airbytehq/airbyte/pull/33625)   | Skip 404 error                                                                                                          |
+| 0.14.0  | 2023-12-15 | [33532](https://github.com/airbytehq/airbyte/pull/33532)   | Add lookback window                                                                                                     |
+| 0.13.0  | 2023-12-12 | [33353](https://github.com/airbytehq/airbyte/pull/33353)   | Fix check command to check access for all available streams                                                             |
+| 0.12.0  | 2023-12-01 | [33011](https://github.com/airbytehq/airbyte/pull/33011)   | Fix BoardIssues stream; increase number of retries for backoff policy to 10                                             |
 | 0.11.0  | 2023-11-29 | [32927](https://github.com/airbytehq/airbyte/pull/32927)   | Fix incremental syncs for stream Issues                                                                                 |
 | 0.10.2  | 2023-10-26 | [31896](https://github.com/airbytehq/airbyte/pull/31896)   | Provide better guidance when configuring the connector with an invalid domain                                           |
 | 0.10.1  | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702)   | Base image migration: remove Dockerfile and use the python-connector-base image                                         |

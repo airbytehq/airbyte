@@ -11,6 +11,9 @@
     "stage": {
       "type": ["null", "string"]
     },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
     "name": {
       "type": ["null", "string"]
     },
