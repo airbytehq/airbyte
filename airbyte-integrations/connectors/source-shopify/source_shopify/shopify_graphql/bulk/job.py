@@ -145,12 +145,13 @@ class ShopifyBulkJob:
 
     def job_check_status(self, url: str, bulk_job_id: str) -> Optional[str]:
         # re-use of `self._session(*, **)` to make BULK Job status checks
-        response = self.session.request(
-            method="POST",
-            url=url,
-            data=ShopifyBulkTemplates.status(bulk_job_id),
-            headers={"Content-Type": "application/graphql"},
-        )
+        request_args = {
+            "method": "POST",
+            "url": url,
+            "data": ShopifyBulkTemplates.status(bulk_job_id),
+            "headers": {"Content-Type": "application/graphql"},
+        }
+        response = self.session.request(**request_args)
         # check for errors and status, return when COMPLETED.
         if not self.job_check_for_errors(response):
             status = response.json().get("data", {}).get("node", {}).get("status")

@@ -6,7 +6,15 @@
 import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
-from source_shopify.streams.streams import FulfillmentOrders, MetafieldOrders, TransactionsGraphql
+from source_shopify.streams.streams import (
+    Collections,
+    DiscountCodes,
+    FulfillmentOrders,
+    InventoryItems,
+    InventoryLevels,
+    MetafieldOrders,
+    TransactionsGraphql,
+)
 
 
 def test_get_errors_from_response(requests_mock, bulk_error, auth_config):
@@ -29,8 +37,8 @@ def test_has_running_concurrent_job(request, requests_mock, bulk_job_response, a
     requests_mock.get(stream.graphql_path, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.graphql_path)
     assert stream.bulk_job.has_running_concurrent_job(test_response) == expected
-    
-    
+
+
 @pytest.mark.parametrize(
     "bulk_job_response, expected",
     [
@@ -44,36 +52,37 @@ def test_job_check_for_errors(request, requests_mock, bulk_job_response, auth_co
     with pytest.raises(ShopifyBulkExceptions.BulkJobError) as error:
         stream.bulk_job.job_check_for_errors(test_response)
     assert expected in repr(error.value)
-    
-    
+
+
 @pytest.mark.parametrize(
     "bulk_job_response, expected",
-    [
-        ("bulk_successful_response", "gid://shopify/BulkOperation/4046733967549"),
-        ("bulk_error", None)
-    ],
+    [("bulk_successful_response", "gid://shopify/BulkOperation/4046733967549"), ("bulk_error", None)],
 )
 def test_job_get_id(request, requests_mock, bulk_job_response, auth_config, expected):
     stream = MetafieldOrders(auth_config)
     requests_mock.get(stream.graphql_path, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.graphql_path)
     assert stream.bulk_job.job_get_id(test_response) == expected
-    
+
 
 @pytest.mark.parametrize(
     "bulk_job_response, error_type, expected",
     [
         ("bulk_successful_response", None, "gid://shopify/BulkOperation/4046733967549"),
-        ("bulk_error", ShopifyBulkExceptions.BulkJobError, "[{'field': 'some_field', 'message': 'something wrong with the requested field.'}]"),
-        ("bulk_error_with_concurrent_job", None, None)
+        (
+            "bulk_error",
+            ShopifyBulkExceptions.BulkJobError,
+            "[{'field': 'some_field', 'message': 'something wrong with the requested field.'}]",
+        ),
+        ("bulk_error_with_concurrent_job", None, None),
     ],
 )
 def test_job_create(request, requests_mock, bulk_job_response, auth_config, error_type, expected):
     stream = MetafieldOrders(auth_config)
     # patching concurent settings
-    stream.bulk_job.concurrent_max_retry = 1 # 1 attempt max
-    stream.bulk_job.concurrent_interval_sec = 1 # 1 sec
-    # 
+    stream.bulk_job.concurrent_max_retry = 1  # 1 attempt max
+    stream.bulk_job.concurrent_interval_sec = 1  # 1 sec
+    #
     requests_mock.get(stream.graphql_path, json=request.getfixturevalue(bulk_job_response))
     if error_type:
         with pytest.raises(error_type) as error:
@@ -87,7 +96,12 @@ def test_job_create(request, requests_mock, bulk_job_response, auth_config, erro
 @pytest.mark.parametrize(
     "job_response, error_type, expected",
     [
-        ("bulk_job_completed_response", None, 'https://some_url?response-content-disposition=attachment;+filename="bulk-123456789.jsonl";+filename*=UTF-8''bulk-123456789.jsonl&response-content-type=application/jsonl'),
+        (
+            "bulk_job_completed_response",
+            None,
+            'https://some_url?response-content-disposition=attachment;+filename="bulk-123456789.jsonl";+filename*=UTF-8'
+            "bulk-123456789.jsonl&response-content-type=application/jsonl",
+        ),
         ("bulk_job_failed_response", ShopifyBulkExceptions.BulkJobFailed, "exited with FAILED"),
         ("bulk_job_timeout_response", ShopifyBulkExceptions.BulkJobTimout, "exited with TIMEOUT"),
         ("bulk_job_access_denied_response", ShopifyBulkExceptions.BulkJobAccessDenied, "exited with ACCESS_DENIED"),
@@ -112,57 +126,49 @@ def test_job_check(mocker, request, requests_mock, job_response, auth_config, er
         assert expected == result
 
 
-def test_metafield_orders_parse_response(mocker, requests_mock, metafield_jsonl_content_example, metafield_parse_response_expected_result, bulk_job_completed_response, auth_config):
-    stream = MetafieldOrders(auth_config)
-    # get the mocked job_result_url
-    test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
-    # patching the method to return the `jpb_result_url` 
-    mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkJob.job_check", return_value=test_result_url)
-    # mocking the result url with jsonl content
-    requests_mock.get(test_result_url, text=metafield_jsonl_content_example)
-    # getting mock response
-    test_bulk_response = requests.get(test_result_url)
-    test_records = stream.parse_response(test_bulk_response)
-    assert list(test_records) == [metafield_parse_response_expected_result]
-
-
-def test_fulfillment_orders_parse_response(
-    mocker, 
-    requests_mock, 
-    bulk_job_completed_response, 
-    filfillment_order_jsonl_content_example, 
-    fulfillment_orders_response_expected_result, 
+@pytest.mark.parametrize(
+    "stream, json_content_example, expected",
+    [
+        (MetafieldOrders, "metafield_jsonl_content_example", "metafield_parse_response_expected_result"),
+        (FulfillmentOrders, "filfillment_order_jsonl_content_example", "fulfillment_orders_response_expected_result"),
+        (DiscountCodes, "discount_codes_jsonl_content_example", "discount_codes_response_expected_result"),
+        (Collections, "collections_jsonl_content_example", "collections_response_expected_result"),
+        (TransactionsGraphql, "transactions_jsonl_content_example", "transactions_response_expected_result"),
+        (InventoryItems, "inventory_items_jsonl_content_example", "inventory_items_response_expected_result"),
+        (InventoryLevels, "inventory_levels_jsonl_content_example", "inventory_levels_response_expected_result"),
+    ],
+    ids=[
+        "MetafieldOrders",
+        "FulfillmentOrders",
+        "DiscountCodes",
+        "Collections",
+        "TransactionsGraphql",
+        "InventoryItems",
+        "InventoryLevels",
+    ],
+)
+def test_bulk_stream_parse_response(
+    mocker,
+    request,
+    requests_mock,
+    bulk_job_completed_response,
+    stream,
+    json_content_example,
+    expected,
     auth_config,
-):
-    stream = FulfillmentOrders(auth_config)
+) -> None:
+    stream = stream(auth_config)
     # get the mocked job_result_url
     test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
-    # patching the method to return the `job_result_url` 
+    # patching the method to return the `job_result_url`
     mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkJob.job_check", return_value=test_result_url)
     # mocking the result url with jsonl content
-    requests_mock.get(test_result_url, text=filfillment_order_jsonl_content_example)
+    requests_mock.get(test_result_url, text=request.getfixturevalue(json_content_example))
     # getting mock response
-    test_bulk_response = requests.get(test_result_url)
-    test_records = stream.parse_response(test_bulk_response)
-    assert list(test_records) == [fulfillment_orders_response_expected_result]
-
-
-def test_transactions_parse_response(
-    mocker, 
-    requests_mock, 
-    bulk_job_completed_response, 
-    transactions_jsonl_content_example, 
-    transactions_response_expected_result, 
-    auth_config,
-):
-    stream = TransactionsGraphql(auth_config)
-    # get the mocked job_result_url
-    test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
-    # patching the method to return the `job_result_url` 
-    mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkJob.job_check", return_value=test_result_url)
-    # mocking the result url with jsonl content
-    requests_mock.get(test_result_url, text=transactions_jsonl_content_example)
-    # getting mock response
-    test_bulk_response = requests.get(test_result_url)
-    test_records = stream.parse_response(test_bulk_response)
-    assert list(test_records) == [transactions_response_expected_result]
+    test_bulk_response: requests.Response = requests.get(test_result_url)
+    test_records = list(stream.parse_response(test_bulk_response))
+    expected_result = request.getfixturevalue(expected)
+    if isinstance(expected_result, dict):
+        assert test_records == [expected_result]
+    elif isinstance(expected_result, list):
+        assert test_records == expected_result
