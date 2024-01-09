@@ -464,12 +464,11 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="bank_accounts",
-                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/sources",
+                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/bank_accounts",
                 parent=self.customers(expand_items=["data.sources"], **args),
                 event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"],
                 legacy_cursor_field=None,
                 sub_items_attr="sources",
-                extra_request_params={"object": "bank_account"},
                 response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),

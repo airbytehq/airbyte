@@ -5,6 +5,7 @@ import shutil
 
 import airbyte_lib as ab
 import pytest
+from airbyte_lib.registry import _update_cache
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -40,9 +41,36 @@ def test_non_existing_connector():
         ab.get_connector("source-not-existing", config={"apiKey": "abc"})
 
 
-def test_wrong_version():
-    with pytest.raises(Exception):
-        ab.get_connector("source-test", version="1.2.3", config={"apiKey": "abc"})
+@pytest.mark.parametrize(
+    "latest_available_version, requested_version, raises",
+    [
+        ("0.0.1", None, False),
+        ("1.2.3", None, False),
+        ("0.0.1", "latest", False),
+        ("1.2.3", "latest", True),
+        ("0.0.1", "0.0.1", False),
+        ("1.2.3", "1.2.3", True),
+    ])
+def test_version_enforcement(raises, latest_available_version, requested_version):
+    """"
+    Ensures version enforcement works as expected:
+    * If no version is specified, the current version is accepted
+    * If the version is specified as "latest", only the latest available version is accepted
+    * If the version is specified as a semantic version, only the exact version is accepted
+
+    In this test, the actually installed version is 0.0.1
+    """
+    _update_cache()
+    from airbyte_lib.registry import _cache
+    _cache["source-test"].latest_available_version = latest_available_version
+    if raises:
+        with pytest.raises(Exception):
+            ab.get_connector("source-test", version=requested_version, config={"apiKey": "abc"})
+    else:
+        ab.get_connector("source-test", version=requested_version, config={"apiKey": "abc"})
+
+    # reset
+    _cache["source-test"].latest_available_version = "0.0.1"
 
 
 def test_check():
@@ -56,6 +84,21 @@ def test_check_fail():
 
     with pytest.raises(Exception):
         source.check()
+
+
+@pytest.mark.parametrize(
+    "method_call",
+    [
+        pytest.param(lambda source: source.check(), id="check"),
+        pytest.param(lambda source: list(source.read_stream("stream1")), id="read_stream"),
+        pytest.param(lambda source: source.read_all(), id="read_all"),
+    ],
+)
+def test_check_fail_on_missing_config(method_call):
+    source = ab.get_connector("source-test")
+
+    with pytest.raises(Exception, match="Config is not set, either set in get_connector or via source.set_config"):
+        method_call(source)
 
 
 def test_sync():
