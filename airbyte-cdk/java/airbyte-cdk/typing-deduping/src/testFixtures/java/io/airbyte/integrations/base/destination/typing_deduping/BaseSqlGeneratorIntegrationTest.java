@@ -403,6 +403,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void allTypes() throws Exception {
+    // Add case-sensitive columnName to test json path querying
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("IamACaseSensitiveColumnName"),
+        AirbyteProtocolType.STRING);
     createRawTable(streamId);
     createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
@@ -514,6 +518,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void handlePreexistingRecords() throws Exception {
+    // Add case-sensitive columnName to test json path querying
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("IamACaseSensitiveColumnName"),
+        AirbyteProtocolType.STRING);
     createRawTable(streamId);
     createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
@@ -541,6 +549,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void handleNoPreexistingRecords() throws Exception {
+    // Add case-sensitive columnName to test json path querying
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("IamACaseSensitiveColumnName"),
+        AirbyteProtocolType.STRING);
     createRawTable(streamId);
     final DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(streamId);
     assertAll(
@@ -1124,6 +1136,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void testV1V2migration() throws Exception {
     // This is maybe a little hacky, but it avoids having to refactor this entire class and subclasses
     // for something that is going away
+    // Add case-sensitive columnName to test json path querying
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("IamACaseSensitiveColumnName"),
+        AirbyteProtocolType.STRING);
     final StreamId v1RawTableStreamId = new StreamId(null, null, streamId.finalNamespace(), "v1_" + streamId.rawName(), null, null);
     createV1RawTable(v1RawTableStreamId);
     insertV1RawTableRecords(v1RawTableStreamId, BaseTypingDedupingTest.readRecords(
@@ -1169,8 +1185,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         record -> record.get("_airbyte_raw_id").asText(),
         Function.identity()));
     assertAll(
-        () -> assertEquals(5, v1RawRecords.size()),
-        () -> assertEquals(5, v2RawRecords.size()));
+        () -> assertEquals(6, v1RawRecords.size()),
+        () -> assertEquals(6, v2RawRecords.size()));
     v1RawRecords.forEach(v1Record -> {
       final var v1id = v1Record.get("_airbyte_ab_id").asText();
       assertAll(
