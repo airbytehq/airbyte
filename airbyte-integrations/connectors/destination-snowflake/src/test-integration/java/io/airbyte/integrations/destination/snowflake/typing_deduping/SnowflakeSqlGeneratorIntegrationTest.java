@@ -22,6 +22,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
@@ -243,7 +244,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    final String sql = generator.createTable(incrementalDedupStream, "", false);
+    final Sql sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
     // Note that USERS_FINAL is uppercased here. This is intentional, because snowflake upcases unquoted
@@ -366,8 +367,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         record -> record.get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).asText(),
         Function.identity()));
     assertAll(
-        () -> assertEquals(5, v1RawRecords.size()),
-        () -> assertEquals(5, v2RawRecords.size()));
+        () -> assertEquals(6, v1RawRecords.size()),
+        () -> assertEquals(6, v2RawRecords.size()));
     v1RawRecords.forEach(v1Record -> {
       final var v1id = v1Record.get(JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase()).asText();
       assertAll(
@@ -406,21 +407,23 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             }
             """)));
 
-    final String createTable = generator.createTable(incrementalDedupStream, "", false);
+    final Sql createTable = generator.createTable(incrementalDedupStream, "", false);
 
     // should be OK with new tables
     destinationHandler.execute(createTable);
     final Optional<SnowflakeTableDefinition> existingTableA = destinationHandler.findExistingTable(streamId);
     assertTrue(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableA.get()));
-    destinationHandler.execute("DROP TABLE " + streamId.finalTableId(""));
+    destinationHandler.execute(Sql.of("DROP TABLE " + streamId.finalTableId("")));
 
     // Hack the create query to add NOT NULLs to emulate the old behavior
-    final String createTableModified = Arrays.stream(createTable.split(System.lineSeparator()))
-        .map(line -> !line.contains("CLUSTER") && (line.contains("id1") || line.contains("id2") || line.contains("ID1") || line.contains("ID2"))
-            ? line.replace(",", " NOT NULL,")
-            : line)
-        .collect(Collectors.joining("\r\n"));
-    destinationHandler.execute(createTableModified);
+    List<List<String>> createTableModified = createTable.transactions().stream().map(transaction -> transaction.stream()
+        .map(statement -> Arrays.stream(statement.split(System.lineSeparator())).map(
+            line -> !line.contains("CLUSTER") && (line.contains("id1") || line.contains("id2") || line.contains("ID1") || line.contains("ID2"))
+                ? line.replace(",", " NOT NULL,")
+                : line)
+            .collect(joining("\r\n")))
+        .toList()).toList();
+    destinationHandler.execute(new Sql(createTableModified));
     final Optional<SnowflakeTableDefinition> existingTableB = destinationHandler.findExistingTable(streamId);
     assertFalse(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableB.get()));
   }

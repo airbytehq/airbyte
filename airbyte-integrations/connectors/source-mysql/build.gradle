@@ -7,7 +7,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.7.7'
+    cdkVersionRequired = '0.10.3'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -30,6 +30,7 @@ dependencies {
 
     implementation 'mysql:mysql-connector-java:8.0.30'
     implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation project(path: ':airbyte-cdk:java:airbyte-cdk:db-sources')
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'

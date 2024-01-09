@@ -1,5 +1,5 @@
 [versions]
-airbyte-protocol = "0.3.6"
+airbyte-protocol = "0.5.0"
 commons_io = "2.7"
 testcontainers = "1.19.0"
 datadog-version = "0.111.0"
@@ -161,4 +161,3 @@ temporal = ["temporal-sdk", "temporal-serviceclient"]
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
