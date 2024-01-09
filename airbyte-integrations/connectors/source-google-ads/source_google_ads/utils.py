@@ -61,8 +61,10 @@ def traced_exception(ga_exception: Union[GoogleAdsException, Unauthenticated], c
     failure_type = FailureType.config_error
 
     if isinstance(ga_exception, Unauthenticated):
-        message = (f"Authentication failed for the customer '{customer_id}'. "
-                   f"Please try to Re-authenticate your credentials on set up Google Ads page.")
+        message = (
+            f"Authentication failed for the customer '{customer_id}'. "
+            f"Please try to Re-authenticate your credentials on set up Google Ads page."
+        )
         raise raise_exception.from_exception(failure_type=failure_type, exc=ga_exception, message=message) from ga_exception
 
     for error in ga_exception.failure.errors:
