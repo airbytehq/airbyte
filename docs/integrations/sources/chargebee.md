@@ -1,6 +1,10 @@
 # Chargebee
 
+<HideInUI>
+
 This page contains the setup guide and reference information for the Chargebee source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -21,6 +25,8 @@ All Chargebee sites created from May 5, 2021 onward will have [Product Catalog 2
 7. For **API Key**, enter the [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication).
 8. For **Product Catalog**, enter the Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2).
 9. Click **Set up source**.
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -67,9 +73,24 @@ Most streams are supported regardless of your Chargebee site's [Product Catalog 
 When using incremental sync mode, the `Attached Items` stream behaves differently than the other streams. Whereas other incremental streams read and output _only new_ records, the `Attached Items` stream reads _all_ records but only outputs _new_ records, making it more demanding on your Chargebee API quota. Each sync incurs API calls equal to the total number of attached items in your Chargebee instance divided by 100, regardless of the actual number of `Attached Items` changed or synced.
 :::
 
-## Performance considerations
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about the Chargebee connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
 
 The Chargebee connector should not run into [Chargebee API](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits) limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+
+### Troubleshooting
+
+* Check out common troubleshooting issues for the Instagram source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
 
 ## Changelog
 
@@ -100,3 +121,5 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 | 0.1.2   | 2021-07-30 | [5067](https://github.com/airbytehq/airbyte/pull/5067)   | Prepare connector for publishing                                                                    |
 | 0.1.1   | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add entrypoint and bump version for connector                                                       |
 | 0.1.0   | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410)   | New Source: Chargebee                                                                               |
+
+</HideInUI>
