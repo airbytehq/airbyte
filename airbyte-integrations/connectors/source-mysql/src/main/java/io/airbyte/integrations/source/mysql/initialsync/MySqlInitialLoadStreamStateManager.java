@@ -49,13 +49,11 @@ public class MySqlInitialLoadStreamStateManager implements MySqlInitialLoadState
 
   @Override
   public AirbyteStateMessage createFinalStateMessage(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
-                                                     final JsonNode streamStateForIncrementalRun,
-                                                     final double messageCount) {
+                                                     final JsonNode streamStateForIncrementalRun) {
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
-        .withStream(getAirbyteStreamState(pair, (streamStateForIncrementalRun)))
-        .withSourceStats(new AirbyteStateStats().withRecordCount(messageCount));
+        .withStream(getAirbyteStreamState(pair, (streamStateForIncrementalRun)));
   }
 
   @Override

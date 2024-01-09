@@ -88,8 +88,7 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
 
   @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair,
-                                                     final JsonNode streamStateForIncrementalRun,
-                                                     final double messageCount) {
+                                                     final JsonNode streamStateForIncrementalRun) {
     streamsThatHaveCompletedSnapshot.add(pair);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
@@ -103,8 +102,7 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
-        .withGlobal(globalState)
-        .withSourceStats(new AirbyteStateStats().withRecordCount(messageCount));
+        .withGlobal(globalState);
   }
 
   @Override

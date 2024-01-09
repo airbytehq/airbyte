@@ -15,7 +15,6 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -78,11 +77,9 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
         LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
         recordCount = 0L;
         lastCheckpoint = Instant.now();
-        final AirbyteMessage message = new AirbyteMessage()
+        return new AirbyteMessage()
             .withType(Type.STATE)
             .withState(stateManager.createCtidStateMessage(pair, ctidStatus));
-        message.getState().withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
-        return message;
       }
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
@@ -99,11 +96,9 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
       hasEmittedFinalState = true;
       final AirbyteStateMessage finalStateMessage = stateManager.createFinalStateMessage(pair, streamStateForIncrementalRun);
       LOGGER.info("Finished initial sync of stream {}, Emitting final state, state is {}", pair, finalStateMessage);
-      final AirbyteMessage message = new AirbyteMessage()
+      return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(finalStateMessage);
-      message.getState().withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
-      return message;
     } else {
       return endOfData();
     }
