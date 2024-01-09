@@ -24,6 +24,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
@@ -38,6 +39,7 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -67,6 +69,11 @@ public class MssqlInitialReadUtil {
 
   public record InitialLoadStreams(List<ConfiguredAirbyteStream> streamsForInitialLoad,
                                    Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToInitialLoadStatus) {
+
+  }
+
+  public record CursorBasedStreams(List<ConfiguredAirbyteStream> streamsForCursorBased,
+                                   Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus) {
 
   }
 
@@ -272,4 +279,53 @@ public class MssqlInitialReadUtil {
         .collect(Collectors.toList());
   }
 
+  public static InitialLoadStreams streamsForInitialOrderedColumnLoad(final StateManager stateManager,
+                                                                      final ConfiguredAirbyteCatalog fullCatalog) {
+
+    final List<AirbyteStateMessage> rawStateMessages = stateManager.getRawStateMessages();
+    final Set<AirbyteStreamNameNamespacePair> streamsStillInOrderedColumnSync = new HashSet<>();
+    final Set<AirbyteStreamNameNamespacePair> alreadySeenStreamPairs = new HashSet<>();
+
+    // Build a map of stream <-> initial load status for streams that currently have an initial primary
+    // key load in progress.
+    final Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToInitialLoadStatus = new HashMap<>();
+
+    if (rawStateMessages != null) {
+      rawStateMessages.forEach(stateMessage -> {
+        final AirbyteStreamState stream = stateMessage.getStream();
+        final JsonNode streamState = stream.getStreamState();
+        final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
+        if (streamState == null || streamDescriptor == null) {
+          return;
+        }
+
+        final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
+            streamDescriptor.getNamespace());
+
+        // Build a map of stream <-> initial load status for streams that currently have an initial primary
+        // key load in progress.
+
+        if (streamState.has(STATE_TYPE_KEY)) {
+          if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase(ORDERED_COL_STATE_TYPE)) {
+            final OrderedColumnLoadStatus orderedColumnLoadStatus = Jsons.object(streamState, OrderedColumnLoadStatus.class);
+            pairToInitialLoadStatus.put(pair, orderedColumnLoadStatus);
+            streamsStillInOrderedColumnSync.add(pair);
+          }
+        }
+        alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
+      });
+    }
+    final List<ConfiguredAirbyteStream> streamsForPkSync = new ArrayList<>();
+    fullCatalog.getStreams().stream()
+        .filter(stream -> streamsStillInOrderedColumnSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
+        .map(Jsons::clone)
+        .forEach(streamsForPkSync::add);
+
+    final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog,
+        Collections.unmodifiableSet(alreadySeenStreamPairs));
+    streamsForPkSync.addAll(newlyAddedStreams);
+    return new InitialLoadStreams(streamsForPkSync.stream().filter((stream) -> !stream.getStream().getSourceDefinedPrimaryKey()
+        .isEmpty()).collect(Collectors.toList()),
+        pairToInitialLoadStatus);
+  }
 }
