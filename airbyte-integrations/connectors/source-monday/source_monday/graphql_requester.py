@@ -133,6 +133,19 @@ class MondayGraphqlRequester(HttpRequester):
         arguments = self._get_object_arguments(**object_arguments)
         return f"boards({arguments}){{{query}}}"
 
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        headers = self._request_options_provider.get_request_headers(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
+        headers['API-Version'] = '2024-01'
+        return headers
+
     def get_request_params(
         self,
         *,
