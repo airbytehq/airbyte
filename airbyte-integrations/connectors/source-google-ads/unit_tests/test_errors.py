@@ -99,9 +99,9 @@ def test_read_record_error_handling(mocker, config, customers, cls, raise_expect
             True,
             None,
             (
-                "Metrics are not available for manager account 8765. Please remove metrics "
-                "fields in your custom query: SELECT campaign.accessible_bidding_strategy, "
-                "metrics.clicks FROM campaigns."
+                "Metrics are not available for manager account 8765. "
+                'Skipping the custom query: "SELECT campaign.accessible_bidding_strategy, '
+                'metrics.clicks FROM campaigns" for manager account.'
             ),
         ),
         (
@@ -123,13 +123,13 @@ def test_read_record_error_handling(mocker, config, customers, cls, raise_expect
                 "table_name": "unhappytable",
             },
             False,
-            "Custom query should not contain segments.date",
+            None,
             None,
         ),
     ],
 )
 def test_check_custom_queries(mocker, config, custom_query, is_manager_account, error_message, warning):
-    config["custom_queries"] = [custom_query]
+    config["custom_queries_array"] = [custom_query]
     mocker.patch(
         "source_google_ads.source.SourceGoogleAds.get_account_info",
         Mock(return_value=[[{"customer.manager": is_manager_account, "customer.time_zone": "Europe/Berlin", "customer.id": "8765"}]]),
