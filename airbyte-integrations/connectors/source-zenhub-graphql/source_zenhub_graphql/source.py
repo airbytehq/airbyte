@@ -37,6 +37,10 @@ There are additional required TODOs in the files within the integration_tests fo
 # Source
 class SourceZenhubGraphql(AbstractSource):
     
+    @property
+    def primary_key(self):
+        return None
+    
     def _get_workspace(self, config):
         try:
             #Get Ids

@@ -64,6 +64,7 @@ class ZenhubGraphqlStream(HttpStream, ABC):
     @property
     def http_method(self) -> str:
         return "POST"
+    
 
     def __init__(self, api_key: str, **kwargs):
         super().__init__(authenticator=TokenAuthenticator(token=api_key),**kwargs) 
@@ -125,27 +126,46 @@ class ZenhubWorkspace(ZenhubGraphqlStream):
         repository_node.id()
         repository_node.name()
         return str(ws_op)
-
-
-    #def fetch_data(self):
-    #    query = self.get_ws_query()
-    #    try: 
-    #        response = self.execute_query(query)
-    #        return response, 200
-    #    except Exception as e:
-    #        return {"error": str(e)}, 500
     
     def request_body_json(self, *args, **kwargs) -> Optional[Mapping]:
         query = self.get_ws_query()
 
         log(Level.INFO, f"Raw Query: {query}")
         return {"query": query}
-        
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # Parse the JSON response
+        response_json = response.json()
+
+        # Handle any errors in the response
+        if 'errors' in response_json:
+            raise Exception(f"Errors in response: {response_json['errors']}")
+
+        # Extract the data from the response
+        data = response_json.get('data', {})
+
+        # Iterate over the records and yield them
+        for record in self.extract_records(data):
+            print(record)
+            yield record
+    
+    def extract_records(self, data: Mapping) -> Iterable[Mapping]:
+        # The top level key to start iteration
+        viewer_data = data.get('viewer', {})
+
+        # Iterate through each workspace node
+        for workspace in viewer_data.get('searchWorkspaces', {}).get('nodes', []):
+            # Extract repository data from each workspace
+            for repo in workspace.get('repositoriesConnection', {}).get('nodes', []):
+                # Yield a dictionary with the repository ID and name
+                yield {'repo_id': repo.get('id'), 'repo_name': repo.get('name')}
+       
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         pass
-
+    
+    @property
     def primary_key(self):
         pass
     
