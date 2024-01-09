@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.integrations.destination_async;
 
-import static io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType.STREAM;
 import static java.util.stream.Collectors.toMap;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -157,16 +156,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
       validateRecord(message);
 
       getRecordCounter(message.getRecord().getStreamDescriptor()).incrementAndGet();
-    } else if (Type.STATE.equals(message.getType())) {
-      if (message.getState().getType() != null && message.getState().getType() == STREAM) {
-        final StreamDescriptor streamDescriptor = message.getState().getStream().getStreamDescriptor();
-        if (Strings.isNullOrEmpty(streamDescriptor.getNamespace())) {
-          message.getState().getStream()
-              .setStreamDescriptor(new StreamDescriptor().withNamespace(defaultNamespace).withName(streamDescriptor.getName()));
-        }
-      }
     }
-    bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
+    bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES, defaultNamespace);
   }
 
   /**

@@ -7,9 +7,9 @@ package io.airbyte.cdk.integrations.destination_async.state;
 import static java.lang.Thread.sleep;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateStats;
@@ -113,7 +113,7 @@ public class GlobalAsyncStateManager {
    * Because state messages are a watermark, all preceding records need to be flushed before the state
    * message can be processed.
    */
-  public void trackState(final PartialAirbyteMessage message, final long sizeInBytes) {
+  public void trackState(final PartialAirbyteMessage message, final long sizeInBytes, final String defaultNamespace) {
     if (preState) {
       convertToGlobalIfNeeded(message);
       preState = false;
@@ -121,7 +121,7 @@ public class GlobalAsyncStateManager {
     // stateType should not change after a conversion.
     Preconditions.checkArgument(stateType == extractStateType(message));
 
-    closeState(message, sizeInBytes);
+    closeState(message, sizeInBytes, defaultNamespace);
   }
 
   /**
@@ -296,8 +296,8 @@ public class GlobalAsyncStateManager {
    * to the newly arrived state message. We also increment the state id in preparation for the next
    * state message.
    */
-  private void closeState(final PartialAirbyteMessage message, final long sizeInBytes) {
-    final StreamDescriptor resolvedDescriptor = extractStream(message).orElse(SENTINEL_GLOBAL_DESC);
+  private void closeState(final PartialAirbyteMessage message, final long sizeInBytes, final String defaultNamespace) {
+    final StreamDescriptor resolvedDescriptor = extractStream(message, defaultNamespace).orElse(SENTINEL_GLOBAL_DESC);
     stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
     registerNewStateId(resolvedDescriptor);
     allocateMemoryToState(sizeInBytes);
@@ -336,8 +336,29 @@ public class GlobalAsyncStateManager {
         (double) memoryUsed.get() / memoryAllocated.get());
   }
 
-  private static Optional<StreamDescriptor> extractStream(final PartialAirbyteMessage message) {
-    return Optional.ofNullable(message.getState().getStream()).map(PartialAirbyteStreamState::getStreamDescriptor);
+  /**
+   * If the user has selected the Destination Namespace as the Destination default while setting up
+   * the connector, the platform sets the namespace as null in the StreamDescriptor in the
+   * AirbyteMessages (both record and state messages). The destination checks that if the namespace is
+   * empty or null, if yes then re-populates it with the defaultNamespace. See
+   * {@link io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer#accept(String,Integer)}
+   * But destination only does this for the record messages. So when state messages arrive without a
+   * namespace and since the destination doesn't repopulate it with the default namespace, there is a
+   * mismatch between the StreamDescriptor from record messages and state messages. That breaks the
+   * logic of the state management class as {@link descToStateIdQ} needs to have consistent
+   * StreamDescriptor. This is why while trying to extract the StreamDescriptor from state messages,
+   * we check if the namespace is null, if yes then replace it with defaultNamespace to keep it
+   * consistent with the record messages.
+   */
+  private static Optional<StreamDescriptor> extractStream(final PartialAirbyteMessage message, final String defaultNamespace) {
+    if (message.getState().getType() != null && message.getState().getType() == AirbyteStateMessage.AirbyteStateType.STREAM) {
+      final StreamDescriptor streamDescriptor = message.getState().getStream().getStreamDescriptor();
+      if (Strings.isNullOrEmpty(streamDescriptor.getNamespace())) {
+        return Optional.of(new StreamDescriptor().withName(streamDescriptor.getName()).withNamespace(defaultNamespace));
+      }
+      return Optional.of(streamDescriptor);
+    }
+    return Optional.empty();
   }
 
   private long getStateAfterAlias(final long stateId) {
