@@ -65,7 +65,10 @@ class RecordProcessor(abc.ABC):
 
         self.config = config or self.config_class()
         if not isinstance(self.config, self.config_class):
-            err_msg = f"Expected config class of type '{self.config_class.__name__}'.  " f"Instead found '{type(self.config).__name__}'."
+            err_msg = (
+                f"Expected config class of type '{self.config_class.__name__}'.  "
+                f"Instead found '{type(self.config).__name__}'."
+            )
             raise TypeError(err_msg)
 
         self.source_catalog = source_catalog
@@ -77,8 +80,12 @@ class RecordProcessor(abc.ABC):
         self._pending_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
         self._finalized_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
 
-        self._pending_state_messages: dict[str, list[AirbyteStateMessage]] = defaultdict(list, {})
-        self._finalized_state_messages: dict[str, list[AirbyteStateMessage]] = defaultdict(list, {})
+        self._pending_state_messages: dict[
+            str, list[AirbyteStateMessage]
+        ] = defaultdict(list, {})
+        self._finalized_state_messages: dict[
+            str, list[AirbyteStateMessage]
+        ] = defaultdict(list, {})
 
         self._setup()
 
@@ -96,7 +103,9 @@ class RecordProcessor(abc.ABC):
         self.process_input_stream(input_stream, max_batch_size)
 
     @final
-    def _airbyte_messages_from_buffer(self, buffer: io.TextIOBase) -> Iterable[AirbyteMessage]:
+    def _airbyte_messages_from_buffer(
+        self, buffer: io.TextIOBase
+    ) -> Iterable[AirbyteMessage]:
         """Yield messages from a buffer."""
         yield from (AirbyteMessage.parse_raw(line) for line in buffer)
 
@@ -220,14 +229,17 @@ class RecordProcessor(abc.ABC):
         with self._finalizing_batches(stream_name) as batches_to_finalize:
             if batches_to_finalize and not self.skip_finalize_step:
                 raise NotImplementedError(
-                    "Caches need to be finalized but no _finalize_batch() method " f"exists for class {self.__class__.__name__}"
+                    "Caches need to be finalized but no _finalize_batch() method "
+                    f"exists for class {self.__class__.__name__}"
                 )
 
             return batches_to_finalize
 
     @final
     @contextlib.contextmanager
-    def _finalizing_batches(self, stream_name: str) -> Generator[dict[str, BatchHandle], str, None]:
+    def _finalizing_batches(
+        self, stream_name: str
+    ) -> Generator[dict[str, BatchHandle], str, None]:
         """Context manager to use for finalizing batches, if applicable.
 
         Returns a mapping of batch IDs to batch handles, for those processed batches.
