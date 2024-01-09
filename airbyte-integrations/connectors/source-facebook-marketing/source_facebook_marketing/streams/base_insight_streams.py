@@ -235,7 +235,11 @@ class AdsInsights(FBMarketingIncrementalStream):
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
             yield InsightAsyncJob(
-                api=self._api.api, edge_object=self._api.get_account(account_id=account_id), interval=interval, params=params, job_timeout=self.insights_job_timeout
+                api=self._api.api,
+                edge_object=self._api.get_account(account_id=account_id),
+                interval=interval,
+                params=params,
+                job_timeout=self.insights_job_timeout,
             )
 
     def check_breakdowns(self, account_id: str):
