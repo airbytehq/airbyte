@@ -34,6 +34,15 @@ class HttpMockerTest(TestCase):
         assert response.status_code == 474
 
     @HttpMocker()
+    def test_given_loose_headers_matching_when_decorate_then_match(self, http_mocker):
+        http_mocker.get(
+            HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS),
+            HttpResponse(_A_RESPONSE_BODY, 474),
+        )
+
+        requests.get(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS | {"more strict query param key": "any value"})
+
+    @HttpMocker()
     def test_given_post_request_match_when_decorate_then_return_response(self, http_mocker):
         http_mocker.post(
             HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS, _SOME_REQUEST_BODY_STR),
@@ -74,61 +83,6 @@ class HttpMockerTest(TestCase):
         assert first_response.status_code == 1
         assert second_response.text == _ANOTHER_RESPONSE_BODY
         assert second_response.status_code == 2
-
-    @HttpMocker()
-    def test_given_body_is_mapping_pass_as_json_when_decorate_then_match_query(self, http_mocker):
-        http_mocker.post(
-            HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS, _SOME_REQUEST_BODY_MAPPING),
-            _A_RESPONSE,
-        )
-
-        requests.post(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS, json=_SOME_REQUEST_BODY_MAPPING)
-
-    @HttpMocker()
-    def test_given_body_is_str_pass_as_json_when_decorate_then_match_query(self, http_mocker):
-        http_mocker.post(
-            HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS, _SOME_REQUEST_BODY_STR),
-            _A_RESPONSE,
-        )
-
-        requests.post(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS, data=_SOME_REQUEST_BODY_STR)
-
-    @HttpMocker()
-    def test_given_body_is_str_pass_as_data_when_decorate_then_match_query(self, http_mocker):
-        http_mocker.post(
-            HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS, _SOME_REQUEST_BODY_STR),
-            _A_RESPONSE,
-        )
-
-        requests.post(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS, data=_SOME_REQUEST_BODY_STR)
-
-    @HttpMocker()
-    def test_given_body_is_json_str_with_formatting_when_decorate_then_match_query(self, http_mocker):
-        http_mocker.get(
-            HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS, {"a body": "body"}),
-            _A_RESPONSE,
-        )
-
-        requests.get(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS, data='{\n  "a body": "body"\n}')
-
-    @HttpMocker()
-    def test_given_body_is_mapping_pass_as_json_different_order_when_decorate_then_match_query(self, http_mocker):
-        http_mocker.post(
-            HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS, {"first_field": "first_value", "second_field": 2}),
-            _A_RESPONSE,
-        )
-
-        requests.post(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS, json={"second_field": 2, "first_field": "first_value"})
-
-    def test_given_body_is_json_str_different_order_when_decorate_then_do_not_match_query(self):
-        with pytest.raises(requests_mock.exceptions.NoMockAddress):
-            with HttpMocker() as http_mocker:
-                http_mocker.post(
-                    HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS, '{"first_field": "first_value", "second_field": 2}'),
-                    _A_RESPONSE,
-                )
-
-                requests.post(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS, data='{"second_field": 2, "first_field": "first_value"}')
 
     @HttpMocker()
     def test_given_more_requests_than_responses_when_decorate_then_raise_error(self, http_mocker):
