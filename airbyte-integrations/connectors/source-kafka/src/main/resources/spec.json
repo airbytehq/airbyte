@@ -224,9 +224,9 @@
                   "PEM"
                 ]
               },
-              "ssl_keystore_location": {
-                "title": "SASL Keystore Location",
-                "description": "The location of the key store file",
+              "ssl_keystore_text": {
+                "title": "SASL Keystore Text (Base64)",
+                "description": "The text of the key store file encoded in base64",
                 "type": "string",
                 "default": "",
                 "airbyte_secret": true
@@ -243,8 +243,8 @@
                 ]
               },
               "ssl_truststore_location": {
-                "title": "SASL Truststore Location",
-                "description": "The location of the trust store file",
+                "title": "SASL Truststore  Text (Base64)",
+                "description": "The text of the trust store file encoded in base64",
                 "type": "string",
                 "default": "",
                 "airbyte_secret": true
