@@ -66,7 +66,7 @@ class AddChangelogEntry(Step):
                 stdout=f"Could not add changelog entry: {e}",
                 output_artifact=self.repo_dir,
             )
-        updated_repo_dir = self.repo_dir.with_new_file(str(doc_path), updated_doc)
+        updated_repo_dir = self.repo_dir.with_new_file(str(doc_path), contents=updated_doc)
         return StepResult(
             self,
             StepStatus.SUCCESS,
@@ -139,7 +139,7 @@ class BumpDockerImageTagInMetadata(Step):
 
 async def run_connector_version_bump_pipeline(
     context: ConnectorContext,
-    semaphore: Semaphore,
+    semaphore: "Semaphore",
     bump_type: str,
     changelog_entry: str,
     pull_request_number: str,

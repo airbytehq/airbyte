@@ -123,7 +123,9 @@ class DeployOrchestrator(Step):
         # mount metadata_service/lib and metadata_service/orchestrator
         parent_dir = self.context.get_repo_dir("airbyte-ci/connectors/metadata_service")
         python_base = with_python_base(self.context, "3.9")
-        python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "pydantic==1.10.6", "poetry2setup==1.1.0"])
+        python_with_dependencies = with_pip_packages(
+            python_base, ["dagster-cloud==1.2.6", "pydantic==1.10.6", "poetry2setup==1.1.0", "pendulum==2.1.2"]
+        )
         dagster_cloud_api_token_secret: dagger.Secret = get_secret_host_variable(
             self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN"
         )
@@ -179,15 +181,19 @@ async def run_metadata_orchestrator_deploy_pipeline(
 
         async with metadata_pipeline_context:
             steps: STEP_TREE = [
-                StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR,
-                    step=TestOrchestrator(context=metadata_pipeline_context),
-                ),
-                StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.DEPLOY_ORCHESTRATOR,
-                    step=DeployOrchestrator(context=metadata_pipeline_context),
-                    depends_on=[CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR],
-                ),
+                [
+                    StepToRun(
+                        id=CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR,
+                        step=TestOrchestrator(context=metadata_pipeline_context),
+                    )
+                ],
+                [
+                    StepToRun(
+                        id=CONNECTOR_TEST_STEP_ID.DEPLOY_ORCHESTRATOR,
+                        step=DeployOrchestrator(context=metadata_pipeline_context),
+                        depends_on=[CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR],
+                    )
+                ],
             ]
             steps_results = await run_steps(steps)
             metadata_pipeline_context.report = Report(

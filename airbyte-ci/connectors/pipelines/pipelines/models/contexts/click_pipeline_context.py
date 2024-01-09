@@ -10,7 +10,6 @@ from typing import Any, Callable, Dict, Optional, TextIO, Tuple
 import anyio
 import dagger
 from asyncclick import Context, get_current_context
-from dagger.api.gen import Client, Container
 from pipelines import main_logger
 from pipelines.cli.click_decorators import LazyPassDecorator
 from pydantic import BaseModel, Field, PrivateAttr
@@ -26,8 +25,8 @@ class ClickPipelineContext(BaseModel, Singleton):
     Dagger client, which is used to create containers for running pipelines.
     """
 
-    dockerd_service: Optional[Container] = Field(default=None)
-    _dagger_client: Optional[Client] = PrivateAttr(default=None)
+    dockerd_service: Optional[dagger.Container] = Field(default=None)
+    _dagger_client: Optional[dagger.Client] = PrivateAttr(default=None)
     _click_context: Callable[[], Context] = PrivateAttr(default_factory=lambda: get_current_context)
     _og_click_context: Context = PrivateAttr(default=None)
 
@@ -79,7 +78,7 @@ class ClickPipelineContext(BaseModel, Singleton):
 
     _dagger_client_lock: anyio.Lock = PrivateAttr(default_factory=anyio.Lock)
 
-    async def get_dagger_client(self, pipeline_name: Optional[str] = None) -> Client:
+    async def get_dagger_client(self, pipeline_name: Optional[str] = None) -> dagger.Client:
         """
         Get (or initialize) the Dagger Client instance.
         """
