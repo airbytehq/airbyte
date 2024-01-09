@@ -164,6 +164,8 @@ async def run_metadata_orchestrator_deploy_pipeline(
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
 ) -> bool:
+    success: bool = False
+
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Orchestrator Unit Test Pipeline",
         is_local=is_local,
@@ -175,7 +177,6 @@ async def run_metadata_orchestrator_deploy_pipeline(
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
     )
-
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
 
@@ -196,9 +197,11 @@ async def run_metadata_orchestrator_deploy_pipeline(
                 ],
             ]
             steps_results = await run_steps(steps)
-            metadata_pipeline_context.report = Report(
+            report = Report(
                 pipeline_context=metadata_pipeline_context,
                 steps_results=list(steps_results.values()),
                 name="METADATA ORCHESTRATOR DEPLOY RESULTS",
             )
-    return metadata_pipeline_context.report.success
+            metadata_pipeline_context.report = report
+            success = report.success
+    return success

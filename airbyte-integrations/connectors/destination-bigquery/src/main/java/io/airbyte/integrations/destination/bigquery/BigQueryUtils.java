@@ -19,6 +19,7 @@ import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.InsertAllRequest;
+import com.google.cloud.bigquery.InsertAllRequest.RowToInsert;
 import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
@@ -159,13 +160,15 @@ public class BigQueryUtils {
         CHECK_TEST_TMP_TABLE_NAME, testTableSchema);
 
     // Try to make test (dummy records) insert to make sure that user has required permissions
+    // Use ids for BigQuery client to attempt idempotent retries.
+    // See https://github.com/airbytehq/airbyte/issues/33982
     try {
       final InsertAllResponse response =
           bigquery.insertAll(InsertAllRequest
               .newBuilder(test_connection_table_name)
-              .addRow(Map.of("id", 1, "name", "James"))
-              .addRow(Map.of("id", 2, "name", "Eugene"))
-              .addRow(Map.of("id", 3, "name", "Angelina"))
+              .addRow(RowToInsert.of("1", ImmutableMap.of("id", 1, "name", "James")))
+              .addRow(RowToInsert.of("2", ImmutableMap.of("id", 2, "name", "Eugene")))
+              .addRow(RowToInsert.of("3", ImmutableMap.of("id", 3, "name", "Angelina")))
               .build());
 
       if (response.hasErrors()) {
@@ -175,6 +178,7 @@ public class BigQueryUtils {
         }
       }
     } catch (final BigQueryException e) {
+      LOGGER.error("Dummy inserts in check failed", e);
       throw new ConfigErrorException("Failed to check connection: \n" + e.getMessage());
     } finally {
       test_connection_table_name.delete();
