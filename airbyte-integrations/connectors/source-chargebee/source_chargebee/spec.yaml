@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - site
     - site_api_key
+    - start_date
   additionalProperties: true
   properties:
     site_api_key:
