@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import aiohttp
 import pytest
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from requests import exceptions
@@ -18,6 +19,10 @@ def helper_with_exceptions(exception_type):
         (1, 1, 0, exceptions.ReadTimeout),
         (2, 2, 1, exceptions.ConnectionError),
         (3, 3, 1, exceptions.ChunkedEncodingError),
+        (1, None, 1, aiohttp.ClientPayloadError),
+        (1, None, 1, aiohttp.ServerTimeoutError),
+        (2, 2, 1, aiohttp.ServerConnectionError),
+        (2, 2, 1, aiohttp.ServerDisconnectedError),
     ],
 )
 def test_default_backoff_handler(max_tries: int, max_time: int, factor: int, exception_to_raise: Exception):

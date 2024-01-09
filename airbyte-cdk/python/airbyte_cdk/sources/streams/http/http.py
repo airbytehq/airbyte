@@ -337,6 +337,9 @@ class HttpStream(BaseHttpStream, ABC):
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
         return HttpError.parse_response_error_message(response)
 
+    def parse_error_message(cls, error: HttpError) -> Optional[str]:
+        return HttpError.parse_response_error_message(error.response)
+
     def read_records(
         self,
         sync_mode: SyncMode,

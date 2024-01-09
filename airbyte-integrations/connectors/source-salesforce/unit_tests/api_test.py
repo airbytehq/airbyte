@@ -87,14 +87,15 @@ async def test_bulk_sync_creation_failed(stream_config, stream_api):
     await stream.ensure_session()
 
     def callback(*args, **kwargs):
-        return CallbackResult(status=400, reason="test_error", content_type="application/json")
+        return CallbackResult(status=400, payload={"message": "test_error"})
 
     with aioresponses() as m:
         m.post("https://fase-account.salesforce.com/services/data/v57.0/jobs/query", status=400, callback=callback)
         with pytest.raises(HttpError) as err:
             stream_slices = await anext(stream.stream_slices(sync_mode=SyncMode.incremental))
             [r async for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices)]
-    assert err.value.message == "test_error"
+
+    assert err.value.json()["message"] == "test_error"
     await stream._session.close()
 
 

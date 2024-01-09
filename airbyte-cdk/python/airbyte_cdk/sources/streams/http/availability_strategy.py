@@ -4,11 +4,12 @@
 
 import logging
 import typing
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.http.utils import HttpError
 from airbyte_cdk.sources.streams.utils.stream_helper import (
     get_first_record_for_slice,
     get_first_stream_slice,
@@ -17,6 +18,7 @@ from requests import HTTPError
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
+    from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class HttpAvailabilityStrategy(AvailabilityStrategy):
@@ -70,7 +72,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         stream: Stream,
         logger: logging.Logger,
         source: Optional["Source"],
-        error: HTTPError,
+        error: Union[HTTPError, HttpError],
     ) -> Tuple[bool, Optional[str]]:
         """
         Override this method to define error handling for various `HTTPError`s
@@ -88,7 +90,15 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           for some reason and the str should describe what went wrong and how to
           resolve the unavailability, if possible.
         """
-        status_code = error.response.status_code
+        if isinstance(error, HttpError):
+            status_code = error.status_code
+            url = error.url
+            reason = error.reason or error.error_message
+        else:
+            # TODO: wrap synchronous codepath's errors in HttpError to delete this path
+            status_code = error.response.status_code
+            url = error.response.url
+            reason = error.response.reason
         known_status_codes = self.reasons_for_unavailable_status_codes(
             stream, logger, source, error
         )
@@ -98,7 +108,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             raise error
 
         doc_ref = self._visit_docs_message(logger, source)
-        reason = f"The endpoint {error.response.url} returned {status_code}: {error.response.reason}. {known_reason}. {doc_ref} "
+        reason = f"The endpoint {url} returned {status_code}: {reason}. {known_reason}. {doc_ref} "
         response_error_message = stream.parse_error_message(error)
         if response_error_message:
             reason += response_error_message

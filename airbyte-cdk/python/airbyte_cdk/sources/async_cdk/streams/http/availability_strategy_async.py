@@ -3,9 +3,8 @@
 #
 
 import logging
-from typing import TYPE_CHECKING, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
 
-import requests
 from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
 from airbyte_cdk.sources.async_cdk.streams.utils.stream_helper_async import (
     get_first_record_for_slice,
@@ -50,23 +49,21 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
             reason = f"Cannot attempt to connect to stream {stream.name} - no stream slices were found, likely because the parent stream is empty."
             return False, reason
         except HttpError as error:
-            is_available, reason = await self._handle_http_error(
-                stream, logger, source, error
-            )
+            is_available, reason = self._handle_http_error(stream, logger, source, error)
             if not is_available:
                 reason = f"Unable to get slices for {stream.name} stream, because of error in parent stream. {reason}"
             return is_available, reason
 
         try:
-            async for _ in get_first_record_for_slice(stream, stream_slice):
-                return True, None
+            await get_first_record_for_slice(stream, stream_slice)
+            return True, None
         except StopAsyncIteration:
             logger.info(
                 f"Successfully connected to stream {stream.name}, but got 0 records."
             )
             return True, None
         except HttpError as error:
-            is_available, reason = await self._handle_http_error(
+            is_available, reason = self._handle_http_error(
                 stream, logger, source, error
             )
             if not is_available:
@@ -74,65 +71,3 @@ class AsyncHttpAvailabilityStrategy(HttpAvailabilityStrategy):
             return is_available, reason
 
         return True, None
-
-    async def _handle_http_error(
-        self,
-        stream: "AsyncHttpStream",
-        logger: logging.Logger,
-        source: Optional["AsyncAbstractSource"],
-        error: HttpError,
-    ) -> Tuple[bool, Optional[str]]:
-        """
-        Override this method to define error handling for various `HTTPError`s
-        that are raised while attempting to check a stream's availability.
-
-        Checks whether an error's status_code is in a list of unavailable_error_codes,
-        and gets the associated reason for that error.
-
-        :param stream: stream
-        :param logger: source logger
-        :param source: optional (source)
-        :param error: HTTPError raised while checking stream's availability.
-        :return: A tuple of (boolean, str). If boolean is true, then the stream
-          is available, and no str is required. Otherwise, the stream is unavailable
-          for some reason and the str should describe what went wrong and how to
-          resolve the unavailability, if possible.
-        """
-        status_code = error.status_code
-        known_status_codes = self.reasons_for_unavailable_status_codes(
-            stream, logger, source, error
-        )
-        known_reason = known_status_codes.get(status_code)
-        if not known_reason:
-            # If the HTTPError is not in the dictionary of errors we know how to handle, don't except
-            raise error
-
-        doc_ref = self._visit_docs_message(logger, source)
-        reason = f"The endpoint {error.url} returned {status_code}: {error.message}. {known_reason}. {doc_ref} "
-        response_error_message = stream.parse_error_message(error)
-        return False, reason
-
-    def reasons_for_unavailable_status_codes(
-        self,
-        stream: "AsyncHttpStream",
-        logger: logging.Logger,
-        source: Optional["AsyncAbstractSource"],
-        error: HttpError,
-    ) -> Dict[int, str]:
-        """
-        Returns a dictionary of HTTP status codes that indicate stream
-        unavailability and reasons explaining why a given status code may
-        have occurred and how the user can resolve that error, if applicable.
-
-        :param stream: stream
-        :param logger: source logger
-        :param source: optional (source)
-        :return: A dictionary of (status code, reason) where the 'reason' explains
-        why 'status code' may have occurred and how the user can resolve that
-        error, if applicable.
-        """
-        reasons_for_codes: Dict[int, str] = {
-            requests.codes.FORBIDDEN: "This is most likely due to insufficient permissions on the credentials in use. "
-            "Try to grant required permissions/scopes or re-authenticate"
-        }
-        return reasons_for_codes

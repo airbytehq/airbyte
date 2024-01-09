@@ -306,6 +306,9 @@ class BaseHttpStream(Stream, ABC):
         """
         if isinstance(exception, HttpError):
             return self.parse_error_message(exception)
+        elif isinstance(exception, requests.HTTPError) and exception.response is not None:
+            # TODO: wrap synchronous codepath's errors in HttpError to delete this path
+            return self.parse_response_error_message(exception.response)
         return None
 
     @abstractmethod

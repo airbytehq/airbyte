@@ -33,19 +33,19 @@ from airbyte_cdk.sources.async_cdk.streams.http.availability_strategy_async impo
     AsyncHttpAvailabilityStrategy,
 )
 from airbyte_cdk.sources.async_cdk.streams.http.exceptions_async import (
-    DefaultBackoffException,
-    RequestBodyException,
-    UserDefinedBackoffException,
+    AsyncDefaultBackoffException,
+    AsyncUserDefinedBackoffException,
 )
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
 from airbyte_cdk.sources.streams.http.http_base import BaseHttpStream
+from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, async_user_defined_backoff_handler
 from airbyte_cdk.sources.streams.http.utils import HttpError
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 
-from .rate_limiting_async import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
@@ -303,13 +303,13 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
                 custom_backoff_time = self.backoff_time(response)
                 error_message = self.error_message(response)
                 if custom_backoff_time:
-                    raise UserDefinedBackoffException(
+                    raise AsyncUserDefinedBackoffException(
                         backoff=custom_backoff_time,
                         error=exc,
                         error_message=error_message,
                     )
                 else:
-                    raise DefaultBackoffException(
+                    raise AsyncDefaultBackoffException(
                         error=exc, error_message=error_message
                     )
             elif self.raise_on_http_errors:
@@ -360,7 +360,7 @@ class AsyncHttpStream(BaseHttpStream, AsyncStream, ABC):
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
 
-        user_backoff_handler = user_defined_backoff_handler(
+        user_backoff_handler = async_user_defined_backoff_handler(
             max_tries=max_tries, max_time=max_time
         )(self._send)
         backoff_handler = default_backoff_handler(

@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+from typing import Optional, Union
 
 import aiohttp
 import requests
@@ -10,8 +10,9 @@ from airbyte_cdk.sources.utils.types import JsonType
 class HttpError(Exception):
     def __init__(
         self,
-        requests_error: Optional[requests.HTTPError] = None,
+        requests_error: Optional[requests.RequestException] = None,
         aiohttp_error: Optional[aiohttp.ClientResponseError] = None,
+        error_message: Optional[str] = None,
     ):
         assert (
             requests_error or aiohttp_error and not (requests_error and aiohttp_error)
@@ -21,6 +22,8 @@ class HttpError(Exception):
         self._aiohttp_response_json = None
         self._aiohttp_response_content = None
         self._aiohttp_response_text = None
+        self._aiohttp_response = None
+        self.error_message = error_message
 
     @property
     def status_code(self) -> Optional[int]:
@@ -35,7 +38,7 @@ class HttpError(Exception):
         if self._requests_error:
             return str(self._requests_error)
         elif self._aiohttp_error:
-            return self._aiohttp_error.message
+            return self.error_message
         else:
             return ""
 
@@ -63,11 +66,33 @@ class HttpError(Exception):
         return ""
 
     @property
+    def request(self) -> Optional[Union[requests.Request, aiohttp.RequestInfo]]:
+        if self._requests_error and self._requests_error.response:
+            return self._requests_error.request
+        elif self._aiohttp_error:
+            return self._aiohttp_error.request_info
+
+    @property
+    def response(self) -> Optional[Union[requests.Response, aiohttp.ClientResponse]]:
+        if self._requests_error and self._requests_error.response:
+            return self._requests_error.response
+        elif self._aiohttp_error:
+            return self._aiohttp_response
+
+    @property
     def url(self) -> str:
         if self._requests_error and self._requests_error.request:
             return self._requests_error.request.url or ""
         elif self._aiohttp_error:
             return str(self._aiohttp_error.request_info.url)
+        return ""
+
+    @property
+    def reason(self) -> Optional[str]:
+        if self._requests_error and self._requests_error.request:
+            return self._requests_error.response.reason
+        elif self._aiohttp_error:
+            return self._aiohttp_error.message
         return ""
 
     @classmethod
@@ -135,6 +160,7 @@ class HttpError(Exception):
             response_json = None
 
         text = await response.text()  # This fixed a test
+        self._aiohttp_response = response
         self._aiohttp_response_json = response_json or text
         self._aiohttp_response_content = await response.content.read()
         self._aiohttp_response_text = text

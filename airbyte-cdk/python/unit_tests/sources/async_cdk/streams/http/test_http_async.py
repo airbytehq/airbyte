@@ -18,10 +18,10 @@ from airbyte_cdk.sources.async_cdk.streams.http.http_async import (
     AsyncHttpStream,
     AsyncHttpSubStream,
 )
+from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
 from airbyte_cdk.sources.async_cdk.streams.http.exceptions_async import (
-    DefaultBackoffException,
-    RequestBodyException,
-    UserDefinedBackoffException,
+    AsyncDefaultBackoffException,
+    AsyncUserDefinedBackoffException,
 )
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.auth import (
@@ -202,7 +202,7 @@ def test_stub_custom_backoff_http_stream(mocker):
     with aioresponses() as m:
         m.get(stream.url_base, status=429, repeat=True, callback=request_callback)
 
-        with pytest.raises(UserDefinedBackoffException):
+        with pytest.raises(AsyncUserDefinedBackoffException):
             loop.run_until_complete(read_records(stream))
 
     assert call_counter == stream.max_retries + 1
@@ -230,7 +230,7 @@ def test_stub_custom_backoff_http_stream_retries(mocker, retries):
     with aioresponses() as m:
         m.get(stream.url_base, status=429, repeat=True, callback=request_callback)
 
-        with pytest.raises(UserDefinedBackoffException) as excinfo:
+        with pytest.raises(AsyncUserDefinedBackoffException) as excinfo:
             loop.run_until_complete(read_records(stream))
             assert isinstance(excinfo.value.request, aiohttp.ClientRequest)
             assert isinstance(excinfo.value.response, aiohttp.ClientResponse)
@@ -309,7 +309,7 @@ def test_raise_on_http_errors_off_429():
 
     with aioresponses() as m:
         m.get(stream.url_base, status=429, repeat=True)
-        with pytest.raises(DefaultBackoffException):
+        with pytest.raises(AsyncDefaultBackoffException):
             loop.run_until_complete(read_records(stream))
 
     loop.run_until_complete(stream._session.close())
@@ -330,7 +330,7 @@ def test_raise_on_http_errors_off_5xx(status_code):
         m.get(
             stream.url_base, status=status_code, repeat=True, callback=request_callback
         )
-        with pytest.raises(DefaultBackoffException):
+        with pytest.raises(AsyncDefaultBackoffException):
             loop.run_until_complete(read_records(stream))
 
     assert call_counter == stream.max_retries + 1

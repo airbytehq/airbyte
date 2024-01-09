@@ -113,15 +113,11 @@ class AsyncStream(Stream, ABC):
                     if internal_config.is_limit_reached(record_counter):
                         break
 
-            yield self._checkpoint_state(
-                stream_state, state_manager, per_stream_state_enabled
-            )
+            yield self._checkpoint_state(stream_state, state_manager, per_stream_state_enabled)
 
         if not has_slices:
             # Safety net to ensure we always emit at least one state message even if there are no slices
-            checkpoint = self._checkpoint_state(
-                stream_state, state_manager, per_stream_state_enabled
-            )
+            checkpoint = self._checkpoint_state(stream_state, state_manager, per_stream_state_enabled)
             yield checkpoint
 
     @abstractmethod
@@ -185,17 +181,3 @@ class AsyncStream(Stream, ABC):
                 self, logger, source
             )
         return True, None
-
-    def get_error_display_message(
-        self, exception: BaseException
-    ) -> Optional[str]:
-        """
-        Retrieves the user-friendly display message that corresponds to an exception.
-        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
-
-        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
-
-        :param exception: The exception that was raised
-        :return: A user-friendly message that indicates the cause of the error
-        """
-        return None

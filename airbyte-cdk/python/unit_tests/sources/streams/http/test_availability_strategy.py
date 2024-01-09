@@ -87,7 +87,7 @@ def test_default_http_availability_strategy(
     class MockResponseWithJsonContents(requests.Response, mocker.MagicMock):
         def __init__(self, *args, **kvargs):
             mocker.MagicMock.__init__(self)
-            requests.Response.__init__(self, **kvargs)
+            requests.Response.__init__(self)
             self.json = mocker.MagicMock()
 
     class MockSource(AbstractSource):

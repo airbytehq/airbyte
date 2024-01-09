@@ -3,12 +3,17 @@
 #
 
 
+from abc import ABC
 from typing import Union
 
 import requests
 
 
-class BaseBackoffException(requests.exceptions.HTTPError):
+class AbstractBaseBackoffException(ABC):
+    pass
+
+
+class BaseBackoffException(AbstractBaseBackoffException, requests.exceptions.HTTPError):
     def __init__(self, request: requests.PreparedRequest, response: requests.Response, error_message: str = ""):
         error_message = (
             error_message or f"Request URL: {request.url}, Response Code: {response.status_code}, Response Text: {response.text}"

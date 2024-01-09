@@ -18,9 +18,7 @@ async def get_first_stream_slice(stream: AsyncStream) -> Optional[Mapping[str, A
     """
     first_slice = await anext(
         stream.stream_slices(
-            cursor_field=[stream.cursor_field]
-            if isinstance(stream.cursor_field, str)
-            else stream.cursor_field,
+            cursor_field=stream.cursor_field,
             sync_mode=SyncMode.full_refresh,
         )
     )
@@ -29,7 +27,7 @@ async def get_first_stream_slice(stream: AsyncStream) -> Optional[Mapping[str, A
 
 async def get_first_record_for_slice(
     stream: AsyncStream, stream_slice: Optional[Mapping[str, Any]]
-) -> AsyncGenerator[StreamData, None]:
+) -> StreamData:
     """
     Gets the first record for a stream_slice of a stream.
     :param stream: stream
@@ -37,9 +35,9 @@ async def get_first_record_for_slice(
     :raises StopAsyncIteration: if there is no first record to return (the read_records generator is empty)
     :return: StreamData containing the first record in the slice
     """
-    # We wrap the return output of read_records() because some implementations return types that are iterable,
-    # but not iterators such as lists or tuples
-    async for record in stream.read_records(
-        sync_mode=SyncMode.full_refresh, stream_slice=stream_slice
-    ):
-        yield record
+    record = await anext(
+        stream.read_records(
+            sync_mode=SyncMode.full_refresh, stream_slice=stream_slice
+        )
+    )
+    return record
