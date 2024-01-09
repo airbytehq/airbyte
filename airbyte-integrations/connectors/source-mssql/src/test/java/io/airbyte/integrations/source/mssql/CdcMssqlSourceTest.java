@@ -98,8 +98,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         .withConnectionProperty("databaseName", testdb.getDatabaseName())
         .initialized()
         .withSnapshotIsolation()
-        .withCdc()
-        .withWaitUntilAgentRunning();
+        .withWaitUntilAgentRunning()
+        .withCdc();
   }
 
   @Override
@@ -134,7 +134,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
                                 \t@supports_net_changes = 0""";
     testdb
         .with(enableCdcSqlFmt, modelsSchema(), MODELS_STREAM_NAME, CDC_ROLE_NAME)
-        .with(enableCdcSqlFmt, randomSchema(), RANDOM_TABLE_NAME, CDC_ROLE_NAME);
+        .with(enableCdcSqlFmt, randomSchema(), RANDOM_TABLE_NAME, CDC_ROLE_NAME)
+        .withShortenedCapturePollingInterval();
 
     // Create a test user to be used by the source, with proper permissions.
     testdb
