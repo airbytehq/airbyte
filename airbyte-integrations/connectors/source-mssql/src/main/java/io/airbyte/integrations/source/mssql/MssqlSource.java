@@ -651,8 +651,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
-    return createDatabase(sourceConfig, JDBC_DELIMITER);
+  public String getJdbcPropertiesDelimiter() {
+    return JDBC_DELIMITER;
   }
 
   public static void main(final String[] args) throws Exception {
