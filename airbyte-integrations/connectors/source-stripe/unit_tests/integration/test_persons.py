@@ -12,6 +12,7 @@ from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
+    NestedPath,
     RecordBuilder,
     create_record_builder,
     create_response_builder,
@@ -72,6 +73,24 @@ def _create_record(resource: str) -> RecordBuilder:
         record_id_path=FieldPath("id"),
         record_cursor_path=FieldPath("created")
     )
+
+
+def _create_persons_event_record(event_type: str) -> RecordBuilder:
+    event_record = create_record_builder(
+        find_template("events", __file__),
+        FieldPath("data"),
+        record_id_path=FieldPath("id"),
+        record_cursor_path=FieldPath("created"),
+    )
+
+    person_record = create_record_builder(
+        find_template("persons", __file__),
+        FieldPath("data"),
+        record_id_path=FieldPath("id"),
+        record_cursor_path=FieldPath("created")
+    )
+
+    return event_record.with_field(NestedPath(["data", "object"]), person_record.build()).with_field(NestedPath(["type"]), event_type)
 
 
 def emits_successful_sync_status_messages(status_messages: List[AirbyteStreamStatus]) -> bool:
@@ -222,7 +241,7 @@ class PersonsTest(TestCase):
         assert actual_messages.errors[-1].trace.error.failure_type == FailureType.system_error
 
     @HttpMocker()
-    def test_accounts_401_error(self, http_mocker: HttpMocker):
+    def test_persons_401_error(self, http_mocker: HttpMocker):
         http_mocker.get(
             _create_request("accounts").with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
@@ -278,13 +297,13 @@ class PersonsTest(TestCase):
 
         http_mocker.get(
             _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("persons_event_created")).with_record(record=_create_record("persons_event_created")).build(),
+            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
         http_mocker.get(
             _create_request("events").with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("persons_event_created")).build(),
+            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental))
@@ -316,13 +335,13 @@ class PersonsTest(TestCase):
 
         http_mocker.get(
             _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("persons_event_created")).with_record(record=_create_record("persons_event_deleted")).build(),
+            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(record=_create_persons_event_record(event_type="person.deleted")).build(),
         )
 
         http_mocker.get(
             _create_request("events").with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("persons_event_deleted")).build(),
+            _create_response().with_record(record=_create_persons_event_record(event_type="person.deleted")).build(),
         )
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental))
@@ -357,7 +376,7 @@ class PersonsTest(TestCase):
         http_mocker.get(
             _create_request("events").with_created_gte(start_datetime).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("persons_event_created")).build(),
+            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
         source = SourceStripe(config=config, catalog=_create_catalog(sync_mode=SyncMode.incremental))
@@ -445,8 +464,8 @@ class PersonsTest(TestCase):
         http_mocker.get(
             _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("persons_event_created")).with_record(
-                record=_create_record("persons_event_created")).build(),
+            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(
+                record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
         http_mocker.get(
@@ -454,7 +473,7 @@ class PersonsTest(TestCase):
                 ["person.created", "person.updated", "person.deleted"]).build(),
             [
                 a_response_with_status(429),
-                _create_response().with_record(record=_create_record("persons_event_created")).build(),
+                _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
             ]
         )
 
@@ -482,11 +501,7 @@ class PersonsTest(TestCase):
             [
                 # Used to pass the initial check_availability before starting the sync
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-                a_response_with_status(429),
-                a_response_with_status(429),
-                a_response_with_status(429),
-                a_response_with_status(429),
-                a_response_with_status(429),
+                a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
             ]
         )
 
@@ -520,20 +535,14 @@ class PersonsTest(TestCase):
         http_mocker.get(
             _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("persons_event_created")).with_record(
-                record=_create_record("persons_event_created")).build(),
+            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(
+                record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
         http_mocker.get(
             _create_request("events").with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
-            [
-                a_response_with_status(429),
-                a_response_with_status(429),
-                a_response_with_status(429),
-                a_response_with_status(429),
-                a_response_with_status(429),
-            ]
+            a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
         )
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental))
@@ -612,11 +621,7 @@ class PersonsTest(TestCase):
             [
                 # Used to pass the initial check_availability before starting the sync
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-                a_response_with_status(500),
-                a_response_with_status(500),
-                a_response_with_status(500),
-                a_response_with_status(500),
-                a_response_with_status(500),
+                a_response_with_status(500),  # Returns 429 on all subsequent requests to test the maximum number of retries
             ]
         )
 
