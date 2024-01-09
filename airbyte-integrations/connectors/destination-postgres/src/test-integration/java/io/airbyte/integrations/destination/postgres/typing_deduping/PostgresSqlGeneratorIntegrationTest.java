@@ -74,7 +74,7 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
     final JsonNode config = testContainer.configBuilder()
         .with("schema", "public")
         .withDatabase()
-        .withResolvedHostAndPort()
+        .withHostAndPort()
         .withCredentials()
         .withoutSsl()
         .build();
