@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from sqlalchemy.engine.reflection import Inspector
 
 
-DEBUG_MODE = False
+DEBUG_MODE = False  # Set to True to enable additional debug logging.
 
 
 class RecordDedupeMode(enum.Enum):
