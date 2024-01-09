@@ -66,5 +66,4 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
             results = list(result_dict.values())
             report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
             context.report = report
-
-        return report
+            return report
