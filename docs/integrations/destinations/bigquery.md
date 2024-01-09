@@ -142,6 +142,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.28  | 2024-01-08 | [34021](https://github.com/airbytehq/airbyte/pull/34021)   | Add idempotency ids in dummy insert for check call                                                                                                              |
 | 2.3.27  | 2024-01-05 | [\#33948](https://github.com/airbytehq/airbyte/pull/33948) | Skip retrieving initial table state when setup fails                                                                                                            |
 | 2.3.26  | 2024-01-04 | [\#33730](https://github.com/airbytehq/airbyte/pull/33730) | Internal code structure changes                                                                                                                                 |
 | 2.3.25  | 2023-12-20 | [\#33704](https://github.com/airbytehq/airbyte/pull/33704) | Update to java CDK 0.10.0 (no changes)                                                                                                                          |

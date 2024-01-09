@@ -1,11 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import ulid
 from airbyte_lib.caches.duckdb import DuckDBCache, DuckDBCacheConfig
 from airbyte_lib.executor import PathExecutor, VenvExecutor
+from airbyte_lib.executor import Executor, PathExecutor, VenvExecutor
 from airbyte_lib.registry import get_connector_metadata
 from airbyte_lib.source import Source
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
@@ -31,7 +32,7 @@ def new_local_cache(
     *,
     source_catalog: ConfiguredAirbyteCatalog,
 ) -> DuckDBCache:
-    """Get a local cache for storing data, using a string to determine the.
+    """Get a local cache for storing data, using a name string to seed the path.
 
     Cache files are stored in the `.cache` directory, relative to the current
     working directory.
@@ -48,20 +49,41 @@ def new_local_cache(
 
 def get_connector(
     name: str,
-    version: str = "latest",
-    config: Optional[Dict[str, Any]] = None,
+    version: str | None = None,
+    pip_url: str | None = None,
+    config: dict[str, Any] | None = None,
     use_local_install: bool = False,
     install_if_missing: bool = False,
 ):
     """
     Get a connector by name and version.
     :param name: connector name
-    :param version: connector version - if not provided, the most recent version will be used
-    :param config: connector config - if not provided, you need to set it later via the set_config method
+    :param version: connector version - if not provided, the currently installed version will be used. If no version is installed, the latest available version will be used. The version can also be set to "latest" to force the use of the latest available version.
+    :param pip_url: connector pip URL - if not provided, the pip url will be inferred from the connector name.
+    :param config: connector config - if not provided, you need to set it later via the set_config method.
     :param use_local_install: whether to use a virtual environment to run the connector. If True, the connector is expected to be available on the path (e.g. installed via pip). If False, the connector will be installed automatically in a virtual environment.
     :param install_if_missing: whether to install the connector if it is not available locally. This parameter is ignored if use_local_install is True.
     """
     metadata = get_connector_metadata(name)
+    if use_local_install:
+        if pip_url:
+            raise ValueError("Param 'pip_url' is not supported when 'use_local_install' is True")
+        if version:
+            raise ValueError("Param 'version' is not supported when 'use_local_install' is True")
+        executor: Executor = PathExecutor(
+            metadata=metadata,
+            target_version=version,
+        )
+
+    else:
+        executor = VenvExecutor(
+            metadata=metadata,
+            target_version=version,
+            install_if_missing=install_if_missing,
+            pip_url=pip_url,
+        )
     return Source(
-        PathExecutor(metadata, version) if use_local_install else VenvExecutor(metadata, version, install_if_missing), name, config
+        executor=executor,
+        name=name,
+        config=config,
     )
