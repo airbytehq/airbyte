@@ -193,8 +193,8 @@ class CsvParser(FileTypeParser):
                 yield CsvParser._to_nullable(
                     cast_fn(row), deduped_property_types, config_format.null_values, config_format.strings_can_be_null
                 )
-        except RecordParseError:
-            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no) from RecordParseError
+        except RecordParseError as parse_err:
+            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no) from parse_err
         finally:
             data_generator.close()
 
