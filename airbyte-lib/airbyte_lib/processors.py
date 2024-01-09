@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, cast, final
 
 import pyarrow as pa
 import ulid
-from airbyte_lib import _util  # Internal utility functions
+
 from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -28,7 +28,9 @@ from airbyte_protocol.models import (
     ConfiguredAirbyteCatalog,
     Type,
 )
-from pydantic import BaseModel
+
+from airbyte_lib import _util  # Internal utility functions
+
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable
@@ -80,11 +82,10 @@ class RecordProcessor(abc.ABC):
         self._pending_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
         self._finalized_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
 
-        self._pending_state_messages: dict[
-            str, list[AirbyteStateMessage]
-        ] = defaultdict(list, {})
+        self._pending_state_messages: dict[str, list[AirbyteStateMessage]] = defaultdict(list, {})
         self._finalized_state_messages: dict[
-            str, list[AirbyteStateMessage]
+            str,
+            list[AirbyteStateMessage],
         ] = defaultdict(list, {})
 
         self._setup()
@@ -104,7 +105,8 @@ class RecordProcessor(abc.ABC):
 
     @final
     def _airbyte_messages_from_buffer(
-        self, buffer: io.TextIOBase
+        self,
+        buffer: io.TextIOBase,
     ) -> Iterable[AirbyteMessage]:
         """Yield messages from a buffer."""
         yield from (AirbyteMessage.parse_raw(line) for line in buffer)
@@ -230,7 +232,7 @@ class RecordProcessor(abc.ABC):
             if batches_to_finalize and not self.skip_finalize_step:
                 raise NotImplementedError(
                     "Caches need to be finalized but no _finalize_batch() method "
-                    f"exists for class {self.__class__.__name__}"
+                    f"exists for class {self.__class__.__name__}",
                 )
 
             return batches_to_finalize
@@ -238,7 +240,8 @@ class RecordProcessor(abc.ABC):
     @final
     @contextlib.contextmanager
     def _finalizing_batches(
-        self, stream_name: str
+        self,
+        stream_name: str,
     ) -> Generator[dict[str, BatchHandle], str, None]:
         """Context manager to use for finalizing batches, if applicable.
 

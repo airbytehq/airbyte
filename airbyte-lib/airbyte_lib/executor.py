@@ -4,11 +4,13 @@ import os
 import subprocess
 import sys
 from abc import ABC, abstractmethod
+from collections.abc import Generator, Iterable
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Generator, Iterable, List
+from typing import IO
 
 from airbyte_lib.registry import ConnectorMetadata
+
 
 _LATEST_VERSION = "latest"
 
@@ -27,7 +29,7 @@ class Executor(ABC):
             self.target_version = target_version
 
     @abstractmethod
-    def execute(self, args: List[str]) -> Iterable[str]:
+    def execute(self, args: list[str]) -> Iterable[str]:
         pass
 
     @abstractmethod
@@ -40,7 +42,7 @@ class Executor(ABC):
 
 
 @contextmanager
-def _stream_from_subprocess(args: List[str]) -> Generator[Iterable[str], None, None]:
+def _stream_from_subprocess(args: list[str]) -> Generator[Iterable[str], None, None]:
     process = subprocess.Popen(
         args,
         stdout=subprocess.PIPE,
@@ -104,8 +106,8 @@ class VenvExecutor(Executor):
     def _get_connector_path(self):
         return Path(self._get_venv_name(), "bin", self.metadata.name)
 
-    def _run_subprocess_and_raise_on_failure(self, args: List[str]):
-        result = subprocess.run(args)
+    def _run_subprocess_and_raise_on_failure(self, args: list[str]):
+        result = subprocess.run(args, check=False)
         if result.returncode != 0:
             raise Exception(f"Install process exited with code {result.returncode}")
 
@@ -148,13 +150,15 @@ class VenvExecutor(Executor):
         venv_path = Path(venv_name)
         if not venv_path.exists():
             if not self.install_if_missing:
-                raise Exception(f"Connector {self.metadata.name} is not available - venv {venv_name} does not exist")
+                raise Exception(
+                    f"Connector {self.metadata.name} is not available - venv {venv_name} does not exist"
+                )
             self.install()
 
         connector_path = self._get_connector_path()
         if not connector_path.exists():
             raise FileNotFoundError(
-                f"Could not find connector '{self.metadata.name}' " f"in venv '{venv_name}' with connector path '{connector_path}'."
+                f"Could not find connector '{self.metadata.name}' in venv '{venv_name}' with connector path '{connector_path}'.",
             )
 
         if self.enforce_version:
@@ -167,10 +171,10 @@ class VenvExecutor(Executor):
                 version_after_install = self._get_installed_version()
                 if version_after_install != self.target_version:
                     raise Exception(
-                        f"Failed to install connector {self.metadata.name} version {self.target_version}. Installed version is {version_after_install}"
+                        f"Failed to install connector {self.metadata.name} version {self.target_version}. Installed version is {version_after_install}",
                     )
 
-    def execute(self, args: List[str]) -> Iterable[str]:
+    def execute(self, args: list[str]) -> Iterable[str]:
         connector_path = self._get_connector_path()
 
         with _stream_from_subprocess([str(connector_path)] + args) as stream:
@@ -182,11 +186,13 @@ class PathExecutor(Executor):
         try:
             self.execute(["spec"])
         except Exception as e:
-            raise Exception(f"Connector {self.metadata.name} is not available - executing it failed: {e}")
+            raise Exception(
+                f"Connector {self.metadata.name} is not available - executing it failed: {e}"
+            )
 
     def install(self):
         raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")
 
-    def execute(self, args: List[str]) -> Iterable[str]:
+    def execute(self, args: list[str]) -> Iterable[str]:
         with _stream_from_subprocess([self.metadata.name] + args) as stream:
             yield from stream

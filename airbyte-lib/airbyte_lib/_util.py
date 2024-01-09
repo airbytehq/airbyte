@@ -2,17 +2,26 @@
 
 """Internal utility functions, especially for dealing with Airbyte Protocol."""
 
-import datetime
 from collections.abc import Iterable
-from functools import lru_cache
 from typing import Any, cast
 
-from airbyte_protocol.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type
+from airbyte_protocol.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    ConfiguredAirbyteCatalog,
+    Type,
+)
 
 
-def airbyte_messages_to_record_dicts(messages: Iterable[AirbyteMessage]) -> Iterable[dict[str, Any]]:
+def airbyte_messages_to_record_dicts(
+    messages: Iterable[AirbyteMessage],
+) -> Iterable[dict[str, Any]]:
     """Convert an AirbyteMessage to a dictionary."""
-    yield from (cast(dict[str, Any], airbyte_message_to_record_dict(message)) for message in messages if message is not None)
+    yield from (
+        cast(dict[str, Any], airbyte_message_to_record_dict(message))
+        for message in messages
+        if message is not None
+    )
 
 
 def airbyte_message_to_record_dict(message: AirbyteMessage) -> dict[str, Any] | None:
@@ -26,7 +35,9 @@ def airbyte_message_to_record_dict(message: AirbyteMessage) -> dict[str, Any] | 
     return airbyte_record_message_to_dict(message.record)
 
 
-def airbyte_record_message_to_dict(record_message: AirbyteRecordMessage) -> dict[str, Any] | None:
+def airbyte_record_message_to_dict(
+    record_message: AirbyteRecordMessage,
+) -> dict[str, Any] | None:
     """Convert an AirbyteMessage to a dictionary.
 
     Return None if the message is not a record message.
@@ -41,7 +52,10 @@ def airbyte_record_message_to_dict(record_message: AirbyteRecordMessage) -> dict
     return result
 
 
-def get_primary_keys_from_stream(stream_name: str, configured_catalog: ConfiguredAirbyteCatalog) -> set[str]:
+def get_primary_keys_from_stream(
+    stream_name: str,
+    configured_catalog: ConfiguredAirbyteCatalog,
+) -> set[str]:
     """Get the primary keys from a stream in the configured catalog."""
     stream = next(
         (stream for stream in configured_catalog.streams if stream.stream.name == stream_name),

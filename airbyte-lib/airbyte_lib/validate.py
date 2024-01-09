@@ -8,10 +8,10 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import List
+
+import yaml
 
 import airbyte_lib as ab
-import yaml
 
 
 def _parse_args():
@@ -31,8 +31,8 @@ def _parse_args():
     return parser.parse_args()
 
 
-def _run_subprocess_and_raise_on_failure(args: List[str]):
-    result = subprocess.run(args)
+def _run_subprocess_and_raise_on_failure(args: list[str]):
+    result = subprocess.run(args, check=False)
     if result.returncode != 0:
         raise Exception(f"{args} exited with code {result.returncode}")
 
@@ -80,7 +80,7 @@ def run():
 def validate(connector_dir, sample_config):
     # read metadata.yaml
     metadata_path = Path(connector_dir) / "metadata.yaml"
-    with open(metadata_path, "r") as stream:
+    with open(metadata_path) as stream:
         metadata = yaml.safe_load(stream)["data"]
 
     # TODO: Use remoteRegistries.pypi.packageName once set for connectors
@@ -102,8 +102,8 @@ def validate(connector_dir, sample_config):
             {
                 "dockerRepository": f"airbyte/{connector_name}",
                 "dockerImageTag": "0.0.1",
-            }
-        ]
+            },
+        ],
     }
 
     with tempfile.NamedTemporaryFile(mode="w+t", delete=True) as temp_file:

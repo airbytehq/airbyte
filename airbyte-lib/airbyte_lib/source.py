@@ -2,16 +2,13 @@
 
 import json
 import tempfile
+from collections.abc import Iterable
 from contextlib import contextmanager
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Optional
 
 import jsonschema
-from airbyte_lib import _util  # Internal utility functions
-from airbyte_lib.caches import SQLCacheBase
-from airbyte_lib.executor import Executor
-from airbyte_lib.factories._cache_factories import get_default_cache
-from airbyte_lib.sync_results import SyncResult
+
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -25,15 +22,21 @@ from airbyte_protocol.models import (
     Type,
 )
 
+from airbyte_lib import _util  # Internal utility functions
+from airbyte_lib.caches import SQLCacheBase
+from airbyte_lib.executor import Executor
+from airbyte_lib.factories._cache_factories import get_default_cache
+from airbyte_lib.sync_results import SyncResult
+
 
 @contextmanager
-def as_temp_files(files: List[Any]):
-    temp_files: List[Any] = []
+def as_temp_files(files: list[Any]):
+    temp_files: list[Any] = []
     try:
         for content in files:
             temp_file = tempfile.NamedTemporaryFile(mode="w+t", delete=True)
             temp_file.write(
-                json.dumps(content) if isinstance(content, dict) else content
+                json.dumps(content) if isinstance(content, dict) else content,
             )
             temp_file.flush()
             temp_files.append(temp_file)
@@ -53,38 +56,38 @@ class Source:
         self,
         executor: Executor,
         name: str,
-        config: Optional[Dict[str, Any]] = None,
-        streams: Optional[List[str]] = None,
+        config: Optional[dict[str, Any]] = None,
+        streams: Optional[list[str]] = None,
     ):
         self.executor = executor
         self.name = name
-        self.streams: Optional[List[str]] = None
+        self.streams: Optional[list[str]] = None
         self._processed_records = 0
-        self._config_dict: Optional[Dict[str, Any]] = None
-        self._last_log_messages: List[str] = []
+        self._config_dict: Optional[dict[str, Any]] = None
+        self._last_log_messages: list[str] = []
         if config is not None:
             self.set_config(config)
         if streams is not None:
             self.set_streams(streams)
 
-    def set_streams(self, streams: List[str]):
+    def set_streams(self, streams: list[str]):
         available_streams = self.get_available_streams()
         for stream in streams:
             if stream not in available_streams:
                 raise Exception(
-                    f"Stream {stream} is not available for connector {self.name}, choose from {available_streams}"
+                    f"Stream {stream} is not available for connector {self.name}, choose from {available_streams}",
                 )
         self.streams = streams
 
-    def set_config(self, config: Dict[str, Any]):
+    def set_config(self, config: dict[str, Any]):
         self._validate_config(config)
         self._config_dict = config
 
     @property
-    def _config(self) -> Dict[str, Any]:
+    def _config(self) -> dict[str, Any]:
         if self._config_dict is None:
             raise Exception(
-                "Config is not set, either set in get_connector or via source.set_config"
+                "Config is not set, either set in get_connector or via source.set_config",
             )
         return self._config_dict
 
@@ -103,17 +106,17 @@ class Source:
                 if msg.type == Type.CATALOG and msg.catalog:
                     return msg.catalog
             raise Exception(
-                f"Connector did not return a catalog. Last logs: {self._last_log_messages}"
+                f"Connector did not return a catalog. Last logs: {self._last_log_messages}",
             )
 
-    def _validate_config(self, config: Dict[str, Any]) -> None:
+    def _validate_config(self, config: dict[str, Any]) -> None:
         """
         Validate the config against the spec.
         """
         spec = self._spec()
         jsonschema.validate(config, spec.connectionSpecification)
 
-    def get_available_streams(self) -> List[str]:
+    def get_available_streams(self) -> list[str]:
         """
         Get the available streams from the spec.
         """
@@ -133,7 +136,7 @@ class Source:
             if msg.type == Type.SPEC and msg.spec:
                 return msg.spec
         raise Exception(
-            f"Connector did not return a spec. Last logs: {self._last_log_messages}"
+            f"Connector did not return a spec. Last logs: {self._last_log_messages}",
         )
 
     @property
@@ -162,11 +165,11 @@ class Source:
                 )
                 for s in catalog.streams
                 if self.streams is None or s.name in self.streams
-            ]
+            ],
         )
         return configured_catalog
 
-    def get_stream_records(self, stream: str) -> Iterable[Dict[str, Any]]:
+    def get_stream_records(self, stream: str) -> Iterable[dict[str, Any]]:
         """
         Read a stream from the connector.
 
@@ -188,15 +191,15 @@ class Source:
                 )
                 for s in catalog.streams
                 if s.name == stream
-            ]
+            ],
         )
         if len(configured_catalog.streams) == 0:
             raise Exception(
-                f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}"
+                f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}",
             )
 
         yield from _util.airbyte_messages_to_record_dicts(
-            self._read_with_catalog(configured_catalog)
+            self._read_with_catalog(configured_catalog),
         )
 
     def check(self):
@@ -214,12 +217,12 @@ class Source:
                 if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
                     if msg.connectionStatus.status == Status.FAILED:
                         raise Exception(
-                            f"Connector returned failed status: {msg.connectionStatus.message}"
+                            f"Connector returned failed status: {msg.connectionStatus.message}",
                         )
                     else:
                         return
             raise Exception(
-                f"Connector did not return check status. Last logs: {self._last_log_messages}"
+                f"Connector did not return check status. Last logs: {self._last_log_messages}",
             )
 
     def install(self):
@@ -246,12 +249,13 @@ class Source:
                 )
                 for s in catalog.streams
                 if self.streams is None or s.name in self.streams
-            ]
+            ],
         )
         yield from self._read_with_catalog(configured_catalog)
 
     def _read_with_catalog(
-        self, catalog: ConfiguredAirbyteCatalog
+        self,
+        catalog: ConfiguredAirbyteCatalog,
     ) -> Iterable[AirbyteMessage]:
         """
         Call read on the connector.
@@ -266,7 +270,7 @@ class Source:
             catalog_file,
         ]:
             for msg in self._execute(
-                ["read", "--config", config_file, "--catalog", catalog_file]
+                ["read", "--config", config_file, "--catalog", catalog_file],
             ):
                 yield msg
 
@@ -274,7 +278,7 @@ class Source:
         self._last_log_messages.append(message)
         self._last_log_messages = self._last_log_messages[-10:]
 
-    def _execute(self, args: List[str]) -> Iterable[AirbyteMessage]:
+    def _execute(self, args: list[str]) -> Iterable[AirbyteMessage]:
         """
         Execute the connector with the given arguments.
 
@@ -297,7 +301,7 @@ class Source:
                 except Exception:
                     self._add_to_logs(line)
         except Exception as e:
-            raise Exception(f"{str(e)}. Last logs: {self._last_log_messages}")
+            raise Exception(f"{e!s}. Last logs: {self._last_log_messages}")
 
     def _tally_records(self, messages: Iterable[AirbyteRecordMessage]):
         """This method simply tallies the number of records processed and yields the messages."""

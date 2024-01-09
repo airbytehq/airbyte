@@ -2,8 +2,6 @@
 
 """Global pytest fixtures."""
 
-import os
-import signal
 import socket
 import time
 

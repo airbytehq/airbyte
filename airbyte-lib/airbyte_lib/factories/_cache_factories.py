@@ -2,8 +2,10 @@
 
 
 import ulid
-from airbyte_lib.caches.duckdb import DuckDBCache, DuckDBCacheConfig
+
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
+
+from airbyte_lib.caches.duckdb import DuckDBCache, DuckDBCacheConfig
 
 
 def get_default_cache(source_catalog: ConfiguredAirbyteCatalog) -> DuckDBCache:

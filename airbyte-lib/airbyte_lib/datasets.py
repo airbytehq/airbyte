@@ -1,10 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
-from airbyte_lib.caches import SQLCacheBase
 from pandas import DataFrame
 from sqlalchemy import Table
+
+from airbyte_lib.caches import SQLCacheBase
 
 
 class Dataset:

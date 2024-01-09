@@ -7,6 +7,7 @@ from typing import cast
 
 import sqlalchemy
 
+
 # Compare to documentation here: https://docs.airbyte.com/understanding-airbyte/supported-data-types
 CONVERSION_MAP = {
     "string": sqlalchemy.types.VARCHAR,
@@ -30,7 +31,7 @@ class SQLTypeConversionError(Exception):
 
 
 def _get_airbyte_type(
-    json_schema_property_def: dict[str, str | dict]
+    json_schema_property_def: dict[str, str | dict],
 ) -> tuple[str, str | None]:
     """Get the airbyte type and subtype from a JSON schema property definition.
 
@@ -71,7 +72,8 @@ class SQLTypeConverter:
         return sqlalchemy.types.VARCHAR()
 
     def to_sql_type(
-        self, json_schema_property_def: dict[str, str | dict]
+        self,
+        json_schema_property_def: dict[str, str | dict],
     ) -> sqlalchemy.types.TypeEngine:
         """Convert a value to a SQL type."""
         airbyte_type, airbyte_subtype = _get_airbyte_type(json_schema_property_def)

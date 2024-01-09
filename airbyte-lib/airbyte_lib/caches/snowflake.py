@@ -10,9 +10,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pyarrow as pa
+from overrides import overrides
+
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.file_writers import ParquetWriter, ParquetWriterConfig
-from overrides import overrides
 
 
 class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):

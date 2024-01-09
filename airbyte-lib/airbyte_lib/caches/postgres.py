@@ -4,9 +4,10 @@
 
 from __future__ import annotations
 
+from overrides import overrides
+
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.file_writers import ParquetWriter, ParquetWriterConfig
-from overrides import overrides
 
 
 class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
