@@ -6,7 +6,10 @@ on:
       airbyte-ci-binary-url:
         description: "URL to airbyte-ci binary"
         required: false
-        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
+        # Pin to a specific version of airbyte-ci to avoid transient failures
+        # Mentioned in issue https://github.com/airbytehq/airbyte/issues/34041
+        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/2.14.1/airbyte-ci
+
   push:
     branches:
       - master
@@ -14,7 +17,7 @@ on:
 
 jobs:
   format-check:
-    runs-on: "ci-runner-connector-format-medium-dagger-0-9-5"
+    runs-on: "ci-runner-connector-format-medium-dagger-0-6-4"
     # IMPORTANT: This name must match the require check name on the branch protection settings
     name: "Check for formatting errors"
     steps:
@@ -55,6 +58,9 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "format check all"
+          # Pin to a specific version of airbyte-ci to avoid transient failures
+          # Mentioned in issue https://github.com/airbytehq/airbyte/issues/34041
+          airbyte_ci_binary_url: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/2.14.1/airbyte-ci
 
       - name: Run airbyte-ci format check [WORKFLOW DISPATCH]
         id: airbyte_ci_format_check_all_manual
