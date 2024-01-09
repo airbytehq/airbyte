@@ -46,7 +46,7 @@ class ConcurrentReadProcessor:
         self._streams_to_partitions: Dict[str, Set[Partition]] = {}
         for stream in stream_instances_to_read_from:
             self._streams_to_partitions[stream.name] = set()
-            self._record_counter[stream.name] = 0
+            #self._record_counter[stream.name] = 0 # This is initialized at runtime to avoid exiting early if a stream has not be processed. #TODO: improve the check so the intent is more explicit
         self._thread_pool_manager = thread_pool_manager
         self._partition_enqueuer = partition_enqueuer
         self._stream_instances_to_start_partition_generation = stream_instances_to_read_from
@@ -80,6 +80,7 @@ class ConcurrentReadProcessor:
         2. Log the slice if necessary
         3. Submit the partition to the thread pool manager
         """
+        self._logger.info(f"On partition {partition}")
         stream_name = partition.stream_name()
         self._streams_to_partitions[stream_name].add(partition)
         if self._slice_logger.should_log_slice_message(self._logger):
@@ -114,7 +115,8 @@ class ConcurrentReadProcessor:
         message = stream_data_to_airbyte_message(record.stream_name, record.data)
         stream = self._stream_name_to_instance[record.stream_name]
 
-        if self._record_counter[stream.name] == 0:
+        if stream.name not in self._record_counter:
+            self._record_counter[stream.name] = 0
             self._logger.info(f"Marking stream {stream.name} as RUNNING")
             yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.RUNNING)
 
@@ -164,16 +166,19 @@ class ConcurrentReadProcessor:
         return (
             not self._streams_currently_generating_partitions
             and not self._stream_instances_to_start_partition_generation
-            and all([all(p.is_closed() for p in partitions) for partitions in self._streams_to_partitions.values()])
+            and all([partition_count == 0 for partition_count in self._streams_to_partitions.values()])
         )
 
     def _is_stream_done(self, stream_name: str) -> bool:
         return (
-            all([p.is_closed() for p in self._streams_to_partitions[stream_name]])
+            self._streams_to_partitions[stream_name] == 0
             and stream_name not in self._streams_currently_generating_partitions
+            and stream_name in self._record_counter
         )
 
     def _on_stream_is_done(self, stream_name: str) -> AirbyteMessage:
+        if stream_name not in self._record_counter:
+            self._record_counter[stream_name] = 0
         self._logger.info(f"Read {self._record_counter[stream_name]} records from {stream_name} stream")
         self._logger.info(f"Marking stream {stream_name} as STOPPED")
         stream = self._stream_name_to_instance[stream_name]
