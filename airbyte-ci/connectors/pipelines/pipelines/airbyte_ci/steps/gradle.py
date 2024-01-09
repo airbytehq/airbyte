@@ -30,7 +30,7 @@ class GradleTask(Step, ABC):
     LOCAL_MAVEN_REPOSITORY_PATH = "/root/.m2"
     GRADLE_DEP_CACHE_PATH = "/root/gradle-cache"
     GRADLE_HOME_PATH = "/root/.gradle"
-    STATIC_GRADLE_TASK_OPTIONS = ("--no-daemon", "--no-watch-fs", "--scan", "--build-cache", "--console=plain")
+    STATIC_GRADLE_TASK_OPTIONS = ("--no-daemon", "--no-watch-fs")
     gradle_task_name: ClassVar[str]
     bind_to_docker_host: ClassVar[bool] = False
     mount_connector_secrets: ClassVar[bool] = False
@@ -40,6 +40,9 @@ class GradleTask(Step, ABC):
     def default_params(self) -> STEP_PARAMS:
         return super().default_params | {
             "-Ds3BuildCachePrefix": [self.context.connector.technical_name],  # Set the S3 build cache prefix.
+            "--build-cache": [],  # Enable the gradle build cache.
+            "--scan": [],  # Enable the gradle build scan.
+            "--console": ["plain"],  # Disable the gradle rich console.
         }
 
     @property

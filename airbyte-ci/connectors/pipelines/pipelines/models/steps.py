@@ -174,9 +174,10 @@ class Step(ABC):
 
     @extra_params.setter
     def extra_params(self, value: STEP_PARAMS) -> None:
-        if not self.accept_extra_params:
+        if value and not self.accept_extra_params:
             raise ValueError(f"{self.__class__.__name__} does not accept extra params.")
         self._extra_params = value
+        self.logger.info(f"Will run with the following parameters: {self.params}")
 
     @property
     def default_params(self) -> STEP_PARAMS:
