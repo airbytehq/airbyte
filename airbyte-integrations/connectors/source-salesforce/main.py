@@ -10,7 +10,7 @@ from typing import List
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
-from source_salesforce import SalesforceSourceDispatcher, SourceSalesforce
+from source_salesforce import SalesforceSourceDispatcher, AsyncSourceSalesforce
 
 
 def _get_source(args: List[str]):
@@ -18,9 +18,9 @@ def _get_source(args: List[str]):
     config_path = AirbyteEntrypoint.extract_config(args)
     try:
         return SalesforceSourceDispatcher(
-            SourceSalesforce(
-                SourceSalesforce.read_catalog(catalog_path) if catalog_path else None,
-                SourceSalesforce.read_config(config_path) if config_path else None,
+            AsyncSourceSalesforce(
+                AsyncSourceSalesforce.read_catalog(catalog_path) if catalog_path else None,
+                AsyncSourceSalesforce.read_config(config_path) if config_path else None,
             )
         )
     except Exception as error:

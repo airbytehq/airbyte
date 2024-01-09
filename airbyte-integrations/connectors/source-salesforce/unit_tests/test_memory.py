@@ -6,9 +6,9 @@
 import tracemalloc
 
 import pytest
-from aioresponses import CallbackResult, aioresponses
+import requests_mock
 from conftest import generate_stream
-from source_salesforce.async_salesforce.streams import BulkIncrementalSalesforceStream
+from source_salesforce.streams import BulkIncrementalSalesforceStream
 
 
 @pytest.mark.parametrize(
@@ -26,22 +26,17 @@ from source_salesforce.async_salesforce.streams import BulkIncrementalSalesforce
         "200k records",
     ],
 )
-@pytest.mark.asyncio
-async def test_memory_download_data(stream_config, stream_api, n_records, first_size, first_peak):
+def test_memory_download_data(stream_config, stream_api, n_records, first_size, first_peak):
     job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
-    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
-    await stream.ensure_session()
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     content = b'"Id","IsDeleted"'
     for _ in range(n_records):
         content += b'"0014W000027f6UwQAI","false"\n'
 
-    def callback(url, **kwargs):
-        return CallbackResult(body=content)
-
-    with aioresponses() as m:
-        m.get(job_full_url_results, status=200, callback=callback)
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", job_full_url_results, content=content)
         tracemalloc.start()
-        tmp_file, response_encoding, _ = await stream.download_data(url=job_full_url_results)
+        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
         for x in stream.read_with_chunks(tmp_file, response_encoding):
             pass
         fs, fp = tracemalloc.get_traced_memory()
@@ -49,5 +44,3 @@ async def test_memory_download_data(stream_config, stream_api, n_records, first_
 
         assert first_size_in_mb < first_size
         assert first_peak_in_mb < first_peak
-
-    await stream._session.close()

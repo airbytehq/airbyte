@@ -7,7 +7,7 @@ import tracemalloc
 
 import pytest
 from aioresponses import CallbackResult, aioresponses
-from conftest import generate_stream
+from conftest import generate_stream_async
 from source_salesforce.async_salesforce.streams import BulkIncrementalSalesforceStream
 
 
@@ -29,7 +29,7 @@ from source_salesforce.async_salesforce.streams import BulkIncrementalSalesforce
 @pytest.mark.asyncio
 async def test_memory_download_data(stream_config, stream_api, n_records, first_size, first_peak):
     job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
-    stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = await generate_stream_async("Account", stream_config, stream_api)
     await stream.ensure_session()
     content = b'"Id","IsDeleted"'
     for _ in range(n_records):
