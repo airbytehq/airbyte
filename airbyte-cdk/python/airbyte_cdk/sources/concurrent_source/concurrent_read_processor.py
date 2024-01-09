@@ -80,7 +80,6 @@ class ConcurrentReadProcessor:
         2. Log the slice if necessary
         3. Submit the partition to the thread pool manager
         """
-        self._logger.info(f"On partition {partition}")
         stream_name = partition.stream_name()
         self._streams_to_partitions[stream_name].add(partition)
         if self._slice_logger.should_log_slice_message(self._logger):
