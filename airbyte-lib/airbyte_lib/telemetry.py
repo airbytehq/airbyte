@@ -60,4 +60,4 @@ def send_telemetry(source: SourceTelemetryInfo, cache_type: CacheType, state: Sy
         payload["properties"]["number_of_records"] = number_of_records
 
     # Do not handle the response, we don't want to block the execution
-    requests.post("https://api.segment.io/v1/track", auth=(TRACKING_KEY, ""), json=payload)
+    _ = requests.post("https://api.segment.io/v1/track", auth=(TRACKING_KEY, ""), json=payload)
