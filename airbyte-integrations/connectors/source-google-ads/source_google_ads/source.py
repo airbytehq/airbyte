@@ -34,6 +34,7 @@ from .streams import (
     CampaignLabel,
     ClickView,
     Customer,
+    CustomerClient,
     CustomerLabel,
     DisplayKeywordView,
     GeographicView,
