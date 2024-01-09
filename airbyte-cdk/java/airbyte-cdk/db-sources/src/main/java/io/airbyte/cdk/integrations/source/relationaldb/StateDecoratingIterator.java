@@ -215,8 +215,9 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         cursorInfo.map(CursorInfo::getCursorField).orElse(null),
         cursorInfo.map(CursorInfo::getCursor).orElse(null),
         cursorInfo.map(CursorInfo::getCursorRecordCount).orElse(null));
-    stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
-
+    if (stateMessage != null) {
+      stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
+    }
     if (isFinalState) {
       hasEmittedFinalState = true;
       if (stateManager.getCursor(pair).isEmpty()) {
