@@ -3,7 +3,7 @@
 #
 
 import sys
-from typing import List
+from typing import Dict, List
 
 import asyncclick as click
 from pipelines import main_logger
@@ -13,12 +13,20 @@ from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import LOCAL_BUILD_PLATFORM, ContextState
+from pipelines.helpers.execution import argument_parsing
+from pipelines.helpers.execution.run_steps import RunStepOptions
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
-from pipelines.helpers.run_steps import RunStepOptions
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
+from pipelines.models.steps import STEP_PARAMS
 
 
-@click.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
+@click.command(
+    cls=DaggerPipelineCommand,
+    help="Test all the selected connectors.",
+    context_settings=dict(
+        ignore_unknown_options=True,
+    ),
+)
 @click.option(
     "--code-tests-only",
     is_flag=True,
@@ -47,6 +55,9 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     type=click.Choice([step_id.value for step_id in CONNECTOR_TEST_STEP_ID]),
     help="Skip a step by name. Can be used multiple times to skip multiple steps.",
 )
+@click.argument(
+    "extra_params", nargs=-1, type=click.UNPROCESSED, callback=argument_parsing.build_extra_params_mapping(CONNECTOR_TEST_STEP_ID)
+)
 @click.pass_context
 async def test(
     ctx: click.Context,
@@ -54,6 +65,7 @@ async def test(
     fail_fast: bool,
     concurrent_cat: bool,
     skip_step: List[str],
+    extra_params: Dict[CONNECTOR_TEST_STEP_ID, STEP_PARAMS],
 ) -> bool:
     """Runs a test pipeline for the selected connectors.
 
@@ -76,8 +88,8 @@ async def test(
     run_step_options = RunStepOptions(
         fail_fast=fail_fast,
         skip_steps=[CONNECTOR_TEST_STEP_ID(step_id) for step_id in skip_step],
+        step_params=extra_params,
     )
-
     connectors_tests_contexts = [
         ConnectorContext(
             pipeline_name=f"Testing connector {connector.technical_name}",
