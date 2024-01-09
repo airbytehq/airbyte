@@ -23,7 +23,7 @@ from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.run_steps import StepToRun
 from pipelines.helpers.utils import export_container_to_tarball
-from pipelines.models.steps import StepResult, StepStatus
+from pipelines.models.steps import STEP_PARAMS, StepResult, StepStatus
 
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional
@@ -35,9 +35,15 @@ class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
     title = "Java Connector Integration Tests"
-    gradle_task_name = "integrationTestJava -x buildConnectorImage -x assemble"
+    gradle_task_name = "integrationTestJava"
     mount_connector_secrets = True
     bind_to_docker_host = True
+
+    @property
+    def default_params(self) -> STEP_PARAMS:
+        return super().default_params | {
+            "-x": ["buildConnectorImage", "assemble"],  # Exclude the buildConnectorImage and assemble tasks
+        }
 
     async def _load_normalization_image(self, normalization_tar_file: File) -> None:
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
