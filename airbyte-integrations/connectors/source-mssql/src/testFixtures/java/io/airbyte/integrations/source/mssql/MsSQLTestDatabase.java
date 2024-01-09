@@ -103,6 +103,11 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     return self();
   }
 
+  public MsSQLTestDatabase withShortenedCapturePollingInterval() {
+    return with("EXEC sys.sp_cdc_change_job @job_type = 'capture', @pollinginterval = %d;",
+        MssqlCdcTargetPosition.MAX_LSN_QUERY_DELAY_TEST.toSeconds());
+  }
+
   private void waitForAgentState(final boolean running) {
     final String expectedValue = running ? "Running." : "Stopped.";
     LOGGER.debug("Waiting for SQLServerAgent state to change to '{}'.", expectedValue);
@@ -258,11 +263,12 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     }
 
     public MsSQLConfigBuilder withCdcReplication() {
-      return with("replication_method", Map.of(
-          "method", "CDC",
-          "data_to_sync", "Existing and New",
-          "initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds(),
-          "snapshot_isolation", "Snapshot"));
+      return with("is_test", true)
+          .with("replication_method", Map.of(
+              "method", "CDC",
+              "data_to_sync", "Existing and New",
+              "initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds(),
+              "snapshot_isolation", "Snapshot"));
     }
 
     public MsSQLConfigBuilder withSchemas(String... schemas) {

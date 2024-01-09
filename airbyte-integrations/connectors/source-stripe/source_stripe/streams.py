@@ -842,7 +842,7 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
             # as the events API does not support expandable items. Parent class will try getting sub-items from this object,
             # then from its own API. In case there are no sub-items at all for this entity, API will raise 404 error.
             self.logger.warning(
-                "Data was not found for URL: {response.request.url}. "
+                f"Data was not found for URL: {response.request.url}. "
                 "If this is a path for getting child attributes like /v1/checkout/sessions/<session_id>/line_items when running "
                 "the incremental sync, you may safely ignore this warning."
             )
