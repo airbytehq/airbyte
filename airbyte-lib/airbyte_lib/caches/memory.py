@@ -23,7 +23,6 @@ from airbyte_lib.file_writers import (
 class InMemoryCacheConfig(DuckDBCacheConfig):
     """Configuration for the in-memory cache."""
 
-    type: str = "in_memory"
     # FIXME: This option doesn't work yet.
     db_path: str = ":memory:"
     # Workaround:
@@ -32,8 +31,6 @@ class InMemoryCacheConfig(DuckDBCacheConfig):
 
 class InMemoryFileWriterConfig(FileWriterConfigBase):
     """Configuration for the in-memory cache."""
-
-    type: str = "in_memory"
 
 
 class InMemoryFileWriterEmulator(FileWriterBase):

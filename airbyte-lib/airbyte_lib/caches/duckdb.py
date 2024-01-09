@@ -19,7 +19,6 @@ class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     Also inherits config from the ParquetWriter, which is responsible for writing files to disk.
     """
 
-    type: str = "duckdb"
     db_path: str
     schema_name: str = "main"
 

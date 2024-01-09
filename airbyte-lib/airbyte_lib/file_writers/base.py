@@ -34,7 +34,6 @@ class FileWriterBatchHandle(BatchHandle):
 class FileWriterConfigBase(CacheConfigBase):
     """Configuration for the Snowflake cache."""
 
-    type: str = "files"
     cache_path: str = "./.cache/files/"
 
 

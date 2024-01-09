@@ -22,7 +22,6 @@ class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     Also inherits config from the ParquetWriter, which is responsible for writing files to disk.
     """
 
-    type: str = "snowflake"
     account: str
     username: str
     password: str

@@ -16,8 +16,6 @@ from .base import FileWriterBase, FileWriterBatchHandle, FileWriterConfigBase
 class ParquetWriterConfig(FileWriterConfigBase):
     """Configuration for the Snowflake cache."""
 
-    type: str = "parquet"
-
     # Inherits from base class:
     # cache_path: str
 

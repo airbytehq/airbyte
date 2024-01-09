@@ -16,7 +16,6 @@ class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     Also inherits config from the ParquetWriter, which is responsible for writing files to disk.
     """
 
-    type: str = "postgres"
     host: str
     port: int
     username: str
