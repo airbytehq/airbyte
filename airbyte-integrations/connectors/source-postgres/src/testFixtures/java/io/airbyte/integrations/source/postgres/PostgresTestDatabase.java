@@ -26,7 +26,7 @@ public class PostgresTestDatabase extends
     POSTGRES_9("postgres:9-alpine"),
     POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev");
 
-    private final String reference;
+    public final String reference;
 
     private BaseImage(String reference) {
       this.reference = reference;
@@ -155,6 +155,11 @@ public class PostgresTestDatabase extends
     return this
         .with("CREATE PUBLICATION %s FOR ALL TABLES;", getPublicationName())
         .onClose("DROP PUBLICATION %s CASCADE;", getPublicationName());
+  }
+
+  @Override
+  public PostgresSource getDbSource() {
+    return new PostgresSource();
   }
 
   static public class PostgresConfigBuilder extends ConfigBuilder<PostgresTestDatabase, PostgresConfigBuilder> {

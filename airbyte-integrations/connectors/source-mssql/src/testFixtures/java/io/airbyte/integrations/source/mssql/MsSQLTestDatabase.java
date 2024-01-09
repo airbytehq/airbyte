@@ -249,6 +249,11 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   @Override
+  public MssqlSource getDbSource() {
+    return new MssqlSource();
+  }
+
+  @Override
   public MsSQLConfigBuilder configBuilder() {
     return new MsSQLConfigBuilder(this);
   }

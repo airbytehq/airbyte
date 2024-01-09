@@ -26,7 +26,7 @@ public class MssqlDataSourceFactoryTest {
         container.getDriverClassName(),
         container.getJdbcUrl(),
         connectionProperties,
-        MssqlSource.getConnectionTimeout(connectionProperties, container.getDriverClassName()));
+        new MssqlSource().getConnectionTimeout(connectionProperties));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());

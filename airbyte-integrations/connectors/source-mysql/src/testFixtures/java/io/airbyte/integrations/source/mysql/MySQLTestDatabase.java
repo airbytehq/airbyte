@@ -22,7 +22,7 @@ public class MySQLTestDatabase extends
     MYSQL_8("mysql:8.0"),
     ;
 
-    private final String reference;
+    public final String reference;
 
     private BaseImage(String reference) {
       this.reference = reference;
@@ -150,6 +150,10 @@ public class MySQLTestDatabase extends
           catFileInContainer("/var/lib/mysql/client-key.pem"));
     }
     return cachedCertificates;
+  }
+
+  public MySqlSource getDbSource() {
+    return new MySqlSource();
   }
 
   public record Certificates(String caCertificate, String clientCertificate, String clientKey) {}

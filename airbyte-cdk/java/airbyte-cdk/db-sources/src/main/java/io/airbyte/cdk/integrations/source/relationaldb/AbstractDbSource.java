@@ -13,7 +13,7 @@ import datadog.trace.api.Trace;
 import io.airbyte.cdk.db.AbstractDatabase;
 import io.airbyte.cdk.db.IncrementalUtils;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.integrations.JdbcConnector;
+import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
@@ -48,7 +48,9 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -69,7 +71,7 @@ import org.slf4j.LoggerFactory;
  * source of both non-relational and relational type
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
-    JdbcConnector implements Source, AutoCloseable {
+    BaseConnector implements Source, AutoCloseable {
 
   public static final String CHECK_TRACE_OPERATION_NAME = "check-operation";
   public static final String DISCOVER_TRACE_OPERATION_NAME = "discover-operation";
@@ -80,8 +82,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   // TODO: Remove when the flag is not use anymore
   protected FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
-  protected AbstractDbSource(String driverClassName) {
-    super(driverClassName);
+  protected AbstractDbSource() {
+    super();
   }
 
   @VisibleForTesting
@@ -690,6 +692,13 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    */
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
     return AirbyteStateType.STREAM;
+  }
+
+  public Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
+    return maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
+        // Enforce minimum timeout duration for unspecified data sources.
+        .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0)
+        .orElse(CONNECT_TIMEOUT_DEFAULT);
   }
 
 }

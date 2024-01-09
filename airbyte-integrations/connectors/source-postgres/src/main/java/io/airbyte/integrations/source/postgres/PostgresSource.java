@@ -47,6 +47,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
@@ -317,9 +318,13 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     this.publicizedTablesInCdc = PostgresCatalogHelper.getPublicizedTables(database);
   }
 
+  /**
+   * NOTE: Postgres timeout is measured in seconds:
+   * https://jdbc.postgresql.org/documentation/head/connect.html
+   */
   @Override
   public Duration getConnectionTimeout(final Map<String, String> connectionProperties) {
-    return JdbcConnector.maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
+    return BaseConnector.maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
         .or(() -> JdbcConnector.maybeParseDuration(CONNECT_TIMEOUT.getDefaultValue(), ChronoUnit.SECONDS))
         .orElse(JdbcConnector.CONNECT_TIMEOUT_DEFAULT);
   }

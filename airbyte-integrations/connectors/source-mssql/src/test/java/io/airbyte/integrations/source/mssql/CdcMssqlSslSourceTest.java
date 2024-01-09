@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.JdbcConnector;
+import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.CertificateKey;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -51,7 +51,7 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
         testdb.getDatabaseDriver().getDriverClassName(),
         testdb.getJdbcUrl(),
         Map.of("encrypt", "true", "databaseName", testdb.getDatabaseName(), "trustServerCertificate", "true"),
-        JdbcConnector.CONNECT_TIMEOUT_DEFAULT);
+        BaseConnector.CONNECT_TIMEOUT_DEFAULT);
   }
 
   @Override

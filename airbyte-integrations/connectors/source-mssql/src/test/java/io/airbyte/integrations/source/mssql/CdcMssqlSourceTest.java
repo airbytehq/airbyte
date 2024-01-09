@@ -30,7 +30,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
-import io.airbyte.cdk.integrations.JdbcConnector;
+import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -161,7 +161,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         testdb.getDatabaseDriver().getDriverClassName(),
         testdb.getJdbcUrl(),
         Map.of("encrypt", "false"),
-        JdbcConnector.CONNECT_TIMEOUT_DEFAULT);
+        BaseConnector.CONNECT_TIMEOUT_DEFAULT);
   }
 
   @Override
