@@ -207,14 +207,19 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   public AirbyteMessage createStateMessage(final boolean isFinalState, final int recordCount) {
     final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount);
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
-    LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
-        pair,
-        cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
-        cursorInfo.map(CursorInfo::getOriginalCursor).orElse(null),
-        cursorInfo.map(CursorInfo::getOriginalCursorRecordCount).orElse(null),
-        cursorInfo.map(CursorInfo::getCursorField).orElse(null),
-        cursorInfo.map(CursorInfo::getCursor).orElse(null),
-        cursorInfo.map(CursorInfo::getCursorRecordCount).orElse(null));
+
+    // logging once every 100 messages to reduce log verbosity
+    if (recordCount % 100 == 0) {
+      LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
+          pair,
+          cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
+          cursorInfo.map(CursorInfo::getOriginalCursor).orElse(null),
+          cursorInfo.map(CursorInfo::getOriginalCursorRecordCount).orElse(null),
+          cursorInfo.map(CursorInfo::getCursorField).orElse(null),
+          cursorInfo.map(CursorInfo::getCursor).orElse(null),
+          cursorInfo.map(CursorInfo::getCursorRecordCount).orElse(null));
+    }
+
     if (stateMessage != null) {
       stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
     }
