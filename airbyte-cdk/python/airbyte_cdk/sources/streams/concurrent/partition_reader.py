@@ -37,8 +37,6 @@ class PartitionReader:
         """
         try:
             for record in partition.read():
-                while self._queue.qsize() > self._max_size:
-                    time.sleep(self._wait_time)
                 self._queue.put(QueueItemObject(record))
             self._queue.put(QueueItemObject(PartitionCompleteSentinel(partition)))
         except Exception as e:
