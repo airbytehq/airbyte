@@ -279,7 +279,7 @@ If you are intending on using Amazon Application Load Balancer (ALB) for ingress
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: enterprise-demo
+  name: <INGRESS_NAME>
   annotations:
     # Specifies that the Ingress should use an AWS ALB.
     kubernetes.io/ingress.class: "alb"
@@ -305,7 +305,7 @@ spec:
           service:
             name: airbyte-pro-airbyte-webapp-svc 
             port:
-              number: 8080
+              number: 80
         path: /
         pathType: Prefix
       - backend:
