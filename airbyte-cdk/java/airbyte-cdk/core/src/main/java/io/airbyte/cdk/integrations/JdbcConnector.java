@@ -55,7 +55,7 @@ public abstract class JdbcConnector extends BaseConnector {
     return parsedConnectionTimeout.orElse(CONNECT_TIMEOUT_DEFAULT);
   }
 
-  private static Optional<Duration> maybeParseDuration(final String stringValue, TemporalUnit unit) {
+  public static Optional<Duration> maybeParseDuration(final String stringValue, TemporalUnit unit) {
     if (stringValue == null) {
       return Optional.empty();
     }
