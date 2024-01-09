@@ -1,0 +1,56 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Astra Spec
+  type: object
+  required:
+    - application_token
+    - database_id
+    - database_region
+    - keyspace_name
+    - collection_name
+    - embedding_dimension
+    - similarity_function
+  properties:
+    application_token:
+      type: string
+      title: Application Token
+      description: >-
+        Description
+      order: 2
+    database_id:
+      type: string
+      title: Database ID
+      description: >-
+        Description
+      order: 0
+    database_region:
+      type: string
+      title: Database Region
+      description: >-
+        Description
+      order: 1
+    keyspace_name:
+      type: string
+      title: Keyspace Name
+      description: >-
+        Description
+      order: 3
+    collection_name:
+      type: string
+      title: Collection Name
+      description: >-
+        Description
+      order: 4
+    embedding_dimension:
+      type: integer
+      title: Embedding Dimension
+      description: >-
+        Description
+      order: 5
+    similarity_function:
+      type: string
+      title: Similarity Function
+      description: >-
+        Description
+      order: 6
