@@ -11,10 +11,10 @@ from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v15.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
 from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
-from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests
+from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests, Unauthenticated
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import ClickView, Customer
+from source_google_ads.streams import ClickView, Customer, CustomerLabel
 
 # EXPIRED_PAGE_TOKEN exception will be raised when page token has expired.
 exception = GoogleAdsException(
@@ -261,3 +261,21 @@ def test_parse_response(mocker, customers, config):
     ]
 
     assert output == expected_output
+
+
+def test_read_records_unauthenticated(mocker, customers, config):
+    credentials = config["credentials"]
+    api = GoogleAds(credentials=credentials)
+
+    mocker.patch.object(api, "parse_single_result", side_effect=Unauthenticated(message="Unauthenticated"))
+
+    stream_config = dict(
+        api=api,
+        customers=customers,
+    )
+    stream = CustomerLabel(**stream_config)
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.read_records(SyncMode.full_refresh, {"customer_id": "customer_id"}))
+
+    assert exc_info.value.message == ("Authentication failed for the customer 'customer_id'. "
+                                      "Please try to Re-authenticate your credentials on set up Google Ads page.")
