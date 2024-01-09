@@ -199,6 +199,19 @@ class SQLCacheBase(RecordProcessor):
             autoload_with=self.get_sql_engine(),
         )
 
+    @final
+    @property
+    def streams(
+        self,
+    ) -> dict[str, CachedDataset]:
+        """Return a temporary table name."""
+        table_name = self.get_sql_table_name(stream_name)
+        return sqlalchemy.Table(
+            table_name,
+            sqlalchemy.MetaData(schema=self.config.schema_name),
+            autoload_with=self.get_sql_engine(),
+        )
+
     # Read methods:
 
     def get_records(

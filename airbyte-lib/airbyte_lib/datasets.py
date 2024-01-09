@@ -9,7 +9,7 @@ from sqlalchemy import Table
 from airbyte_lib.caches import SQLCacheBase
 
 
-class Dataset:
+class CachedDataset:
     def __init__(self, cache: SQLCacheBase, stream: str) -> None:
         self._cache = cache
         self._stream = stream

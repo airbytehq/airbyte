@@ -3,7 +3,7 @@
 from typing import Any
 
 from airbyte_lib.caches import SQLCacheBase
-from airbyte_lib.datasets import Dataset
+from airbyte_lib.datasets import CachedDataset
 
 
 class ReadResult:
@@ -11,8 +11,8 @@ class ReadResult:
         self.processed_records = processed_records
         self._cache = cache
 
-    def __getitem__(self, stream: str) -> Dataset:
-        return Dataset(self._cache, stream)
+    def __getitem__(self, stream: str) -> CachedDataset:
+        return CachedDataset(self._cache, stream)
 
     def get_sql_engine(self) -> Any:
         return self._cache.get_sql_engine()
