@@ -7,8 +7,8 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from source_salesforce.api import Salesforce
-from source_salesforce.source import SourceSalesforce
+from source_salesforce.async_salesforce.api import Salesforce
+from source_salesforce.async_salesforce.source import AsyncSourceSalesforce
 
 
 @pytest.fixture(autouse=True)
@@ -120,7 +120,7 @@ def stream_api_v2_pk_too_many_properties(stream_config):
 
 
 async def generate_stream(stream_name, stream_config, stream_api):
-    return (await SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api))[0]
+    return (await AsyncSourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api))[0]
 
 
 def encoding_symbols_parameters():

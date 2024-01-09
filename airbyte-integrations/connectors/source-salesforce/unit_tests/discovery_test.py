@@ -5,8 +5,8 @@
 from unittest.mock import Mock
 
 import pytest
-from source_salesforce.api import DATE_TYPES, LOOSE_TYPES, NUMBER_TYPES, STRING_TYPES, Salesforce
-from source_salesforce.exceptions import TypeSalesforceException
+from source_salesforce.async_salesforce.api import DATE_TYPES, LOOSE_TYPES, NUMBER_TYPES, STRING_TYPES, Salesforce
+from source_salesforce.async_salesforce.exceptions import TypeSalesforceException
 
 
 @pytest.mark.parametrize(

@@ -6,11 +6,11 @@ import logging
 import sys
 
 import backoff
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.sources.async_cdk.streams.http.exceptions_async import AsyncDefaultBackoffException
 from requests import codes, exceptions  # type: ignore[import]
 
 TRANSIENT_EXCEPTIONS = (
-    DefaultBackoffException,
+    AsyncDefaultBackoffException,
     exceptions.ConnectTimeout,
     exceptions.ReadTimeout,
     exceptions.ConnectionError,

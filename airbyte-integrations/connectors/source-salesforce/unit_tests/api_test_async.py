@@ -23,10 +23,10 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.http.utils import HttpError
 from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
-from source_salesforce.async_salesforce.api import Salesforce
-from source_salesforce.async_salesforce.exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
-from source_salesforce.async_salesforce.source import SalesforceSourceDispatcher, AsyncSourceSalesforce
-from source_salesforce.async_salesforce.streams import (
+from source_salesforce.api import Salesforce
+from source_salesforce.exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
+from source_salesforce.async_salesforce.source import SalesforceSourceDispatcher, SourceSalesforce
+from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
     BulkIncrementalSalesforceStream,
     BulkSalesforceStream,
@@ -65,7 +65,7 @@ _ANY_CONFIG = {}
 def test_login_authentication_error_handler(
     stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error
 ):
-    source = SalesforceSourceDispatcher(AsyncSourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
+    source = SalesforceSourceDispatcher(SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
     logger = logging.getLogger("airbyte")
     requests_mock.register_uri(
         "POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code
@@ -410,7 +410,7 @@ async def test_encoding_symbols(stream_config, stream_api, chunk_size, content_t
 async def test_check_connection_rate_limit(
     stream_config, login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg
 ):
-    source = AsyncSourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
     logger = logging.getLogger("airbyte")
 
     with requests_mock.Mocker() as m:
@@ -449,7 +449,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
     stream_1.page_size = 6
     stream_1.state_checkpoint_interval = 5
 
-    source = SalesforceSourceDispatcher(AsyncSourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
+    source = SalesforceSourceDispatcher(SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
     source.streams = Mock()
     source.streams.return_value = streams
     logger = logging.getLogger("airbyte")
@@ -512,7 +512,7 @@ async def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
     stream_1.state_checkpoint_interval = 3
     configure_request_params_mock(stream_1, stream_2)
 
-    source = SalesforceSourceDispatcher(AsyncSourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
+    source = SalesforceSourceDispatcher(SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
     source.streams = Mock()
     source.streams.return_value = [stream_1, stream_2]
 
@@ -730,7 +730,7 @@ async def test_forwarding_sobject_options(stream_config, stream_names, catalog_s
                 ],
             },
         )
-        source = AsyncSourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+        source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
         source.catalog = catalog
         streams = source.streams(config=stream_config)
     expected_names = catalog_stream_names if catalog else stream_names
@@ -790,7 +790,7 @@ def _get_streams(stream_config, stream_names, catalog_stream_names, sync_type) -
                 ],
             },
         )
-        source = AsyncSourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+        source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
         source.catalog = catalog
         return source.streams(config=stream_config)
 
@@ -974,7 +974,7 @@ async def test_bulk_stream_request_params_states(stream_config_date_format, stre
     stream: BulkIncrementalSalesforceStream = await generate_stream("Account", stream_config_date_format, stream_api)
     await stream.ensure_session()
 
-    source = SalesforceSourceDispatcher(AsyncSourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
+    source = SalesforceSourceDispatcher(SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG))
     source.streams = Mock()
     source.streams.return_value = [stream]
     base_url = f"{stream.sf_api.instance_url}{stream.path()}"

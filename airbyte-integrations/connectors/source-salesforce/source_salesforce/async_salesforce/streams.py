@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import asyncio
 import csv
 import ctypes
 import math
@@ -11,8 +10,6 @@ import time
 import urllib.parse
 import uuid
 from abc import ABC
-from contextlib import closing
-from threading import Thread
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import aiohttp
@@ -28,11 +25,11 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
-from requests import codes, exceptions
+from requests import codes
 from requests.models import PreparedRequest
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
-from .availability_strategy import SalesforceAvailabilityStrategy
+from .availability_strategy import AsyncSalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
 
@@ -91,7 +88,7 @@ class SalesforceStream(AsyncHttpStream, ABC):
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return SalesforceAvailabilityStrategy()
+        return AsyncSalesforceAvailabilityStrategy()
 
     @property
     def too_many_properties(self):

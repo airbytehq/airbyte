@@ -6,7 +6,6 @@ import logging
 from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-import aiohttp
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.logger import AirbyteLogFormatter
@@ -43,7 +42,7 @@ class AirbyteStopSync(AirbyteTracedException):
     pass
 
 
-class SourceSalesforce(AsyncAbstractSource):
+class AsyncSourceSalesforce(AsyncAbstractSource):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     START_DATE_OFFSET_IN_YEARS = 2
     MAX_WORKERS = 5

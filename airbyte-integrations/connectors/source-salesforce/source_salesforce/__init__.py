@@ -2,6 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from .source import SourceSalesforce, SalesforceSourceDispatcher
+from .async_salesforce.source import AsyncSourceSalesforce, SalesforceSourceDispatcher
 
-__all__ = ["SourceSalesforce", "SalesforceSourceDispatcher"]
+__all__ = ["AsyncSourceSalesforce", "SalesforceSourceDispatcher"]
