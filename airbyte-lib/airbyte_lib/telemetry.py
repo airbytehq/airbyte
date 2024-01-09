@@ -2,6 +2,8 @@
 
 import datetime
 import os
+from dataclasses import asdict, dataclass
+from enum import Enum
 from typing import Any, Dict, Optional
 
 import requests
@@ -11,7 +13,31 @@ from airbyte_lib.version import get_version
 TRACKING_KEY = "jxT1qP9WEKwR3vtKMwP9qKhfQEGFtIM1" or str(os.environ.get("AIRBYTE_TRACKING_KEY"))
 
 
-def track(source: Dict[str, str], target: str, state: str, number_of_records: Optional[int] = None):
+class SourceType(str, Enum):
+    VENV = "venv"
+    LOCAL_INSTALL = "local_install"
+
+
+class CacheType(str, Enum):
+    # TODO: Extend once proper caches have been merged
+    IN_MEMORY = "in_memory"
+    STREAMING = "streaming"
+
+
+class SyncState(str, Enum):
+    STARTED = "started"
+    FAILED = "failed"
+    SUCCEEDED = "succeeded"
+
+
+@dataclass
+class SourceTelemetryInfo:
+    name: str
+    type: SourceType
+    version: Optional[str]
+
+
+def send_telemetry(source: SourceTelemetryInfo, cache_type: CacheType, state: SyncState, number_of_records: Optional[int] = None):
     # If DO_NOT_TRACK is set, we don't send any telemetry
     if os.environ.get("DO_NOT_TRACK"):
         return
@@ -22,9 +48,9 @@ def track(source: Dict[str, str], target: str, state: str, number_of_records: Op
         "event": "sync",
         "properties": {
             "version": get_version(),
-            "source": source,
+            "source": asdict(source),
             "state": state,
-            "target": target,
+            "cache_type": cache_type,
             # explicitly set to 0.0.0.0 to avoid leaking IP addresses
             "ip": "0.0.0.0",
         },

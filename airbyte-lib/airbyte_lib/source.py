@@ -10,7 +10,7 @@ import jsonschema
 from airbyte_lib.cache import Cache, InMemoryCache
 from airbyte_lib.executor import Executor
 from airbyte_lib.sync_result import SyncResult
-from airbyte_lib.telemetry import track
+from airbyte_lib.telemetry import CacheType, SyncState, send_telemetry
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -145,7 +145,7 @@ class Source:
         )
         if len(configured_catalog.streams) == 0:
             raise Exception(f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}")
-        for message in self._read_catalog("stream", configured_catalog):
+        for message in self._read_catalog(CacheType.STREAMING, configured_catalog):
             yield message.data
 
     def check(self):
@@ -170,7 +170,7 @@ class Source:
     def install(self):
         self.executor.install()
 
-    def _read(self, target: str) -> Iterable[AirbyteRecordMessage]:
+    def _read(self, cache_type: CacheType) -> Iterable[AirbyteRecordMessage]:
         """
         Call read on the connector.
 
@@ -193,9 +193,9 @@ class Source:
                 if self.streams is None or s.name in self.streams
             ]
         )
-        yield from self._read_catalog(target, configured_catalog)
+        yield from self._read_catalog(cache_type, configured_catalog)
 
-    def _read_catalog(self, target: str, catalog: ConfiguredAirbyteCatalog) -> Iterable[AirbyteRecordMessage]:
+    def _read_catalog(self, cache_type: CacheType, catalog: ConfiguredAirbyteCatalog) -> Iterable[AirbyteRecordMessage]:
         """
         Call read on the connector.
 
@@ -203,9 +203,10 @@ class Source:
         * Write the config to a temporary file
         * execute the connector with read --config <config_file> --catalog <catalog_file>
         * Listen to the messages and return the AirbyteRecordMessages that come along.
+        * Send out telemetry on the performed sync (with information about which source was used and the type of the cache)
         """
-        source_tracking_information = self.executor.get_tracking_information()
-        track(source_tracking_information, target, "started")
+        source_tracking_information = self.executor.get_telemetry_info()
+        send_telemetry(source_tracking_information, cache_type, SyncState.STARTED)
         try:
             with as_temp_files([self.config, catalog.json()]) as [
                 config_file,
@@ -215,10 +216,10 @@ class Source:
                     if msg.type == Type.RECORD:
                         yield msg.record
         except Exception as e:
-            track(source_tracking_information, target, "failed", self._processed_records)
+            send_telemetry(source_tracking_information, cache_type, SyncState.FAILED, self._processed_records)
             raise e
         finally:
-            track(source_tracking_information, target, "succeeded", self._processed_records)
+            send_telemetry(source_tracking_information, cache_type, SyncState.SUCCEEDED, self._processed_records)
 
     def _add_to_logs(self, message: str):
         self._last_log_messages.append(message)
@@ -258,7 +259,8 @@ class Source:
     def read_all(self, cache: Optional[Cache] = None) -> SyncResult:
         if cache is None:
             cache = InMemoryCache()
-        cache.write(self._process(self._read("cache")))
+        # TODO: Get the cache type from the cache instance
+        cache.write(self._process(self._read(CacheType.IN_MEMORY)))
 
         return SyncResult(
             processed_records=self._processed_records,

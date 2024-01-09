@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import IO, Dict, Generator, Iterable, List
 
 from airbyte_lib.registry import ConnectorMetadata
+from airbyte_lib.telemetry import SourceTelemetryInfo, SourceType
 
 
 class Executor(ABC):
@@ -29,7 +30,7 @@ class Executor(ABC):
         pass
 
     @abstractmethod
-    def get_tracking_information(self) -> Dict[str, str]:
+    def get_telemetry_info(self) -> SourceTelemetryInfo:
         pass
 
 
@@ -143,12 +144,8 @@ class VenvExecutor(Executor):
         with _stream_from_subprocess([str(connector_path)] + args) as stream:
             yield from stream
 
-    def get_tracking_information(self) -> Dict[str, str]:
-        return {
-            "name": self.metadata.name,
-            "version": self.target_version,
-            "type": "venv",
-        }
+    def get_telemetry_info(self) -> SourceTelemetryInfo:
+        return SourceTelemetryInfo(self.metadata.name, SourceType.VENV, self.target_version)
 
 
 class PathExecutor(Executor):
@@ -165,8 +162,5 @@ class PathExecutor(Executor):
         with _stream_from_subprocess([self.metadata.name] + args) as stream:
             yield from stream
 
-    def get_tracking_information(self) -> Dict[str, str]:
-        return {
-            "name": self.metadata.name,
-            "type": "local_install",
-        }
+    def get_telemetry_info(self) -> SourceTelemetryInfo:
+        return SourceTelemetryInfo(self.metadata.name, SourceType.LOCAL_INSTALL, version=None)
