@@ -521,6 +521,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.1.2  | [#TODO](https://github.com/airbytehq/airbyte/pull/TODO)  | Use dagster-cloud 1.5.7 for deploy |
 | 3.1.1  | [#33979](https://github.com/airbytehq/airbyte/pull/33979)  | Fix AssertionError on report existence again |
 | 3.1.0   | [#33994](https://github.com/airbytehq/airbyte/pull/33994)  | Log more context information in CI. |
 | 3.0.2   | [#33987](https://github.com/airbytehq/airbyte/pull/33987)  | Fix type checking issue when running --help |
