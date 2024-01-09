@@ -6,6 +6,11 @@ acceptance_tests:
           path: integration_tests/expected_records/csv.jsonl
           exact_order: true
         timeout_seconds: 1800
+      - config_path: secrets/config_iam_role.json
+        expect_records:
+          path: integration_tests/expected_records/csv.jsonl
+          exact_order: true
+        timeout_seconds: 1800
       - config_path: secrets/v4_csv_custom_encoding_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_custom_encoding.jsonl
@@ -110,6 +115,8 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         status: succeed
+      - config_path: secrets/config_iam_role.json
+        status: succeed
       - config_path: secrets/v4_csv_custom_encoding_config.json
         status: succeed
       - config_path: secrets/v4_csv_custom_format_config.json
@@ -148,6 +155,7 @@ acceptance_tests:
         status: failed
   discovery:
     tests:
+      - config_path: secrets/config_iam_role.json
       - config_path: secrets/config.json
         backward_compatibility_tests_config:
           disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
@@ -201,6 +209,9 @@ acceptance_tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalogs/csv.json
         timeout_seconds: 1800
+      - config_path: secrets/config_iam_role.json
+        configured_catalog_path: integration_tests/configured_catalogs/csv.json
+        timeout_seconds: 1800
       - config_path: secrets/v4_parquet_config.json
         configured_catalog_path: integration_tests/configured_catalogs/parquet.json
         timeout_seconds: 1800
@@ -232,6 +243,11 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalogs/csv.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 1800
+      - config_path: secrets/config_iam_role.json
         configured_catalog_path: integration_tests/configured_catalogs/csv.json
         future_state:
           future_state_path: integration_tests/abnormal_state.json
