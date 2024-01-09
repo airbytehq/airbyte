@@ -35,6 +35,12 @@ import org.slf4j.LoggerFactory;
 public class MssqlQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlQueryUtils.class);
+  private static final String MAX_OC_VALUE_QUERY =
+      """
+        SELECT MAX(%s) as %s FROM %s;
+      """;
+
+  private static final String MAX_ORDERED_COL = "max_oc";
 
   public record TableSizeInfo(Long tableSize, Long avgRowLength) {}
   private static final String MAX_CURSOR_VALUE_QUERY =
@@ -57,11 +63,6 @@ public class MssqlQueryUtils {
                                                     WHERE
                                                        table_schema = '%s' AND table_name = '%s';
                                                     """;
-
-  public static final String MAX_OC_VALUE_QUERY =
-      """
-        SELECT MAX(%s) as %s FROM %s;
-      """;
 
   public static final String MAX_OC_COL = "max_oc";
   public static final String TABLE_SIZE_BYTES_COL = "TotalSizeBytes";

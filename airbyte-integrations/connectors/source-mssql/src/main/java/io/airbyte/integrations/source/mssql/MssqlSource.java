@@ -11,7 +11,14 @@ import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryU
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.logStreamSyncStatus;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.convertNameNamespacePairFromV0;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.identifyStreamsForCursorBased;
+import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getCursorBasedSyncStatusForStreams;
+import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.initPairToOrderedColumnInfoMap;
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.streamsForInitialOrderedColumnLoad;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,17 +39,24 @@ import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.mssql.cursor_based.MssqlCursorBasedStateManager;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStreamStateManager;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.CursorBasedStreams;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
@@ -65,6 +79,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -461,9 +477,45 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("using OC + CDC");
       return MssqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
     } else {
-      LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      if (isAnyStreamIncrementalSyncMode(catalog)) {
+        LOGGER.info("Syncing via Primary Key");
+        final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
+        final InitialLoadStreams initialLoadStreams = streamsForInitialOrderedColumnLoad(cursorBasedStateManager, catalog);
+        final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
+            getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, quoteString);
+        final CursorBasedStreams cursorBasedStreams =
+            new CursorBasedStreams(identifyStreamsForCursorBased(catalog, initialLoadStreams.streamsForInitialLoad()), pairToCursorBasedStatus);
+
+        logStreamSyncStatus(initialLoadStreams.streamsForInitialLoad(), "Primary Key");
+        logStreamSyncStatus(cursorBasedStreams.streamsForCursorBased(), "Cursor");
+
+        final MssqlInitialLoadStreamStateManager mssqlInitialLoadStreamStateManager = new MssqlInitialLoadStreamStateManager(catalog,
+            initialLoadStreams, initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString));
+        final MssqlInitialLoadHandler initialLoadHandler =
+            new MssqlInitialLoadHandler(sourceConfig, database, new MssqlSourceOperations(), quoteString, mssqlInitialLoadStreamStateManager,
+                namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))),
+                    getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
+
+        final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
+            new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
+            tableNameToTable,
+            emittedAt));
+
+        // Build Cursor based iterator
+        final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterator =
+            new ArrayList<>(super.getIncrementalIterators(database,
+                new ConfiguredAirbyteCatalog().withStreams(
+                    cursorBasedStreams.streamsForCursorBased()),
+                tableNameToTable,
+                cursorBasedStateManager, emittedAt));
+
+        return Stream.of(initialLoadIterator, cursorBasedIterator).flatMap(Collection::stream).collect(Collectors.toList());
+
+      }
     }
+
+    LOGGER.info("using CDC: {}", false);
+    return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
   }
 
   @Override
