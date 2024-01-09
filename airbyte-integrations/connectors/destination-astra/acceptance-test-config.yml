@@ -1,0 +1,5 @@
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: destination_astra/spec.json
+connector_image: airbyte/destination-astra:dev
