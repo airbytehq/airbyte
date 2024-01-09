@@ -521,6 +521,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.1.0   | [#33994](https://github.com/airbytehq/airbyte/pull/33994)  | Log more context information in CI. |
 | 3.0.2   | [#33987](https://github.com/airbytehq/airbyte/pull/33987)  | Fix type checking issue when running --help |
 | 3.0.1   | [#33981](https://github.com/airbytehq/airbyte/pull/33981)  | Fix issues with deploying dagster, pin pendulum version in dagster-cli install |
 | 3.0.0   | [#33582](https://github.com/airbytehq/airbyte/pull/33582)  | Upgrade to Dagger 0.9.5 |
