@@ -125,7 +125,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
+  protected JdbcSqlGenerator getSqlGenerator() {
     throw new UnsupportedOperationException("Snowflake does not yet use the native JDBC DV2 interface");
   }
 
