@@ -43,7 +43,6 @@ class GoogleAdsStream(Stream, ABC):
             except Unauthenticated as exception:
                 traced_exception(exception, "", self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
 
-
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
             yield {"customer_id": customer.id}

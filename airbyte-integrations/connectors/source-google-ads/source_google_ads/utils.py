@@ -19,8 +19,8 @@ from google.ads.googleads.v15.errors.types.authentication_error import Authentic
 from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
 from google.ads.googleads.v15.errors.types.quota_error import QuotaErrorEnum
 from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
-from source_google_ads.google_ads import logger
 from google.api_core.exceptions import Unauthenticated
+from source_google_ads.google_ads import logger
 
 
 def get_resource_name(stream_name: str) -> str:
