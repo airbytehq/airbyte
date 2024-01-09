@@ -30,7 +30,7 @@ class HttpRequest:
 
         self._body = body
         if self._body is not None:
-            if isinstance(self._body, (dict, str)):
+            if isinstance(self._body, (Mapping, str)):
                 self._body = json.dumps(self._body)
             if not isinstance(self._body, bytes):
                 self._body = self._body.encode("utf-8")
@@ -60,7 +60,7 @@ class HttpRequest:
         return False
 
     def __str__(self) -> str:
-        return f"{self._parsed_url} with headers {self._headers} and body {self._body})"
+        return f"{self._parsed_url} with headers {self._headers} and body {self._body!r})"
 
     def __repr__(self) -> str:
-        return f"HttpRequest(request={self._parsed_url}, headers={self._headers}, body={self._body})"
+        return f"HttpRequest(request={self._parsed_url}, headers={self._headers}, body={self._body!r})"
