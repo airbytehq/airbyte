@@ -1,5 +1,7 @@
 # Changelog
 
+## 2.3.0
+Upgrade to Dagger 0.9.5
 
 ## 2.2.0
 Add connector_attribute test suite and stream primary key validation
