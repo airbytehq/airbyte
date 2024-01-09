@@ -455,6 +455,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     // rewire snapshot here
+    // Duy add user cursor here
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using OC + CDC");
