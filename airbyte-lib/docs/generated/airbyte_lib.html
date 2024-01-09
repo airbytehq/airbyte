@@ -113,42 +113,42 @@ working directory.</p>
 
                             </div>
                 </section>
-                <section id="SyncResult">
+                <section id="ReadResult">
                     <div class="attr class">
             
     <span class="def">class</span>
-    <span class="name">SyncResult</span>:
+    <span class="name">ReadResult</span>:
 
         
     </div>
-    <a class="headerlink" href="#SyncResult"></a>
+    <a class="headerlink" href="#ReadResult"></a>
     
     
 
-                            <div id="SyncResult.__init__" class="classattr">
+                            <div id="ReadResult.__init__" class="classattr">
                                 <div class="attr function">
             
-        <span class="name">SyncResult</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">processed_records</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span></span>)</span>
+        <span class="name">ReadResult</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">processed_records</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span></span>)</span>
 
         
     </div>
-    <a class="headerlink" href="#SyncResult.__init__"></a>
+    <a class="headerlink" href="#ReadResult.__init__"></a>
     
     
 
                             </div>
-                            <div id="SyncResult.processed_records" class="classattr">
+                            <div id="ReadResult.processed_records" class="classattr">
                                 <div class="attr variable">
             <span class="name">processed_records</span>
 
         
     </div>
-    <a class="headerlink" href="#SyncResult.processed_records"></a>
+    <a class="headerlink" href="#ReadResult.processed_records"></a>
     
     
 
                             </div>
-                            <div id="SyncResult.get_sql_engine" class="classattr">
+                            <div id="ReadResult.get_sql_engine" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
@@ -156,7 +156,7 @@ working directory.</p>
 
         
     </div>
-    <a class="headerlink" href="#SyncResult.get_sql_engine"></a>
+    <a class="headerlink" href="#ReadResult.get_sql_engine"></a>
     
     
 
@@ -288,15 +288,15 @@ working directory.</p>
 
 
                             </div>
-                            <div id="Source.get_stream_records" class="classattr">
+                            <div id="Source.get_records" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_stream_records</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]]</span>:</span></span>
+        <span class="name">get_records</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]]</span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#Source.get_stream_records"></a>
+    <a class="headerlink" href="#Source.get_records"></a>
     
             <div class="docstring"><p>Read a stream from the connector.</p>
 
@@ -351,15 +351,15 @@ working directory.</p>
     
 
                             </div>
-                            <div id="Source.read_all" class="classattr">
+                            <div id="Source.read" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">read_all</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#SyncResult">SyncResult</a></span>:</span></span>
+        <span class="name">read</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#ReadResult">ReadResult</a></span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#Source.read_all"></a>
+    <a class="headerlink" href="#Source.read"></a>
     
     
 

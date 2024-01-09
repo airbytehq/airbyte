@@ -47,7 +47,7 @@ so we insert as values instead.</p>
                 <dd id="DuckDBCache.get_sql_connection" class="function"><a href="#SQLCacheBase.get_sql_connection">get_sql_connection</a></dd>
                 <dd id="DuckDBCache.get_sql_table_name" class="function"><a href="#SQLCacheBase.get_sql_table_name">get_sql_table_name</a></dd>
                 <dd id="DuckDBCache.get_sql_table" class="function"><a href="#SQLCacheBase.get_sql_table">get_sql_table</a></dd>
-                <dd id="DuckDBCache.get_stream_records" class="function"><a href="#SQLCacheBase.get_stream_records">get_stream_records</a></dd>
+                <dd id="DuckDBCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
                 <dd id="DuckDBCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
 
             </div>
@@ -234,7 +234,7 @@ so we insert as values instead.</p>
                 <dd id="InMemoryCache.get_sql_connection" class="function"><a href="#SQLCacheBase.get_sql_connection">get_sql_connection</a></dd>
                 <dd id="InMemoryCache.get_sql_table_name" class="function"><a href="#SQLCacheBase.get_sql_table_name">get_sql_table_name</a></dd>
                 <dd id="InMemoryCache.get_sql_table" class="function"><a href="#SQLCacheBase.get_sql_table">get_sql_table</a></dd>
-                <dd id="InMemoryCache.get_stream_records" class="function"><a href="#SQLCacheBase.get_stream_records">get_stream_records</a></dd>
+                <dd id="InMemoryCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
                 <dd id="InMemoryCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
 
             </div>
@@ -372,7 +372,7 @@ so we insert as values instead.</p>
                 <dd id="PostgresCache.get_sql_connection" class="function"><a href="#SQLCacheBase.get_sql_connection">get_sql_connection</a></dd>
                 <dd id="PostgresCache.get_sql_table_name" class="function"><a href="#SQLCacheBase.get_sql_table_name">get_sql_table_name</a></dd>
                 <dd id="PostgresCache.get_sql_table" class="function"><a href="#SQLCacheBase.get_sql_table">get_sql_table</a></dd>
-                <dd id="PostgresCache.get_stream_records" class="function"><a href="#SQLCacheBase.get_stream_records">get_stream_records</a></dd>
+                <dd id="PostgresCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
                 <dd id="PostgresCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
 
             </div>
@@ -736,15 +736,15 @@ so we insert as values instead.</p>
 
 
                             </div>
-                            <div id="SQLCacheBase.get_stream_records" class="classattr">
+                            <div id="SQLCacheBase.get_records" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_stream_records</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]]</span>:</span></span>
+        <span class="name">get_records</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]]</span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#SQLCacheBase.get_stream_records"></a>
+    <a class="headerlink" href="#SQLCacheBase.get_records"></a>
     
             <div class="docstring"><p>Uses SQLAlchemy to select all rows from the table.</p>
 </div>
