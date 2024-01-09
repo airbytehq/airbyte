@@ -179,7 +179,10 @@
       "type": ["integer", "null"]
     },
     "tax_providers_fields": {
-      "type": ["array", "null"]
+      "type": ["array", "null"],
+      "items": {
+          "type": ["integer", "string", "null"]
+      }
     },
     "billing_address": {
       "type": ["object", "null"],
