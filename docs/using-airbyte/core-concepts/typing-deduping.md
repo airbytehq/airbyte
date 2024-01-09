@@ -15,12 +15,6 @@ This page refers to new functionality added by [Destinations V2](/release_notes/
 - Internal Airbyte tables in the `airbyte_internal` schema: Airbyte will now generate all raw tables in the `airbyte_internal` schema. We no longer clutter your desired schema with raw data tables.
 - Incremental delivery for large syncs: Data will be incrementally delivered to your final tables when possible. No more waiting hours to see the first rows in your destination table.
 
-:::note
-
-Typing and Deduping may cause an increase in your destination's compute cost. This cost will vary depending on the amount of data that is transformed and is not related to Airbyte credit usage.
-
-:::
-
 ## `_airbyte_meta` Errors
 
 "Per-row error handling" is a new paradigm for Airbyte which provides greater flexibility for our users. Airbyte now separates `data-moving problems` from `data-content problems`. Prior to Destinations V2, both types of errors were handled the same way: by failing the sync. Now, a failing sync means that Airbyte could not _move_ all of your data. You can query the `_airbyte_meta` column to see which rows failed for _content_ reasons, and why. This is a more flexible approach, as you can now decide how to handle rows with errors on a case-by-case basis.
@@ -60,7 +54,7 @@ Consider the following [source schema](/integrations/sources/faker) for stream `
 
 The data from one stream will now be mapped to one table in your schema as below:
 
-#### Destination Table Name: _public.users_
+#### Final Destination Table Name: _public.users_
 
 | _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_extracted_at | \_airbyte_meta                                               | id  | first_name | age  | address                                 |
 | -------------------------------------------- | ---------------- | ---------------------- | ------------------------------------------------------------ | --- | ---------- | ---- | --------------------------------------- |
@@ -70,7 +64,7 @@ The data from one stream will now be mapped to one table in your schema as below
 
 In legacy normalization, columns of [Airbyte type](/understanding-airbyte/supported-data-types/#the-types) `Object` in the Destination were "unnested" into separate tables. In this example, with Destinations V2, the previously unnested `public.users_address` table with columns `city` and `zip` will no longer be generated.
 
-#### Destination Table Name: _airbyte.raw_public_users_ (`airbyte.{namespace}_{stream}`)
+#### Raw Destination Table Name: _airbyte_internal.raw_public__users_ (`airbyte_internal.raw_{namespace}__{stream}`)
 
 | _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_data﻿                                                                           | \_airbyte_loaded_at  | \_airbyte_extracted_at |
 | -------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------- | -------------------- | ---------------------- |
@@ -81,3 +75,14 @@ In legacy normalization, columns of [Airbyte type](/understanding-airbyte/suppor
 You also now see the following changes in Airbyte-provided columns:
 
 ![Airbyte Destinations V2 Column Changes](../../release_notes/assets/updated_table_columns.png)
+
+## Loading Data Incrementally to Final Tables
+
+:::note
+
+Typing and Deduping may cause an increase in your destination's compute cost. This cost will vary depending on the amount of data that is transformed and is not related to Airbyte credit usage.  Enabling loading data incrementally to final tables may further increase this cost.
+
+:::
+
+V2 destinations may include the option "Enable Loading Data Incrementally to Final Tables".  When enabled your data will load into your final tables incrementally while your data is still being synced. When Disabled (the default), your data loads into your final tables once at the end of a sync. Note that this option only applies if you elect to create Final tables.
+
