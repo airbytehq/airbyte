@@ -82,7 +82,9 @@ class ParquetParser(FileTypeParser):
                             **partition_columns,
                         }
         except Exception as exc:
-            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=f"{row_group=}, {line_no=}") from exc
+            raise RecordParseError(
+                FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=f"{row_group=}, {line_no=}"
+            ) from exc
 
     @staticmethod
     def _extract_partitions(filepath: str) -> List[str]:
