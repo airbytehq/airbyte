@@ -9,8 +9,8 @@ packages = [{include = "airbyte_lib"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 
-airbyte-cdk = "^0.57.6"
-airbyte-protocol-models = "^1.0.1"
+airbyte-cdk = "^0.58.3"
+# airbyte-protocol-models = "^1.0.1"  # Conflicts with airbyte-cdk # TODO: delete or resolve
 duckdb-engine = "^0.9.5"
 jsonschema = "3.2.0"
 orjson = "^3.9.10"
@@ -44,7 +44,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-addopts = "--mypy"  # FIXME: This sometimes blocks test discovery and execution
+# addopts = "--mypy"  # FIXME: This sometimes blocks test discovery and execution
 
 [tool.ruff]
 target-version = "py310"
