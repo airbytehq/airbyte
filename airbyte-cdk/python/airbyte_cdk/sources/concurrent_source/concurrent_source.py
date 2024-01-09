@@ -93,7 +93,7 @@ class ConcurrentSource:
         queue: Queue[QueueItemObject] = PriorityQueue()
         concurrent_stream_processor = ConcurrentReadProcessor(
             stream_instances_to_read_from,
-            PartitionEnqueuer(queue, self._max_queue_size, self._sleep_time),
+            PartitionEnqueuer(queue),
             self._threadpool,
             self._logger,
             self._slice_logger,
