@@ -13,6 +13,7 @@ import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.obtain
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
@@ -25,9 +26,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +46,28 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   public PostgresDestination() {
     super(DRIVER_CLASS, new PostgresSQLNameTransformer(), new PostgresSqlOperations());
+  }
+
+  @Override
+  protected DataSourceFactory.DataSourceBuilder modifyDataSourceBuilder(final DataSourceFactory.DataSourceBuilder builder) {
+    // Anything in the pg_temp schema is only visible to the connection that created it.
+    // So this creates an airbyte_safe_cast function that only exists for the duration of
+    // a single connection.
+    // This avoids issues with creating the same function concurrently (e.g. if multiple syncs run
+    // at the same time).
+    // Function definition copied from https://dba.stackexchange.com/a/203986
+    return builder.withConnectionInitSql("""
+        CREATE FUNCTION pg_temp.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
+          LANGUAGE plpgsql AS
+        $func$
+        BEGIN
+          EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
+          INTO  _out;
+        EXCEPTION WHEN others THEN
+          -- do nothing: _out already carries default
+        END
+        $func$;
+        """);
   }
 
   @Override
@@ -98,7 +123,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator(JsonNode config) {
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
     return new PostgresSqlGenerator(
         new PostgresSQLNameTransformer(),
         TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).orElse(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));

@@ -195,8 +195,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     generator = getSqlGenerator();
     destinationHandler = getDestinationHandler();
 
-    destinationHandler.execute(generator.setup());
-
     final ColumnId id1 = generator.buildColumnId("id1");
     final ColumnId id2 = generator.buildColumnId("id2");
     primaryKey = List.of(id1, id2);

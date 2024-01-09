@@ -5,7 +5,6 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction.SOFT_RESET_SUFFIX;
-import static java.util.Collections.emptyList;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -19,20 +18,6 @@ public interface SqlGenerator<DialectTableDefinition> {
   }
 
   ColumnId buildColumnId(String name, String suffix);
-
-  /**
-   * Implementations which need to perform catalog-agnostic setup may override this method. For
-   * example, any {@code CREATE FUNCTION} calls should happen here.
-   * <p>
-   * It's expected that most implementations do not need to override this method.
-   * <p>
-   * This SQL MUST be idempotent and threadsafe. Callers SHOULD guarantee this method is only called
-   * once per sync, but subsequent syncs will run this code again, and concurrent syncs may run this
-   * code in parallel.
-   */
-  default Sql setup() {
-    return new Sql(emptyList());
-  }
 
   /**
    * Generate a SQL statement to create a fresh table to match the given stream.

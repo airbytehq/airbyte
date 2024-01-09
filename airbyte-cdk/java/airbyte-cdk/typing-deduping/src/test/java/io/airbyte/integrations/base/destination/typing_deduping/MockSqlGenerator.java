@@ -13,11 +13,6 @@ import java.util.Optional;
 class MockSqlGenerator implements SqlGenerator<String> {
 
   @Override
-  public Sql setup() {
-    return Sql.of("SETUP");
-  }
-
-  @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
     return null;
   }

@@ -12,7 +12,6 @@ import static java.util.Collections.emptyList;
 import static org.jooq.impl.DSL.array;
 import static org.jooq.impl.DSL.case_;
 import static org.jooq.impl.DSL.cast;
-import static org.jooq.impl.DSL.createSchemaIfNotExists;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.function;
 import static org.jooq.impl.DSL.name;
@@ -29,12 +28,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,45 +60,6 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer, final String defaultRawTableSchema) {
     super(namingTransformer);
     this.defaultRawTableSchema = defaultRawTableSchema;
-  }
-
-  @Override
-  public Sql setup() {
-    return Sql.separately(
-        createSchemaIfNotExists(defaultRawTableSchema).getSQL(),
-        // safe_cast implementation copied from https://dba.stackexchange.com/a/203986
-        // and wrapped in the idempotent function creation logic from https://stackoverflow.com/a/69547602
-
-        // This is pretty hacky. It's to handle the fact that postgres disallows concurrent
-        // `CREATE OR REPLACE FUNCTION airbyte_safe_cast` calls.
-        // It's possible for two syncs to start running at the same time, and we can't coordinate
-        // between destination-postgres instances, so we need to make sure that they can both successfully
-        // run this function creation logic without failing.
-
-        // The string replace is _even more hacky_, but OSS jooq doesn't support CREATE FUNCTION
-        // so we'll just handle this ourselves.
-        // We just want to create our custom function inside the airbyte_internal schema
-        // rather than the default `public` schema.
-        """
-        do $$
-        begin
-            CREATE FUNCTION RAW_TABLE_SCHEMA_PLACEHOLDER.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
-              LANGUAGE plpgsql AS
-            $func$
-            BEGIN
-                EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
-                INTO  _out;
-            EXCEPTION WHEN others THEN
-                -- do nothing: _out already carries default
-            END
-            $func$;
-          exception
-            -- sometimes postgres returns a PK-uniqueness violation instead of duplicate_function
-            -- so we catch that error also
-            when duplicate_function OR unique_violation then
-            null;
-        end; $$
-        """.replace("RAW_TABLE_SCHEMA_PLACEHOLDER", defaultRawTableSchema));
   }
 
   @Override
@@ -196,7 +154,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
           .when(field.isNull().or(jsonTypeof(field).eq("null")), val((String) null))
           .else_(cast(field, SQLDataType.VARCHAR));
       if (useExpensiveSaferCasting) {
-        return function(name(defaultRawTableSchema, "airbyte_safe_cast"), dialectType, extractAsText, cast(val((Object) null), dialectType));
+        return function(name("pg_temp", "airbyte_safe_cast"), dialectType, extractAsText, cast(val((Object) null), dialectType));
       } else {
         return cast(extractAsText, dialectType);
       }

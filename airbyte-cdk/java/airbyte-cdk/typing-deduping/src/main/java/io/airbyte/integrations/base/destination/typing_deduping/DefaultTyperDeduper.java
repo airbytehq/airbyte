@@ -122,8 +122,6 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     overwriteStreamsWithTmpTable = ConcurrentHashMap.newKeySet();
     LOGGER.info("Preparing tables");
 
-    destinationHandler.execute(sqlGenerator.setup());
-
     prepareSchemas(parsedCatalog);
     final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
     for (final StreamConfig stream : parsedCatalog.streams()) {

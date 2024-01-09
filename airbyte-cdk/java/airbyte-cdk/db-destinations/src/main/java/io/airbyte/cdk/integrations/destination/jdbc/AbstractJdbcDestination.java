@@ -190,17 +190,26 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
         .withSerialized(dummyDataToInsert.toString());
   }
 
+  /**
+   * Subclasses which need to modify the DataSource should override
+   * {@link #modifyDataSourceBuilder(DataSourceFactory.DataSourceBuilder)} rather than this method.
+   */
   @VisibleForTesting
   public DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
     final Map<String, String> connectionProperties = getConnectionProperties(config);
-    return DataSourceFactory.create(
+    final DataSourceFactory.DataSourceBuilder builder = new DataSourceFactory.DataSourceBuilder(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClassName,
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        connectionProperties,
-        getConnectionTimeout(connectionProperties));
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText())
+        .withConnectionProperties(connectionProperties)
+        .withConnectionTimeout(getConnectionTimeout(connectionProperties));
+    return modifyDataSourceBuilder(builder).build();
+  }
+
+  protected DataSourceFactory.DataSourceBuilder modifyDataSourceBuilder(final DataSourceFactory.DataSourceBuilder builder) {
+    return builder;
   }
 
   @VisibleForTesting
