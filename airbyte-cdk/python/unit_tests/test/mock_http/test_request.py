@@ -44,24 +44,29 @@ class HttpRequestMatcherTest(TestCase):
         request_received = HttpRequest("mock://test.com/path", headers={"first_header": "value does not match"})
         assert not request_received.matches(request_to_match)
 
-    def test_given_same_body_mapping_value_when_matches_then_return_true(self):
+    def test_given_same_body_mappings_value_when_matches_then_return_true(self):
         request_to_match = HttpRequest("mock://test.com/path", body={"first_field": "first_value", "second_field": 2})
         request_received = HttpRequest("mock://test.com/path", body={"first_field": "first_value", "second_field": 2})
         assert request_received.matches(request_to_match)
 
-    def test_given_body_mapping_value_differs_when_matches_then_return_false(self):
+    def test_given_bodies_are_mapping_and_differs_when_matches_then_return_false(self):
         request_to_match = HttpRequest("mock://test.com/path", body={"first_field": "first_value"})
         request_received = HttpRequest("mock://test.com/path", body={"first_field": "value does not match"})
         assert not request_received.matches(request_to_match)
 
+    def test_given_to_match_is_mapping_and_received_is_bytes_when_matches_then_return_true(self):
+        request_to_match = HttpRequest("mock://test.com/path", body={"first_field": "first_value"})
+        request_received = HttpRequest("mock://test.com/path", body=b'{"first_field": "first_value"}')
+        assert request_received.matches(request_to_match)
+
     def test_given_same_body_str_value_when_matches_then_return_true(self):
         request_to_match = HttpRequest("mock://test.com/path", body="some_request_body")
-        request_received = HttpRequest("mock://test.com/path", body="some_request_body")
+        request_received = HttpRequest("mock://test.com/path", body=b"some_request_body")
         assert request_received.matches(request_to_match)
 
     def test_given_body_str_value_differs_when_matches_then_return_false(self):
         request_to_match = HttpRequest("mock://test.com/path", body="some_request_body")
-        request_received = HttpRequest("mock://test.com/path", body="another_request_body")
+        request_received = HttpRequest("mock://test.com/path", body=b"another_request_body")
         assert not request_received.matches(request_to_match)
 
     def test_given_any_matcher_for_query_param_when_matches_then_return_true(self):
