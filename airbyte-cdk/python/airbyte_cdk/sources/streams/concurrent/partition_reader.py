@@ -5,7 +5,7 @@
 from queue import Queue
 
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem, QueueItemObject
 
 
 class PartitionReader:
@@ -32,7 +32,7 @@ class PartitionReader:
         """
         try:
             for record in partition.read():
-                self._queue.put(record)
-            self._queue.put(PartitionCompleteSentinel(partition))
+                self._queue.put(QueueItemObject(record))
+            self._queue.put(QueueItemObject(PartitionCompleteSentinel(partition)))
         except Exception as e:
-            self._queue.put(e)
+            self._queue.put(QueueItemObject(e))

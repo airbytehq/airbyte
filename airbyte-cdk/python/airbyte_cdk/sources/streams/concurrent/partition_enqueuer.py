@@ -6,7 +6,7 @@ from queue import Queue
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
+from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem, QueueItemObject
 
 
 class PartitionEnqueuer:
@@ -34,7 +34,7 @@ class PartitionEnqueuer:
         """
         try:
             for partition in stream.generate_partitions():
-                self._queue.put(partition)
-            self._queue.put(PartitionGenerationCompletedSentinel(stream))
+                self._queue.put(QueueItemObject(partition))
+            self._queue.put(QueueItemObject(PartitionGenerationCompletedSentinel(stream)))
         except Exception as e:
-            self._queue.put(e)
+            self._queue.put(QueueItemObject(e))
