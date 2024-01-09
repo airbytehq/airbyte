@@ -27,7 +27,6 @@
               "client_secret",
               "refresh_token"
             ],
-            "additionalProperties": false,
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -65,7 +64,6 @@
             "type": "object",
             "title": "Authenticate via Microsoft",
             "required": ["tenant_id", "client_id", "client_secret"],
-            "additionalProperties": false,
             "properties": {
               "auth_type": {
                 "type": "string",
