@@ -263,7 +263,7 @@ def test_parse_response(mocker, customers, config):
     assert output == expected_output
 
 
-def test_parse_response_unauthenticated(mocker, customers, config):
+def test_request_records_job_unauthenticated(mocker, customers, config):
     credentials = config["credentials"]
     api = GoogleAds(credentials=credentials)
 
@@ -274,10 +274,7 @@ def test_parse_response_unauthenticated(mocker, customers, config):
         customers=customers,
     )
     stream = CustomerLabel(**stream_config)
-    response = [
-        {"customer.id": "1", "segments.date": "2023-09-19", "customer.optimization_score_weight": 80},
-    ]
     with pytest.raises(AirbyteTracedException) as exc_info:
-        list(stream.parse_response(response))
+        list(stream.request_records_job("customer id", "", {}))
 
     assert exc_info.value.message == "Authentication failed. Please try to Re-authenticate your credentials on set up Google Ads page."

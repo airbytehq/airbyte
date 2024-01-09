@@ -38,10 +38,7 @@ class GoogleAdsStream(Stream, ABC):
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
         for result in response:
-            try:
-                yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
-            except Unauthenticated as exception:
-                traced_exception(exception, "", self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
+            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
@@ -58,8 +55,11 @@ class GoogleAdsStream(Stream, ABC):
     )
     @detached(timeout_minutes=5)
     def request_records_job(self, customer_id, query, stream_slice):
-        response_records = self.google_ads_client.send_request(query=query, customer_id=customer_id)
-        yield from self.parse_records_with_backoff(response_records, stream_slice)
+        try:
+            response_records = self.google_ads_client.send_request(query=query, customer_id=customer_id)
+            yield from self.parse_records_with_backoff(response_records, stream_slice)
+        except Unauthenticated as exception:
+            traced_exception(exception, "", self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
 
     def read_records(self, sync_mode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         if stream_slice is None:
