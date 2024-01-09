@@ -1,5 +1,44 @@
 <!-- THIS IS AN AUTO-GENERATED FILE, DO NOT EDIT MANUALLY. INSTEAD, RUN `poetry run generate-docs` -->
 <main class="pdoc">
+                <section id="FileWriterBatchHandle">
+                    <div class="attr class">
+                    <div class="decorator">@dataclass</div>
+
+    <span class="def">class</span>
+    <span class="name">FileWriterBatchHandle</span><wbr>(<span class="base">airbyte_lib.processors.BatchHandle</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#FileWriterBatchHandle"></a>
+    
+            <div class="docstring"><p>The file writer batch handle is a list of Path objects.</p>
+</div>
+
+
+                            <div id="FileWriterBatchHandle.__init__" class="classattr">
+                                <div class="attr function">
+            
+        <span class="name">FileWriterBatchHandle</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">files</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">factory</span><span class="o">&gt;</span></span>)</span>
+
+        
+    </div>
+    <a class="headerlink" href="#FileWriterBatchHandle.__init__"></a>
+    
+    
+
+                            </div>
+                            <div id="FileWriterBatchHandle.files" class="classattr">
+                                <div class="attr variable">
+            <span class="name">files</span><span class="annotation">: list[pathlib.Path]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#FileWriterBatchHandle.files"></a>
+    
+    
+
+                            </div>
+                </section>
                 <section id="FileWriterBase">
                     <div class="attr class">
             
@@ -19,7 +58,7 @@
                     <div class="decorator">@final</div>
 
         <span class="def">def</span>
-        <span class="name">write_batch</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">batch_id</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">record_batch</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">Table</span> <span class="o">|</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RecordBatch</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">file_writers</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">FileWriterBatchHandle</span>:</span></span>
+        <span class="name">write_batch</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">batch_id</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">record_batch</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">Table</span> <span class="o">|</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RecordBatch</span></span><span class="return-annotation">) -> <span class="n"><a href="#FileWriterBatchHandle">FileWriterBatchHandle</a></span>:</span></span>
 
         
     </div>
@@ -64,17 +103,6 @@
 </div>
 
 
-                            <div id="FileWriterConfigBase.type" class="classattr">
-                                <div class="attr variable">
-            <span class="name">type</span><span class="annotation">: str</span>
-
-        
-    </div>
-    <a class="headerlink" href="#FileWriterConfigBase.type"></a>
-    
-    
-
-                            </div>
                             <div id="FileWriterConfigBase.cache_path" class="classattr">
                                 <div class="attr variable">
             <span class="name">cache_path</span><span class="annotation">: str</span>
@@ -184,17 +212,6 @@
 </div>
 
 
-                            <div id="ParquetWriterConfig.type" class="classattr">
-                                <div class="attr variable">
-            <span class="name">type</span><span class="annotation">: str</span>
-
-        
-    </div>
-    <a class="headerlink" href="#ParquetWriterConfig.type"></a>
-    
-    
-
-                            </div>
                             <div class="inherited">
                                 <h5>Inherited Members</h5>
                                 <dl>
