@@ -176,9 +176,9 @@ public class MssqlQueryUtils {
    * @return Map of streams to statuses
    */
   public static Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
-                                                                                                                                        final List<ConfiguredAirbyteStream> streams,
-                                                                                                                                        final StateManager stateManager,
-                                                                                                                                        final String quoteString) {
+      final List<ConfiguredAirbyteStream> streams,
+      final StateManager stateManager,
+      final String quoteString) {
 
     final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
     streams.forEach(stream -> {
