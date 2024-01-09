@@ -118,6 +118,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         // enable cdc on tables for designated role
         .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME, CDC_ROLE_NAME)
         .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME2, CDC_ROLE_NAME)
+        .withShortenedCapturePollingInterval()
         .withWaitUntilMaxLsnAvailable()
         // revoke user permissions
         .with("REVOKE ALL FROM %s CASCADE;", testdb.getUserName())
