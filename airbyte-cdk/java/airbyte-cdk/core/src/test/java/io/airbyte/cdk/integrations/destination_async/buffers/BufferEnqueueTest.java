@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 public class BufferEnqueueTest {
 
   private static final int RECORD_SIZE_20_BYTES = 20;
-  private static final String DEFAULT_NAMESPACE = "";
+  private static final String DEFAULT_NAMESPACE = "foo_namespace";
 
   @Test
   void testAddRecordShouldAdd() {
