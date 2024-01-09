@@ -8,8 +8,9 @@ from typing import Any, Dict, Iterable, List, Optional
 
 import jsonschema
 from airbyte_lib import _util  # Internal utility functions
-from airbyte_lib.caches import InMemoryCache, SQLCacheBase
+from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.executor import Executor
+from airbyte_lib.factories._cache_factories import get_default_cache
 from airbyte_lib.sync_results import SyncResult
 from airbyte_protocol.models import (
     AirbyteCatalog,
@@ -25,17 +26,15 @@ from airbyte_protocol.models import (
 )
 
 
-def _new_default_cache() -> SQLCacheBase:
-    return InMemoryCache()
-
-
 @contextmanager
 def as_temp_files(files: List[Any]):
     temp_files: List[Any] = []
     try:
         for content in files:
             temp_file = tempfile.NamedTemporaryFile(mode="w+t", delete=True)
-            temp_file.write(json.dumps(content) if isinstance(content, dict) else content)
+            temp_file.write(
+                json.dumps(content) if isinstance(content, dict) else content
+            )
             temp_file.flush()
             temp_files.append(temp_file)
         yield [file.name for file in temp_files]
@@ -72,7 +71,9 @@ class Source:
         available_streams = self.get_available_streams()
         for stream in streams:
             if stream not in available_streams:
-                raise Exception(f"Stream {stream} is not available for connector {self.name}, choose from {available_streams}")
+                raise Exception(
+                    f"Stream {stream} is not available for connector {self.name}, choose from {available_streams}"
+                )
         self.streams = streams
 
     def set_config(self, config: Dict[str, Any]):
@@ -82,7 +83,9 @@ class Source:
     @property
     def _config(self) -> Dict[str, Any]:
         if self._config_dict is None:
-            raise Exception("Config is not set, either set in get_connector or via source.set_config")
+            raise Exception(
+                "Config is not set, either set in get_connector or via source.set_config"
+            )
         return self._config_dict
 
     def _discover(self) -> AirbyteCatalog:
@@ -99,7 +102,9 @@ class Source:
             for msg in self._execute(["discover", "--config", config_file]):
                 if msg.type == Type.CATALOG and msg.catalog:
                     return msg.catalog
-            raise Exception(f"Connector did not return a catalog. Last logs: {self._last_log_messages}")
+            raise Exception(
+                f"Connector did not return a catalog. Last logs: {self._last_log_messages}"
+            )
 
     def _validate_config(self, config: Dict[str, Any]) -> None:
         """
@@ -127,7 +132,9 @@ class Source:
         for msg in self._execute(["spec"]):
             if msg.type == Type.SPEC and msg.spec:
                 return msg.spec
-        raise Exception(f"Connector did not return a spec. Last logs: {self._last_log_messages}")
+        raise Exception(
+            f"Connector did not return a spec. Last logs: {self._last_log_messages}"
+        )
 
     @property
     @lru_cache(maxsize=1)
@@ -151,6 +158,7 @@ class Source:
                     stream=s,
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
+                    primary_key=None,
                 )
                 for s in catalog.streams
                 if self.streams is None or s.name in self.streams
@@ -183,9 +191,13 @@ class Source:
             ]
         )
         if len(configured_catalog.streams) == 0:
-            raise Exception(f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}")
+            raise Exception(
+                f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}"
+            )
 
-        yield from _util.airbyte_messages_to_record_dicts(self._read_with_catalog(configured_catalog))
+        yield from _util.airbyte_messages_to_record_dicts(
+            self._read_with_catalog(configured_catalog)
+        )
 
     def check(self):
         """
@@ -201,10 +213,14 @@ class Source:
             for msg in self._execute(["check", "--config", config_file]):
                 if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
                     if msg.connectionStatus.status == Status.FAILED:
-                        raise Exception(f"Connector returned failed status: {msg.connectionStatus.message}")
+                        raise Exception(
+                            f"Connector returned failed status: {msg.connectionStatus.message}"
+                        )
                     else:
                         return
-            raise Exception(f"Connector did not return check status. Last logs: {self._last_log_messages}")
+            raise Exception(
+                f"Connector did not return check status. Last logs: {self._last_log_messages}"
+            )
 
     def install(self):
         self.executor.install()
@@ -234,7 +250,9 @@ class Source:
         )
         yield from self._read_with_catalog(configured_catalog)
 
-    def _read_with_catalog(self, catalog: ConfiguredAirbyteCatalog) -> Iterable[AirbyteMessage]:
+    def _read_with_catalog(
+        self, catalog: ConfiguredAirbyteCatalog
+    ) -> Iterable[AirbyteMessage]:
         """
         Call read on the connector.
 
@@ -247,7 +265,9 @@ class Source:
             config_file,
             catalog_file,
         ]:
-            for msg in self._execute(["read", "--config", config_file, "--catalog", catalog_file]):
+            for msg in self._execute(
+                ["read", "--config", config_file, "--catalog", catalog_file]
+            ):
                 yield msg
 
     def _add_to_logs(self, message: str):
@@ -288,7 +308,7 @@ class Source:
 
     def read_all(self, cache: Optional[SQLCacheBase] = None) -> SyncResult:
         if cache is None:
-            cache = _new_default_cache()
+            cache = get_default_cache(source_catalog=self.configured_catalog)
 
         cache.process_airbyte_messages(self._tally_records(self._read()))
 

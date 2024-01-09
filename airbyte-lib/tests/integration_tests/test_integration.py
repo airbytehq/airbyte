@@ -118,7 +118,7 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
     "method_call",
     [
         pytest.param(lambda source: source.check(), id="check"),
-        pytest.param(lambda source: list(source.read_stream("stream1")), id="read_stream"),
+        pytest.param(lambda source: list(source.get_stream_records("stream1")), id="read_stream"),
         pytest.param(lambda source: source.read_all(), id="read_all"),
     ],
 )
