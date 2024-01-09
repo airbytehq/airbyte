@@ -65,11 +65,9 @@ public static record MssqlDebeziumStateAttributes(Lsn lsn) {}
 
   @VisibleForTesting
   public JsonNode format(final MssqlDebeziumStateAttributes attributes, final String dbName, final Instant time) {
-    final String key = "[\"" + dbName + "\",{\"server\":\"" + dbName + "\"}]";
+    final String key = "[\"" + dbName + "\",{\"server\":\"" + dbName + "\",\"database\":\"" + dbName + "\"}]";
     final String value =
-        "{\"transaction_id\":null,\"event_serial_no\":1,\"commit_lsn\":\"" + attributes.lsn.toString() + "\",\"change_lsn\":"
-            + attributes.lsn.toString()
-            + ", \"snapshot\":true,\"snapshot_completed\":true"
+        "{\"commit_lsn\":\"" + attributes.lsn.toString() + "\",\"snapshot\":true,\"snapshot_completed\":true"
             + "}";
 
     final Map<String, String> result = new HashMap<>();

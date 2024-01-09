@@ -47,6 +47,7 @@ public abstract class DebeziumPropertiesManager {
     // default values from debezium CommonConnectorConfig
     props.setProperty("max.batch.size", "2048");
     props.setProperty("max.queue.size", "8192");
+    props.setProperty("snapshot.mode", "schema_only");
 
     // Disabling retries because debezium startup time might exceed our 60-second wait limit
     // The maximum number of retries on connection errors before failing (-1 = no limit, 0 = disabled, >
