@@ -28,7 +28,7 @@ data:
     breakingChanges:
       1.0.0:
         message: "Stream state will be saved for every board in stream `Boards Issues`. Customers who use stream `Board Issues` in Incremental Sync mode must take action with their connections."
-        upgradeDeadline: "2024-01-17"
+        upgradeDeadline: "2024-01-25"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["board_issues"]

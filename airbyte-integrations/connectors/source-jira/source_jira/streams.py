@@ -297,7 +297,6 @@ class BoardIssues(StartDateJiraStream):
         return super().should_retry(response)
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        self._starting_point_cache.clear()
         yield from read_full_refresh(self.boards_stream)
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -328,8 +327,8 @@ class BoardIssues(StartDateJiraStream):
         return self._starting_point_cache[board_id][self.cursor_field]
 
     def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
-        board_id = str(stream_slice["board_id"])
         if stream_state:
+            board_id = str(stream_slice["board_id"])
             stream_state_value = stream_state.get(board_id, {}).get(self.cursor_field)
             if stream_state_value:
                 stream_state_value = pendulum.parse(stream_state_value) - self._lookback_window_minutes
