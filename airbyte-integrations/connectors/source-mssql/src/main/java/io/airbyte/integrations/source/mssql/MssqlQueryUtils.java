@@ -46,6 +46,7 @@ public class MssqlQueryUtils {
       """
         SELECT MAX(%s) as %s FROM %s;
       """;
+
   public record TableSizeInfo(Long tableSize, Long avgRowLength) {}
   private static final String MAX_CURSOR_VALUE_QUERY =
       """
