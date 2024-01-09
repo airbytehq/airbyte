@@ -149,8 +149,7 @@ class PipelineContext:
         return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
 
     @property
-    def report(self) -> Report | ConnectorReport:
-        assert self._report is not None, "The report was not set on this PipelineContext."
+    def report(self) -> Report | ConnectorReport | None:
         return self._report
 
     @report.setter
@@ -303,14 +302,15 @@ class PipelineContext:
         Returns:
             bool: Whether the teardown operation ran successfully.
         """
-        self.state = self.determine_final_state(self.report, exception_value)
-        self.stopped_at = datetime.utcnow()
-
         if exception_value:
             self.logger.error("An error was handled by the Pipeline", exc_info=True)
+
         if self.report is None:
             self.logger.error("No test report was provided. This is probably due to an upstream error")
             self.report = Report(self, steps_results=[])
+
+        self.state = self.determine_final_state(self.report, exception_value)
+        self.stopped_at = datetime.utcnow()
 
         self.report.print()
 
