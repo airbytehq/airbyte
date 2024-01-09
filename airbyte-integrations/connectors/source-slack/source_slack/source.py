@@ -180,9 +180,9 @@ class IncrementalMessageStream(ChanneledStream, ABC):
             # Since new messages can be posted to threads or messages can be edited continuously
             # after the original message has been posted, we get messages from the latest date
             # found in the state minus X days to pick up any new messages in threads or any edits.
-            # Offset by 1 second to ensure cursor message is included.
+            # Offset by 1 microsecond to ensure cursor message is included.
             # If there is state always use lookback.
-            return pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window + pendulum.duration(seconds=1)
+            return pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window + pendulum.duration(microseconds=1)
         else:
             # If there is no state, i.e. this is the first sync, then there is no use for lookback.
             # Just get messages from the default start date.
