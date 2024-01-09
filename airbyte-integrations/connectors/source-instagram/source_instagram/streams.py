@@ -413,6 +413,8 @@ class MediaInsights(Media):
         """Get insights for specific media"""
         if item.get("media_product_type") == "REELS":
             metrics = self.REELS_METRICS
+        elif item.get("media_type") == "VIDEO" and item.get("media_product_type") == "FEED":
+            metrics = ["impressions", "reach", "saved", "video_views", "video_views"]
         elif item.get("media_type") == "VIDEO":
             metrics = self.MEDIA_METRICS + ["video_views"]
         elif item.get("media_type") == "CAROUSEL_ALBUM":
