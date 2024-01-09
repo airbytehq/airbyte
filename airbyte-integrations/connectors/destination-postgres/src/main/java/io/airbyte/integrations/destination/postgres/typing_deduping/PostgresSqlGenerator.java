@@ -8,6 +8,7 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
+import static java.util.Collections.emptyList;
 import static org.jooq.impl.DSL.array;
 import static org.jooq.impl.DSL.case_;
 import static org.jooq.impl.DSL.cast;
@@ -31,7 +32,9 @@ import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,13 +126,17 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
-    return List.of(
-        getDslContext().createIndex().on(
-            name(stream.id().finalNamespace(), stream.id().finalName() + suffix),
-            stream.primaryKey().stream()
-                .map(pk -> quotedName(pk.name()))
-                .toList())
-            .getSQL());
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && !stream.primaryKey().isEmpty()) {
+      return List.of(
+          getDslContext().createIndex().on(
+                  name(stream.id().finalNamespace(), stream.id().finalName() + suffix),
+                  stream.primaryKey().stream()
+                      .map(pk -> quotedName(pk.name()))
+                      .toList())
+              .getSQL());
+    } else {
+      return emptyList();
+    }
   }
 
   @Override
