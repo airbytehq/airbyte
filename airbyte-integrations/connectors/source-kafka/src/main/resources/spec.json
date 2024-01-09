@@ -198,6 +198,58 @@
                 "airbyte_secret": true
               }
             }
+          },
+          {
+            "title": "SSL",
+            "required": [
+              "security_protocol",
+              "ssl_keystore_type",
+              "ssl_keystore_location",
+              "ssl_truststore_type",
+              "ssl_truststore_location"
+            ],
+            "properties": {
+              "security_protocol": {
+                "type": "string",
+                "const": "SSL"
+              },
+              "ssl_keystore_type": {
+                "title": "SSL Keystore Type",
+                "description": "The file format of the key store file",
+                "type": "string",
+                "default": "JKS",
+                "enum": [
+                  "JKS",
+                  "PKCS12",
+                  "PEM"
+                ]
+              },
+              "ssl_keystore_location": {
+                "title": "SASL Keystore Location",
+                "description": "The location of the key store file",
+                "type": "string",
+                "default": "",
+                "airbyte_secret": true
+              },
+              "ssl_truststore_type": {
+                "title": "SSL Truststore Type",
+                "description": "The file format of the trust store file",
+                "type": "string",
+                "default": "JKS",
+                "enum": [
+                  "JKS",
+                  "PKCS12",
+                  "PEM"
+                ]
+              },
+              "ssl_truststore_location": {
+                "title": "SASL Truststore Location",
+                "description": "The location of the trust store file",
+                "type": "string",
+                "default": "",
+                "airbyte_secret": true
+              }
+            }
           }
         ]
       },
