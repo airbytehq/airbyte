@@ -11,7 +11,19 @@ from airbyte_cdk.test.mock_http import HttpRequest, HttpRequestMatcher, HttpResp
 
 class HttpMocker(contextlib.ContextDecorator):
     """
-    WARNING: This implementation only works if the lib used to perform HTTP requests is `requests`
+    WARNING 1: This implementation only works if the lib used to perform HTTP requests is `requests`.
+
+    WARNING 2: Given multiple requests that are not mutually exclusive, the request will match the first one. This can happen in scenarios
+    where the same request is added twice (in which case there will always be an exception because we will never match the second
+    request) or in a case like this:
+    ```
+    http_mocker.get(HttpRequest(_A_URL, headers={"less_granular": "1", "more_granular": "2"}), <...>)
+    http_mocker.get(HttpRequest(_A_URL, headers={"less_granular": "1"}), <...>)
+    requests.get(_A_URL, headers={"less_granular": "1", "more_granular": "2"})
+    ```
+    In the example above, the matcher would match the second mock as requests_mock iterate over the matcher in reverse order (see
+    https://github.com/jamielennox/requests-mock/blob/c06f124a33f56e9f03840518e19669ba41b93202/requests_mock/adapter.py#L246) even
+    though the request sent is a better match for the first `http_mocker.get`.
     """
 
     def __init__(self) -> None:
@@ -30,25 +42,17 @@ class HttpMocker(contextlib.ContextDecorator):
             if not matcher.has_expected_match_count():
                 raise ValueError(f"Invalid number of matches for `{matcher}`")
 
-    def get(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> None:
-        """
-        WARNING: Given multiple requests that are not mutually exclusive, the request will match the first one. This can happen in scenarios
-        where the same request is added twice (in which case there will always be an exception because we will never match the second
-        request) or in a case like this:
-        ```
-        http_mocker.get(HttpRequest(_A_URL, headers={"less_granular": "1", "more_granular": "2"}), <...>)
-        http_mocker.get(HttpRequest(_A_URL, headers={"less_granular": "1"}), <...>)
-        requests.get(_A_URL, headers={"less_granular": "1", "more_granular": "2"})
-        ```
-        In the example above, the matcher would match the second mock as requests_mock iterate over the matcher in reverse order (see
-        https://github.com/jamielennox/requests-mock/blob/c06f124a33f56e9f03840518e19669ba41b93202/requests_mock/adapter.py#L246) even
-        though the request sent is a better match for the first `http_mocker.get`.
-        """
+    def _get_request_matcher(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> HttpRequestMatcher:
         if isinstance(responses, HttpResponse):
             responses = [responses]
 
         matcher = HttpRequestMatcher(request, len(responses))
         self._matchers.append(matcher)
+
+        return matcher
+
+    def get(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> None:
+        matcher = self._get_request_matcher(request, responses)
         self._mocker.get(
             requests_mock.ANY,
             additional_matcher=self._matches_wrapper(matcher),
@@ -56,11 +60,7 @@ class HttpMocker(contextlib.ContextDecorator):
         )
 
     def post(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> None:
-        if isinstance(responses, HttpResponse):
-            responses = [responses]
-
-        matcher = HttpRequestMatcher(request, len(responses))
-        self._matchers.append(matcher)
+        matcher = self._get_request_matcher(request, responses)
         self._mocker.post(
             requests_mock.ANY,
             additional_matcher=self._matches_wrapper(matcher),
