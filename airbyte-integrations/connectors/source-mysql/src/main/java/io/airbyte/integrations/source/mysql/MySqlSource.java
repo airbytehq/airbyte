@@ -25,11 +25,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mysql.cj.MysqlType;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
@@ -84,7 +82,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -522,32 +519,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
-    // return super.createDatabase(sourceConfig, this::getConnectionProperties);
-    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
-    final Map<String, String> connectionProperties = this.getConnectionProperties(sourceConfig);
-    // Create the data source
-    final DataSource dataSource = DataSourceFactory.create(
-        jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClassName,
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        connectionProperties,
-        getConnectionTimeout(connectionProperties, driverClassName));
-    // Record the data source so that it can be closed.
-    dataSources.add(dataSource);
-
-    final JdbcDatabase database = new StreamingJdbcDatabase(
-        dataSource,
-        sourceOperations,
-        streamingQueryConfigProvider);
-
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-    database.setSourceConfig(sourceConfig);
-    database.setDatabaseConfig(jdbcConfig);
-    return database;
-  }
-
   public Map<String, String> getConnectionProperties(final JsonNode config) {
     final Map<String, String> customProperties =
         config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)

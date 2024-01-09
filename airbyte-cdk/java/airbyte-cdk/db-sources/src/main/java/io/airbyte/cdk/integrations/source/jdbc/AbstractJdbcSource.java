@@ -428,9 +428,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     return JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
   }
 
-  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+  public final JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
-    Map<String, String> connectionProperties = JdbcDataSourceUtils.getConnectionProperties(sourceConfig, getJdbcPropertiesDelimiter());
+    Map<String, String> connectionProperties = getConnectionProperties(sourceConfig);
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
@@ -450,7 +450,17 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
+
+    createDatabase_postHook(database);
     return database;
+  }
+
+  public Map<String, String> getConnectionProperties(final JsonNode sourceConfig) {
+    return JdbcDataSourceUtils.getConnectionProperties(sourceConfig, getJdbcPropertiesDelimiter());
+  }
+
+  protected void createDatabase_postHook(JdbcDatabase database) throws SQLException {
+
   }
 
   /**
