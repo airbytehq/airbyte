@@ -11,7 +11,6 @@ import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.Pri
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
