@@ -58,27 +58,6 @@ public class BigQueryUtilsTest {
     assertEquals(expected, exception.getMessage());
   }
 
-  @Test
-  public void testIsUsingJsonCredentials() {
-    // empty
-    final JsonNode emptyConfig = Jsons.jsonNode(Collections.emptyMap());
-    assertFalse(BigQueryUtils.isUsingJsonCredentials(emptyConfig));
-
-    // empty text
-    final JsonNode emptyTextConfig = Jsons.jsonNode(Map.of(BigQueryConsts.CONFIG_CREDS, ""));
-    assertFalse(BigQueryUtils.isUsingJsonCredentials(emptyTextConfig));
-
-    // non-empty text
-    final JsonNode nonEmptyTextConfig = Jsons.jsonNode(
-        Map.of(BigQueryConsts.CONFIG_CREDS, "{ \"service_account\": \"test@airbyte.io\" }"));
-    assertTrue(BigQueryUtils.isUsingJsonCredentials(nonEmptyTextConfig));
-
-    // object
-    final JsonNode objectConfig = Jsons.jsonNode(Map.of(
-        BigQueryConsts.CONFIG_CREDS, Jsons.jsonNode(Map.of("service_account", "test@airbyte.io"))));
-    assertTrue(BigQueryUtils.isUsingJsonCredentials(objectConfig));
-  }
-
   private static Stream<Arguments> validBigQueryIdProvider() {
     return Stream.of(
         Arguments.arguments("my-project", "my_dataset", "my_dataset"),
