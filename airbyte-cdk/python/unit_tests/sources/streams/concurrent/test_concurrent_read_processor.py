@@ -147,7 +147,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         handler.on_partition(self._a_closed_partition)
 
         self._thread_pool_manager.submit.assert_called_with(self._partition_reader.process_partition, self._a_closed_partition)
-        assert self._a_closed_partition in handler._streams_to_partitions[_ANOTHER_STREAM_NAME]
+        assert self._a_closed_partition in handler._streams_to_running_partitions[_ANOTHER_STREAM_NAME]
 
     def test_handle_partition_emits_log_message_if_it_should_be_logged(self):
         stream_instances_to_read_from = [self._stream]
@@ -169,7 +169,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
 
         self._thread_pool_manager.submit.assert_called_with(self._partition_reader.process_partition, self._an_open_partition)
         self._message_repository.emit_message.assert_called_with(self._log_message)
-        assert self._an_open_partition in handler._streams_to_partitions[_STREAM_NAME]
+        assert self._an_open_partition in handler._streams_to_running_partitions[_STREAM_NAME]
 
     def test_handle_on_partition_complete_sentinel_with_messages_from_repository(self):
         stream_instances_to_read_from = [self._stream]
@@ -474,7 +474,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             self._message_repository,
             self._partition_reader,
         )
-        handler._streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}, _ANOTHER_STREAM_NAME: {self._a_closed_partition}}
+        handler._streams_to_running_partitions = {_STREAM_NAME: {self._an_open_partition}, _ANOTHER_STREAM_NAME: {self._a_closed_partition}}
 
         another_stream = Mock(spec=AbstractStream)
         another_stream.name = _STREAM_NAME
