@@ -19,6 +19,9 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "organization_id": {
+      "type": ["null", "integer"]
+    },
     "default_branch_protection_defaults": {
       "type": ["null", "object"],
       "properties": {
@@ -72,6 +75,9 @@
       "type": ["null", "string"]
     },
     "emails_disabled": {
+      "type": ["null", "boolean"]
+    },
+    "emails_enabled": {
       "type": ["null", "boolean"]
     },
     "mentions_disabled": {
@@ -144,6 +150,9 @@
     },
     "shared_runners_setting": {
       "type": ["null", "string"]
+    },
+    "service_access_tokens_expiration_enforced": {
+      "type": ["null", "boolean"]
     }
   }
 }
