@@ -147,7 +147,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     // TODO: Pull common code from RedshiftInsertDestination and RedshiftStagingS3Destination into a
     // base class.
     // The following properties can be overriden through jdbcUrlParameters in the config.
-    Map<String, String> connectionOptions = new HashMap<>();
+    final Map<String, String> connectionOptions = new HashMap<>();
     // Redshift properties
     // https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-configuration-options.html#jdbc20-connecttimeout-option
     // connectTimeout is different from Hikari pool's connectionTimout, driver defaults to 10seconds so
@@ -170,7 +170,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
+  protected JdbcSqlGenerator getSqlGenerator() {
     return new RedshiftSqlGenerator(getNamingResolver());
   }
 

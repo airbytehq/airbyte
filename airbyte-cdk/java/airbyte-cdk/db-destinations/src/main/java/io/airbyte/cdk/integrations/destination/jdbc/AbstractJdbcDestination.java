@@ -237,7 +237,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
-  protected abstract JdbcSqlGenerator getSqlGenerator(JsonNode config);
+  protected abstract JdbcSqlGenerator getSqlGenerator();
 
   protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
     return new JdbcDestinationHandler(databaseName, database);
@@ -277,7 +277,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
           stream.getStream().setNamespace(defaultNamespace);
         }
       }
-      final JdbcSqlGenerator sqlGenerator = getSqlGenerator(config);
+      final JdbcSqlGenerator sqlGenerator = getSqlGenerator();
       final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
           .map(override -> new CatalogParser(sqlGenerator, override))
           .orElse(new CatalogParser(sqlGenerator))

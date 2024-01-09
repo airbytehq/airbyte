@@ -121,10 +121,8 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
-    return new PostgresSqlGenerator(
-        new PostgresSQLNameTransformer(),
-        TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).orElse(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
+  protected JdbcSqlGenerator getSqlGenerator() {
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
   }
 
   public static void main(final String[] args) throws Exception {

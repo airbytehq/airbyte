@@ -55,11 +55,8 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
       "timestamptz", "timestamp with time zone",
       "timetz", "time with time zone");
 
-  private final String defaultRawTableSchema;
-
-  public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer, final String defaultRawTableSchema) {
+  public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
-    this.defaultRawTableSchema = defaultRawTableSchema;
   }
 
   @Override
