@@ -79,6 +79,13 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "feedback_submissions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_state": { "updatedAt": "" },
       "stream_descriptor": { "name": "forms" }
     }

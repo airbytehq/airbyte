@@ -74,6 +74,7 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 | `email_subscriptions`       | `content`                                                                                                    |
 | `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
 | `engagements_emails`        | `sales-email-read`                                                                                           |
+| `feedback_submissions`      | `crm.objects.feedback_submissions.read`
 | `forms`                     | `forms`                                                                                                      |
 | `form_submissions`          | `forms`                                                                                                      |
 | `goals`                     | `crm.objects.goals.read`                                                                                     |
@@ -179,6 +180,7 @@ The HubSpot source connector supports the following streams:
 - [Engagements Meetings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental\)
 - [Engagements Notes](https://developers.hubspot.com/docs/api/crm/notes) \(Incremental\)
 - [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
+- [Feedback Submissions](https://developers.hubspot.com/docs/api/crm/feedback-submissions) \(Client-Side Incremental\)
 - [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
 - [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form) \(Client-Side Incremental\)
 - [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
@@ -304,6 +306,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.0   | 2024-01-10 | [](https://github.com/airbytehq/airbyte/pull/) | Added Feedback Submissions
 | 2.0.2   | 2023-12-15 | [33844](https://github.com/airbytehq/airbyte/pull/33844) | Make property_history PK combined to support Incremental/Deduped sync type                                                                                                         |
 | 2.0.1   | 2023-12-15 | [33527](https://github.com/airbytehq/airbyte/pull/33527) | Make query string calculated correctly for ProertyHistory streams to avoid 414 HTTP Errors                                                                                         |
 | 2.0.0   | 2023-12-08 | [33266](https://github.com/airbytehq/airbyte/pull/33266) | Added ContactsPropertyHistory, CompaniesPropertyHistory, DealsPropertyHistory streams                                                                                              |

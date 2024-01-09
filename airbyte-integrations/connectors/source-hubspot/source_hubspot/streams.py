@@ -2237,7 +2237,6 @@ class EngagementsTasks(CRMSearchStream):
     scopes = {"crm.objects.contacts.read"}
 
 
-# this stream uses a beta endpoint thus is unstable and disabled
 class FeedbackSubmissions(CRMObjectIncrementalStream):
     entity = "feedback_submissions"
     associations = ["contacts"]

@@ -17,6 +17,7 @@ The primary key for the following streams is `id`:
 - engagements_meetings
 - engagements_notes
 - engagements_tasks
+- feedback_submissions
 - forms
 - goals
 - line_items
