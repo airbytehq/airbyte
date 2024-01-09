@@ -263,7 +263,7 @@ def test_parse_response(mocker, customers, config):
     assert output == expected_output
 
 
-def test_request_records_job_unauthenticated(mocker, customers, config):
+def test_read_records_unauthenticated(mocker, customers, config):
     credentials = config["credentials"]
     api = GoogleAds(credentials=credentials)
 
@@ -275,6 +275,7 @@ def test_request_records_job_unauthenticated(mocker, customers, config):
     )
     stream = CustomerLabel(**stream_config)
     with pytest.raises(AirbyteTracedException) as exc_info:
-        list(stream.request_records_job("customer id", "", {}))
+        list(stream.read_records(SyncMode.full_refresh, {"customer_id": "customer_id"}))
 
-    assert exc_info.value.message == "Authentication failed. Please try to Re-authenticate your credentials on set up Google Ads page."
+    assert exc_info.value.message == ("Authentication failed for the customer 'customer_id'. "
+                                      "Please try to Re-authenticate your credentials on set up Google Ads page.")
