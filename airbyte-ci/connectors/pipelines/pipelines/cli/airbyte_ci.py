@@ -24,6 +24,7 @@ from pipelines.cli.confirm_prompt import pre_confirm_all_flag
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, CIContext
+from pipelines.dagger.actions.connector.hooks import get_dagger_sdk_version
 from pipelines.helpers import github
 from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
 from pipelines.helpers.utils import get_current_epoch_time
@@ -81,7 +82,9 @@ def set_working_directory_to_root() -> None:
     os.chdir(working_dir)
 
 
-def log_git_info(ctx: click.Context) -> None:
+def log_context_info(ctx: click.Context) -> None:
+    main_logger.info(f"Running airbyte-ci version {__installed_version__}")
+    main_logger.info(f"Running dagger version {get_dagger_sdk_version()}")
     main_logger.info("Running airbyte-ci in CI mode.")
     main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
     main_logger.info(f"CI Report Bucket Name: {ctx.obj['ci_report_bucket_name']}")
@@ -235,7 +238,7 @@ async def airbyte_ci(ctx: click.Context) -> None:  # noqa D103
         check_local_docker_configuration()
 
     if not ctx.obj["is_local"]:
-        log_git_info(ctx)
+        log_context_info(ctx)
 
 
 set_working_directory_to_root()

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.58.3
+fix declarative oauth initialization
+
 ## 0.58.2
 Integration tests: adding debug mode to improve logging
 
