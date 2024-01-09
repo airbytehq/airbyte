@@ -35,7 +35,7 @@ pytest = "^7.4.3"
 pytest-docker = "^2.0.1"
 pytest-mypy = "^0.10.3"
 pytest-postgresql = "^5.0.0"
-ruff = "^0.1.7"
+ruff = "^0.1.11"
 types-jsonschema = "^4.20.0.0"
 types-requests = "^2.31.0.10"
 
@@ -46,24 +46,34 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 # addopts = "--mypy"  # FIXME: This sometimes blocks test discovery and execution
 
+[tool.ruff.pylint]
+max-args = 8  # Relaxed from default of 5
+
 [tool.ruff]
 target-version = "py310"
 select = ["F", "E"]
 extend-select = [
-    "W", "C90", "I", "N", "UP", "YTT", "ANN", "ASYNC", "BLE", "B", "A", "COM", "C4", "EXE", "FA", "ISC", "ICN", "INP", "PIE", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD", "FIX", "PD", "PL", "TRY", "FLY", "NPY", "PERF", "FURB", "RUF", "TRIO"
+    "W", "C90", "I", "N", "UP", "YTT", "ANN", "ASYNC", "BLE", "B", "A", "COM", "C4", "EXE", "FA", "ISC", "ICN", "INP", "PIE", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD", "FIX", "PD", "PL", "TRY", "FLY", "NPY", "PERF", "RUF"
 ]
 ignore = [
-    "I001", "ANN401", "ANN003", "SIM300", "PERF203", "ANN101", "B905", "NPY002", "COM812", "N999", "PTH", "INP001", "TRY003", "PLW1641", "E203", "PLW1514"
+    # For rules reference, see https://docs.astral.sh/ruff/rules/
+    # "I001",  # Sorted imports
+    # "ANN401",  # Any-typed expressions
+    "ANN003",  # kwargs missing type annotations
+    # "SIM300",  # 'yoda' conditions
+    "PERF203",  # exception handling in loop
+    "ANN101",  # Type annotations for 'self' args
+    "TD002", # Require author for TODOs
+    "TD003", # Require links for TODOs
+    "B019", # lru_cache on class methods keep instance from getting garbage collected
+    "COM812", # Conflicts with ruff auto-format
+    "ISC001" # Conflicts with ruff auto-format
 ]
-fixable = ["W", "C90", "I", "N", "UP", "YTT", "ANN", "ASYNC", "BLE", "B", "A", "COM", "C4", "EXE", "FA", "ISC", "ICN", "INP", "PIE", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD", "FIX", "PD", "PL", "TRY", "FLY", "NPY", "PERF", "FURB", "RUF", "TRIO"]
+fixable = ["ALL"]
 unfixable = []
 line-length = 88
-indent-width = 4
 extend-exclude = ["docs", "test", "tests"]
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-[tool.ruff.lint]
-preview = false  # TODO: Consider enabling this
 
 [tool.ruff.isort]
 force-sort-within-sections = false
