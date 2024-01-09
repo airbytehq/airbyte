@@ -63,7 +63,6 @@ definitions:
         field_name: offset
     requester:
       $ref: "#/definitions/requester"
-
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
