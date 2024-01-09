@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import json
 from typing import Any, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
 
@@ -16,7 +17,7 @@ class HttpRequest:
         url: str,
         query_params: Optional[Union[str, Mapping[str, Union[str, List[str]]]]] = None,
         headers: Optional[Mapping[str, str]] = None,
-        body: Optional[Union[str, Mapping[str, Any]]] = None,
+        body: Optional[Union[str, bytes, Mapping[str, Any]]] = None,
     ) -> None:
         self._parsed_url = urlparse(url)
         self._query_params = query_params
@@ -26,7 +27,13 @@ class HttpRequest:
             raise ValueError("If query params are provided as part of the url, `query_params` should be empty")
 
         self._headers = headers or {}
-        self._body = body or {}
+
+        self._body = body
+        if self._body is not None:
+            if isinstance(self._body, (dict, str)):
+                self._body = json.dumps(self._body)
+            if not isinstance(self._body, bytes):
+                self._body = self._body.encode("utf-8")
 
     @staticmethod
     def _encode_qs(query_params: Union[str, Mapping[str, Union[str, List[str]]]]) -> str:

@@ -74,7 +74,7 @@ class HttpMocker(contextlib.ContextDecorator):
         def matches(requests_mock_request: requests_mock.request._RequestObjectProxy) -> bool:
             # query_params are provided as part of `requests_mock_request.url`
             http_request = HttpRequest(
-                requests_mock_request.url, query_params={}, headers=requests_mock_request.headers, body=requests_mock_request.text
+                requests_mock_request.url, query_params={}, headers=requests_mock_request.headers, body=requests_mock_request.body
             )
             return matcher.matches(http_request)
 
