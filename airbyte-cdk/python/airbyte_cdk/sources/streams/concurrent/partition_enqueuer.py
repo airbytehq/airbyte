@@ -23,7 +23,7 @@ class PartitionEnqueuer:
         :param wait_time: The time to wait between checking the queue size.
         """
         self._queue = queue
-        self._max_size = max_size
+        self._max_size = 100 #FIXME
         self._wait_time = wait_time
 
     def generate_partitions(self, stream: AbstractStream) -> None:
