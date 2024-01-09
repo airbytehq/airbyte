@@ -38,7 +38,7 @@ class UpgradeBaseImageMetadata(Step):
         self.repo_dir = repo_dir
         self.set_if_not_exists = set_if_not_exists
 
-    async def get_latest_base_image_address(self) -> Optional[str]:
+    async def get_latest_base_image_address(self) -> "Optional[str]":
         try:
             version_registry_for_language = await version_registry.get_registry_for_language(
                 self.dagger_client, self.context.connector.language, (self.context.docker_hub_username, self.context.docker_hub_password)
@@ -263,7 +263,7 @@ class AddBuildInstructionsToReadme(Step):
         return new_doc
 
 
-async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, semaphore: Semaphore, set_if_not_exists: bool) -> Report:
+async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, semaphore: "Semaphore", set_if_not_exists: bool) -> Report:
     """Run a pipeline to upgrade for a single connector to use our base image."""
     async with semaphore:
         steps_results = []
@@ -284,7 +284,7 @@ async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, s
 
 
 async def run_connector_migration_to_base_image_pipeline(
-    context: ConnectorContext, semaphore: Semaphore, pull_request_number: str
+    context: ConnectorContext, semaphore: "Semaphore", pull_request_number: str
 ) -> Report:
     async with semaphore:
         steps_results = []
