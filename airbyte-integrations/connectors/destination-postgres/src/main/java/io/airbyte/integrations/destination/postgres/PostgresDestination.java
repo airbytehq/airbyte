@@ -26,11 +26,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,17 +55,17 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     // at the same time).
     // Function definition copied from https://dba.stackexchange.com/a/203986
     return builder.withConnectionInitSql("""
-        CREATE FUNCTION pg_temp.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
-          LANGUAGE plpgsql AS
-        $func$
-        BEGIN
-          EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
-          INTO  _out;
-        EXCEPTION WHEN others THEN
-          -- do nothing: _out already carries default
-        END
-        $func$;
-        """);
+                                         CREATE FUNCTION pg_temp.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
+                                           LANGUAGE plpgsql AS
+                                         $func$
+                                         BEGIN
+                                           EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
+                                           INTO  _out;
+                                         EXCEPTION WHEN others THEN
+                                           -- do nothing: _out already carries default
+                                         END
+                                         $func$;
+                                         """);
   }
 
   @Override

@@ -203,8 +203,8 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText())
-        .withConnectionProperties(connectionProperties)
-        .withConnectionTimeout(getConnectionTimeout(connectionProperties));
+            .withConnectionProperties(connectionProperties)
+            .withConnectionTimeout(getConnectionTimeout(connectionProperties));
     return modifyDataSourceBuilder(builder).build();
   }
 

@@ -44,7 +44,17 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
 
   @Override
   protected DataSource getDataSource(final JsonNode config) {
-    return new PostgresDestination().getDataSource(config);
+    // Intentionally ignore the config and rebuild it.
+    // The config param has the resolved (i.e. in-docker) host/port.
+    // We need the unresolved host/port since the test wrapper code is running from the docker host
+    // rather than in a container.
+    return new PostgresDestination().getDataSource(testContainer.configBuilder()
+        .with("schema", "public")
+        .withDatabase()
+        .withHostAndPort()
+        .withCredentials()
+        .withoutSsl()
+        .build());
   }
 
   @Override

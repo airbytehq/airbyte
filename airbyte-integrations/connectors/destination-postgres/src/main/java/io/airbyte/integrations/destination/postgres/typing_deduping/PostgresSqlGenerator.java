@@ -87,10 +87,10 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && !stream.primaryKey().isEmpty()) {
       return List.of(
           getDslContext().createIndex().on(
-                  name(stream.id().finalNamespace(), stream.id().finalName() + suffix),
-                  stream.primaryKey().stream()
-                      .map(pk -> quotedName(pk.name()))
-                      .toList())
+              name(stream.id().finalNamespace(), stream.id().finalName() + suffix),
+              stream.primaryKey().stream()
+                  .map(pk -> quotedName(pk.name()))
+                  .toList())
               .getSQL());
     } else {
       return emptyList();
