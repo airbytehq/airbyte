@@ -114,6 +114,7 @@ REGISTRY_ENTRY_RESOURCE_TREE = {
 }
 
 CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE = {
+    **GCS_RESOURCE_TREE,
     "latest_nightly_complete_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_COMPLETE_REPORT_FILE_NAME}$"}
     ),
