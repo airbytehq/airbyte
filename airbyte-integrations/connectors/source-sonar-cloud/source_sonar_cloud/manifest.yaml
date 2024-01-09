@@ -6,7 +6,7 @@ definitions:
       field_path:
         - "{{ parameters['name'] }}"
   requester:
-    url_base: "https://sonarcloud.io/api"
+    url_base: "{{ config['api_url'] }}"
     http_method: "GET"
     request_parameters:
       organization: "{{ config['organization'] }}"

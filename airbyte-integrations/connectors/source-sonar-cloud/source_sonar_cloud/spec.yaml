@@ -3,12 +3,22 @@ connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Sonar Cloud Spec
   type: object
-  required:
-    - user_token
-    - organization
-    - component_keys
+  oneOf:
+    - required:
+      - user_token
+      - organization
+      - component_keys
+    - required:
+      - user_token
+      - qualifiers
+      - component_keys
   additionalProperties: true
   properties:
+    api_url:
+      type: string
+      title: Sonar API URL
+      description: Either SonarCloud or SonarQube API URL.
+      default: https://sonarcloud.io/api
     user_token:
       title: User Token
       type: string
@@ -32,6 +42,13 @@ connectionSpecification:
       examples:
         - airbyte-ws-order
         - airbyte-ws-checkout
+    qualifiers:
+      title: Qualifiers
+      type: array
+      description: Comma-separated list of component qualifiers.
+      examples:
+        - TRK
+        - BRC
     start_date:
       title: Start date
       type: string
