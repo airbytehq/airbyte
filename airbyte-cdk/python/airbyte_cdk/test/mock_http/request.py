@@ -27,13 +27,18 @@ class HttpRequest:
             raise ValueError("If query params are provided as part of the url, `query_params` should be empty")
 
         self._headers = headers or {}
+        self._body = self._prepare_request_body(body)
 
-        self._body = body
-        if self._body is not None:
-            if isinstance(self._body, (Mapping, str)):
-                self._body = json.dumps(self._body)
-            if not isinstance(self._body, bytes):
-                self._body = self._body.encode("utf-8")
+    @staticmethod
+    def _prepare_request_body(body: Optional[Union[str, bytes, Mapping[str, Any]]]) -> Any:
+        if isinstance(body, (str, bytes)):
+            if isinstance(body, bytes):
+                body = body.decode("utf-8")
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError:
+                return body
+        return body
 
     @staticmethod
     def _encode_qs(query_params: Union[str, Mapping[str, Union[str, List[str]]]]) -> str:
