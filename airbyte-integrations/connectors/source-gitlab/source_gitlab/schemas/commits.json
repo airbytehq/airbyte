@@ -39,11 +39,11 @@
     },
     "extended_trailers": {
       "type": ["null", "object"],
-      "properties" : {
+      "properties": {
         "Cc": {
-          "type" : ["null", "array"],
-          "items" : {
-            "type" : ["null", "string"]
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
           }
         }
       }

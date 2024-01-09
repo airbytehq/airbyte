@@ -1,5 +1,7 @@
-from source_gitlab.utils import parse_url
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import pytest
+from source_gitlab.utils import parse_url
 
 
 @pytest.mark.parametrize(

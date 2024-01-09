@@ -6,6 +6,7 @@ import datetime
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_gitlab.streams import (
     Branches,
@@ -19,7 +20,6 @@ from source_gitlab.streams import (
     Releases,
     Tags,
 )
-from airbyte_cdk.models import SyncMode
 
 auth_params = {"authenticator": NoAuth(), "api_url": "gitlab.com"}
 start_date = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=14)

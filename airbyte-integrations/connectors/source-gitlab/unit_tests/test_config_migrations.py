@@ -1,4 +1,7 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import os
+
 from source_gitlab.config_migrations import MigrateGroups
 from source_gitlab.source import SourceGitlab
 
