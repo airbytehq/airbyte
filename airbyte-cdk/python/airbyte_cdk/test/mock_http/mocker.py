@@ -2,11 +2,17 @@
 
 import contextlib
 import functools
+from enum import Enum
 from types import TracebackType
 from typing import Callable, List, Optional, Union
 
 import requests_mock
 from airbyte_cdk.test.mock_http import HttpRequest, HttpRequestMatcher, HttpResponse
+
+
+class SupportedHttpMethods(str, Enum):
+    GET = "get"
+    POST = "post"
 
 
 class HttpMocker(contextlib.ContextDecorator):
@@ -42,30 +48,26 @@ class HttpMocker(contextlib.ContextDecorator):
             if not matcher.has_expected_match_count():
                 raise ValueError(f"Invalid number of matches for `{matcher}`")
 
-    def _get_request_matcher(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> HttpRequestMatcher:
+    def _mock_request_method(
+        self, method: SupportedHttpMethods, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]
+    ) -> None:
         if isinstance(responses, HttpResponse):
             responses = [responses]
 
         matcher = HttpRequestMatcher(request, len(responses))
         self._matchers.append(matcher)
 
-        return matcher
+        getattr(self._mocker, method)(
+            requests_mock.ANY,
+            additional_matcher=self._matches_wrapper(matcher),
+            response_list=[{"text": response.body, "status_code": response.status_code} for response in responses],
+        )
 
     def get(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> None:
-        matcher = self._get_request_matcher(request, responses)
-        self._mocker.get(
-            requests_mock.ANY,
-            additional_matcher=self._matches_wrapper(matcher),
-            response_list=[{"text": response.body, "status_code": response.status_code} for response in responses],
-        )
+        self._mock_request_method(SupportedHttpMethods.GET, request, responses)
 
     def post(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> None:
-        matcher = self._get_request_matcher(request, responses)
-        self._mocker.post(
-            requests_mock.ANY,
-            additional_matcher=self._matches_wrapper(matcher),
-            response_list=[{"text": response.body, "status_code": response.status_code} for response in responses],
-        )
+        self._mock_request_method(SupportedHttpMethods.POST, request, responses)
 
     @staticmethod
     def _matches_wrapper(matcher: HttpRequestMatcher) -> Callable[[requests_mock.request._RequestObjectProxy], bool]:
