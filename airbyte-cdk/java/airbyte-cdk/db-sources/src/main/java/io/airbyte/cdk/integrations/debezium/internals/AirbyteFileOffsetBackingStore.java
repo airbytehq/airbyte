@@ -169,7 +169,6 @@ public class AirbyteFileOffsetBackingStore {
     final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
 
     final AirbyteFileOffsetBackingStore offsetManager = new AirbyteFileOffsetBackingStore(cdcOffsetFilePath, dbName);
-    LOGGER.info("xiaohan test: saved cdc state in file is: " + cdcState.toPrettyString() );
     offsetManager.persist(cdcState);
     return offsetManager;
   }

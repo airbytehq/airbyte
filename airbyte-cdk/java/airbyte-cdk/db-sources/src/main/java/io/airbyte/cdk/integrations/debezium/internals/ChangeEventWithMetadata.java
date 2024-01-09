@@ -7,11 +7,8 @@ package io.airbyte.cdk.integrations.debezium.internals;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.debezium.engine.ChangeEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ChangeEventWithMetadata {
-  private static final Logger LOGGER = LoggerFactory.getLogger(ChangeEventWithMetadata.class);
 
   private final ChangeEvent<String, String> event;
   private final JsonNode eventKeyAsJson;
@@ -20,13 +17,7 @@ public class ChangeEventWithMetadata {
 
   public ChangeEventWithMetadata(final ChangeEvent<String, String> event) {
     this.event = event;
-    LOGGER.info("xiaohan curious - event key: " + event.key());
-    LOGGER.info("xiaohan curious - event value: " + event.value());
-    if (event.key() == null) {
-      this.eventKeyAsJson = Jsons.emptyObject();
-    } else {
-      this.eventKeyAsJson = Jsons.deserialize(event.key());
-    }
+    this.eventKeyAsJson = Jsons.deserialize(event.key());
     this.eventValueAsJson = Jsons.deserialize(event.value());
     this.snapshotMetadata = SnapshotMetadata.fromString(eventValueAsJson.get("source").get("snapshot").asText());
   }
