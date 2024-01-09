@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+"""Defines the `airbyte-lib-validate-source` CLI, which checks if connectors are compatible with airbyte-lib."""
 
 import argparse
 import json
