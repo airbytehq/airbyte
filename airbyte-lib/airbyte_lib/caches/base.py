@@ -274,8 +274,7 @@ class SQLCacheBase(RecordProcessor):
         temp_table_name = self._get_temp_table_name(stream_name, batch_id)
         column_definition_str = ",\n  ".join(
             f"{column_name} {sql_type}"
-            for column_name, sql_type
-            in self._get_sql_column_definitions(stream_name).items()
+            for column_name, sql_type in self._get_sql_column_definitions(stream_name).items()
         )
         self._create_table(temp_table_name, column_definition_str)
 
