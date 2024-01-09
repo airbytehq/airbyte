@@ -10,18 +10,18 @@ from typing import List
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
-from source_salesforce import SalesforceSourceDispatcher, AsyncSourceSalesforce
+from source_salesforce import AsyncSourceSalesforce, SalesforceSourceDispatcher, SourceSalesforce
 
 
 def _get_source(args: List[str]):
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     config_path = AirbyteEntrypoint.extract_config(args)
+    catalog = AsyncSourceSalesforce.read_catalog(catalog_path) if catalog_path else None
+    config = AsyncSourceSalesforce.read_config(config_path) if config_path else None
     try:
         return SalesforceSourceDispatcher(
-            AsyncSourceSalesforce(
-                AsyncSourceSalesforce.read_catalog(catalog_path) if catalog_path else None,
-                AsyncSourceSalesforce.read_config(config_path) if config_path else None,
-            )
+            AsyncSourceSalesforce(catalog, config),
+            SourceSalesforce(catalog, config)
         )
     except Exception as error:
         print(
@@ -41,7 +41,6 @@ def _get_source(args: List[str]):
 
 
 if __name__ == "__main__":
-    # _args = ['read', '--config', 'secrets/config.json', '--catalog', 'integration_tests/configured_catalog.json']
     _args = sys.argv[1:]
     source = _get_source(_args)
     if source:

@@ -3,5 +3,6 @@
 #
 
 from .async_salesforce.source import AsyncSourceSalesforce, SalesforceSourceDispatcher
+from .source import SourceSalesforce
 
-__all__ = ["AsyncSourceSalesforce", "SalesforceSourceDispatcher"]
+__all__ = ["AsyncSourceSalesforce", "SalesforceSourceDispatcher", "AsyncSourceSalesforce"]

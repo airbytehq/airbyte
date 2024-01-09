@@ -25,12 +25,14 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
+    SyncMode,
 )
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.abstract_source import AbstractSource
 from airbyte_cdk.sources.async_cdk.abstract_source_async import AsyncAbstractSource
 from airbyte_cdk.sources.async_cdk.source_reader import Sentinel, SourceReader
 from airbyte_cdk.sources.async_cdk.streams.core_async import AsyncStream
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -48,8 +50,9 @@ class SourceDispatcher(AbstractSource, ABC):
     Abstract base class for an Airbyte Source that can dispatch to an async source.
     """
 
-    def __init__(self, async_source: AsyncAbstractSource):
+    def __init__(self, async_source: AsyncAbstractSource, source: AbstractSource):
         self.async_source = async_source
+        self.source = source
         self.queue = Queue(DEFAULT_QUEUE_SIZE)
         self.session_limit = DEFAULT_SESSION_LIMIT
 
@@ -82,14 +85,8 @@ class SourceDispatcher(AbstractSource, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[
-            Union[List[AirbyteStateMessage], MutableMapping[str, Any]]
-        ] = None,
-    ) -> Iterator[AirbyteMessage]:
-        """
-        Run the async_source's `read_streams` method and yield its results.
-
-        """
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+    ):
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
         stream_instances: Mapping[str, AsyncStream] = {
@@ -100,19 +97,42 @@ class SourceDispatcher(AbstractSource, ABC):
         )
         self._stream_to_instance_map = stream_instances
         self._assert_streams(catalog, stream_instances)
-
         n_records = 0
+        stream_name_to_exception: MutableMapping[str, AirbyteTracedException] = {}  # TODO: wire this option through for asyncio
+        full_refresh_streams = {}
+        incremental_streams = {}
+
+        for stream in catalog.streams:
+            if stream.sync_mode == SyncMode.full_refresh:
+                full_refresh_streams[stream.stream.name] = stream_instances[stream.stream.name]
+            else:
+                incremental_streams[stream.stream.name] = stream_instances[stream.stream.name]
+
         with create_timer(self.name) as timer:
-            for record in self._do_read(
-                catalog, stream_instances, timer, logger, state_manager, internal_config
+            for record in self._read_async_source(
+                catalog, full_refresh_streams, timer, logger, state_manager, internal_config
+            ):
+                n_records += 1
+                yield record
+
+            for record in self._read_sync_source(
+                catalog, incremental_streams, timer, logger, state_manager, internal_config, stream_name_to_exception
             ):
                 n_records += 1
                 yield record
 
         print(f"_______________________-ASYNCIO SOURCE N RECORDS == {n_records}")
+
+        if self.continue_sync_on_stream_failure and len(stream_name_to_exception) > 0:
+            raise AirbyteTracedException(
+                message=self._generate_failed_streams_error_message(
+                    stream_name_to_exception
+                )
+            )
+
         logger.info(f"Finished syncing {self.name}")
 
-    def _do_read(
+    def _read_sync_source(
         self,
         catalog: ConfiguredAirbyteCatalog,
         stream_instances: Dict[str, AsyncStream],
@@ -120,7 +140,94 @@ class SourceDispatcher(AbstractSource, ABC):
         logger: logging.Logger,
         state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
+        stream_name_to_exception: MutableMapping[str, AirbyteTracedException],
     ):
+        """
+        For concurrent streams, records from the sync source.
+
+        TODO: this can be deleted when asyncio is deployed for incremental
+        """
+        for configured_stream in catalog.streams:
+            stream_instance = stream_instances.get(configured_stream.stream.name)
+            if not stream_instance:
+                if not self.raise_exception_on_missing_stream:
+                    continue
+                raise KeyError(
+                    f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
+                    f"Refresh the schema in replication settings and remove this stream from future sync attempts."
+                )
+
+            try:
+                timer.start_event(f"Syncing stream {configured_stream.stream.name}")
+                stream_is_available, reason = stream_instance.check_availability(
+                    logger, self
+                )
+                if not stream_is_available:
+                    logger.warning(
+                        f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}"
+                    )
+                    continue
+                logger.info(
+                    f"Marking stream {configured_stream.stream.name} as STARTED"
+                )
+                yield stream_status_as_airbyte_message(
+                    configured_stream.stream, AirbyteStreamStatus.STARTED
+                )
+                yield from self._read_stream(
+                    logger=logger,
+                    stream_instance=stream_instance,
+                    configured_stream=configured_stream,
+                    state_manager=state_manager,
+                    internal_config=internal_config,
+                )
+                logger.info(
+                    f"Marking stream {configured_stream.stream.name} as STOPPED"
+                )
+                yield stream_status_as_airbyte_message(
+                    configured_stream.stream, AirbyteStreamStatus.COMPLETE
+                )
+            except AirbyteTracedException as e:
+                yield stream_status_as_airbyte_message(
+                    configured_stream.stream, AirbyteStreamStatus.INCOMPLETE
+                )
+                if self.continue_sync_on_stream_failure:
+                    stream_name_to_exception[stream_instance.name] = e
+                else:
+                    raise e
+            except Exception as e:
+                yield from self._emit_queued_messages()
+                logger.exception(
+                    f"Encountered an exception while reading stream {configured_stream.stream.name}"
+                )
+                logger.info(
+                    f"Marking stream {configured_stream.stream.name} as STOPPED"
+                )
+                yield stream_status_as_airbyte_message(
+                    configured_stream.stream, AirbyteStreamStatus.INCOMPLETE
+                )
+                display_message = stream_instance.get_error_display_message(e)
+                if display_message:
+                    raise AirbyteTracedException.from_exception(
+                        e, message=display_message
+                    ) from e
+                raise e
+            finally:
+                timer.finish_event()
+                logger.info(f"Finished syncing {configured_stream.stream.name}")
+                logger.info(timer.report())
+
+    def _read_async_source(
+        self,
+        catalog: ConfiguredAirbyteCatalog,
+        stream_instances: Dict[str, AsyncStream],
+        timer: Any,
+        logger: logging.Logger,
+        state_manager: ConnectorStateManager,
+        internal_config: InternalConfig,
+    ) -> Iterator[AirbyteMessage]:
+        """
+        Run the async_source's `read_streams` method and yield its results.
+        """
         streams_in_progress_sentinels = {
             s.stream.name: Sentinel(s.stream.name)
             for s in catalog.streams
