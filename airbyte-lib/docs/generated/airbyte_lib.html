@@ -30,7 +30,7 @@
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_default_cache</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">source_catalog</span><span class="p">:</span> <span class="n">airbyte_protocol</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">airbyte_protocol</span><span class="o">.</span><span class="n">ConfiguredAirbyteCatalog</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBCache</span>:</span></span>
+        <span class="name">get_default_cache</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBCache</span>:</span></span>
 
         
     </div>
@@ -48,7 +48,7 @@ working directory.</p>
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">new_local_cache</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">cache_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">source_catalog</span><span class="p">:</span> <span class="n">airbyte_protocol</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">airbyte_protocol</span><span class="o">.</span><span class="n">ConfiguredAirbyteCatalog</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBCache</span>:</span></span>
+        <span class="name">new_local_cache</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">cache_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">root_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBCache</span>:</span></span>
 
         
     </div>
@@ -165,6 +165,17 @@ working directory.</p>
     
 
                             </div>
+                            <div id="ReadResult.cache" class="classattr">
+                                <div class="attr variable">
+            <span class="name">cache</span><span class="annotation">: airbyte_lib.caches.base.SQLCacheBase</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ReadResult.cache"></a>
+    
+    
+
+                            </div>
                 </section>
                 <section id="Source">
                     <div class="attr class">
@@ -183,7 +194,7 @@ working directory.</p>
                             <div id="Source.__init__" class="classattr">
                                 <div class="attr function">
             
-        <span class="name">Source</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">executor</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">Executor</span>,</span><span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">streams</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
+        <span class="name">Source</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">executor</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">Executor</span>,</span><span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">streams</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
 
         
     </div>
@@ -229,7 +240,7 @@ working directory.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">set_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">streams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">):</span></span>
+        <span class="name">set_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">streams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
         
     </div>
@@ -242,7 +253,7 @@ working directory.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">set_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span></span><span class="return-annotation">):</span></span>
+        <span class="name">set_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
         
     </div>
@@ -296,7 +307,7 @@ working directory.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_records</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">_lazy</span><span class="o">.</span><span class="n">LazyDataset</span>:</span></span>
+        <span class="name">get_records</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]]</span>:</span></span>
 
         
     </div>
@@ -346,7 +357,7 @@ working directory.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">install</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+        <span class="name">install</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
         
     </div>
@@ -359,7 +370,7 @@ working directory.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">read</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#ReadResult">ReadResult</a></span>:</span></span>
+        <span class="name">read</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#ReadResult">ReadResult</a></span>:</span></span>
 
         
     </div>
