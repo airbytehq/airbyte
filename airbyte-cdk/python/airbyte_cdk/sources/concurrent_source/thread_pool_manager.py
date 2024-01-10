@@ -54,6 +54,8 @@ class ThreadPoolManager:
             future = futures[index]
 
             if future.done():
+                # Only call future.exception() if the future is known to be done because it will block until the future is done.
+                # See https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.Future.exception
                 optional_exception = future.exception()
                 if optional_exception:
                     exception = RuntimeError(f"Failed reading with error: {optional_exception}")
