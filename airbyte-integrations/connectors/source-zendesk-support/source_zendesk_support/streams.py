@@ -640,7 +640,8 @@ class TicketAudits(IncrementalZendeskSupportStream):
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == requests.codes.GATEWAY_TIMEOUT:
                 self.logger.error(f"Skipping stream `{self.name}`. Timed out waiting for response: {e.response.text}...")
-            raise e
+            else:
+                raise e
 
 
 class Tags(FullRefreshZendeskSupportStream):
