@@ -36,8 +36,7 @@ public class MssqlDebeziumStateUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlDebeziumStateUtil.class);
 
-  public JsonNode generateOffsetJsonNode(
-                                         final JdbcDatabase database) {
+  public JsonNode generateOffsetJsonNode(final JdbcDatabase database) {
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
         constructLsnSnapshotState(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
         Optional.empty());

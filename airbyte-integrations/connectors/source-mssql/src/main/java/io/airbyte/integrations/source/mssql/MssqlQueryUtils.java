@@ -31,6 +31,7 @@ public class MssqlQueryUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlQueryUtils.class);
 
   public record TableSizeInfo(Long tableSize, Long avgRowLength) {}
+
   public static final String INDEX_QUERY = "EXEC sp_helpindex N'%s'";
   public record Index(
       @JsonProperty("index_name") String name,
@@ -80,9 +81,9 @@ public class MssqlQueryUtils {
   }
 
   public static String getMaxOcValueForStream(final JdbcDatabase database,
-  final ConfiguredAirbyteStream stream,
-  final String ocFieldName,
-  final String quoteString) {
+                                              final ConfiguredAirbyteStream stream,
+                                              final String ocFieldName,
+                                              final String quoteString) {
     final String name = stream.getStream().getName();
     final String namespace = stream.getStream().getNamespace();
     final String fullTableName =
@@ -94,7 +95,7 @@ public class MssqlQueryUtils {
     LOGGER.info("Querying for max oc value: {}", maxOcQuery);
     try {
       final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(maxOcQuery).executeQuery(),
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
       Preconditions.checkState(jsonNodes.size() == 1);
       if (jsonNodes.get(0).get(MAX_OC_COL) == null) {
         LOGGER.info("Max PK is null for table {} - this could indicate an empty table", fullTableName);
@@ -107,8 +108,8 @@ public class MssqlQueryUtils {
   }
 
   public static Map<AirbyteStreamNameNamespacePair, TableSizeInfo> getTableSizeInfoForStreams(final JdbcDatabase database,
-      final List<ConfiguredAirbyteStream> streams,
-      final String quoteString) {
+                                                                                              final List<ConfiguredAirbyteStream> streams,
+                                                                                              final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap = new HashMap<>();
     streams.forEach(stream -> {
       try {

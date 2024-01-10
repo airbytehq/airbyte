@@ -54,13 +54,13 @@ public class MssqlInitialLoadHandler {
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
   public MssqlInitialLoadHandler(
-      final JsonNode config,
-      final JdbcDatabase database,
-      final MssqlSourceOperations sourceOperations,
-      final String quoteString,
-      final MssqlInitialLoadStateManager initialLoadStateManager,
-      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
-      final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
+                                 final JsonNode config,
+                                 final JdbcDatabase database,
+                                 final MssqlSourceOperations sourceOperations,
+                                 final String quoteString,
+                                 final MssqlInitialLoadStateManager initialLoadStateManager,
+                                 final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
+                                 final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
     this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;

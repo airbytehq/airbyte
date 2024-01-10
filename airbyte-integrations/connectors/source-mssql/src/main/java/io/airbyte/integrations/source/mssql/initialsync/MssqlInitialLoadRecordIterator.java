@@ -132,10 +132,8 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
           sql = "SELECT %s FROM %s WHERE %s >= ? ORDER BY %s".formatted(wrappedColumnNames, fullTableName,
               quotedCursorField, quotedCursorField);
         } else {
-          // The ordered column max value could be null - this can happen in the case of empty tables. In this
-          // case, we
-          // can just issue a query
-          // without any chunking.
+          // The ordered column max value could be null - this can happen in the case of empty tables. In this case,
+          // we can just issue a query without any chunking.
           if (ocInfo.ocMaxValue() != null) {
             sql = "SELECT %s FROM %s WHERE %s > ? AND %s <= ? ORDER BY %s LIMIT %s".formatted(wrappedColumnNames, fullTableName,
                 quotedCursorField, quotedCursorField, quotedCursorField, chunkSize);
