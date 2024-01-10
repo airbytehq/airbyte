@@ -22,7 +22,7 @@ class ThreadPoolManagerTest(TestCase):
         self._threadpool.submit.assert_called_with(self._fn, self._arg)
 
         assert len(self._thread_pool_manager._futures) == 1
-./airbyte_cdk/sources/concurrent_source/thread_pool_manager.py
+        
     def test_submit_task_previous_task_failed(self):
         future = Mock(spec=Future)
         future.exception.return_value = RuntimeError
