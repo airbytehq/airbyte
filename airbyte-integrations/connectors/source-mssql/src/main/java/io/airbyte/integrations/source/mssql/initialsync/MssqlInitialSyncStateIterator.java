@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mssql.initialsync;
 
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.MSSQL_STATE_VERSION;
@@ -21,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MssqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialSyncStateIterator.class);
   public static final Duration SYNC_CHECKPOINT_DURATION = DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION;
   public static final Integer SYNC_CHECKPOINT_RECORDS = DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
@@ -38,11 +43,11 @@ public class MssqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
   private final String ocFieldName;
 
   public MssqlInitialSyncStateIterator(final Iterator<AirbyteMessage> messageIterator,
-      final AirbyteStreamNameNamespacePair pair,
-      final MssqlInitialLoadStateManager stateManager,
-      final JsonNode streamStateForIncrementalRun,
-      final Duration checkpointDuration,
-      final Long checkpointRecords) {
+                                       final AirbyteStreamNameNamespacePair pair,
+                                       final MssqlInitialLoadStateManager stateManager,
+                                       final JsonNode streamStateForIncrementalRun,
+                                       final Duration checkpointDuration,
+                                       final Long checkpointRecords) {
     this.messageIterator = messageIterator;
     this.pair = pair;
     this.stateManager = stateManager;
@@ -95,4 +100,5 @@ public class MssqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
       return endOfData();
     }
   }
+
 }

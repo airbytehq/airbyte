@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mssql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -5,12 +9,12 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadS
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.OrderedColumnInfo;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 public interface MssqlInitialLoadStateManager {
+
   long MSSQL_STATE_VERSION = 2;
   String STATE_TYPE_KEY = "state_type";
   String ORDERED_COL_STATE_TYPE = "ordered_column";
@@ -61,4 +65,5 @@ public interface MssqlInitialLoadStateManager {
             e -> new AirbyteStreamNameNamespacePair(e.getKey().getName(), e.getKey().getNamespace()),
             Entry::getValue));
   }
+
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mssql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,15 +26,16 @@ import org.slf4j.LoggerFactory;
  * keys to the stream state when they're going through the iterator Once we have verified that
  * expanding StreamStateManager itself to include this functionality, this class will be removed
  */
-public class MssqlInitialLoadStreamStateManager implements MssqlInitialLoadStateManager{
+public class MssqlInitialLoadStreamStateManager implements MssqlInitialLoadStateManager {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadStateManager.class);
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOrderedColLoadStatus;
 
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
 
   public MssqlInitialLoadStreamStateManager(final ConfiguredAirbyteCatalog catalog,
-      final InitialLoadStreams initialLoadStreams,
-      final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo) {
+                                            final InitialLoadStreams initialLoadStreams,
+                                            final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo) {
     this.pairToOrderedColInfo = pairToOrderedColInfo;
     this.pairToOrderedColLoadStatus = MssqlInitialLoadStateManager.initPairToOrderedColumnLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
   }
