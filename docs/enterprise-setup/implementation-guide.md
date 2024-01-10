@@ -291,14 +291,12 @@ metadata:
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-x:xxxxxxxxx:certificate/xxxxxxxxx-xxxxx-xxxx-xxxx-xxxxxxxxxxx
     # Sets the idle timeout value for the ALB.
     alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=30
-    # [Optional] Custom SSL policy for security settings and protocols. If not provided, a default will be used.
-    alb.ingress.kubernetes.io/ssl-policy:
-    # [Optional] Specifies the VPC subnets and security groups for the ALB
-    alb.ingress.kubernetes.io/subnets: 'subnet-12345, subnet-67890'
-    alb.ingress.kubernetes.io/security-groups: 'sg-12345678'
+    # [If Applicable] Specifies the VPC subnets and security groups for the ALB
+    # alb.ingress.kubernetes.io/subnets: '' e.g. 'subnet-12345, subnet-67890'
+    # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
 spec:
   rules:
-  - host: enterprise-demo.airbyte.com
+  - host: <WEBAPP_URL> e.g. enterprise-demo.airbyte.com
     http:
       paths:
       - backend:
@@ -317,9 +315,13 @@ spec:
         pathType: Prefix
 ```
 
+The ALB controller will use a `ServiceAccount` that requires the [following IAM policy](https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json) to be attached.
+
 </TabItem>
 </Tabs>
 </details>
+
+Once this is complete, ensure that the value of the `webapp-url` field in your `airbyte.yml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
