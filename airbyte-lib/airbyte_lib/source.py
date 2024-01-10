@@ -24,6 +24,7 @@ from airbyte_protocol.models import (
 
 from airbyte_lib import _util  # Internal utility functions
 from airbyte_lib.caches import SQLCacheBase
+from airbyte_lib.datasets._lazy import LazyDataset
 from airbyte_lib.executor import Executor
 from airbyte_lib.factories._cache_factories import get_default_cache
 from airbyte_lib.sync_results import ReadResult
@@ -169,7 +170,7 @@ class Source:
         )
         return configured_catalog
 
-    def get_records(self, stream: str) -> Iterable[dict[str, Any]]:
+    def get_records(self, stream: str) -> LazyDataset:
         """
         Read a stream from the connector.
 
@@ -194,15 +195,17 @@ class Source:
             ],
         )
         if len(configured_catalog.streams) == 0:
-            raise Exception(
-                f"Stream {stream} is not available for connector {self.name}, choose from {self.get_available_streams()}",
+            raise ValueError(  # noqa: TRY003  # Long message in exception constructor
+                f"Stream {stream} is not available for connector {self.name}, "
+                f"choose from {self.get_available_streams()}",
             )
 
-        yield from _util.airbyte_messages_to_record_dicts(
+        iterator: Iterable[dict[str, Any]] = _util.airbyte_messages_to_record_dicts(
             self._read_with_catalog(configured_catalog),
         )
+        return LazyDataset(iterator)
 
-    def check(self):
+    def check(self) -> None:
         """
         Call check on the connector.
 

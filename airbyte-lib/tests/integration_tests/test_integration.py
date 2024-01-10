@@ -114,6 +114,28 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
             check_dtype=False,
         )
 
+
+def test_sync_with_merge_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    """Test that the merge strategy works as expected.
+
+    In this test, we sync the same data twice. If the data is not duplicated, we assume
+    the merge was successful.
+    """
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.new_local_cache(source_catalog=source.configured_catalog)
+
+    result: ReadResult = source.read(cache)
+    result: ReadResult = source.read(cache)
+
+    assert result.processed_records == 3
+    for stream_name, expected_data in expected_test_stream_data.items():
+        pd.testing.assert_frame_equal(
+            result[stream_name].to_pandas(),
+            pd.DataFrame(expected_data),
+            check_dtype=False,
+        )
+
+
 @pytest.mark.parametrize(
     "method_call",
     [

@@ -4,7 +4,7 @@
 
 import abc
 import enum
-from collections.abc import Generator, Iterable
+from collections.abc import Generator
 from contextlib import contextmanager
 from functools import cached_property, lru_cache
 from pathlib import Path
@@ -29,6 +29,7 @@ from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteS
 
 from airbyte_lib.config import CacheConfigBase
 from airbyte_lib.datasets._base import DatasetBase
+from airbyte_lib.datasets._lazy import LazyDataset
 from airbyte_lib.file_writers import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib.processors import BatchHandle, RecordProcessor
 from airbyte_lib.types import SQLTypeConverter
@@ -54,10 +55,16 @@ class SQLRuntimeError(Exception):
 class SQLCacheConfigBase(CacheConfigBase):
     """Same as a regular config except it exposes the 'get_sql_alchemy_url()' method."""
 
-    dedupe_mode = RecordDedupeMode.APPEND  # TODO: Set to REPLACE by default.
+    dedupe_mode = RecordDedupeMode.REPLACE
     schema_name: str = "airbyte_raw"
-    table_prefix: str = ""
+
+    table_prefix: str | None = None
+    """ A prefix to add to all table names.
+    If 'None', a prefix will be created based on the source name.
+    """
+
     table_suffix: str = ""
+    """A suffix to add to all table names."""
 
     @abc.abstractmethod
     def get_sql_alchemy_url(self) -> str:
@@ -183,8 +190,12 @@ class SQLCacheBase(RecordProcessor):
         stream_name: str,
     ) -> str:
         """Return the name of the SQL table for the given stream."""
+        table_prefix = self.config.table_prefix or ""
+
+        # TODO: Add default prefix based on the source name.
+
         return self._normalize_table_name(
-            f"{self.config.table_prefix}{stream_name}{self.config.table_suffix}",
+            f"{table_prefix}{stream_name}{self.config.table_suffix}",
         )
 
     @final
@@ -214,12 +225,13 @@ class SQLCacheBase(RecordProcessor):
     def get_records(
         self,
         stream_name: str,
-    ) -> Iterable[dict[str, Any]]:
+    ) -> LazyDataset:
         """Uses SQLAlchemy to select all rows from the table."""
         table_ref = self.get_sql_table(stream_name)
         stmt = table_ref.select()
         with self.get_sql_connection() as conn:
-            yield from conn.execute(stmt)
+            curs: CursorResult[Any] = conn.execute(stmt)
+            return LazyDataset(curs)
 
     def get_pandas_dataframe(
         self,
@@ -335,6 +347,34 @@ class SQLCacheBase(RecordProcessor):
             self._create_table(table_name, column_definition_str)
 
         return table_name
+
+    def _ensure_compatible_table_schema(
+        self,
+        stream_name: str,
+        table_name: str,
+        raise_on_error: bool = False,
+    ) -> bool:
+        """Return true if the given table is compatible with the stream's schema.
+
+        If raise_on_error is true, raise an exception if the table is not compatible.
+
+        TODO: Expand this to check for column types and sizes, and to add missing columns.
+
+        Returns true if the table is compatible, false if it is not.
+        """
+        json_schema = self._get_stream_json_schema(stream_name)
+        stream_column_names: list[str] = json_schema["properties"].keys()
+        table_column_names: list[str] = self.get_sql_table(table_name).columns.keys()
+
+        missing_columns: set[str] = set(stream_column_names) - set(table_column_names)
+        if missing_columns:
+            if raise_on_error:
+                raise RuntimeError(  # noqa: TRY003  # Too-long exception message
+                    f"Table {table_name} is missing columns: {missing_columns}",
+                )
+            return False  # Some columns are missing.
+
+        return True  # All columns exist.
 
     @final
     def _create_table(
@@ -461,6 +501,11 @@ class SQLCacheBase(RecordProcessor):
                 stream_name,
                 create_if_missing=True,
             )
+            self._ensure_compatible_table_schema(
+                stream_name=stream_name,
+                table_name=final_table_name,
+                raise_on_error=True,
+            )
 
             temp_table_name = self._write_files_to_new_table(
                 files,
@@ -472,7 +517,7 @@ class SQLCacheBase(RecordProcessor):
                 temp_table_name,
                 final_table_name,
             )
-            self._drop_temp_table(temp_table_name)
+            self._drop_temp_table(temp_table_name, if_exists=True)
 
             # Return the batch handles as measure of work completed.
             return batches_to_finalize
@@ -501,9 +546,11 @@ class SQLCacheBase(RecordProcessor):
     def _drop_temp_table(
         self,
         table_name: str,
+        if_exists: bool = True,
     ) -> None:
         """Drop the given table."""
-        self._execute_sql(f"DROP TABLE {self._fully_qualified(table_name)}")
+        exists_str = "IF EXISTS" if if_exists else ""
+        self._execute_sql(f"DROP TABLE {exists_str} {self._fully_qualified(table_name)}")
 
     def _write_files_to_new_table(
         self,
@@ -547,11 +594,18 @@ class SQLCacheBase(RecordProcessor):
                     "Deduping was requested but merge-insert is not yet supported.",
                 )
 
-            self._merge_temp_table_to_final_table(
-                stream_name,
-                temp_table_name,
-                final_table_name,
-            )
+            if not self._get_primary_keys(stream_name):
+                self._swap_temp_table_with_final_table(
+                    stream_name,
+                    temp_table_name,
+                    final_table_name,
+                )
+            else:
+                self._merge_temp_table_to_final_table(
+                    stream_name,
+                    temp_table_name,
+                    final_table_name,
+                )
 
         else:
             self._append_temp_table_to_final_table(
@@ -595,6 +649,27 @@ class SQLCacheBase(RecordProcessor):
                 raise NotImplementedError(msg)
 
         return joined_pks
+
+    def _swap_temp_table_with_final_table(
+        self,
+        stream_name: str,
+        temp_table_name: str,
+        final_table_name: str,
+    ) -> None:
+        """Merge the temp table into the main one.
+
+        This implementation requires MERGE support in the SQL DB.
+        Databases that do not support this syntax can override this method.
+        """
+        _ = stream_name
+        deletion_name = f"{final_table_name}_deleteme"
+        commands = [
+            f"ALTER TABLE {final_table_name} RENAME TO {deletion_name}",
+            f"ALTER TABLE {temp_table_name} RENAME TO {final_table_name}",
+            f"DROP TABLE {deletion_name}",
+        ]
+        for cmd in commands:
+            self._execute_sql(cmd)
 
     def _merge_temp_table_to_final_table(
         self,
