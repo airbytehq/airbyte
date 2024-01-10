@@ -23,7 +23,7 @@ from airbyte_protocol.models import (
 )
 
 from airbyte_lib._executor import Executor
-from airbyte_lib._util import airbyte  # Internal utility functions
+from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.factories._cache_factories import get_default_cache
 from airbyte_lib.results import ReadResult
@@ -199,7 +199,7 @@ class Source:
                 f"choose from {self.get_available_streams()}",
             )
 
-        iterator: Iterable[dict[str, Any]] = airbyte.airbyte_messages_to_record_dicts(
+        iterator: Iterable[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
             self._read_with_catalog(configured_catalog),
         )
         yield from iterator  # TODO: Refactor to use LazyDataset here
