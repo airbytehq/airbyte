@@ -20,4 +20,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        "console_scripts": [
+            "source-stripe=source_stripe.run:run",
+        ],
+    },
 )
