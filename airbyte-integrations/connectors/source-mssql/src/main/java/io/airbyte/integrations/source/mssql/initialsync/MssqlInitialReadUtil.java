@@ -186,8 +186,8 @@ public class MssqlInitialReadUtil {
   }
 
   public static InitialLoadStreams cdcStreamsForInitialOrderedCoumnLoad(final CdcStateManager stateManager,
-      final ConfiguredAirbyteCatalog fullCatalog,
-      final boolean savedOffsetStillPresentOnServer) {
+                                                                        final ConfiguredAirbyteCatalog fullCatalog,
+                                                                        final boolean savedOffsetStillPresentOnServer) {
     if (!savedOffsetStillPresentOnServer) {
       return new InitialLoadStreams(
           fullCatalog.getStreams()
@@ -234,10 +234,10 @@ public class MssqlInitialReadUtil {
   }
 
   public static Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, OrderedColumnInfo> initPairToOrderedColumnInfoMap(
-      final JdbcDatabase database,
-      final InitialLoadStreams initialLoadStreams,
-      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-      final String quoteString) {
+                                                                                                                                 final JdbcDatabase database,
+                                                                                                                                 final InitialLoadStreams initialLoadStreams,
+                                                                                                                                 final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                                                                                 final String quoteString) {
     final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOcInfoMap = new HashMap<>();
     // For every stream that is in initial ordered column sync, we want to maintain information about
     // the current ordered column info associated with the stream
@@ -334,5 +334,4 @@ public class MssqlInitialReadUtil {
         .isEmpty()).collect(Collectors.toList()),
         pairToInitialLoadStatus);
   }
-
 }
