@@ -78,8 +78,15 @@ class MondayGraphqlRequester(HttpRequester):
         arguments = self._get_object_arguments(**object_arguments)
         arguments = f"({arguments})" if arguments else ""
         fields = ",".join(fields)
-
-        return f"{object_name}{arguments}{{{fields}}}"
+        # q_2023-07 = boards(limit: 1)         {      items( limit: 20)                 {              field1, field2, ...  }}
+        #             boards(limit: 1, page:2) {      items( limit: 20, page:1)         {              field1, field2, ...  }}
+        # q_2024_01 = boards(limit: 1)         { items_page( limit: 20)                 {cursor, items{field1, field2, ...} }}
+        #                                   next_items_page( limit: 20, cursor: "blaa") {cursor, items{field1, field2, ...} }
+        if object_name == 'items_page':
+            query = f"{object_name}{arguments}{{cursor,items{{{fields}}}}}"
+        else:
+            query = f"{object_name}{arguments}{{{fields}}}"
+        return query
 
     def _build_items_query(self, object_name: str, field_schema: dict, sub_page: Optional[int], **object_arguments) -> str:
         """
@@ -88,7 +95,8 @@ class MondayGraphqlRequester(HttpRequester):
         """
         nested_limit = self.nested_limit.eval(self.config)
 
-        query = self._build_query("items", field_schema, limit=nested_limit, page=sub_page)
+        # query = self._build_query("items", field_schema, limit=nested_limit, page=sub_page)
+        query = self._build_query("items_page", field_schema, limit=nested_limit, page=sub_page)
         arguments = self._get_object_arguments(**object_arguments)
         return f"boards({arguments}){{{query}}}"
 

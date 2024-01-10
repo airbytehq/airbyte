@@ -172,7 +172,7 @@ definitions:
       page_size: 20
       nested_items_per_page: 20
       parent_key: "pulse_id"
-      field_path: ["data", "items", "*"]
+      field_path: ["data", "boards", "*", 'items_page', "items", "*"]
       additional_field_path: ["data", "boards", "*", "items", "*"]
     retriever:
       $ref: "#/definitions/base_stream/retriever"
