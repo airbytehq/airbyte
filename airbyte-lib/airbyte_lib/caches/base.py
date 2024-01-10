@@ -28,6 +28,7 @@ from sqlalchemy.pool import StaticPool
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 
 from airbyte_lib.config import CacheConfigBase
+from airbyte_lib.datasets._base import DatasetBase
 from airbyte_lib.file_writers import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib.processors import BatchHandle, RecordProcessor
 from airbyte_lib.types import SQLTypeConverter
@@ -203,14 +204,10 @@ class SQLCacheBase(RecordProcessor):
     @property
     def streams(
         self,
-    ) -> dict[str, CachedDataset]:
+    ) -> dict[str, DatasetBase]:
         """Return a temporary table name."""
-        table_name = self.get_sql_table_name(stream_name)
-        return sqlalchemy.Table(
-            table_name,
-            sqlalchemy.MetaData(schema=self.config.schema_name),
-            autoload_with=self.get_sql_engine(),
-        )
+        # TODO: Add support for streams map, based on the cached catalog.
+        raise NotImplementedError("Streams map is not yet supported.")
 
     # Read methods:
 
