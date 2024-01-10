@@ -38,9 +38,9 @@ definitions:
         cursor_value: "{{ response.get('pages', {}).get('next') }}"
         stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
         page_size: 150
-#      page_size_option:
-#        inject_into: request_parameter
-#        field_name: per_page
+      page_size_option:
+        inject_into: request_parameter
+        field_name: per_page
       page_token_option:
         type: RequestPath
   requester_incremental_search:
@@ -299,11 +299,12 @@ definitions:
 
   # activity logs stream is incremental based on created_at field
   activity_logs:
+    $ref: "#/definitions/stream_full_refresh"
     primary_key: id
     $parameters:
       name: "activity_logs"
-      data_field: "activity_logs"
       path: "admins/activity_logs"
+      data_field: "activity_logs"
     retriever:
       $ref: "#/definitions/retriever"
       description: "The Retriever without passing page size option"
