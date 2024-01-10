@@ -4,7 +4,7 @@
 
 import abc
 import enum
-from collections.abc import Generator, Iterable
+from collections.abc import Generator, Iterator
 from contextlib import contextmanager
 from functools import cached_property, lru_cache
 from pathlib import Path
@@ -19,16 +19,20 @@ from sqlalchemy import CursorResult, Executable, TextClause, create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.pool import StaticPool
 
-from airbyte_lib._file_writers import FileWriterBase, FileWriterBatchHandle
+from airbyte_protocol.models import ConfiguredAirbyteStream
+
+from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
-from airbyte_lib.datasets._base import DatasetBase
 from airbyte_lib.types import SQLTypeConverter
 
 
 if TYPE_CHECKING:
+
     from sqlalchemy.engine import Connection
     from sqlalchemy.engine.reflection import Inspector
+
+    from airbyte_lib.datasets._base import DatasetBase
 
 
 DEBUG_MODE = False  # Set to True to enable additional debug logging.
@@ -203,7 +207,7 @@ class SQLCacheBase(RecordProcessor):
     @property
     def streams(
         self,
-    ) -> dict[str, DatasetBase]:
+    ) -> dict[str, "DatasetBase"]:
         """Return a temporary table name."""
         # TODO: Add support for streams map, based on the cached catalog.
         raise NotImplementedError("Streams map is not yet supported.")
@@ -213,12 +217,13 @@ class SQLCacheBase(RecordProcessor):
     def get_records(
         self,
         stream_name: str,
-    ) -> Iterable[dict[str, Any]]:
+    ) -> Iterator[dict[str, Any]]:
         """Uses SQLAlchemy to select all rows from the table."""
         table_ref = self.get_sql_table(stream_name)
         stmt = table_ref.select()
         with self.get_sql_connection() as conn:
-            yield from conn.execute(stmt)  # TODO: Refactor to return a LazyDataset here.
+            for row in conn.execute(stmt):
+                yield row.__dict__  # TODO: Refactor to return a LazyDataset here.
 
     def get_pandas_dataframe(
         self,

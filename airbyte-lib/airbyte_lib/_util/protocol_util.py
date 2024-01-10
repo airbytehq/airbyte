@@ -2,7 +2,7 @@
 
 """Internal utility functions, especially for dealing with Airbyte Protocol."""
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from typing import Any, cast
 
 from airbyte_protocol.models import (
@@ -15,7 +15,7 @@ from airbyte_protocol.models import (
 
 def airbyte_messages_to_record_dicts(
     messages: Iterable[AirbyteMessage],
-) -> Iterable[dict[str, Any]]:
+) -> Iterator[dict[str, Any]]:
     """Convert an AirbyteMessage to a dictionary."""
     yield from (
         cast(dict[str, Any], airbyte_message_to_record_dict(message))

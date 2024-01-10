@@ -26,7 +26,7 @@ class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     def get_sql_alchemy_url(self) -> str:
         """Return the SQLAlchemy URL to use."""
         # return f"duckdb:///{self.db_path}?schema={self.schema_name}"
-        return f"duckdb:///{self.db_path}"
+        return f"duckdb:///{self.db_path!s}"
 
     def get_database_name(self) -> str:
         """Return the name of the database."""
@@ -34,7 +34,7 @@ class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
             return "memory"
 
         # Return the file name without the extension
-        return self.db_path.split("/")[-1].split(".")[0]
+        return str(self.db_path).split("/")[-1].split(".")[0]
 
 
 class DuckDBCacheBase(SQLCacheBase):

@@ -4,7 +4,8 @@
 
 Processors can all take input from STDIN or a stream of Airbyte messages.
 
-Caches will pass their input to the File Writer. They share a common base class so certain abstractions like "write" and "finalize" can be handled in either layer, or both.
+Caches will pass their input to the File Writer. They share a common base class so certain
+abstractions like "write" and "finalize" can be handled in either layer, or both.
 """
 
 from __future__ import annotations
@@ -33,7 +34,7 @@ from airbyte_lib._util import protocol_util  # Internal utility functions
 
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Iterable
+    from collections.abc import Generator, Iterable, Iterator
 
     from airbyte_lib.config import CacheConfigBase
 
@@ -115,7 +116,7 @@ class RecordProcessor(abc.ABC):
     def _airbyte_messages_from_buffer(
         self,
         buffer: io.TextIOBase,
-    ) -> Iterable[AirbyteMessage]:
+    ) -> Iterator[AirbyteMessage]:
         """Yield messages from a buffer."""
         yield from (AirbyteMessage.parse_raw(line) for line in buffer)
 

@@ -1,6 +1,6 @@
-from ._base import DatasetBase
-from ._cached import CachedDataset
-from ._map import DatasetMap
+from airbyte_lib.datasets._base import DatasetBase
+from airbyte_lib.datasets._cached import CachedDataset
+from airbyte_lib.datasets._map import DatasetMap
 
 
 __all__ = [

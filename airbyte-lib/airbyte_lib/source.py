@@ -2,7 +2,7 @@
 
 import json
 import tempfile
-from collections.abc import Generator, Iterable
+from collections.abc import Generator, Iterable, Iterator
 from contextlib import contextmanager
 from functools import lru_cache
 from typing import Any, Optional
@@ -155,7 +155,7 @@ class Source:
         Get the configured catalog for the given streams.
         """
         catalog = self._discover()
-        configured_catalog = ConfiguredAirbyteCatalog(
+        return ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
                     stream=s,
@@ -167,9 +167,8 @@ class Source:
                 if self.streams is None or s.name in self.streams
             ],
         )
-        return configured_catalog
 
-    def get_records(self, stream: str) -> Iterable[dict[str, Any]]:
+    def get_records(self, stream: str) -> Iterator[dict[str, Any]]:
         """
         Read a stream from the connector.
 
@@ -230,7 +229,7 @@ class Source:
     def install(self) -> None:
         self.executor.install()
 
-    def _read(self) -> Iterable[AirbyteMessage]:
+    def _read(self) -> Iterator[AirbyteMessage]:
         """
         Call read on the connector.
 
@@ -258,7 +257,7 @@ class Source:
     def _read_with_catalog(
         self,
         catalog: ConfiguredAirbyteCatalog,
-    ) -> Iterable[AirbyteMessage]:
+    ) -> Iterator[AirbyteMessage]:
         """
         Call read on the connector.
 
@@ -280,7 +279,7 @@ class Source:
         self._last_log_messages.append(message)
         self._last_log_messages = self._last_log_messages[-10:]
 
-    def _execute(self, args: list[str]) -> Iterable[AirbyteMessage]:
+    def _execute(self, args: list[str]) -> Iterator[AirbyteMessage]:
         """
         Execute the connector with the given arguments.
 

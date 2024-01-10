@@ -67,7 +67,8 @@ ignore = [
     "TD003", # Require links for TODOs
     "B019", # lru_cache on class methods keep instance from getting garbage collected
     "COM812", # Conflicts with ruff auto-format
-    "ISC001" # Conflicts with ruff auto-format
+    "ISC001", # Conflicts with ruff auto-format
+    "TRY003"  # Raising exceptions with too-long string descriptions  # TODO: re-evaluate once we have our own exception classes
 ]
 fixable = ["ALL"]
 unfixable = []

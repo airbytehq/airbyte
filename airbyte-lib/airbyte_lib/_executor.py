@@ -4,12 +4,13 @@ import os
 import subprocess
 import sys
 from abc import ABC, abstractmethod
-from collections.abc import Generator, Iterable
+from collections.abc import Generator, Iterable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, NoReturn
 
 from airbyte_lib.registry import ConnectorMetadata
+
 
 _LATEST_VERSION = "latest"
 
@@ -28,7 +29,7 @@ class Executor(ABC):
             self.target_version = target_version
 
     @abstractmethod
-    def execute(self, args: list[str]) -> Iterable[str]:
+    def execute(self, args: list[str]) -> Iterator[str]:
         pass
 
     @abstractmethod
@@ -173,7 +174,7 @@ class VenvExecutor(Executor):
                         f"Failed to install connector {self.metadata.name} version {self.target_version}. Installed version is {version_after_install}",
                     )
 
-    def execute(self, args: list[str]) -> Iterable[str]:
+    def execute(self, args: list[str]) -> Iterator[str]:
         connector_path = self._get_connector_path()
 
         with _stream_from_subprocess([str(connector_path)] + args) as stream:
@@ -192,6 +193,6 @@ class PathExecutor(Executor):
     def install(self) -> NoReturn:
         raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")
 
-    def execute(self, args: list[str]) -> Iterable[str]:
+    def execute(self, args: list[str]) -> Iterator[str]:
         with _stream_from_subprocess([self.metadata.name] + args) as stream:
             yield from stream
