@@ -3,7 +3,6 @@
 #
 
 from queue import Queue
-import time
 
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
@@ -17,8 +16,6 @@ class PartitionReader:
     def __init__(self, queue: Queue[QueueItem]) -> None:
         """
         :param queue: The queue to put the records in.
-        :param max_size: The maximum size of the queue. If the queue is full, the thread will wait for the specified amount of time before trying again.
-        :param wait_time: The amount of time to wait before trying to put a record in the queue again.
         """
         self._queue = queue
 
