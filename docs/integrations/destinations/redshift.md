@@ -211,24 +211,30 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 - `_airbyte_data`: a json blob representing with the event data. The column type in Redshift is
   `SUPER`.
 
-## Data type mapping
+## Data type map
 
-| Redshift Type         | Airbyte Type              | Notes |
-| :-------------------- | :------------------------ | :---- |
-| `boolean`             | `boolean`                 |       |
-| `int`                 | `integer`                 |       |
-| `float`               | `number`                  |       |
-| `varchar`             | `string`                  |       |
-| `date/varchar`        | `date`                    |       |
-| `time/varchar`        | `time`                    |       |
-| `timestamptz/varchar` | `timestamp_with_timezone` |       |
-| `varchar`             | `array`                   |       |
-| `varchar`             | `object`                  |       |
+| Airbyte type                        | Redshift type                          |
+|:------------------------------------|:---------------------------------------|
+| STRING                              | VARCHAR                                |
+| STRING (BASE64)                     | VARCHAR                                |
+| STRING (BIG_NUMBER)                 | VARCHAR                                |
+| STRING (BIG_INTEGER)                | VARCHAR                                |
+| NUMBER                              | DECIMAL / NUMERIC                      |
+| INTEGER                             | BIGINT / INT8                          |
+| BOOLEAN                             | BOOLEAN / BOOL                         |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMPTZ / TIMESTAMP WITH TIME ZONE |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP                              |
+| STRING (TIME_WITH_TIMEZONE)         | TIMETZ / TIME WITH TIME ZONE           |
+| STRING (TIME_WITHOUT_TIMEZONE)      | TIME                                   |
+| DATE                                | DATE                                   |
+| OBJECT                              | SUPER                                  |
+| ARRAY                               | SUPER                                  |
 
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.0   | 2024-01-xx | [\#xxxxx](https://github.com/airbytehq/airbyte/pull/xxxxx) | Destinations V2                                                                                                                                                                                                  |
 | 0.8.0   | 2024-01-18 | [34236](https://github.com/airbytehq/airbyte/pull/34236)   | Upgrade CDK to 0.13.0                                                                                                                                                                                            |
 | 0.7.15  | 2024-01-11 | [\#34186](https://github.com/airbytehq/airbyte/pull/34186) | Update check method with svv_table_info permission check, fix bug where s3 staging files were not being deleted.                                                                                                 |
 | 0.7.14  | 2024-01-08 | [\#34014](https://github.com/airbytehq/airbyte/pull/34014) | Update order of options in spec                                                                                                                                                                                  |

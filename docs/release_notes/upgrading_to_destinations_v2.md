@@ -158,7 +158,7 @@ For each destination connector, Destinations V2 is effective as of the following
 | --------------------- | --------------------- | -------------------------- | ------------------------ |
 | BigQuery              | 1.10.2                | 2.0.6+                     | November 7, 2023         |
 | Snowflake             | 2.1.7                 | 3.1.0+                     | November 7, 2023         |
-| Redshift              | 0.6.11                | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| Redshift              | 0.7.xx                | 2.0.0+                     | March 8, 2024            |
 | Postgres              | 0.4.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
 | MySQL                 | 0.2.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
 
