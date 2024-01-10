@@ -35,7 +35,7 @@ class ThreadPoolManager:
         self._futures: List[Future[Any]] = []
 
     def submit(self, function: Callable[..., Any], *args: Any) -> None:
-        # Submit a task to the threadpool, waiting if there are too many pending tasks
+        # Submit a task to the threadpool, removing completed tasks if there are too many tasks in self._futures.
         self._prune_futures(self._futures)
         self._futures.append(self._threadpool.submit(function, *args))
 
