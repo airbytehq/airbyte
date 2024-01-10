@@ -1,0 +1,20 @@
+{
+    "properties": {
+      "individual": {
+        "properties": {
+          "requirements": {
+            "properties": {
+              "alternatives": {
+                "properties": {
+                },
+                "type": [
+                  "null",
+                  "array"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+}
