@@ -120,6 +120,8 @@ def test_sync_with_merge_to_duckdb(expected_test_stream_data: dict[str, list[dic
 
     In this test, we sync the same data twice. If the data is not duplicated, we assume
     the merge was successful.
+
+    # TODO: Add a check with a primary key to ensure that the merge strategy works as expected.
     """
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache(source_catalog=source.configured_catalog)
@@ -152,6 +154,13 @@ def test_check_fail_on_missing_config(method_call):
         method_call(source)
 
 def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    """Test that the merge strategy works as expected.
+
+    In this test, we sync the same data twice. If the data is not duplicated, we assume
+    the merge was successful.
+
+    # TODO: Add a check with a primary key to ensure that the merge strategy works as expected.
+    """
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = PostgresCache(
         config=new_pg_cache_config,
@@ -174,24 +183,6 @@ def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_tes
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = PostgresCache(
         config=new_pg_cache_config,
-        source_catalog=source.configured_catalog,
-    )
-
-    result: ReadResult = source.read(cache)
-
-    assert result.processed_records == 3
-    for stream_name, expected_data in expected_test_stream_data.items():
-        pd.testing.assert_frame_equal(
-            result[stream_name].to_pandas(),
-            pd.DataFrame(expected_data),
-            check_dtype=False,
-        )
-
-
-@pytest.mark.skip(reason="InMemoryCache is not yet working.")
-def test_sync_to_inmemory(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
-    cache = InMemoryCache(
         source_catalog=source.configured_catalog,
     )
 
