@@ -191,6 +191,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   public static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
     final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
+    // Follows this order of resolution:
+    // https://cloud.google.com/java/docs/reference/google-auth-library/latest/com.google.auth.oauth2.GoogleCredentials#com_google_auth_oauth2_GoogleCredentials_getApplicationDefault
     if (serviceAccountKey == null) {
       LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
       LOGGER.info("Using the default service account credential from environment.");
