@@ -124,6 +124,7 @@ def test_sync_with_merge_to_duckdb(expected_test_stream_data: dict[str, list[dic
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache(source_catalog=source.configured_catalog)
 
+    # Read twice to test merge strategy
     result: ReadResult = source.read(cache)
     result: ReadResult = source.read(cache)
 
@@ -157,6 +158,7 @@ def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, e
         source_catalog=source.configured_catalog,
     )
 
+    # Read twice to test merge strategy
     result: ReadResult = source.read(cache)
     result: ReadResult = source.read(cache)
 
