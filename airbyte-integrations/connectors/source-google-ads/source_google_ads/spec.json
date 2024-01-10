@@ -84,7 +84,7 @@
         "order": 6,
         "format": "date"
       },
-      "custom_queries": {
+      "custom_queries_array": {
         "type": "array",
         "title": "Custom GAQL Queries",
         "description": "",

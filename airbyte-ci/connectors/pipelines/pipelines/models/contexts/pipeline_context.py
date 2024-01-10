@@ -149,8 +149,7 @@ class PipelineContext:
         return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
 
     @property
-    def report(self) -> Report | ConnectorReport:
-        assert self._report is not None, "The report was not set on this PipelineContext."
+    def report(self) -> Report | ConnectorReport | None:
         return self._report
 
     @report.setter

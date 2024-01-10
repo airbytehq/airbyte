@@ -33,4 +33,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        "console_scripts": [
+            "source-s3=source_s3.run:run",
+        ],
+    },
 )
