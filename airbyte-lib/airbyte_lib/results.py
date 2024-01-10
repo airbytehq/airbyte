@@ -16,3 +16,7 @@ class ReadResult:
 
     def get_sql_engine(self) -> Engine:
         return self._cache.get_sql_engine()
+
+    @property
+    def cache(self) -> SQLCacheBase:
+        return self._cache

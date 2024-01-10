@@ -10,7 +10,7 @@ from typing import cast
 from overrides import overrides
 
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
-from airbyte_lib.file_writers import ParquetWriter, ParquetWriterConfig
+from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 
 
 class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -127,3 +127,15 @@ class DuckDBCache(DuckDBCacheBase):
             return False
 
         return True
+
+    def _write_files_to_new_table(
+        self,
+        files: list[Path],
+        stream_name: str,
+        batch_id: str,
+    ) -> str:
+        """Write a file(s) to a new table.
+
+        TODO: Optimize this for DuckDB instead of calling the base implementation.
+        """
+        return super()._write_files_to_new_table(files, stream_name, batch_id)

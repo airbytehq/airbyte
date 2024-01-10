@@ -13,7 +13,7 @@ import pyarrow as pa
 from overrides import overrides
 
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
-from airbyte_lib.file_writers import ParquetWriter, ParquetWriterConfig
+from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 
 
 class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):

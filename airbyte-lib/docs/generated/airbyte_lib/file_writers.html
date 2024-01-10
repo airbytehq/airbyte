@@ -7,48 +7,48 @@
     <span class="def">class</span>
     <span class="name">FileWriterBatchHandle</span><wbr>(<span class="base">airbyte_lib.processors.BatchHandle</span>):
 
-        
+
     </div>
     <a class="headerlink" href="#FileWriterBatchHandle"></a>
-    
+
             <div class="docstring"><p>The file writer batch handle is a list of Path objects.</p>
 </div>
 
 
                             <div id="FileWriterBatchHandle.__init__" class="classattr">
                                 <div class="attr function">
-            
+
         <span class="name">FileWriterBatchHandle</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">files</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">factory</span><span class="o">&gt;</span></span>)</span>
 
-        
+
     </div>
     <a class="headerlink" href="#FileWriterBatchHandle.__init__"></a>
-    
-    
+
+
 
                             </div>
                             <div id="FileWriterBatchHandle.files" class="classattr">
                                 <div class="attr variable">
             <span class="name">files</span><span class="annotation">: list[pathlib.Path]</span>
 
-        
+
     </div>
     <a class="headerlink" href="#FileWriterBatchHandle.files"></a>
-    
-    
+
+
 
                             </div>
                 </section>
                 <section id="FileWriterBase">
                     <div class="attr class">
-            
+
     <span class="def">class</span>
     <span class="name">FileWriterBase</span><wbr>(<span class="base">airbyte_lib.processors.RecordProcessor</span>, <span class="base">abc.ABC</span>):
 
-        
+
     </div>
     <a class="headerlink" href="#FileWriterBase"></a>
-    
+
             <div class="docstring"><p>A generic base implementation for a file-based cache.</p>
 </div>
 
@@ -60,10 +60,10 @@
         <span class="def">def</span>
         <span class="name">write_batch</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">batch_id</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">record_batch</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">Table</span> <span class="o">|</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RecordBatch</span></span><span class="return-annotation">) -> <span class="n"><a href="#FileWriterBatchHandle">FileWriterBatchHandle</a></span>:</span></span>
 
-        
+
     </div>
     <a class="headerlink" href="#FileWriterBase.write_batch"></a>
-    
+
             <div class="docstring"><p>Write a batch of records to the cache.</p>
 
 <p>This method is final because it should not be overridden.</p>
@@ -91,14 +91,14 @@
                 </section>
                 <section id="FileWriterConfigBase">
                     <div class="attr class">
-            
+
     <span class="def">class</span>
     <span class="name">FileWriterConfigBase</span><wbr>(<span class="base">airbyte_lib.config.CacheConfigBase</span>):
 
-        
+
     </div>
     <a class="headerlink" href="#FileWriterConfigBase"></a>
-    
+
             <div class="docstring"><p>Configuration for the Snowflake cache.</p>
 </div>
 
@@ -107,11 +107,11 @@
                                 <div class="attr variable">
             <span class="name">cache_path</span><span class="annotation">: str</span>
 
-        
+
     </div>
     <a class="headerlink" href="#FileWriterConfigBase.cache_path"></a>
-    
-    
+
+
 
                             </div>
                             <div class="inherited">
@@ -139,14 +139,14 @@
                 </section>
                 <section id="ParquetWriter">
                     <div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">ParquetWriter</span><wbr>(<span class="base"><a href="#FileWriterBase">airbyte_lib.file_writers.FileWriterBase</a></span>):
 
-        
+    <span class="def">class</span>
+    <span class="name">ParquetWriter</span><wbr>(<span class="base"><a href="#FileWriterBase">airbyte_lib._file_writers.FileWriterBase</a></span>):
+
+
     </div>
     <a class="headerlink" href="#ParquetWriter"></a>
-    
+
             <div class="docstring"><p>A Parquet cache implementation.</p>
 </div>
 
@@ -156,23 +156,23 @@
             <span class="name">config_class</span>        =
 <span class="default_value">&lt;class &#39;<a href="#ParquetWriterConfig">ParquetWriterConfig</a>&#39;&gt;</span>
 
-        
+
     </div>
     <a class="headerlink" href="#ParquetWriter.config_class"></a>
-    
-    
+
+
 
                             </div>
                             <div id="ParquetWriter.get_new_cache_file_path" class="classattr">
                                 <div class="attr function">
-            
+
         <span class="def">def</span>
         <span class="name">get_new_cache_file_path</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span>, </span><span class="param"><span class="n">batch_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span>:</span></span>
 
-        
+
     </div>
     <a class="headerlink" href="#ParquetWriter.get_new_cache_file_path"></a>
-    
+
             <div class="docstring"><p>Return a new cache file path for the given stream.</p>
 </div>
 
@@ -200,14 +200,14 @@
                 </section>
                 <section id="ParquetWriterConfig">
                     <div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">ParquetWriterConfig</span><wbr>(<span class="base"><a href="#FileWriterConfigBase">airbyte_lib.file_writers.FileWriterConfigBase</a></span>):
 
-        
+    <span class="def">class</span>
+    <span class="name">ParquetWriterConfig</span><wbr>(<span class="base"><a href="#FileWriterConfigBase">airbyte_lib._file_writers.FileWriterConfigBase</a></span>):
+
+
     </div>
     <a class="headerlink" href="#ParquetWriterConfig"></a>
-    
+
             <div class="docstring"><p>Configuration for the Snowflake cache.</p>
 </div>
 

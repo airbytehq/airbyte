@@ -3,7 +3,7 @@
 
 from typing import Any
 
-from airbyte_lib.executor import Executor, PathExecutor, VenvExecutor
+from airbyte_lib._executor import Executor, PathExecutor, VenvExecutor
 from airbyte_lib.registry import get_connector_metadata
 from airbyte_lib.source import Source
 

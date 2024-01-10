@@ -13,7 +13,7 @@ import pyarrow as pa
 from overrides import overrides
 
 from airbyte_lib.caches.duckdb import DuckDBCacheBase, DuckDBCacheConfig
-from airbyte_lib.file_writers import (
+from airbyte_lib._file_writers import (
     FileWriterBase,
     FileWriterBatchHandle,
     FileWriterConfigBase,

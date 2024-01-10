@@ -58,7 +58,6 @@ class RecordProcessor(abc.ABC):
     def __init__(
         self,
         config: CacheConfigBase | dict | None,
-        source_catalog: ConfiguredAirbyteCatalog | None,
         **kwargs,  # Added for future proofing purposes.
     ) -> None:
         _ = kwargs
@@ -73,11 +72,7 @@ class RecordProcessor(abc.ABC):
             )
             raise TypeError(err_msg)
 
-        self.source_catalog = source_catalog
-        if not self.source_catalog:
-            # TODO: Consider a warning here that the cache will not be able to capture
-            #       any metadata if catalog is omitted.
-            pass
+        self.source_catalog: ConfiguredAirbyteCatalog | None = None
 
         self._pending_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
         self._finalized_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
@@ -89,6 +84,21 @@ class RecordProcessor(abc.ABC):
         ] = defaultdict(list, {})
 
         self._setup()
+
+    def register_source(
+        self,
+        source_name: str,
+        source_catalog: ConfiguredAirbyteCatalog,
+    ) -> None:
+        """Register the source name and catalog.
+
+        For now, only one source at a time is supported.
+        If this method is called multiple times, the last call will overwrite the previous one.
+
+        TODO: Expand this to handle mutliple sources.
+        """
+        _ = source_name
+        self.source_catalog = source_catalog
 
     @final
     def process_stdin(
@@ -204,6 +214,18 @@ class RecordProcessor(abc.ABC):
         Returns a batch handle, such as a path or any other custom reference.
         """
 
+    def _cleanup_batch(  # noqa: B027  # Intentionally empty, not abstract
+        self,
+        stream_name: str,
+        batch_id: str,
+        batch_handle: BatchHandle,
+    ) -> None:
+        """Clean up the cache.
+
+        This method is called after the given batch has been finalized.
+        """
+        pass  # noqa: PIE790 # Intentional no-op
+
     def _new_batch_id(self) -> str:
         """Return a new batch handle."""
         return str(ulid.ULID())
@@ -256,6 +278,9 @@ class RecordProcessor(abc.ABC):
         self._finalized_batches[stream_name].update(batches_to_finalize)
         self._finalized_state_messages[stream_name] += state_messages_to_finalize
 
+        for batch_id, batch_handle in batches_to_finalize.items():
+            self._cleanup_batch(stream_name, batch_id, batch_handle)
+
     def _setup(self) -> None:  # noqa: B027  # Intentionally empty, not abstract
         """Create the database.
 
@@ -263,12 +288,18 @@ class RecordProcessor(abc.ABC):
         any necessary resources.
         """
 
-    def _teardown(self) -> None:  # noqa: B027  # Intentionally empty, not abstract
-        """Create the database.
+    def _teardown(self) -> None:
+        """Teardown the processor resources.
 
-        By default this is a no-op but subclasses can override this method to cleanup
-        any resources when the cache is unloaded from memory.
+        By default, the base implementation simply calls _cleanup_batch() for all pending batches.
         """
+        for stream_name, pending_batches in self._pending_batches.items():
+            for batch_id, batch_handle in pending_batches.items():
+                self._cleanup_batch(
+                    stream_name=stream_name,
+                    batch_id=batch_id,
+                    batch_handle=batch_handle,
+                )
 
     @final
     def __del__(self) -> None:

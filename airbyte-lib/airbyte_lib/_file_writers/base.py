@@ -6,12 +6,12 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, final
+from typing import TYPE_CHECKING, cast, final
 
 from overrides import overrides
 
 from airbyte_lib.config import CacheConfigBase
-from airbyte_lib.processors import BatchHandle, RecordProcessor
+from airbyte_lib._processors import BatchHandle, RecordProcessor
 
 
 if TYPE_CHECKING:
@@ -69,3 +69,16 @@ class FileWriterBase(RecordProcessor, abc.ABC):
         Subclasses should override `_write_batch` instead.
         """
         return self._write_batch(stream_name, batch_id, record_batch)
+
+    @overrides
+    def _cleanup_batch(
+        self,
+        stream_name: str,
+        batch_id: str,
+        batch_handle: BatchHandle,
+    ) -> None:
+        """Clean up the cache."""
+        batch_handle = cast(FileWriterBatchHandle, batch_handle)
+        _ = stream_name, batch_id
+        for file_path in batch_handle.files:
+            file_path.unlink()

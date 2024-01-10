@@ -30,8 +30,8 @@ from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteS
 from airbyte_lib.config import CacheConfigBase
 from airbyte_lib.datasets._base import DatasetBase
 from airbyte_lib.datasets._lazy import LazyDataset
-from airbyte_lib.file_writers import FileWriterBase, FileWriterBatchHandle
-from airbyte_lib.processors import BatchHandle, RecordProcessor
+from airbyte_lib._file_writers import FileWriterBase, FileWriterBatchHandle
+from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.types import SQLTypeConverter
 
 
@@ -107,19 +107,16 @@ class SQLCacheBase(RecordProcessor):
     def __init__(
         self,
         config: SQLCacheConfigBase | None = None,
-        source_catalog: ConfiguredAirbyteCatalog | None = None,
         file_writer: FileWriterBase | None = None,
         **kwargs: dict[str, Any],  # Added for future proofing purposes.
     ) -> None:
         self.config: SQLCacheConfigBase
         self._engine: Engine | None = None
         self._connection_to_reuse: Connection | None = None
-        super().__init__(config, source_catalog, **kwargs)
+        super().__init__(config, **kwargs)
         self._ensure_schema_exists()
 
-        self.file_writer = file_writer or self.file_writer_class(
-            config, source_catalog=source_catalog
-        )
+        self.file_writer = file_writer or self.file_writer_class(config)
         self.type_converter = self.type_converter_class()
 
     # Public interface:
@@ -569,8 +566,9 @@ class SQLCacheBase(RecordProcessor):
                 record_batch = pf.read()
                 dataframe = record_batch.to_pandas()
 
-                # TODO: Add the metadata columns (this breaks tests)
+                # TODO: Add back metadata columns (this breaks tests)
                 # dataframe["_airbyte_loaded_at"] = str(pd.Timestamp.now())
+
                 dataframe.to_sql(
                     temp_table_name,
                     self.get_sql_alchemy_url(),
@@ -661,6 +659,11 @@ class SQLCacheBase(RecordProcessor):
         This implementation requires MERGE support in the SQL DB.
         Databases that do not support this syntax can override this method.
         """
+        if final_table_name is None:
+            raise ValueError("Arg 'final_table_name' cannot be None.")
+        if temp_table_name is None:
+            raise ValueError("Arg 'temp_table_name' cannot be None.")
+
         _ = stream_name
         deletion_name = f"{final_table_name}_deleteme"
         commands = [

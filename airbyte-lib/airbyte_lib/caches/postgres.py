@@ -7,7 +7,7 @@ from __future__ import annotations
 from overrides import overrides
 
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
-from airbyte_lib.file_writers import ParquetWriter, ParquetWriterConfig
+from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 
 
 class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -41,6 +41,9 @@ class PostgresCache(SQLCacheBase):
     Parquet is used for local file storage before bulk loading.
     Unlike the Snowflake implementation, we can't use the COPY command to load data
     so we insert as values instead.
+
+    TOOD: Add optimized bulk load path for Postgres. Could use an alternate file writer
+    or another import method. (Relatively low priority, since for now it works fine as-is.)
     """
 
     config_class = PostgresCacheConfig

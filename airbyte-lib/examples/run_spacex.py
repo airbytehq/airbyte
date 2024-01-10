@@ -17,7 +17,7 @@ source = ab.get_connector(
     config={"id": "605b4b6aaa5433645e37d03f"},
     install_if_missing=True,
 )
-cache = ab.new_local_cache(source_catalog=source.configured_catalog)
+cache = ab.new_local_cache()
 
 source.check()
 

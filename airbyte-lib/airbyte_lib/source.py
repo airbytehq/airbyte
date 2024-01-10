@@ -25,9 +25,9 @@ from airbyte_protocol.models import (
 from airbyte_lib._util import airbyte  # Internal utility functions
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.datasets._lazy import LazyDataset
-from airbyte_lib.executor import Executor
+from airbyte_lib._executor import Executor
 from airbyte_lib.factories._cache_factories import get_default_cache
-from airbyte_lib.sync_results import ReadResult
+from airbyte_lib.results import ReadResult
 
 
 @contextmanager
@@ -313,10 +313,11 @@ class Source:
             self._processed_records += 1
             yield message
 
-    def read(self, cache: Optional[SQLCacheBase] = None) -> ReadResult:
+    def read(self, cache: SQLCacheBase | None = None) -> ReadResult:
         if cache is None:
-            cache = get_default_cache(source_catalog=self.configured_catalog)
+            cache = get_default_cache()
 
+        cache.register_source(source_name=self.name, source_catalog=self.configured_catalog)
         cache.process_airbyte_messages(self._tally_records(self._read()))
 
         return ReadResult(

@@ -1,7 +1,7 @@
 import pytest
 from airbyte_lib.caches.duckdb import DuckDBCacheConfig, DuckDBCacheBase
 from airbyte_lib.caches.base import SQLCacheConfigBase, SQLCacheBase
-from airbyte_lib.file_writers import ParquetWriterConfig
+from airbyte_lib._file_writers import ParquetWriterConfig
 
 
 def test_duck_db_cache_config_initialization():

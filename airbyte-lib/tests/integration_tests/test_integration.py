@@ -7,7 +7,7 @@ import airbyte_lib as ab
 import pandas as pd
 import pytest
 from airbyte_lib.caches import DuckDBCache, DuckDBCacheConfig, InMemoryCache, InMemoryCacheConfig, PostgresCache, PostgresCacheConfig
-from airbyte_lib.sync_results import ReadResult
+from airbyte_lib.results import ReadResult
 from airbyte_lib.registry import _update_cache
 
 
@@ -102,7 +102,7 @@ def test_check_fail():
 
 def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_connector("source-test", config={"apiKey": "test"})
-    cache = ab.new_local_cache(source_catalog=source.configured_catalog)
+    cache = ab.new_local_cache()
 
     result: ReadResult = source.read(cache)
 
@@ -124,7 +124,7 @@ def test_sync_with_merge_to_duckdb(expected_test_stream_data: dict[str, list[dic
     # TODO: Add a check with a primary key to ensure that the merge strategy works as expected.
     """
     source = ab.get_connector("source-test", config={"apiKey": "test"})
-    cache = ab.new_local_cache(source_catalog=source.configured_catalog)
+    cache = ab.new_local_cache()
 
     # Read twice to test merge strategy
     result: ReadResult = source.read(cache)
@@ -162,10 +162,7 @@ def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, e
     # TODO: Add a check with a primary key to ensure that the merge strategy works as expected.
     """
     source = ab.get_connector("source-test", config={"apiKey": "test"})
-    cache = PostgresCache(
-        config=new_pg_cache_config,
-        source_catalog=source.configured_catalog,
-    )
+    cache = PostgresCache(config=new_pg_cache_config)
 
     # Read twice to test merge strategy
     result: ReadResult = source.read(cache)
@@ -179,12 +176,10 @@ def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, e
             check_dtype=False,
         )
 
+
 def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_connector("source-test", config={"apiKey": "test"})
-    cache = PostgresCache(
-        config=new_pg_cache_config,
-        source_catalog=source.configured_catalog,
-    )
+    cache = PostgresCache(config=new_pg_cache_config)
 
     result: ReadResult = source.read(cache)
 
@@ -198,11 +193,8 @@ def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_tes
 
 
 def test_sync_limited_streams(expected_test_stream_data):
-    # source = ab.get_connector("source-test", config={"apiKey": "test"})
-    # cache = ab.new_local_cache(source_catalog=source.configured_catalog)
-
     source = ab.get_connector("source-test", config={"apiKey": "test"})
-    cache = ab.new_local_cache(source_catalog=source.configured_catalog)
+    cache = ab.new_local_cache()
 
     source.set_streams(["stream2"])
 
