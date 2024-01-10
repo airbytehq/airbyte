@@ -12,9 +12,6 @@ import pendulum
 import pytest
 import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-<<<<<<< HEAD
-from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, SourceMarketo, Segmentations
-=======
 from airbyte_cdk.utils import AirbyteTracedException
 from source_marketo.source import (
     Activities,
@@ -26,7 +23,6 @@ from source_marketo.source import (
     Programs,
     SourceMarketo,
 )
->>>>>>> master
 
 
 def test_create_export_job(mocker, send_email_stream, caplog):
