@@ -269,9 +269,6 @@ dependencies:
   del:
     specifier: 6.1.1
     version: 6.1.1
-  docusaurus-json-schema-plugin:
-    specifier: ^1.10.0
-    version: 1.10.0(@docusaurus/core@3.0.1)(@docusaurus/theme-classic@3.0.1)(@types/react@18.2.46)(react@18.2.0)(webpack@5.89.0)
   docusaurus-plugin-hubspot:
     specifier: ^1.0.0
     version: 1.0.0
@@ -332,6 +329,9 @@ dependencies:
   react-router:
     specifier: 5.3.3
     version: 5.3.3(react@18.2.0)
+  sanitize-html:
+    specifier: ^2.11.0
+    version: 2.11.0
   sockjs:
     specifier: 0.3.24
     version: 0.3.24
@@ -3257,52 +3257,6 @@ packages:
       webpack-sources: 3.2.3
     dev: false
 
-  /@stoplight/json-ref-resolver@3.1.6:
-    resolution: {integrity: sha512-YNcWv3R3n3U6iQYBsFOiWSuRGE5su1tJSiX6pAPRVk7dP0L7lqCteXGzuVRQ0gMZqUl8v1P0+fAKxF6PLo9B5A==}
-    engines: {node: '>=8.3.0'}
-    dependencies:
-      '@stoplight/json': 3.21.0
-      '@stoplight/path': 1.3.2
-      '@stoplight/types': 13.20.0
-      '@types/urijs': 1.19.25
-      dependency-graph: 0.11.0
-      fast-memoize: 2.5.2
-      immer: 9.0.21
-      lodash: 4.17.21
-      tslib: 2.6.2
-      urijs: 1.19.11
-    dev: false
-
-  /@stoplight/json@3.21.0:
-    resolution: {integrity: sha512-5O0apqJ/t4sIevXCO3SBN9AHCEKKR/Zb4gaj7wYe5863jme9g02Q0n/GhM7ZCALkL+vGPTe4ZzTETP8TFtsw3g==}
-    engines: {node: '>=8.3.0'}
-    dependencies:
-      '@stoplight/ordered-object-literal': 1.0.5
-      '@stoplight/path': 1.3.2
-      '@stoplight/types': 13.20.0
-      jsonc-parser: 2.2.1
-      lodash: 4.17.21
-      safe-stable-stringify: 1.1.1
-    dev: false
-
-  /@stoplight/ordered-object-literal@1.0.5:
-    resolution: {integrity: sha512-COTiuCU5bgMUtbIFBuyyh2/yVVzlr5Om0v5utQDgBCuQUOPgU1DwoffkTfg4UBQOvByi5foF4w4T+H9CoRe5wg==}
-    engines: {node: '>=8'}
-    dev: false
-
-  /@stoplight/path@1.3.2:
-    resolution: {integrity: sha512-lyIc6JUlUA8Ve5ELywPC8I2Sdnh1zc1zmbYgVarhXIp9YeAB0ReeqmGEOWNtlHkbP2DAA1AL65Wfn2ncjK/jtQ==}
-    engines: {node: '>=8'}
-    dev: false
-
-  /@stoplight/types@13.20.0:
-    resolution: {integrity: sha512-2FNTv05If7ib79VPDA/r9eUet76jewXFH2y2K5vuge6SXbRHtWBhcaRmu+6QpF4/WRNoJj5XYRSwLGXDxysBGA==}
-    engines: {node: ^12.20 || >=14.13}
-    dependencies:
-      '@types/json-schema': 7.0.15
-      utility-types: 3.10.0
-    dev: false
-
   /@svgr/babel-plugin-add-jsx-attribute@6.5.1(@babel/core@7.23.6):
     resolution: {integrity: sha512-9PYGcXrAxitycIjRmZB+Q0JaN07GZIWaTBIGQzfaZv+qr1n8X1XUEJ5rZ/vx6OVD9RRYlrNnXWExQXcmZeD/BQ==}
     engines: {node: '>=10'}
@@ -3762,10 +3716,6 @@ packages:
 
   /@types/unist@3.0.2:
     resolution: {integrity: sha512-dqId9J8K/vGi5Zr7oo212BGii5m3q5Hxlkwy3WpYuKPklmBEvsbMYYyLxAQpSffdLl/gdW0XUpKWFvYmyoWCoQ==}
-    dev: false
-
-  /@types/urijs@1.19.25:
-    resolution: {integrity: sha512-XOfUup9r3Y06nFAZh3WvO0rBU4OtlfPB/vgxpjg+NRdGU6CN6djdc6OEiH+PcqHCY6eFLo9Ista73uarf4gnBg==}
     dev: false
 
   /@types/ws@8.5.10:
@@ -5535,11 +5485,6 @@ packages:
     engines: {node: '>= 0.8'}
     dev: false
 
-  /dependency-graph@0.11.0:
-    resolution: {integrity: sha512-JeMq7fEshyepOWDfcfHK06N3MhyPhz++vtqWhMT5O9A3K42rdsEDpfdVqjaqaAhsw6a+ZqeDvQVtD0hFHQWrzg==}
-    engines: {node: '>= 0.6.0'}
-    dev: false
-
   /dequal@2.0.3:
     resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
     engines: {node: '>=6'}
@@ -5598,25 +5543,6 @@ packages:
     engines: {node: '>=6'}
     dependencies:
       '@leichtgewicht/ip-codec': 2.0.4
-    dev: false
-
-  /docusaurus-json-schema-plugin@1.10.0(@docusaurus/core@3.0.1)(@docusaurus/theme-classic@3.0.1)(@types/react@18.2.46)(react@18.2.0)(webpack@5.89.0):
-    resolution: {integrity: sha512-RshMfUsxQQZojCw2GYjJM3q2Ri4nNrruFR1An0HHHybG5/PSKXdUPcDlM3BX5k4MZrPcS2smTRRnFyRV+WHVlA==}
-    peerDependencies:
-      '@docusaurus/core': ^3.0.0
-      '@docusaurus/theme-classic': ^3.0.0
-      react: '>=17 <= 18'
-    dependencies:
-      '@docusaurus/core': 3.0.1(@docusaurus/types@3.0.1)(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.3)
-      '@docusaurus/theme-classic': 3.0.1(@types/react@18.2.46)(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.3)
-      '@stoplight/json-ref-resolver': 3.1.6
-      monaco-editor: 0.44.0
-      monaco-editor-webpack-plugin: 7.1.0(monaco-editor@0.44.0)(webpack@5.89.0)
-      react: 18.2.0
-      react-monaco-editor: 0.55.0(@types/react@18.2.46)(monaco-editor@0.44.0)(react@18.2.0)
-    transitivePeerDependencies:
-      - '@types/react'
-      - webpack
     dev: false
 
   /docusaurus-plugin-hubspot@1.0.0:
@@ -5999,10 +5925,6 @@ packages:
 
   /fast-json-stable-stringify@2.1.0:
     resolution: {integrity: sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==}
-    dev: false
-
-  /fast-memoize@2.5.2:
-    resolution: {integrity: sha512-Ue0LwpDYErFbmNnZSF0UH6eImUwDmogUO1jyE+JbN2gsQz/jICm1Ve7t9QT0rNSsfJt+Hs4/S3GnsDVjL4HVrw==}
     dev: false
 
   /fast-url-parser@1.1.3:
@@ -7182,10 +7104,6 @@ packages:
     hasBin: true
     dev: false
 
-  /jsonc-parser@2.2.1:
-    resolution: {integrity: sha512-o6/yDBYccGvTz1+QFevz6l6OBZ2+fMVu2JZ9CIhzsYRX4mjaK5IyX9eldUdCmga16zlgQxyrj5pt9kzuj2C02w==}
-    dev: false
-
   /jsonfile@6.1.0:
     resolution: {integrity: sha512-5dgndWOriYSm5cnYaJNhalLNDKOqFwyDB/rr1E9ZsGciGvKPs8R2xYGCacuf3z6K1YKDz182fd+fY3cn3pMqXQ==}
     dependencies:
@@ -8335,21 +8253,6 @@ packages:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
     dev: false
 
-  /monaco-editor-webpack-plugin@7.1.0(monaco-editor@0.44.0)(webpack@5.89.0):
-    resolution: {integrity: sha512-ZjnGINHN963JQkFqjjcBtn1XBtUATDZBMgNQhDQwd78w2ukRhFXAPNgWuacaQiDZsUr4h1rWv5Mv6eriKuOSzA==}
-    peerDependencies:
-      monaco-editor: '>= 0.31.0'
-      webpack: ^4.5.0 || 5.x
-    dependencies:
-      loader-utils: 2.0.4
-      monaco-editor: 0.44.0
-      webpack: 5.89.0
-    dev: false
-
-  /monaco-editor@0.44.0:
-    resolution: {integrity: sha512-5SmjNStN6bSuSE5WPT2ZV+iYn1/yI9sd4Igtk23ChvqB7kDk9lZbB9F5frsuvpB+2njdIeGGFf2G4gbE6rCC9Q==}
-    dev: false
-
   /mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
     engines: {node: '>=4'}
@@ -8665,6 +8568,10 @@ packages:
 
   /parse-numeric-range@1.3.0:
     resolution: {integrity: sha512-twN+njEipszzlMJd4ONUYgSfZPDxgHhT9Ahed5uTigpQn90FggW4SA/AIPq/6a149fTbE9qBEcSwE3FAEp6wQQ==}
+    dev: false
+
+  /parse-srcset@1.0.2:
+    resolution: {integrity: sha512-/2qh0lav6CmI15FzA3i/2Bzk2zCgQhGMkvhOhKNcBVQ1ldgpbfiNTVslmooUmWJcADi1f1kIeynbDRVzNlfR6Q==}
     dev: false
 
   /parse5-htmlparser2-tree-adapter@7.0.0:
@@ -9837,19 +9744,6 @@ packages:
       - supports-color
     dev: false
 
-  /react-monaco-editor@0.55.0(@types/react@18.2.46)(monaco-editor@0.44.0)(react@18.2.0):
-    resolution: {integrity: sha512-GdEP0Q3Rn1dczfKEEyY08Nes5plWwIYU4sWRBQO0+jsQWQsKMHKCC6+hPRwR7G/4aA3V/iU9jSmWPzVJYMVFSQ==}
-    peerDependencies:
-      '@types/react': '>=16 <= 18'
-      monaco-editor: ^0.44.0
-      react: '>=16 <= 18'
-    dependencies:
-      '@types/react': 18.2.46
-      monaco-editor: 0.44.0
-      prop-types: 15.8.1
-      react: 18.2.0
-    dev: false
-
   /react-router-config@5.1.1(react-router@5.3.4)(react@18.2.0):
     resolution: {integrity: sha512-DuanZjaD8mQp1ppHjgnnUnyOlqYXZVjnov/JzFhjLEwd3Z4dYjMSnqrEzzGThH47vpCOqPPwJM2FtthLeJ8Pbg==}
     peerDependencies:
@@ -10247,12 +10141,19 @@ packages:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
     dev: false
 
-  /safe-stable-stringify@1.1.1:
-    resolution: {integrity: sha512-ERq4hUjKDbJfE4+XtZLFPCDi8Vb1JqaxAPTxWFLBx8XcAlf9Bda/ZJdVezs/NAfsMQScyIlUMx+Yeu7P7rx5jw==}
-    dev: false
-
   /safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
+    dev: false
+
+  /sanitize-html@2.11.0:
+    resolution: {integrity: sha512-BG68EDHRaGKqlsNjJ2xUB7gpInPA8gVx/mvjO743hZaeMCZ2DwzW7xvsqZ+KNU4QKwj86HJ3uu2liISf2qBBUA==}
+    dependencies:
+      deepmerge: 4.3.1
+      escape-string-regexp: 4.0.0
+      htmlparser2: 8.0.2
+      is-plain-object: 5.0.0
+      parse-srcset: 1.0.2
+      postcss: 8.4.32
     dev: false
 
   /sax@1.3.0:
@@ -11123,10 +11024,6 @@ packages:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
     dependencies:
       punycode: 2.3.1
-    dev: false
-
-  /urijs@1.19.11:
-    resolution: {integrity: sha512-HXgFDgDommxn5/bIv0cnQZsPhHDA90NPHD6+c/v21U5+Sx5hoP8+dP9IZXBU1gIfvdRfhG8cel9QNPeionfcCQ==}
     dev: false
 
   /url-loader@4.1.1(file-loader@6.2.0)(webpack@5.89.0):
