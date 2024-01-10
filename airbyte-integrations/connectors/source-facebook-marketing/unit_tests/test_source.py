@@ -4,6 +4,7 @@
 
 
 from copy import deepcopy
+from unittest.mock import call
 
 import pytest
 from airbyte_cdk.models import (
@@ -83,7 +84,12 @@ class TestSourceFacebookMarketing:
         ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
 
         api_find_account.assert_called_once_with(config["account_ids"][0])
-        logger_mock.info.assert_called_once_with("Select account 1234")
+        logger_mock.info.assert_has_calls(
+            [
+                call("Attempting to retrieve information for account with ID: 123"),
+                call("Successfully retrieved account information for account: 1234"),
+            ]
+        )
         assert ok
         assert not error_msg
 
