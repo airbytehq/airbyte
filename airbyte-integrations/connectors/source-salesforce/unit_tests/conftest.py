@@ -3,6 +3,7 @@
 #
 
 import json
+import os
 from unittest.mock import Mock
 
 import pytest
@@ -19,14 +20,14 @@ def time_sleep_mock(mocker):
 
 @pytest.fixture(scope="module")
 def bulk_catalog():
-    with open("unit_tests/bulk_catalog.json") as f:
+    with open(f"{os.path.dirname(__file__)}/bulk_catalog.json") as f:
         data = json.loads(f.read())
     return ConfiguredAirbyteCatalog.parse_obj(data)
 
 
 @pytest.fixture(scope="module")
 def rest_catalog():
-    with open("unit_tests/rest_catalog.json") as f:
+    with open(f"{os.path.dirname(__file__)}/rest_catalog.json") as f:
         data = json.loads(f.read())
     return ConfiguredAirbyteCatalog.parse_obj(data)
 

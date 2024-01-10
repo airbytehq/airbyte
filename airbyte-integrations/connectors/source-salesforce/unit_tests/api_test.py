@@ -420,7 +420,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
         assert len(records) == 6  # stream page size: 6
 
         state_record = [item for item in result if item.type == Type.STATE][0]
-        assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-10-05T00:00:00+00:00"  # state checkpoint interval is 5.
+        assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-10-05T00:00:00.000+00:00"  # state checkpoint interval is 5.
 
 
 def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
@@ -489,7 +489,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
         assert len(records) == 5
 
         state_record = [item for item in result if item.type == Type.STATE][0]
-        assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17T00:00:00+00:00"
+        assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17T00:00:00.000+00:00"
 
 
 def test_pagination_rest(stream_config, stream_api):
@@ -943,21 +943,21 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     actual_state_values = [item.state.data.get("Account").get(stream.cursor_field) for item in result if item.type == Type.STATE]
     # assert request params
     assert (
-        "LastModifiedDate >= 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate < 2023-01-31T10:10:10.000+00:00"
+        "LastModifiedDate > 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate <= 2023-01-31T10:10:10.000+00:00"
         in queries_history.request_history[0].text
     )
     assert (
-        "LastModifiedDate >= 2023-01-31T10:10:10.000+00:00 AND LastModifiedDate < 2023-03-02T10:10:10.000+00:00"
+        "LastModifiedDate > 2023-01-31T10:10:10.000+00:00 AND LastModifiedDate <= 2023-03-02T10:10:10.000+00:00"
         in queries_history.request_history[1].text
     )
     assert (
-        "LastModifiedDate >= 2023-03-02T10:10:10.000+00:00 AND LastModifiedDate < 2023-04-01T00:00:00.000+00:00"
+        "LastModifiedDate > 2023-03-02T10:10:10.000+00:00 AND LastModifiedDate <= 2023-04-01T00:00:00.000+00:00"
         in queries_history.request_history[2].text
     )
 
     # assert states
     # if connector meets record with cursor `2023-04-01` out of current slice range 2023-01-31 <> 2023-03-02, we ignore all other values and set state to slice end_date
-    expected_state_values = ["2023-01-15T00:00:00+00:00", "2023-03-02T10:10:10+00:00", "2023-04-01T00:00:00+00:00"]
+    expected_state_values = ["2023-01-15T00:00:00.000+00:00", "2023-03-02T10:10:10.000+00:00", "2023-04-01T00:00:00.000+00:00"]
     assert actual_state_values == expected_state_values
 
 
@@ -965,7 +965,7 @@ def test_request_params_incremental(stream_config_date_format, stream_api):
     stream = generate_stream("ContentDocument", stream_config_date_format, stream_api)
     params = stream.request_params(stream_state={}, stream_slice={'start_date': '2020', 'end_date': '2021'})
 
-    assert params == {'q': 'SELECT LastModifiedDate, Id FROM ContentDocument WHERE LastModifiedDate >= 2020 AND LastModifiedDate < 2021'}
+    assert params == {'q': 'SELECT LastModifiedDate, Id FROM ContentDocument WHERE LastModifiedDate > 2020 AND LastModifiedDate <= 2021'}
 
 
 def test_request_params_substream(stream_config_date_format, stream_api):

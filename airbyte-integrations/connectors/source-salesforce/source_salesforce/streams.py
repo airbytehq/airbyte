@@ -721,9 +721,9 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         where_conditions = []
 
         if start_date:
-            where_conditions.append(f"{self.cursor_field} >= {start_date}")
+            where_conditions.append(f"{self.cursor_field} > {start_date}")
         if end_date:
-            where_conditions.append(f"{self.cursor_field} < {end_date}")
+            where_conditions.append(f"{self.cursor_field} <= {end_date}")
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
@@ -744,9 +744,9 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         max_possible_value = min(latest_record_value, slice_max_value)
         if current_stream_state.get(self.cursor_field):
             if latest_record_value > slice_max_value:
-                return {self.cursor_field: max_possible_value.isoformat()}
+                return {self.cursor_field: max_possible_value.isoformat(timespec="milliseconds")}
             max_possible_value = max(latest_record_value, pendulum.parse(current_stream_state[self.cursor_field]))
-        return {self.cursor_field: max_possible_value.isoformat()}
+        return {self.cursor_field: max_possible_value.isoformat(timespec="milliseconds")}
 
 
 class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSalesforceStream):
@@ -755,15 +755,9 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        start_date = stream_slice["start_date"]
-        end_date = stream_slice["end_date"]
-
+        start_date, end_date = stream_slice["start_date"], stream_slice["end_date"]
         select_fields = self.get_query_select_fields()
-        table_name = self.name
-        where_conditions = [f"{self.cursor_field} >= {start_date}", f"{self.cursor_field} < {end_date}"]
-
-        where_clause = f"WHERE {' AND '.join(where_conditions)}"
-        query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
+        query = f"SELECT {select_fields} FROM {self.name} WHERE {self.cursor_field} > {start_date} AND {self.cursor_field} <= {end_date}"
         return {"q": query}
 
 
