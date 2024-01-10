@@ -73,6 +73,17 @@
     },
     "subscribed": {
       "type": ["null", "boolean"]
+    },
+    "edited": {
+      "properties": {
+        "ts": {
+          "type": ["null", "number"]
+        },
+        "user": {
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["null", "object"]
     }
   }
 }
