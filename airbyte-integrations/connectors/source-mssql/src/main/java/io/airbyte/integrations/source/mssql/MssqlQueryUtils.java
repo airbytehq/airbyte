@@ -20,11 +20,14 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,19 +57,14 @@ public class MssqlQueryUtils {
       @JsonProperty("index_keys") String keys
   ) { }
 
-  public static final String TABLE_ESTIMATE_QUERY = """
-                                                     SELECT
-                                                       (data_length + index_length) as %s,
-                                                       AVG_ROW_LENGTH as %s
-                                                    FROM
-                                                       information_schema.tables
-                                                    WHERE
-                                                       table_schema = '%s' AND table_name = '%s';
-                                                    """;
+  public static final String TABLE_ESTIMATE_QUERY =
+"""
+EXEC sp_spaceused N'"%s"."%s"'
+""";
 
   public static final String MAX_OC_COL = "max_oc";
-  public static final String TABLE_SIZE_BYTES_COL = "TotalSizeBytes";
-  public static final String AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
+  public static final String DATA_SIZE_HUMAN_READABLE = "data";
+  public static final String NUM_ROWS = "rows";
 
   public static void getIndexInfoForStreams(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final String quoteString) {
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
@@ -117,6 +115,23 @@ public class MssqlQueryUtils {
     }
   }
 
+  private static long toBytes(String filesize) {
+    long returnValue = -1;
+    Pattern patt = Pattern.compile("([\\d.]+)[\s+]*([GMK]B)", Pattern.CASE_INSENSITIVE);
+    Matcher matcher = patt.matcher(filesize);
+    Map<String, Integer> powerMap = new HashMap<String, Integer>();
+    powerMap.put("GB", 3);
+    powerMap.put("MB", 2);
+    powerMap.put("KB", 1);
+    if (matcher.find()) {
+      String number = matcher.group(1).trim();
+      int pow = powerMap.get(matcher.group(2).toUpperCase());
+      BigDecimal bytes = new BigDecimal(number);
+      bytes = bytes.multiply(BigDecimal.valueOf(1024).pow(pow));
+      returnValue = bytes.longValue();
+    }
+    return returnValue;
+  }
   public static Map<AirbyteStreamNameNamespacePair, TableSizeInfo> getTableSizeInfoForStreams(final JdbcDatabase database,
                                                                                               final List<ConfiguredAirbyteStream> streams,
                                                                                               final String quoteString) {
@@ -131,10 +146,11 @@ public class MssqlQueryUtils {
 
         if (tableEstimateResult != null
             && tableEstimateResult.size() == 1
-            && tableEstimateResult.get(0).get(TABLE_SIZE_BYTES_COL) != null
-            && tableEstimateResult.get(0).get(AVG_ROW_LENGTH) != null) {
-          final long tableEstimateBytes = tableEstimateResult.get(0).get(TABLE_SIZE_BYTES_COL).asLong();
-          final long avgTableRowSizeBytes = tableEstimateResult.get(0).get(AVG_ROW_LENGTH).asLong();
+            && tableEstimateResult.get(0).get(DATA_SIZE_HUMAN_READABLE) != null
+            && tableEstimateResult.get(0).get(NUM_ROWS) != null) {
+          final long tableEstimateBytes = toBytes(tableEstimateResult.get(0).get(DATA_SIZE_HUMAN_READABLE).asText());
+          final long numRows = tableEstimateResult.get(0).get(NUM_ROWS).asLong();
+          final long avgTableRowSizeBytes = tableEstimateBytes / numRows;
           LOGGER.info("Stream {} size estimate is {}, average row size estimate is {}", fullTableName, tableEstimateBytes, avgTableRowSizeBytes);
           final TableSizeInfo tableSizeInfo = new TableSizeInfo(tableEstimateBytes, avgTableRowSizeBytes);
           final AirbyteStreamNameNamespacePair namespacePair =
@@ -214,10 +230,12 @@ public class MssqlQueryUtils {
       throws SQLException {
     // Construct the table estimate query.
     final String tableEstimateQuery =
-        String.format(TABLE_ESTIMATE_QUERY, TABLE_SIZE_BYTES_COL, AVG_ROW_LENGTH, namespace, name);
+        String.format(TABLE_ESTIMATE_QUERY, namespace, name);
+    LOGGER.info("Querying for table estimate size: {}", tableEstimateQuery);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
+    LOGGER.debug("Estimate: {}", jsonNodes);
     return jsonNodes;
   }
 
