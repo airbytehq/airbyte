@@ -14,7 +14,7 @@ class DatasetMap(Mapping):
     def __getitem__(self, key: str) -> DatasetBase:
         return self._datasets[key]
 
-    def __iter__(self) -> Iterator[DatasetBase]:
+    def __iter__(self) -> Iterator[str]:
         return iter(self._datasets)
 
     def __len__(self) -> int:

@@ -28,4 +28,4 @@ result = source.read(cache)
 print(islice(source.get_records("capsules"), 10))
 
 for name, records in result.cache.streams.items():
-    print(f"Stream {name}: {len(records)} records")
+    print(f"Stream {name}: {len(list(records))} records")

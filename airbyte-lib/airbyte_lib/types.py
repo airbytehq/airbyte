@@ -44,7 +44,7 @@ def _get_airbyte_type(
     json_schema_type = json_schema_property_def.get("type", None)
 
     if json_schema_type in ["string", "number", "boolean", "integer"]:
-        return json_schema_type, None
+        return cast(str, json_schema_type), None
 
     if json_schema_type == "object" and "properties" in json_schema_property_def:
         return "object", None
@@ -59,7 +59,6 @@ class SQLTypeConverter:
     def __init__(
         self,
         conversion_map: dict | None = None,
-        **kwargs,  # Additional arguments (future proofing)
     ):
         self.conversion_map = defaultdict(
             self.get_failover_type,

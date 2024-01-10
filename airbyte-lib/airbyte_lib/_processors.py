@@ -58,9 +58,7 @@ class RecordProcessor(abc.ABC):
     def __init__(
         self,
         config: CacheConfigBase | dict | None,
-        **kwargs,  # Added for future proofing purposes.
     ) -> None:
-        _ = kwargs
         if isinstance(config, dict):
             config = self.config_class(**config)
 

@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Generator, Iterable
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO
+from typing import IO, Any, NoReturn
 
 from airbyte_lib.registry import ConnectorMetadata
 
@@ -33,11 +33,11 @@ class Executor(ABC):
         pass
 
     @abstractmethod
-    def ensure_installation(self):
+    def ensure_installation(self) -> None:
         pass
 
     @abstractmethod
-    def install(self):
+    def install(self) -> None:
         pass
 
 
@@ -50,7 +50,7 @@ def _stream_from_subprocess(args: list[str]) -> Generator[Iterable[str], None, N
         universal_newlines=True,
     )
 
-    def _stream_from_file(file: IO[str]):
+    def _stream_from_file(file: IO[str]) -> Generator[str, Any, None]:
         while True:
             line = file.readline()
             if not line:
@@ -100,18 +100,18 @@ class VenvExecutor(Executor):
         # TODO: Replace with `f"airbyte-{self.metadata.name}"`
         self.pip_url = pip_url or f"../airbyte-integrations/connectors/{self.metadata.name}"
 
-    def _get_venv_name(self):
+    def _get_venv_name(self) -> str:
         return f".venv-{self.metadata.name}"
 
-    def _get_connector_path(self):
+    def _get_connector_path(self) -> Path:
         return Path(self._get_venv_name(), "bin", self.metadata.name)
 
-    def _run_subprocess_and_raise_on_failure(self, args: list[str]):
+    def _run_subprocess_and_raise_on_failure(self, args: list[str]) -> None:
         result = subprocess.run(args, check=False)
         if result.returncode != 0:
             raise Exception(f"Install process exited with code {result.returncode}")
 
-    def install(self):
+    def install(self) -> None:
         venv_name = self._get_venv_name()
         self._run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", venv_name])
 
@@ -119,7 +119,7 @@ class VenvExecutor(Executor):
 
         self._run_subprocess_and_raise_on_failure([pip_path, "install", "-e", self.pip_url])
 
-    def _get_installed_version(self):
+    def _get_installed_version(self) -> str:
         """
         In the venv, run the following: python -c "from importlib.metadata import version; print(version('<connector-name>'))"
         """
@@ -136,7 +136,7 @@ class VenvExecutor(Executor):
 
     def ensure_installation(
         self,
-    ):
+    ) -> None:
         """
         Ensure that the connector is installed in a virtual environment.
         If not yet installed and if install_if_missing is True, then install.
@@ -182,7 +182,7 @@ class VenvExecutor(Executor):
 
 
 class PathExecutor(Executor):
-    def ensure_installation(self):
+    def ensure_installation(self) -> None:
         try:
             self.execute(["spec"])
         except Exception as e:
@@ -190,7 +190,7 @@ class PathExecutor(Executor):
                 f"Connector {self.metadata.name} is not available - executing it failed: {e}"
             )
 
-    def install(self):
+    def install(self) -> NoReturn:
         raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")
 
     def execute(self, args: list[str]) -> Iterable[str]:

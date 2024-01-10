@@ -1,7 +1,7 @@
 import subprocess
 import pytest
 
-XFAIL = True # Toggle to set if the test is expected to fail or not
+XFAIL = False # Toggle to set if the test is expected to fail or not
 
 @pytest.mark.xfail(
     condition=XFAIL,

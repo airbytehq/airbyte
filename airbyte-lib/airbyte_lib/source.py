@@ -2,7 +2,7 @@
 
 import json
 import tempfile
-from collections.abc import Iterable
+from collections.abc import Generator, Iterable
 from contextlib import contextmanager
 from functools import lru_cache
 from typing import Any, Optional
@@ -22,16 +22,16 @@ from airbyte_protocol.models import (
     Type,
 )
 
+from airbyte_lib._executor import Executor
 from airbyte_lib._util import airbyte  # Internal utility functions
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.datasets._lazy import LazyDataset
-from airbyte_lib._executor import Executor
 from airbyte_lib.factories._cache_factories import get_default_cache
 from airbyte_lib.results import ReadResult
 
 
 @contextmanager
-def as_temp_files(files: list[Any]):
+def as_temp_files(files: list[Any]) -> Generator[list[Any], Any, None]:
     temp_files: list[Any] = []
     try:
         for content in files:
@@ -71,7 +71,7 @@ class Source:
         if streams is not None:
             self.set_streams(streams)
 
-    def set_streams(self, streams: list[str]):
+    def set_streams(self, streams: list[str]) -> None:
         available_streams = self.get_available_streams()
         for stream in streams:
             if stream not in available_streams:
@@ -80,7 +80,7 @@ class Source:
                 )
         self.streams = streams
 
-    def set_config(self, config: dict[str, Any]):
+    def set_config(self, config: dict[str, Any]) -> None:
         self._validate_config(config)
         self._config_dict = config
 
@@ -203,7 +203,7 @@ class Source:
         iterator: Iterable[dict[str, Any]] = airbyte.airbyte_messages_to_record_dicts(
             self._read_with_catalog(configured_catalog),
         )
-        return LazyDataset(iterator)
+        return LazyDataset(iter(iterator))
 
     def check(self) -> None:
         """
@@ -228,7 +228,7 @@ class Source:
                 f"Connector did not return check status. Last logs: {self._last_log_messages}",
             )
 
-    def install(self):
+    def install(self) -> None:
         self.executor.install()
 
     def _read(self) -> Iterable[AirbyteMessage]:
@@ -277,7 +277,7 @@ class Source:
             ):
                 yield msg
 
-    def _add_to_logs(self, message: str):
+    def _add_to_logs(self, message: str) -> None:
         self._last_log_messages.append(message)
         self._last_log_messages = self._last_log_messages[-10:]
 
@@ -306,7 +306,10 @@ class Source:
         except Exception as e:
             raise Exception(f"{e!s}. Last logs: {self._last_log_messages}")
 
-    def _tally_records(self, messages: Iterable[AirbyteRecordMessage]):
+    def _tally_records(
+        self,
+        messages: Iterable[AirbyteRecordMessage],
+    ) -> Generator[AirbyteRecordMessage, Any, None]:
         """This method simply tallies the number of records processed and yields the messages."""
         self._processed_records = 0  # Reset the counter before we start
         for message in messages:

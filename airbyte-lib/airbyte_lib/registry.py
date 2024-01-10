@@ -37,7 +37,7 @@ def _update_cache() -> None:
         _cache[name] = ConnectorMetadata(name, connector["dockerImageTag"])
 
 
-def get_connector_metadata(name: str):
+def get_connector_metadata(name: str) -> ConnectorMetadata:
     """
     check the cache for the connector. If the cache is empty, populate by calling update_cache
     """

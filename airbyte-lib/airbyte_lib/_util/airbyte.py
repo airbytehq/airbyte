@@ -37,7 +37,7 @@ def airbyte_message_to_record_dict(message: AirbyteMessage) -> dict[str, Any] | 
 
 def airbyte_record_message_to_dict(
     record_message: AirbyteRecordMessage,
-) -> dict[str, Any] | None:
+) -> dict[str, Any]:
     """Convert an AirbyteMessage to a dictionary.
 
     Return None if the message is not a record message.
@@ -49,7 +49,7 @@ def airbyte_record_message_to_dict(
     #     record_message.emitted_at
     # )
 
-    return result
+    return result  # noqa: RET504 # unnecessary assignment and then return (see TODO above)
 
 
 def get_primary_keys_from_stream(
