@@ -27,8 +27,6 @@ public class MssqlCdcHelper {
   private static final String REPLICATION_FIELD = "replication";
   private static final String REPLICATION_TYPE_FIELD = "replication_type";
   private static final String METHOD_FIELD = "method";
-  private static final String CDC_SNAPSHOT_ISOLATION_FIELD = "snapshot_isolation";
-  private static final String CDC_DATA_TO_SYNC_FIELD = "data_to_sync";
 
   private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
 
@@ -81,8 +79,8 @@ public class MssqlCdcHelper {
     if (isSnapshot) {
       props.setProperty("snapshot.mode", "initial_only");
     } else {
-      // If not in snapshot mode, initial_only will make sure that a snapshot is taken if the oplog is
-      // rotated out.
+      // If not in snapshot mode, initial will make sure that a snapshot is taken if the transaction log is
+      // rotated out. This will also end up read streaming changes from the transaction_log.
       props.setProperty("snapshot.mode", "initial");
     }
 
