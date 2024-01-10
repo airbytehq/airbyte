@@ -64,12 +64,39 @@ def test_connection_fail_due_to_api_error(errror_code, expected_status, config, 
     assert msg.startswith("Unable to connect to Gitlab API with the provided Private Access Token")
 
 
+def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_mock):
+    mocker.patch("time.sleep")
+    test_response = {
+        "access_token": "new_access_token",
+        "expires_in": 7200,
+        "created_at": 1735689600,
+        # (7200 + 1735689600).timestamp().to_rfc3339_string() = "2025-01-01T02:00:00+00:00"
+        "refresh_token": "new_refresh_token",
+    }
+    requests_mock.post("https://gitlab.com/oauth/token", status_code=200, json=test_response)
+    requests_mock.get("/api/v4/groups", status_code=500)
+    source = SourceGitlab()
+    status, msg = source.check_connection(logging.getLogger(), oauth_config)
+    assert status is False
+    assert msg.startswith("Unable to connect to Gitlab API with the provided credentials")
+
+
 def test_connection_fail_due_to_expired_access_token_error(oauth_config, requests_mock):
-    expected = "Unable to refresh the `access_token`, please re-auth in Source > Settings."
+    expected = "Unable to refresh the `access_token`, please re-authenticate in Sources > Settings."
     requests_mock.post("https://gitlab.com/oauth/token", status_code=401)
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger("airbyte"), oauth_config)
-    assert status is False, expected in msg
+    assert status is False
+    assert expected in msg
+
+
+def test_connection_refresh_access_token(oauth_config, requests_mock):
+    expected = "Unknown error occurred while checking the connection"
+    requests_mock.post("https://gitlab.com/oauth/token", status_code=200, json={"access_token": "new access token"})
+    source = SourceGitlab()
+    status, msg = source.check_connection(logging.getLogger("airbyte"), oauth_config)
+    assert status is False
+    assert expected in msg
 
 
 def test_refresh_expired_access_token_on_error(oauth_config, requests_mock):
@@ -108,3 +135,27 @@ def test_connection_fail_due_to_config_error(mocker, api_url, deployment_env, ex
     }
     status, msg = source.check_connection(logging.getLogger(), config)
     assert (status, msg) == (False, expected_message)
+
+
+def test_try_refresh_access_token(oauth_config, requests_mock):
+    test_response = {
+        "access_token": "new_access_token",
+        "expires_in": 7200,
+        "created_at": 1735689600,
+        # (7200 + 1735689600).timestamp().to_rfc3339_string() = "2025-01-01T02:00:00+00:00"
+        "refresh_token": "new_refresh_token",
+    }
+    requests_mock.post("https://gitlab.com/oauth/token", status_code=200, json=test_response)
+
+    expected = {"api_url": "gitlab.com",
+                "credentials": {"access_token": "new_access_token",
+                                "auth_type": "oauth2.0",
+                                "client_id": "client_id",
+                                "client_secret": "client_secret",
+                                "refresh_token": "new_refresh_token",
+                                "token_expiry_date": "2025-01-01T02:00:00+00:00"},
+                "start_date": "2021-01-01T00:00:00Z"}
+
+    source = SourceGitlab()
+    source._auth_params(oauth_config)
+    assert source._try_refresh_access_token(logger=logging.getLogger(), config=oauth_config) == expected
