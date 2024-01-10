@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """A generic interface for a set of streams."""
 
 from collections.abc import Iterator, Mapping

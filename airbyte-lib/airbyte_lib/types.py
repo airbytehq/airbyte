@@ -7,7 +7,6 @@ from typing import cast
 
 import sqlalchemy
 
-
 # Compare to documentation here: https://docs.airbyte.com/understanding-airbyte/supported-data-types
 CONVERSION_MAP = {
     "string": sqlalchemy.types.VARCHAR,

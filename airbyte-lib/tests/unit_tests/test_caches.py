@@ -1,7 +1,9 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import pytest
-from airbyte_lib.caches.duckdb import DuckDBCacheConfig, DuckDBCacheBase
-from airbyte_lib.caches.base import SQLCacheConfigBase, SQLCacheBase
 from airbyte_lib._file_writers import ParquetWriterConfig
+from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
+from airbyte_lib.caches.duckdb import DuckDBCacheBase, DuckDBCacheConfig
 
 
 def test_duck_db_cache_config_initialization():

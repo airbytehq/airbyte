@@ -8,11 +8,9 @@ import abc
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, cast, final
 
-from overrides import overrides
-
-from airbyte_lib.config import CacheConfigBase
 from airbyte_lib._processors import BatchHandle, RecordProcessor
-
+from airbyte_lib.config import CacheConfigBase
+from overrides import overrides
 
 if TYPE_CHECKING:
     from pathlib import Path

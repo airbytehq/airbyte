@@ -4,7 +4,6 @@ import os
 
 import airbyte_lib as ab
 
-
 # preparation (from airbyte-lib main folder):
 #   python -m venv .venv-source-test
 #   source .venv-source-test/bin/activate

@@ -4,7 +4,6 @@ from itertools import islice
 
 import airbyte_lib as ab
 
-
 # preparation (from airbyte-lib main folder):
 #   python -m venv .venv-source-spacex-api
 #   source .venv-source-spacex-api/bin/activate

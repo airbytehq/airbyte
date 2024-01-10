@@ -7,8 +7,8 @@ import airbyte_lib as ab
 import pandas as pd
 import pytest
 from airbyte_lib.caches import DuckDBCache, DuckDBCacheConfig, InMemoryCache, InMemoryCacheConfig, PostgresCache, PostgresCacheConfig
-from airbyte_lib.results import ReadResult
 from airbyte_lib.registry import _update_cache
+from airbyte_lib.results import ReadResult
 
 
 @pytest.fixture(scope="module", autouse=True)

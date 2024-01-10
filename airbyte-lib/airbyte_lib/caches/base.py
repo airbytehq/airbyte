@@ -14,26 +14,17 @@ import pandas as pd
 import pyarrow as pa
 import sqlalchemy
 import ulid
-from overrides import overrides
-from sqlalchemy import (
-    CursorResult,
-    Executable,
-    TextClause,
-    create_engine,
-    text,
-)
-from sqlalchemy.engine import Engine
-from sqlalchemy.pool import StaticPool
-
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
-
+from airbyte_lib._file_writers import FileWriterBase, FileWriterBatchHandle
+from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
 from airbyte_lib.datasets._base import DatasetBase
 from airbyte_lib.datasets._lazy import LazyDataset
-from airbyte_lib._file_writers import FileWriterBase, FileWriterBatchHandle
-from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.types import SQLTypeConverter
-
+from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
+from overrides import overrides
+from sqlalchemy import CursorResult, Executable, TextClause, create_engine, text
+from sqlalchemy.engine import Engine
+from sqlalchemy.pool import StaticPool
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection
@@ -260,9 +251,7 @@ class SQLCacheBase(RecordProcessor):
 
         if DEBUG_MODE:
             found_schemas = self._get_schemas_list()
-            assert (
-                schema_name in found_schemas
-            ), f"Schema {schema_name} was not created. Found: {found_schemas}"
+            assert schema_name in found_schemas, f"Schema {schema_name} was not created. Found: {found_schemas}"
 
     @final
     def _get_temp_table_name(
@@ -292,8 +281,7 @@ class SQLCacheBase(RecordProcessor):
         """Create a new table for loading data."""
         temp_table_name = self._get_temp_table_name(stream_name, batch_id)
         column_definition_str = ",\n  ".join(
-            f"{column_name} {sql_type}"
-            for column_name, sql_type in self._get_sql_column_definitions(stream_name).items()
+            f"{column_name} {sql_type}" for column_name, sql_type in self._get_sql_column_definitions(stream_name).items()
         )
         self._create_table(temp_table_name, column_definition_str)
 
@@ -318,8 +306,7 @@ class SQLCacheBase(RecordProcessor):
         return [
             found_schema.split(".")[-1].strip('"')
             for found_schema in found_schemas
-            if "." not in found_schema
-            or (found_schema.split(".")[0].lower().strip('"') == database_name.lower())
+            if "." not in found_schema or (found_schema.split(".")[0].lower().strip('"') == database_name.lower())
         ]
 
     def _ensure_final_table_exists(
@@ -390,9 +377,7 @@ class SQLCacheBase(RecordProcessor):
         _ = self._execute_sql(cmd)
         if DEBUG_MODE:
             tables_list = self._get_tables_list()
-            assert (
-                table_name in tables_list
-            ), f"Table {table_name} was not created. Found: {tables_list}"
+            assert table_name in tables_list, f"Table {table_name} was not created. Found: {tables_list}"
 
     def _normalize_column_name(
         self,

@@ -3,11 +3,10 @@
 from collections.abc import Iterator
 from typing import Any
 
-from pandas import DataFrame
-from sqlalchemy import Table
-
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.datasets import DatasetBase
+from pandas import DataFrame
+from sqlalchemy import Table
 
 
 class CachedDataset(DatasetBase):

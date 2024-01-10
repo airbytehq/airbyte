@@ -9,9 +9,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-import yaml
-
 import airbyte_lib as ab
+import yaml
 
 
 def _parse_args() -> argparse.Namespace:
@@ -41,7 +40,8 @@ def tests(connector_name: str, sample_config: str) -> None:
     print("Creating source and validating spec and version...")
     source = ab.get_connector(
         # FIXME: noqa: SIM115, PTH123
-        connector_name, config=json.load(open(sample_config))  # noqa: SIM115, PTH123
+        connector_name,
+        config=json.load(open(sample_config)),  # noqa: SIM115, PTH123
     )
 
     print("Running check...")

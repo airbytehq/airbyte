@@ -10,11 +10,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pyarrow as pa
-from overrides import overrides
-
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
-
+from overrides import overrides
 
 if TYPE_CHECKING:
     from pathlib import Path

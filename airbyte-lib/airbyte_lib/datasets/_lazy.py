@@ -3,9 +3,8 @@
 from collections.abc import Callable, Iterator
 from typing import Any
 
-from overrides import overrides
-
 from airbyte_lib.datasets import DatasetBase
+from overrides import overrides
 
 
 class LazyDataset(DatasetBase):

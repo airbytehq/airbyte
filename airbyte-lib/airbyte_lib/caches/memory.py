@@ -10,14 +10,9 @@ from __future__ import annotations
 from typing import cast
 
 import pyarrow as pa
-from overrides import overrides
-
+from airbyte_lib._file_writers import FileWriterBase, FileWriterBatchHandle, FileWriterConfigBase
 from airbyte_lib.caches.duckdb import DuckDBCacheBase, DuckDBCacheConfig
-from airbyte_lib._file_writers import (
-    FileWriterBase,
-    FileWriterBatchHandle,
-    FileWriterConfigBase,
-)
+from overrides import overrides
 
 
 class InMemoryCacheConfig(DuckDBCacheConfig):

@@ -1,7 +1,10 @@
-from numpy import source
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import pytest
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle, FileWriterConfigBase
-from airbyte_lib._file_writers.parquet import ParquetWriterConfig, ParquetWriter
+from airbyte_lib._file_writers.parquet import ParquetWriter, ParquetWriterConfig
+from numpy import source
+
 
 def test_parquet_writer_config_initialization():
     config = ParquetWriterConfig(cache_path='test_path')

@@ -8,7 +8,12 @@ from functools import lru_cache
 from typing import Any, Optional
 
 import jsonschema
-
+from airbyte_lib._executor import Executor
+from airbyte_lib._util import airbyte  # Internal utility functions
+from airbyte_lib.caches import SQLCacheBase
+from airbyte_lib.datasets._lazy import LazyDataset
+from airbyte_lib.factories._cache_factories import get_default_cache
+from airbyte_lib.results import ReadResult
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -21,13 +26,6 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
-
-from airbyte_lib._executor import Executor
-from airbyte_lib._util import airbyte  # Internal utility functions
-from airbyte_lib.caches import SQLCacheBase
-from airbyte_lib.datasets._lazy import LazyDataset
-from airbyte_lib.factories._cache_factories import get_default_cache
-from airbyte_lib.results import ReadResult
 
 
 @contextmanager
@@ -196,8 +194,7 @@ class Source:
         )
         if len(configured_catalog.streams) == 0:
             raise ValueError(  # noqa: TRY003  # Long message in exception constructor
-                f"Stream {stream} is not available for connector {self.name}, "
-                f"choose from {self.get_available_streams()}",
+                f"Stream {stream} is not available for connector {self.name}, " f"choose from {self.get_available_streams()}",
             )
 
         iterator: Iterable[dict[str, Any]] = airbyte.airbyte_messages_to_record_dicts(
