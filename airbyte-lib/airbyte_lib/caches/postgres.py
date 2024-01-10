@@ -45,3 +45,4 @@ class PostgresCache(SQLCacheBase):
 
     config_class = PostgresCacheConfig
     file_writer_class = ParquetWriter
+    supports_merge_insert = True

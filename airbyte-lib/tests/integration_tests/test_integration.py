@@ -150,6 +150,24 @@ def test_check_fail_on_missing_config(method_call):
     with pytest.raises(Exception, match="Config is not set, either set in get_connector or via source.set_config"):
         method_call(source)
 
+def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = PostgresCache(
+        config=new_pg_cache_config,
+        source_catalog=source.configured_catalog,
+    )
+
+    result: ReadResult = source.read(cache)
+    result: ReadResult = source.read(cache)
+
+    assert result.processed_records == 3
+    for stream_name, expected_data in expected_test_stream_data.items():
+        pd.testing.assert_frame_equal(
+            result[stream_name].to_pandas(),
+            pd.DataFrame(expected_data),
+            check_dtype=False,
+        )
+
 def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = PostgresCache(
