@@ -7,15 +7,16 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import java.util.stream.Stream;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
+import org.apache.commons.lang3.ArrayUtils;
 
 public class MySqlSslFullCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 
   private static final String PASSWORD = "Passw0rd";
 
   @Override
-  protected Stream<String> extraContainerFactoryMethods() {
-    return Stream.of("withRootAndServerCertificates", "withClientCertificate");
+  protected ContainerModifier[] getContainerModifiers() {
+    return ArrayUtils.toArray(ContainerModifier.ROOT_AND_SERVER_CERTIFICATES, ContainerModifier.CLIENT_CERTITICATE);
   }
 
   @Override

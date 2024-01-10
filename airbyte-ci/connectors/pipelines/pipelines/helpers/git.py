@@ -82,4 +82,4 @@ def get_git_repo() -> git.Repo:
 @functools.cache
 def get_git_repo_path() -> str:
     """Retrieve the git repo path."""
-    return get_git_repo().working_tree_dir
+    return str(get_git_repo().working_tree_dir)

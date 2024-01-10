@@ -67,7 +67,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
@@ -87,7 +86,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       "storage.objects.delete",
       "storage.objects.get",
       "storage.objects.list");
-  private static final ConcurrentMap<AirbyteStreamNameNamespacePair, String> randomSuffixMap = new ConcurrentHashMap<>();
   protected final BigQuerySQLNameTransformer namingResolver;
 
   public BigQueryDestination() {
@@ -294,10 +292,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         final AirbyteStream stream = configStream.getStream();
         final StreamConfig parsedStream;
 
-        randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
-
-        final String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
-        final String streamName = stream.getName();
         final String targetTableName;
 
         parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
@@ -310,7 +304,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             .parsedStream(parsedStream)
             .config(config)
             .formatterMap(getFormatterMap(stream.getJsonSchema()))
-            .tmpTableName(namingResolver.getTmpTableName(streamName, randomSuffix))
             .targetTableName(targetTableName)
             // This refers to whether this is BQ denormalized or not
             .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
@@ -390,10 +383,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             }
           });
         },
-        (hasFailed) -> {
+        (hasFailed, streamSyncSummaries) -> {
           try {
             Thread.sleep(30 * 1000);
-            typerDeduper.typeAndDedupe();
+            typerDeduper.typeAndDedupe(streamSyncSummaries);
             typerDeduper.commitFinalTables();
             typerDeduper.cleanup();
           } catch (final Exception e) {

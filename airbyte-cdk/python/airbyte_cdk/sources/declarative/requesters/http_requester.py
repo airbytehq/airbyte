@@ -7,10 +7,12 @@ import os
 import urllib
 from dataclasses import InitVar, dataclass
 from functools import lru_cache
+from pathlib import Path
 from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 
 import requests
+import requests_cache
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
@@ -29,6 +31,7 @@ from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
 from requests.auth import AuthBase
 
@@ -47,6 +50,7 @@ class HttpRequester(Requester):
         authenticator (DeclarativeAuthenticator): Authenticator defining how to authenticate to the source
         error_handler (Optional[ErrorHandler]): Error handler defining how to detect and handle errors
         config (Config): The user-provided configuration as specified by the source's spec
+        use_cache (bool): Indicates that data should be cached for this stream
     """
 
     name: str
@@ -55,11 +59,12 @@ class HttpRequester(Requester):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     authenticator: Optional[DeclarativeAuthenticator] = None
-    http_method: Union[str, HttpMethod] = HttpMethod.GET
+    http_method: HttpMethod = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
     error_handler: Optional[ErrorHandler] = None
     disable_retries: bool = False
     message_repository: MessageRepository = NoopMessageRepository()
+    use_cache: bool = False
 
     _DEFAULT_MAX_RETRY = 5
     _DEFAULT_RETRY_FACTOR = 5
@@ -75,11 +80,10 @@ class HttpRequester(Requester):
         else:
             self._request_options_provider = self.request_options_provider
         self._authenticator = self.authenticator or NoAuth(parameters=parameters)
-        self._http_method = HttpMethod[self.http_method] if isinstance(self.http_method, str) else self.http_method
         self.error_handler = self.error_handler
         self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
-        self._session = requests.Session()
+        self._session = self.request_cache()
         self._session.mount(
             "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
         )
@@ -92,6 +96,33 @@ class HttpRequester(Requester):
     # but this has a cascading effect where all dataclass fields must also be set to frozen.
     def __hash__(self) -> int:
         return hash(tuple(self.__dict__))
+
+    @property
+    def cache_filename(self) -> str:
+        """
+        Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
+        """
+        return f"{self.name}.sqlite"
+
+    def request_cache(self) -> requests.Session:
+        if self.use_cache:
+            cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
+            # Use in-memory cache if cache_dir is not set
+            # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
+            if cache_dir:
+                sqlite_path = str(Path(cache_dir) / self.cache_filename)
+            else:
+                sqlite_path = "file::memory:?cache=shared"
+            return requests_cache.CachedSession(sqlite_path, backend="sqlite")  # type: ignore # there are no typeshed stubs for requests_cache
+        else:
+            return requests.Session()
+
+    def clear_cache(self) -> None:
+        """
+        Clear cached requests for current session, can be called any time
+        """
+        if isinstance(self._session, requests_cache.CachedSession):
+            self._session.cache.clear()  # type: ignore # cache.clear is not typed
 
     def get_authenticator(self) -> DeclarativeAuthenticator:
         return self._authenticator
@@ -107,15 +138,17 @@ class HttpRequester(Requester):
         return path.lstrip("/")
 
     def get_method(self) -> HttpMethod:
-        return self._http_method
+        return self.http_method
 
-    # use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
-    # only care about the status of the last response received
-    @lru_cache(maxsize=10)
     def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
-        # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
         if self.error_handler is None:
             raise ValueError("Cannot interpret response status without an error handler")
+
+        # Change CachedRequest to PreparedRequest for response
+        request = response.request
+        if isinstance(request, requests_cache.CachedRequest):
+            response.request = request.prepare()
+
         return self.error_handler.interpret_response(response)
 
     def get_request_params(
@@ -200,7 +233,16 @@ class HttpRequester(Requester):
         """
         if self.error_handler is None:
             return response.status_code == 429 or 500 <= response.status_code < 600
-        return bool(self.interpret_response_status(response).action == ResponseAction.RETRY)
+
+        if self.use_cache:
+            interpret_response_status = self.interpret_response_status
+        else:
+            # Use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
+            # only care about the status of the last response received
+            # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
+            interpret_response_status = lru_cache(maxsize=10)(self.interpret_response_status)
+
+        return bool(interpret_response_status(response).action == ResponseAction.RETRY)
 
     def _backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -291,6 +333,11 @@ class HttpRequester(Requester):
         )
         if isinstance(options, str):
             raise ValueError("Request params cannot be a string")
+
+        for k, v in options.items():
+            if isinstance(v, (list, dict)):
+                raise ValueError(f"Invalid value for `{k}` parameter. The values of request params cannot be an array or object.")
+
         return options
 
     def _request_body_data(
@@ -372,7 +419,7 @@ class HttpRequester(Requester):
         data: Any = None,
     ) -> requests.PreparedRequest:
         url = urljoin(self.get_url_base(), path)
-        http_method = str(self._http_method.value)
+        http_method = str(self.http_method.value)
         query_params = self.deduplicate_query_params(url, params)
         args = {"method": http_method, "url": url, "headers": headers, "params": query_params}
         if http_method.upper() in BODY_REQUEST_METHODS:

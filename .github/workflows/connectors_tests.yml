@@ -19,7 +19,7 @@ on:
         default: "--modified"
       runner:
         description: "The runner to use for this job"
-        default: "ci-runner-connector-test-large-dagger-0-6-4"
+        default: "ci-runner-connector-test-large-dagger-0-9-5"
       airbyte_ci_binary_url:
         description: "The URL to download the airbyte-ci binary from"
         required: false
@@ -33,7 +33,7 @@ jobs:
   connectors_ci:
     name: Connectors CI
     timeout-minutes: 1440 # 24 hours
-    runs-on: ${{ inputs.runner || 'ci-runner-connector-test-large-dagger-0-6-4'}}
+    runs-on: ${{ inputs.runner || 'ci-runner-connector-test-large-dagger-0-9-5'}}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -60,6 +60,7 @@ jobs:
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -71,11 +72,13 @@ jobs:
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
           airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -85,4 +88,5 @@ jobs:
           github_token: ${{ env.PAT }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "connectors --modified test"
