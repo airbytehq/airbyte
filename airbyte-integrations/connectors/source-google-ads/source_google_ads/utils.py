@@ -19,6 +19,7 @@ from google.ads.googleads.v15.errors.types.authentication_error import Authentic
 from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
 from google.ads.googleads.v15.errors.types.quota_error import QuotaErrorEnum
 from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
+from google.api_core.exceptions import Unauthenticated
 from source_google_ads.google_ads import logger
 
 
@@ -53,11 +54,18 @@ def is_error_type(error_value, target_enum_value):
     return int(error_value) == int(target_enum_value)
 
 
-def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_disabled_customer_error: bool):
+def traced_exception(ga_exception: Union[GoogleAdsException, Unauthenticated], customer_id: str, catch_disabled_customer_error: bool):
     """Add user-friendly message for GoogleAdsException"""
     messages = []
     raise_exception = AirbyteTracedException
     failure_type = FailureType.config_error
+
+    if isinstance(ga_exception, Unauthenticated):
+        message = (
+            f"Authentication failed for the customer '{customer_id}'. "
+            f"Please try to Re-authenticate your credentials on set up Google Ads page."
+        )
+        raise raise_exception.from_exception(failure_type=failure_type, exc=ga_exception, message=message) from ga_exception
 
     for error in ga_exception.failure.errors:
         # Get error codes
