@@ -1,21 +1,31 @@
 package io.airbyte.integrations.source.mssql;
 
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.connector.sqlserver.Lsn;
+import io.debezium.engine.ChangeEvent;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +41,70 @@ public class MssqlDebeziumStateUtil {
         Optional.empty());
     final Map<String, Object> state = new HashMap<>();
     state.put(MssqlSource.MSSQL_CDC_OFFSET, offsetManager.read());
+    return Jsons.jsonNode(state);
+  }
+
+
+  public JsonNode generateSchemaState(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) {
+    final JsonNode highWaterMark = constructLsnSnapshotState(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText());
+    final AirbyteFileOffsetBackingStore emptyOffsetManager = AirbyteFileOffsetBackingStore.initializeState(null,
+        Optional.empty());
+    final AirbyteSchemaHistoryStorage schemaHistoryStorage =
+        AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), false);
+    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
+    final Instant engineStartTime = Instant.now();
+    try {
+      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(MssqlCdcHelper.getDebeziumProperties(database, catalog, true),
+          database.getSourceConfig(),
+          catalog,
+          emptyOffsetManager,
+          Optional.of(schemaHistoryStorage),
+          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB);
+      publisher.start(queue);
+      while (!publisher.hasClosed()) {
+        final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
+        if (event != null) {
+          publisher.close();
+          break;
+        }
+        if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(3)) > 0) {
+          LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 180);
+          publisher.close();
+          throw new RuntimeException(
+              "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
+        }
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(highWaterMark,
+        Optional.empty());
+
+    final Map<String, String> offset = offsetManager.read();
+    final SchemaHistory<String> schemaHistory = schemaHistoryStorage.read();
+
+    assert !offset.isEmpty();
+    assert Objects.nonNull(schemaHistory);
+    assert Objects.nonNull(schemaHistory.schema());
+
+    final JsonNode asJson = serialize(offset, schemaHistory);
+    LOGGER.info("Initial Debezium state constructed: {}", asJson);
+
+    if (asJson.get(MssqlSource.MSSQL_DB_HISTORY).asText().isBlank()) {
+      throw new RuntimeException("Schema history snapshot returned empty history.");
+    }
+    return asJson;
+
+
+  }
+
+  public static JsonNode serialize(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
+    final Map<String, Object> state = new HashMap<>();
+    state.put(MssqlSource.MSSQL_CDC_OFFSET, offset);
+    state.put(MssqlSource.MSSQL_DB_HISTORY, dbHistory.schema());
+    state.put(MssqlSource.IS_COMPRESSED, dbHistory.isCompressed());
+
     return Jsons.jsonNode(state);
   }
 
@@ -50,7 +124,7 @@ public class MssqlDebeziumStateUtil {
   }
 }
 
-public static record MssqlDebeziumStateAttributes(Lsn lsn) {}
+public record MssqlDebeziumStateAttributes(Lsn lsn) {}
 
 
   /**

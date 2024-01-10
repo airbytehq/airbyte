@@ -524,76 +524,32 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final ConfiguredAirbyteCatalog streamsToSnapshotCatalog = new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot);
 
       final MssqlDebeziumStateUtil msSqlDebeziumStateUtil = new MssqlDebeziumStateUtil();
-      final JsonNode initialDebeziumState = msSqlDebeziumStateUtil.constructInitialDebeziumState(
-           database);
-      boolean isFirstTimeRun = (stateManager.getCdcStateManager().getCdcState() == null
-          || stateManager.getCdcStateManager().getCdcState().getState() == null);
-
-      if (isFirstTimeRun) {
-        final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
-            msSqlDebeziumStateUtil.constructLsnSnapshotState(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
-            Optional.empty());
-        final AirbyteSchemaHistoryStorage schemaHistoryStorage =
-            AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), COMPRESSION_ENABLED);
-        final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
-        final Instant engineStartTime = Instant.now();
-        try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(MssqlCdcHelper.getDebeziumProperties(database, catalog, true),
-            database.getSourceConfig(),
-            catalog,
-            offsetManager,
-            Optional.of(schemaHistoryStorage),
-            DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB)) {
-          publisher.start(queue);
-          while (!publisher.hasClosed()) {
-            final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
-            if (event != null) {
-              publisher.close();
-              break;
-            }
-            if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(3)) > 0) {
-              LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 180);
-              publisher.close();
-              throw new RuntimeException(
-                  "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
-            }
-          }
-
-
-      } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-
-        final SchemaHistory schemaHistory = schemaHistoryStorage.read();
-
-        assert !offset.isEmpty();
-        assert Objects.nonNull(schemaHistory);
-        assert Objects.nonNull(schemaHistory.schema());
-
-        final JsonNode asJson = serialize(offset, schemaHistory);
-        LOGGER.info("Initial Debezium state constructed: {}", asJson);
+      final JsonNode initialDebeziumState = msSqlDebeziumStateUtil.generateSchemaState(
+          database, catalog);
 
         final CdcState stateToBeUsed = (stateManager.getCdcStateManager().getCdcState() == null
             || stateManager.getCdcStateManager().getCdcState().getState() == null) ? new CdcState().withState(initialDebeziumState)
             : stateManager.getCdcStateManager().getCdcState();
-      stateManager.getCdcStateManager().setCdcState(stateToBeUsed);
+        stateManager.getCdcStateManager().setCdcState(stateToBeUsed);
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(
-          catalog,
-          new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MssqlCdcStateHandler(stateManager),
-          mssqlCdcConnectorMetadataInjector,
-          MssqlCdcHelper.getDebeziumProperties(database, catalog, false),
-          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
-          emittedAt,
-          true);
+        final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(
+            catalog,
+            new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+            new MssqlCdcStateHandler(stateManager),
+            mssqlCdcConnectorMetadataInjector,
+            MssqlCdcHelper.getDebeziumProperties(database, catalog, false),
+            DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
+            emittedAt,
+            true);
 
         return List.of(incrementalIteratorsSupplier.get());
 
-    } else {
-      LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      } else {
+        LOGGER.info("using CDC: {}", false);
+        return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      }
     }
-  }
+
 
   @Override
   protected int getStateEmissionFrequency() {
