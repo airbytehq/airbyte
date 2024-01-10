@@ -77,7 +77,7 @@
     "edited": {
       "properties": {
         "ts": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "user": {
           "type": ["null", "string"]
