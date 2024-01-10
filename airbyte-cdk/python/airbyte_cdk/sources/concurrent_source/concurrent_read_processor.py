@@ -118,7 +118,6 @@ class ConcurrentReadProcessor:
         message = stream_data_to_airbyte_message(record.stream_name, record.data)
         stream = self._stream_name_to_instance[record.stream_name]
 
-
         if message.type == MessageType.RECORD:
             if self._record_counter[stream.name] == 0:
                 self._logger.info(f"Marking stream {stream.name} as RUNNING")
@@ -173,7 +172,9 @@ class ConcurrentReadProcessor:
         )
 
     def _is_stream_done(self, stream_name: str) -> bool:
-        return stream_name in self._streams_done or (len(self._streams_to_running_partitions[stream_name]) == 0 and stream_name not in self._streams_currently_generating_partitions)
+        return stream_name in self._streams_done or (
+            len(self._streams_to_running_partitions[stream_name]) == 0 and stream_name not in self._streams_currently_generating_partitions
+        )
 
     def _on_stream_is_done(self, stream_name: str) -> AirbyteMessage:
         self._logger.info(f"Read {self._record_counter[stream_name]} records from {stream_name} stream")

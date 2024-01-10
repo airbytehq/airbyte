@@ -39,7 +39,6 @@ class ThreadPoolManager:
         self._prune_futures(self._futures)
         self._futures.append(self._threadpool.submit(function, *args))
 
-
     def _prune_futures(self, futures: List[Future[Any]]) -> None:
         """
         Take a list in input and remove the futures that are completed. If a future has an exception, it'll raise and kill the stream
