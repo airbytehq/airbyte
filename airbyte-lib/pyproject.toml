@@ -10,6 +10,7 @@ python = "^3.10"
 jsonschema = "3.2.0"
 requests = "^2.31.0"
 airbyte-protocol-models = "^1.0.1"
+types-pyyaml = "^6.0.12.12"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
@@ -17,6 +18,7 @@ mypy = "^1.7.1"
 types-requests = "^2.31.0.10"
 types-jsonschema = "^4.20.0.0"
 pytest-mypy = "^0.10.3"
+pdoc = "^14.3.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -27,3 +29,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 addopts = "--mypy"
+
+[tool.poetry.scripts]
+generate-docs = "docs:run"
+airbyte-lib-validate-source = "airbyte_lib.validate:run"
