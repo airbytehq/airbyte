@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Any
+from sqlalchemy import Engine
 
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.datasets import CachedDataset
@@ -14,5 +14,5 @@ class ReadResult:
     def __getitem__(self, stream: str) -> CachedDataset:
         return CachedDataset(self._cache, stream)
 
-    def get_sql_engine(self) -> Any:
+    def get_sql_engine(self) -> Engine:
         return self._cache.get_sql_engine()
