@@ -17,11 +17,9 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.microsoft.sqlserver.jdbc.SQLServerException;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -32,9 +30,6 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
@@ -50,9 +45,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
-import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
 import java.net.URI;
 import java.security.KeyStoreException;
@@ -72,7 +65,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -468,55 +460,49 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using OC + CDC");
       return MssqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
-/*      final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
-      final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
-      final var targetPosition = MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
-      final AirbyteDebeziumHandler<Lsn> handler = new AirbyteDebeziumHandler<>(
-          sourceConfig,
-          targetPosition,
-          true,
-          firstRecordWaitTime,
-          subsequentRecordWaitTime,
-          OptionalInt.empty());
-      final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
-
-      // Determine if new stream(s) have been added to the catalog after initial sync of existing streams
-      final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
-      final ConfiguredAirbyteCatalog streamsToSnapshotCatalog = new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot);
-
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(
-          catalog,
-          new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MssqlCdcStateHandler(stateManager),
-          mssqlCdcConnectorMetadataInjector,
-          MssqlCdcHelper.getDebeziumProperties(database, catalog, false),
-          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
-          emittedAt,
-          true);
-
-      *//*
-       * If the CDC state is null or there is no streams to snapshot, that means no stream has gone
-       * through the initial sync, so we return the list of incremental iterators
+      /*
+       * final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
+       * final Duration subsequentRecordWaitTime =
+       * RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig); final var targetPosition =
+       * MssqlCdcTargetPosition.getTargetPosition(database,
+       * sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()); final AirbyteDebeziumHandler<Lsn> handler =
+       * new AirbyteDebeziumHandler<>( sourceConfig, targetPosition, true, firstRecordWaitTime,
+       * subsequentRecordWaitTime, OptionalInt.empty()); final MssqlCdcConnectorMetadataInjector
+       * mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
+       *
+       * // Determine if new stream(s) have been added to the catalog after initial sync of existing
+       * streams final List<ConfiguredAirbyteStream> streamsToSnapshot =
+       * identifyStreamsToSnapshot(catalog, stateManager); final ConfiguredAirbyteCatalog
+       * streamsToSnapshotCatalog = new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot);
+       *
+       * final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () ->
+       * handler.getIncrementalIterators( catalog, new
+       * MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()), new
+       * MssqlCdcStateHandler(stateManager), mssqlCdcConnectorMetadataInjector,
+       * MssqlCdcHelper.getDebeziumProperties(database, catalog, false),
+       * DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB, emittedAt, true);
+       *
        *//*
-      if ((stateManager.getCdcStateManager().getCdcState() == null ||
-          stateManager.getCdcStateManager().getCdcState().getState() == null ||
-          streamsToSnapshot.isEmpty())) {
-        return List.of(incrementalIteratorsSupplier.get());
-      }
-
-      // Otherwise, we build the snapshot iterators for the newly added streams(s)
-      final AutoCloseableIterator<AirbyteMessage> snapshotIterators =
-          handler.getSnapshotIterators(streamsToSnapshotCatalog,
-              mssqlCdcConnectorMetadataInjector,
-              MssqlCdcHelper.getDebeziumProperties(database, catalog, true),
-              new MssqlCdcStateHandler(stateManager),
-              DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
-              emittedAt);
-      *//*
-       * The incremental iterators needs to be wrapped in a lazy iterator since only 1 Debezium engine for
-       * the DB can be running at a time
-       *//*
-      return List.of(snapshotIterators, AutoCloseableIterators.lazyIterator(incrementalIteratorsSupplier, null));*/
+          * If the CDC state is null or there is no streams to snapshot, that means no stream has gone
+          * through the initial sync, so we return the list of incremental iterators
+          *//*
+             * if ((stateManager.getCdcStateManager().getCdcState() == null ||
+             * stateManager.getCdcStateManager().getCdcState().getState() == null ||
+             * streamsToSnapshot.isEmpty())) { return List.of(incrementalIteratorsSupplier.get()); }
+             *
+             * // Otherwise, we build the snapshot iterators for the newly added streams(s) final
+             * AutoCloseableIterator<AirbyteMessage> snapshotIterators =
+             * handler.getSnapshotIterators(streamsToSnapshotCatalog, mssqlCdcConnectorMetadataInjector,
+             * MssqlCdcHelper.getDebeziumProperties(database, catalog, true), new
+             * MssqlCdcStateHandler(stateManager), DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
+             * emittedAt);
+             *//*
+                * The incremental iterators needs to be wrapped in a lazy iterator since only 1 Debezium engine for
+                * the DB can be running at a time
+                *//*
+                   * return List.of(snapshotIterators,
+                   * AutoCloseableIterators.lazyIterator(incrementalIteratorsSupplier, null));
+                   */
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
@@ -649,4 +635,5 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     super.logPreSyncDebugData(database, catalog);
     MssqlQueryUtils.getIndexInfoForStreams(database, catalog, getQuoteString());
   }
+
 }

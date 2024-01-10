@@ -97,6 +97,7 @@ dependencies {
     implementation libs.debezium.mysql
     implementation libs.debezium.postgres
     implementation libs.debezium.mongodb
+    implementation libs.debezium.sqlserver
 
     implementation libs.bundles.datadog
     // implementation 'com.datadoghq:dd-trace-api'

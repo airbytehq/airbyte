@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mssql.initialsync;
 
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
@@ -26,6 +30,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("try")
 public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
     implements AutoCloseableIterator<JsonNode> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadRecordIterator.class);
 
   private AutoCloseableIterator<JsonNode> currentIterator;
@@ -41,14 +46,14 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   private final boolean isCompositeKeyLoad;
 
   MssqlInitialLoadRecordIterator(
-      final JdbcDatabase database,
-      final JdbcCompatibleSourceOperations<JDBCType> sourceOperations,
-      final String quoteString,
-      final MssqlInitialLoadStateManager initialLoadStateManager,
-      final List<String> columnNames,
-      final AirbyteStreamNameNamespacePair pair,
-      final long chunkSize,
-      final boolean isCompositeKeyLoad) {
+                                 final JdbcDatabase database,
+                                 final JdbcCompatibleSourceOperations<JDBCType> sourceOperations,
+                                 final String quoteString,
+                                 final MssqlInitialLoadStateManager initialLoadStateManager,
+                                 final List<String> columnNames,
+                                 final AirbyteStreamNameNamespacePair pair,
+                                 final long chunkSize,
+                                 final boolean isCompositeKeyLoad) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
@@ -59,6 +64,7 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
     this.ocInfo = initialLoadStateManager.getOrderedColumnInfo(pair);
     this.isCompositeKeyLoad = isCompositeKeyLoad;
   }
+
   @CheckForNull
   @Override
   protected JsonNode computeNext() {
@@ -126,7 +132,8 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
           sql = "SELECT %s FROM %s WHERE %s >= ? ORDER BY %s".formatted(wrappedColumnNames, fullTableName,
               quotedCursorField, quotedCursorField);
         } else {
-          // The ordered column max value could be null - this can happen in the case of empty tables. In this case, we
+          // The ordered column max value could be null - this can happen in the case of empty tables. In this
+          // case, we
           // can just issue a query
           // without any chunking.
           if (ocInfo.ocMaxValue() != null) {
@@ -157,4 +164,5 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
       currentIterator.close();
     }
   }
+
 }

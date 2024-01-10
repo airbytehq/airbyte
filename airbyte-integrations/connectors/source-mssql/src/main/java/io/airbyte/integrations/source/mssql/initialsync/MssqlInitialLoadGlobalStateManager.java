@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mssql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,11 +23,10 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MssqlInitialLoadGlobalStateManager implements MssqlInitialLoadStateManager{
+public class MssqlInitialLoadGlobalStateManager implements MssqlInitialLoadStateManager {
 
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOrderedColLoadStatus;
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
@@ -32,10 +35,11 @@ public class MssqlInitialLoadGlobalStateManager implements MssqlInitialLoadState
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
   // a result, we need to keep track of streams that have completed the snapshot.
   private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
+
   public MssqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
-      final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
-      final CdcState cdcState,
-      final ConfiguredAirbyteCatalog catalog) {
+                                            final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
+                                            final CdcState cdcState,
+                                            final ConfiguredAirbyteCatalog catalog) {
     this.cdcState = cdcState;
     this.pairToOrderedColLoadStatus = MssqlInitialLoadStateManager.initPairToOrderedColumnLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToOrderedColInfo = pairToOrderedColInfo;
