@@ -6,12 +6,13 @@ import logging
 import os
 import tracemalloc
 from functools import partial
-from unittest.mock import ANY, Mock, patch, MagicMock
+from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pendulum
 import pytest
 import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
+<<<<<<< HEAD
 <<<<<<< HEAD
 from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, SourceMarketo, Segmentations
 =======
@@ -27,6 +28,9 @@ from source_marketo.source import (
     SourceMarketo,
 )
 >>>>>>> master
+=======
+from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, Segmentations, SourceMarketo
+>>>>>>> aa056d64caff6f4f941fb907ae1b957d01476ac9
 
 
 def test_create_export_job(mocker, send_email_stream, caplog):
