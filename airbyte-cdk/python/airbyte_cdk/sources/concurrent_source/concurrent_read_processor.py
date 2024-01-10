@@ -99,7 +99,7 @@ class ConcurrentReadProcessor:
         partitions_running = self._streams_to_running_partitions[partition.stream_name()]
         if partition in partitions_running:
             partitions_running.remove(partition)
-            if len(partitions_running) == 0:
+            if len(partitions_running) == 0 and partition.stream_name() not in self._streams_currently_generating_partitions:
                 yield self._on_stream_is_done(partition.stream_name())
         yield from self._message_repository.consume_queue()
 
@@ -173,7 +173,7 @@ class ConcurrentReadProcessor:
         )
 
     def _is_stream_done(self, stream_name: str) -> bool:
-        return stream_name in self._streams_done and (len(self._streams_to_running_partitions[stream_name]) == 0 and stream_name not in self._streams_currently_generating_partitions)
+        return stream_name in self._streams_done or (len(self._streams_to_running_partitions[stream_name]) == 0 and stream_name not in self._streams_currently_generating_partitions)
 
     def _on_stream_is_done(self, stream_name: str) -> AirbyteMessage:
         self._logger.info(f"Read {self._record_counter[stream_name]} records from {stream_name} stream")

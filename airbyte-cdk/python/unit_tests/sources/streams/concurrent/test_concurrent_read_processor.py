@@ -111,9 +111,9 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             self._partition_reader,
         )
         handler.start_next_partition_generator()
-        handler.on_partition(self._a_closed_partition)
 
-        messages = list(handler.on_partition_complete_sentinel(PartitionCompleteSentinel(self._a_closed_partition)))
+        sentinel = PartitionGenerationCompletedSentinel(self._another_stream)
+        messages = handler.on_partition_generation_completed(sentinel)
 
         expected_messages = [
             AirbyteMessage(
@@ -191,6 +191,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         )
         handler.start_next_partition_generator()
         handler.on_partition(partition)
+        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream)))
 
         sentinel = PartitionCompleteSentinel(partition)
 
@@ -492,8 +493,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         )
         handler._streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}, _ANOTHER_STREAM_NAME: {self._a_closed_partition}}
 
-        # Initialize the handler with the second stream done
-        handler._streams_done.add(_ANOTHER_STREAM_NAME)
+        handler.start_next_partition_generator()
 
         another_stream = Mock(spec=AbstractStream)
         another_stream.name = _STREAM_NAME
