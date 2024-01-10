@@ -218,6 +218,9 @@ class RecordProcessor(abc.ABC):
         """Clean up the cache.
 
         This method is called after the given batch has been finalized.
+
+        For instance, file writers can override this method to delete the files created. Caches,
+        similarly, can override this method to delete any other temporary artifacts.
         """
         pass  # noqa: PIE790 # Intentional no-op
 

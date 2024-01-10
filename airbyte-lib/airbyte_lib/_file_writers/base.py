@@ -75,7 +75,10 @@ class FileWriterBase(RecordProcessor, abc.ABC):
         batch_id: str,
         batch_handle: BatchHandle,
     ) -> None:
-        """Clean up the cache."""
+        """Clean up the cache.
+
+        For file writers, this means deleting the files created and declared in the batch.
+        """
         batch_handle = cast(FileWriterBatchHandle, batch_handle)
         _ = stream_name, batch_id
         for file_path in batch_handle.files:
