@@ -67,6 +67,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MssqlInitialReadUtil {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialReadUtil.class);
 
   public record InitialLoadStreams(List<ConfiguredAirbyteStream> streamsForInitialLoad,
@@ -82,11 +83,11 @@ public class MssqlInitialReadUtil {
   public record OrderedColumnInfo(String ocFieldName, JDBCType fieldType, String ocMaxValue) {}
 
   public static List<AutoCloseableIterator<AirbyteMessage>> getCdcReadIterators(final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt,
-      final String quoteString) {
+                                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                                final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                                final StateManager stateManager,
+                                                                                final Instant emittedAt,
+                                                                                final String quoteString) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
     final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
@@ -185,8 +186,8 @@ public class MssqlInitialReadUtil {
   }
 
   public static InitialLoadStreams cdcStreamsForInitialOrderedCoumnLoad(final CdcStateManager stateManager,
-      final ConfiguredAirbyteCatalog fullCatalog,
-      final boolean savedOffsetStillPresentOnServer) {
+                                                                        final ConfiguredAirbyteCatalog fullCatalog,
+                                                                        final boolean savedOffsetStillPresentOnServer) {
     if (!savedOffsetStillPresentOnServer) {
       return new InitialLoadStreams(
           fullCatalog.getStreams()
@@ -233,10 +234,10 @@ public class MssqlInitialReadUtil {
   }
 
   public static Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, OrderedColumnInfo> initPairToOrderedColumnInfoMap(
-      final JdbcDatabase database,
-      final InitialLoadStreams initialLoadStreams,
-      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-      final String quoteString) {
+                                                                                                                                 final JdbcDatabase database,
+                                                                                                                                 final InitialLoadStreams initialLoadStreams,
+                                                                                                                                 final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                                                                                 final String quoteString) {
     final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOcInfoMap = new HashMap<>();
     // For every stream that is in initial ordered column sync, we want to maintain information about
     // the current ordered column info associated with the stream
@@ -274,7 +275,7 @@ public class MssqlInitialReadUtil {
   }
 
   public static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,
-      final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
+                                                                        final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
     return catalog.getStreams().stream()
