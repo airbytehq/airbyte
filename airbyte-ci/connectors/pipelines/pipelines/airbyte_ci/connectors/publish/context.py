@@ -120,6 +120,7 @@ class PublishConnectorContext(ConnectorContext):
             message += "🔴"
         message += f" {self.state.value['description']}\n"
         if self.state is ContextState.SUCCESSFUL:
+            assert self.report is not None, "Report should be set when state is successful"
             message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
         if self.state is ContextState.FAILURE:
             message += "\ncc. <!subteam^S0407GYHW4E>"  # @dev-connector-ops

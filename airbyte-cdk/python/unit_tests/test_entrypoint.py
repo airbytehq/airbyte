@@ -28,6 +28,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class MockSource(Source):
@@ -276,12 +277,12 @@ def test_invalid_command(entrypoint: AirbyteEntrypoint, config_mock):
     "deployment_mode, url, expected_error",
     [
         pytest.param("CLOUD", "https://airbyte.com", None, id="test_cloud_public_endpoint_is_successful"),
-        pytest.param("CLOUD", "https://192.168.27.30", ValueError, id="test_cloud_private_ip_address_is_rejected"),
-        pytest.param("CLOUD", "https://localhost:8080/api/v1/cast", ValueError, id="test_cloud_private_endpoint_is_rejected"),
+        pytest.param("CLOUD", "https://192.168.27.30", AirbyteTracedException, id="test_cloud_private_ip_address_is_rejected"),
+        pytest.param("CLOUD", "https://localhost:8080/api/v1/cast", AirbyteTracedException, id="test_cloud_private_endpoint_is_rejected"),
         pytest.param("CLOUD", "http://past.lives.net/api/v1/inyun", ValueError, id="test_cloud_unsecured_endpoint_is_rejected"),
         pytest.param("CLOUD", "https://not:very/cash:443.money", ValueError, id="test_cloud_invalid_url_format"),
         pytest.param("CLOUD", "https://192.168.27.30    ", ValueError, id="test_cloud_incorrect_ip_format_is_rejected"),
-        pytest.param("cloud", "https://192.168.27.30", ValueError, id="test_case_insensitive_cloud_environment_variable"),
+        pytest.param("cloud", "https://192.168.27.30", AirbyteTracedException, id="test_case_insensitive_cloud_environment_variable"),
         pytest.param("OSS", "https://airbyte.com", None, id="test_oss_public_endpoint_is_successful"),
         pytest.param("OSS", "https://192.168.27.30", None, id="test_oss_private_endpoint_is_successful"),
         pytest.param("OSS", "https://localhost:8080/api/v1/cast", None, id="test_oss_private_endpoint_is_successful"),
