@@ -6,7 +6,7 @@ import logging
 import os
 import tracemalloc
 from functools import partial
-from unittest.mock import ANY, Mock, patch, MagicMock
+from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pendulum
 import pytest
@@ -22,6 +22,7 @@ from source_marketo.source import (
     MarketoStream,
     Programs,
     SourceMarketo,
+    Segmentations
 )
 
 
