@@ -7,7 +7,6 @@ from airbyte_lib.datasets._base import DatasetBase
 
 
 if TYPE_CHECKING:
-
     from pandas import DataFrame
     from sqlalchemy import Table
 

@@ -82,7 +82,7 @@ class DuckDBCache(DuckDBCacheBase):
         Databases that do not support this syntax can override this method.
         """
         if not self._get_primary_keys(stream_name):
-            raise RuntimeError(  # noqa: TRY003  # Too-long exception message
+            raise RuntimeError(
                 f"Primary keys not found for stream {stream_name}. "
                 "Cannot run merge updates without primary keys."
             )
@@ -119,7 +119,7 @@ class DuckDBCache(DuckDBCacheBase):
         table_pk_cols = table.primary_key.columns.keys()
         if set(pk_cols) != set(table_pk_cols):
             if raise_on_error:
-                raise RuntimeError(  # noqa: TRY003  # Too-long exception message
+                raise RuntimeError(
                     f"Primary keys do not match for table {table_name}. "
                     f"Expected: {pk_cols}. "
                     f"Found: {table_pk_cols}.",

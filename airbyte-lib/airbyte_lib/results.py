@@ -1,8 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from sqlalchemy import Engine
+
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.datasets import CachedDataset
-from sqlalchemy import Engine
 
 
 class ReadResult:

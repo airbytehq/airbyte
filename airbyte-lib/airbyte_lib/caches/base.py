@@ -28,7 +28,6 @@ from airbyte_lib.types import SQLTypeConverter
 
 
 if TYPE_CHECKING:
-
     from sqlalchemy.engine import Connection
     from sqlalchemy.engine.reflection import Inspector
 
@@ -361,7 +360,7 @@ class SQLCacheBase(RecordProcessor):
         missing_columns: set[str] = set(stream_column_names) - set(table_column_names)
         if missing_columns:
             if raise_on_error:
-                raise RuntimeError(  # noqa: TRY003  # Too-long exception message
+                raise RuntimeError(
                     f"Table {table_name} is missing columns: {missing_columns}",
                 )
             return False  # Some columns are missing.

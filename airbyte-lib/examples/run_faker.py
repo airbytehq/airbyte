@@ -4,6 +4,7 @@ from itertools import islice
 
 import airbyte_lib as ab
 
+
 source = ab.get_connector(
     "source-faker",
     config={"count": 10000, "seed": 0, "parallelism": 1, "always_updated": False},

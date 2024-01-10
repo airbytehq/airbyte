@@ -193,7 +193,7 @@ class Source:
             ],
         )
         if len(configured_catalog.streams) == 0:
-            raise ValueError(  # noqa: TRY003  # Long message in exception constructor
+            raise ValueError(
                 f"Stream {stream} is not available for connector {self.name}, "
                 f"choose from {self.get_available_streams()}",
             )

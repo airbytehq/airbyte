@@ -48,5 +48,5 @@ def test_ruff_format():
     # Assert that the Ruff command exited without errors (exit code 0)
     assert result.returncode == 0, (
         f"Ruff checks failed:\n\n{result.stdout.decode()}\n{result.stderr.decode()}\n\n"
-        + "Run `poetry run ruff format fix .` to attempt automatic fixes."
+        + "Run `poetry run ruff format .` to attempt automatic fixes."
     )

@@ -9,8 +9,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-import airbyte_lib as ab
 import yaml
+
+import airbyte_lib as ab
 
 
 def _parse_args() -> argparse.Namespace:
