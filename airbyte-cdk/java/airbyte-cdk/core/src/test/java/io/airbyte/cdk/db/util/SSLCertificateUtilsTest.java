@@ -14,7 +14,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
@@ -25,8 +24,6 @@ import java.security.spec.InvalidKeySpecException;
 import org.junit.jupiter.api.Test;
 
 class SSLCertificateUtilsTest {
-
-  private static final String SLASH_TMP = "/tmp";
   private static final String KEY_STORE_PASSWORD = "123456";
   private static final String KEY_STORE_PASSWORD2 = "78910";
   static final String caPem = "-----BEGIN CERTIFICATE-----\n"
@@ -128,9 +125,9 @@ class SSLCertificateUtilsTest {
       + "UfBvhwXuNBkYrpd2OABCAZ5NxoTnj/vXf12l9aSZ1N4pOPAKntRAa+ZQKBgQDCPgJQfZePJGOvSIkW/TkXcHpGsexb5p900Si23BLjnMtCNMSkHuIWb60xq"
       + "I3vLFKhrLiYzYVQ5n3C6PYLcdfiDYwruYU3zmtr/gpg/QzcsvTe5CW/hxTAkzsZsFBOquJyuyCRBGN59tH6N6ietu8zzvCc8EeJJX7N7AX0ezF7lQ==";
 
-  void testkeyStoreFromCertificateInternal(final String certString, final String pwd, final FileSystem fs, final String directory)
+  void testkeyStoreFromCertificateInternal(final String certString, final String pwd)
       throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
-    final URI ksUri = SSLCertificateUtils.keyStoreFromCertificate(certString, pwd, fs, directory);
+    final URI ksUri = SSLCertificateUtils.keyStoreFromCertificate(certString, pwd);
 
     final KeyStore ks = KeyStore.getInstance("PKCS12");
     final InputStream inputStream = Files.newInputStream(Path.of(ksUri));
@@ -141,20 +138,20 @@ class SSLCertificateUtilsTest {
 
   @Test
   void testkeyStoreFromCertificate() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
-    testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD, null, SLASH_TMP);
+    testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD);
 
     final Exception exception = assertThrows(CertificateException.class, () -> {
-      testkeyStoreFromCertificateInternal(caPem_Bad, KEY_STORE_PASSWORD, null, SLASH_TMP);
+      testkeyStoreFromCertificateInternal(caPem_Bad, KEY_STORE_PASSWORD);
     });
     assertNotNull(exception);
   }
 
   @Test
   void testkeyStoreFromCertificateInMemory() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
-    testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD2, null, null);
+    testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD2);
 
     final Exception exception = assertThrows(CertificateException.class, () -> {
-      testkeyStoreFromCertificateInternal(caPem_Bad, KEY_STORE_PASSWORD, null, null);
+      testkeyStoreFromCertificateInternal(caPem_Bad, KEY_STORE_PASSWORD);
     });
     assertNotNull(exception);
   }
@@ -163,11 +160,9 @@ class SSLCertificateUtilsTest {
   void testKeyStoreFromClientCertificateInternal(
                                                  final String certString,
                                                  final String keyString,
-                                                 final String keyStorePassword,
-                                                 final FileSystem filesystem,
-                                                 final String directory)
+                                                 final String keyStorePassword)
       throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException {
-    final URI ksUri = SSLCertificateUtils.keyStoreFromClientCertificate(certString, keyString, keyStorePassword, filesystem, directory);
+    final URI ksUri = SSLCertificateUtils.keyStoreFromClientCertificate(certString, keyString, keyStorePassword);
     final KeyStore ks = KeyStore.getInstance("PKCS12");
     final InputStream inputStream = Files.newInputStream(Path.of(ksUri));
     ks.load(inputStream, KEY_STORE_PASSWORD.toCharArray());
@@ -180,15 +175,15 @@ class SSLCertificateUtilsTest {
   @Test
   void testKeyStoreFromClientCertificate()
       throws CertificateException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, KeyStoreException, InterruptedException {
-    testKeyStoreFromClientCertificateInternal(clientPem, clientKey, KEY_STORE_PASSWORD, null, SLASH_TMP);
+    testKeyStoreFromClientCertificateInternal(clientPem, clientKey, KEY_STORE_PASSWORD);
 
     final Exception exceptionKey = assertThrows(InvalidKeySpecException.class, () -> {
-      testKeyStoreFromClientCertificateInternal(clientPem, clientKey_wrong_format, KEY_STORE_PASSWORD, null, SLASH_TMP);
+      testKeyStoreFromClientCertificateInternal(clientPem, clientKey_wrong_format, KEY_STORE_PASSWORD);
     });
     assertNotNull(exceptionKey);
 
     final Exception exceptionCert = assertThrows(CertificateException.class, () -> {
-      testKeyStoreFromClientCertificateInternal(caPem_Bad, clientKey, KEY_STORE_PASSWORD, null, SLASH_TMP);
+      testKeyStoreFromClientCertificateInternal(caPem_Bad, clientKey, KEY_STORE_PASSWORD);
     });
     assertNotNull(exceptionCert);
   }
@@ -196,15 +191,15 @@ class SSLCertificateUtilsTest {
   @Test
   void testKeyStoreFromClientCertificateInMemory()
       throws CertificateException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, KeyStoreException, InterruptedException {
-    testKeyStoreFromClientCertificateInternal(clientPem, clientKey, KEY_STORE_PASSWORD, null, null);
+    testKeyStoreFromClientCertificateInternal(clientPem, clientKey, KEY_STORE_PASSWORD);
 
     final Exception exceptionKey = assertThrows(InvalidKeySpecException.class, () -> {
-      testKeyStoreFromClientCertificateInternal(clientPem, clientKey_wrong_format, KEY_STORE_PASSWORD, null, null);
+      testKeyStoreFromClientCertificateInternal(clientPem, clientKey_wrong_format, KEY_STORE_PASSWORD);
     });
     assertNotNull(exceptionKey);
 
     final Exception exceptionCert = assertThrows(CertificateException.class, () -> {
-      testKeyStoreFromClientCertificateInternal(caPem_Bad, clientKey, KEY_STORE_PASSWORD, null, null);
+      testKeyStoreFromClientCertificateInternal(caPem_Bad, clientKey, KEY_STORE_PASSWORD);
     });
     assertNotNull(exceptionCert);
 

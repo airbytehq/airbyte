@@ -6,6 +6,8 @@ package io.airbyte.cdk.db.util;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -49,16 +51,13 @@ public class SSLCertificateUtils {
   public static final String KEYSTORE_FILE_NAME = KEYSTORE_ENTRY_PREFIX + "keystore_";
   public static final String KEYSTORE_FILE_TYPE = ".p12";
 
-  private static URI saveKeyStoreToFile(final KeyStore keyStore, final String keyStorePassword, final FileSystem filesystem, final String directory)
+  private static URI saveKeyStoreToFile(final KeyStore keyStore, final String keyStorePassword)
       throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
-    final FileSystem fs = Objects.requireNonNullElse(filesystem, FileSystems.getDefault());
-    final Path pathToStore = fs.getPath(Objects.toString(directory, ""));
-    final Path pathToFile = pathToStore.resolve(KEYSTORE_FILE_NAME + RANDOM.nextInt() + KEYSTORE_FILE_TYPE);
-    final OutputStream os = Files.newOutputStream(pathToFile);
+    File keyStoreFile = File.createTempFile(KEYSTORE_FILE_NAME + RANDOM.nextInt(), KEYSTORE_FILE_TYPE);
+    final OutputStream os = new FileOutputStream(keyStoreFile);
     keyStore.store(os, keyStorePassword.toCharArray());
-    assert (Files.exists(pathToFile) == true);
 
-    return pathToFile.toUri();
+    return keyStoreFile.toPath().toUri();
   }
 
   private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
@@ -78,54 +77,35 @@ public class SSLCertificateUtils {
   }
 
   public static URI keyStoreFromCertificate(final Certificate cert,
-                                            final String keyStorePassword,
-                                            final FileSystem filesystem,
-                                            final String directory)
+                                            final String keyStorePassword)
       throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
     final KeyStore keyStore = KeyStore.getInstance(PKCS_12);
     keyStore.load(null);
     keyStore.setCertificateEntry(KEYSTORE_ENTRY_PREFIX + "1", cert);
-    return saveKeyStoreToFile(keyStore, keyStorePassword, filesystem, directory);
-  }
-
-  public static URI keyStoreFromCertificate(final String certString,
-                                            final String keyStorePassword,
-                                            final FileSystem filesystem,
-                                            final String directory)
-      throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
-    return keyStoreFromCertificate(fromPEMString(certString), keyStorePassword, filesystem, directory);
+    return saveKeyStoreToFile(keyStore, keyStorePassword);
   }
 
   public static URI keyStoreFromCertificate(final String certString,
                                             final String keyStorePassword)
       throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
-    return keyStoreFromCertificate(fromPEMString(certString), keyStorePassword, null, null);
-  }
-
-  public static URI keyStoreFromCertificate(final String certString, final String keyStorePassword, final String directory)
-      throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
-    return keyStoreFromCertificate(certString, keyStorePassword, FileSystems.getDefault(), directory);
+    return keyStoreFromCertificate(fromPEMString(certString), keyStorePassword);
   }
 
   public static URI keyStoreFromClientCertificate(
                                                   final Certificate cert,
                                                   final PrivateKey key,
-                                                  final String keyStorePassword,
-                                                  final FileSystem filesystem,
-                                                  final String directory)
+                                                  final String keyStorePassword)
       throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
     final KeyStore keyStore = KeyStore.getInstance(PKCS_12);
     keyStore.load(null);
     keyStore.setKeyEntry(KEYSTORE_ENTRY_PREFIX, key, keyStorePassword.toCharArray(), new Certificate[] {cert});
-    return saveKeyStoreToFile(keyStore, keyStorePassword, filesystem, directory);
+    return saveKeyStoreToFile(keyStore, keyStorePassword);
   }
 
   public static URI keyStoreFromClientCertificate(
                                                   final String certString,
                                                   final String keyString,
-                                                  final String keyStorePassword,
-                                                  final FileSystem filesystem,
-                                                  final String directory)
+                                                  final String keyStorePassword)
       throws IOException, InterruptedException, NoSuchAlgorithmException, InvalidKeySpecException, CertificateException, KeyStoreException {
 
     // Convert RSA key (PKCS#1) to PKCS#8 key
@@ -156,17 +136,8 @@ public class SSLCertificateUtils {
       }
     }
 
-    return keyStoreFromClientCertificate(fromPEMString(certString), privateKey, keyStorePassword, filesystem, directory);
+    return keyStoreFromClientCertificate(fromPEMString(certString), privateKey, keyStorePassword);
 
-  }
-
-  public static URI keyStoreFromClientCertificate(
-                                                  final String certString,
-                                                  final String keyString,
-                                                  final String keyStorePassword,
-                                                  final String directory)
-      throws CertificateException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, KeyStoreException, InterruptedException {
-    return keyStoreFromClientCertificate(certString, keyString, keyStorePassword, FileSystems.getDefault(), directory);
   }
 
   public static SSLContext createContextFromCaCert(String caCertificate) {

@@ -141,13 +141,11 @@ public class JdbcSSLConnectionUtils {
       if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
         final var encryption = config.get(JdbcUtils.SSL_MODE_KEY);
         if (encryption.has(PARAM_CA_CERTIFICATE) && !encryption.get(PARAM_CA_CERTIFICATE).asText().isEmpty()) {
-          final String clientKeyPassword = getOrGeneratePassword(encryption);
+          final String clientKeyPassword = RandomStringUtils.randomAlphanumeric(10);
           try {
             final URI caCertKeyStoreUri = SSLCertificateUtils.keyStoreFromCertificate(
                 encryption.get(PARAM_CA_CERTIFICATE).asText(),
-                clientKeyPassword,
-                null,
-                null);
+                clientKeyPassword);
             caCertKeyStorePair = new ImmutablePair<>(caCertKeyStoreUri, clientKeyPassword);
           } catch (final CertificateException | IOException | KeyStoreException | NoSuchAlgorithmException e) {
             throw new RuntimeException("Failed to create keystore for CA certificate", e);
@@ -158,16 +156,6 @@ public class JdbcSSLConnectionUtils {
     return caCertKeyStorePair;
   }
 
-  private static String getOrGeneratePassword(final JsonNode sslModeConfig) {
-    final String clientKeyPassword;
-    if (sslModeConfig.has(PARAM_CLIENT_KEY_PASSWORD) && !sslModeConfig.get(PARAM_CLIENT_KEY_PASSWORD).asText().isEmpty()) {
-      clientKeyPassword = sslModeConfig.get(PARAM_CLIENT_KEY_PASSWORD).asText();
-    } else {
-      clientKeyPassword = RandomStringUtils.randomAlphanumeric(10);
-    }
-    return clientKeyPassword;
-  }
-
   public static Pair<URI, String> prepareClientCertificateKeyStore(final JsonNode config) {
     Pair<URI, String> clientCertKeyStorePair = null;
     if (Objects.nonNull(config)) {
@@ -175,11 +163,11 @@ public class JdbcSSLConnectionUtils {
         final var encryption = config.get(JdbcUtils.SSL_MODE_KEY);
         if (encryption.has(PARAM_CLIENT_CERTIFICATE) && !encryption.get(PARAM_CLIENT_CERTIFICATE).asText().isEmpty()
             && encryption.has(PARAM_CLIENT_KEY) && !encryption.get(PARAM_CLIENT_KEY).asText().isEmpty()) {
-          final String clientKeyPassword = getOrGeneratePassword(encryption);
+          final String clientKeyPassword = RandomStringUtils.randomAlphanumeric(10);
           try {
             final URI clientCertKeyStoreUri = SSLCertificateUtils.keyStoreFromClientCertificate(encryption.get(PARAM_CLIENT_CERTIFICATE).asText(),
                 encryption.get(PARAM_CLIENT_KEY).asText(),
-                clientKeyPassword, null);
+                clientKeyPassword);
             clientCertKeyStorePair = new ImmutablePair<>(clientCertKeyStoreUri, clientKeyPassword);
           } catch (final CertificateException | IOException
               | KeyStoreException | NoSuchAlgorithmException
