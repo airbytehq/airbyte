@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, Iterable, List, MutableMapping, Optional
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
@@ -49,9 +49,7 @@ class AbstractStreamStateConverter(ABC):
         {
             "state_type": ConcurrencyCompatibleStateType.date_range.value,
             "metadata": { … },
-            "slices": [
-                {starts: 0, end: 1617030403, finished_processing: true}]
-        }
+            "low_water_mark": 1617030403
         """
         ...
 
@@ -66,19 +64,9 @@ class AbstractStreamStateConverter(ABC):
         ...
 
     @abstractmethod
-    def increment(self, timestamp: Any) -> Any:
+    def decrement(self, item: Any) -> Any:
         """
-        Increment a timestamp by a single unit.
-        """
-        ...
-
-    @abstractmethod
-    def merge_intervals(self, intervals: List[MutableMapping[str, Any]]) -> List[MutableMapping[str, Any]]:
-        """
-        Compute and return a list of merged intervals.
-
-        Intervals may be merged if the start time of the second interval is 1 unit or less (as defined by the
-        `increment` method) than the end time of the first interval.
+        Decrement an item by a single unit.
         """
         ...
 
@@ -92,4 +80,25 @@ class AbstractStreamStateConverter(ABC):
     @property
     @abstractmethod
     def zero_value(self) -> Any:
+        ...
+
+    @abstractmethod
+    def is_greater_than(self, item1: Any, item2: Any) -> bool:
+        """
+        Return True if the first item is greater than the second item.
+        """
+        ...
+
+    @abstractmethod
+    def min(self, *items: Iterable[Any]) -> Any:
+        """
+        Performs a comparison of the items and returns the min.
+        """
+        ...
+
+    @abstractmethod
+    def max(self, *items: Iterable[Any]) -> Any:
+        """
+        Performs a comparison of the items and returns the max.
+        """
         ...

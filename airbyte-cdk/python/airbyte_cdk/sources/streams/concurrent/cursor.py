@@ -3,7 +3,8 @@
 #
 import functools
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping, Optional, Protocol, Tuple
+from threading import Lock
+from typing import Any, List, Mapping, Optional, Protocol, Set, Tuple
 
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
@@ -50,6 +51,13 @@ class Cursor(ABC):
         """
         raise NotImplementedError()
 
+    @abstractmethod
+    def set_pending_partitions(self, pending_partitions: List[Partition]):
+        """
+        Set the pending partitions for tracking the job state
+        """
+        ...
+
 
 class NoopCursor(Cursor):
     def observe(self, record: Record) -> None:
@@ -85,6 +93,29 @@ class ConcurrentCursor(Cursor):
         self._most_recent_record: Optional[Record] = None
         self._has_closed_at_least_one_slice = False
         self.state = stream_state
+        self._pending_slices = None
+        self._min = None
+
+    def set_pending_partitions(self, pending_partitions: List[Partition]):
+        """
+        Set the slices waiting to be processed.
+
+        Also sets the min value of all slices for use in updating the state's `low_water_mark`.
+        """
+        pending_slices = set()
+        for partition in pending_partitions:
+            pending_slices.add(self._get_key_from_partition(partition))
+        if pending_slices:
+            _first_interval = sorted(pending_slices, key=lambda x: (x[self._START_BOUNDARY], x[self._END_BOUNDARY]))[0]
+            self._min = _first_interval[self._START_BOUNDARY]
+        self._pending_slices = pending_slices
+
+    def _get_key_from_partition(self, partition: Partition):
+        partition_slice = partition.to_slice()
+        return (
+            self._connector_state_converter.parse_value(partition_slice[self._connector_state_converter.START_KEY]),
+            self._connector_state_converter.parse_value(partition_slice[self._connector_state_converter.END_KEY]),
+        )
 
     def observe(self, record: Record) -> None:
         if self._slice_boundary_fields:
@@ -100,38 +131,64 @@ class ConcurrentCursor(Cursor):
         return self._connector_state_converter.parse_value(self._cursor_field.extract_value(record))
 
     def close_partition(self, partition: Partition) -> None:
-        slice_count_before = len(self.state.get("slices", []))
-        self._add_slice_to_state(partition)
-        if slice_count_before < len(self.state["slices"]):
-            self._merge_partitions()
+        """
+        Closes partitions and advances the low_water_mark if appropriate.
+
+        When a close_partition request comes in, we pop the partition from the set of pending partitions.
+        We then use the timestamp of the earliest partition as the new "low water mark" - the time before which all partitions have been processed.
+
+        # Start
+        [(1,2), (3,4), (5,6), (6,7)]
+        _min = 1
+        low_water_mark = None
+        no partitions are complete
+        emitted state = <min>
+
+        # (5,6) finishes
+        [(1,2) (3,4), (6,7)]
+        low_water_mark = 1*
+
+        # (1,2) finishes
+        [(3,4), (6,7)]
+        low_water_mark = 3 - increment
+
+        # (6,7) finishes
+        [3,4]
+        low_water_mark = 3 - increment
+
+        # (3,4) finishes
+        []
+        low_water_mark = max(min, last_slice_end)
+
+        *To avoid decrementing the cursor in the case where no partitions finish, we
+        take the max(_min, low_water_mark - increment)
+        """
+        if not self._min:
+            raise RuntimeError(f"The cursor's `_min` value should be set before processing partitions, but was not. This is unexpected. Please contact support.")
+
+        position_before = self.state["low_water_mark"]
+        partition_key = self._get_key_from_partition(partition)
+        self._pending_slices -= {partition_key}
+        converter = self._connector_state_converter
+
+        if self._pending_slices:
+            self.state["low_water_mark"] = converter.max(
+            converter.decrement(converter.min([start for start, end in self._pending_slices])),
+                self._min,
+            )
+        else:
+            # We are done processing all partitions
+            partition_slice = partition.to_slice()
+            self.state["low_water_mark"] = partition_key[-1]
+
+        position_after = self.state["low_water_mark"]
+
+        if self._has_advanced(position_before, position_after):
             self._emit_state_message()
         self._has_closed_at_least_one_slice = True
 
-    def _add_slice_to_state(self, partition: Partition) -> None:
-        if self._slice_boundary_fields:
-            if "slices" not in self.state:
-                self.state["slices"] = []
-            self.state["slices"].append(
-                {
-                    "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
-                    "end": self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
-                }
-            )
-        elif self._most_recent_record:
-            if self._has_closed_at_least_one_slice:
-                raise ValueError(
-                    "Given that slice_boundary_fields is not defined and that per-partition state is not supported, only one slice is "
-                    "expected."
-                )
-
-            self.state["slices"].append(
-                {
-                    # TODO: if we migrate stored state to the concurrent state format, we may want this to be the config start date
-                    #  instead of zero_value.
-                    "start": self._connector_state_converter.zero_value,
-                    "end": self._extract_cursor_value(self._most_recent_record),
-                }
-            )
+    def _has_advanced(self, before, after) -> bool:
+        return self._connector_state_converter.is_greater_than(after, before)
 
     def _emit_state_message(self) -> None:
         self._connector_state_manager.update_state_for_stream(
@@ -147,14 +204,11 @@ class ConcurrentCursor(Cursor):
         )
         self._message_repository.emit_message(state_message)
 
-    def _merge_partitions(self) -> None:
-        self.state["slices"] = self._connector_state_converter.merge_intervals(self.state["slices"])
-
     def _extract_from_slice(self, partition: Partition, key: str) -> Comparable:
         try:
             _slice = partition.to_slice()
             if not _slice:
-                raise KeyError(f"Could not find key `{key}` in empty slice")
+                raise KeyError(f"Could not find key `{key}` in empty slice for {partition.stream_name()}")
             return self._connector_state_converter.parse_value(_slice[key])  # type: ignore  # we expect the devs to specify a key that would return a Comparable
         except KeyError as exception:
-            raise KeyError(f"Partition is expected to have key `{key}` but could not be found") from exception
+            raise KeyError(f"Partition is expected to have key `{key}` but could not be found in {partition.stream_name()} {partition.to_slice()}") from exception
