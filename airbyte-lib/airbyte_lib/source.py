@@ -22,7 +22,7 @@ from airbyte_protocol.models import (
     Type,
 )
 
-from airbyte_lib import _util  # Internal utility functions
+from airbyte_lib._util import airbyte  # Internal utility functions
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.datasets._lazy import LazyDataset
 from airbyte_lib.executor import Executor
@@ -200,7 +200,7 @@ class Source:
                 f"choose from {self.get_available_streams()}",
             )
 
-        iterator: Iterable[dict[str, Any]] = _util.airbyte_messages_to_record_dicts(
+        iterator: Iterable[dict[str, Any]] = airbyte.airbyte_messages_to_record_dicts(
             self._read_with_catalog(configured_catalog),
         )
         return LazyDataset(iterator)

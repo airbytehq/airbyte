@@ -29,7 +29,7 @@ from airbyte_protocol.models import (
     Type,
 )
 
-from airbyte_lib import _util  # Internal utility functions
+from airbyte_lib._util import airbyte  # Internal utility functions
 
 
 if TYPE_CHECKING:
@@ -138,7 +138,7 @@ class RecordProcessor(abc.ABC):
                 record_msg = cast(AirbyteRecordMessage, message.record)
                 stream_name = record_msg.stream
                 stream_batch = stream_batches[stream_name]
-                stream_batch.append(_util.airbyte_record_message_to_dict(record_msg))
+                stream_batch.append(airbyte.airbyte_record_message_to_dict(record_msg))
 
                 if len(stream_batch) >= max_batch_size:
                     record_batch = pa.Table.from_pylist(stream_batch)
