@@ -504,17 +504,19 @@ class SQLCacheBase(RecordProcessor):
                 raise_on_error=True,
             )
 
-            temp_table_name = self._write_files_to_new_table(
-                files,
-                stream_name,
-                max_batch_id,
-            )
-            self._write_temp_table_to_final_table(
-                stream_name,
-                temp_table_name,
-                final_table_name,
-            )
-            self._drop_temp_table(temp_table_name, if_exists=True)
+            try:
+                temp_table_name = self._write_files_to_new_table(
+                    files,
+                    stream_name,
+                    max_batch_id,
+                )
+                self._write_temp_table_to_final_table(
+                    stream_name,
+                    temp_table_name,
+                    final_table_name,
+                )
+            finally:
+                self._drop_temp_table(temp_table_name, if_exists=True)
 
             # Return the batch handles as measure of work completed.
             return batches_to_finalize
