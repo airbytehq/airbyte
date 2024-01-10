@@ -1,9 +1,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 
+from pathlib import Path
+
 import ulid
+
 from airbyte_lib.caches.duckdb import DuckDBCache, DuckDBCacheConfig
-from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
 
 def get_default_cache() -> DuckDBCache:
@@ -20,6 +22,7 @@ def get_default_cache() -> DuckDBCache:
 
 def new_local_cache(
     cache_name: str | None = None,
+    root_dir: str | Path | None = None,
 ) -> DuckDBCache:
     """Get a local cache for storing data, using a name string to seed the path.
 
@@ -27,7 +30,11 @@ def new_local_cache(
     working directory.
     """
     cache_name = cache_name or str(ulid.ULID())
+    root_dir = root_dir or Path("./.cache")
+    if not isinstance(root_dir, Path):
+        root_dir = Path(root_dir)
+
     config = DuckDBCacheConfig(
-        db_path=f"./.cache/db_{cache_name}.duckdb",
+        db_path=root_dir / f"db_{cache_name}.duckdb",
     )
     return DuckDBCache(config=config)

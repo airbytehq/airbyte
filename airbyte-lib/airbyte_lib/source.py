@@ -8,12 +8,7 @@ from functools import lru_cache
 from typing import Any, Optional
 
 import jsonschema
-from airbyte_lib._executor import Executor
-from airbyte_lib._util import airbyte  # Internal utility functions
-from airbyte_lib.caches import SQLCacheBase
-from airbyte_lib.datasets._lazy import LazyDataset
-from airbyte_lib.factories._cache_factories import get_default_cache
-from airbyte_lib.results import ReadResult
+
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -26,6 +21,12 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
+
+from airbyte_lib._executor import Executor
+from airbyte_lib._util import airbyte  # Internal utility functions
+from airbyte_lib.caches import SQLCacheBase
+from airbyte_lib.factories._cache_factories import get_default_cache
+from airbyte_lib.results import ReadResult
 
 
 @contextmanager
@@ -168,7 +169,7 @@ class Source:
         )
         return configured_catalog
 
-    def get_records(self, stream: str) -> LazyDataset:
+    def get_records(self, stream: str) -> Iterable[dict[str, Any]]:
         """
         Read a stream from the connector.
 
@@ -201,7 +202,7 @@ class Source:
         iterator: Iterable[dict[str, Any]] = airbyte.airbyte_messages_to_record_dicts(
             self._read_with_catalog(configured_catalog),
         )
-        return LazyDataset(iter(iterator))
+        yield from iterator  # TODO: Refactor to use LazyDataset here
 
     def check(self) -> None:
         """

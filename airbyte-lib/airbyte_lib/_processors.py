@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, cast, final
 
 import pyarrow as pa
 import ulid
-from airbyte_lib._util import airbyte  # Internal utility functions
+
 from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -28,6 +28,9 @@ from airbyte_protocol.models import (
     ConfiguredAirbyteCatalog,
     Type,
 )
+
+from airbyte_lib._util import airbyte  # Internal utility functions
+
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable

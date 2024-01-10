@@ -7,9 +7,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import cast
 
+from overrides import overrides
+
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
-from overrides import overrides
 
 
 class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -18,7 +19,7 @@ class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     Also inherits config from the ParquetWriter, which is responsible for writing files to disk.
     """
 
-    db_path: str
+    db_path: Path | str
     schema_name: str = "main"
 
     @overrides

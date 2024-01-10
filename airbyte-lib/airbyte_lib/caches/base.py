@@ -4,7 +4,7 @@
 
 import abc
 import enum
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
 from contextlib import contextmanager
 from functools import cached_property, lru_cache
 from pathlib import Path
@@ -14,17 +14,17 @@ import pandas as pd
 import pyarrow as pa
 import sqlalchemy
 import ulid
-from airbyte_lib._file_writers import FileWriterBase, FileWriterBatchHandle
-from airbyte_lib._processors import BatchHandle, RecordProcessor
-from airbyte_lib.config import CacheConfigBase
-from airbyte_lib.datasets._base import DatasetBase
-from airbyte_lib.datasets._lazy import LazyDataset
-from airbyte_lib.types import SQLTypeConverter
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from overrides import overrides
 from sqlalchemy import CursorResult, Executable, TextClause, create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.pool import StaticPool
+
+from airbyte_lib._file_writers import FileWriterBase, FileWriterBatchHandle
+from airbyte_lib._processors import BatchHandle, RecordProcessor
+from airbyte_lib.config import CacheConfigBase
+from airbyte_lib.datasets._base import DatasetBase
+from airbyte_lib.types import SQLTypeConverter
+
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection
@@ -213,13 +213,12 @@ class SQLCacheBase(RecordProcessor):
     def get_records(
         self,
         stream_name: str,
-    ) -> LazyDataset:
+    ) -> Iterable[dict[str, Any]]:
         """Uses SQLAlchemy to select all rows from the table."""
         table_ref = self.get_sql_table(stream_name)
         stmt = table_ref.select()
         with self.get_sql_connection() as conn:
-            curs: CursorResult[Any] = conn.execute(stmt)
-            return LazyDataset(curs)
+            yield from conn.execute(stmt)  # TODO: Refactor to return a LazyDataset here.
 
     def get_pandas_dataframe(
         self,
