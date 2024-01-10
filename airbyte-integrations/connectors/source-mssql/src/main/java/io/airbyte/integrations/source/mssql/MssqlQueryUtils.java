@@ -67,9 +67,6 @@ public class MssqlQueryUtils {
   public static final String MAX_OC_COL = "max_oc";
   public static final String DATA_SIZE_HUMAN_READABLE = "data";
   public static final String NUM_ROWS = "rows";
-  public static final String TABLE_SIZE_BYTES_COL = "TotalSizeBytes";
-  public static final String AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
-
   public static void getIndexInfoForStreams(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final String quoteString) {
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
@@ -93,9 +90,9 @@ public class MssqlQueryUtils {
   }
 
   public static String getMaxOcValueForStream(final JdbcDatabase database,
-  final ConfiguredAirbyteStream stream,
-  final String ocFieldName,
-  final String quoteString) {
+                                              final ConfiguredAirbyteStream stream,
+                                              final String ocFieldName,
+                                              final String quoteString) {
     final String name = stream.getStream().getName();
     final String namespace = stream.getStream().getNamespace();
     final String fullTableName =
@@ -107,7 +104,7 @@ public class MssqlQueryUtils {
     LOGGER.info("Querying for max oc value: {}", maxOcQuery);
     try {
       final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(maxOcQuery).executeQuery(),
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
       Preconditions.checkState(jsonNodes.size() == 1);
       if (jsonNodes.get(0).get(MAX_OC_COL) == null) {
         LOGGER.info("Max PK is null for table {} - this could indicate an empty table", fullTableName);
@@ -119,10 +116,10 @@ public class MssqlQueryUtils {
     }
   }
 
-  private static long toBytes(String filesize) {
+  private static long toBytes(final String filesize) {
     long returnValue = -1;
-    Pattern patt = Pattern.compile("([\\d.]+)[\s+]*([GMK]B)", Pattern.CASE_INSENSITIVE);
-    Matcher matcher = patt.matcher(filesize);
+    final Pattern patt = Pattern.compile("([\\d.]+)[\s+]*([GMK]B)", Pattern.CASE_INSENSITIVE);
+    final Matcher matcher = patt.matcher(filesize);
     Map<String, Integer> powerMap = new HashMap<String, Integer>();
     powerMap.put("GB", 3);
     powerMap.put("MB", 2);
@@ -138,8 +135,8 @@ public class MssqlQueryUtils {
   }
 
   public static Map<AirbyteStreamNameNamespacePair, TableSizeInfo> getTableSizeInfoForStreams(final JdbcDatabase database,
-      final List<ConfiguredAirbyteStream> streams,
-      final String quoteString) {
+                                                                                              final List<ConfiguredAirbyteStream> streams,
+                                                                                              final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap = new HashMap<>();
     streams.forEach(stream -> {
       try {
