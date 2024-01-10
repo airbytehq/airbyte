@@ -40,13 +40,11 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         self._thread_pool_manager = Mock(spec=ThreadPoolManager)
 
         self._an_open_partition = Mock(spec=Partition)
-        self._an_open_partition.is_closed.return_value = False
         self._log_message = Mock(spec=LogMessage)
         self._an_open_partition.to_slice.return_value = self._log_message
         self._an_open_partition.stream_name.return_value = _STREAM_NAME
 
         self._a_closed_partition = Mock(spec=Partition)
-        self._a_closed_partition.is_closed.return_value = True
         self._a_closed_partition.stream_name.return_value = _ANOTHER_STREAM_NAME
 
         self._logger = Mock(spec=logging.Logger)
@@ -178,7 +176,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
 
         handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
@@ -257,7 +254,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
 
         handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
@@ -285,7 +281,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
         self._message_repository.consume_queue.return_value = []
 
         handler = ConcurrentReadProcessor(
@@ -322,7 +317,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
         slice_logger = Mock(spec=SliceLogger)
         slice_logger.should_log_slice_message.return_value = True
         slice_logger.create_slice_log_message.return_value = log_message
@@ -373,7 +367,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         stream_instances_to_read_from = [self._stream]
         partition = Mock(spec=Partition)
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
 
         handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
@@ -416,7 +409,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
         self._message_repository.consume_queue.return_value = [
             AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
         ]
