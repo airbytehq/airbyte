@@ -21,8 +21,8 @@ from source_marketo.source import (
     MarketoExportCreate,
     MarketoStream,
     Programs,
+    Segmentations,
     SourceMarketo,
-    Segmentations
 )
 
 
