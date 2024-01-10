@@ -166,6 +166,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.11.4  | 2024-01-09 | [\#33305](https://github.com/airbytehq/airbyte/pull/33305) | Source stats in incremental syncs                                                                                                                              |
 | 0.11.3  | 2023-01-09 | [\#33658](https://github.com/airbytehq/airbyte/pull/33658) | Always fail when debezium fails, even if it happened during the setup phase.                                                                                   |
 | 0.11.2  | 2024-01-09 | [\#33969](https://github.com/airbytehq/airbyte/pull/33969) | Destination state stats implementation                                                                                                                         |
 | 0.11.1  | 2024-01-04 | [\#33727](https://github.com/airbytehq/airbyte/pull/33727) | SSH bastion heartbeats for Destinations                                                                                                                        |
