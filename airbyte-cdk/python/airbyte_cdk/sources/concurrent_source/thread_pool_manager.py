@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-import time
 from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Any, Callable, List
 
