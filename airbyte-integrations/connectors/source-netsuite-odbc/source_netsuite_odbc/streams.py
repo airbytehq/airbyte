@@ -40,7 +40,10 @@ class NetsuiteODBCStream(Stream):
       key = stream.primary_key
       if not key:
         return []
+      elif stream.name == 'TransactionAccountingLine':
+        return ['transaction', 'transactionline', 'accountingbook']
       else:
+        # return ['transaction', 'transactionline', 'accountingbook']
         return sorted(key, reverse=True)
   
     def get_incremental_column_from_airbyte_stream(self, stream: AirbyteStream):
@@ -64,7 +67,7 @@ class NetsuiteODBCStream(Stream):
     def __init__(self, db_connection: pyodbc.Cursor, table_name, stream, config):
       self.db_connection = db_connection
       self.table_name = table_name
-      self.properties = self.get_properties_from_stream(stream)
+      self.properties = self.get_primary_key_from_airbyte_stream(stream) # self.get_properties_from_stream(stream)
       self.primary_key_column = self.get_primary_key_from_airbyte_stream(stream)
       self.incremental_column = self.get_incremental_column_from_airbyte_stream(stream)
       self.primary_key_last_value_seen = self.set_up_primary_key_last_value_seen(self.primary_key_column)
@@ -215,18 +218,48 @@ class NetsuiteODBCStream(Stream):
       incremental_column_sorter = f", {self.incremental_column} ASC" if self.incremental_column else ""
       # per https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_156257805177.html#subsect_156330163819
       # date literals need to be wrapped in a to_date function
-      incremental_column_filter = f"{self.incremental_column} >= to_timestamp('{stream_slice['first_day']}', 'YYYY-MM-DD') AND {self.incremental_column} <= to_timestamp('{stream_slice['last_day']}', 'YYYY-MM-DD')" if self.incremental_column else ""
+      incremental_column_filter = self.generate_incremental_filter_for_full_refresh(stream_slice=stream_slice)
       primary_key_filter = self.generate_primary_key_filter()
       primary_key_sorter = self.generate_primary_key_sorter()
       and_connector = " AND " if primary_key_filter != "" and incremental_column_filter != "" else ""
       where_clause = "WHERE " if primary_key_filter != "" or incremental_column_filter != "" else ""
       query = f"""
         SELECT TOP {NETSUITE_PAGINATION_INTERVAL} {values} FROM {self.table_name} 
-        {where_clause}{primary_key_filter}{and_connector}{incremental_column_filter}
+        {where_clause}{primary_key_filter}{and_connector}{incremental_column_filter} 
         ORDER BY {primary_key_sorter}""" + incremental_column_sorter
       return query
     
+    def generate_incremental_filter_for_full_refresh(self, stream_slice):      
+      if not self.incremental_column:
+        return ""
+      # first, we check to see if we've been given a null slice, and if so, we change the query accordingly
+      if (stream_slice['first_day'] is None or stream_slice['last_day'] is None):
+        return f"{self.incremental_column} IS NULL"
+      return f"{self.incremental_column} >= to_timestamp('{stream_slice['first_day']}', 'YYYY-MM-DD') AND {self.incremental_column} <= to_timestamp('{stream_slice['last_day']}', 'YYYY-MM-DD')"
+    
     def generate_primary_key_filter(self):
+      # Note that netsuite tables can have composite primary keys, and we've so far 
+      # seen keys with up to 3 columns. 
+      # To deal with this, we use generic syntax for keysort pagination with composite keys
+      # https://stackoverflow.com/questions/56719611/generic-sql-predicate-to-use-for-keyset-pagination-on-multiple-fields 
+      # given n keys, we should end up with (n1 > val1) OR (n1 = val1 AND n2 > val2) OR (n1 = val1 AND n2 = val2 AND n3 > val3) OR ...
+      filter_string = ""
+      for i, key in enumerate(self.primary_key_column):
+        last_value_seen = self.primary_key_last_value_seen[key] if key in self.primary_key_last_value_seen else STARTING_PRIMARY_KEY_VALUE
+        filters =[ f"{key} > {last_value_seen}"]
+        for j in range(i):
+          previous_key = self.primary_key_column[j]
+          previous_value = self.primary_key_last_value_seen[previous_key] if previous_key in self.primary_key_last_value_seen else STARTING_PRIMARY_KEY_VALUE
+          filters.append(f"{previous_key} = {previous_value}")
+        filter_string_for_step = "(" + " AND ".join(filters) + ")"
+        if filter_string != "":
+          filter_string = filter_string + " OR " + filter_string_for_step
+        else:
+          filter_string = filter_string_for_step
+      return f"({filter_string})"
+
+
+    def generate_primary_key_filter_deprecated(self):
       primary_key_filter = ""
       # primary keys can be composite!  To deal with this, we add filters for each column
       # This is an edge case.  In the standard case where there's only a single primary key column, 
@@ -280,14 +313,22 @@ class NetsuiteODBCStream(Stream):
     def generate_primary_key_filter_for_incremental_refresh(self, stream_slice):
       primary_key_filter = self.generate_primary_key_filter()
       starting_timestamp = self.incremental_most_recent_value_seen if self.incremental_most_recent_value_seen is not None else stream_slice['first_day']
-      starting_timestamp = parser.parse(str(starting_timestamp)).strftime('%Y-%m-%d %H:%M:%S.%f')
-      return f"({self.incremental_column} = to_timestamp('{starting_timestamp}', 'YYYY-MM-DD HH24:MI:SS.FF') AND {primary_key_filter})"
+      timestamp_filter = ""
+      if starting_timestamp is not None:
+        starting_timestamp = parser.parse(str(starting_timestamp)).strftime('%Y-%m-%d %H:%M:%S.%f')
+        timestamp_filter = f"{self.incremental_column} = to_timestamp('{starting_timestamp}', 'YYYY-MM-DD HH24:MI:SS.FF')"
+      else:
+        timestamp_filter = f"{self.incremental_column} IS NULL"
+      return f"({timestamp_filter} AND {primary_key_filter})"
     
     def generate_incremental_filter_for_incremental_refresh(self, stream_slice):
-      # per https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_156257805177.html#subsect_156330163819
-      # date literals need to be wrapped in a to_date function
       if self.incremental_column is None:
         raise AirbyteTracedException.from_exception(message=GENERATING_INCREMENTAL_QUERY_WITH_NO_INCREMENTAL_COLUMN_ERROR, failure_type=FailureType.system_error)
+      # first, we check to see if we've been given a null slice, and if so, we change the query accordingly
+      if (stream_slice['first_day'] is None or stream_slice['last_day'] is None):
+        return f"{self.incremental_column} IS NULL"
+      # per https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_156257805177.html#subsect_156330163819
+      # date literals need to be wrapped in a to_date function
       starting_timestamp = self.incremental_most_recent_value_seen if self.incremental_most_recent_value_seen is not None else stream_slice['first_day']
       starting_timestamp = parser.parse(str(starting_timestamp)).strftime('%Y-%m-%d %H:%M:%S.%f')
       ending_timestamp = parser.parse(str(stream_slice['last_day'])).strftime('%Y-%m-%d %H:%M:%S.%f')
@@ -319,7 +360,15 @@ class NetsuiteODBCStream(Stream):
         date_slices.append(self.get_slice_for_year(current_date))
         current_date = current_date.replace(year=current_date.year + 1, month=1)
 
+      # If date slices exist, we add a null slice to the end of the list.
+      # We do this because while common sense would suggest that a incremental column would not be nullable,
+      # Netsuite obeys no such rules.  Since incremental columns can be null, we need to fetch for this, which we do by adding a null slice.
+      date_slices.append(self.get_null_slice())
+
       return date_slices
+    
+    def get_null_slice(self):
+      return {'first_day': None, 'last_day': None}
     
     def get_range_to_fetch(self, sync_mode: SyncMode, stream_state: Optional[Mapping[str, Any]] = None):
       end_slice_range = date.today()
