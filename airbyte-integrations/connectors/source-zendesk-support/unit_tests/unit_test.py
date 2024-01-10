@@ -231,7 +231,7 @@ def test_str2unixtime():
 def test_check_start_time_param():
     expected = 1626936955
     start_time = calendar.timegm(pendulum.parse(DATETIME_STR).utctimetuple())
-    output = SourceZendeskIncrementalExportStream.check_start_time_param(start_time)
+    output = SourceZendeskIncrementalExportStream.validate_start_time(start_time)
     assert output == expected
 
 
@@ -245,7 +245,7 @@ def test_check_start_time_param():
     ids=["state present", "state is None"],
 )
 def test_check_stream_state(stream_state, expected):
-    result = Tickets(**STREAM_ARGS).check_stream_state(stream_state)
+    result = Tickets(**STREAM_ARGS).get_stream_state_value(stream_state)
     assert result == expected
 
 
@@ -474,7 +474,7 @@ class TestSourceZendeskSupportStream:
         [
             (Macros, None),
             (Posts, None),
-            (Organizations, None),
+            (Organizations, {}),
             (Groups, None),
             (TicketFields, None),
         ],
@@ -703,7 +703,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
     )
     def test_check_stream_state(self, stream_cls, expected):
         stream = stream_cls(**STREAM_ARGS)
-        result = stream.check_stream_state()
+        result = stream.get_stream_state_value()
         assert result == expected
 
     @pytest.mark.parametrize(
@@ -750,7 +750,7 @@ class TestSourceZendeskIncrementalExportStream:
     def test_check_start_time_param(self, stream_cls):
         expected = int(dict(parse_qsl(urlparse(STREAM_URL).query)).get("start_time"))
         stream = stream_cls(**STREAM_ARGS)
-        result = stream.check_start_time_param(expected)
+        result = stream.validate_start_time(expected)
         assert result == expected
 
     @pytest.mark.parametrize(
@@ -770,7 +770,7 @@ class TestSourceZendeskIncrementalExportStream:
         requests_mock.get(STREAM_URL, json={stream_name: {}})
         test_response = requests.get(STREAM_URL)
         output = stream.next_page_token(test_response)
-        assert output is None
+        assert output == {}
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
