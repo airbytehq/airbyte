@@ -30,9 +30,7 @@ class MssqlCdcHelperTest {
 
     final JsonNode newCdc = Jsons.jsonNode(Map.of("replication_method",
         Jsons.jsonNode(Map.of(
-            "method", "CDC",
-            "data_to_sync", "Existing and New",
-            "snapshot_isolation", "Snapshot"))));
+            "method", "CDC"))));
     assertTrue(MssqlCdcHelper.isCdc(newCdc));
 
     // migration from legacy to new config
@@ -43,13 +41,9 @@ class MssqlCdcHelperTest {
 
     final JsonNode mixCdc = Jsons.jsonNode(Map.of(
         "replication", Jsons.jsonNode(Map.of(
-            "replication_type", "Standard",
-            "data_to_sync", "Existing and New",
-            "snapshot_isolation", "Snapshot")),
+            "replication_type", "Standard")),
         "replication_method", Jsons.jsonNode(Map.of(
-            "method", "CDC",
-            "data_to_sync", "Existing and New",
-            "snapshot_isolation", "Snapshot"))));
+            "method", "CDC"))));
     assertTrue(MssqlCdcHelper.isCdc(mixCdc));
   }
 

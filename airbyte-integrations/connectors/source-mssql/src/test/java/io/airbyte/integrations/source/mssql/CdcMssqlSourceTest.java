@@ -97,7 +97,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         .withConnectionProperty("encrypt", "false")
         .withConnectionProperty("databaseName", testdb.getDatabaseName())
         .initialized()
-        .withSnapshotIsolation()
         .withWaitUntilAgentRunning()
         .withCdc();
   }
@@ -256,8 +255,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     status = source().check(config());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
     testdb.withAgentStarted().withWaitUntilAgentRunning();
-    // assertSnapshotIsolationAllowed
-    testdb.withoutSnapshotIsolation();
     status = source().check(config());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }
