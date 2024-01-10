@@ -6,7 +6,7 @@
 import enum
 from functools import wraps
 from time import sleep
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.utils import AirbyteTracedException
@@ -91,33 +91,33 @@ class ShopifyAccessScopesError(AirbyteTracedException):
 
     help_url = "https://shopify.dev/docs/api/usage/access-scopes#authenticated-access-scopes"
 
-    def __init__(self, response, **kwargs):
+    def __init__(self, response, **kwargs) -> None:
         self.message = f"Reason: Scopes are not available, make sure you're using the correct `Shopify Store` name. Actual response: {response}. More info about: {self.help_url}"
-        super().__init__(message=self.message, failure_type=FailureType.config_error, **kwargs)
+        super().__init__(internal_message=self.message, failure_type=FailureType.config_error, **kwargs)
 
 
 class ShopifyBadJsonError(AirbyteTracedException):
     """Raises the error when Shopify replies with broken json for `access_scopes` request"""
 
-    def __init__(self, message, **kwargs):
+    def __init__(self, message, **kwargs) -> None:
         self.message = f"Reason: Bad JSON Response from the Shopify server. Details: {message}."
-        super().__init__(message=self.message, failure_type=FailureType.config_error, **kwargs)
+        super().__init__(internal_message=self.message, failure_type=FailureType.config_error, **kwargs)
 
 
 class ShopifyConnectionError(AirbyteTracedException):
     """Raises the error when Shopify resources couldn't be accessed because of the ConnectionError occured (100-x)"""
 
-    def __init__(self, details, **kwargs):
+    def __init__(self, details, **kwargs) -> None:
         self.message = f"Invalid `Shopify Store` name used or `host` couldn't be verified by Shopify. Details: {details}"
-        super().__init__(self.message, failure_type=FailureType.config_error, **kwargs)
+        super().__init__(internal_message=self.message, failure_type=FailureType.config_error, **kwargs)
 
 
 class ShopifyWrongShopNameError(AirbyteTracedException):
     """Raises the error when `Shopify Store` name is incorrect or couldn't be verified by the Shopify"""
 
-    def __init__(self, url, **kwargs):
+    def __init__(self, url, **kwargs) -> None:
         self.message = f"The `Shopify Store` name is invalid or missing for `input configuration`, make sure it's valid. Details: {url}"
-        super().__init__(message=self.message, failure_type=FailureType.config_error, **kwargs)
+        super().__init__(internal_message=self.message, failure_type=FailureType.config_error, **kwargs)
 
 
 class UnrecognisedApiType(Exception):
@@ -173,7 +173,7 @@ class ShopifyRateLimiter:
         return wait_time
 
     @staticmethod
-    def get_rest_api_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
+    def get_rest_api_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit") -> float:
         """
         To avoid reaching Shopify REST API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
         to determine the current rate limits and load and handle wait_time based on load %.
@@ -204,7 +204,7 @@ class ShopifyRateLimiter:
         return wait_time
 
     @staticmethod
-    def get_graphql_api_wait_time(*args, threshold: float = 0.9):
+    def get_graphql_api_wait_time(*args, threshold: float = 0.9) -> float:
         """
         To avoid reaching Shopify Graphql API Rate Limits, use the extensions dict in the response.
 
@@ -252,7 +252,7 @@ class ShopifyRateLimiter:
         return wait_time
 
     @staticmethod
-    def wait_time(wait_time: float):
+    def wait_time(wait_time: float) -> None:
         return sleep(wait_time)
 
     @staticmethod
@@ -260,15 +260,15 @@ class ShopifyRateLimiter:
         threshold: float = 0.9,
         rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit",
         api_type: ApiTypeEnum = ApiTypeEnum.rest.value,
-    ):
+    ) -> Callable[..., Any]:
         """
         The decorator function.
         Adjust `threshold`, `rate_limit_header` and `api_type` if needed.
         """
 
-        def decorator(func):
+        def decorator(func) -> Callable[..., Any]:
             @wraps(func)
-            def wrapper_balance_rate_limit(*args, **kwargs):
+            def wrapper_balance_rate_limit(*args, **kwargs) -> Any:
                 if api_type == ApiTypeEnum.rest.value:
                     ShopifyRateLimiter.wait_time(
                         ShopifyRateLimiter.get_rest_api_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header)
@@ -322,9 +322,9 @@ class EagerlyCachedStreamState:
 
         return state_object
 
-    def cache_stream_state(func):
+    def cache_stream_state(func) -> Callable[..., Any]:
         @wraps(func)
-        def decorator(*args, **kwargs):
+        def decorator(*args, **kwargs) -> Any:
             EagerlyCachedStreamState.stream_state_to_tmp(*args, **kwargs)
             return func(*args, **kwargs)
 

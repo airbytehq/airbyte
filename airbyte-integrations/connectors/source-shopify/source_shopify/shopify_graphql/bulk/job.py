@@ -24,7 +24,6 @@ class ShopifyBulkStatus(Enum):
     CREATED = "CREATED"
     COMPLETED = "COMPLETED"
     RUNNING = "RUNNING"
-    CANCELED = "CANCELED"
     FAILED = "FAILED"
     TIMEOUT = "TIMEOUT"
     ACCESS_DENIED = "ACCESS_DENIED"
@@ -84,10 +83,9 @@ class ShopifyBulkJob:
                 message = error.get("message", "")
                 if concurent_job_pattern in message:
                     return True
-                else:
-                    continue
-        else:
-            return False
+        # reset the `concurrent_attempt` counter, once the are no concurrent job error
+        self.concurrent_attempt = 0
+        return False
 
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def job_check_for_errors(self, response: requests.Response) -> None:
@@ -107,15 +105,14 @@ class ShopifyBulkJob:
         bulk_response = response_data.get("data", {}).get("bulkOperationRunQuery", {}).get("bulkOperation", {})
         if bulk_response and bulk_response.get("status") == ShopifyBulkStatus.CREATED.value:
             job_id = bulk_response.get("id")
-            if job_id:
-                self.logger.info(f"The BULK Job: `{job_id}` is {ShopifyBulkStatus.CREATED.value}")
-                return job_id
+            self.logger.info(f"The BULK Job: `{job_id}` is {ShopifyBulkStatus.CREATED.value}")
+            return job_id
         else:
             return None
 
     def job_retry_on_concurrency(self, request: requests.Request) -> Optional[requests.Response]:
         if self.concurrent_attempt == self.concurrent_max_retry:
-            # indicate we'are out of attempts to retry with job creation
+            # indicate we're out of attempts to retry with job creation
             self.concurrent_max_attempt_reached = True
             self.logger.error(f"The BULK Job couldn't be created at this time, since another job is running.")
             return None
@@ -144,42 +141,44 @@ class ShopifyBulkJob:
         self.logger.info(f"The BULK Job: `{bulk_job_id}` is {status}.")
 
     def job_check_status(self, url: str, bulk_job_id: str) -> Optional[str]:
-        # re-use of `self._session(*, **)` to make BULK Job status checks
         request_args = {
             "method": "POST",
             "url": url,
             "data": ShopifyBulkTemplates.status(bulk_job_id),
             "headers": {"Content-Type": "application/graphql"},
         }
-        response = self.session.request(**request_args)
-        # check for errors and status, return when COMPLETED.
-        if not self.job_check_for_errors(response):
-            status = response.json().get("data", {}).get("node", {}).get("status")
-            if status == ShopifyBulkStatus.COMPLETED.value:
-                self.log_job_status(bulk_job_id, status)
-                return response.json().get("data", {}).get("node", {}).get("url")
-            elif status == ShopifyBulkStatus.RUNNING.value:
-                self.log_job_status(bulk_job_id, status)
-                # wait for the `job_check_interval_sec` value in sec before check again.
-                sleep(self.job_check_interval_sec)
-                return self.job_check_status(url, bulk_job_id)
-            elif status == ShopifyBulkStatus.FAILED.value:
-                self.log_job_status(bulk_job_id, status)
-                raise ShopifyBulkExceptions.BulkJobFailed(
-                    f"The BULK Job: `{bulk_job_id}` exited with {status}, details: {self.job_check_for_errors(response)}",
-                )
-            elif status == ShopifyBulkStatus.TIMEOUT.value:
-                self.log_job_status(bulk_job_id, status)
-                raise ShopifyBulkExceptions.BulkJobTimout(
-                    f"The BULK Job: `{bulk_job_id}` exited with {status}, please retry the operation with smaller date range.",
-                )
-            elif status == ShopifyBulkStatus.ACCESS_DENIED.value:
-                self.log_job_status(bulk_job_id, status)
-                raise ShopifyBulkExceptions.BulkJobAccessDenied(
-                    f"The BULK Job: `{bulk_job_id}` exited with {status}, please check your PERMISSION to fetch the data for this stream.",
-                )
+        status: str = None
+        while status != ShopifyBulkStatus.COMPLETED.value:
+            # re-use of `self._session(*, **)` to make BULK Job status checks
+            response = self.session.request(**request_args)
+            # errors check
+            errors = self.job_check_for_errors(response)
+            if not errors:
+                status = response.json().get("data", {}).get("node", {}).get("status")
+                if status == ShopifyBulkStatus.RUNNING.value:
+                    self.log_job_status(bulk_job_id, status)
+                    sleep(self.job_check_interval_sec)
+                elif status == ShopifyBulkStatus.FAILED.value:
+                    self.log_job_status(bulk_job_id, status)
+                    raise ShopifyBulkExceptions.BulkJobFailed(
+                        f"The BULK Job: `{bulk_job_id}` exited with {status}, details: {self.get_errors_from_response(response)}",
+                    )
+                elif status == ShopifyBulkStatus.TIMEOUT.value:
+                    self.log_job_status(bulk_job_id, status)
+                    raise ShopifyBulkExceptions.BulkJobTimout(
+                        f"The BULK Job: `{bulk_job_id}` exited with {status}, please retry the operation with smaller date range.",
+                    )
+                elif status == ShopifyBulkStatus.ACCESS_DENIED.value:
+                    self.log_job_status(bulk_job_id, status)
+                    raise ShopifyBulkExceptions.BulkJobAccessDenied(
+                        f"The BULK Job: `{bulk_job_id}` exited with {status}, please check your PERMISSION to fetch the data for this stream.",
+                    )
             else:
-                raise Exception(f"Could not validate the status of the BULK Job `{bulk_job_id}`.")
+                raise Exception(f"Could not validate the status of the BULK Job `{bulk_job_id}`. Errors: {errors}.")
+
+        # return when status is `COMPLETED`
+        self.log_job_status(bulk_job_id, status)
+        return response.json().get("data", {}).get("node", {}).get("url")
 
     def job_check(self, url: str, created_job_response: requests.Response) -> Optional[str]:
         """
@@ -229,7 +228,7 @@ class ShopifyBulkJob:
             )
         finally:
             # removing the tmp file, if requested
-            if remove_file:
+            if remove_file and filename:
                 try:
                     remove(filename)
                 except Exception as e:

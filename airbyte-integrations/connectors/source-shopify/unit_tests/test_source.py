@@ -48,7 +48,7 @@ from source_shopify.streams.streams import (
 
 
 @pytest.fixture
-def config(basic_config):
+def config(basic_config) -> dict:
     basic_config["start_date"] = "2020-11-01"
     basic_config["authenticator"] = ShopifyAuthenticator(basic_config)
     return basic_config
@@ -91,7 +91,7 @@ def config(basic_config):
         (CustomCollections, None, "custom_collections.json"),
     ],
 )
-def test_path(stream, stream_slice, expected_path, config):
+def test_path(stream, stream_slice, expected_path, config) -> None:
     stream = stream(config)
     if stream_slice:
         result = stream.path(stream_slice)
@@ -114,7 +114,7 @@ def test_path(stream, stream_slice, expected_path, config):
         (InventoryLevels, None, "graphql.json"),
     ],
 )
-def test_path_with_stream_slice_param(stream, stream_slice, expected_path, config):
+def test_path_with_stream_slice_param(stream, stream_slice, expected_path, config) -> None:
     stream = stream(config)
     if stream_slice:
         result = stream.path(stream_slice)
@@ -123,18 +123,18 @@ def test_path_with_stream_slice_param(stream, stream_slice, expected_path, confi
     assert result == expected_path
 
 
-def test_check_connection(config, mocker):
+def test_check_connection(config, mocker) -> None:
     mocker.patch("source_shopify.streams.streams.Shop.read_records", return_value=[{"id": 1}])
     source = SourceShopify()
     logger_mock = MagicMock()
     assert source.check_connection(logger_mock, config) == (True, None)
 
 
-def test_read_records(config, mocker):
+def test_read_records(config, mocker) -> None:
     records = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
     stream_slice = records[0]
     stream = OrderRefunds(config)
-    mocker.patch("source_shopify.streams.base_streams.IncrementalShopifyNestedSubstream.read_records", return_value=records)
+    mocker.patch("source_shopify.streams.base_streams.IncrementalShopifyNestedStream.read_records", return_value=records)
     assert stream.read_records(stream_slice=stream_slice)[0] == records[0]
 
 
@@ -151,7 +151,7 @@ def test_read_records(config, mocker):
         ),
     ],
 )
-def test_request_params(config, stream, expected):
+def test_request_params(config, stream, expected) -> None:
     assert stream(config).request_params() == expected
 
 
@@ -180,12 +180,12 @@ def test_request_params(config, stream, expected):
         "no values at all",
     ],
 )
-def test_get_updated_state(config, last_record, current_state, expected):
+def test_get_updated_state(config, last_record, current_state, expected) -> None:
     stream = OrderRefunds(config)
     assert stream.get_updated_state(current_state, last_record) == expected
 
 
-def test_parse_response_with_bad_json(config, response_with_bad_json):
+def test_parse_response_with_bad_json(config, response_with_bad_json) -> None:
     stream = Customers(config)
     assert list(stream.parse_response(response_with_bad_json)) == [{}]
 
@@ -198,7 +198,7 @@ def test_parse_response_with_bad_json(config, response_with_bad_json):
     ],
     ids=["old style", "oauth style"],
 )
-def test_get_shop_name(config, shop, expected):
+def test_get_shop_name(config, shop, expected) -> None:
     source = SourceShopify()
     config["shop"] = shop
     actual = source.get_shop_name(config)

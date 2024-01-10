@@ -20,7 +20,7 @@ class ShopifyBulkRecord:
         self.tools: BulkTools = BulkTools()
 
     @staticmethod
-    def check_type(record: Optional[Mapping[str, Any]] = None, types: Optional[Union[set[str], str]] = None) -> bool:
+    def check_type(record: Optional[Mapping[str, Any]] = None, types: Optional[Union[List[str], str]] = None) -> bool:
         if record:
             record_type = record.get("__typename")
             if isinstance(types, list):
@@ -100,11 +100,13 @@ class ShopifyBulkRecord:
         # we re-assign the original id like `"gid://shopify/Order/19435458986123"`,
         # into `admin_graphql_api_id` have the ability to identify the record oigin correctly in subsequent actions.
         id = record.get("id")
-        if id and isinstance(id, str):
+        if isinstance(id, str):
             record["admin_graphql_api_id"] = id
             # extracting the int(id) and reassign
             record["id"] = self.tools.resolve_str_id(id)
-        return record
+            return record
+        elif isinstance(id, int):
+            return record
 
     def produce_records(self, filename: str) -> Iterable[Mapping[str, Any]]:
         """

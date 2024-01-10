@@ -17,7 +17,7 @@ from source_shopify.streams.streams import (
 )
 
 
-def test_get_errors_from_response(requests_mock, bulk_error, auth_config):
+def test_get_errors_from_response(requests_mock, bulk_error, auth_config) -> None:
     stream = MetafieldOrders(auth_config)
     requests_mock.get(stream.graphql_path, json=bulk_error)
     test_response = requests.get(stream.graphql_path)
@@ -32,7 +32,7 @@ def test_get_errors_from_response(requests_mock, bulk_error, auth_config):
         ("bulk_successful_response", False),
     ],
 )
-def test_has_running_concurrent_job(request, requests_mock, bulk_job_response, auth_config, expected):
+def test_has_running_concurrent_job(request, requests_mock, bulk_job_response, auth_config, expected) -> None:
     stream = MetafieldOrders(auth_config)
     requests_mock.get(stream.graphql_path, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.graphql_path)
@@ -45,7 +45,7 @@ def test_has_running_concurrent_job(request, requests_mock, bulk_job_response, a
         ("bulk_error", "[{'field': 'some_field', 'message': 'something wrong with the requested field.'}]"),
     ],
 )
-def test_job_check_for_errors(request, requests_mock, bulk_job_response, auth_config, expected):
+def test_job_check_for_errors(request, requests_mock, bulk_job_response, auth_config, expected) -> None:
     stream = MetafieldOrders(auth_config)
     requests_mock.get(stream.graphql_path, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.graphql_path)
@@ -58,7 +58,7 @@ def test_job_check_for_errors(request, requests_mock, bulk_job_response, auth_co
     "bulk_job_response, expected",
     [("bulk_successful_response", "gid://shopify/BulkOperation/4046733967549"), ("bulk_error", None)],
 )
-def test_job_get_id(request, requests_mock, bulk_job_response, auth_config, expected):
+def test_job_get_id(request, requests_mock, bulk_job_response, auth_config, expected) -> None:
     stream = MetafieldOrders(auth_config)
     requests_mock.get(stream.graphql_path, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.graphql_path)
@@ -77,7 +77,7 @@ def test_job_get_id(request, requests_mock, bulk_job_response, auth_config, expe
         ("bulk_error_with_concurrent_job", None, None),
     ],
 )
-def test_job_create(request, requests_mock, bulk_job_response, auth_config, error_type, expected):
+def test_job_create(request, requests_mock, bulk_job_response, auth_config, error_type, expected) -> None:
     stream = MetafieldOrders(auth_config)
     # patching concurent settings
     stream.bulk_job.concurrent_max_retry = 1  # 1 attempt max
@@ -105,10 +105,9 @@ def test_job_create(request, requests_mock, bulk_job_response, auth_config, erro
         ("bulk_job_failed_response", ShopifyBulkExceptions.BulkJobFailed, "exited with FAILED"),
         ("bulk_job_timeout_response", ShopifyBulkExceptions.BulkJobTimout, "exited with TIMEOUT"),
         ("bulk_job_access_denied_response", ShopifyBulkExceptions.BulkJobAccessDenied, "exited with ACCESS_DENIED"),
-        ("bulk_job_unknown_status_response", ShopifyBulkExceptions.BulkJobUnknownError, "has unknown status"),
     ],
 )
-def test_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, expected):
+def test_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
     stream = MetafieldOrders(auth_config)
     # get job_id from FIXTURE
     job_id = request.getfixturevalue(job_response).get("data").get("node").get("id")

@@ -3,10 +3,14 @@
 #
 
 
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
+
+
 class ShopifyBulkExceptions:
-    class BaseBulkException(Exception):
-        def __init__(self, message: str):
-            super().__init__(message)
+    class BaseBulkException(AirbyteTracedException):
+        def __init__(self, message: str, **kwargs) -> None:
+            super().__init__(internal_message=message, failure_type=FailureType.config_error, **kwargs)
 
     class BulkJobError(BaseBulkException):
         """Raised when there are BULK Job Errors in response"""

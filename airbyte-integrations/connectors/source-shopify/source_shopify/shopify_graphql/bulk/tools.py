@@ -5,7 +5,7 @@
 
 import os
 import re
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum as pdm
@@ -19,7 +19,7 @@ BULK_PARENT_KEY: str = "__parentId"
 
 class BulkTools:
     @staticmethod
-    def camel_to_snake(camel_case: str):
+    def camel_to_snake(camel_case: str) -> str:
         snake_case = []
         for char in camel_case:
             if char.isupper():
@@ -30,6 +30,18 @@ class BulkTools:
 
     @staticmethod
     def filename_from_url(job_result_url: str) -> str:
+        """
+        Example of `job_result_url` (str) :
+            https://storage.googleapis.com/shopify-tiers-assets-prod-us-east1/<some_hashed_sum>?
+                GoogleAccessId=assets-us-prod%40shopify-tiers.iam.gserviceaccount.com&
+                Expires=1705508208&
+                Signature=<some_long_signature>%3D%3D&
+                response-content-disposition=attachment%3B+filename%3D%22bulk-4147374162109.jsonl%22%3B+filename%2A%3DUTF-8%27%27bulk-4147374162109.jsonl&
+                response-content-type=application%2Fjsonl
+
+        Output:
+            (str): bulk-4147374162109.jsonl
+        """
         # Regular expression pattern to extract the filename
         filename_pattern = r'filename\*?=(?:UTF-8\'\')?"([^"]+)"'
         parsed_url = dict(parse_qsl(urlparse(job_result_url).query))
@@ -49,20 +61,22 @@ class BulkTools:
             Output: "2023-01-01T15:00:00+00:00"
         If the value of the `field` is `None` we return it `as is`.
         """
+        # some fields that expected to be resolved as ids, might not be populated for the particular `RECORD`,
+        # we should return `None` to make the field `null` in the output as the result of the transformation.
         target_value = record.get(field)
         return pdm.parse(target_value).to_rfc3339_string() if target_value else record.get(field)
 
-    def fields_names_to_snake_case(self, record: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
-        # transforming record field names from camel to snake case,
-        # leaving the `__parent_id` relation in place.
-        if record:
-            return {self.camel_to_snake(k) if record and k != BULK_PARENT_KEY else k: v for k, v in record.items()}
+    def fields_names_to_snake_case(self, dict_input: Optional[Mapping[str, Any]] = None) -> Optional[MutableMapping[str, Any]]:
+        # transforming record field names from camel to snake case, leaving the `__parent_id` relation in place
+        if dict_input:
+            # the `None` type check is required, to properly handle nested missing entities (return None)
+            return {self.camel_to_snake(k) if dict_input and k != BULK_PARENT_KEY else k: v for k, v in dict_input.items()}
 
     @staticmethod
-    def file_size(filename: str) -> int:
-        return os.path.getsize(filename)
-
-    @staticmethod
-    def resolve_str_id(input: Optional[str] = None, output_type: Optional[Union[int, str, float]] = int) -> Union[int, str, float]:
-        if input:
-            return output_type(re.search(r"\d+", input).group())
+    def resolve_str_id(str_input: Optional[str] = None, output_type: Optional[Union[int, str, float]] = int) -> Union[int, str, float]:
+        # some fields that expected to be resolved as ids, might not be populated for the particular `RECORD`,
+        # we should return `None` to make the field `null` in the output as the result of the transformation.
+        if str_input:
+            return output_type(re.search(r"\d+", str_input).group())
+        else:
+            return None

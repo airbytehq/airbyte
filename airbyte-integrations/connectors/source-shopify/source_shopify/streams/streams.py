@@ -31,7 +31,7 @@ from source_shopify.utils import ShopifyRateLimiter as limiter
 
 from .base_streams import (
     IncrementalShopifyGraphQlBulkStream,
-    IncrementalShopifyNestedSubstream,
+    IncrementalShopifyNestedStream,
     IncrementalShopifyStream,
     IncrementalShopifyStreamWithDeletedEvents,
     IncrementalShopifySubstream,
@@ -49,7 +49,7 @@ class Articles(IncrementalShopifyStreamWithDeletedEvents):
 
 
 class MetafieldArticles(MetafieldShopifySubstream):
-    parent_stream_class: object = Articles
+    parent_stream_class = Articles
 
 
 class Blogs(IncrementalShopifyStreamWithDeletedEvents):
@@ -61,7 +61,7 @@ class Blogs(IncrementalShopifyStreamWithDeletedEvents):
 
 
 class MetafieldBlogs(MetafieldShopifySubstream):
-    parent_stream_class: object = Blogs
+    parent_stream_class = Blogs
 
 
 class Customers(IncrementalShopifyStream):
@@ -166,9 +166,9 @@ class MetafieldProducts(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldProduct = MetafieldProduct
 
 
-class ProductImages(IncrementalShopifyNestedSubstream):
-    parent_stream_class: object = Products
-    nested_substream = "images"
+class ProductImages(IncrementalShopifyNestedStream):
+    parent_stream_class = Products
+    nested_entity = "images"
     # add `product_id` to each nested subrecord
     mutation_map = {"product_id": "id"}
 
@@ -177,9 +177,9 @@ class MetafieldProductImages(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldProductImage = MetafieldProductImage
 
 
-class ProductVariants(IncrementalShopifyNestedSubstream):
-    parent_stream_class: object = Products
-    nested_substream = "variants"
+class ProductVariants(IncrementalShopifyNestedStream):
+    parent_stream_class = Products
+    nested_entity = "variants"
     # add `product_id` to each nested subrecord
     mutation_map = {"product_id": "id"}
 
@@ -211,7 +211,7 @@ class SmartCollections(IncrementalShopifyStream):
 
 
 class MetafieldSmartCollections(MetafieldShopifySubstream):
-    parent_stream_class: object = SmartCollections
+    parent_stream_class = SmartCollections
 
 
 class Collects(IncrementalShopifyStream):
@@ -254,15 +254,15 @@ class BalanceTransactions(IncrementalShopifyStream):
         return f"shopify_payments/balance/{self.data_field}.json"
 
 
-class OrderRefunds(IncrementalShopifyNestedSubstream):
-    parent_stream_class: object = Orders
+class OrderRefunds(IncrementalShopifyNestedStream):
+    parent_stream_class = Orders
     # override default cursor field
     cursor_field = "created_at"
-    nested_substream = "refunds"
+    nested_entity = "refunds"
 
 
 class OrderRisks(IncrementalShopifySubstream):
-    parent_stream_class: object = Orders
+    parent_stream_class = Orders
     slice_key = "order_id"
     data_field = "risks"
     cursor_field = "id"
@@ -273,7 +273,7 @@ class OrderRisks(IncrementalShopifySubstream):
 
 
 class Transactions(IncrementalShopifySubstream):
-    parent_stream_class: object = Orders
+    parent_stream_class = Orders
     slice_key = "order_id"
     data_field = "transactions"
     cursor_field = "created_at"
@@ -311,7 +311,7 @@ class Pages(IncrementalShopifyStreamWithDeletedEvents):
 
 
 class MetafieldPages(MetafieldShopifySubstream):
-    parent_stream_class: object = Pages
+    parent_stream_class = Pages
 
 
 class PriceRules(IncrementalShopifyStreamWithDeletedEvents):
@@ -351,9 +351,9 @@ class FulfillmentOrders(IncrementalShopifyGraphQlBulkStream):
     bulk_query: FulfillmentOrder = FulfillmentOrder
 
 
-class Fulfillments(IncrementalShopifyNestedSubstream):
-    parent_stream_class: object = Orders
-    nested_substream = "fulfillments"
+class Fulfillments(IncrementalShopifyNestedStream):
+    parent_stream_class = Orders
+    nested_entity = "fulfillments"
 
 
 class Shop(ShopifyStream):
@@ -372,14 +372,14 @@ class CustomerSavedSearch(IncrementalShopifyStream):
     filter_field = "since_id"
 
 
-class CustomerAddress(IncrementalShopifyNestedSubstream):
+class CustomerAddress(IncrementalShopifyNestedStream):
     """
     https://shopify.dev/docs/api/admin-rest/2023-10/resources/customer#resource-object
     """
 
-    parent_stream_class: object = Customers
+    parent_stream_class = Customers
     cursor_field = "id"
-    nested_substream = "addresses"
+    nested_entity = "addresses"
 
 
 class Countries(ShopifyStream):

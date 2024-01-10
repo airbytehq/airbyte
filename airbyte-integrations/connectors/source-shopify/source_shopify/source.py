@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Tuple
 
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests.exceptions import ConnectionError, InvalidURL, JSONDecodeError, RequestException, SSLError
@@ -64,7 +65,7 @@ from .utils import SCOPES_MAPPING, ShopifyAccessScopesError, ShopifyBadJsonError
 
 
 class ConnectionCheckTest:
-    def __init__(self, config: Mapping[str, Any]):
+    def __init__(self, config: Mapping[str, Any]) -> None:
         self.config = config
         # use `Shop` as a test stream for connection check
         self.test_stream = Shop(self.config)
@@ -89,7 +90,7 @@ class ConnectionCheckTest:
             return False, "The `Shopify Store` name is missing. Make sure it's entered and valid."
 
         try:
-            response = list(self.test_stream.read_records(sync_mode=None))
+            response = list(self.test_stream.read_records(sync_mode=SyncMode.full_refresh))
             # check for the shop_id is present in the response
             shop_id = response[0].get("id")
             if shop_id is not None:
@@ -110,9 +111,12 @@ class ConnectionCheckTest:
         We need to have the `shop_id` value available to have it passed elsewhere and fill-in the missing data.
         By the time this method is tiggered, we are sure we've passed the `Connection Checks` and have the `shop_id` value.
         """
-        response = list(self.test_stream.read_records(sync_mode=None))
+        response = list(self.test_stream.read_records(sync_mode=SyncMode.full_refresh))
         shop_id = response[0].get("id")
-        return shop_id if shop_id else None
+        if shop_id:
+            return shop_id
+        else:
+            raise Exception(f"Couldn't get `shop_id`. Actual `response`: {response}.")
 
 
 class SourceShopify(AbstractSource):
@@ -192,7 +196,7 @@ class SourceShopify(AbstractSource):
         return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]
 
     @staticmethod
-    def get_user_scopes(config):
+    def get_user_scopes(config) -> list[Any]:
         session = requests.Session()
         url = f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json"
         headers = config["authenticator"].get_auth_header()
@@ -212,11 +216,11 @@ class SourceShopify(AbstractSource):
             raise ShopifyAccessScopesError(response)
 
     @staticmethod
-    def get_shop_name(config):
+    def get_shop_name(config) -> str:
         split_pattern = ".myshopify.com"
         shop_name = config.get("shop")
         return shop_name.split(split_pattern)[0] if split_pattern in shop_name else shop_name
 
     @staticmethod
-    def format_name(name):
+    def format_name(name) -> str:
         return "".join(x.capitalize() for x in name.split("_"))
