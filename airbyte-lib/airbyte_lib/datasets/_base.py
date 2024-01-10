@@ -6,10 +6,13 @@ from pandas import DataFrame
 
 
 class DatasetBase(ABC):
-    @abstractmethod
-    def __iter__(self) -> Iterator[dict[str, Any]]:
-        ...
+    """Base implementation for all datasets."""
 
     @abstractmethod
-    def to_pandas(self) -> DataFrame:
+    def __iter__(self) -> Iterator[dict[str, Any]]:
+        """Return an iterator of records in the dataset."""
         ...
+
+    def to_pandas(self) -> DataFrame:
+        """Return a pandas DataFrame representation of the dataset."""
+        return DataFrame(iter(self))

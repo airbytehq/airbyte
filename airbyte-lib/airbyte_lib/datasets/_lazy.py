@@ -3,21 +3,30 @@
 from collections.abc import Callable, Iterator
 from typing import Any
 
-from pandas import DataFrame
+from overrides import overrides
 
 from airbyte_lib.datasets import DatasetBase
 
 
 class LazyDataset(DatasetBase):
+    """A dataset that is loaded incrementally from a source or a SQL query."""
+
     def __init__(
-        self, on_iter: Callable, on_open: Callable | None, on_close: Callable | None
+        self,
+        iterator: Iterator,
+        on_open: Callable | None = None,
+        on_close: Callable | None = None,
     ) -> None:
-        self._on_iter = on_iter
+        self._iterator = iterator
         self._on_open = on_open
         self._on_close = on_close
 
+    @overrides
     def __iter__(self) -> Iterator[dict[str, Any]]:
-        return self._on_iter()
+        if self._on_open is not None:
+            self._on_open()
 
-    def to_pandas(self) -> DataFrame:
-        raise NotImplementedError
+        yield from self._iterator
+
+        if self._on_close is not None:
+            self._on_close()
