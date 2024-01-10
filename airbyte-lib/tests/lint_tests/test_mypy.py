@@ -4,15 +4,7 @@ import subprocess
 
 import pytest
 
-XFAIL = False  # Toggle to set if the test is expected to fail or not
 
-
-@pytest.mark.xfail(
-    condition=XFAIL,
-    reason=(
-        "This is expected to fail until MyPy cleanup is completed.\n" "In the meanwhile, use `poetry run mypy .` to find and fix issues."
-    ),
-)
 def test_mypy_typing():
     # Run the check command
     check_result = subprocess.run(
