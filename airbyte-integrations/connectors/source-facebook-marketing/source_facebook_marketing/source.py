@@ -100,8 +100,9 @@ class SourceFacebookMarketing(AbstractSource):
 
             for account_id in config.account_ids:
                 # Get Ad Account to check creds
+                logger.info(f"Attempting to retrieve information for account with ID: {account_id}")
                 ad_account = api.get_account(account_id=account_id)
-                logger.info(f"Select account {ad_account}")
+                logger.info(f"Successfully retrieved account information for account: {ad_account}")
 
                 # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
                 for stream in self.get_custom_insights_streams(api, config):
