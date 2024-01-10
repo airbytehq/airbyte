@@ -59,7 +59,7 @@ public static record MssqlDebeziumStateAttributes(Lsn lsn) {}
    * Example:
    * ["test",{"server":"test","database":"test"}]" : "{"transaction_id":null,"event_serial_no":1,"commit_lsn":"00000644:00002ff8:0099","change_lsn":"0000062d:00017ff0:016d"}"
    */
-  private JsonNode constructLsnSnapshotState(final JdbcDatabase database, final String dbName) {
+  public JsonNode constructLsnSnapshotState(final JdbcDatabase database, final String dbName) {
     return format(getStateAttributesFromDB(database), dbName, Instant.now());
   }
 

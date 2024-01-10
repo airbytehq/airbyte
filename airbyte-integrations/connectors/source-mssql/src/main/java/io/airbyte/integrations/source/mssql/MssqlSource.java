@@ -33,9 +33,11 @@ import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
@@ -56,6 +58,10 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
+import io.debezium.engine.ChangeEvent;
+import io.debezium.engine.DebeziumEngine;
+import io.debezium.engine.format.Json;
+import io.debezium.engine.spi.OffsetCommitPolicy;
 import java.io.IOException;
 import java.net.URI;
 import java.security.KeyStoreException;
@@ -73,9 +79,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -517,7 +526,53 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final MssqlDebeziumStateUtil msSqlDebeziumStateUtil = new MssqlDebeziumStateUtil();
       final JsonNode initialDebeziumState = msSqlDebeziumStateUtil.constructInitialDebeziumState(
            database);
-      final CdcState stateToBeUsed = (stateManager.getCdcStateManager().getCdcState() == null
+      boolean isFirstTimeRun = (stateManager.getCdcStateManager().getCdcState() == null
+          || stateManager.getCdcStateManager().getCdcState().getState() == null);
+
+      if (isFirstTimeRun) {
+        final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
+            msSqlDebeziumStateUtil.constructLsnSnapshotState(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
+            Optional.empty());
+        final AirbyteSchemaHistoryStorage schemaHistoryStorage =
+            AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), COMPRESSION_ENABLED);
+        final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
+        final Instant engineStartTime = Instant.now();
+        try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(MssqlCdcHelper.getDebeziumProperties(database, catalog, true),
+            database.getSourceConfig(),
+            catalog,
+            offsetManager,
+            Optional.of(schemaHistoryStorage),
+            DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB)) {
+          publisher.start(queue);
+          while (!publisher.hasClosed()) {
+            final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
+            if (event != null) {
+              publisher.close();
+              break;
+            }
+            if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(3)) > 0) {
+              LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 180);
+              publisher.close();
+              throw new RuntimeException(
+                  "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
+            }
+          }
+
+
+      } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+
+        final SchemaHistory schemaHistory = schemaHistoryStorage.read();
+
+        assert !offset.isEmpty();
+        assert Objects.nonNull(schemaHistory);
+        assert Objects.nonNull(schemaHistory.schema());
+
+        final JsonNode asJson = serialize(offset, schemaHistory);
+        LOGGER.info("Initial Debezium state constructed: {}", asJson);
+
+        final CdcState stateToBeUsed = (stateManager.getCdcStateManager().getCdcState() == null
             || stateManager.getCdcStateManager().getCdcState().getState() == null) ? new CdcState().withState(initialDebeziumState)
             : stateManager.getCdcStateManager().getCdcState();
       stateManager.getCdcStateManager().setCdcState(stateToBeUsed);

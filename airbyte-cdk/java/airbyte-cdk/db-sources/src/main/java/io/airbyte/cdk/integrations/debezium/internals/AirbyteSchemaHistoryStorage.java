@@ -149,7 +149,7 @@ public class AirbyteSchemaHistoryStorage {
     if (schemaHistory.schema().isEmpty()) {
       return;
     }
-    final String fileAsString = "{\"source\":{\"server\":\"test\",\"database\":\"test\"},\"position\":{\"commit_lsn\":\"0000093b:0000f520:0003\",\"snapshot\":true,\"snapshot_completed\":false},\"ts_ms\":1704740663018,\"databaseName\":\"test\",\"schemaName\":\"dbo\",\"tableChanges\":[{\"type\":\"CREATE\",\"id\":\"\\\"test\\\".\\\"dbo\\\".\\\"NewTable\\\"\",\"table\":{\"defaultCharsetName\":null,\"primaryKeyColumnNames\":[],\"columns\":[{\"name\":\"id\",\"jdbcType\":12,\"typeName\":\"varchar\",\"typeExpression\":\"varchar\",\"charsetName\":null,\"length\":100,\"position\":1,\"optional\":true,\"autoIncremented\":false,\"generated\":false,\"comment\":null,\"hasDefaultValue\":true,\"enumValues\":[]},{\"name\":\"bin\",\"jdbcType\":-2,\"typeName\":\"binary\",\"typeExpression\":\"binary\",\"charsetName\":null,\"length\":100,\"position\":2,\"optional\":true,\"autoIncremented\":false,\"generated\":false,\"comment\":null,\"hasDefaultValue\":true,\"enumValues\":[]}],\"attributes\":[]},\"comment\":null}]}";
+    final String fileAsString = Jsons.object(schemaHistory.schema().get(), String.class);
 
     if (fileAsString == null || fileAsString.isEmpty()) {
       return;

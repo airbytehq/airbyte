@@ -164,7 +164,7 @@ public class MssqlCdcHelper {
     // the snapshot.mode needs to be initial_only since we don't want to continue streaming changes
     // https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-mode
     if (isSnapshot) {
-      props.setProperty("snapshot.mode", "initial_only");
+      props.setProperty("snapshot.mode", "schema_only");
     } else {
       props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
     }
