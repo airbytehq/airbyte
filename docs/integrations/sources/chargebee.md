@@ -8,7 +8,9 @@ This page contains the setup guide and reference information for the Chargebee s
 
 ## Prerequisites
 
-To set up the Chargebee source connector, you will need a valid [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication) and the [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html) of the Chargebee site you are syncing data from.
+To set up the Chargebee source connector, you will need:
+ - [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication)
+ - [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html) of the Chargebee site you are syncing.
 
 :::info
 All Chargebee sites created from May 5, 2021 onward will have [Product Catalog 2.0](https://www.chargebee.com/docs/2.0/product-catalog.html) enabled by default. Sites created prior to this date will use [Product Catalog 1.0](https://www.chargebee.com/docs/1.0/product-catalog.html).
