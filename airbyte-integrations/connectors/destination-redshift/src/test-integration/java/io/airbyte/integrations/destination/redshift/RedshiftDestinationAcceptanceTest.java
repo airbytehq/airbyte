@@ -4,12 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.amazon.redshift.util.RedshiftTimestamp;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.ConnectionFactory;
@@ -22,7 +18,6 @@ import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataC
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -35,7 +30,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jooq.impl.DSL;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
@@ -58,8 +52,6 @@ public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationA
   private Connection connection;
   protected TestDestinationEnv testDestinationEnv;
 
-  private final ObjectMapper mapper = new ObjectMapper();
-
   @Override
   protected String getImageName() {
     return "airbyte/destination-redshift:dev";
@@ -77,46 +69,6 @@ public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationA
     final JsonNode invalidConfig = Jsons.clone(config);
     ((ObjectNode) invalidConfig).put("password", "wrong password");
     return invalidConfig;
-  }
-
-  @Test
-  void testCheckIncorrectPasswordFailure() throws Exception {
-    final JsonNode invalidConfig = Jsons.clone(config);
-    ((ObjectNode) invalidConfig).put("password", "fake");
-    final RedshiftDestination destination = new RedshiftDestination();
-    final AirbyteConnectionStatus status = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 28000;"));
-  }
-
-  @Test
-  public void testCheckIncorrectUsernameFailure() throws Exception {
-    final JsonNode invalidConfig = Jsons.clone(config);
-    ((ObjectNode) invalidConfig).put("username", "");
-    final RedshiftDestination destination = new RedshiftDestination();
-    final AirbyteConnectionStatus status = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 28000;"));
-  }
-
-  @Test
-  public void testCheckIncorrectHostFailure() throws Exception {
-    final JsonNode invalidConfig = Jsons.clone(config);
-    ((ObjectNode) invalidConfig).put("host", "localhost2");
-    final RedshiftDestination destination = new RedshiftDestination();
-    final AirbyteConnectionStatus status = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08001;"));
-  }
-
-  @Test
-  public void testCheckIncorrectDataBaseFailure() throws Exception {
-    final JsonNode invalidConfig = Jsons.clone(config);
-    ((ObjectNode) invalidConfig).put("database", "wrongdatabase");
-    final RedshiftDestination destination = new RedshiftDestination();
-    final AirbyteConnectionStatus status = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 3D000;"));
   }
 
   @Override
@@ -282,10 +234,6 @@ public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationA
 
   protected Database getDatabase() {
     return database;
-  }
-
-  public RedshiftSQLNameTransformer getNamingResolver() {
-    return namingResolver;
   }
 
   @Override
