@@ -19,7 +19,7 @@ def test_config():
         "customer_id": "123",
         "start_date": "2021-01-01",
         "conversion_window_days": 14,
-        "custom_queries": [
+        "custom_queries_array": [
             {
                 "query": "SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign",
                 "primary_key": None,
