@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
-  dockerImageTag: 0.10.0
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-mailchimp
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   githubIssueLabel: source-mailchimp
@@ -22,7 +22,21 @@ data:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        message:
+          Version 1.0.0 introduces schema changes to all incremental streams.
+          A full schema refresh and data reset are required to upgrade to this version.
+          For more details, see our <a href='https://docs.airbyte.io/integrations/sources/mailchimp-migrations'>migration guide</a>.
+        upgradeDeadline: "2024-01-10"
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - email_activity
+      - campaigns
+      - lists
+      - reports
   supportLevel: certified
   tags:
     - language:python

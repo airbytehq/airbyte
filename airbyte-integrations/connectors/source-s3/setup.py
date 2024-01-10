@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk[file-based]>=0.55.5",
+    "airbyte-cdk[file-based]>=0.57.7",
     "smart-open[s3]==5.1.0",
     "wcmatch==8.4",
     "dill==0.3.4",
@@ -32,5 +32,10 @@ setup(
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
+    },
+    entry_points={
+        "console_scripts": [
+            "source-s3=source_s3.run:run",
+        ],
     },
 )
