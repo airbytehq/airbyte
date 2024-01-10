@@ -83,7 +83,7 @@ class ShopifyBulkJob:
                 message = error.get("message", "")
                 if concurent_job_pattern in message:
                     return True
-        # reset the `concurrent_attempt` counter, once the are no concurrent job error
+        # reset the `concurrent_attempt` counter, once there is no concurrent job error
         self.concurrent_attempt = 0
         return False
 
