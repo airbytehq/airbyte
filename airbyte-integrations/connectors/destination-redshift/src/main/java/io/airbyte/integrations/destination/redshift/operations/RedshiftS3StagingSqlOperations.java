@@ -59,6 +59,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
    *
    */
   @Override
+  @Deprecated
   public String getStageName(final String namespace, final String streamName) {
     return nameTransformer.applyDefaultCase(String.join("_",
         nameTransformer.convertStreamName(namespace),
@@ -185,9 +186,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   @Override
   public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    s3StorageOperations.dropBucketObject(prefix + stageName);
+    s3StorageOperations.dropBucketObject(stageName);
   }
 
 }
