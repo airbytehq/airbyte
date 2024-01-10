@@ -10,8 +10,7 @@
     </div>
     <a class="headerlink" href="#CachedDataset"></a>
     
-            <div class="docstring"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p>
+            <div class="docstring"><p>Base implementation for all datasets.</p>
 </div>
 
 
@@ -37,7 +36,9 @@ inheritance.</p>
     </div>
     <a class="headerlink" href="#CachedDataset.to_pandas"></a>
     
-    
+            <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
+</div>
+
 
                             </div>
                             <div id="CachedDataset.to_sql_table" class="classattr">
@@ -64,15 +65,13 @@ inheritance.</p>
     </div>
     <a class="headerlink" href="#DatasetBase"></a>
     
-            <div class="docstring"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p>
+            <div class="docstring"><p>Base implementation for all datasets.</p>
 </div>
 
 
                             <div id="DatasetBase.to_pandas" class="classattr">
                                 <div class="attr function">
-                    <div class="decorator">@abstractmethod</div>
-
+            
         <span class="def">def</span>
         <span class="name">to_pandas</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span>:</span></span>
 
@@ -80,7 +79,9 @@ inheritance.</p>
     </div>
     <a class="headerlink" href="#DatasetBase.to_pandas"></a>
     
-    
+            <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
+</div>
+
 
                             </div>
                 </section>
@@ -94,11 +95,7 @@ inheritance.</p>
     </div>
     <a class="headerlink" href="#DatasetMap"></a>
     
-            <div class="docstring"><p>A Mapping is a generic container for associating key/value
-pairs.</p>
-
-<p>This class provides concrete generic implementations of all
-methods except for __getitem__, __iter__, and __len__.</p>
+            <div class="docstring"><p>A generic interface for a set of streams or datasets.</p>
 </div>
 
 

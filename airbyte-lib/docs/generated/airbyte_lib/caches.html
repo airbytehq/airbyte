@@ -36,7 +36,6 @@ so we insert as values instead.</p>
                                     <div><dt><a href="#SQLCacheBase">SQLCacheBase</a></dt>
                                 <dd id="DuckDBCache.__init__" class="function"><a href="#SQLCacheBase.__init__">SQLCacheBase</a></dd>
                 <dd id="DuckDBCache.type_converter_class" class="variable"><a href="#SQLCacheBase.type_converter_class">type_converter_class</a></dd>
-                <dd id="DuckDBCache.supports_merge_insert" class="variable"><a href="#SQLCacheBase.supports_merge_insert">supports_merge_insert</a></dd>
                 <dd id="DuckDBCache.use_singleton_connection" class="variable"><a href="#SQLCacheBase.use_singleton_connection">use_singleton_connection</a></dd>
                 <dd id="DuckDBCache.config" class="variable"><a href="#SQLCacheBase.config">config</a></dd>
                 <dd id="DuckDBCache.file_writer" class="variable"><a href="#SQLCacheBase.file_writer">file_writer</a></dd>
@@ -54,6 +53,7 @@ so we insert as values instead.</p>
             </div>
             <div><dt>airbyte_lib.caches.duckdb.DuckDBCacheBase</dt>
                                 <dd id="DuckDBCache.config_class" class="variable">config_class</dd>
+                <dd id="DuckDBCache.supports_merge_insert" class="variable">supports_merge_insert</dd>
 
             </div>
             <div><dt>airbyte_lib.processors.RecordProcessor</dt>
@@ -225,7 +225,6 @@ so we insert as values instead.</p>
                                     <div><dt><a href="#SQLCacheBase">SQLCacheBase</a></dt>
                                 <dd id="InMemoryCache.__init__" class="function"><a href="#SQLCacheBase.__init__">SQLCacheBase</a></dd>
                 <dd id="InMemoryCache.type_converter_class" class="variable"><a href="#SQLCacheBase.type_converter_class">type_converter_class</a></dd>
-                <dd id="InMemoryCache.supports_merge_insert" class="variable"><a href="#SQLCacheBase.supports_merge_insert">supports_merge_insert</a></dd>
                 <dd id="InMemoryCache.config" class="variable"><a href="#SQLCacheBase.config">config</a></dd>
                 <dd id="InMemoryCache.file_writer" class="variable"><a href="#SQLCacheBase.file_writer">file_writer</a></dd>
                 <dd id="InMemoryCache.type_converter" class="variable"><a href="#SQLCacheBase.type_converter">type_converter</a></dd>
@@ -238,6 +237,10 @@ so we insert as values instead.</p>
                 <dd id="InMemoryCache.streams" class="variable"><a href="#SQLCacheBase.streams">streams</a></dd>
                 <dd id="InMemoryCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
                 <dd id="InMemoryCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
+
+            </div>
+            <div><dt>airbyte_lib.caches.duckdb.DuckDBCacheBase</dt>
+                                <dd id="InMemoryCache.supports_merge_insert" class="variable">supports_merge_insert</dd>
 
             </div>
             <div><dt>airbyte_lib.processors.RecordProcessor</dt>
@@ -756,7 +759,7 @@ so we insert as values instead.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_records</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]]</span>:</span></span>
+        <span class="name">get_records</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">_lazy</span><span class="o">.</span><span class="n">LazyDataset</span>:</span></span>
 
         
     </div>

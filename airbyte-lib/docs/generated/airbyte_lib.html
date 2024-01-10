@@ -72,8 +72,7 @@ working directory.</p>
     </div>
     <a class="headerlink" href="#CachedDataset"></a>
     
-            <div class="docstring"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p>
+            <div class="docstring"><p>Base implementation for all datasets.</p>
 </div>
 
 
@@ -99,7 +98,9 @@ inheritance.</p>
     </div>
     <a class="headerlink" href="#CachedDataset.to_pandas"></a>
     
-    
+            <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
+</div>
+
 
                             </div>
                             <div id="CachedDataset.to_sql_table" class="classattr">
@@ -295,7 +296,7 @@ inheritance.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_records</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]]</span>:</span></span>
+        <span class="name">get_records</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">_lazy</span><span class="o">.</span><span class="n">LazyDataset</span>:</span></span>
 
         
     </div>
@@ -321,7 +322,7 @@ inheritance.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">check</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+        <span class="name">check</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
         
     </div>
