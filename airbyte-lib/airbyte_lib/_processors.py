@@ -61,7 +61,10 @@ class RecordProcessor(abc.ABC):
 
         self.config = config or self.config_class()
         if not isinstance(self.config, self.config_class):
-            err_msg = f"Expected config class of type '{self.config_class.__name__}'.  " f"Instead found '{type(self.config).__name__}'."
+            err_msg = (
+                f"Expected config class of type '{self.config_class.__name__}'.  "
+                f"Instead found '{type(self.config).__name__}'."
+            )
             raise TypeError(err_msg)
 
         self.source_catalog: ConfiguredAirbyteCatalog | None = None
@@ -245,7 +248,8 @@ class RecordProcessor(abc.ABC):
         with self._finalizing_batches(stream_name) as batches_to_finalize:
             if batches_to_finalize and not self.skip_finalize_step:
                 raise NotImplementedError(
-                    "Caches need to be finalized but no _finalize_batch() method " f"exists for class {self.__class__.__name__}",
+                    "Caches need to be finalized but no _finalize_batch() method "
+                    f"exists for class {self.__class__.__name__}",
                 )
 
             return batches_to_finalize

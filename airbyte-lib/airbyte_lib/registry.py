@@ -26,7 +26,9 @@ def _update_cache() -> None:
         with open(str(os.environ.get("AIRBYTE_LOCAL_REGISTRY"))) as f:
             data = json.load(f)
     else:
-        response = requests.get(REGISTRY_URL, headers={"User-Agent": f"airbyte-lib-{airbyte_lib_version}"})
+        response = requests.get(
+            REGISTRY_URL, headers={"User-Agent": f"airbyte-lib-{airbyte_lib_version}"}
+        )
         response.raise_for_status()
         data = response.json()
     _cache = {}

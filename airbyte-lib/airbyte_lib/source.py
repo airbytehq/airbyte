@@ -194,7 +194,8 @@ class Source:
         )
         if len(configured_catalog.streams) == 0:
             raise ValueError(  # noqa: TRY003  # Long message in exception constructor
-                f"Stream {stream} is not available for connector {self.name}, " f"choose from {self.get_available_streams()}",
+                f"Stream {stream} is not available for connector {self.name}, "
+                f"choose from {self.get_available_streams()}",
             )
 
         iterator: Iterable[dict[str, Any]] = airbyte.airbyte_messages_to_record_dicts(

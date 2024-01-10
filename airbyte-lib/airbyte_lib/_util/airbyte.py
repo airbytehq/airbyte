@@ -5,14 +5,23 @@
 from collections.abc import Iterable
 from typing import Any, cast
 
-from airbyte_protocol.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_protocol.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    ConfiguredAirbyteCatalog,
+    Type,
+)
 
 
 def airbyte_messages_to_record_dicts(
     messages: Iterable[AirbyteMessage],
 ) -> Iterable[dict[str, Any]]:
     """Convert an AirbyteMessage to a dictionary."""
-    yield from (cast(dict[str, Any], airbyte_message_to_record_dict(message)) for message in messages if message is not None)
+    yield from (
+        cast(dict[str, Any], airbyte_message_to_record_dict(message))
+        for message in messages
+        if message is not None
+    )
 
 
 def airbyte_message_to_record_dict(message: AirbyteMessage) -> dict[str, Any] | None:

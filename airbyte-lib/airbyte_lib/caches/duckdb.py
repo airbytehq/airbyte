@@ -82,7 +82,8 @@ class DuckDBCache(DuckDBCacheBase):
         """
         if not self._get_primary_keys(stream_name):
             raise RuntimeError(  # noqa: TRY003  # Too-long exception message
-                f"Primary keys not found for stream {stream_name}. " "Cannot run merge updates without primary keys."
+                f"Primary keys not found for stream {stream_name}. "
+                "Cannot run merge updates without primary keys."
             )
 
         _ = stream_name
@@ -118,7 +119,9 @@ class DuckDBCache(DuckDBCacheBase):
         if set(pk_cols) != set(table_pk_cols):
             if raise_on_error:
                 raise RuntimeError(  # noqa: TRY003  # Too-long exception message
-                    f"Primary keys do not match for table {table_name}. " f"Expected: {pk_cols}. " f"Found: {table_pk_cols}.",
+                    f"Primary keys do not match for table {table_name}. "
+                    f"Expected: {pk_cols}. "
+                    f"Found: {table_pk_cols}.",
                 )
             return False
 

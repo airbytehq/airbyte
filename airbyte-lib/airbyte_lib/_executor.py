@@ -149,7 +149,9 @@ class VenvExecutor(Executor):
         venv_path = Path(venv_name)
         if not venv_path.exists():
             if not self.install_if_missing:
-                raise Exception(f"Connector {self.metadata.name} is not available - venv {venv_name} does not exist")
+                raise Exception(
+                    f"Connector {self.metadata.name} is not available - venv {venv_name} does not exist"
+                )
             self.install()
 
         connector_path = self._get_connector_path()
@@ -183,7 +185,9 @@ class PathExecutor(Executor):
         try:
             self.execute(["spec"])
         except Exception as e:
-            raise Exception(f"Connector {self.metadata.name} is not available - executing it failed: {e}")
+            raise Exception(
+                f"Connector {self.metadata.name} is not available - executing it failed: {e}"
+            )
 
     def install(self) -> NoReturn:
         raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")
