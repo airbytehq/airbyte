@@ -16,17 +16,14 @@ import io.airbyte.cdk.db.factory.ConnectionFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.destination.TestingNamespaces;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.ZoneOffset;
@@ -44,15 +41,11 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration
- * test credentials contain S3 credentials - this automatically causes COPY to be selected.
- */
 // these tests are not yet thread-safe, unlike the DV2 tests.
 @Execution(ExecutionMode.SAME_THREAD)
-public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3DestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestinationAcceptanceTest.class);
 
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
@@ -77,9 +70,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     return config;
   }
 
-  public JsonNode getStaticConfig() throws IOException {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config_staging.json")));
-  }
+  public abstract JsonNode getStaticConfig() throws IOException;
 
   @Override
   protected JsonNode getFailCheckConfig() {
@@ -126,33 +117,6 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     final AirbyteConnectionStatus status = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 3D000;"));
-  }
-
-  /*
-   * FileBuffer Default Tests
-   */
-  @Test
-  public void testGetFileBufferDefault() {
-    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
-    assertEquals(destination.getNumberOfFileBuffers(config), FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
-  }
-
-  @Test
-  public void testGetFileBufferMaxLimited() {
-    final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
-    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
-    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
-  }
-
-  @Test
-  public void testGetMinimumFileBufferCount() {
-    final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
-    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
-    // User cannot set number of file counts below the default file buffer count, which is existing
-    // behavior
-    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
   @Override
