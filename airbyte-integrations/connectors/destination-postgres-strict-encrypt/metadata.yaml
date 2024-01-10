@@ -1,13 +1,15 @@
 data:
   registries:
     cloud:
+      dockerImageTag: 0.4.0
       enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
     oss:
+      dockerImageTag: 0.4.0
       enabled: false # strict encrypt connectors are not used on OSS.
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.5.1
   dockerRepository: airbyte/destination-postgres-strict-encrypt
   githubIssueLabel: destination-postgres
   icon: postgresql.svg

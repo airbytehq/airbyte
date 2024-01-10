@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.58.3
+fix declarative oauth initialization
+
+## 0.58.2
+Integration tests: adding debug mode to improve logging
+
+## 0.58.1
+Add schema normalization to declarative stream
+
+## 0.58.0
+Concurrent CDK: add state converter for ISO timestamps with millisecond granularity
+
+## 0.57.8
+add SelectiveAuthenticator
+
+## 0.57.7
+File CDK: Support raw txt file
+
 ## 0.57.6
 Adding more tooling to cover source-stripe events stream
 
@@ -20,6 +38,9 @@ Improve integration tests tooling
 
 ## 0.57.0
 low-code: cache requests sent for parent streams
+File-based CDK: Add support for automatic primary key for document file type format
+File-based CDK: Add support for remote parsing of document file type format via API
+Vector DB CDK: Fix bug with embedding tokens with special meaning like `<|endoftext|>`
 
 ## 0.56.1
 no-op to verify pypi publish flow

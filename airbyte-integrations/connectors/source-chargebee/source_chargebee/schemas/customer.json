@@ -165,6 +165,16 @@
       "type": ["string", "null"],
       "maxLength": 10
     },
+    "business_entity_id": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "channel": {
+      "type": ["string", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
     "billing_address": {
       "type": ["object", "null"],
       "properties": {
@@ -413,7 +423,6 @@
     "card_status": {
       "type": ["string", "null"]
     },
-
     "meta_data": {
       "type": ["object", "null"],
       "properties": {}

@@ -16,8 +16,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.Field;
@@ -87,6 +85,7 @@ public class CdcStateCompressionTest {
       testdb
           .with("CREATE TABLE %s.test_table_%d (id INT IDENTITY(1,1) PRIMARY KEY);", TEST_SCHEMA, i)
           .with(enableCdcSqlFmt, TEST_SCHEMA, i, CDC_ROLE_NAME, i, 1)
+          .withShortenedCapturePollingInterval()
           .with("INSERT INTO %s.test_table_%d DEFAULT VALUES", TEST_SCHEMA, i);
     }
 
@@ -124,7 +123,8 @@ public class CdcStateCompressionTest {
       testdb
           .with(sb.toString())
           .with(enableCdcSqlFmt, TEST_SCHEMA, i, CDC_ROLE_NAME, i, 2)
-          .with(disableCdcSqlFmt, TEST_SCHEMA, i, i, 1);
+          .with(disableCdcSqlFmt, TEST_SCHEMA, i, i, 1)
+          .withShortenedCapturePollingInterval();
     }
   }
 
@@ -148,9 +148,7 @@ public class CdcStateCompressionTest {
   }
 
   private MssqlSource source() {
-    final var source = new MssqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new MssqlSource();
   }
 
   private JsonNode config() {
@@ -160,8 +158,16 @@ public class CdcStateCompressionTest {
         .with(JdbcUtils.USERNAME_KEY, testUserName())
         .with(JdbcUtils.PASSWORD_KEY, testdb.getPassword())
         .withSchemas(TEST_SCHEMA)
-        .withCdcReplication()
         .withoutSsl()
+        // Configure for CDC replication but with a higher timeout than usual.
+        // This is because Debezium requires more time than usual to build the initial snapshot.
+        .with("is_test", true)
+        .with("replication_method", Map.of(
+            "method", "CDC",
+            "data_to_sync", "Existing and New",
+            "initial_waiting_seconds", 60,
+            "snapshot_isolation", "Snapshot"))
+
         .build();
   }
 

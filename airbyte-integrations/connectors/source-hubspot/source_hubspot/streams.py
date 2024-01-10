@@ -32,6 +32,7 @@ from requests import HTTPError, codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import (
+    APIPropertiesWithHistory,
     APIv1Property,
     APIv2Property,
     APIv3Property,
@@ -1848,6 +1849,11 @@ class PropertyHistory(ClientSideIncrementalStream):
 
     @property
     @abstractmethod
+    def entity_primary_key(self) -> str:
+        """Indicates a field name which is considered to be a primary key of the parent entity"""
+
+    @property
+    @abstractmethod
     def additional_keys(self) -> list:
         """The root keys to be placed into each record while iterating through versions"""
 
@@ -1885,7 +1891,7 @@ class PropertyHistory(ClientSideIncrementalStream):
     def _transform(self, records: Iterable) -> Iterable:
         for record in records:
             properties = record.get("properties")
-            primary_key = record.get(self.primary_key)
+            primary_key = record.get(self.entity_primary_key)
             additional_keys = {additional_key: record.get(additional_key) for additional_key in self.additional_keys}
             value_dict: Dict
             for property_name, value_dict in properties.items():
@@ -1900,7 +1906,7 @@ class PropertyHistory(ClientSideIncrementalStream):
                 if versions:
                     for version in versions:
                         version["property"] = property_name
-                        version[self.primary_key] = primary_key
+                        version[self.entity_primary_key] = primary_key
                         yield version | additional_keys
 
 
@@ -1934,8 +1940,12 @@ class ContactsPropertyHistory(PropertyHistory):
         return "contacts"
 
     @property
-    def primary_key(self) -> list:
+    def entity_primary_key(self) -> list:
         return "vid"
+
+    @property
+    def primary_key(self) -> list:
+        return ["vid", "property", "timestamp"]
 
     @property
     def additional_keys(self) -> list:
@@ -1955,6 +1965,11 @@ class ContactsPropertyHistory(PropertyHistory):
 
 
 class CompaniesPropertyHistory(PropertyHistory):
+    @cached_property
+    def _property_wrapper(self) -> IURLPropertyRepresentation:
+        properties = list(self.properties.keys())
+        return APIPropertiesWithHistory(properties=properties)
+
     @property
     def scopes(self) -> set:
         return {"crm.objects.companies.read"}
@@ -1984,8 +1999,12 @@ class CompaniesPropertyHistory(PropertyHistory):
         return "companies"
 
     @property
-    def primary_key(self) -> list:
+    def entity_primary_key(self) -> list:
         return "companyId"
+
+    @property
+    def primary_key(self) -> list:
+        return ["companyId", "property", "timestamp"]
 
     @property
     def additional_keys(self) -> list:
@@ -2014,10 +2033,15 @@ class CompaniesPropertyHistory(PropertyHistory):
         next_page_token: Mapping[str, Any] = None,
         properties: IURLPropertyRepresentation = None,
     ) -> str:
-        return f"{self.url}?{properties.as_url_param_with_history()}"
+        return f"{self.url}?{properties.as_url_param()}"
 
 
 class DealsPropertyHistory(PropertyHistory):
+    @cached_property
+    def _property_wrapper(self) -> IURLPropertyRepresentation:
+        properties = list(self.properties.keys())
+        return APIPropertiesWithHistory(properties=properties)
+
     @property
     def scopes(self) -> set:
         return {"crm.objects.deals.read"}
@@ -2047,8 +2071,12 @@ class DealsPropertyHistory(PropertyHistory):
         return "deals"
 
     @property
-    def primary_key(self) -> list:
+    def entity_primary_key(self) -> list:
         return "dealId"
+
+    @property
+    def primary_key(self) -> list:
+        return ["dealId", "property", "timestamp"]
 
     @property
     def additional_keys(self) -> list:
@@ -2077,7 +2105,7 @@ class DealsPropertyHistory(PropertyHistory):
         next_page_token: Mapping[str, Any] = None,
         properties: IURLPropertyRepresentation = None,
     ) -> str:
-        return f"{self.url}?{properties.as_url_param_with_history()}"
+        return f"{self.url}?{properties.as_url_param()}"
 
 
 class SubscriptionChanges(IncrementalStream):

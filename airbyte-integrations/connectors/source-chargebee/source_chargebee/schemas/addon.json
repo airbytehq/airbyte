@@ -138,6 +138,15 @@
     "show_description_in_quotes": {
       "type": ["boolean", "null"]
     },
+    "channel": {
+      "type": ["string", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
     "tiers": {
       "type": ["array", "null"],
       "items": {
