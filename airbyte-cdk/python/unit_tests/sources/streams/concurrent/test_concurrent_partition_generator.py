@@ -3,7 +3,7 @@
 #
 
 from queue import Queue
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import SyncMode
@@ -17,9 +17,7 @@ from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionE
 )
 def test_partition_generator(slices):
     queue = Queue()
-    max_size = 10
-    wait_time = 0.1
-    partition_generator = PartitionEnqueuer(queue, max_size, wait_time)
+    partition_generator = PartitionEnqueuer(queue)
 
     stream = Mock()
     message_repository = Mock()
@@ -39,19 +37,3 @@ def test_partition_generator(slices):
         actual_partitions.append(partition)
 
     assert actual_partitions == partitions
-
-def test_generate_partitions_waits_if_too_many_items_in_queue():
-    queue: Queue = Mock(spec=Queue)
-    max_size = 1
-    wait_time = 0.1
-    partition_generator = PartitionEnqueuer(queue, max_size, wait_time)
-
-    stream = Mock()
-    partitions = [Mock()]
-    stream.generate_partitions.return_value = iter(partitions)
-
-    queue.qsize.side_effect = [2, 2]
-
-    with patch("time.sleep") as sleep_mock:
-        partition_generator.generate_partitions(stream)
-        sleep_mock.assert_called_with(wait_time)

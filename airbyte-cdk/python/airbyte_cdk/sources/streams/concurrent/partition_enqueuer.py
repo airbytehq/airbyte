@@ -3,7 +3,6 @@
 #
 
 from queue import Queue
-import time
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
