@@ -68,6 +68,7 @@ public class MssqlQueryUtils {
   public static final String MAX_OC_COL = "max_oc";
   public static final String DATA_SIZE_HUMAN_READABLE = "data";
   public static final String NUM_ROWS = "rows";
+
   public static void getIndexInfoForStreams(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final String quoteString) {
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
