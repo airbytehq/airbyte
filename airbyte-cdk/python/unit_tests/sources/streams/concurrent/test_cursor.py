@@ -76,6 +76,20 @@ class ConcurrentCursorTest(TestCase):
         self._state_manager.update_state_for_stream.assert_called_once_with(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
+            {_A_CURSOR_FIELD_KEY: 0},  # State message is updated to the legacy format before being emitted
+        )
+
+    def test_given_boundary_fields_when_close_partition_then_emit_updated_state(self) -> None:
+        self._cursor_with_slice_boundary_fields().close_partition(
+            _partition(
+                {_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 30},
+            )
+        )
+
+        self._message_repository.emit_message.assert_called_once_with(self._state_manager.create_state_message.return_value)
+        self._state_manager.update_state_for_stream.assert_called_once_with(
+            _A_STREAM_NAME,
+            _A_STREAM_NAMESPACE,
             {_A_CURSOR_FIELD_KEY: 30},  # State message is updated to the legacy format before being emitted
         )
 

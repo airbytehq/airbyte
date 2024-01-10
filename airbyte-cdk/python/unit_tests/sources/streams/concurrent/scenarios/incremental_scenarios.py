@@ -166,6 +166,7 @@ CONCURRENT_STATE = [
         "stream": {
             "stream_state": {
                 "slices": [{"start": 0, "end": 0}],
+                "start": 0,
                 "state_type": ConcurrencyCompatibleStateType.date_range.value,
             },
             "stream_descriptor": {"name": "stream1"},
