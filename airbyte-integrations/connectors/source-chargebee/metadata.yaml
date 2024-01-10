@@ -23,6 +23,19 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - subscription
+      - customer
+      - invoice
+      - credit_note
+      - coupon
+      - transaction
+      - event
+      - order
+      - plan
+      - payment_source
+      - addon
   supportLevel: certified
   tags:
     - language:low-code
