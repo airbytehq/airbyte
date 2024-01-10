@@ -56,8 +56,8 @@ class StripeRequestBuilder:
         return cls("payment_methods", account_id, client_secret)
 
     @classmethod
-    def persons_endpoint(cls, account_id: str, client_secret: str, ) -> "StripeRequestBuilder":
-        return cls(f"accounts/{account_id}/persons", account_id, client_secret)
+    def persons_endpoint(cls, parent_account_id: str, account_id: str, client_secret: str, ) -> "StripeRequestBuilder":
+        return cls(f"accounts/{parent_account_id}/persons", account_id, client_secret)
 
     @classmethod
     def radar_early_fraud_warnings_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":

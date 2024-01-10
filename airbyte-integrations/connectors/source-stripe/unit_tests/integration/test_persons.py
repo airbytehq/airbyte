@@ -45,17 +45,16 @@ def _create_catalog(sync_mode: SyncMode = SyncMode.full_refresh):
     return CatalogBuilder().with_stream(name="persons", sync_mode=sync_mode).build()
 
 
-def _create_request(resource: str) -> StripeRequestBuilder:
-    # if we need to allow for parent ids then we can use kwargs
-    match resource:
-        case "accounts":
-            return StripeRequestBuilder.accounts_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
-        case "events":
-            return StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
-        case "persons":
-            return StripeRequestBuilder.persons_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
-        case _:
-            raise ValueError("Invalid resource specified")
+def _create_accounts_request() -> StripeRequestBuilder:
+    return StripeRequestBuilder.accounts_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
+
+
+def _create_persons_request(parent_account_id: str = _ACCOUNT_ID) -> StripeRequestBuilder:
+    return StripeRequestBuilder.persons_endpoint(parent_account_id, _ACCOUNT_ID, _CLIENT_SECRET)
+
+
+def _create_events_request() -> StripeRequestBuilder:
+    return StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
 
 
 def _create_response() -> HttpResponseBuilder:
@@ -103,17 +102,17 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_full_refresh(self, http_mocker):
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
@@ -127,25 +126,25 @@ class PersonsTest(TestCase):
     def test_parent_pagination(self, http_mocker):
         # First parent stream accounts first page request
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
-            _create_response().with_record(record=_create_record("accounts")).with_pagination().build(),
+            _create_accounts_request().with_limit(100).build(),
+            _create_response().with_record(record=_create_record("accounts").with_id("last_page_record_id")).with_pagination().build(),
         )
 
         # Second parent stream accounts second page request
         http_mocker.get(
-            _create_request("accounts").with_limit(100).with_starting_after("acct_1G9HZLIEn49ers").build(),
-            _create_response().with_record(record=_create_record("accounts")).build(),
+            _create_accounts_request().with_limit(100).with_starting_after("last_page_record_id").build(),
+            _create_response().with_record(record=_create_record("accounts").with_id("last_page_record_id")).build(),
         )
 
         # Persons stream first page request
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request(parent_account_id="last_page_record_id").with_limit(100).build(),
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
         # The persons stream makes a final call to events endpoint
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
@@ -160,26 +159,26 @@ class PersonsTest(TestCase):
     def test_substream_pagination(self, http_mocker):
         # First parent stream accounts first page request
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         # Persons stream first page request
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
-            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).with_pagination().build(),
+            _create_persons_request().with_limit(100).build(),
+            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons").with_id("last_page_record_id")).with_pagination().build(),
         )
 
         # Persons stream second page request
         http_mocker.get(
-            _create_request("persons").with_limit(100).with_starting_after("person_1MqjB62eZvKYlo2CaeEJzK13").build(),
+            _create_persons_request().with_limit(100).with_starting_after("last_page_record_id").build(),
             _create_response().with_record(record=_create_record("persons")).with_record(
                 record=_create_record("persons")).build(),
         )
 
         # The persons stream makes a final call to events endpoint
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
@@ -193,7 +192,7 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_accounts_400_error(self, http_mocker: HttpMocker):
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             a_response_with_status(400),
         )
 
@@ -209,13 +208,13 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_persons_400_error(self, http_mocker: HttpMocker):
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         # Persons stream first page request
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             a_response_with_status(400),
         )
 
@@ -231,7 +230,7 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_accounts_401_error(self, http_mocker: HttpMocker):
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             a_response_with_status(401),
         )
 
@@ -243,13 +242,13 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_persons_401_error(self, http_mocker: HttpMocker):
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         # Persons stream first page request
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             a_response_with_status(401),
         )
 
@@ -261,13 +260,13 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_persons_403_error(self, http_mocker: HttpMocker):
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         # Persons stream first page request
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             a_response_with_status(403),
         )
 
@@ -286,22 +285,22 @@ class PersonsTest(TestCase):
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
 
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
@@ -324,22 +323,22 @@ class PersonsTest(TestCase):
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
 
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(record=_create_persons_event_record(event_type="person.deleted")).build(),
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.deleted")).build(),
         )
@@ -364,17 +363,17 @@ class PersonsTest(TestCase):
         config = _create_config().with_start_date(start_datetime).build()
 
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(start_datetime).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(start_datetime).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
@@ -394,7 +393,7 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_rate_limited_parent_stream_accounts(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             [
                 a_response_with_status(429),
                 _create_response().with_record(record=_create_record("accounts")).build(),
@@ -402,12 +401,12 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
@@ -421,12 +420,12 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_rate_limited_substream_persons(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             [
                 a_response_with_status(429),
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
@@ -434,7 +433,7 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
@@ -451,25 +450,25 @@ class PersonsTest(TestCase):
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
 
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
         # Mock when check_availability is run on the persons incremental stream
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(
                 record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             [
                 a_response_with_status(429),
@@ -492,12 +491,12 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_rate_limit_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             [
                 # Used to pass the initial check_availability before starting the sync
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
@@ -506,7 +505,7 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
@@ -522,25 +521,25 @@ class PersonsTest(TestCase):
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
 
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
         # Mock when check_availability is run on the persons incremental stream
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(
                 record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
         )
@@ -558,7 +557,7 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_server_error_parent_stream_accounts(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             [
                 a_response_with_status(500),
                 _create_response().with_record(record=_create_record("accounts")).build(),
@@ -566,12 +565,12 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
@@ -585,12 +584,12 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_server_error_substream_persons(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             [
                 a_response_with_status(500),
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
@@ -598,7 +597,7 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
@@ -612,12 +611,12 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_server_error_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _create_request("accounts").with_limit(100).build(),
+            _create_accounts_request().with_limit(100).build(),
             _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
         http_mocker.get(
-            _create_request("persons").with_limit(100).build(),
+            _create_persons_request().with_limit(100).build(),
             [
                 # Used to pass the initial check_availability before starting the sync
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
@@ -626,7 +625,7 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_request("events").with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
+            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
