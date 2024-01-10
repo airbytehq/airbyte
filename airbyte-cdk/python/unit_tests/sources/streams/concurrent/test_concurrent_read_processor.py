@@ -191,7 +191,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         )
         handler.start_next_partition_generator()
         handler.on_partition(partition)
-        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream)))
 
         sentinel = PartitionCompleteSentinel(partition)
 
@@ -202,19 +201,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         messages = list(handler.on_partition_complete_sentinel(sentinel))
 
         expected_messages = [
-            AirbyteMessage(
-                type=MessageType.TRACE,
-                trace=AirbyteTraceMessage(
-                    type=TraceType.STREAM_STATUS,
-                    stream_status=AirbyteStreamStatusTraceMessage(
-                        stream_descriptor=StreamDescriptor(
-                            name=_STREAM_NAME,
-                        ),
-                        status=AirbyteStreamStatus.COMPLETE,
-                    ),
-                    emitted_at=1577836800000.0,
-                ),
-            ),
             AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
         ]
         assert expected_messages == messages
