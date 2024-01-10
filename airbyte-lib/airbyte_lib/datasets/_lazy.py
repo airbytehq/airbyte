@@ -30,3 +30,6 @@ class LazyDataset(DatasetBase):
 
         if self._on_close is not None:
             self._on_close()
+
+    def __next__(self) -> dict[str, Any]:
+        return next(self._iterator)
