@@ -68,7 +68,7 @@ class ConcurrentReadProcessor:
         self._streams_currently_generating_partitions.remove(sentinel.stream.name)
         ret = []
         # It is possible for the stream to already be done if no partitions were generated
-        if len(self._streams_to_running_partitions[stream_name]) == 0:
+        if self._is_stream_done(stream_name):
             ret.append(self._on_stream_is_done(stream_name))
         if self._stream_instances_to_start_partition_generation:
             ret.append(self.start_next_partition_generator())
