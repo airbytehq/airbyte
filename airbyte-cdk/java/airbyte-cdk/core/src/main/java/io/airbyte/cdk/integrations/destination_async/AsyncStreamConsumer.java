@@ -45,6 +45,10 @@ import org.slf4j.LoggerFactory;
 @Slf4j
 public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
+  {
+    LOGGER.info("dumb change to maybe bust cache?");
+  }
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStreamConsumer.class);
 
   private final OnStartFunction onStart;
@@ -149,7 +153,6 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
      * do it without touching buffer manager.
      */
     final var message = deserializeAirbyteMessage(messageString);
-    LOGGER.info("dumb change to maybe bust cache?");
     if (Type.RECORD.equals(message.getType())) {
       if (Strings.isNullOrEmpty(message.getRecord().getNamespace())) {
         message.getRecord().setNamespace(defaultNamespace);
