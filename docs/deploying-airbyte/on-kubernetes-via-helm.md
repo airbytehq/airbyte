@@ -10,7 +10,9 @@ If you don't want to configure your own Kubernetes cluster and Airbyte instance,
 
 Alternatively, you can deploy Airbyte on [Restack](https://www.restack.io) to provision your Kubernetes cluster on AWS. Follow [this guide](on-restack.md) to get started.
 
-> Note: Airbyte running on Self-Hosted Kubernetes doesn't support DBT Transformations. Please refer to [#5901](https://github.com/airbytehq/airbyte/issues/5091)
+:::note
+Airbyte running on Self-Hosted Kubernetes doesn't support DBT Transformations. Please refer to [#5901](https://github.com/airbytehq/airbyte/issues/5091)
+:::
 
 ## Getting Started
 
