@@ -109,7 +109,7 @@ def test_job_create(request, requests_mock, bulk_job_response, auth_config, erro
 
 
 @pytest.mark.parametrize(
-    "job_response, error_type, is_test, should_mock_id, expected",
+    "job_response, error_type, is_test, expected",
     [
         (
             "bulk_job_completed_response",
