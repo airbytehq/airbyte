@@ -92,7 +92,12 @@ so we insert as values instead.</p>
     </div>
     <a class="headerlink" href="#DuckDBCacheConfig.db_path"></a>
     
-    
+            <div class="docstring"><p>Normally db_path is a Path object.</p>
+
+<p>There are some cases, such as when connecting to MotherDuck, where it could be a string that
+is not also a path, such as "md:" to connect the user's default MotherDuck DB.</p>
+</div>
+
 
                             </div>
                             <div id="DuckDBCacheConfig.schema_name" class="classattr">
@@ -103,7 +108,9 @@ so we insert as values instead.</p>
     </div>
     <a class="headerlink" href="#DuckDBCacheConfig.schema_name"></a>
     
-    
+            <div class="docstring"><p>The name of the schema to write to. Defaults to "main".</p>
+</div>
+
 
                             </div>
                             <div id="DuckDBCacheConfig.get_sql_alchemy_url" class="classattr">
