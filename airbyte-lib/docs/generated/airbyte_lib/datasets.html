@@ -4,7 +4,7 @@
                     <div class="attr class">
             
     <span class="def">class</span>
-    <span class="name">CachedDataset</span><wbr>(<span class="base"><a href="#DatasetBase">airbyte_lib.datasets.DatasetBase</a></span>):
+    <span class="name">CachedDataset</span><wbr>(<span class="base">abc.ABC</span>, <span class="base">collections.abc.Iterator[collections.abc.Mapping[str, typing.Any]]</span>):
 
         
     </div>
@@ -59,7 +59,7 @@
                     <div class="attr class">
             
     <span class="def">class</span>
-    <span class="name">DatasetBase</span><wbr>(<span class="base">abc.ABC</span>):
+    <span class="name">DatasetBase</span><wbr>(<span class="base">abc.ABC</span>, <span class="base">collections.abc.Iterator[collections.abc.Mapping[str, typing.Any]]</span>):
 
         
     </div>
