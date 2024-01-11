@@ -187,7 +187,7 @@ definitions:
       path: "/events"
       stream_cursor_field: "occurred_at"
   gift_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "gift"
       primary_key: "id"
@@ -315,17 +315,7 @@ definitions:
       primary_key: "id"
       path: "/quotes/{{ stream_slice.id }}/quote_line_groups"
   site_migration_detail_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/retriever/requester"
-        request_parameters:
-          sort_by[asc]: migrated_at
-          include_deleted: "true"
-          migrated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
-    incremental_sync:
-      $ref: "#/definitions/date_stream_slicer"
+    $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "site_migration_detail"
       primary_key: "entity_id"
