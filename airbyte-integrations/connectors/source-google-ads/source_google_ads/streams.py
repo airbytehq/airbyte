@@ -16,7 +16,7 @@ from airbyte_protocol.models import FailureType
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v15.services.services.google_ads_service.pagers import SearchPager
 from google.ads.googleads.v15.services.types.google_ads_service import SearchGoogleAdsResponse
-from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests
+from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests, Unauthenticated
 
 from .google_ads import GoogleAds, logger
 from .models import CustomerModel
@@ -65,7 +65,7 @@ class GoogleAdsStream(Stream, ABC):
         customer_id = stream_slice["customer_id"]
         try:
             yield from self.request_records_job(customer_id, self.get_query(stream_slice), stream_slice)
-        except GoogleAdsException as exception:
+        except (GoogleAdsException, Unauthenticated) as exception:
             traced_exception(exception, customer_id, self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
         except TimeoutError as exception:
             # Prevent sync failure

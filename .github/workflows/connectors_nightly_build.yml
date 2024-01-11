@@ -13,10 +13,6 @@ on:
       test-connectors-options:
         default: --concurrency=5 --support-level=certified
         required: true
-      airbyte-ci-binary-url:
-        description: "URL to airbyte-ci binary"
-        required: false
-        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
 
 run-name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }} - on ${{ inputs.runs-on || 'ci-runner-connector-nightly-xlarge-dagger-0-9-5' }}"
 
@@ -50,4 +46,3 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ inputs.test-connectors-options || '--concurrency=8 --support-level=certified' }} test"
-          airbyte_ci_binary_url: ${{ github.event.inputs.airbyte-ci-binary-url }}

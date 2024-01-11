@@ -172,7 +172,16 @@ class Source:
             raise Exception(f"Connector did not return check status. Last logs: {self._last_log_messages}")
 
     def install(self):
+        """
+        Install the connector if it is not yet installed.
+        """
         self.executor.install()
+
+    def uninstall(self):
+        """
+        Uninstall the connector if it is installed. This only works if the use_local_install flag wasn't used and installation is managed by airbyte-lib.
+        """
+        self.executor.uninstall()
 
     def _read(self) -> Iterable[AirbyteRecordMessage]:
         """
