@@ -26,10 +26,8 @@ class StripeRequestBuilder:
         return cls("customers", account_id, client_secret)
 
     @classmethod
-    def customers_sources_endpoint(cls, customer_id: str, account_id: str, client_secret: str) -> "StripeRequestBuilder":
-        # FIXME this endpoint is not available in the documentation and stripe mentions explicitly that the sources API is deprecated
-        #  (see https://stripe.com/docs/sources/customers and https://github.com/airbytehq/airbyte/issues/33714)
-        return cls(f"customers/{customer_id}/sources", account_id, client_secret)
+    def customers_bank_accounts_endpoint(cls, customer_id: str, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls(f"customers/{customer_id}/bank_accounts", account_id, client_secret)
 
     @classmethod
     def events_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":

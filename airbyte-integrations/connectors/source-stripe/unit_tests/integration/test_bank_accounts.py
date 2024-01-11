@@ -50,8 +50,8 @@ def _customers_request() -> StripeRequestBuilder:
     return StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
 
 
-def _customers_sources_request(customer_id: str) -> StripeRequestBuilder:
-    return StripeRequestBuilder.customers_sources_endpoint(customer_id, _ACCOUNT_ID, _CLIENT_SECRET)
+def _customers_bank_accounts_request(customer_id: str) -> StripeRequestBuilder:
+    return StripeRequestBuilder.customers_bank_accounts_endpoint(customer_id, _ACCOUNT_ID, _CLIENT_SECRET)
 
 
 def _events_request() -> StripeRequestBuilder:
@@ -229,7 +229,7 @@ class FullRefreshTest(TestCase):
             # * there should be no duplicates parents (application fees) returned by the stripe API as it is using cursor pagination
             # * it is implicitly lower bounder by the parent creation
             # * the upper boundary is not configurable and is always <now>
-            _customers_sources_request("parent_id").with_object(_OBJECT).with_limit(100).with_starting_after("latest_bank_account_id").build(),
+            _customers_bank_accounts_request("parent_id").with_limit(100).with_starting_after("latest_bank_account_id").build(),
             _bank_accounts_response().with_record(_a_bank_account()).build(),
         )
 
@@ -344,7 +344,7 @@ class FullRefreshTest(TestCase):
         )
         http_mocker.get(
             # slice range is not applied here
-            _customers_sources_request("parent_id").with_object(_OBJECT).with_limit(100).with_starting_after("latest_bank_account_id").build(),
+            _customers_bank_accounts_request("parent_id").with_limit(100).with_starting_after("latest_bank_account_id").build(),
             _bank_accounts_response().with_record(_a_bank_account()).build(),
         )
 
