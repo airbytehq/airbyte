@@ -51,13 +51,7 @@ tasks.named('check').configure {
         'tidb',
         'duckdb',
 ].each {destinationName ->
-    def integrationTestPython = tasks.named('integrationTestPython')
-    integrationTestPython.configure {
-        dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')
-    }
-    // Not really sure what this task does differently from customIntegrationTestPython,
-    // but it seems to also run integration tests and as such it depends on the docker images.
-    integrationTestPython.configure {
+    tasks.matching { it.name == 'integrationTestPython' }.configureEach {
         dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')
     }
 }

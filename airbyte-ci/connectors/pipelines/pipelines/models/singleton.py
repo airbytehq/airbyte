@@ -1,4 +1,6 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 from typing import Any, Type
 
@@ -17,7 +19,7 @@ class Singleton:
     _instances: dict[Type["Singleton"], Any] = {}
     _initialized: dict[Type["Singleton"], bool] = {}
 
-    def __new__(cls: Type["Singleton"], *args: Any, **kwargs: Any) -> Any:
+    def __new__(cls: Type["Singleton"], *args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
         if cls not in cls._instances:
             cls._instances[cls] = super().__new__(cls)
             cls._initialized[cls] = False

@@ -1,34 +1,17 @@
 # Opsgenie Source
 
-This is the repository for the Opsgenie source connector, written in Python.
+This is the repository for the Opsgenie source connector, written in low-code configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/opsgenie).
 
 ## Local development
 
-### Prerequisites
-**To iterate on this connector, make sure to complete this prerequisites section.**
+#### Building via Gradle
+You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
 
-#### Minimum Python version required `= 3.9.0`
-
-#### Build & Activate Virtual Environment and install dependencies
-From this connector directory, create a virtual environment:
+To build using Gradle, from the Airbyte repository root, run:
 ```
-python -m venv .venv
+./gradlew :airbyte-integrations:connectors:source-opsgenie:build
 ```
-
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
-```
-source .venv/bin/activate
-pip install -r requirements.txt
-pip install '.[tests]'
-```
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
-
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
 
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/opsgenie)
