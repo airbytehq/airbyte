@@ -78,6 +78,17 @@ public class CatalogParser {
         AirbyteExceptionHandler.addStringForDeinterpolation(columnId.name());
         AirbyteExceptionHandler.addStringForDeinterpolation(columnId.originalName());
       });
+      // It's (unfortunately) possible for a cursor/PK to be declared that don't actually exist in the
+      // schema.
+      // Add their strings explicitly.
+      actualStreamConfig.cursor().ifPresent(cursor -> {
+        AirbyteExceptionHandler.addStringForDeinterpolation(cursor.name());
+        AirbyteExceptionHandler.addStringForDeinterpolation(cursor.originalName());
+      });
+      actualStreamConfig.primaryKey().forEach(pk -> {
+        AirbyteExceptionHandler.addStringForDeinterpolation(pk.name());
+        AirbyteExceptionHandler.addStringForDeinterpolation(pk.originalName());
+      });
     }
     return new ParsedCatalog(streamConfigs);
   }

@@ -26,15 +26,8 @@ Validator = Callable[[ConnectorMetadataDefinitionV0, ValidatorOptions], Validati
 # TODO: Remove these when each of these connectors ship any new version
 ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
     ("airbyte/source-prestashop", "1.0.0"),
-    ("airbyte/source-onesignal", "1.0.0"),
     ("airbyte/source-yandex-metrica", "1.0.0"),
-    ("airbyte/destination-meilisearch", "1.0.0"),
     ("airbyte/destination-csv", "1.0.0"),
-    ("airbyte/source-metabase", "1.0.0"),
-    ("airbyte/source-typeform", "1.0.0"),
-    ("airbyte/source-recharge", "1.0.0"),
-    ("airbyte/source-pipedrive", "1.0.0"),
-    ("airbyte/source-paypal-transaction", "2.0.0"),
 ]
 
 
@@ -71,7 +64,7 @@ def validate_metadata_images_in_dockerhub(
 
     print(f"Checking that the following images are on dockerhub: {images_to_check}")
     for image, version in images_to_check:
-        if not is_image_on_docker_hub(image, version):
+        if not is_image_on_docker_hub(image, version, retries=3):
             return False, f"Image {image}:{version} does not exist in DockerHub"
 
     return True, None
@@ -151,7 +144,7 @@ def validate_metadata_base_images_in_dockerhub(
 ) -> ValidationResult:
     metadata_definition_dict = metadata_definition.dict()
 
-    image_address = get(metadata_definition_dict, "data.connectorOptions.baseImage")
+    image_address = get(metadata_definition_dict, "data.connectorBuildOptions.baseImage")
     if image_address is None:
         return True, None
 
@@ -164,8 +157,25 @@ def validate_metadata_base_images_in_dockerhub(
     tag = tag_with_sha_prefix.split("@")[0]
 
     print(f"Checking that the base images is on dockerhub: {image_address}")
-    if not is_image_on_docker_hub(image_name, tag, digest):
+
+    if not is_image_on_docker_hub(image_name, tag, digest, retries=3):
         return False, f"Image {image_address} does not exist in DockerHub"
+
+    return True, None
+
+
+def validate_pypi_only_for_python(
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+) -> ValidationResult:
+    """Ensure that if pypi publishing is enabled for a connector, it has a python language tag."""
+
+    pypi_enabled = get(metadata_definition, "data.remoteRegistries.pypi.enabled", False)
+    if not pypi_enabled:
+        return True, None
+
+    tags = get(metadata_definition, "data.tags", [])
+    if "language:python" not in tags and "language:low-code" not in tags:
+        return False, "If pypi publishing is enabled, the connector must have a python language tag."
 
     return True, None
 
@@ -176,6 +186,7 @@ PRE_UPLOAD_VALIDATORS = [
     validate_major_version_bump_has_breaking_change_entry,
     validate_docs_path_exists,
     validate_metadata_base_images_in_dockerhub,
+    validate_pypi_only_for_python,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [

@@ -4,9 +4,19 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
+    cdkVersionRequired = '0.7.7'
     features = ['db-sources']
     useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileTestJava {
+        options.compilerArgs.remove("-Werror")
+    }
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -23,4 +33,3 @@ dependencies {
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     // integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-bigquery')
 }
-

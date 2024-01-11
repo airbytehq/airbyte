@@ -224,6 +224,49 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  SelectiveAuthenticator:
+    title: Selective Authenticator
+    description: Authenticator that selects concrete authenticator based on config property.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - authenticators
+      - authenticator_selection_path
+    properties:
+      type:
+        type: string
+        enum: [SelectiveAuthenticator]
+      authenticator_selection_path:
+        title: Authenticator Selection Path
+        description: Path of the field in config with selected authenticator name
+        type: array
+        items:
+          type: string
+        examples:
+          - ["auth"]
+          - ["auth", "type"]
+      authenticators:
+        title: Authenticators
+        description: Authenticators to select from.
+        type: object
+        additionalProperties:
+          anyOf:
+            - "$ref": "#/definitions/ApiKeyAuthenticator"
+            - "$ref": "#/definitions/BasicHttpAuthenticator"
+            - "$ref": "#/definitions/BearerAuthenticator"
+            - "$ref": "#/definitions/CustomAuthenticator"
+            - "$ref": "#/definitions/OAuthAuthenticator"
+            - "$ref": "#/definitions/NoAuth"
+            - "$ref": "#/definitions/SessionTokenAuthenticator"
+            - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
+        examples:
+          - authenticators:
+              token: "#/definitions/ApiKeyAuthenticator"
+              oauth: "#/definitions/OAuthAuthenticator"
+      $parameters:
+        type: object
+        additionalProperties: true
   CheckStream:
     title: Streams to Check
     description: Defines the streams to try reading when running a check operation.
@@ -1149,6 +1192,7 @@ definitions:
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
           - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
+          - "$ref": "#/definitions/SelectiveAuthenticator"
       error_handler:
         title: Error Handler
         description: Error handler component that defines how to handle errors.
@@ -1159,12 +1203,10 @@ definitions:
       http_method:
         title: HTTP Method
         description: The HTTP method used to fetch data from the source (can be GET or POST).
-        anyOf:
-          - type: string
-          - type: string
-            enum:
-              - GET
-              - POST
+        type: string
+        enum:
+          - GET
+          - POST
         default: GET
         examples:
           - GET
@@ -1244,6 +1286,11 @@ definitions:
           - query: 'last_event_time BETWEEN TIMESTAMP "{{ stream_interval.start_time }}" AND TIMESTAMP "{{ stream_interval.end_time }}"'
           - searchIn: "{{ ','.join(config.get('search_in', [])) }}"
           - sort_by[asc]: updated_at
+      use_cache:
+        title: Use Cache
+        description: Enables stream requests caching. This field is automatically set by the CDK.
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -1773,9 +1820,22 @@ definitions:
         title: Record Filter
         description: Responsible for filtering records to be emitted by the Source.
         "$ref": "#/definitions/RecordFilter"
+      schema_normalization:
+        "$ref": "#/definitions/SchemaNormalization"
+        default: None
       $parameters:
         type: object
         additionalProperties: true
+  SchemaNormalization:
+    title: Schema Normalization
+    description: Responsible for normalization according to the schema.
+    type: string
+    enum:
+      - None
+      - Default
+    examples:
+      - None
+      - Default
   RemoveFields:
     title: Remove Fields
     description: A transformation which removes fields from a record. The fields removed are designated using FieldPointers. During transformation, if a field or any of its parents does not exist in the record, no error is thrown.

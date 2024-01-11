@@ -160,7 +160,6 @@ if (isCiServer || isAirbyteCI) {
 rootProject.name = 'airbyte'
 
 include ':tools:code-generator'
-include ':octavia-cli'
 
 include ':airbyte-cdk:python'
 include ':airbyte-cdk:java:airbyte-cdk'
