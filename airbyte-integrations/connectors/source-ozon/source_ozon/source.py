@@ -16,9 +16,8 @@ class SourceOzon(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = self._get_auth(config)()
         date_from, date_to = self._prepare_dates(config)
-        group_by = config.get("group_by")
         return [
-            CampaignsReportStream(credentials=credentials, date_from=date_from, date_to=date_to, group_by=group_by),
+            CampaignsReportStream(credentials=credentials, date_from=date_from, date_to=date_to),
         ]
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[IsSuccess, Message | None]:

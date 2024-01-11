@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from typing import Optional
 
 from pydantic import Field, validator
@@ -8,6 +9,7 @@ from source_ozon.schemas.base_report_data import BaseOzonReport
 
 
 class SkuReport(BaseOzonReport):
+    date: Optional[date] = Field(description="Дата", alias="Дата")
     sku: Optional[str] = Field(description="SKU", alias="sku")
     product_name: Optional[str] = Field(description="Название товара", alias="Название товара")
     product_price_rub: Optional[float] = Field(description="Цена товара, ₽", alias="Цена товара, ₽")
