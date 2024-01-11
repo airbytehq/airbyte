@@ -94,12 +94,24 @@ connection only. S3 is secured through public HTTPS access only.
 5. (Optional)
    [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
    staging S3 bucket \(for the COPY strategy\).
-6. Create a user with at least create table permissions for the schema. If the schema does not exist
-   you need to add permissions for that, too. Something like this:
 
-```
-GRANT CREATE ON DATABASE database_name TO airflow_user; -- add create schema permission
-GRANT usage, create on schema my_schema TO airflow_user; -- add create table permission
+### Permissions in Redshift
+Airbyte writes data into two schemas, whichever schema you want your data to land in, e.g. `my_schema`
+and a "Raw Data" schema that Airbyte uses to improve ELT reliability. By default, this raw data schema
+is `airbyte_internal` but this can be overridden in the Redshift Destination's advanced settings. 
+Airbyte also needs to query Redshift's
+[SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for 
+metadata about the tables airbyte manages. 
+
+To set up permissions is to ensure that the `airbyte_user` has permissions to:
+- create schemas in your database
+- grant usage to any existing schemas
+- grant select to the `svv_table_info` table
+
+```sql
+GRANT CREATE ON DATABASE database_name TO airbyte_user; -- add create schema permission
+GRANT usage, create on schema my_schema TO airbyte_user; -- add create table permission
+GRANT SELECT ON TABLE SVV_TABLE_INFO TO airbyte_user; -- add select permission for svv_table_info
 ```
 
 ### Optional Use of SSH Bastion Host
