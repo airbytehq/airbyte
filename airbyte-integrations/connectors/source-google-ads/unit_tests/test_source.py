@@ -117,6 +117,7 @@ def test_streams_count(config, mock_account_info):
     source = SourceGoogleAds()
     streams = source.streams(config)
     expected_streams_number = 30
+    print(f"{config=} \n{streams=}")
     assert len(streams) == expected_streams_number
 
 
@@ -391,7 +392,7 @@ def test_check_connection_should_pass_when_config_valid(mocker):
             "customer_id": "fake_customer_id",
             "start_date": "2022-01-01",
             "conversion_window_days": 14,
-            "custom_queries": [
+            "custom_queries_array": [
                 {
                     "query": "SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign",
                     "primary_key": None,
