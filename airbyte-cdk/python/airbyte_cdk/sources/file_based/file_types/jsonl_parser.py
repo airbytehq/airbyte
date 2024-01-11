@@ -119,7 +119,7 @@ class JsonlParser(FileTypeParser):
                     break
 
             if had_json_parsing_error and not yielded_at_least_once:
-                raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD)
+                raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line)
 
     @staticmethod
     def _instantiate_accumulator(line: Union[bytes, str]) -> Union[bytes, str]:
