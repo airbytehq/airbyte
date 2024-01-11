@@ -10,6 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk"]
 TEST_REQUIREMENTS = ["pytest-mock~=3.6.1", "pytest~=6.1", "requests-mock==1.9.3", "timeout-decorator==0.5.0"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-tiktok-marketing=source_tiktok_marketing.run:run",
+        ],
+    },
     name="source_tiktok_marketing",
     description="Source implementation for Tiktok Marketing.",
     author="Airbyte",
