@@ -5,11 +5,11 @@
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Set
 
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
-from pydantic import BaseModel, Field, PositiveInt
+from pydantic import BaseModel, Field, PositiveInt, constr
 
 logger = logging.getLogger("airbyte")
 
@@ -112,18 +112,18 @@ class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
-    account_id: str = Field(
-        title="Ad Account ID",
+    account_ids: Set[constr(regex="^[0-9]+$")] = Field(
+        title="Ad Account ID(s)",
         order=0,
         description=(
-            "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. "
+            "The Facebook Ad account ID(s) to pull data from. "
             "The Ad account ID number is in the account dropdown menu or in your browser's address "
             'bar of your <a href="https://adsmanager.facebook.com/adsmanager/">Meta Ads Manager</a>. '
             'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
         ),
-        pattern="^[0-9]+$",
-        pattern_descriptor="1234567890",
+        pattern_descriptor="The Ad Account ID must be a number.",
         examples=["111111111111111"],
+        min_items=1,
     )
 
     access_token: str = Field(
