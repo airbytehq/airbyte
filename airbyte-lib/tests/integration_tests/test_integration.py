@@ -133,12 +133,25 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
         )
 
 
-def test_read_result_convert_to_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+def test_read_result_as_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache()
 
     result: ReadResult = source.read(cache)
     stream_1_list = list(result["stream1"])
+    stream_2_list = list(result["stream2"])
+    assert stream_1_list == expected_test_stream_data["stream1"]
+    assert stream_2_list == expected_test_stream_data["stream2"]
+
+
+def test_get_records_result_as_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.new_local_cache()
+
+    stream_1_list = list(source.get_records("stream1"))
+    stream_2_list = list(source.get_records("stream2"))
+    assert stream_1_list == expected_test_stream_data["stream1"]
+    assert stream_2_list == expected_test_stream_data["stream2"]
 
 
 
