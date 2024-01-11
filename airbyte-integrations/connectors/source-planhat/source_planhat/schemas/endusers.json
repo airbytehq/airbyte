@@ -9,19 +9,7 @@
         "null"
       ]
     },
-    "externalId": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "companyId": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "sourceId": {
+    "email": {
       "type": [
         "string",
         "null"
@@ -45,19 +33,7 @@
         "null"
       ]
     },
-    "email": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "phone": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "createDate": {
+    "companyId": {
       "type": [
         "string",
         "null"
@@ -69,19 +45,89 @@
         "null"
       ]
     },
-    "createdAt": {
+    "externalId": {
       "type": [
         "string",
         "null"
       ]
     },
-    "updatedAt": {
+    "sourceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "position": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "type": [
+        "array"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "featured": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "primary": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "otherEmails": {
+      "type": [
+        "array"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "nps": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "npsComment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "npsDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "npsSent": {
       "type": [
         "string",
         "null"
       ]
     },
     "beatTrend": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "beats": {
       "type": [
         "number",
         "null"
@@ -99,6 +145,32 @@
         "null"
       ]
     },
+    "createDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createdAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updatedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lastActivities": {
+      "type": [
+        "array"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
     "relevance": {
       "type": [
         "number",
@@ -114,12 +186,6 @@
     "custom": {
       "type": [
         "object",
-        "null"
-      ]
-    },
-    "primary": {
-      "type": [
-        "boolean",
         "null"
       ]
     }

@@ -15,5 +15,8 @@ data:
   license: MIT
   name: Planhat
   releaseStage: alpha
+  supportLevel: community
   supportUrl: https://docs.airbyte.com/integrations/sources/planhat
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

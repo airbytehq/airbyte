@@ -18,7 +18,7 @@ definitions:
     request_body_json: {}
     request_parameters: {}
 
-  endusers_paginator:
+  default_paginator:
     type: "DefaultPaginator"
     page_size_option:
       type: "RequestOption"
@@ -32,37 +32,42 @@ definitions:
       type: OffsetIncrement
       page_size: 2000
 
-  endusers_retriever:
-    type: SimpleRetriever
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      $ref: "#/definitions/endusers_paginator"
-    requester:
-      $ref: "#/definitions/requester"
-
-  endusers_stream:
-    type: DeclarativeStream
-    retriever:
-      $ref: "#/definitions/endusers_retriever"
-    $parameters:
-      name: "endusers"
-      primary_key: "_id"
-      path: "/endusers"
-
   companies_paginator:
-    type: DefaultPaginator
+    type: "DefaultPaginator"
     page_size_option:
-      type: RequestOption
-      field_name: limit
+      type: "RequestOption"
+      field_name: "limit"
       inject_into: request_parameter
     page_token_option:
-      type: RequestOption
-      field_name: offset
+      type: "RequestOption"
+      field_name: "offset"
       inject_into: request_parameter
     pagination_strategy:
       type: OffsetIncrement
       page_size: 5000
+
+  large_paginator:
+    type: "DefaultPaginator"
+    page_size_option:
+      type: "RequestOption"
+      field_name: "limit"
+      inject_into: request_parameter
+    page_token_option:
+      type: "RequestOption"
+      field_name: "offset"
+      inject_into: request_parameter
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 10000
+
+  simple_retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      $ref: "#/definitions/default_paginator"
+    requester:
+      $ref: "#/definitions/requester"
 
   companies_retriever:
     type: SimpleRetriever
@@ -70,6 +75,15 @@ definitions:
       $ref: "#/definitions/selector"
     paginator:
       $ref: "#/definitions/companies_paginator"
+    requester:
+      $ref: "#/definitions/requester"
+
+  large_retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      $ref: "#/definitions/large_paginator"
     requester:
       $ref: "#/definitions/requester"
 
@@ -82,12 +96,153 @@ definitions:
       primary_key: "_id"
       path: "/companies"
 
+  conversations_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/simple_retriever"
+    $parameters:
+      name: "conversations"
+      primary_key: "_id"
+      path: "/conversations"
+
+  custom_fields_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/simple_retriever"
+    $parameters:
+      name: "custom_fields"
+      primary_key: "_id"
+      path: "/customfields"
+
+  endusers_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/simple_retriever"
+    $parameters:
+      name: "endusers"
+      primary_key: "_id"
+      path: "/endusers"
+
+  invoices_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/simple_retriever"
+    $parameters:
+      name: "invoices"
+      primary_key: "_id"
+      path: "/invoices"
+
+  issues_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/simple_retriever"
+    $parameters:
+      name: "issues"
+      primary_key: "_id"
+      path: "/issues"
+
+  licenses_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/simple_retriever"
+    $parameters:
+      name: "licenses"
+      primary_key: "_id"
+      path: "/licenses"
+
+  nps_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/large_retriever"
+    $parameters:
+      name: "nps"
+      primary_key: "_id"
+      path: "/nps"
+
+  opportunities_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/simple_retriever"
+    $parameters:
+      name: "opportunities"
+      primary_key: "_id"
+      path: "/opportunities"
+
+  objectives_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/simple_retriever"
+    $parameters:
+      name: "objectives"
+      primary_key: "_id"
+      path: "/objectives"
+
+  sales_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/simple_retriever"
+    $parameters:
+      name: "sales"
+      primary_key: "_id"
+      path: "/sales"
+
+  tasks_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/large_retriever"
+    $parameters:
+      name: "tasks"
+      primary_key: "_id"
+      path: "/tasks"
+
+  tickets_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/large_retriever"
+    $parameters:
+      name: "tickets"
+      primary_key: "_id"
+      path: "/tickets"
+
+  users_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/large_retriever"
+    $parameters:
+      name: "users"
+      primary_key: "_id"
+      path: "/users"
+
 streams:
-  - "#/definitions/endusers_stream"
   - "#/definitions/companies_stream"
+  - "#/definitions/conversations_stream"
+  - "#/definitions/custom_fields_stream"
+  - "#/definitions/endusers_stream"
+  - "#/definitions/invoices_stream"
+  - "#/definitions/issues_stream"
+  - "#/definitions/licenses_stream"
+  - "#/definitions/nps_stream"
+  - "#/definitions/opportunities_stream"
+  - "#/definitions/objectives_stream"
+  - "#/definitions/sales_stream"
+  - "#/definitions/tasks_stream"
+  - "#/definitions/tickets_stream"
+  - "#/definitions/users_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "endusers"
     - "companies"
+    - "conversations"
+    - "custom_fields"
+    - "endusers"
+    - "invoices"
+    - "issues"
+    - "licenses"
+    - "nps"
+    - "opportunities"
+    - "objectives"
+    - "sales"
+    - "tasks"
+    - "tickets"
+    - "users"

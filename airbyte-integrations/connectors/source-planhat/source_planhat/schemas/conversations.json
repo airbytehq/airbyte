@@ -1,0 +1,223 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "subject": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "companyId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "companyName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "description": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "snippet": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "date": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "outDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "createDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "users": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "endusers": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "externalId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "activityTags": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "starred": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "pinned": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "emailTemplateIds": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "isOpen": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "tags": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "waitsToBeFiltered": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "timeBucket": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "archived": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "numberOfParts": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "sender": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "history": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "userIds": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "hasMore": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "isCustomType": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "assigneeName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "numberOfRelevantParts": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "hasAttachments": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "isSeen": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "custom": {
+            "type": [
+                "object",
+                "null"
+            ]
+        }
+    }
+}

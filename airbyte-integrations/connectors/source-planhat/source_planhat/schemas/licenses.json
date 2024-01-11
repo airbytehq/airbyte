@@ -9,13 +9,25 @@
                 "null"
             ]
         },
-        "name": {
+        "product": {
             "type": [
                 "string",
                 "null"
             ]
         },
-        "owner": {
+        "_currency": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "companyId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "companyName": {
             "type": [
                 "string",
                 "null"
@@ -33,225 +45,21 @@
                 "null"
             ]
         },
-        "phase": {
+        "fromDate": {
             "type": [
                 "string",
                 "null"
             ]
         },
-        "status": {
+        "toDate": {
             "type": [
                 "string",
                 "null"
             ]
         },
-        "domains": {
+        "fixedPeriod": {
             "type": [
-                "array"
-            ],
-            "items": {
-                "type": "string"
-            }
-        },
-        "h": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "hProfile": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "hDiff": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "hDiffDate": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "csmScore": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "csmScoreLog": {
-            "type": [
-                "array"
-            ],
-            "items": {
-                "type": "string"
-            }
-        },
-        "mr": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "nrr30": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "mrrTotal": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "nrrTotal": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "mrTotal": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "description": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "address": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "country": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "city": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "zip": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "web": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "customerFrom": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "customerTo": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "tags": {
-            "type": [
-                "array"
-            ],
-            "items": {
-                "type": "string"
-            }
-        },
-        "createDate": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "createdAt": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "updatedAt": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "lastUpdated": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "renewalDaysFromNow": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "lastRenewal": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "usage": {
-            "type": [
-                "object",
-                "null"
-            ]
-        },
-        "lastTouch": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "lastTouchByType": {
-            "type": [
-                "object",
-                "null"
-            ]
-        },
-        "lastTouchType": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "phaseSince": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "headId": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "sunits": {
-            "type": [
-                "object",
+                "boolean",
                 "null"
             ]
         },
@@ -274,6 +82,144 @@
             ]
         },
         "renewalArr": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "fcNewMrr": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "fcNewArr": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "fcNewMrrOptimistic": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "fcNewArrOptimistic": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "fcNewMrrPessimistic": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "fcNewArrPessimistic": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "value": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "renewalStatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "renewalPeriod": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "renewalDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "renewalDaysFromNow": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "isOverdue": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "autoRenews": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "noticePeriod": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "noticeUnit": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "renewalUnit": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "parent": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "invoicesGenerated": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "invoiceMuted": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "invoiceCycleInterval": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "invoiceCycle": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "toDateIncluded": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "length": {
             "type": [
                 "number",
                 "null"

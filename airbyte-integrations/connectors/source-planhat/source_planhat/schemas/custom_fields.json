@@ -1,0 +1,109 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "name": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "parent": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "isFeatured": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "isHidden": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "isShared": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "isLocked": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "isMandatory": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "isFormula": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "treatUndefinedAsZero": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "formula": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "listValues": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "filter": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "formulaRefs": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "numberFormat": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    }
+}

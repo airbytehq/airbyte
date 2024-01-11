@@ -20,7 +20,7 @@ setup(
     name="source_planhat",
     description="Source implementation for Planhat.",
     author="Kim Plavonil",
-    author_email="kim.plavonil@brevo.com",
+    author_email="kplavonil@gmail.com",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
