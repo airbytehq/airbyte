@@ -603,14 +603,12 @@ public abstract class BaseTypingDedupingTest {
     for (int i = 0; i < 100_000; i++) {
       pushMessages(messages2, sync2);
     }
-    // This will dump sync1's entire stdout to our stdout
     endSync(sync1);
     // Write some more messages to the second sync. It should not be affected by the first sync's
     // shutdown.
     for (int i = 0; i < 100_000; i++) {
       pushMessages(messages2, sync2);
     }
-    // And this will dump sync2's entire stdout to our stdout
     endSync(sync2);
 
     // For simplicity, don't verify the raw table. Assume that if the final table is correct, then
