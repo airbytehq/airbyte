@@ -19,7 +19,7 @@ from source_facebook_marketing.streams.base_streams import FBMarketingStream
 from source_facebook_marketing.streams.streams import fetch_thumbnail_data_url
 
 
-def test_filter_all_statuses(api, mocker):
+def test_filter_all_statuses(api, mocker, some_config):
     mocker.patch.multiple(FBMarketingStream, __abstractmethods__=set())
     expected = {
         "filtering": [
@@ -45,7 +45,7 @@ def test_filter_all_statuses(api, mocker):
             }
         ]
     }
-    assert FBMarketingStream(api=api)._filter_all_statuses() == expected
+    assert FBMarketingStream(api=api, account_ids=some_config["account_ids"])._filter_all_statuses() == expected
 
 
 @pytest.mark.parametrize(
@@ -76,15 +76,27 @@ def test_parse_call_rate_header():
         [AdsInsightsRegion, ["region"], ["action_type", "action_target_id", "action_destination"]],
     ],
 )
-def test_ads_insights_breakdowns(class_name, breakdowns, action_breakdowns):
-    kwargs = {"api": None, "start_date": pendulum.now(), "end_date": pendulum.now(), "insights_lookback_window": 1}
+def test_ads_insights_breakdowns(class_name, breakdowns, action_breakdowns, some_config):
+    kwargs = {
+        "api": None,
+        "account_ids": some_config["account_ids"],
+        "start_date": pendulum.now(),
+        "end_date": pendulum.now(),
+        "insights_lookback_window": 1,
+    }
     stream = class_name(**kwargs)
     assert stream.breakdowns == breakdowns
     assert stream.action_breakdowns == action_breakdowns
 
 
-def test_custom_ads_insights_breakdowns():
-    kwargs = {"api": None, "start_date": pendulum.now(), "end_date": pendulum.now(), "insights_lookback_window": 1}
+def test_custom_ads_insights_breakdowns(some_config):
+    kwargs = {
+        "api": None,
+        "account_ids": some_config["account_ids"],
+        "start_date": pendulum.now(),
+        "end_date": pendulum.now(),
+        "insights_lookback_window": 1,
+    }
     stream = AdsInsights(breakdowns=["mmm"], action_breakdowns=["action_destination"], **kwargs)
     assert stream.breakdowns == ["mmm"]
     assert stream.action_breakdowns == ["action_destination"]
@@ -98,9 +110,10 @@ def test_custom_ads_insights_breakdowns():
     assert stream.action_breakdowns == []
 
 
-def test_custom_ads_insights_action_report_times():
+def test_custom_ads_insights_action_report_times(some_config):
     kwargs = {
         "api": None,
+        "account_ids": some_config["account_ids"],
         "start_date": pendulum.now(),
         "end_date": pendulum.now(),
         "insights_lookback_window": 1,

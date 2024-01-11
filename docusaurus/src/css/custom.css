@@ -4,7 +4,7 @@
  * work well for content-centric websites.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;700&display=swap");
 
 /* You can override the default Infima variables here. */
 :root {
@@ -25,6 +25,10 @@
   --ifm-hover-overlay: rgb(0 0 0 / 2%);
   --color-active-nav-item-background: #f4f4ff;
   --color-active-nav-item-text: var(--ifm-color-primary-darker);
+
+  --color-grey-40: hsl(240, 25%, 98%);
+  --color-grey-400: hsl(240, 10%, 59%);
+  --color-green-50: hsl(184, 67%, 92%);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -39,6 +43,10 @@ html[data-theme="dark"] {
   --ifm-color-primary-lightest: #c8c7ff;
   --color-active-nav-item-background: #272729;
   --color-active-nav-item-text: var(--ifm-color-primary-lighter);
+
+  --color-grey-40: hsl(240, 14%, 14%);
+  --color-grey-400: hsl(240, 13%, 72%);
+  --color-green-50: hsl(184, 100%, 12%);
 }
 
 .docusaurus-highlight-code-line {
@@ -124,9 +132,17 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
   font-weight: 700;
   font-size: 0.8em;
   padding: 0.4em 0 0.4em 0.4em;
-  margin-top: 1.1em;
   color: var(--docsearch-text-color);
   background-color: var(--ifm-hover-overlay);
+}
+
+.navbar__category:not(:first-child) {
+  margin-top: 1.1em;
+}
+
+/* Hide the breadcrumbs if they have only the house as an entry (i.e. on the start page) */
+.breadcrumbs:has(li:first-child:last-child) {
+  display: none;
 }
 
 .cloudStatusLink {
@@ -192,61 +208,4 @@ The variables for them have been added to :root at the top of this file */
 .menu__list-item-collapsible--active:hover {
   background: var(--color-active-nav-item-background);
   color: var(--color-active-nav-item-text);
-}
-
-.connectorIcon {
-  max-height: 40px;
-  max-width: 40px;
-  float: left;
-  margin-right: 10px;
-}
-
-.connectorMetadata {
-  background: var(--ifm-color-info-contrast-background);
-  border-radius: 2px;
-  width: 100%;
-  font-size: smaller;
-  margin: 0;
-  padding: 5px;
-  margin-bottom: 15px;
-}
-
-.connectorMetadata > div {
-  display: flex;
-  align-items: center;
-  gap: 0.2em;
-}
-
-.connectorMetadata dt {
-  display: inline;
-  font-weight: bold;
-}
-
-.connectorMetadata dd {
-  display: inline;
-  margin: 0;
-}
-
-.connectorMetadata dt::after {
-  content: ": ";
-}
-
-.connectorMetadata .availability {
-  display: inline-flex;
-  gap: 8px;
-  margin-left: 2px;
-}
-
-.connectorMetadata .availability > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.connectorMetadata .availability .unavailable {
-  color: var(--ifm-color-emphasis-600);
-}
-
-[data-theme="dark"] .connectorMetadata .availability .unavailable {
-  color: var(--ifm-color-emphasis-400);
 }

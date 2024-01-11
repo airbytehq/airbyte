@@ -48,12 +48,36 @@
         "airbyte_secret": true,
         "order": 4
       },
+      "account_names": {
+        "title": "Account Names Predicates",
+        "description": "Predicates that will be used to sync data by specific accounts.",
+        "type": "array",
+        "order": 5,
+        "items": {
+          "description": "Account Names Predicates Config.",
+          "type": "object",
+          "properties": {
+            "operator": {
+              "title": "Operator",
+              "description": "An Operator that will be used to filter accounts. The Contains predicate has features for matching words, matching inflectional forms of words, searching using wildcard characters, and searching using proximity. The Equals is used to return all rows where account name is equal(=) to the string that you provided",
+              "type": "string",
+              "enum": ["Contains", "Equals"]
+            },
+            "name": {
+              "title": "Account Name",
+              "description": "Account Name is a string value for comparing with the specified predicate.",
+              "type": "string"
+            }
+          },
+          "required": ["operator", "name"]
+        }
+      },
       "reports_start_date": {
         "type": "string",
         "title": "Reports replication start date",
         "format": "date",
         "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format. If not set, data from previous and current calendar year will be replicated.",
-        "order": 5
+        "order": 6
       },
       "lookback_window": {
         "title": "Lookback window",
@@ -62,12 +86,12 @@
         "default": 0,
         "minimum": 0,
         "maximum": 90,
-        "order": 6
+        "order": 7
       },
       "custom_reports": {
         "title": "Custom Reports",
         "description": "You can add your Custom Bing Ads report by creating one.",
-        "order": 7,
+        "order": 8,
         "type": "array",
         "items": {
           "title": "Custom Report Config",

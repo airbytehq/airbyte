@@ -1,3 +1,7 @@
+---
+products: oss-community
+---
+
 # CLI documentation
 
 :::caution
@@ -173,7 +177,7 @@ headers:
   Authorization: Bearer ${MY_API_TOKEN}
 ```
 
-**Options based headers are overriding file based headers if an header is declared in both.**
+**Options based headers are overriding file based headers if a header is declared in both.**
 
 ### `octavia` subcommands
 

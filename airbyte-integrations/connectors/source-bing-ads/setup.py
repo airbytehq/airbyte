@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "bingads~=13.0.17", "urllib3<2.0", "pandas"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "cached_property~=1.5", "bingads~=13.0.17", "urllib3<2.0", "pandas"]
 
 TEST_REQUIREMENTS = [
     "freezegun",
