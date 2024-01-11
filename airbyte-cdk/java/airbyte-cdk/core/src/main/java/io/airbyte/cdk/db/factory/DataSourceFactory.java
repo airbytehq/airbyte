@@ -4,15 +4,12 @@
 
 package io.airbyte.cdk.db.factory;
 
-import static org.postgresql.PGProperty.CONNECT_TIMEOUT;
-
 import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.Map;
-import java.util.Objects;
 import javax.sql.DataSource;
 
 /**
@@ -57,14 +54,15 @@ public class DataSourceFactory {
                                   final String password,
                                   final String driverClassName,
                                   final String jdbcConnectionString,
-                                  final Map<String, String> connectionProperties) {
+                                  final Map<String, String> connectionProperties,
+                                  final Duration connectionTimeout) {
     return new DataSourceBuilder()
         .withConnectionProperties(connectionProperties)
         .withDriverClassName(driverClassName)
         .withJdbcUrl(jdbcConnectionString)
         .withPassword(password)
         .withUsername(username)
-        .withConnectionTimeoutMs(DataSourceBuilder.getConnectionTimeoutMs(connectionProperties, driverClassName))
+        .withConnectionTimeout(connectionTimeout)
         .build();
   }
 
@@ -178,53 +176,12 @@ public class DataSourceFactory {
     private String jdbcUrl;
     private int maximumPoolSize = 10;
     private int minimumPoolSize = 0;
-    private long connectionTimeoutMs;
+    private Duration connectionTimeout = Duration.ZERO;
     private String password;
     private int port = 5432;
     private String username;
-    private static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
-    private static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
 
     private DataSourceBuilder() {}
-
-    /**
-     * Retrieves connectionTimeout value from connection properties in seconds, default minimum timeout
-     * is 60 seconds since Hikari default of 30 seconds is not enough for acceptance tests. In the case
-     * the value is 0, pass the value along as Hikari and Postgres use default max value for 0 timeout
-     * value
-     *
-     * NOTE: HikariCP uses milliseconds for all time values:
-     * https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby whereas Postgres is
-     * measured in seconds: https://jdbc.postgresql.org/documentation/head/connect.html
-     *
-     * @param connectionProperties custom jdbc_url_parameters containing information on connection
-     *        properties
-     * @param driverClassName name of the JDBC driver
-     * @return DataSourceBuilder class used to create dynamic fields for DataSource
-     */
-    private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties, String driverClassName) {
-      // TODO: the usage of CONNECT_TIMEOUT is Postgres specific, may need to extend for other databases
-      if (driverClassName.equals(DatabaseDriver.POSTGRESQL.getDriverClassName())) {
-        final String pgPropertyConnectTimeout = CONNECT_TIMEOUT.getName();
-        // If the PGProperty.CONNECT_TIMEOUT was set by the user, then take its value, if not take the
-        // default
-        if (connectionProperties.containsKey(pgPropertyConnectTimeout)
-            && (Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout)) >= 0)) {
-          return Duration.ofSeconds(Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout))).toMillis();
-        } else {
-          return Duration.ofSeconds(Long.parseLong(Objects.requireNonNull(CONNECT_TIMEOUT.getDefaultValue()))).toMillis();
-        }
-      }
-      final Duration connectionTimeout;
-      connectionTimeout =
-          connectionProperties.containsKey(CONNECT_TIMEOUT_KEY) ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(CONNECT_TIMEOUT_KEY)))
-              : CONNECT_TIMEOUT_DEFAULT;
-      if (connectionTimeout.getSeconds() == 0) {
-        return connectionTimeout.toMillis();
-      } else {
-        return (connectionTimeout.compareTo(CONNECT_TIMEOUT_DEFAULT) > 0 ? connectionTimeout : CONNECT_TIMEOUT_DEFAULT).toMillis();
-      }
-    }
 
     public DataSourceBuilder withConnectionProperties(final Map<String, String> connectionProperties) {
       if (connectionProperties != null) {
@@ -267,9 +224,9 @@ public class DataSourceFactory {
       return this;
     }
 
-    public DataSourceBuilder withConnectionTimeoutMs(final Long connectionTimeoutMs) {
-      if (connectionTimeoutMs != null) {
-        this.connectionTimeoutMs = connectionTimeoutMs;
+    public DataSourceBuilder withConnectionTimeout(final Duration connectionTimeout) {
+      if (connectionTimeout != null) {
+        this.connectionTimeout = connectionTimeout;
       }
       return this;
     }
@@ -302,7 +259,9 @@ public class DataSourceFactory {
       config.setJdbcUrl(jdbcUrl != null ? jdbcUrl : String.format(databaseDriver.getUrlFormatString(), host, port, database));
       config.setMaximumPoolSize(maximumPoolSize);
       config.setMinimumIdle(minimumPoolSize);
-      config.setConnectionTimeout(connectionTimeoutMs);
+      // HikariCP uses milliseconds for all time values:
+      // https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby
+      config.setConnectionTimeout(connectionTimeout.toMillis());
       config.setPassword(password);
       config.setUsername(username);
 

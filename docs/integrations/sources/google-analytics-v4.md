@@ -104,7 +104,7 @@ The Google Analytics (Universal Analytics) source connector can sync the followi
 
 Reach out to us on Slack or [create an issue](https://github.com/airbytehq/airbyte/issues) if you need to send custom Google Analytics report data with Airbyte.
 
-## Rate Limits and Performance Considerations \(Airbyte Open-Source\)
+## Rate Limits and Performance Considerations \(Airbyte Open Source\)
 
 [Analytics Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas)
 

@@ -15,7 +15,7 @@ from source_facebook_marketing.streams import AdAccount, AdCreatives, AdsInsight
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 account_id = "unknown_account"
-some_config = {"start_date": "2021-01-23T00:00:00Z", "account_id": account_id, "access_token": "unknown_token"}
+some_config = {"start_date": "2021-01-23T00:00:00Z", "account_ids": [account_id], "access_token": "unknown_token"}
 base_url = f"{FacebookSession.GRAPH}/{FB_API_VERSION}/"
 act_url = f"{base_url}act_{account_id}/"
 
@@ -26,8 +26,8 @@ ad_account_response = {
     }
 }
 ad_creative_data = [
-    {"id": "111111", "name": "ad creative 1", "updated_time": "2023-03-21T22:33:56-0700"},
-    {"id": "222222", "name": "ad creative 2", "updated_time": "2023-03-22T22:33:56-0700"},
+    {"account_id": account_id, "id": "111111", "name": "ad creative 1", "updated_time": "2023-03-21T22:33:56-0700"},
+    {"account_id": account_id, "id": "222222", "name": "ad creative 2", "updated_time": "2023-03-22T22:33:56-0700"},
 ]
 ad_creative_response = {
     "json": {
@@ -288,9 +288,11 @@ class TestRealErrors:
         requests_mock.register_uri("GET", f"{act_url}", [retryable_error_response, ad_account_response])
         requests_mock.register_uri("GET", f"{act_url}adcreatives", [retryable_error_response, ad_creative_response])
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
-        ad_creative_records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdCreatives(api=api, account_ids=some_config["account_ids"], include_deleted=False)
+        ad_creative_records = list(
+            stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice={"account_id": account_id})
+        )
 
         assert ad_creative_records == ad_creative_data
 
@@ -301,12 +303,12 @@ class TestRealErrors:
     def test_config_error_during_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during account info read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdCreatives(api=api, account_ids=some_config["account_ids"], include_deleted=False)
 
         requests_mock.register_uri("GET", f"{act_url}", [config_error_response, ad_account_response])
         try:
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice={"account_id": account_id}))
             assert False
         except Exception as error:
             assert isinstance(error, AirbyteTracedException)
@@ -318,13 +320,13 @@ class TestRealErrors:
     def test_config_error_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdCreatives(api=api, account_ids=some_config["account_ids"], include_deleted=False)
 
         requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
         requests_mock.register_uri("GET", f"{act_url}adcreatives", [config_error_response, ad_creative_response])
         try:
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice={"account_id": account_id}))
             assert False
         except Exception as error:
             assert isinstance(error, AirbyteTracedException)
@@ -335,9 +337,10 @@ class TestRealErrors:
     def test_config_error_insights_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
+        api = API(access_token=some_config["access_token"], page_size=100)
         stream = AdsInsights(
             api=api,
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             fields=["account_id", "account_currency"],
@@ -357,9 +360,10 @@ class TestRealErrors:
     def test_config_error_insights_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
+        api = API(access_token=some_config["access_token"], page_size=100)
         stream = AdsInsights(
             api=api,
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             fields=["account_id", "account_currency"],
@@ -411,8 +415,11 @@ class TestRealErrors:
             ]
         As a workaround for this case we can retry the API call excluding `owner` from `?fields=` GET query param.
         """
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
-        stream = AdAccount(api=api)
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdAccount(
+            api=api,
+            account_ids=some_config["account_ids"],
+        )
 
         business_user = {"account_id": account_id, "business": {"id": "1", "name": "TEST"}}
         requests_mock.register_uri("GET", f"{base_url}me/business_users", status_code=200, json=business_user)
@@ -423,5 +430,5 @@ class TestRealErrors:
         success_response = {"status_code": 200, "json": {"account_id": account_id}}
         requests_mock.register_uri("GET", f"{act_url}", [failure_response, success_response])
 
-        record_gen = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=None, stream_state={})
+        record_gen = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account_id}, stream_state={})
         assert list(record_gen) == [{"account_id": "unknown_account", "id": "act_unknown_account"}]
