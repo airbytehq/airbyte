@@ -535,9 +535,9 @@ class TestSpec(BaseTest):
             if one_of_default_method:
                 path_in_credentials = "/".join(advanced_auth.predicate_key[1:])
                 auth_method_predicate_const = dpath.util.get(one_of_default_method, f"/**/{path_in_credentials}/const")
-                assert auth_method_predicate_const == advanced_auth.predicate_value, (
-                    f"Oauth method should be a default option. Current default method is {auth_method_predicate_const}."
-                )
+                assert (
+                    auth_method_predicate_const == advanced_auth.predicate_value
+                ), f"Oauth method should be a default option. Current default method is {auth_method_predicate_const}."
 
     @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility
