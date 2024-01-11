@@ -470,7 +470,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
-    //Add tests
+    // Add tests
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using OC + CDC");
@@ -493,7 +493,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         final MssqlInitialLoadHandler initialLoadHandler =
             new MssqlInitialLoadHandler(sourceConfig, database, new MssqlSourceOperations(), quoteString, mssqlInitialLoadStreamStateManager,
                 namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))),
-                    getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
+                getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
 
         final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
