@@ -142,8 +142,6 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
   protected abstract void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages);
 
-  protected abstract void assertExpectedStateMessagesWithTotalCount(final List<AirbyteStateMessage> stateMessages, final long totalRecordCount);
-
   @BeforeEach
   protected void setup() {
     testdb = createTestDatabase();
