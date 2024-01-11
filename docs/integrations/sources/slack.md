@@ -165,7 +165,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
-| 1.0.0   | 2024-02-01 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add message edit information                                                        |
+| 1.0.0   | 2024-02-01 | [34163](https://github.com/airbytehq/airbyte/pull/34163) | Add message edit information                                                        |
 | 0.3.6   | 2023-11-21 | [32707](https://github.com/airbytehq/airbyte/pull/32707) | Threads: do not use client-side record filtering                                    |
 | 0.3.5   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image     |
 | 0.3.4   | 2023-10-06 | [31134](https://github.com/airbytehq/airbyte/pull/31134) | Update CDK and remove non iterable return from records                              |
