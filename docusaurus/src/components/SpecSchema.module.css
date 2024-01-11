@@ -1,9 +1,13 @@
 .block {
-  padding: 10px;
+  padding: 10px 0;
 }
 
 .block + .block {
-  border-top: 1px solid black;
+  border-top: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.open {
+  transform: rotate(90deg);
 }
 
 .header {
@@ -14,6 +18,7 @@
   background: none;
   padding: 0;
   cursor: pointer;
+  font-size: inherit;
 }
 
 .propertyName {
@@ -25,4 +30,18 @@
   padding: 2px 4px;
   border-radius: 4px;
   background-color: #c5c5c5;
+}
+
+.propertyDocumentation {
+  margin-left: 15px;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.oneOfList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
