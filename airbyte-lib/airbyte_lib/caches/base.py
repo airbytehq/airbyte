@@ -475,7 +475,6 @@ class SQLCacheBase(RecordProcessor):
         """
         self.file_writer.cleanup_batch(stream_name, batch_id, batch_handle)
 
-
     @final
     @overrides
     def _finalize_batches(self, stream_name: str) -> dict[str, BatchHandle]:

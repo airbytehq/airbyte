@@ -91,7 +91,6 @@ class FileWriterBase(RecordProcessor, abc.ABC):
             for file_path in batch_handle.files:
                 file_path.unlink()
 
-
     @final
     def cleanup_batch(
         self,
