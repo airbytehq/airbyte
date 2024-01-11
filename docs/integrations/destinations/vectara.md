@@ -6,6 +6,15 @@ This page contains the setup guide and reference information for the Vectara des
 
 The Vectara destination connector allows you to connect any Airbyte source to Vectara and ingest data into Vectara for your RAG pipeline.
 
+:::info
+In case of issues, the following public channels are available for support:
+
+* Airbyte related issues: [Open a Github issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug%2Carea%2Fconnectors%2Cneeds-triage&projects=&template=1-issue-connector.yaml)
+* Vectara related issues:  Create a post in the [Vectara forum](https://discuss.vectara.com/) or reach out on [Vectara's Discord server](https://discord.gg/GFb8gMz6UH)
+
+In case you are not sure if the issue is related to Airbyte or Vectara, please start with Vectara's support channels.
+:::
+
 ## Overview
 
 The Vectara destination connector supports Full Refresh Overwrite, Full Refresh Append, and Incremental Append.
