@@ -1,11 +1,28 @@
 .block {
-  border: 1px solid black;
-  border-radius: 5px;
   padding: 10px;
+}
+
+.block + .block {
+  border-top: 1px solid black;
 }
 
 .header {
   display: flex;
   flex-direction: row;
   gap: 10px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.propertyName {
+  font-weight: bold;
+}
+
+.tag {
+  font-size: 0.8em;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background-color: #c5c5c5;
 }

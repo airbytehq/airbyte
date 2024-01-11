@@ -1,6 +1,8 @@
 import React from "react";
 import styles from "./SpecSchema.module.css";
 import sanitizeHtml from "sanitize-html";
+import { Disclosure } from "@headlessui/react";
+import Heading from '@theme/Heading';
 
 export const SpecSchema = ({
   specJSON
@@ -15,7 +17,8 @@ export const SpecSchema = ({
 
 function JSONSchemaViewer(props) {
   return <div>
-    <pre>{JSON.stringify(props.schema, null, 2)}</pre>
+    {/* <pre>{JSON.stringify(props.schema, null, 2)}</pre> */}
+    <Heading as="h4">Config fields reference</Heading>
     <JSONSchemaObject schema={props.schema} />
   </div>
 }
@@ -31,7 +34,7 @@ function JSONSchemaObject(props) {
 
 function JSONSchemaOneOf(props) {
   return <div>
-    oneOf:
+    <Heading as="h5">One of:</Heading>
     <ul>
       {props.schema.oneOf.map((schema, i) => {
         return <li key={i}>
@@ -66,25 +69,26 @@ const TextWithHTML = ({ text, className }) => {
 };
 
 function JSONSchemaProperty({ propertyKey, schema, required }) {
-  return <div className={styles.block}>
-    <div>
-      <div className={styles.header}>
-        {propertyKey && <div>{propertyKey}</div>}
-        {schema.title && <div>{schema.title}</div>}
-        {required && <div>REQUIRED!</div>}
-        {schema.const && <div>constant value: <pre>{schema.default}</pre></div>}
-      </div>
+  return <Disclosure initiallyOpen={false}><div className={styles.block}>
+    <Disclosure.Button className={styles.header}>
+      {propertyKey && <div className={styles.propertyName}>{propertyKey}</div>}
+      {schema.title && <div>{schema.title}</div>}
+      {required && <div className={styles.tag}>required</div>}
+      {schema.const && <div className={styles.tag}>constant value: {schema.default}</div>}
+    </Disclosure.Button>
+    <Disclosure.Panel>
       <div>type: {schema.type}</div>
       {schema.default && !schema.const && <div>default: <pre>{JSON.stringify(schema.default, null, 2)}</pre></div>}
       {schema.pattern && <div>pattern: {schema.pattern} {schema.pattern_descriptor && <>({schema.pattern_descriptor})</>}</div>}
       {schema.examples && schema.examples.length > 1 && <div>examples: <ul>
         {schema.examples.map((example, i) => <li key={i}>{example}</li>)}
-        </ul></div>}
+      </ul></div>}
       {schema.examples && schema.examples.length === 1 && <div>example: {schema.examples[0]}</div>}
       {schema.description && <div><TextWithHTML text={schema.description} /></div>}
+      {(schema.type === "object" && (schema.properties || schema.oneOf)) || schema.type === "array" && <Heading as="h5">Sub-properties</Heading>}
       {schema.type === "object" && schema.properties && <JSONSchemaObject schema={schema} />}
       {schema.type === "object" && schema.oneOf && <JSONSchemaOneOf schema={schema} />}
       {schema.type === "array" && <JSONSchemaProperty propertyKey="items[x]" schema={schema.items} />}
-    </div>
-  </div>
+    </Disclosure.Panel>
+  </div></Disclosure>
 }
