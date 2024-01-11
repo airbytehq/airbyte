@@ -3,6 +3,8 @@
 #
 
 
+from unittest.mock import Mock
+
 import pytest
 from source_google_ads.models import CustomerModel
 
