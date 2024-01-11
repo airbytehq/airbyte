@@ -42,6 +42,9 @@ class FileWriterConfigBase(CacheConfigBase):
 class FileWriterBase(RecordProcessor, abc.ABC):
     """A generic base implementation for a file-based cache."""
 
+    config_class = FileWriterConfigBase
+    config: FileWriterConfigBase
+
     @abc.abstractmethod
     @overrides
     def _write_batch(
