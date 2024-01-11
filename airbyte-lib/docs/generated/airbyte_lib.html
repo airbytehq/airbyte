@@ -4,7 +4,7 @@
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_connector</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;latest&#39;</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">use_local_install</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">install_if_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></span><span class="return-annotation">):</span></span>
+        <span class="name">get_connector</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">pip_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">use_local_install</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">install_if_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">):</span></span>
 
         
     </div>
@@ -16,8 +16,9 @@
 
 <ul>
 <li><strong>name</strong>:  connector name</li>
-<li><strong>version</strong>:  connector version - if not provided, the most recent version will be used</li>
-<li><strong>config</strong>:  connector config - if not provided, you need to set it later via the set_config method</li>
+<li><strong>version</strong>:  connector version - if not provided, the currently installed version will be used. If no version is installed, the latest available version will be used. The version can also be set to "latest" to force the use of the latest available version.</li>
+<li><strong>pip_url</strong>:  connector pip URL - if not provided, the pip url will be inferred from the connector name.</li>
+<li><strong>config</strong>:  connector config - if not provided, you need to set it later via the set_config method.</li>
 <li><strong>use_local_install</strong>:  whether to use a virtual environment to run the connector. If True, the connector is expected to be available on the path (e.g. installed via pip). If False, the connector will be installed automatically in a virtual environment.</li>
 <li><strong>install_if_missing</strong>:  whether to install the connector if it is not available locally. This parameter is ignored if use_local_install is True.</li>
 </ul>
@@ -197,17 +198,6 @@
     
 
                             </div>
-                            <div id="Source.config" class="classattr">
-                                <div class="attr variable">
-            <span class="name">config</span><span class="annotation">: Optional[Dict[str, Any]]</span>
-
-        
-    </div>
-    <a class="headerlink" href="#Source.config"></a>
-    
-    
-
-                            </div>
                             <div id="Source.set_streams" class="classattr">
                                 <div class="attr function">
             
@@ -309,7 +299,24 @@
     </div>
     <a class="headerlink" href="#Source.install"></a>
     
+            <div class="docstring"><p>Install the connector if it is not yet installed.</p>
+</div>
+
+
+                            </div>
+                            <div id="Source.uninstall" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">uninstall</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.uninstall"></a>
     
+            <div class="docstring"><p>Uninstall the connector if it is installed. This only works if the use_local_install flag wasn't used and installation is managed by airbyte-lib.</p>
+</div>
+
 
                             </div>
                             <div id="Source.read_all" class="classattr">
