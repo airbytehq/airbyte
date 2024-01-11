@@ -85,10 +85,11 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 3. On the Set up the source page, enter the name for the Slack connector and select **Slack** from the Source type dropdown.
 4. Select `Authenticate your account` and log in and Authorize to the Slack account.
 5. **Required** Enter your `start_date`.
-6. **Required** Enter your `lookback_window`, which corresponds to amount of days in the past from which you want to sync data.
-7. Toggle `join_channels`, if you want to join all channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
-8. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data.
-9. Click **Set up source**.
+6. **Required** Enter your `threads_lookback_window`, which corresponds to amount of days in the past from which you want to sync thread messages data.
+7. **Required** Enter your `messages_lookback_window`, which corresponds to amount of days in the past from which you want to sync channel messages data.
+8. Toggle `join_channels`, if you want to join all channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+9. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data.
+10. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -97,11 +98,12 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. **Required** Enter your `start_date`.
-4. **Required** Enter your `lookback_window`, which corresponds to amount of days in the past from which you want to sync data.
-5. Toggle `join_channels`, if you want to join all channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
-6. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data.
-7. Enter your `api_token`.
-8. Click **Set up source**.
+4. **Required** Enter your `threads_lookback_window`, which corresponds to amount of days in the past from which you want to sync thread messages data.
+5. **Required** Enter your `messages_lookback_window`, which corresponds to amount of days in the past from which you want to sync channel messages data.
+6. Toggle `join_channels`, if you want to join all channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+7. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data.
+8. Enter your `api_token`.
+9. Click **Set up source**.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -163,6 +165,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 1.0.0   | 2024-02-01 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add message edit information                                                        |
 | 0.3.6   | 2023-11-21 | [32707](https://github.com/airbytehq/airbyte/pull/32707) | Threads: do not use client-side record filtering                                    |
 | 0.3.5   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image     |
 | 0.3.4   | 2023-10-06 | [31134](https://github.com/airbytehq/airbyte/pull/31134) | Update CDK and remove non iterable return from records                              |
