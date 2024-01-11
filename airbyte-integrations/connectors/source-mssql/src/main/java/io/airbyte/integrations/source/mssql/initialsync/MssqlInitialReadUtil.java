@@ -334,4 +334,5 @@ public class MssqlInitialReadUtil {
         .isEmpty()).collect(Collectors.toList()),
         pairToInitialLoadStatus);
   }
+
 }
