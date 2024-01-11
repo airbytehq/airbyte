@@ -47,6 +47,7 @@ public class MssqlQueryUtils {
   private static final String MAX_ORDERED_COL = "max_oc";
 
   public record TableSizeInfo(Long tableSize, Long avgRowLength) {}
+
   private static final String MAX_CURSOR_VALUE_QUERY =
       """
         SELECT %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s);
@@ -59,9 +60,9 @@ public class MssqlQueryUtils {
   ) { }
 
   public static final String TABLE_ESTIMATE_QUERY =
-"""
-EXEC sp_spaceused N'"%s"."%s"'
-""";
+      """
+      EXEC sp_spaceused N'"%s"."%s"'
+      """;
 
   public static final String MAX_OC_COL = "max_oc";
   public static final String DATA_SIZE_HUMAN_READABLE = "data";
@@ -133,6 +134,7 @@ EXEC sp_spaceused N'"%s"."%s"'
     }
     return returnValue;
   }
+
   public static Map<AirbyteStreamNameNamespacePair, TableSizeInfo> getTableSizeInfoForStreams(final JdbcDatabase database,
                                                                                               final List<ConfiguredAirbyteStream> streams,
                                                                                               final String quoteString) {
@@ -176,9 +178,9 @@ EXEC sp_spaceused N'"%s"."%s"'
    * @return Map of streams to statuses
    */
   public static Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
-      final List<ConfiguredAirbyteStream> streams,
-      final StateManager stateManager,
-      final String quoteString) {
+                                                                                                                                        final List<ConfiguredAirbyteStream> streams,
+                                                                                                                                        final StateManager stateManager,
+                                                                                                                                        final String quoteString) {
 
     final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
     streams.forEach(stream -> {
