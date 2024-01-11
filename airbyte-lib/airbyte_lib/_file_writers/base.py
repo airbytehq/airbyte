@@ -34,7 +34,8 @@ class FileWriterBatchHandle(BatchHandle):
 class FileWriterConfigBase(CacheConfigBase):
     """Configuration for the Snowflake cache."""
 
-    cache_path: str = "./.cache/files/"
+    cache_dir: str | Path = "./.cache/files/"
+    cleanup: bool = True
 
 
 class FileWriterBase(RecordProcessor, abc.ABC):
@@ -80,8 +81,29 @@ class FileWriterBase(RecordProcessor, abc.ABC):
         """Clean up the cache.
 
         For file writers, this means deleting the files created and declared in the batch.
+
+        This method is a no-op if the `cleanup` config option is set to False.
         """
-        batch_handle = cast(FileWriterBatchHandle, batch_handle)
-        _ = stream_name, batch_id
-        for file_path in batch_handle.files:
-            file_path.unlink()
+        if self.config.cleanup:
+            batch_handle = cast(FileWriterBatchHandle, batch_handle)
+            _ = stream_name, batch_id
+            for file_path in batch_handle.files:
+                file_path.unlink()
+
+
+    @final
+    def cleanup_batch(
+        self,
+        stream_name: str,
+        batch_id: str,
+        batch_handle: BatchHandle,
+    ) -> None:
+        """Clean up the cache.
+
+        For file writers, this means deleting the files created and declared in the batch.
+
+        This method is final because it should not be overridden.
+
+        Subclasses should override `_cleanup_batch` instead.
+        """
+        self._cleanup_batch(stream_name, batch_id, batch_handle)

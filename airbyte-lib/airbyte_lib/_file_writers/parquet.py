@@ -17,7 +17,7 @@ class ParquetWriterConfig(FileWriterConfigBase):
     """Configuration for the Snowflake cache."""
 
     # Inherits from base class:
-    # cache_path: str
+    # cache_dir: str | Path
 
 
 class ParquetWriter(FileWriterBase):
@@ -33,7 +33,7 @@ class ParquetWriter(FileWriterBase):
         """Return a new cache file path for the given stream."""
         batch_id = batch_id or str(ulid.ULID())
         config: ParquetWriterConfig = cast(ParquetWriterConfig, self.config)
-        target_dir = Path(config.cache_path)
+        target_dir = Path(config.cache_dir)
         target_dir.mkdir(parents=True, exist_ok=True)
         return target_dir / f"{stream_name}_{batch_id}.parquet"
 

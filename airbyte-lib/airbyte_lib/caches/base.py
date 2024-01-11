@@ -461,6 +461,21 @@ class SQLCacheBase(RecordProcessor):
         """
         return self.file_writer.write_batch(stream_name, batch_id, record_batch)
 
+    def _cleanup_batch(
+        self,
+        stream_name: str,
+        batch_id: str,
+        batch_handle: BatchHandle,
+    ) -> None:
+        """Clean up the cache.
+
+        For SQL caches, we only need to call the cleanup operation on the file writer.
+
+        Subclasses should call super() if they override this method.
+        """
+        self.file_writer.cleanup_batch(stream_name, batch_id, batch_handle)
+
+
     @final
     @overrides
     def _finalize_batches(self, stream_name: str) -> dict[str, BatchHandle]:

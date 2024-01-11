@@ -22,19 +22,34 @@ def get_default_cache() -> DuckDBCache:
 
 def new_local_cache(
     cache_name: str | None = None,
-    root_dir: str | Path | None = None,
+    cache_dir: str | Path | None = None,
+    cleanup: bool = True,
 ) -> DuckDBCache:
     """Get a local cache for storing data, using a name string to seed the path.
+
+    Args:
+        cache_name: Name to use for the cache. Defaults to None.
+        root_dir: Root directory to store the cache in. Defaults to None.
+        cleanup: Whether to clean up temporary files. Defaults to True.
 
     Cache files are stored in the `.cache` directory, relative to the current
     working directory.
     """
+    if cache_name:
+        if " " in cache_name:
+            raise ValueError(f"Cache name '{cache_name}' cannot contain spaces")
+
+        if not cache_name.isalnum():
+            raise ValueError(f"Cache name '{cache_name}' can only contain alphanumeric characters")
+
     cache_name = cache_name or str(ulid.ULID())
-    root_dir = root_dir or Path("./.cache")
-    if not isinstance(root_dir, Path):
-        root_dir = Path(root_dir)
+    cache_dir = cache_dir or Path("./.cache/{cache_name}")
+    if not isinstance(cache_dir, Path):
+        cache_dir = Path(cache_dir)
 
     config = DuckDBCacheConfig(
-        db_path=root_dir / f"db_{cache_name}.duckdb",
+        db_path=cache_dir / f"db_{cache_name}.duckdb",
+        cache_dir=cache_dir,
+        cleanup=cleanup,
     )
     return DuckDBCache(config=config)

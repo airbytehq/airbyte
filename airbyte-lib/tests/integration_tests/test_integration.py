@@ -2,11 +2,14 @@
 
 import os
 import shutil
+import tempfile
+from pathlib import Path
 
 import airbyte_lib as ab
 import pandas as pd
 import pytest
-from airbyte_lib.caches import DuckDBCache, DuckDBCacheConfig, InMemoryCache, InMemoryCacheConfig, PostgresCache, PostgresCacheConfig
+
+from airbyte_lib.caches import PostgresCache, PostgresCacheConfig
 from airbyte_lib.registry import _update_cache
 from airbyte_lib.results import ReadResult
 
@@ -98,6 +101,21 @@ def test_check_fail():
 
     with pytest.raises(Exception):
         source.check()
+
+
+def test_file_write_and_cleanup() -> None:
+    """Ensure files are written to the correct location and cleaned up afterwards."""
+    with tempfile.TemporaryDirectory() as temp_dir_1, tempfile.TemporaryDirectory() as temp_dir_2:
+        cache_w_cleanup = ab.new_local_cache(cache_dir=temp_dir_1, cleanup=True)
+        cache_wo_cleanup = ab.new_local_cache(cache_dir=temp_dir_2, cleanup=False)
+
+        source = ab.get_connector("source-test", config={"apiKey": "test"})
+
+        _ = source.read(cache_w_cleanup)
+        _ = source.read(cache_wo_cleanup)
+
+        assert len(list(Path(temp_dir_1).glob("*.parquet"))) == 0, "Expected files to be cleaned up"
+        assert len(list(Path(temp_dir_2).glob("*.parquet"))) == 2, "Expected files to exist"
 
 
 def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
