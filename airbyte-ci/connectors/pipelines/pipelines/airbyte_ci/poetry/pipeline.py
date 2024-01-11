@@ -15,7 +15,7 @@ from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.common import with_pip_packages
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.helpers.run_steps import STEP_TREE, StepToRun, run_steps
-from pipelines.helpers.utils import DAGGER_CONFIG, get_secret_host_variable
+from pipelines.helpers.utils import get_file_contents
 from pipelines.models.reports import Report
 from pipelines.models.steps import MountPath, Step, StepResult
 from pipelines.models.contexts.pipeline_context import PipelineContext
@@ -76,16 +76,16 @@ class PublishToPyPI(Step):
     title = "Publish package to PyPI"
 
     async def _run(self) -> StepResult:
-        context: PyPIPublishContext = self.context
+        context: PyPIPublishContext = self.context # TODO: Add logic to create a PyPIPublishContext out of a ConnectorContext (check the instance type to decide whether it's necessary)
         dir_to_publish = await context.get_repo_dir(context.package_path)
 
         if not context.package_name or not context.version:
             # check whether it has a pyproject.toml file
-            pyproject_toml = dir_to_publish.file("pyproject.toml")
-            if not await pyproject_toml.exists():
+            if "pyproject.toml" not in (await dir_to_publish.entries()):
                 return self.skip("Connector does not have a pyproject.toml file and version and package name is not set otherwise, skipping.")
             
             # get package name and version from pyproject.toml
+            pyproject_toml = dir_to_publish.file("pyproject.toml")
             pyproject_toml_content = await pyproject_toml.contents()
             contents = tomli.loads(pyproject_toml_content)
             if "tool" not in contents or "poetry" not in contents["tool"] or "name" not in contents["tool"]["poetry"] or "version" not in contents["tool"]["poetry"]:
@@ -115,7 +115,7 @@ class PublishToPyPI(Step):
             .with_directory("package", dir_to_publish)
             .with_workdir("package")
             .with_exec(["sed", "-i", "/name=/d; /author=/d; /author_email=/d; /version=/d", "setup.py"])
-            .with_new_file("setup.cfg", setup_cfg)
+            .with_new_file("setup.cfg", contents=setup_cfg)
             .with_exec(["pip", "install", "--upgrade", "setuptools", "wheel"])
             .with_exec(["python", "setup.py", "sdist", "bdist_wheel"])
             .with_secret_variable("TWINE_USERNAME", twine_username)

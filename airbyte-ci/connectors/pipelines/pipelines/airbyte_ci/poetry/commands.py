@@ -26,6 +26,12 @@ from .pipeline import PyPIPublishContext, PublishToPyPI
     name="poetry",
     help="Commands related to running poetry commands.",
 )
+@click.option(
+    "--package-path",
+    help="The path to publish",
+    type=click.STRING,
+    required=True,
+)
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
@@ -54,21 +60,13 @@ async def poetry(pipeline_context: ClickPipelineContext) -> None:
     type=click.Choice(["pypi", "testpypi"]),
     default="pypi",
 )
-@click.option(
-    "--package-path",
-    help="The path to publish",
-    type=click.STRING,
-    required=True,
-)
 @pass_pipeline_context
 @click.pass_context
 async def publish(ctx: click.Context,
-    package_path: str,
+    click_pipeline_context: ClickPipelineContext,
     pypi_username: str,
     pypi_password: str,
-    pypi_repository: str,
-    click_pipeline_context: ClickPipelineContext
-                  ) -> None:
+    pypi_repository: str) -> None:
     context = PyPIPublishContext(
         is_local=ctx.obj["is_local"],
         git_branch=ctx.obj["git_branch"],
@@ -83,9 +81,9 @@ async def publish(ctx: click.Context,
         pypi_username=pypi_username,
         pypi_password=pypi_password,
         pypi_repository=pypi_repository,
-        package_path=package_path
+        package_path=ctx.obj["package_path"],
     )
-    dagger_client = await click_pipeline_context.get_dagger_client(pipeline_name=f"Publish {package_path} to PyPI")
+    dagger_client = await click_pipeline_context.get_dagger_client(pipeline_name=f"Publish {ctx.obj['package_path']} to PyPI")
     context.dagger_client = dagger_client
 
     await PublishToPyPI(context).run()
