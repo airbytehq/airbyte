@@ -42,6 +42,17 @@ def _get_airbyte_type(
         return airbyte_type, None
 
     json_schema_type = json_schema_property_def.get("type", None)
+    json_schema_format = json_schema_property_def.get("format", None)
+
+    if json_schema_type == "string":
+        if json_schema_format == "date":
+            return "date", None
+
+        if json_schema_format == "date-time":
+            return "timestamp_with_timezone", None
+
+        if json_schema_format == "time":
+            return "time_without_timezone", None
 
     if json_schema_type in ["string", "number", "boolean", "integer"]:
         return cast(str, json_schema_type), None
@@ -59,11 +70,8 @@ class SQLTypeConverter:
     def __init__(
         self,
         conversion_map: dict | None = None,
-    ):
-        self.conversion_map = defaultdict(
-            self.get_failover_type,
-            conversion_map or CONVERSION_MAP,
-        )
+    ) -> None:
+        self.conversion_map = conversion_map or CONVERSION_MAP
 
     @staticmethod
     def get_failover_type() -> sqlalchemy.types.TypeEngine:
@@ -75,8 +83,22 @@ class SQLTypeConverter:
         json_schema_property_def: dict[str, str | dict],
     ) -> sqlalchemy.types.TypeEngine:
         """Convert a value to a SQL type."""
-        airbyte_type, airbyte_subtype = _get_airbyte_type(json_schema_property_def)
+        try:
+            airbyte_type, airbyte_subtype = _get_airbyte_type(json_schema_property_def)
+            return self.conversion_map[airbyte_type]()
+        except SQLTypeConversionError:
+            print(f"Could not determine airbyte type from JSON schema type: {json_schema_property_def}")
+        except KeyError:
+            print(f"Could not find SQL type for airbyte type: {airbyte_type}")
+
         json_schema_type = json_schema_property_def.get("type", None)
+        json_schema_format = json_schema_property_def.get("format", None)
+
+        if json_schema_type == "string" and json_schema_format == "date":
+            return sqlalchemy.types.DATE()
+
+        if json_schema_type == "string" and json_schema_format == "date-time":
+            return sqlalchemy.types.TIMESTAMP()
 
         if json_schema_type == "array":
             # TODO: Implement array type conversion.
@@ -86,4 +108,4 @@ class SQLTypeConverter:
             # TODO: Implement object type handling.
             return self.get_failover_type()
 
-        return self.conversion_map[airbyte_type]()
+        return self.get_failover_type()
