@@ -1,0 +1,95 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "campaign_id" : {
+      "type" : [
+        "number"
+      ]
+    },
+    "campaign_name" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "is_coppa" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "promotion_type" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "alive_in_store" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "preview_url" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "product_name" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "package_name" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "description" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "icon" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "platform" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "category" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "app_size" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "min_version" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "maintain_by" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

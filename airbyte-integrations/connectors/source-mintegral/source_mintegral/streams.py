@@ -43,6 +43,11 @@ class MintegralStream(HttpStream, ABC):
                 "ext_fields": "creatives"
             }
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.text == "":
+            return '{}'
+        yield from response.json()["data"]["list"]
+
 
 class Offers(MintegralStream):
     primary_key = "campaign_id"
@@ -50,7 +55,9 @@ class Offers(MintegralStream):
     def path(self, **kwargs) -> str:
         return "offers"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.text == "":
-            return '{}'
-        yield from response.json()["data"]["list"]
+
+class Campaigns(MintegralStream):
+    primary_key = "campaign_id"
+
+    def path(self, **kwargs) -> str:
+        return "campaign"
