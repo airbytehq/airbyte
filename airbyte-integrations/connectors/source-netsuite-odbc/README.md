@@ -100,6 +100,14 @@ First install test dependencies into your virtual environment:
 pip install .[tests]
 ```
 
+If on M1, please run the following commands:
+
+```
+brew install unixodbc
+pip uninstall pyodbc
+pip install --pre --no-binary :all: pyodbc
+```
+
 ### Unit Tests
 
 To run unit tests locally, from the connector directory run:

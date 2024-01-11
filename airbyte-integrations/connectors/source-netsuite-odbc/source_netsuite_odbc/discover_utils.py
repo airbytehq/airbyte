@@ -37,7 +37,7 @@ class NetsuiteODBCTableDiscoverer:
 
     # In Netsuite, the OA_FKEYS table contains the primary keys and foreign keys for each table
     # If primary table name and column name exists and foreign table/column name DONT, then that row represents a primary key
-    # This is what we check for.  Note Netsuite can have compositive primary keys, so we return a set of primary keys
+    # This is what we check for.  Note Netsuite can have composite primary keys, so we return a set of primary keys
     # Link: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4410184091.html#oa_fkeys
     def fetch_primary_key_for_all_tables(self):
       def default_value():
@@ -116,7 +116,4 @@ class NetsuiteODBCTableDiscoverer:
     def is_column_incremental(self, column) -> bool:
       column_meta_data = column['column_userdata']
       column_name = column['column_name']
-      if (column_meta_data is not None and 'M-' in column_meta_data) or column_name in ['datelastmodified', 'lastmodified', 'lastmodifieddate']:
-          return True
-      else:
-          return False
+      return (column_meta_data is not None and 'M-' in column_meta_data) or column_name in ['datelastmodified', 'lastmodified', 'lastmodifieddate']

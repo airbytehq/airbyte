@@ -1,0 +1,86 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "BillingRateCardPriceForSearch",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "billingclass": { "type": ["integer", "null"] },
+            "billingratecard": { "type": ["integer", "null"] },
+            "price": { "type": ["number", "null"] },
+            "saleunit": { "type": ["integer", "null"] },
+            "serviceitem": { "type": ["integer", "null"] },
+            "unitstype": { "type": ["integer", "null"] },
+            "version": { "type": ["integer", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [
+          ["version"],
+          ["billingratecard"],
+          ["billingclass"]
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "UsrDsAuditLogChangeDetail",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "audit_change_id": { "type": ["integer", "null"] },
+            "audit_log_id": { "type": ["integer", "null"] },
+            "id": { "type": ["integer", "null"] },
+            "name": { "type": ["string", "null"] },
+            "new_value": { "type": ["string", "null"] },
+            "old_value": { "type": ["string", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [
+          ["id"],
+          ["audit_log_id"],
+          ["audit_change_id"]
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "UsrAuditLogChangeDetail",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "audit_change_id": { "type": ["integer", "null"] },
+            "audit_log_id": { "type": ["integer", "null"] },
+            "id": { "type": ["integer", "null"] },
+            "name": { "type": ["string", "null"] },
+            "new_value": { "type": ["string", "null"] },
+            "old_value": { "type": ["string", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [
+          ["id"],
+          ["audit_log_id"],
+          ["audit_change_id"]
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}

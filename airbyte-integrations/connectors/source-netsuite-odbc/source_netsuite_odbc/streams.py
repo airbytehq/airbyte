@@ -41,9 +41,10 @@ class NetsuiteODBCStream(Stream):
       if not key:
         return []
       elif stream.name == 'TransactionAccountingLine':
-        return ['transaction', 'transactionline', 'accountingbook']
+        # we have this special case because the "transactionline" column on the TransactionAccountingLine table does not actually support WHERE clauses for some reason
+        # therefore, we knowingly accept duplicate rows in order to try to fetch all rows.
+        return ['transaction', 'accountingbook']
       else:
-        # return ['transaction', 'transactionline', 'accountingbook']
         return sorted(key, reverse=True)
   
     def get_incremental_column_from_airbyte_stream(self, stream: AirbyteStream):

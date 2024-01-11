@@ -43,9 +43,13 @@ class SourceNetsuiteOdbc(AbstractSource):
         """
         # check if config is valid
         service_host = config.get("service_host")
+        if service_host is None:
+            return False, "service_host is required"
         if not (NETSUITE_ODBC_BASE_URL in service_host):
             return False, f"Invalid service_host: {service_host}.  Must be of the form: *******.connect.api.netsuite.com"
         starting_year = config.get("starting_year")
+        if starting_year is None:
+            starting_year = 1980
         if not (starting_year >= 1900 and starting_year <= datetime.now().year):
             return False, f"Invalid starting_year: {starting_year}.  Must be between 1900 and {datetime.now().year}"
 
