@@ -227,7 +227,19 @@ class Source:
             )
 
     def install(self) -> None:
+        """
+        Install the connector if it is not yet installed.
+        """
         self.executor.install()
+
+    def uninstall(self) -> None:
+        """
+        Uninstall the connector if it is installed.
+
+        This only works if the use_local_install flag wasn't used and installation is managed by
+        airbyte-lib.
+        """
+        self.executor.uninstall()
 
     def _read(self) -> Iterator[AirbyteMessage]:
         """
