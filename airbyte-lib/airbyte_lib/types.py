@@ -87,7 +87,7 @@ class SQLTypeConverter:
             airbyte_type, airbyte_subtype = _get_airbyte_type(json_schema_property_def)
             return self.conversion_map[airbyte_type]()
         except SQLTypeConversionError:
-            print(f"Could not determine airbyte type from JSON schema type: {json_schema_property_def}")
+            print(f"Could not determine airbyte type from JSON schema: {json_schema_property_def}")
         except KeyError:
             print(f"Could not find SQL type for airbyte type: {airbyte_type}")
 
