@@ -583,9 +583,7 @@ class SQLCacheBase(RecordProcessor):
 
                 # Pandas will auto-create the table if it doesn't exist, which we don't want.
                 if not self._table_exists(temp_table_name):
-                    raise RuntimeError(
-                        f"Table {temp_table_name} does not exist after creation."
-                    )
+                    raise RuntimeError(f"Table {temp_table_name} does not exist after creation.")
 
                 dataframe.to_sql(
                     temp_table_name,
@@ -593,7 +591,7 @@ class SQLCacheBase(RecordProcessor):
                     schema=self.config.schema_name,
                     if_exists="append",
                     index=False,
-                    dtype=self._get_sql_column_definitions(stream_name),
+                    dtype=self._get_sql_column_definitions(stream_name),  # type: ignore
                 )
         return temp_table_name
 

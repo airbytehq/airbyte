@@ -41,7 +41,7 @@ class Executor(ABC):
         pass
 
     @abstractmethod
-    def uninstall(self):
+    def uninstall(self) -> None:
         pass
 
 
@@ -203,7 +203,9 @@ class PathExecutor(Executor):
         raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")
 
     def uninstall(self) -> NoReturn:
-        raise Exception(f"Connector {self.metadata.name} is installed manually and not managed by airbyte-lib - please remove it manually")
+        raise Exception(
+            f"Connector {self.metadata.name} is installed manually and not managed by airbyte-lib - please remove it manually"
+        )
 
     def execute(self, args: list[str]) -> Iterator[str]:
         with _stream_from_subprocess([self.metadata.name] + args) as stream:

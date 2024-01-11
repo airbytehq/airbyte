@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import pyarrow as pa
 from overrides import overrides
 
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
@@ -68,4 +67,4 @@ class SnowflakeSQLCache(SQLCacheBase):
 
         TODO: Override the base implementation to use the COPY command.
         """
-        super()._write_files_to_new_table(files, stream_name, batch_id)
+        return super()._write_files_to_new_table(files, stream_name, batch_id)
