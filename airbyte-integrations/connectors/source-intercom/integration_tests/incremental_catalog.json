@@ -10,6 +10,7 @@
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
+      "cursor_field": ["created_at"],
       "primary_key": [["id"]],
       "destination_sync_mode": "append"
     },
