@@ -1,6 +1,6 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 {
-  "name": "Connector Development DevContainer (Generic)",
+  "name": "Java Development DevContainer (Generic)",
 
   "image": "mcr.microsoft.com/devcontainers/java:0-17",
   "features": {
