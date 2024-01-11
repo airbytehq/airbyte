@@ -2,7 +2,6 @@
 
 """Type conversion methods for SQL Caches."""
 
-from collections import defaultdict
 from typing import cast
 
 import sqlalchemy

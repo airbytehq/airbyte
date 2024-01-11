@@ -4,7 +4,7 @@
 
 import abc
 import enum
-from collections.abc import Generator, Iterator
+from collections.abc import Generator, Iterator, Mapping
 from contextlib import contextmanager
 from functools import cached_property, lru_cache
 from pathlib import Path
@@ -216,13 +216,18 @@ class SQLCacheBase(RecordProcessor):
     def get_records(
         self,
         stream_name: str,
-    ) -> Iterator[dict[str, Any]]:
-        """Uses SQLAlchemy to select all rows from the table."""
+    ) -> Iterator[Mapping[str, Any]]:
+        """Uses SQLAlchemy to select all rows from the table.
+
+        # TODO: Refactor to return a LazyDataset here.
+        """
         table_ref = self.get_sql_table(stream_name)
         stmt = table_ref.select()
         with self.get_sql_connection() as conn:
             for row in conn.execute(stmt):
-                yield row.__dict__  # TODO: Refactor to return a LazyDataset here.
+                # Access to private member required because SQLAlchemy doesn't expose a public API.
+                # https://pydoc.dev/sqlalchemy/latest/sqlalchemy.engine.row.RowMapping.html
+                yield cast(Mapping[str, Any], row._mapping)  # noqa: SLF001
 
     def get_pandas_dataframe(
         self,

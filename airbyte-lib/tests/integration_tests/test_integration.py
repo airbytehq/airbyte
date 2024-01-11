@@ -133,6 +133,15 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
         )
 
 
+def test_read_result_convert_to_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.new_local_cache()
+
+    result: ReadResult = source.read(cache)
+    stream_1_list = list(result["stream1"])
+
+
+
 def test_sync_with_merge_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     """Test that the merge strategy works as expected.
 
