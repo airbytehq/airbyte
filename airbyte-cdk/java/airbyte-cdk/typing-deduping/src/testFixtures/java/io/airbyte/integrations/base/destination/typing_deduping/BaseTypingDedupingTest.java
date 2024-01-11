@@ -839,6 +839,8 @@ public abstract class BaseTypingDedupingTest {
     );
     messageHandler.submit(() -> {
       while (!destination.isFinished()) {
+        // attemptRead isn't threadsafe, we read stdout fully here.
+        // i.e. we shouldn't call attemptRead anywhere else.
         destination.attemptRead();
       }
     });
