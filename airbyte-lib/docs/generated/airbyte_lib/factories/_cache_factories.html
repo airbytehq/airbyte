@@ -22,13 +22,18 @@ working directory.</p>
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">new_local_cache</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">cache_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">root_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBCache</span>:</span></span>
+        <span class="name">new_local_cache</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">cache_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">cleanup</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBCache</span>:</span></span>
 
         
     </div>
     <a class="headerlink" href="#new_local_cache"></a>
     
             <div class="docstring"><p>Get a local cache for storing data, using a name string to seed the path.</p>
+
+<p>Args:
+    cache_name: Name to use for the cache. Defaults to None.
+    root_dir: Root directory to store the cache in. Defaults to None.
+    cleanup: Whether to clean up temporary files. Defaults to True.</p>
 
 <p>Cache files are stored in the <code>.cache</code> directory, relative to the current
 working directory.</p>
