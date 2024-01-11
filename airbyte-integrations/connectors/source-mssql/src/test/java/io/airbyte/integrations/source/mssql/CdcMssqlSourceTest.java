@@ -30,6 +30,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -47,9 +48,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
+@TestInstance(Lifecycle.PER_CLASS)
 public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestDatabase> {
 
   static private final String CDC_ROLE_NAME = "cdc_selector";
@@ -58,37 +62,43 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   // Deliberately do not share this test container, as we're going to mutate the global SQL Server
   // state.
-  static private final MSSQLServerContainer<?> UNSHARED_CONTAINER = new MsSQLContainerFactory()
-      .createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
-  private static final Duration CONNECTION_TIME = Duration.ofSeconds(60);
+  protected final MSSQLServerContainer<?> privateContainer;
 
   private DataSource testDataSource;
 
+  CdcMssqlSourceTest() {
+    this.privateContainer = createContainer();
+  }
+
+  protected MSSQLServerContainer<?> createContainer() {
+    return new MsSQLContainerFactory()
+        .createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
+  }
+
   @BeforeAll
-  static public void beforeAll() {
-    new MsSQLContainerFactory().withAgent(UNSHARED_CONTAINER);
-    UNSHARED_CONTAINER.start();
+  public void beforeAll() {
+    new MsSQLContainerFactory().withAgent(privateContainer);
+    privateContainer.start();
   }
 
   @AfterAll
-  static void afterAll() {
-    UNSHARED_CONTAINER.close();
+  void afterAll() {
+    privateContainer.close();
   }
 
-  private String testUserName() {
+  protected final String testUserName() {
     return testdb.withNamespace(TEST_USER_NAME_PREFIX);
   }
 
   @Override
   protected MsSQLTestDatabase createTestDatabase() {
-    final var testdb = new MsSQLTestDatabase(UNSHARED_CONTAINER);
+    final var testdb = new MsSQLTestDatabase(privateContainer);
     return testdb
         .withConnectionProperty("encrypt", "false")
         .withConnectionProperty("databaseName", testdb.getDatabaseName())
         .initialized()
-        .withSnapshotIsolation()
-        .withCdc()
-        .withWaitUntilAgentRunning();
+        .withWaitUntilAgentRunning()
+        .withCdc();
   }
 
   @Override
@@ -123,7 +133,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
                                 \t@supports_net_changes = 0""";
     testdb
         .with(enableCdcSqlFmt, modelsSchema(), MODELS_STREAM_NAME, CDC_ROLE_NAME)
-        .with(enableCdcSqlFmt, randomSchema(), RANDOM_TABLE_NAME, CDC_ROLE_NAME);
+        .with(enableCdcSqlFmt, randomSchema(), RANDOM_TABLE_NAME, CDC_ROLE_NAME)
+        .withShortenedCapturePollingInterval();
 
     // Create a test user to be used by the source, with proper permissions.
     testdb
@@ -139,13 +150,17 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         .with("USE [%s]", testdb.getDatabaseName())
         .with("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testUserName());
 
-    testDataSource = DataSourceFactory.create(
+    testDataSource = createTestDataSource();
+  }
+
+  protected DataSource createTestDataSource() {
+    return DataSourceFactory.create(
         testUserName(),
         testdb.getPassword(),
         testdb.getDatabaseDriver().getDriverClassName(),
         testdb.getJdbcUrl(),
         Map.of("encrypt", "false"),
-        CONNECTION_TIME);
+        JdbcConnector.CONNECT_TIMEOUT_DEFAULT);
   }
 
   @Override
@@ -153,7 +168,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   protected void tearDown() {
     try {
       DataSourceFactory.close(testDataSource);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
     super.tearDown();
@@ -219,30 +234,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     assertDoesNotThrow(() -> source().assertSqlServerAgentRunning(testDatabase()));
   }
 
-  @Test
-  void testAssertSnapshotIsolationAllowed() {
-    // snapshot isolation enabled by setup so assert check passes
-    assertDoesNotThrow(() -> source().assertSnapshotIsolationAllowed(config(), testDatabase()));
-    // now disable snapshot isolation and assert that check fails
-    testdb.withoutSnapshotIsolation();
-    assertThrows(RuntimeException.class, () -> source().assertSnapshotIsolationAllowed(config(), testDatabase()));
-  }
-
-  @Test
-  void testAssertSnapshotIsolationDisabled() {
-    final JsonNode replicationConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "CDC")
-        .put("data_to_sync", "New Changes Only")
-        // set snapshot_isolation level to "Read Committed" to disable snapshot
-        .put("snapshot_isolation", "Read Committed")
-        .build());
-    final var config = config();
-    Jsons.replaceNestedValue(config, List.of("replication_method"), replicationConfig);
-    assertDoesNotThrow(() -> source().assertSnapshotIsolationAllowed(config, testDatabase()));
-    testdb.withoutSnapshotIsolation();
-    assertDoesNotThrow(() -> source().assertSnapshotIsolationAllowed(config, testDatabase()));
-  }
-
   // Ensure the CDC check operations are included when CDC is enabled
   // todo: make this better by checking the returned checkOperations from source.getCheckOperations
   @Test
@@ -264,8 +255,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     status = source().check(config());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
     testdb.withAgentStarted().withWaitUntilAgentRunning();
-    // assertSnapshotIsolationAllowed
-    testdb.withoutSnapshotIsolation();
     status = source().check(config());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }

@@ -78,6 +78,8 @@ class ShopifyStream(HttpStream, ABC):
         else:
             params["order"] = f"{self.order_field} asc"
             params[self.filter_field] = self.default_filter_field_value
+            if self.config.get("end_date") and self.filter_field == "updated_at_min":
+                params["updated_at_max"] = self.config.get("end_date")
         return params
 
     @limiter.balance_rate_limit()
