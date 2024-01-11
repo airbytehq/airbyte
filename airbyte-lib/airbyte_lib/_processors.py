@@ -142,6 +142,7 @@ class RecordProcessor(abc.ABC):
     ) -> None:
         stream_batches: dict[str, list[dict]] = defaultdict(list, {})
 
+        # Process messages, writing to batches as we go
         for message in messages:
             if message.type is Type.RECORD:
                 record_msg = cast(AirbyteRecordMessage, message.record)
@@ -169,11 +170,13 @@ class RecordProcessor(abc.ABC):
             else:
                 raise ValueError(f"Unexpected message type: {message.type}")
 
+        # We are at the end of the stream. Process whatever else is queued.
         for stream_name, batch in stream_batches.items():
             if batch:
                 record_batch = pa.Table.from_pylist(batch)
                 self._process_batch(stream_name, record_batch)
 
+        # Finalize any pending batches
         for stream_name in list(self._pending_batches.keys()):
             self._finalize_batches(stream_name)
 
