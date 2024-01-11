@@ -53,7 +53,7 @@ class RequestOptionsProvider:
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Union[Mapping, str]]:
+    ) -> Optional[Union[Mapping[str, Any], str]]:
         """
         Specifies how to populate the body of the request with a non-JSON payload.
 
@@ -71,7 +71,7 @@ class RequestOptionsProvider:
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
+    ) -> Optional[Mapping[str, Any]]:
         """
         Specifies how to populate the body of the request with a JSON payload.
 

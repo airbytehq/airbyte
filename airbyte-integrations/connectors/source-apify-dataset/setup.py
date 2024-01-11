@@ -20,4 +20,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        "console_scripts": [
+            "source-apify-dataset=source_apify_dataset.run:run",
+        ],
+    },
 )

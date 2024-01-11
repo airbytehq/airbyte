@@ -116,15 +116,14 @@ test_stream_facade_single_stream = (
     .set_expected_logs(
         {
             "read": [
-                {"level": "INFO", "message": "Starting syncing StreamFacadeSource"},
+                {"level": "INFO", "message": "Starting syncing"},
                 {"level": "INFO", "message": "Marking stream stream1 as STARTED"},
                 {"level": "INFO", "message": "Syncing stream: stream1"},
                 {"level": "INFO", "message": "Marking stream stream1 as RUNNING"},
                 {"level": "INFO", "message": "Read 2 records from stream1 stream"},
                 {"level": "INFO", "message": "Marking stream stream1 as STOPPED"},
                 {"level": "INFO", "message": "Finished syncing stream1"},
-                {"level": "INFO", "message": "StreamFacadeSource runtimes"},
-                {"level": "INFO", "message": "Finished syncing StreamFacadeSource"},
+                {"level": "INFO", "message": "Finished syncing"},
             ]
         }
     )
@@ -358,10 +357,10 @@ test_incremental_stream_with_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 1}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 1}], "state_type": "date-range", "legacy": {}}},
+            {"stream1": {'cursor_field': 1}},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 2}], "state_type": "date-range", "legacy": {}}},
+            {"stream1": {"cursor_field": 2}},
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -403,7 +402,7 @@ test_incremental_stream_without_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 3}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 3}], "state_type": "date-range", "legacy": {}}},
+            {"stream1": {"cursor_field": 3}},
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})

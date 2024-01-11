@@ -1,0 +1,128 @@
+name: Connector Ops CI - Airbyte CI Release
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    paths:
+      - "airbyte-ci/connectors/pipelines/**"
+  workflow_dispatch:
+
+env:
+  DEV_GCS_BUCKET_NAME: dev-airbyte-cloud-connector-metadata-service
+  PROD_GCS_BUCKET_NAME: prod-airbyte-cloud-connector-metadata-service
+  BINARY_FILE_NAME: airbyte-ci
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu", "macos"]
+
+    steps:
+      - name: Checkout Airbyte
+        id: checkout_airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.sha }} # This is required to make sure that the same commit is checked out on all runners
+
+      - name: Get short SHA
+        id: get_short_sha
+        uses: benjlevesque/short-sha@v2.2
+
+      - name: Install Python
+        id: install_python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install Poetry
+        id: install_poetry
+        uses: snok/install-poetry@v1
+
+      - name: Install Dependencies
+        id: install_dependencies
+        working-directory: airbyte-ci/connectors/pipelines/
+        run: poetry install --with dev
+
+      - name: Build release
+        id: build_release
+        working-directory: airbyte-ci/connectors/pipelines/
+        run: poetry run poe build-release-binary ${{ env.BINARY_FILE_NAME }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: airbyte-ci-${{ matrix.os }}-${{ steps.get_short_sha.outputs.sha }}
+          path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
+
+      - name: Authenticate to Google Cloud Dev
+        id: auth_dev
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: "${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}"
+
+      - name: Upload pre-release to GCS dev bucket
+        id: upload_pre_release_to_gcs
+        if: github.ref != 'refs/heads/master'
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
+          destination: ${{ env.DEV_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/${{ steps.get_short_sha.outputs.sha }}
+          headers: |-
+            cache-control:public, max-age=10
+
+      - name: Print pre-release public url
+        id: print_pre_release_public_url
+        run: |
+          echo "https://storage.googleapis.com/${{ env.DEV_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/${{ steps.get_short_sha.outputs.sha }}/${{ env.BINARY_FILE_NAME }}"
+
+      # if master, upload per version and latest to prod bucket
+
+      - name: Set version from poetry version --short
+        id: set_version
+        if: github.ref == 'refs/heads/master'
+        working-directory: airbyte-ci/connectors/pipelines/
+        run: |
+          echo "::set-output name=version::$(poetry version --short)"
+
+      - name: Authenticate to Google Cloud Prod
+        id: auth_prod
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: "${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}"
+
+      - name: Upload version release to GCS prod bucket
+        id: upload_version_release_to_gcs
+        if: github.ref == 'refs/heads/master'
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
+          destination: ${{ env.PROD_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/${{ steps.set_version.outputs.version }}
+          headers: |-
+            cache-control:public, max-age=10
+
+      - name: Print release version public url
+        id: print_version_release_public_url
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo "https://storage.googleapis.com/${{ env.PROD_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/${{ steps.set_version.outputs.version }}/${{ env.BINARY_FILE_NAME }}"
+
+      - name: Upload latest release to GCS prod bucket
+        id: upload_latest_release_to_gcs
+        if: github.ref == 'refs/heads/master'
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
+          destination: ${{ env.PROD_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/latest
+          headers: |-
+            cache-control:public, max-age=10
+
+      - name: Print latest release public url
+        id: print_latest_release_public_url
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo "https://storage.googleapis.com/${{ env.PROD_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/latest/${{ env.BINARY_FILE_NAME }}"
