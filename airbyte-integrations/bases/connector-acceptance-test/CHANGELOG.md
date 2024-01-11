@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.3.1
+Extend TestSpec.test_oauth_flow_parameters test with OAuth is default option validation.
+
 ## 2.3.0
 Upgrade to Dagger 0.9.5
 
