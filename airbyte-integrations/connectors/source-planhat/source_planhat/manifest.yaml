@@ -233,16 +233,4 @@ check:
   type: CheckStream
   stream_names:
     - "companies"
-    - "conversations"
-    - "custom_fields"
     - "endusers"
-    - "invoices"
-    - "issues"
-    - "licenses"
-    - "nps"
-    - "opportunities"
-    - "objectives"
-    - "sales"
-    - "tasks"
-    - "tickets"
-    - "users"
