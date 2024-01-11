@@ -72,8 +72,7 @@ ignore = [
 ]
 fixable = ["ALL"]
 unfixable = []
-line-length = 140 # TODO: Reduce to 88 or 100 once `airbyte-ci` can respect nested config.
-                  # Ruff supports nested configs, but `airbyte-ci` still uses Black, which does not.
+line-length = 100
 extend-exclude = ["docs", "test", "tests"]
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
