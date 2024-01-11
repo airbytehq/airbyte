@@ -45,10 +45,6 @@ import org.slf4j.LoggerFactory;
 @Slf4j
 public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
-  {
-    LOGGER.info("dumb change to maybe bust cache?");
-  }
-
   private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStreamConsumer.class);
 
   private final OnStartFunction onStart;

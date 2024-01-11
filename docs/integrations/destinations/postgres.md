@@ -170,6 +170,7 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.5.4   | 2024-01-11 | [34177](https://github.com/airbytehq/airbyte/pull/34177)   | Add code for DV2 beta (no user-visible changes)                                                     |
 | 0.5.3   | 2024-01-10 | [34135](https://github.com/airbytehq/airbyte/pull/34135)   | Use published CDK missed in previous release                                                        |
 | 0.5.2   | 2024-01-08 | [33875](https://github.com/airbytehq/airbyte/pull/33875)   | Update CDK to get Tunnel heartbeats feature                                                         |
 | 0.5.1   | 2024-01-04 | [33873](https://github.com/airbytehq/airbyte/pull/33873)   | Install normalization to enable DV2 beta                                                            |

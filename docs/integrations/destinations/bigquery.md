@@ -210,6 +210,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.3.30  | 2024-01-11 | [34177](https://github.com/airbytehq/airbyte/pull/34177)   | Update to java CDK 0.13.0 (no changes)                                                                                                                          |
 | 2.3.29  | 2024-01-09 | [34003](https://github.com/airbytehq/airbyte/pull/34003)   | Fix loading credentials from GCP Env                                                                                                                            |
 | 2.3.28  | 2024-01-08 | [34021](https://github.com/airbytehq/airbyte/pull/34021)   | Add idempotency ids in dummy insert for check call                                                                                                              |
 | 2.3.27  | 2024-01-05 | [\#33948](https://github.com/airbytehq/airbyte/pull/33948) | Skip retrieving initial table state when setup fails                                                                                                            |
