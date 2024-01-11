@@ -130,7 +130,7 @@ class FullRefreshTest(TestCase):
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         _given_events_availability_check(http_mocker)
         http_mocker.get(
-            _payment_methods_request().with_limit(1000).build(),
+            _payment_methods_request().with_limit(100).build(),
             _payment_methods_response().with_record(_a_payment_method()).with_record(_a_payment_method()).build(),
         )
 
