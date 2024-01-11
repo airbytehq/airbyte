@@ -19,7 +19,7 @@ def get_connector(
     pip_url: str | None = None,
     config: dict[str, Any] | None = None,
     use_local_install: bool = False,
-    install_if_missing: bool = False,
+    install_if_missing: bool = True,
 ):
     """
     Get a connector by name and version.
