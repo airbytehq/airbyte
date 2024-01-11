@@ -684,7 +684,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
         .withCursor("5")
         .withCursorRecordCount(1L);
 
-    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
+    expectedMessages.addAll(createExpectedTestMessages(List.of(state), 2));
     return expectedMessages;
   }
 
