@@ -68,15 +68,4 @@ class SnowflakeSQLCache(SQLCacheBase):
 
         TODO: Override the base implementation to use the COPY command.
         """
-        table_name = self._create_table_for_loading(stream_name, batch_id)
-        for file_path in files:
-            with pa.parquet.ParquetFile(file_path) as pf:
-                record_batch = pf.read()
-                record_batch.to_pandas().to_sql(
-                    table_name,
-                    self.get_sql_alchemy_url(),
-                    if_exists="replace",
-                    index=False,
-                )
-
-        return table_name
+        super()._write_files_to_new_table(files, stream_name, batch_id)

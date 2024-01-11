@@ -581,15 +581,19 @@ class SQLCacheBase(RecordProcessor):
                 record_batch = pf.read()
                 dataframe = record_batch.to_pandas()
 
-                # TODO: Add back metadata columns (this breaks tests)
-                # dataframe["_airbyte_loaded_at"] = str(pd.Timestamp.now())
+                # Pandas will auto-create the table if it doesn't exist, which we don't want.
+                if not self._table_exists(temp_table_name):
+                    raise RuntimeError(
+                        f"Table {temp_table_name} does not exist after creation."
+                    )
 
                 dataframe.to_sql(
                     temp_table_name,
                     self.get_sql_alchemy_url(),
                     schema=self.config.schema_name,
-                    if_exists="replace",
+                    if_exists="append",
                     index=False,
+                    dtype=self._get_sql_column_definitions(stream_name),
                 )
         return temp_table_name
 
