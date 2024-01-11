@@ -206,7 +206,7 @@ class SourceGoogleAds(AbstractSource):
                     query = IncrementalCustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
 
                 query = query.set_limit(1)
-                response = google_api.send_request(str(query), customer_id=customer.id)
+                response = google_api.send_request(str(query), customer_id=customer.id, login_customer_id=customer.login_customer_id)
                 # iterate over the response otherwise exceptions will not be raised!
                 for _ in response:
                     pass
