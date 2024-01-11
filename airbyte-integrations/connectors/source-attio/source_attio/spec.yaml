@@ -4,20 +4,13 @@ connectionSpecification:
   title: Attio Spec
   type: object
   required:
-    - credentials
+    - access_token
   properties:
-    credentials:
-      title: Authentication
-      description: Choose how to authenticate with Attio.
-      type: object
-      oneOf:
-        - type: object
-          title: API Key
-          properties:
-            api_key:
-              type: string
-              description: Your Attio API Key
-              airbyte_secret: true
+    access_token:
+      title: Access Token
+      type: string
+      description: Your Attio access token
+      airbyte_secret: true
 
 
 
