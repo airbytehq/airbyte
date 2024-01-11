@@ -808,7 +808,11 @@ class InventoryItem(ShopifyBulkQuery):
         """
 
         # resolve `cost` to root lvl as `number`
-        record["cost"] = float(record.get("unitCost", {}).get("cost"))
+        unit_cost = record.get("unitCost", {})
+        if unit_cost:
+            record["cost"] = float(unit_cost.get("cost"))
+        else:
+            record["cost"] = None
         # clean up
         record.pop("unitCost", None)
         # add empty `country_harmonized_system_codes` array, if missing for record

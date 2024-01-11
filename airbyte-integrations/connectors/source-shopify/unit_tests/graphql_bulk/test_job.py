@@ -17,12 +17,20 @@ from source_shopify.streams.streams import (
 )
 
 
-def test_get_errors_from_response(requests_mock, bulk_error, auth_config) -> None:
+@pytest.mark.parametrize(
+    "bulk_job_response, expected_len",
+    [
+        ("bulk_error", 1),
+        ("bulk_unknown_error", 1),
+        ("bulk_no_errors", 0),        
+    ],
+)
+def test_get_errors_from_response(request, requests_mock, bulk_job_response, expected_len, auth_config) -> None:
     stream = MetafieldOrders(auth_config)
-    requests_mock.get(stream.graphql_path, json=bulk_error)
+    requests_mock.get(stream.graphql_path, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.graphql_path)
     test_errors = stream.bulk_job.get_errors_from_response(test_response)
-    assert test_errors == bulk_error.get("data").get("bulkOperationRunQuery").get("userErrors")
+    assert len(test_errors) == expected_len
 
 
 @pytest.mark.parametrize(
@@ -30,13 +38,15 @@ def test_get_errors_from_response(requests_mock, bulk_error, auth_config) -> Non
     [
         ("bulk_error_with_concurrent_job", True),
         ("bulk_successful_response", False),
+        ("bulk_error", False),
     ],
 )
 def test_has_running_concurrent_job(request, requests_mock, bulk_job_response, auth_config, expected) -> None:
     stream = MetafieldOrders(auth_config)
     requests_mock.get(stream.graphql_path, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.graphql_path)
-    assert stream.bulk_job.has_running_concurrent_job(test_response) == expected
+    test_errors = stream.bulk_job.get_errors_from_response(test_response)
+    assert stream.bulk_job.has_running_concurrent_job(test_errors) == expected
 
 
 @pytest.mark.parametrize(
@@ -49,14 +59,19 @@ def test_job_check_for_errors(request, requests_mock, bulk_job_response, auth_co
     stream = MetafieldOrders(auth_config)
     requests_mock.get(stream.graphql_path, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.graphql_path)
+    test_errors = stream.bulk_job.get_errors_from_response(test_response)
     with pytest.raises(ShopifyBulkExceptions.BulkJobError) as error:
-        stream.bulk_job.job_check_for_errors(test_response)
+        stream.bulk_job.job_check_for_errors(test_errors)
     assert expected in repr(error.value)
 
 
 @pytest.mark.parametrize(
     "bulk_job_response, expected",
-    [("bulk_successful_response", "gid://shopify/BulkOperation/4046733967549"), ("bulk_error", None)],
+    [
+        ("bulk_successful_response", "gid://shopify/BulkOperation/4046733967549"), 
+        ("bulk_error", None),
+        ("bulk_successful_response_with_no_id", None),
+    ],
 )
 def test_job_get_id(request, requests_mock, bulk_job_response, auth_config, expected) -> None:
     stream = MetafieldOrders(auth_config)
@@ -94,34 +109,42 @@ def test_job_create(request, requests_mock, bulk_job_response, auth_config, erro
 
 
 @pytest.mark.parametrize(
-    "job_response, error_type, expected",
+    "job_response, error_type, is_test, should_mock_id, expected",
     [
         (
             "bulk_job_completed_response",
             None,
+            False,
             'https://some_url?response-content-disposition=attachment;+filename="bulk-123456789.jsonl";+filename*=UTF-8'
             "bulk-123456789.jsonl&response-content-type=application/jsonl",
         ),
-        ("bulk_job_failed_response", ShopifyBulkExceptions.BulkJobFailed, "exited with FAILED"),
-        ("bulk_job_timeout_response", ShopifyBulkExceptions.BulkJobTimout, "exited with TIMEOUT"),
-        ("bulk_job_access_denied_response", ShopifyBulkExceptions.BulkJobAccessDenied, "exited with ACCESS_DENIED"),
+        ("bulk_job_failed_response", ShopifyBulkExceptions.BulkJobFailed, False, "exited with FAILED"),
+        ("bulk_job_timeout_response", ShopifyBulkExceptions.BulkJobTimout, False, "exited with TIMEOUT"),
+        ("bulk_job_access_denied_response", ShopifyBulkExceptions.BulkJobAccessDenied, False, "exited with ACCESS_DENIED"),
+        # is_test should be set to `True` to exit from the while loop in `job_check_status()` 
+        ("bulk_job_running_response", None, True, None),
+        ("bulk_job_running_response_without_id", None, True, None),
     ],
 )
-def test_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
+def test_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, is_test, expected) -> None:
     stream = MetafieldOrders(auth_config)
+    # modify the sleep time for the test
+    stream.bulk_job.job_check_interval_sec = 1
+    is_test = is_test if is_test else False
     # get job_id from FIXTURE
     job_id = request.getfixturevalue(job_response).get("data").get("node").get("id")
     # patching the method to get the right ID checks
-    mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkJob.job_get_id", value=job_id)
+    if job_id:
+        mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkJob.job_get_id", value=job_id)
     # mocking the response for STATUS CHECKS
     requests_mock.post(stream.graphql_path, json=request.getfixturevalue(job_response))
     test_job_status_response = requests.post(stream.graphql_path)
     if error_type:
         with pytest.raises(error_type) as error:
-            stream.bulk_job.job_check(stream.graphql_path, test_job_status_response)
+            stream.bulk_job.job_check(stream.graphql_path, test_job_status_response, is_test)
         assert expected in repr(error.value)
     else:
-        result = stream.bulk_job.job_check(stream.graphql_path, test_job_status_response)
+        result = stream.bulk_job.job_check(stream.graphql_path, test_job_status_response, is_test)
         assert expected == result
 
 

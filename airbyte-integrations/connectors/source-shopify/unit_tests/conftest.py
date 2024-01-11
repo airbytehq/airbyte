@@ -4,6 +4,7 @@
 
 import os
 from json import dumps
+from typing import Any
 
 import pytest
 import requests
@@ -60,7 +61,7 @@ def response_with_bad_json():
 
 
 @pytest.fixture
-def bulk_error():
+def bulk_error() -> dict[str, Any]:
     return {
         "data": {
             "bulkOperationRunQuery": {
@@ -85,6 +86,32 @@ def bulk_error():
             }
         },
     }
+    
+@pytest.fixture
+def bulk_unknown_error() -> dict[str, Any]:
+    return {
+        "errors": [
+            {
+                "message": "something wrong with the job",
+            },
+        ],
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 10,
+                "actualQueryCost": 10,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 990,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+    
+
+@pytest.fixture
+def bulk_no_errors() -> dict[str, Any]:
+    return {}
 
 
 @pytest.fixture
@@ -127,6 +154,31 @@ def bulk_successful_response():
                 "bulkOperation": {
                     "id": "gid://shopify/BulkOperation/4046733967549",
                     "status": "CREATED",
+                },
+                "userErrors": [],
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 10,
+                "actualQueryCost": 10,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 990,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+    
+    
+@pytest.fixture
+def bulk_successful_response_with_no_id():
+    return {
+        "data": {
+            "bulkOperationRunQuery": {
+                "bulkOperation": {
+                    "status": "RUNNING",
                 },
                 "userErrors": [],
             }
@@ -263,6 +315,62 @@ def bulk_job_timeout_response():
             "node": {
                 "id": "gid://shopify/BulkOperation/4047052112061",
                 "status": "TIMEOUT",
+                "errorCode": None,
+                "objectCount": "0",
+                "fileSize": None,
+                "url": None,
+                "partialDataUrl": None,
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 999,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+    
+    
+@pytest.fixture
+def bulk_job_running_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/4047052112061",
+                "status": "RUNNING",
+                "errorCode": None,
+                "objectCount": "0",
+                "fileSize": None,
+                "url": None,
+                "partialDataUrl": None,
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 999,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+    
+    
+@pytest.fixture
+def bulk_job_running_response_without_id():
+    return {
+        "data": {
+            "node": {
+                # "id": "gid://shopify/BulkOperation/4047052112061",
+                "status": "RUNNING",
                 "errorCode": None,
                 "objectCount": "0",
                 "fileSize": None,

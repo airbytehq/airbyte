@@ -5,7 +5,7 @@
 
 from io import TextIOWrapper
 from json import loads
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from .query import ShopifyBulkQuery
 from .tools import END_OF_FILE, BulkTools
@@ -16,32 +16,29 @@ class ShopifyBulkRecord:
         self.composition = query.record_composition
         self.record_process_components = query.record_process_components
         self.components: List[str] = self.composition.get("record_components", []) if self.composition else []
-        self.buffer: List[Mapping[str, Any]] = []
+        self.buffer: List[MutableMapping[str, Any]] = []
         self.tools: BulkTools = BulkTools()
 
     @staticmethod
-    def check_type(record: Optional[Mapping[str, Any]] = None, types: Optional[Union[List[str], str]] = None) -> bool:
-        if record:
-            record_type = record.get("__typename")
-            if isinstance(types, list):
-                return any(record_type == t for t in types)
-            else:
-                return record_type == types
+    def check_type(record: Mapping[str, Any], types: Union[List[str], str]) -> bool:
+        record_type = record.get("__typename")
+        if isinstance(types, list):
+            return any(record_type == t for t in types)
         else:
-            return False
+            return record_type == types
 
-    def record_new(self, record: Mapping[str, Any]) -> None:
+    def record_new(self, record: MutableMapping[str, Any]) -> None:
         record = self.component_prepare(record)
         record.pop("__typename")
         self.buffer.append(record)
 
-    def record_new_component(self, record: Mapping[str, Any]) -> None:
+    def record_new_component(self, record: MutableMapping[str, Any]) -> None:
         component = record.get("__typename")
         record.pop("__typename")
-        # add compponent to it's placeholder in the components list
+        # add component to its placeholder in the components list
         self.buffer[-1]["record_components"][component].append(record)
 
-    def component_prepare(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def component_prepare(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         if self.components:
             record["record_components"] = {}
             for component in self.components:
@@ -58,7 +55,7 @@ class ShopifyBulkRecord:
             # clean the buffer
             self.buffer.clear()
 
-    def record_compose(self, record: Mapping[str, Any]) -> Optional[Iterable[Mapping[str, Any]]]:
+    def record_compose(self, record: Mapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
         """
         Step 1: register the new record by it's `__typename`
         Step 2: check for `components` by their `__typename` and add to the placeholder
@@ -74,7 +71,7 @@ class ShopifyBulkRecord:
         elif self.check_type(record, self.components):
             self.record_new_component(record)
 
-    def process_line(self, jsonl_file: TextIOWrapper) -> Iterable[Mapping[str, Any]]:
+    def process_line(self, jsonl_file: TextIOWrapper) -> Iterable[MutableMapping[str, Any]]:
         # process the json lines
         for line in jsonl_file:
             # we exit from the loop when receive <end_of_file> (file ends)
@@ -86,7 +83,7 @@ class ShopifyBulkRecord:
         # emit what's left in the buffer, typically last record
         yield from self.buffer_flush()
 
-    def record_resolve_id(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def record_resolve_id(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         The ids are fetched in the format of: " gid://shopify/Order/<Id> "
         Input:
@@ -108,7 +105,7 @@ class ShopifyBulkRecord:
         elif isinstance(id, int):
             return record
 
-    def produce_records(self, filename: str) -> Iterable[Mapping[str, Any]]:
+    def produce_records(self, filename: str) -> Iterable[MutableMapping[str, Any]]:
         """
         Read the JSONL content saved from `job.job_retrieve_result()` line-by-line to avoid OOM.
         The filename example: `bulk-4039263649981.jsonl`,

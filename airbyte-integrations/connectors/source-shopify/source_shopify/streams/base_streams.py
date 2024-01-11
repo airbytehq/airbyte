@@ -652,7 +652,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             end = pdm.now()
             while start < end:
                 # check if we reached the max attempts retry with concurent BULK job.
-                if self.bulk_job.concurrent_max_attempt_reached:
+                if self.bulk_job.has_reached_max_concurrency_attempt():
                     # exit gracefully from the sync
                     return []
                 else:
