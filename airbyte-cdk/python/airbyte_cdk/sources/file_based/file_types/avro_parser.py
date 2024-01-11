@@ -157,8 +157,8 @@ class AvroParser(FileTypeParser):
                         record_field: self._to_output_value(avro_format, schema_field_name_to_type[record_field], record[record_field])
                         for record_field, record_value in schema_field_name_to_type.items()
                     }
-        except Exception:
-            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no)
+        except Exception as exc:
+            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no) from exc
 
     @property
     def file_read_mode(self) -> FileReadMode:
