@@ -231,7 +231,7 @@ def test_str2unixtime():
 def test_check_start_time_param():
     expected = 1626936955
     start_time = calendar.timegm(pendulum.parse(DATETIME_STR).utctimetuple())
-    output = SourceZendeskIncrementalExportStream.check_start_time_param(start_time)
+    output = SourceZendeskIncrementalExportStream.validate_start_time(start_time)
     assert output == expected
 
 
@@ -245,7 +245,7 @@ def test_check_start_time_param():
     ids=["state present", "state is None"],
 )
 def test_check_stream_state(stream_state, expected):
-    result = Tickets(**STREAM_ARGS).check_stream_state(stream_state)
+    result = Tickets(**STREAM_ARGS).get_stream_state_value(stream_state)
     assert result == expected
 
 
@@ -474,7 +474,7 @@ class TestSourceZendeskSupportStream:
         [
             (Macros, None),
             (Posts, None),
-            (Organizations, None),
+            (Organizations, {}),
             (Groups, None),
             (TicketFields, None),
         ],
@@ -703,7 +703,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
     )
     def test_check_stream_state(self, stream_cls, expected):
         stream = stream_cls(**STREAM_ARGS)
-        result = stream.check_stream_state()
+        result = stream.get_stream_state_value()
         assert result == expected
 
     @pytest.mark.parametrize(
@@ -750,7 +750,7 @@ class TestSourceZendeskIncrementalExportStream:
     def test_check_start_time_param(self, stream_cls):
         expected = int(dict(parse_qsl(urlparse(STREAM_URL).query)).get("start_time"))
         stream = stream_cls(**STREAM_ARGS)
-        result = stream.check_start_time_param(expected)
+        result = stream.validate_start_time(expected)
         assert result == expected
 
     @pytest.mark.parametrize(
@@ -770,7 +770,7 @@ class TestSourceZendeskIncrementalExportStream:
         requests_mock.get(STREAM_URL, json={stream_name: {}})
         test_response = requests.get(STREAM_URL)
         output = stream.next_page_token(test_response)
-        assert output is None
+        assert output == {}
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -1098,6 +1098,16 @@ def test_read_non_json_error(requests_mock, caplog):
     stream = Tickets(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
     expected_message = (
         "Skipping stream tickets: Non-JSON response received. Please ensure that you have enough permissions for this stream."
+    )
+    read_full_refresh(stream)
+    assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
+
+
+def test_read_ticket_audits_504_error(requests_mock, caplog):
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/ticket_audits", status_code=504, text="upstream request timeout")
+    stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    expected_message = (
+        "Skipping stream `ticket_audits`. Timed out waiting for response: upstream request timeout..."
     )
     read_full_refresh(stream)
     assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")

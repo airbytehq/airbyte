@@ -23,13 +23,13 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public String createSchema(final String schema) {
-    return "CREATE SCHEMA " + schema;
+  public Sql createSchema(final String schema) {
+    return Sql.of("CREATE SCHEMA " + schema);
   }
 
   @Override
-  public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
-    return "CREATE TABLE " + stream.id().finalTableId("", suffix);
+  public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
+    return Sql.of("CREATE TABLE " + stream.id().finalTableId("", suffix));
   }
 
   @Override
@@ -38,34 +38,34 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public String updateTable(final StreamConfig stream,
-                            final String finalSuffix,
-                            final Optional<Instant> minRawTimestamp,
-                            final boolean useExpensiveSaferCasting) {
+  public Sql updateTable(final StreamConfig stream,
+                         final String finalSuffix,
+                         final Optional<Instant> minRawTimestamp,
+                         final boolean useExpensiveSaferCasting) {
     final String timestampFilter = minRawTimestamp
         .map(timestamp -> " WHERE extracted_at > " + timestamp)
         .orElse("");
     final String casting = useExpensiveSaferCasting ? " WITH" : " WITHOUT" + " SAFER CASTING";
-    return "UPDATE TABLE " + stream.id().finalTableId("", finalSuffix) + casting + timestampFilter;
+    return Sql.of("UPDATE TABLE " + stream.id().finalTableId("", finalSuffix) + casting + timestampFilter);
   }
 
   @Override
-  public String overwriteFinalTable(final StreamId stream, final String finalSuffix) {
-    return "OVERWRITE TABLE " + stream.finalTableId("") + " FROM " + stream.finalTableId("", finalSuffix);
+  public Sql overwriteFinalTable(final StreamId stream, final String finalSuffix) {
+    return Sql.of("OVERWRITE TABLE " + stream.finalTableId("") + " FROM " + stream.finalTableId("", finalSuffix));
   }
 
   @Override
-  public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
-    return "MIGRATE TABLE " + String.join(".", namespace, tableName) + " TO " + streamId.rawTableId("");
+  public Sql migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
+    return Sql.of("MIGRATE TABLE " + String.join(".", namespace, tableName) + " TO " + streamId.rawTableId(""));
   }
 
   @Override
-  public String prepareTablesForSoftReset(final StreamConfig stream) {
-    return "PREPARE " + String.join(".", stream.id().originalNamespace(), stream.id().originalName()) + " FOR SOFT RESET";
+  public Sql prepareTablesForSoftReset(final StreamConfig stream) {
+    return Sql.of("PREPARE " + String.join(".", stream.id().originalNamespace(), stream.id().originalName()) + " FOR SOFT RESET");
   }
 
   @Override
-  public String clearLoadedAt(final StreamId streamId) {
+  public Sql clearLoadedAt(final StreamId streamId) {
     return null;
   }
 

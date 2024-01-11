@@ -20,9 +20,11 @@ import com.google.cloud.bigquery.TableId;
 import com.google.common.collect.Streams;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.math.BigInteger;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -98,67 +100,72 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   }
 
   @Override
-  public void execute(final String sql) throws InterruptedException {
-    if ("".equals(sql)) {
+  public void execute(final Sql sql) throws InterruptedException {
+    final List<String> transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT TRANSACTION");
+    if (transactions.isEmpty()) {
       return;
     }
     final UUID queryId = UUID.randomUUID();
-    LOGGER.debug("Executing sql {}: {}", queryId, sql);
+    for (final String transaction : transactions) {
+      final UUID transactionId = UUID.randomUUID();
+      LOGGER.debug("Executing sql {}-{}: {}", queryId, transactionId, transaction);
 
-    /*
-     * If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery
-     * doesn't do a good job of inferring the query location. Pass it in explicitly.
-     */
-    Job job = bq.create(JobInfo.of(JobId.newBuilder().setLocation(datasetLocation).build(), QueryJobConfiguration.newBuilder(sql).build()));
-    AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
-    // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
-    while (!JobStatus.State.DONE.equals(job.getStatus().getState())) {
-      Thread.sleep(1000L);
-      job = job.reload();
-    }
-    if (job.getStatus().getError() != null) {
-      throw new BigQueryException(Streams.concat(
-          Stream.of(job.getStatus().getError()),
-          job.getStatus().getExecutionErrors().stream()).toList());
-    }
+      /*
+       * If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery
+       * doesn't do a good job of inferring the query location. Pass it in explicitly.
+       */
+      Job job = bq.create(JobInfo.of(JobId.newBuilder().setLocation(datasetLocation).build(), QueryJobConfiguration.newBuilder(transaction).build()));
+      AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
+      // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
+      while (!JobStatus.State.DONE.equals(job.getStatus().getState())) {
+        Thread.sleep(1000L);
+        job = job.reload();
+      }
+      if (job.getStatus().getError() != null) {
+        throw new BigQueryException(Streams.concat(
+            Stream.of(job.getStatus().getError()),
+            job.getStatus().getExecutionErrors().stream()).toList());
+      }
 
-    final JobStatistics.QueryStatistics statistics = job.getStatistics();
-    LOGGER.debug("Root-level job {} completed in {} ms; processed {} bytes; billed for {} bytes",
-        queryId,
-        statistics.getEndTime() - statistics.getStartTime(),
-        statistics.getTotalBytesProcessed(),
-        statistics.getTotalBytesBilled());
+      final JobStatistics.QueryStatistics statistics = job.getStatistics();
+      LOGGER.debug("Root-level job {}-{} completed in {} ms; processed {} bytes; billed for {} bytes",
+          queryId,
+          transactionId,
+          statistics.getEndTime() - statistics.getStartTime(),
+          statistics.getTotalBytesProcessed(),
+          statistics.getTotalBytesBilled());
 
-    // SQL transactions can spawn child jobs, which are billed individually. Log their stats too.
-    if (statistics.getNumChildJobs() != null) {
-      // There isn't (afaict) anything resembling job.getChildJobs(), so we have to ask bq for them
-      bq.listJobs(BigQuery.JobListOption.parentJobId(job.getJobId().getJob())).streamAll()
-          .sorted(Comparator.comparing(childJob -> childJob.getStatistics().getEndTime()))
-          .forEach(childJob -> {
-            final JobConfiguration configuration = childJob.getConfiguration();
-            if (configuration instanceof final QueryJobConfiguration qc) {
-              final JobStatistics.QueryStatistics childQueryStats = childJob.getStatistics();
-              String truncatedQuery = qc.getQuery()
-                  .replaceAll("\n", " ")
-                  .replaceAll(" +", " ")
-                  .substring(0, Math.min(100, qc.getQuery().length()));
-              if (!truncatedQuery.equals(qc.getQuery())) {
-                truncatedQuery += "...";
+      // SQL transactions can spawn child jobs, which are billed individually. Log their stats too.
+      if (statistics.getNumChildJobs() != null) {
+        // There isn't (afaict) anything resembling job.getChildJobs(), so we have to ask bq for them
+        bq.listJobs(BigQuery.JobListOption.parentJobId(job.getJobId().getJob())).streamAll()
+            .sorted(Comparator.comparing(childJob -> childJob.getStatistics().getEndTime()))
+            .forEach(childJob -> {
+              final JobConfiguration configuration = childJob.getConfiguration();
+              if (configuration instanceof final QueryJobConfiguration qc) {
+                final JobStatistics.QueryStatistics childQueryStats = childJob.getStatistics();
+                String truncatedQuery = qc.getQuery()
+                    .replaceAll("\n", " ")
+                    .replaceAll(" +", " ")
+                    .substring(0, Math.min(100, qc.getQuery().length()));
+                if (!truncatedQuery.equals(qc.getQuery())) {
+                  truncatedQuery += "...";
+                }
+                LOGGER.debug("Child sql {} completed in {} ms; processed {} bytes; billed for {} bytes",
+                    truncatedQuery,
+                    childQueryStats.getEndTime() - childQueryStats.getStartTime(),
+                    childQueryStats.getTotalBytesProcessed(),
+                    childQueryStats.getTotalBytesBilled());
+              } else {
+                // other job types are extract/copy/load
+                // we're probably not using them, but handle just in case?
+                final JobStatistics childJobStats = childJob.getStatistics();
+                LOGGER.debug("Non-query child job ({}) completed in {} ms",
+                    configuration.getType(),
+                    childJobStats.getEndTime() - childJobStats.getStartTime());
               }
-              LOGGER.debug("Child sql {} completed in {} ms; processed {} bytes; billed for {} bytes",
-                  truncatedQuery,
-                  childQueryStats.getEndTime() - childQueryStats.getStartTime(),
-                  childQueryStats.getTotalBytesProcessed(),
-                  childQueryStats.getTotalBytesBilled());
-            } else {
-              // other job types are extract/copy/load
-              // we're probably not using them, but handle just in case?
-              final JobStatistics childJobStats = childJob.getStatistics();
-              LOGGER.debug("Non-query child job ({}) completed in {} ms",
-                  configuration.getType(),
-                  childJobStats.getEndTime() - childJobStats.getStartTime());
-            }
-          });
+            });
+      }
     }
   }
 

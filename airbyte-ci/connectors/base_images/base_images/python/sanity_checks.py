@@ -76,11 +76,7 @@ async def check_python_image_has_expected_env_vars(python_image_container: dagge
         "PATH",
         "LANG",
         "GPG_KEY",
-        "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL",
         "PYTHON_SETUPTOOLS_VERSION",
-        "OTEL_TRACES_EXPORTER",
-        "OTEL_TRACE_PARENT",
-        "TRACEPARENT",
     }
     # It's not suboptimal to call printenv multiple times because the printenv output is cached.
     for expected_env_var in expected_env_vars:

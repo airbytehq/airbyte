@@ -26,6 +26,7 @@ from airbyte_cdk.utils import is_cloud_environment
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
@@ -236,9 +237,10 @@ def _init_internal_request_filter() -> None:
         try:
             is_private = _is_private_url(parsed_url.hostname, parsed_url.port)  # type: ignore [arg-type]
             if is_private:
-                raise ValueError(
-                    "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
-                    + "connectors only support requesting data from public API endpoints."
+                raise AirbyteTracedException(
+                    internal_message=f"Invalid URL endpoint: `{parsed_url.hostname!r}` belongs to a private network",
+                    failure_type=FailureType.config_error,
+                    message="Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source connectors only support requesting data from public API endpoints.",
                 )
         except socket.gaierror as exception:
             # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing

@@ -140,7 +140,7 @@ RESOURCES = {
 }
 
 SENSORS = [
-    registry_updated_sensor(job=generate_registry_reports, resources_def=RESOURCES),
+    registry_updated_sensor(job=generate_registry_reports, resources_def=REGISTRY_RESOURCE_TREE),
     new_gcs_blobs_sensor(
         job=generate_oss_registry,
         resources_def=REGISTRY_ENTRY_RESOURCE_TREE,

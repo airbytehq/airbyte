@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.58.5
+Handle private network exception as config error
+
+## 0.58.4
+Add POST method to HttpMocker
+
+## 0.58.3
+fix declarative oauth initialization
+
+## 0.58.2
+Integration tests: adding debug mode to improve logging
+
 ## 0.58.1
 Add schema normalization to declarative stream
 
