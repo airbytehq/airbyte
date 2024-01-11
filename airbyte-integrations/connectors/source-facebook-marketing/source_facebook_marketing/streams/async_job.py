@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -17,7 +17,10 @@ from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+from pendulum.duration import Duration
 from source_facebook_marketing.streams.common import retry_pattern
+
+from ..utils import validate_start_date
 
 logger = logging.getLogger("airbyte")
 
@@ -27,7 +30,7 @@ logger = logging.getLogger("airbyte")
 # Also, it does not happen while making a call to the API, but later - when parsing the result,
 # that's why a retry is added to `get_results()` instead of extending the existing retry of `api.call()` with `FacebookBadObjectError`.
 
-backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
 
 
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
@@ -187,10 +190,9 @@ class ParentAsyncJob(AsyncJob):
 class InsightAsyncJob(AsyncJob):
     """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
 
-    job_timeout = pendulum.duration(hours=1)
     page_size = 100
 
-    def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet, Ad], params: Mapping[str, Any], **kwargs):
+    def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet, Ad], params: Mapping[str, Any], job_timeout: Duration, **kwargs):
         """Initialize
 
         :param api: FB API
@@ -203,6 +205,7 @@ class InsightAsyncJob(AsyncJob):
             "since": self._interval.start.to_date_string(),
             "until": self._interval.end.to_date_string(),
         }
+        self._job_timeout = job_timeout
 
         self._edge_object = edge_object
         self._job: Optional[AdReportRun] = None
@@ -241,14 +244,20 @@ class InsightAsyncJob(AsyncJob):
         params = dict(copy.deepcopy(self._params))
         # get objects from attribution window as well (28 day + 1 current day)
         new_start = self._interval.start - pendulum.duration(days=28 + 1)
-        params.update(fields=[pk_name], level=level)
+        new_start = validate_start_date(new_start)
         params["time_range"].update(since=new_start.to_date_string())
+        params.update(fields=[pk_name], level=level)
         params.pop("time_increment")  # query all days
         result = self._edge_object.get_insights(params=params)
         ids = set(row[pk_name] for row in result)
         logger.info(f"Got {len(ids)} {pk_name}s for period {self._interval}: {ids}")
 
-        jobs = [InsightAsyncJob(api=self._api, edge_object=edge_class(pk), params=self._params, interval=self._interval) for pk in ids]
+        jobs = [
+            InsightAsyncJob(
+                api=self._api, edge_object=edge_class(pk), params=self._params, interval=self._interval, job_timeout=self._job_timeout
+            )
+            for pk in ids
+        ]
         return jobs
 
     def start(self):
@@ -332,8 +341,8 @@ class InsightAsyncJob(AsyncJob):
         percent = self._job["async_percent_completion"]
         logger.info(f"{self}: is {percent} complete ({job_status})")
 
-        if self.elapsed_time > self.job_timeout:
-            logger.info(f"{self}: run more than maximum allowed time {self.job_timeout}.")
+        if self.elapsed_time > self._job_timeout:
+            logger.info(f"{self}: run more than maximum allowed time {self._job_timeout}.")
             self._finish_time = pendulum.now()
             self._failed = True
             return True

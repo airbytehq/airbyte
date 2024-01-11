@@ -170,12 +170,23 @@ definitions:
         type: string
         enum:
           - ERROR
+          - ESTIMATE
+          - STREAM_STATUS
+          - ANALYTICS
       emitted_at:
         description: "the time in ms that the message was emitted"
         type: number
       error:
         description: "error trace message: the error object"
         "$ref": "#/definitions/AirbyteErrorTraceMessage"
+      estimate:
+        description: "Estimate trace message: a guess at how much data will be produced in this sync"
+        "$ref": "#/definitions/AirbyteEstimateTraceMessage"
+      stream_status:
+        description: "Stream status trace message:  the current status of a stream within a source"
+        "$ref": "#/definitions/AirbyteStreamStatusTraceMessage"
+      analytics:
+        "$ref": "#/definitions/AirbyteAnalyticsTraceMessage"
   AirbyteErrorTraceMessage:
     type: object
     additionalProperties: true
@@ -197,6 +208,9 @@ definitions:
         enum:
           - system_error
           - config_error
+      stream_descriptor:
+        description: "The stream associated with the error, if known (optional)"
+        "$ref": "#/definitions/StreamDescriptor"
   AirbyteConnectionStatus:
     type: object
     description: Airbyte connection status
@@ -260,6 +274,82 @@ definitions:
       namespace:
         description: Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.
         type: string
+  AirbyteAnalyticsTraceMessage:
+    type: object
+    additionalProperties: true
+    description:
+      "A message to communicate usage information about the connector which is not captured by regular sync analytics because it's specific to the connector internals.
+
+      This is useful to understand how the connector is used and how to improve it.
+      Each message is an event with a type and an optional payload value (both of them being strings). The event types should not be dynamically generated but defined statically.
+      The payload value is optional and can contain arbitrary strings.
+      "
+    examples:
+      - type: "sql-source-used-cursor-count-indexed"
+        value: "2"
+      - type: "mongodb-cluster-version"
+        value: "6.5"
+    required:
+      - type
+    properties:
+      type:
+        description: "The event type - should be a static string. Keep in mind that all strings are shared across all connectors."
+        type: string
+      value:
+        type: string
+        description: "The value of the event - can be an arbitrary string. In case the value is numeric, it should be converted to a string. Casting for analytics purposes can happen in the warehouse."
+  AirbyteStreamStatus:
+    type: string
+    description: >
+      The current status of a stream within the context of an executing synchronization job.
+    enum:
+      - STARTED # Stream has started executing, but no data read yet
+      - RUNNING # Stream has read its first byte/message
+      - COMPLETE # Stream has completed executing without interruption or error
+      - INCOMPLETE # Stream has stopped due to an interruption or error
+  AirbyteStreamStatusTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - stream_descriptor
+      - status
+    properties:
+      stream_descriptor:
+        description: "The stream associated with the status"
+        "$ref": "#/definitions/StreamDescriptor"
+      status:
+        description: "The current status of the stream"
+        "$ref": "#/definitions/AirbyteStreamStatus"
+  AirbyteEstimateTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - name
+      - type
+    properties:
+      name:
+        description: The name of the stream
+        type: string
+      type:
+        title: "estimate type" # this title is required to avoid python codegen conflicts with the "type" parameter in AirbyteMessage. See https://github.com/airbytehq/airbyte/pull/12581
+        description: >
+          Estimates are either per-stream (STREAM) or for the entire sync (SYNC).
+          STREAM is preferred, and requires the source to count how many records are about to be emitted per-stream (e.g. there will be 100 rows from this table emitted).
+          For the rare source which cannot tell which stream a record belongs to before reading (e.g. CDC databases), SYNC estimates can be emitted.
+          Sources should not emit both STREAM and SOURCE estimates within a sync.
+        type: string
+        enum:
+          - STREAM
+          - SYNC
+      namespace:
+        description: The namespace of the stream
+        type: string
+      row_estimate:
+        description: The estimated number of rows to be emitted by this sync for this stream
+        type: integer
+      byte_estimate:
+        description: The estimated number of bytes to be emitted by this sync for this stream
+        type: integer
   ConfiguredAirbyteCatalog:
     type: object
     additionalProperties: true
