@@ -38,6 +38,6 @@ This Source is capable of syncing the following core Streams:
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject               |
-| :------ | :--------- | :----------- | :-------------------- |
-| 0.1.0   | 2024-01-11 | []()         | 🎉 New Source: Planhat |
+| Version | Date       | Pull Request                                             | Subject               |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 0.1.0   | 2024-01-11 | [34143](https://github.com/airbytehq/airbyte/pull/34143) | 🎉 New Source: Planhat |
