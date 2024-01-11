@@ -1,0 +1,30 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Third Spec
+  type: object
+  required:
+    - api_key
+    - version
+    - plugin_id
+    - file_path
+    - url_base
+  properties:
+    url_base:
+      type: string
+      description: Base URL of this connector, It should end with /
+    api_key:
+      type: string
+      description: Bearer token (should remove 'Bearer ' from the token, only token require)
+      airbyte_secret: true
+    version:
+      type: string
+      description: API vresion
+      examples:
+        - "1.46"
+    plugin_id:
+      type: string
+      description: plugin_id
+    file_path:
+      type: string
+      description: file_path to download file, it will automatically deleted. It will be a temparay space(file path should end with '/')

@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "Name": {
+        "type": ["null", "string"]
+      },
+      "Filters": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "Name":{
+                  "type": "string"
+                },
+                "Type":{
+                  "type": "number"
+                },
+                "Description": {
+                    "type":["null", "string"]
+                },
+                "DefaultValue": {
+                    "type": ["null", "string"]
+                }
+            }
+        }
+      },
+      "Category": {
+          "type": "string"
+      },
+      "DataSetId": {
+          "type": "string"
+      },
+      "Description": {
+          "type": "string"
+      }
+    }
+  }
+  
