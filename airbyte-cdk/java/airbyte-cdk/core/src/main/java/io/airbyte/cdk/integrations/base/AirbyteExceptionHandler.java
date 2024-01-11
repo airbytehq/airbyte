@@ -139,12 +139,19 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   @VisibleForTesting
   static void addCommonStringsToDeinterpolate() {
     // Add some common strings to deinterpolate, regardless of what the connector is doing
+    STRINGS_TO_DEINTERPOLATE.add("airbyte");
+    STRINGS_TO_DEINTERPOLATE.add("config");
+    STRINGS_TO_DEINTERPOLATE.add("configuration");
     STRINGS_TO_DEINTERPOLATE.add("description");
+    STRINGS_TO_DEINTERPOLATE.add("email");
     STRINGS_TO_DEINTERPOLATE.add("id");
     STRINGS_TO_DEINTERPOLATE.add("location");
+    STRINGS_TO_DEINTERPOLATE.add("message");
     STRINGS_TO_DEINTERPOLATE.add("name");
+    STRINGS_TO_DEINTERPOLATE.add("state");
     STRINGS_TO_DEINTERPOLATE.add("status");
     STRINGS_TO_DEINTERPOLATE.add("type");
+    STRINGS_TO_DEINTERPOLATE.add("userEmail");
   }
 
 }

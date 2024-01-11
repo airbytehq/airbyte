@@ -1,7 +1,7 @@
-# Salesloft Source
+# Instagram Source
 
-This is the repository for the Salesloft source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/salesloft).
+This is the repository for the Instagram source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/instagram).
 
 ## Local development
 
@@ -30,12 +30,12 @@ If this is mumbo jumbo to you, don't worry about it, just put your deps in `setu
 should work as you expect.
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/salesloft)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_salesloft/spec.json` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/instagram)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_instagram/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source salesloft test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source instagram test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -52,23 +52,23 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 **Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
 ```bash
-airbyte-ci connectors --name source-salesloft build
+airbyte-ci connectors --name source-instagram build
 ```
 
-An image will be built with the tag `airbyte/source-salesloft:dev`.
+An image will be built with the tag `airbyte/source-instagram:dev`.
 
 **Via `docker build`:**
 ```bash
-docker build -t airbyte/source-salesloft:dev .
+docker build -t airbyte/source-instagram:dev .
 ```
 
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-salesloft:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-salesloft:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-salesloft:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-salesloft:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-instagram:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-instagram:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-instagram:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-instagram:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ## Testing

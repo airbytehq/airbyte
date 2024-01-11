@@ -12,4 +12,5 @@ include ':airbyte-cdk:java:airbyte-cdk:core'
 include ':airbyte-cdk:java:airbyte-cdk:db-sources'
 include ':airbyte-cdk:java:airbyte-cdk:db-destinations'
 include ':airbyte-cdk:java:airbyte-cdk:s3-destinations'
-include ':airbyte-cdk:java:airbyte-cdk:typing-deduping'
+// Leaving this out until we fully commit to moving this to the cdk
+//include ':airbyte-cdk:java:airbyte-cdk:typing-deduping'
