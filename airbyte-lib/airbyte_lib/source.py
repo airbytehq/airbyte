@@ -23,9 +23,9 @@ from airbyte_protocol.models import (
 )
 
 from airbyte_lib._executor import Executor
+from airbyte_lib._factories.cache_factories import get_default_cache
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.caches import SQLCacheBase
-from airbyte_lib.factories._cache_factories import get_default_cache
 from airbyte_lib.results import ReadResult
 
 
