@@ -103,10 +103,12 @@ Airbyte also needs to query Redshift's
 [SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for 
 metadata about the tables airbyte manages. 
 
-To set up permissions is to ensure that the `airbyte_user` has permissions to:
+To ensure the `airbyte_user` has the correction permissions to:
 - create schemas in your database
-- grant usage to any existing schemas
+- grant usage to any existing schemas you want Airbyte to use
 - grant select to the `svv_table_info` table
+
+You can execute the following SQL statements
 
 ```sql
 GRANT CREATE ON DATABASE database_name TO airbyte_user; -- add create schema permission

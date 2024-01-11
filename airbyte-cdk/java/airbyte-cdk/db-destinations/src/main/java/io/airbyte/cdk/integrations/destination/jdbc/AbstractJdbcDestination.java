@@ -115,6 +115,12 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
     }
   }
 
+  /**
+   * Specific Databases may have additional checks unique to them which they need to perform, override this method
+   * to add additional checks.
+   * @param database the database to run checks against
+   * @throws Exception
+   */
   protected void destinationSpecificTableOperations(final JdbcDatabase database) throws Exception {}
 
   /**
