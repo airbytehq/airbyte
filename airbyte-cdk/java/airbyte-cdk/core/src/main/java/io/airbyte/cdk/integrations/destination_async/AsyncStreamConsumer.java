@@ -161,7 +161,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
       getRecordCounter(message.getRecord().getStreamDescriptor()).incrementAndGet();
     }
-    bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
+    bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES, defaultNamespace);
   }
 
   /**

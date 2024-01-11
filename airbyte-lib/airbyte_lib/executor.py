@@ -38,6 +38,10 @@ class Executor(ABC):
     def install(self):
         pass
 
+    @abstractmethod
+    def uninstall(self):
+        pass
+
 
 @contextmanager
 def _stream_from_subprocess(args: List[str]) -> Generator[Iterable[str], None, None]:
@@ -108,6 +112,11 @@ class VenvExecutor(Executor):
         result = subprocess.run(args)
         if result.returncode != 0:
             raise Exception(f"Install process exited with code {result.returncode}")
+
+    def uninstall(self):
+        venv_name = self._get_venv_name()
+        if os.path.exists(venv_name):
+            self._run_subprocess_and_raise_on_failure(["rm", "-rf", venv_name])
 
     def install(self):
         venv_name = self._get_venv_name()
@@ -186,6 +195,9 @@ class PathExecutor(Executor):
 
     def install(self):
         raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")
+
+    def uninstall(self):
+        raise Exception(f"Connector {self.metadata.name} is installed manually and not managed by airbyte-lib - please remove it manually")
 
     def execute(self, args: List[str]) -> Iterable[str]:
         with _stream_from_subprocess([self.metadata.name] + args) as stream:
