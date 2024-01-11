@@ -34,6 +34,7 @@ from .streams import (
     CampaignLabel,
     ClickView,
     Customer,
+    CustomerClient,
     CustomerLabel,
     DisplayKeywordView,
     GeographicView,
@@ -46,6 +47,8 @@ from .streams import (
     UserLocationView,
 )
 from .utils import GAQL
+
+logger = logging.getLogger("airbyte")
 
 
 class SourceGoogleAds(AbstractSource):
@@ -65,6 +68,11 @@ class SourceGoogleAds(AbstractSource):
                     "https://developers.google.com/google-ads/api/fields/v15/query_validator"
                 )
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+
+        if "customer_id" in config:
+            config["customer_ids"] = config["customer_id"].split(",")
+            config.pop("customer_id")
+
         return config
 
     @staticmethod
@@ -73,10 +81,6 @@ class SourceGoogleAds(AbstractSource):
         # use_proto_plus is set to True, because setting to False returned wrong value types, which breaks the backward compatibility.
         # For more info read the related PR's description: https://github.com/airbytehq/airbyte/pull/9996
         credentials.update(use_proto_plus=True)
-
-        # https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid
-        if "login_customer_id" in config and config["login_customer_id"].strip():
-            credentials["login_customer_id"] = config["login_customer_id"]
         return credentials
 
     @staticmethod
@@ -98,12 +102,45 @@ class SourceGoogleAds(AbstractSource):
         )
         return incremental_stream_config
 
-    @staticmethod
-    def get_account_info(google_api: GoogleAds, config: Mapping[str, Any]) -> Iterable[Iterable[Mapping[str, Any]]]:
-        dummy_customers = [CustomerModel(id=_id) for _id in config["customer_id"].split(",")]
-        accounts_stream = ServiceAccounts(google_api, customers=dummy_customers)
-        for slice_ in accounts_stream.stream_slices():
-            yield accounts_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_)
+    def get_all_accounts(self, google_api: GoogleAds, customers: List[CustomerModel], customer_status_filter: List[str]) -> List[str]:
+        customer_clients_stream = CustomerClient(api=google_api, customers=customers, customer_status_filter=customer_status_filter)
+        for slice in customer_clients_stream.stream_slices():
+            for record in customer_clients_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
+                yield record
+
+    def _get_all_connected_accounts(
+        self, google_api: GoogleAds, customer_status_filter: List[str]
+    ) -> Iterable[Iterable[Mapping[str, Any]]]:
+        customer_ids = [customer_id for customer_id in google_api.get_accessible_accounts()]
+        dummy_customers = [CustomerModel(id=_id, login_customer_id=_id) for _id in customer_ids]
+
+        yield from self.get_all_accounts(google_api, dummy_customers, customer_status_filter)
+
+    def get_customers(self, google_api: GoogleAds, config: Mapping[str, Any]) -> List[CustomerModel]:
+        customer_status_filter = config.get("customer_status_filter", [])
+        accounts = self._get_all_connected_accounts(google_api, customer_status_filter)
+        customers = CustomerModel.from_accounts(accounts)
+
+        # filter duplicates as one customer can be accessible from mutiple connected accounts
+        unique_customers = []
+        seen_ids = set()
+        for customer in customers:
+            if customer.id in seen_ids:
+                continue
+            seen_ids.add(customer.id)
+            unique_customers.append(customer)
+        customers = unique_customers
+        customers_dict = {customer.id: customer for customer in customers}
+
+        # filter only selected accounts
+        if config.get("customer_ids"):
+            customers = []
+            for customer_id in config["customer_ids"]:
+                if customer_id not in customers_dict:
+                    logging.warning(f"Customer with id {customer_id} is not accessible. Skipping it.")
+                else:
+                    customers.append(customers_dict[customer_id])
+        return customers
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:
@@ -149,8 +186,9 @@ class SourceGoogleAds(AbstractSource):
         logger.info("Checking the config")
         google_api = GoogleAds(credentials=self.get_credentials(config))
 
-        accounts = self.get_account_info(google_api, config)
-        customers = CustomerModel.from_accounts(accounts)
+        customers = self.get_customers(google_api, config)
+        logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
+
         # Check custom query request validity by sending metric request with non-existent time window
         for customer in customers:
             for query in config.get("custom_queries_array", []):
@@ -168,7 +206,7 @@ class SourceGoogleAds(AbstractSource):
                     query = IncrementalCustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
 
                 query = query.set_limit(1)
-                response = google_api.send_request(str(query), customer_id=customer.id)
+                response = google_api.send_request(str(query), customer_id=customer.id, login_customer_id=customer.login_customer_id)
                 # iterate over the response otherwise exceptions will not be raised!
                 for _ in response:
                     pass
@@ -177,8 +215,10 @@ class SourceGoogleAds(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform(config)
         google_api = GoogleAds(credentials=self.get_credentials(config))
-        accounts = self.get_account_info(google_api, config)
-        customers = CustomerModel.from_accounts(accounts)
+
+        customers = self.get_customers(google_api, config)
+        logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
+
         non_manager_accounts = [customer for customer in customers if not customer.is_manager_account]
         default_config = dict(api=google_api, customers=customers)
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
