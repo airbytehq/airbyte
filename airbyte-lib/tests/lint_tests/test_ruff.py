@@ -21,7 +21,17 @@ def test_ruff_linting():
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    # Find automatically fixable issues
+
+    # Assert that the Ruff command exited without errors (exit code 0)
+    assert check_result.returncode == 0, (
+        "Ruff checks failed:\n\n"
+        + f"{check_result.stdout.decode()}\n{check_result.stderr.decode()}\n\n"
+        + "Run `poetry run ruff check .` to view all issues."
+    )
+
+
+def test_ruff_linting_fixable():
+    # Run the check command
     fix_diff_result = subprocess.run(
         ["poetry", "run", "ruff", "check", "--fix", "--diff", "."],
         stdout=subprocess.PIPE,
@@ -29,10 +39,8 @@ def test_ruff_linting():
     )
 
     # Assert that the Ruff command exited without errors (exit code 0)
-    assert check_result.returncode == 0, (
-        "Ruff checks failed:\n\n"
-        + f"{check_result.stdout.decode()}\n{check_result.stderr.decode()}\n\n"
-        + "Fixable issues:\n\n"
+    assert fix_diff_result.returncode == 0, (
+        "Ruff checks revealed fixable issues:\n\n"
         + f"{fix_diff_result.stdout.decode()}\n{fix_diff_result.stderr.decode()}\n\n"
         + "Run `poetry run ruff check --fix .` to attempt automatic fixes."
     )
