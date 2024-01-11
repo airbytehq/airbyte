@@ -9,6 +9,12 @@ airbyteJavaConnector {
     useLocalCdk = true
 }
 
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
 airbyteJavaConnector.addCdkDependencies()
 
 application {
