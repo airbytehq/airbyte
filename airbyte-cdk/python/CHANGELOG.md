@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.58.5
+Handle private network exception as config error
+
 ## 0.58.4
 Add POST method to HttpMocker
 
