@@ -149,3 +149,19 @@ def test_succeeding_path_connector():
     source.check()
 
     os.environ["PATH"] = old_path
+
+def test_install_uninstall():
+    source = ab.get_connector("source-test", pip_url="./tests/integration_tests/fixtures/source-test", config={"apiKey": "test"}, install_if_missing=False)
+
+    source.uninstall()
+
+    # assert that the venv is gone
+    assert not os.path.exists(".venv-source-test")
+
+    # assert that the connector is not available
+    with pytest.raises(Exception):
+        source.check()
+
+    source.install()
+
+    source.check()
