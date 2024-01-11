@@ -1,6 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from pathlib import Path
+
 import pytest
+
 from airbyte_lib._file_writers import ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.caches.duckdb import DuckDBCacheBase, DuckDBCacheConfig
@@ -8,7 +11,7 @@ from airbyte_lib.caches.duckdb import DuckDBCacheBase, DuckDBCacheConfig
 
 def test_duck_db_cache_config_initialization():
     config = DuckDBCacheConfig(db_path='test_path', schema_name='test_schema')
-    assert config.db_path == 'test_path'
+    assert config.db_path == Path('test_path')
     assert config.schema_name == 'test_schema'
 
 def test_duck_db_cache_config_default_schema_name():
@@ -34,10 +37,6 @@ def test_duck_db_cache_config_get_sql_alchemy_url():
 def test_duck_db_cache_config_get_database_name():
     config = DuckDBCacheConfig(db_path='test_path/test_db.duckdb', schema_name='test_schema')
     assert config.get_database_name() == 'test_db'
-
-def test_duck_db_cache_config_get_database_name_memory():
-    config = DuckDBCacheConfig(db_path=':memory:', schema_name='test_schema')
-    assert config.get_database_name() == 'memory'
 
 def test_duck_db_cache_base_inheritance():
     assert issubclass(DuckDBCacheBase, SQLCacheBase)

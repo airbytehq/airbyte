@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING, cast, final
 
 from overrides import overrides
@@ -15,8 +16,6 @@ from airbyte_lib.config import CacheConfigBase
 
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     import pyarrow as pa
 
 
@@ -34,8 +33,10 @@ class FileWriterBatchHandle(BatchHandle):
 class FileWriterConfigBase(CacheConfigBase):
     """Configuration for the Snowflake cache."""
 
-    cache_dir: str | Path = "./.cache/files/"
+    cache_dir: Path = Path("./.cache/files/")
+    """The directory to store cache files in."""
     cleanup: bool = True
+    """Whether to clean up temporary files after processing a batch."""
 
 
 class FileWriterBase(RecordProcessor, abc.ABC):

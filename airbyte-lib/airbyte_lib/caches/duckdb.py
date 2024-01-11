@@ -20,7 +20,13 @@ class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     """
 
     db_path: Path | str
+    """Normally db_path is a Path object.
+
+    There are some cases, such as when connecting to MotherDuck, where it could be a string that
+    is not also a path, such as "md:" to connect the user's default MotherDuck DB.
+    """
     schema_name: str = "main"
+    """The name of the schema to write to. Defaults to "main"."""
 
     @overrides
     def get_sql_alchemy_url(self) -> str:
