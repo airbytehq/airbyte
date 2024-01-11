@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import pytest
 from sqlalchemy import types
 from airbyte_lib.types import SQLTypeConverter
