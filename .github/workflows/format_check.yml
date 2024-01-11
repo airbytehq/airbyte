@@ -42,6 +42,9 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "format check all"
+          # Pin to a specific version of airbyte-ci to avoid transient failures
+          # Mentioned in issue https://github.com/airbytehq/airbyte/issues/34041
+          airbyte_ci_binary_url: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/2.14.1/airbyte-ci
 
       - name: Run airbyte-ci format check [PULL REQUEST]
         id: airbyte_ci_format_check_all_pr

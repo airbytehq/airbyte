@@ -41,7 +41,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -104,7 +103,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String JDBC_DELIMITER = ";";
   private List<String> schemas;
 
-  public static Source sshWrappedSource(MssqlSource source) {
+  public static Source sshWrappedSource(final MssqlSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
@@ -372,7 +371,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       checkOperations.add(database -> assertCdcEnabledInDb(config, database));
       checkOperations.add(database -> assertCdcSchemaQueryable(config, database));
       checkOperations.add(database -> assertSqlServerAgentRunning(database));
-      checkOperations.add(database -> assertSnapshotIsolationAllowed(config, database));
     }
 
     return checkOperations;
@@ -453,35 +451,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       } else {
         throw e;
       }
-    }
-  }
-
-  protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
-      throws SQLException {
-    if (MssqlCdcHelper.getSnapshotIsolationConfig(config) != SnapshotIsolation.SNAPSHOT) {
-      return;
-    }
-
-    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
-      final PreparedStatement ps = connection.prepareStatement(sql);
-      ps.setString(1, config.get(JdbcUtils.DATABASE_KEY).asText());
-      LOGGER.info(String.format(
-          "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
-          config.get(JdbcUtils.DATABASE_KEY).asText(), sql));
-      return ps;
-    }, sourceOperations::rowToJson);
-
-    if (queryResponse.size() < 1) {
-      throw new RuntimeException(String.format(
-          "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-          config.get(JdbcUtils.DATABASE_KEY).asText()));
-    }
-    if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
-      throw new RuntimeException(String.format(
-          "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
-              + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
-          config.get(JdbcUtils.DATABASE_KEY).asText()));
     }
   }
 
