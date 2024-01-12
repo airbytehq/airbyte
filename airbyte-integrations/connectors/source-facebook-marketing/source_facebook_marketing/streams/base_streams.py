@@ -1,25 +1,27 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
-from facebook_business.adobjects.adimage import AdImage
-from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
+from facebook_business.exceptions import FacebookRequestError
+from source_facebook_marketing.streams.common import traced_exception
 
 from .common import deep_merge
 
 if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
+
 
 logger = logging.getLogger("airbyte")
 
@@ -30,53 +32,51 @@ class FBMarketingStream(Stream, ABC):
     primary_key = "id"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    # use batch API to retrieve details for each record in a stream
-    use_batch = True
     # this flag will override `include_deleted` option for streams that does not support it
     enable_deleted = True
     # entity prefix for `include_deleted` filter, it usually matches singular version of stream name
     entity_prefix = None
+    # In case of Error 'Too much data was requested in batch' some fields should be removed from request
+    fields_exceptions = []
 
-    def __init__(self, api: "API", include_deleted: bool = False, page_size: int = 100, max_batch_size: int = 50, **kwargs):
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
+
+    def __init__(self, api: "API", include_deleted: bool = False, page_size: int = 100, **kwargs):
         super().__init__(**kwargs)
         self._api = api
         self.page_size = page_size if page_size is not None else 100
         self._include_deleted = include_deleted if self.enable_deleted else False
-        self.max_batch_size = max_batch_size if max_batch_size is not None else 50
 
     @cached_property
     def fields(self) -> List[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
         return list(self.get_json_schema().get("properties", {}).keys())
 
-    def _execute_batch(self, batch: FacebookAdsApiBatch) -> None:
-        """Execute batch, retry in case of failures"""
-        while batch:
-            batch = batch.execute()
-            if batch:
-                logger.info("Retry failed requests in batch")
+    @classmethod
+    def fix_date_time(cls, record):
+        date_time_fields = (
+            "created_time",
+            "creation_time",
+            "updated_time",
+            "event_time",
+            "start_time",
+            "first_fired_time",
+            "last_fired_time",
+        )
 
-    def execute_in_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
-        """Execute list of requests in batches"""
-        records = []
+        if isinstance(record, dict):
+            for field, value in record.items():
+                if isinstance(value, str):
+                    if field in date_time_fields:
+                        record[field] = value.replace("t", "T").replace(" 0000", "+0000")
+                else:
+                    cls.fix_date_time(value)
 
-        def success(response: FacebookResponse):
-            records.append(response.json())
-
-        def failure(response: FacebookResponse):
-            raise RuntimeError(f"Batch request failed with response: {response.body()}")
-
-        api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
-        for request in pending_requests:
-            api_batch.add_request(request, success=success, failure=failure)
-            if len(api_batch) == self.max_batch_size:
-                self._execute_batch(api_batch)
-                yield from records
-                records = []
-                api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
-
-        self._execute_batch(api_batch)
-        yield from records
+        elif isinstance(record, list):
+            for entry in record:
+                cls.fix_date_time(entry)
 
     def read_records(
         self,
@@ -86,16 +86,14 @@ class FBMarketingStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
-        records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
-        loaded_records_iter = (record.api_get(fields=self.fields, pending=self.use_batch) for record in records_iter)
-        if self.use_batch:
-            loaded_records_iter = self.execute_in_batch(loaded_records_iter)
-
-        for record in loaded_records_iter:
-            if isinstance(record, AbstractObject):
-                yield record.export_all_data()  # convert FB object to dict
-            else:
-                yield record  # execute_in_batch will emmit dicts
+        try:
+            for record in self.list_objects(params=self.request_params(stream_state=stream_state)):
+                if isinstance(record, AbstractObject):
+                    record = record.export_all_data()  # convert FB object to dict
+                self.fix_date_time(record)
+                yield record
+        except FacebookRequestError as exc:
+            raise traced_exception(exc)
 
     @abstractmethod
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
@@ -145,13 +143,10 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
     cursor_field = "updated_time"
 
-    def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
+    def __init__(self, start_date: Optional[datetime], end_date: Optional[datetime], **kwargs):
         super().__init__(**kwargs)
-        self._start_date = pendulum.instance(start_date)
-        self._end_date = pendulum.instance(end_date)
-
-        if self._end_date < self._start_date:
-            logger.error("The end_date must be after start_date.")
+        self._start_date = pendulum.instance(start_date) if start_date else None
+        self._end_date = pendulum.instance(end_date) if end_date else None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
@@ -175,13 +170,24 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
+
         state_value = stream_state.get(self.cursor_field)
-        filter_value = self._start_date if not state_value else pendulum.parse(state_value)
+        if stream_state:
+            filter_value = pendulum.parse(state_value)
+        elif self._start_date:
+            filter_value = self._start_date
+        else:
+            # if start_date is not specified then do not use date filters
+            return {}
 
         potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
-            filter_value = self._start_date
+            if self._start_date:
+                filter_value = self._start_date
+            else:
+                # if start_date is not specified then do not use date filters
+                return {}
 
         return {
             "filtering": [
@@ -228,6 +234,9 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         """Don't have classic cursor filtering"""
         return {}
 
+    def get_record_deleted_status(self, record) -> bool:
+        return False
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -241,16 +250,20 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         - update state only when we reach the end
         - stop reading when we reached the end
         """
-        records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
-        for record in records_iter:
-            record_cursor_value = pendulum.parse(record[self.cursor_field])
-            if self._cursor_value and record_cursor_value < self._cursor_value:
-                break
-            if not self._include_deleted and record[AdImage.Field.status] == AdImage.Status.deleted:
-                continue
+        try:
+            records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
+            for record in records_iter:
+                record_cursor_value = pendulum.parse(record[self.cursor_field])
+                if self._cursor_value and record_cursor_value < self._cursor_value:
+                    break
+                if not self._include_deleted and self.get_record_deleted_status(record):
+                    continue
 
-            self._max_cursor_value = self._max_cursor_value or record_cursor_value
-            self._max_cursor_value = max(self._max_cursor_value, record_cursor_value)
-            yield record.export_all_data()
+                self._max_cursor_value = max(self._max_cursor_value, record_cursor_value) if self._max_cursor_value else record_cursor_value
+                record = record.export_all_data()
+                self.fix_date_time(record)
+                yield record
 
-        self._cursor_value = self._max_cursor_value
+            self._cursor_value = self._max_cursor_value
+        except FacebookRequestError as exc:
+            raise traced_exception(exc)
