@@ -57,6 +57,7 @@ jobs:
         with:
           context: "manual"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          pypi_token: ${{ secrets.PYPI_TOKEN }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
