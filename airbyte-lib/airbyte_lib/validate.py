@@ -88,7 +88,7 @@ def run() -> None:
 def validate(connector_dir: str, sample_config: str) -> None:
     # read metadata.yaml
     metadata_path = Path(connector_dir) / "metadata.yaml"
-    with open(metadata_path) as stream:
+    with Path(metadata_path).open() as stream:
         metadata = yaml.safe_load(stream)["data"]
 
     # TODO: Use remoteRegistries.pypi.packageName once set for connectors
@@ -100,7 +100,7 @@ def validate(connector_dir: str, sample_config: str) -> None:
     if not venv_path.exists():
         _run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", venv_name])
 
-    pip_path = os.path.join(venv_name, "bin", "pip")
+    pip_path = Path(venv_name) / "bin" / "pip"
 
     _run_subprocess_and_raise_on_failure([pip_path, "install", "-e", connector_dir])
 

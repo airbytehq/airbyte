@@ -5,6 +5,7 @@ import importlib.metadata
 import json
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 import requests
 
@@ -24,7 +25,7 @@ REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.
 def _update_cache() -> None:
     global _cache
     if os.environ.get("AIRBYTE_LOCAL_REGISTRY"):
-        with open(str(os.environ.get("AIRBYTE_LOCAL_REGISTRY"))) as f:
+        with Path(str(os.environ.get("AIRBYTE_LOCAL_REGISTRY"))).open() as f:
             data = json.load(f)
     else:
         response = requests.get(

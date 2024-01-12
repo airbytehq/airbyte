@@ -122,14 +122,14 @@ class VenvExecutor(Executor):
 
     def uninstall(self) -> None:
         venv_name = self._get_venv_name()
-        if os.path.exists(venv_name):
+        if Path(venv_name).exists():
             self._run_subprocess_and_raise_on_failure(["rm", "-rf", venv_name])
 
     def install(self) -> None:
         venv_name = self._get_venv_name()
         self._run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", venv_name])
 
-        pip_path = os.path.join(venv_name, "bin", "pip")
+        pip_path = Path(venv_name) / "bin" / "pip"
 
         self._run_subprocess_and_raise_on_failure([pip_path, "install", "-e", self.pip_url])
 
@@ -143,7 +143,7 @@ class VenvExecutor(Executor):
         connector_name = self.metadata.name
         return subprocess.check_output(
             [
-                os.path.join(venv_name, "bin", "python"),
+                Path(venv_name) / "bin" / "python",
                 "-c",
                 f"from importlib.metadata import version; print(version('{connector_name}'))",
             ],
