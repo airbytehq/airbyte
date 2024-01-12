@@ -4,11 +4,13 @@ import os
 import subprocess
 import sys
 from abc import ABC, abstractmethod
+from collections.abc import Generator, Iterable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Generator, Iterable, List
+from typing import IO, Any, NoReturn
 
 from airbyte_lib.registry import ConnectorMetadata
+
 
 _LATEST_VERSION = "latest"
 
@@ -27,24 +29,24 @@ class Executor(ABC):
             self.target_version = target_version
 
     @abstractmethod
-    def execute(self, args: List[str]) -> Iterable[str]:
+    def execute(self, args: list[str]) -> Iterator[str]:
         pass
 
     @abstractmethod
-    def ensure_installation(self):
+    def ensure_installation(self) -> None:
         pass
 
     @abstractmethod
-    def install(self):
+    def install(self) -> None:
         pass
 
     @abstractmethod
-    def uninstall(self):
+    def uninstall(self) -> None:
         pass
 
 
 @contextmanager
-def _stream_from_subprocess(args: List[str]) -> Generator[Iterable[str], None, None]:
+def _stream_from_subprocess(args: list[str]) -> Generator[Iterable[str], None, None]:
     process = subprocess.Popen(
         args,
         stdout=subprocess.PIPE,
@@ -52,7 +54,7 @@ def _stream_from_subprocess(args: List[str]) -> Generator[Iterable[str], None, N
         universal_newlines=True,
     )
 
-    def _stream_from_file(file: IO[str]):
+    def _stream_from_file(file: IO[str]) -> Generator[str, Any, None]:
         while True:
             line = file.readline()
             if not line:
@@ -102,23 +104,23 @@ class VenvExecutor(Executor):
         # TODO: Replace with `f"airbyte-{self.metadata.name}"`
         self.pip_url = pip_url or f"../airbyte-integrations/connectors/{self.metadata.name}"
 
-    def _get_venv_name(self):
+    def _get_venv_name(self) -> str:
         return f".venv-{self.metadata.name}"
 
-    def _get_connector_path(self):
+    def _get_connector_path(self) -> Path:
         return Path(self._get_venv_name(), "bin", self.metadata.name)
 
-    def _run_subprocess_and_raise_on_failure(self, args: List[str]):
-        result = subprocess.run(args)
+    def _run_subprocess_and_raise_on_failure(self, args: list[str]) -> None:
+        result = subprocess.run(args, check=False)
         if result.returncode != 0:
             raise Exception(f"Install process exited with code {result.returncode}")
 
-    def uninstall(self):
+    def uninstall(self) -> None:
         venv_name = self._get_venv_name()
         if os.path.exists(venv_name):
             self._run_subprocess_and_raise_on_failure(["rm", "-rf", venv_name])
 
-    def install(self):
+    def install(self) -> None:
         venv_name = self._get_venv_name()
         self._run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", venv_name])
 
@@ -126,7 +128,7 @@ class VenvExecutor(Executor):
 
         self._run_subprocess_and_raise_on_failure([pip_path, "install", "-e", self.pip_url])
 
-    def _get_installed_version(self):
+    def _get_installed_version(self) -> str:
         """
         In the venv, run the following: python -c "from importlib.metadata import version; print(version('<connector-name>'))"
         """
@@ -143,7 +145,7 @@ class VenvExecutor(Executor):
 
     def ensure_installation(
         self,
-    ):
+    ) -> None:
         """
         Ensure that the connector is installed in a virtual environment.
         If not yet installed and if install_if_missing is True, then install.
@@ -157,13 +159,15 @@ class VenvExecutor(Executor):
         venv_path = Path(venv_name)
         if not venv_path.exists():
             if not self.install_if_missing:
-                raise Exception(f"Connector {self.metadata.name} is not available - venv {venv_name} does not exist")
+                raise Exception(
+                    f"Connector {self.metadata.name} is not available - venv {venv_name} does not exist"
+                )
             self.install()
 
         connector_path = self._get_connector_path()
         if not connector_path.exists():
             raise FileNotFoundError(
-                f"Could not find connector '{self.metadata.name}' " f"in venv '{venv_name}' with connector path '{connector_path}'."
+                f"Could not find connector '{self.metadata.name}' in venv '{venv_name}' with connector path '{connector_path}'.",
             )
 
         if self.enforce_version:
@@ -176,10 +180,10 @@ class VenvExecutor(Executor):
                 version_after_install = self._get_installed_version()
                 if version_after_install != self.target_version:
                     raise Exception(
-                        f"Failed to install connector {self.metadata.name} version {self.target_version}. Installed version is {version_after_install}"
+                        f"Failed to install connector {self.metadata.name} version {self.target_version}. Installed version is {version_after_install}",
                     )
 
-    def execute(self, args: List[str]) -> Iterable[str]:
+    def execute(self, args: list[str]) -> Iterator[str]:
         connector_path = self._get_connector_path()
 
         with _stream_from_subprocess([str(connector_path)] + args) as stream:
@@ -187,18 +191,22 @@ class VenvExecutor(Executor):
 
 
 class PathExecutor(Executor):
-    def ensure_installation(self):
+    def ensure_installation(self) -> None:
         try:
             self.execute(["spec"])
         except Exception as e:
-            raise Exception(f"Connector {self.metadata.name} is not available - executing it failed: {e}")
+            raise Exception(
+                f"Connector {self.metadata.name} is not available - executing it failed: {e}"
+            )
 
-    def install(self):
+    def install(self) -> NoReturn:
         raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")
 
-    def uninstall(self):
-        raise Exception(f"Connector {self.metadata.name} is installed manually and not managed by airbyte-lib - please remove it manually")
+    def uninstall(self) -> NoReturn:
+        raise Exception(
+            f"Connector {self.metadata.name} is installed manually and not managed by airbyte-lib - please remove it manually"
+        )
 
-    def execute(self, args: List[str]) -> Iterable[str]:
+    def execute(self, args: list[str]) -> Iterator[str]:
         with _stream_from_subprocess([self.metadata.name] + args) as stream:
             yield from stream
