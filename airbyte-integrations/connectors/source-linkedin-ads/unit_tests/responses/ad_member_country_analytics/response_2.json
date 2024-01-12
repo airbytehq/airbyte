@@ -28,9 +28,7 @@
       "leadGenerationMailContactInfoShares": 0,
       "opens": 0,
       "leadGenerationMailInterestedClicks": 0,
-      "pivotValues": [
-        "urn:li:sponsoredCreative:1"
-      ],
+      "pivotValues": ["urn:li:sponsoredCreative:1"],
       "likes": 0
     },
     {
@@ -56,9 +54,7 @@
       "leadGenerationMailContactInfoShares": 0,
       "opens": 0,
       "leadGenerationMailInterestedClicks": 0,
-      "pivotValues": [
-        "urn:li:sponsoredCreative:1"
-      ],
+      "pivotValues": ["urn:li:sponsoredCreative:1"],
       "likes": 0
     }
   ]
