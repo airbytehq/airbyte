@@ -118,7 +118,11 @@ class DuckDBCache(DuckDBCacheBase):
         In addition to the base implementation, this also checks primary keys.
         """
         # call super
-        if not super()._ensure_compatible_table_schema(stream_name, table_name, raise_on_error):
+        if not super()._ensure_compatible_table_schema(
+            stream_name=stream_name,
+            table_name=table_name,
+            raise_on_error=raise_on_error,
+        ):
             return False
 
         pk_cols = self._get_primary_keys(stream_name)

@@ -100,7 +100,7 @@ def validate(connector_dir: str, sample_config: str) -> None:
     if not venv_path.exists():
         _run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", venv_name])
 
-    pip_path = Path(venv_name) / "bin" / "pip"
+    pip_path = str(venv_path / "bin" / "pip")
 
     _run_subprocess_and_raise_on_failure([pip_path, "install", "-e", connector_dir])
 

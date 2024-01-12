@@ -4,7 +4,6 @@ from __future__ import annotations
 import subprocess
 import sys
 from abc import ABC, abstractmethod
-from collections.abc import Generator, Iterable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, NoReturn
@@ -130,7 +129,7 @@ class VenvExecutor(Executor):
         venv_name = self._get_venv_name()
         self._run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", venv_name])
 
-        pip_path = Path(venv_name) / "bin" / "pip"
+        pip_path = str(Path(venv_name) / "bin" / "pip")
 
         self._run_subprocess_and_raise_on_failure([pip_path, "install", "-e", self.pip_url])
 

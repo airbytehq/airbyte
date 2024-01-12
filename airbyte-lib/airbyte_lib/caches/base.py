@@ -592,7 +592,7 @@ class SQLCacheBase(RecordProcessor):
                     schema=self.config.schema_name,
                     if_exists="append",
                     index=False,
-                    dtype=self._get_sql_column_definitions(stream_name),  # type: ignore
+                    dtype=self._get_sql_column_definitions(stream_name),  # type: ignore[arg-type]
                 )
         return temp_table_name
 
