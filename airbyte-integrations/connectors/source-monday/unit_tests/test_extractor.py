@@ -50,10 +50,13 @@ def test_extract_records_incremental():
     }
 
     response.json.return_value = response_body
-    extractor = MondayIncrementalItemsExtractor(parameters={}, field_path=["data", "ccccc"], config=MagicMock())
-    extractor.field_path_pagination = ["data", "bbbb"]
-    extractor.field_path_incremental = ["data", "boards", "*"]
-    extractor.__post_init__(parameters={})
+    extractor = MondayIncrementalItemsExtractor(
+        parameters={},
+        field_path=["data", "ccccc"],
+        config=MagicMock(),
+        field_path_pagination=["data", "bbbb"],
+        field_path_incremental=["data", "boards", "*"]
+    )
     records = extractor.extract_records(response)
 
     # Assertions

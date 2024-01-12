@@ -154,13 +154,6 @@ def test_build_items_incremental_query(monday_requester):
 
 def test_get_request_headers(monday_requester):
 
-    object_name = "test_items"
-    field_schema = {
-        "id": {"type": "integer"},
-        "name": {"type": "string"},
-    }
-    stream_slice = {"ids": [1, 2, 3]}
-
     headers = monday_requester.get_request_headers()
 
     assert headers == {'API-Version': '2024-01'}
