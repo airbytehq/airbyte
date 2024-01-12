@@ -436,10 +436,23 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   @Override
   protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+    assertEquals(7, stateMessages.size());
+    assertStateTypes(stateMessages, 4);
+  }
+
+  @Override
+  protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
-    assertNotNull(stateMessages.get(0).getData().get("cdc_state").get("state").get(MSSQL_CDC_OFFSET));
-    assertNotNull(stateMessages.get(0).getData().get("cdc_state").get("state").get(MSSQL_DB_HISTORY));
+    for (final AirbyteStateMessage stateMessage : stateMessages) {
+      assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MSSQL_CDC_OFFSET));
+      assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MSSQL_DB_HISTORY));
+    }
+  }
+
+  @Override
+  protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
+    assertEquals(2, stateMessages.size());
   }
 
   @Override

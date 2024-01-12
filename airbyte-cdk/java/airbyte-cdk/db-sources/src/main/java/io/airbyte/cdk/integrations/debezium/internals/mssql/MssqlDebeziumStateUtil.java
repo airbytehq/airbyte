@@ -18,7 +18,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.connector.sqlserver.Lsn;
 import io.debezium.engine.ChangeEvent;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -59,16 +58,17 @@ public class MssqlDebeziumStateUtil {
       publisher.start(queue);
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
-        if (event != null) {
-          publisher.close();
-          break;
-        }
-        if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5)) > 0) {
-          LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 300);
-          publisher.close();
-          throw new RuntimeException(
-              "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
-        }
+        // if (event != null) {
+        publisher.close();
+        break;
+        // }
+        /*
+         * if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5)) > 0) {
+         * LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 300);
+         * publisher.close(); throw new RuntimeException(
+         * "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options."
+         * ); }
+         */
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -103,7 +103,7 @@ public class MssqlDebeziumStateUtil {
     return Jsons.jsonNode(state);
   }
 
-  private static MssqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
+  public static MssqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
     try (final Stream<MssqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("select sys.fn_cdc_get_max_lsn()"),
         resultSet -> {

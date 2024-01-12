@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_DEFAULT_CURSOR;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_EVENT_SERIAL_NO;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
@@ -11,10 +13,11 @@ import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
+import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<Long> {
+public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<MssqlDebeziumStateAttributes> {
 
   private final long emittedAtConverted;
 
@@ -42,6 +45,17 @@ public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<Lo
     event.put(CDC_LSN, commitLsn);
     event.put(CDC_EVENT_SERIAL_NO, eventSerialNo);
     event.put(CDC_DEFAULT_CURSOR, getCdcDefaultCursor());
+  }
+
+  @Override
+  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record,
+                                                      final String transactionTimestamp,
+                                                      final MssqlDebeziumStateAttributes debeziumStateAttributes) {
+    record.put(CDC_UPDATED_AT, transactionTimestamp);
+    record.put(CDC_EVENT_SERIAL_NO, 1); // TEMP
+    record.put(CDC_LSN, debeziumStateAttributes.lsn().toString()); // TODO: check here
+    record.put(CDC_DELETED_AT, (String) null);
+    record.put(CDC_DEFAULT_CURSOR, getCdcDefaultCursor());
   }
 
   @Override

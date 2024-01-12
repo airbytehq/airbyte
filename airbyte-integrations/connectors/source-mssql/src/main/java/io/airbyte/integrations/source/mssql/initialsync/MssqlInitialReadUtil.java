@@ -19,6 +19,7 @@ import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager.DebeziumConnectorType;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlDebeziumStateUtil;
+import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
 import io.airbyte.cdk.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
@@ -34,6 +35,7 @@ import io.airbyte.integrations.source.mssql.MssqlCdcSavedInfoFetcher;
 import io.airbyte.integrations.source.mssql.MssqlCdcStateHandler;
 import io.airbyte.integrations.source.mssql.MssqlCdcTargetPosition;
 import io.airbyte.integrations.source.mssql.MssqlQueryUtils;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadSourceOperations.CdcMetadataInjector;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -54,6 +56,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -122,7 +125,7 @@ public class MssqlInitialReadUtil {
         ? new CdcState().withState(initialDebeziumState)
         : stateManager.getCdcStateManager().getCdcState();
 
-    final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
+    final MssqlCdcConnectorMetadataInjector metadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
     // If there are streams to sync via ordered column load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
       LOGGER.info("Streams to be synced via ordered column : {}", initialLoadStreams.streamsForInitialLoad().size());
@@ -132,8 +135,9 @@ public class MssqlInitialReadUtil {
               initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
               stateToBeUsed, catalog);
 
+      final MssqlDebeziumStateAttributes stateAttributes = MssqlDebeziumStateUtil.getStateAttributesFromDB(database);
       final MssqlInitialLoadSourceOperations sourceOperations =
-          new MssqlInitialLoadSourceOperations();
+          new MssqlInitialLoadSourceOperations(Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
 
       final MssqlInitialLoadHandler initialLoadHandler = new MssqlInitialLoadHandler(sourceConfig, database,
           sourceOperations, quoteString, initialLoadStateManager,
@@ -161,7 +165,7 @@ public class MssqlInitialReadUtil {
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(catalog,
         new MssqlCdcSavedInfoFetcher(stateToBeUsed),
         new MssqlCdcStateHandler(stateManager),
-        mssqlCdcConnectorMetadataInjector,
+        metadataInjector,
         getDebeziumProperties(database, catalog, false),
         DebeziumConnectorType.RELATIONALDB,
         emittedAt,
