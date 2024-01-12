@@ -68,6 +68,8 @@ jobs:
           git_branch: ${{ steps.extract_branch.outputs.branch }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
           github_token: ${{ env.PAT }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
           airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
@@ -84,5 +86,7 @@ jobs:
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
           github_token: ${{ env.PAT }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "connectors --modified test"
