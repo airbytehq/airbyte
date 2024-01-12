@@ -212,6 +212,16 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 </details>
 
+<HideInUI>
+
+## Usage with airbyte-lib
+
+<AirbyteLibExample connector="source-stripe" />
+
+<SpecSchema connector="source-stripe" />
+
+</HideInUI>
+
 ## Changelog
 
 | Version | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |

@@ -93,12 +93,12 @@ function JSONSchemaProperty({ propertyKey, schema, required }) {
           <Disclosure.Panel>
             <div className={styles.propertyDocumentation}>
               <div>Type: {schema.type}</div>
-              {schema.default && !schema.const && <div>Default: <pre>{JSON.stringify(schema.default, null, 2)}</pre></div>}
+              {(typeof schema.default !== "undefined" && !schema.const) && <div>Default: <pre>{JSON.stringify(schema.default, null, 2)}</pre></div>}
               {schema.pattern && <div>Pattern{schema.pattern_descriptor && <> ({schema.pattern_descriptor})</>}: <pre>{schema.pattern}</pre></div>}
-              {schema.examples && schema.examples.length > 1 && <div>Examples: <ul>
+              {(schema.examples && schema.examples.length > 1) && <div>Examples: <ul>
                 {schema.examples.map((example, i) => <li key={i}><pre>{JSON.stringify(example)}</pre></li>)}
               </ul></div>}
-              {schema.examples && schema.examples.length === 1 && <div>Example: <pre>{JSON.stringify(schema.examples[0])}</pre></div>}
+              {(schema.examples && schema.examples.length === 1) && <div>Example: <pre>{JSON.stringify(schema.examples[0])}</pre></div>}
               {schema.description && <div><TextWithHTML text={schema.description} /></div>}
               {schema.type === "object" && schema.oneOf && <JSONSchemaOneOf schema={schema} />}
               {schema.type === "object" && schema.properties && <JSONSchemaObject schema={schema} />}
