@@ -15,7 +15,7 @@ from pipelines.consts import (
     DOCKER_REGISTRY_ADDRESS,
     DOCKER_REGISTRY_MIRROR_URL,
     DOCKER_TMP_VOLUME_NAME,
-    DOCKER_VAR_LIB_VOLUME_NAME,
+    #DOCKER_VAR_LIB_VOLUME_NAME,
     STORAGE_DRIVER,
     TAILSCALE_AUTH_KEY,
 )
@@ -56,11 +56,11 @@ def get_base_dockerd_container(dagger_client: Client) -> Container:
         # Expose the docker host port.
         .with_exposed_port(DOCKER_HOST_PORT)
         # We cache /tmp for file sharing between client and daemon.
-        .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
+        #.with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
     )
 
     # We cache /var/lib/docker to avoid downloading images and layers multiple times.
-    base_container = base_container.with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
+    #base_container = base_container.with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
     return base_container
 
 
