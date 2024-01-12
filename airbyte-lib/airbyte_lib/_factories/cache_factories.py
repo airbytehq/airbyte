@@ -30,7 +30,7 @@ def new_local_cache(
 
     Args:
         cache_name: Name to use for the cache. Defaults to None.
-        root_dir: Root directory to store the cache in. Defaults to None.
+        cache_dir: Root directory to store the cache in. Defaults to None.
         cleanup: Whether to clean up temporary files. Defaults to True.
 
     Cache files are stored in the `.cache` directory, relative to the current

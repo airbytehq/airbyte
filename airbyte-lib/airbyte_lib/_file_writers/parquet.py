@@ -17,8 +17,7 @@ from .base import FileWriterBase, FileWriterBatchHandle, FileWriterConfigBase
 class ParquetWriterConfig(FileWriterConfigBase):
     """Configuration for the Snowflake cache."""
 
-    # Inherits from base class:
-    # cache_dir: str | Path
+    # Inherits `cache_dir` from base class
 
 
 class ParquetWriter(FileWriterBase):
@@ -49,6 +48,7 @@ class ParquetWriter(FileWriterBase):
 
         Return the path to the cache file.
         """
+        _ = batch_id  # unused
         output_file_path = self.get_new_cache_file_path(stream_name)
 
         with parquet.ParquetWriter(output_file_path, record_batch.schema) as writer:

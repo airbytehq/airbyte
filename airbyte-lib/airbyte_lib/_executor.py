@@ -1,7 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
-import os
 import subprocess
 import sys
 from abc import ABC, abstractmethod
@@ -206,8 +205,8 @@ class PathExecutor(Executor):
             self.execute(["spec"])
         except Exception as e:
             raise Exception(
-                f"Connector {self.metadata.name} is not available - executing it failed: {e}"
-            )
+                f"Connector {self.metadata.name} is not available - executing it failed"
+            ) from e
 
     def install(self) -> NoReturn:
         raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")

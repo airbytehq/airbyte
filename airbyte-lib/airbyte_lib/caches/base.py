@@ -279,7 +279,6 @@ class SQLCacheBase(RecordProcessor):
         table_name: str,
     ) -> str:
         """Return the fully qualified name of the given table."""
-        # return f"{self.database_name}.{self.config.schema_name}.{table_name}"
         return f"{self.config.schema_name}.{table_name}"
 
     @final

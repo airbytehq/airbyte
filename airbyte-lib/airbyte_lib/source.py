@@ -207,12 +207,12 @@ class Source:
         with as_temp_files([self._config]) as [config_file]:
             for msg in self._execute(["check", "--config", config_file]):
                 if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
-                    if msg.connectionStatus.status == Status.FAILED:
-                        raise Exception(
-                            f"Connector returned failed status: {msg.connectionStatus.message}",
-                        )
-                    else:
-                        return
+                    if msg.connectionStatus.status != Status.FAILED:
+                        return # Success!
+
+                    raise Exception(
+                        f"Connector returned failed status: {msg.connectionStatus.message}",
+                    )
             raise Exception(
                 f"Connector did not return check status. Last logs: {self._last_log_messages}",
             )
@@ -298,7 +298,7 @@ class Source:
                 except Exception:
                     self._add_to_logs(line)
         except Exception as e:
-            raise Exception(f"{e!s}. Last logs: {self._last_log_messages}")
+            raise Exception(f"Execution failed. Last logs: {self._last_log_messages}") from e
 
     def _tally_records(
         self,
