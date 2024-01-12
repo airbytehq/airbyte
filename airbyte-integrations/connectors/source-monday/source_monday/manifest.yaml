@@ -70,6 +70,7 @@ definitions:
     schema_loader:
       $ref: "#/definitions/schema_loader"
     primary_key: "id"
+
   base_nopagination_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -177,7 +178,8 @@ definitions:
       nested_items_per_page: 20
       parent_key: "pulse_id"
       field_path: ["data", "boards", "*", 'items_page', "items", "*"]  # for first and further incremental pagination responses
-      additional_field_path: ["data", "next_items_page", "items", "*"]  # for cursor pagination responses
+      field_path_pagination: ["data", "next_items_page", "items", "*"]  # for cursor pagination responses
+      field_path_incremental: ["data", "items", "*"]  # for incremental sync responses
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
