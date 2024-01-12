@@ -109,6 +109,12 @@ definitions:
       class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategy"
       type: "CustomPaginationStrategy"
 
+  cursor_paginator:
+    $ref: "#/definitions/default_paginator"
+    pagination_strategy:
+      class_name: "source_monday.item_pagination_strategy.ItemCursorPaginationStrategy"
+      type: "CustomPaginationStrategy"
+
   activity_logs_stream:
     description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
     incremental_sync:
@@ -183,7 +189,7 @@ definitions:
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
-        $ref: "#/definitions/double_paginator"
+        $ref: "#/definitions/cursor_paginator"
       record_selector:
         $ref: "#/definitions/selector"
         extractor:
