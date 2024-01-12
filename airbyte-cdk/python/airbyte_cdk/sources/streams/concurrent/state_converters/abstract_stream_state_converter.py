@@ -19,13 +19,13 @@ class AbstractStreamStateConverter(ABC):
     END_KEY = "end"
 
     def get_concurrent_stream_state(
-        self, cursor_field: Optional["CursorField"], state: MutableMapping[str, Any]
+        self, cursor_field: Optional["CursorField"], start: Any, state: MutableMapping[str, Any]
     ) -> Optional[MutableMapping[str, Any]]:
         if not cursor_field:
             return None
         if self.is_state_message_compatible(state):
-            return self.deserialize(state)
-        return self.convert_from_sequential_state(cursor_field, state)
+            compatible_state = self.deserialize(state)
+        return self.convert_from_sequential_state(cursor_field, start, state)
 
     @abstractmethod
     def deserialize(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
@@ -40,7 +40,7 @@ class AbstractStreamStateConverter(ABC):
 
     @abstractmethod
     def convert_from_sequential_state(
-        self, cursor_field: "CursorField", stream_state: MutableMapping[str, Any]
+        self, cursor_field: "CursorField", start: Any, stream_state: MutableMapping[str, Any]
     ) -> MutableMapping[str, Any]:
         """
         Convert the state message to the format required by the ConcurrentCursor.

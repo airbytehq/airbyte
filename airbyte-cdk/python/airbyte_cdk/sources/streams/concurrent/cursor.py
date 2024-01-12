@@ -3,6 +3,7 @@
 #
 import functools
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, List, Mapping, Optional, Protocol, Tuple
 
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
@@ -126,9 +127,7 @@ class ConcurrentCursor(Cursor):
 
             self.state["slices"].append(
                 {
-                    # TODO: if we migrate stored state to the concurrent state format, we may want this to be the config start date
-                    #  instead of zero_value.
-                    "start": self._connector_state_converter.zero_value,
+                    "start": self.state["start"] or self._connector_state_converter.zero_value,
                     "end": self._extract_cursor_value(self._most_recent_record),
                 }
             )

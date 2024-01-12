@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from datetime import datetime
+
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import ConcurrencyCompatibleStateType
 from unit_tests.sources.file_based.scenarios.scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
@@ -167,6 +169,7 @@ CONCURRENT_STATE = [
             "stream_state": {
                 "slices": [{"start": 0, "end": 0}],
                 "start": 0,
+                "low_water_mark": 0,
                 "state_type": ConcurrencyCompatibleStateType.date_range.value,
             },
             "stream_descriptor": {"name": "stream1"},
