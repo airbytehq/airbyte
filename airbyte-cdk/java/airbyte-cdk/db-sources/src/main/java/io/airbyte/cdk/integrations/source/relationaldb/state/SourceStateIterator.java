@@ -63,6 +63,8 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
       final AirbyteStateMessage finalStateMessage = sourceStateIteratorManager.createFinalStateMessage();
+      finalStateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
+      recordCount = 0L;
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(finalStateMessage);
