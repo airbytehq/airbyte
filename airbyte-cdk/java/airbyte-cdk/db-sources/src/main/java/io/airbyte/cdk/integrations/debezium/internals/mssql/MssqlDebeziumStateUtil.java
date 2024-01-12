@@ -36,15 +36,9 @@ public class MssqlDebeziumStateUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlDebeziumStateUtil.class);
 
-  public JsonNode generateOffsetJsonNode(final JdbcDatabase database) {
-    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
-        constructLsnSnapshotState(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
-        Optional.empty());
-    final Map<String, Object> state = new HashMap<>();
-    state.put(MssqlCdcStateConstants.MSSQL_CDC_OFFSET, offsetManager.read());
-    return Jsons.jsonNode(state);
-  }
-
+  /**
+   * Generate initial state for debezium state.
+   */
   public JsonNode constructInitialDebeziumState(final Properties properties,
                                                 final ConfiguredAirbyteCatalog catalog,
                                                 final JdbcDatabase database) {
@@ -69,8 +63,8 @@ public class MssqlDebeziumStateUtil {
           publisher.close();
           break;
         }
-        if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(3)) > 0) {
-          LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 180);
+        if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5)) > 0) {
+          LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 300);
           publisher.close();
           throw new RuntimeException(
               "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
@@ -100,7 +94,7 @@ public class MssqlDebeziumStateUtil {
 
   }
 
-  public static JsonNode serialize(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
+  private static JsonNode serialize(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MssqlCdcStateConstants.MSSQL_CDC_OFFSET, offset);
     state.put(MssqlCdcStateConstants.MSSQL_DB_HISTORY, dbHistory.schema());
@@ -109,7 +103,7 @@ public class MssqlDebeziumStateUtil {
     return Jsons.jsonNode(state);
   }
 
-  public static MssqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
+  private static MssqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
     try (final Stream<MssqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("select sys.fn_cdc_get_max_lsn()"),
         resultSet -> {
@@ -133,12 +127,12 @@ public class MssqlDebeziumStateUtil {
    * ["test",{"server":"test","database":"test"}]" :
    * "{"transaction_id":null,"event_serial_no":1,"commit_lsn":"00000644:00002ff8:0099","change_lsn":"0000062d:00017ff0:016d"}"
    */
-  public JsonNode constructLsnSnapshotState(final JdbcDatabase database, final String dbName) {
-    return format(getStateAttributesFromDB(database), dbName, Instant.now());
+  JsonNode constructLsnSnapshotState(final JdbcDatabase database, final String dbName) {
+    return format(getStateAttributesFromDB(database), dbName);
   }
 
   @VisibleForTesting
-  public JsonNode format(final MssqlDebeziumStateAttributes attributes, final String dbName, final Instant time) {
+  JsonNode format(final MssqlDebeziumStateAttributes attributes, final String dbName) {
     final String key = "[\"" + dbName + "\",{\"server\":\"" + dbName + "\",\"database\":\"" + dbName + "\"}]";
     final String value =
         "{\"commit_lsn\":\"" + attributes.lsn.toString() + "\",\"snapshot\":true,\"snapshot_completed\":true"

@@ -32,6 +32,7 @@ import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
+import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlDebeziumStateUtil;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -45,6 +46,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -183,6 +185,25 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   @Override
   public void newTableSnapshotTest() {
     // Do nothing
+  }
+
+  // Utilize the setup to do test on MssqlDebeziumStateUtil.
+  @Test
+  public void testCdcSnapshot() {
+    MssqlDebeziumStateUtil util = new MssqlDebeziumStateUtil();
+
+    JdbcDatabase testDatabase = testDatabase();
+    testDatabase.setSourceConfig(config());
+
+    JsonNode debeziumState = util.constructInitialDebeziumState(MssqlCdcHelper.getDebeziumProperties(testDatabase, getConfiguredCatalog(), true),
+        getConfiguredCatalog(), testDatabase);
+
+    Assertions.assertEquals(3, Jsons.object(debeziumState, Map.class).size());
+    Assertions.assertTrue(debeziumState.has("is_compressed"));
+    Assertions.assertFalse(debeziumState.get("is_compressed").asBoolean());
+    Assertions.assertTrue(debeziumState.has("mssql_db_history"));
+    Assertions.assertNotNull(debeziumState.get("mssql_db_history"));
+    Assertions.assertTrue(debeziumState.has("mssql_cdc_offset"));
   }
 
   @Override
