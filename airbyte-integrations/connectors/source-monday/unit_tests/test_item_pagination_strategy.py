@@ -14,13 +14,13 @@ from source_monday.item_pagination_strategy import ItemPaginationStrategy
         pytest.param(
             {"data": {"boards": [{"items": [{"id": "1"}]}]}},
             [{"id": "1"}],
-            (1, 2),
+            (2, None),
             id="test_next_item_page_for_the_same_board",
         ),
         pytest.param(
             {"data": {"boards": [{"items": []}]}},
             [],
-            (2, 1),
+            (2, None),
             id="test_next_board_page_with_item_page_reset",
         ),
         pytest.param(
