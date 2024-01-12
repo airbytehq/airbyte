@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.connector.sqlserver.Lsn;
 import io.debezium.engine.ChangeEvent;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
+import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +50,8 @@ public class MssqlDebeziumStateUtil {
         AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), false);
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
     final Instant engineStartTime = Instant.now();
+    boolean schemaHistoryRead = false;
+    SchemaHistory<String> schemaHistory = null;
     try {
       final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties,
           database.getSourceConfig(),
@@ -58,19 +62,26 @@ public class MssqlDebeziumStateUtil {
       publisher.start(queue);
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
-        // if (event != null) {
-        publisher.close();
-        break;
-        // }
-        /*
-         * if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5)) > 0) {
-         * LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 300);
-         * publisher.close(); throw new RuntimeException(
-         * "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options."
-         * ); }
-         */
+
+        // If no event such as an empty table, generating schema history may take a few cycles
+        // depending on the size of history.
+        schemaHistory = schemaHistoryStorage.read();
+        schemaHistoryRead = Objects.nonNull(schemaHistory) && StringUtils.isNotBlank(schemaHistory.schema());
+
+        if (event != null || schemaHistoryRead) {
+          publisher.close();
+          break;
+        }
+
+        if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5)) > 0) {
+          LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 300);
+          publisher.close();
+          throw new RuntimeException(
+              "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
+        }
+
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
 
@@ -78,7 +89,9 @@ public class MssqlDebeziumStateUtil {
         Optional.empty());
 
     final Map<String, String> offset = offsetManager.read();
-    final SchemaHistory<String> schemaHistory = schemaHistoryStorage.read();
+    if (!schemaHistoryRead) {
+      schemaHistory = schemaHistoryStorage.read();
+    }
 
     assert !offset.isEmpty();
     assert Objects.nonNull(schemaHistory);
@@ -103,7 +116,7 @@ public class MssqlDebeziumStateUtil {
     return Jsons.jsonNode(state);
   }
 
-  private static MssqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
+  public static MssqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
     try (final Stream<MssqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("select sys.fn_cdc_get_max_lsn()"),
         resultSet -> {
