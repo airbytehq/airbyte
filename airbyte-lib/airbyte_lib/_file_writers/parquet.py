@@ -45,8 +45,7 @@ class ParquetWriter(FileWriterBase):
         batch_id: str,
         record_batch: pa.Table | pa.RecordBatch,
     ) -> FileWriterBatchHandle:
-        """
-        Process a record batch.
+        """Process a record batch.
 
         Return the path to the cache file.
         """

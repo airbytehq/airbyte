@@ -104,8 +104,7 @@ class RecordProcessor(abc.ABC):
         self,
         max_batch_size: int = DEFAULT_BATCH_SIZE,
     ) -> None:
-        """
-        Process the input stream from stdin.
+        """Process the input stream from stdin.
 
         Return a list of summaries for testing.
         """
@@ -126,8 +125,7 @@ class RecordProcessor(abc.ABC):
         input_stream: io.TextIOBase,
         max_batch_size: int = DEFAULT_BATCH_SIZE,
     ) -> None:
-        """
-        Parse the input stream and process data in batches.
+        """Parse the input stream and process data in batches.
 
         Return a list of summaries for testing.
         """

@@ -327,8 +327,7 @@ class SQLCacheBase(RecordProcessor):
         stream_name: str,
         create_if_missing: bool = True,
     ) -> str:
-        """
-        Create the final table if it doesn't already exist.
+        """Create the final table if it doesn't already exist.
 
         Return the table name.
         """
@@ -460,8 +459,7 @@ class SQLCacheBase(RecordProcessor):
         batch_id: str,
         record_batch: pa.Table | pa.RecordBatch,
     ) -> FileWriterBatchHandle:
-        """
-        Process a record batch.
+        """Process a record batch.
 
         Return the path to the cache file.
         """

@@ -95,8 +95,7 @@ class Source:
         return self._config_dict
 
     def _discover(self) -> AirbyteCatalog:
-        """
-        Call discover on the connector.
+        """Call discover on the connector.
 
         This involves the following steps:
         * Write the config to a temporary file
@@ -123,8 +122,7 @@ class Source:
 
     @lru_cache(maxsize=1)
     def _spec(self) -> ConnectorSpecification:
-        """
-        Call spec on the connector.
+        """Call spec on the connector.
 
         This involves the following steps:
         * execute the connector with spec
@@ -163,8 +161,7 @@ class Source:
         )
 
     def get_records(self, stream: str) -> Iterator[dict[str, Any]]:
-        """
-        Read a stream from the connector.
+        """Read a stream from the connector.
 
         This involves the following steps:
         * Call discover to get the catalog
@@ -198,8 +195,7 @@ class Source:
         yield from iterator  # TODO: Refactor to use LazyDataset here
 
     def check(self) -> None:
-        """
-        Call check on the connector.
+        """Call check on the connector.
 
         This involves the following steps:
         * Write the config to a temporary file
@@ -225,8 +221,7 @@ class Source:
         self.executor.install()
 
     def uninstall(self) -> None:
-        """
-        Uninstall the connector if it is installed.
+        """Uninstall the connector if it is installed.
 
         This only works if the use_local_install flag wasn't used and installation is managed by
         airbyte-lib.
@@ -234,8 +229,7 @@ class Source:
         self.executor.uninstall()
 
     def _read(self) -> Iterator[AirbyteMessage]:
-        """
-        Call read on the connector.
+        """Call read on the connector.
 
         This involves the following steps:
         * Call discover to get the catalog
@@ -262,8 +256,7 @@ class Source:
         self,
         catalog: ConfiguredAirbyteCatalog,
     ) -> Iterator[AirbyteMessage]:
-        """
-        Call read on the connector.
+        """Call read on the connector.
 
         This involves the following steps:
         * Write the config to a temporary file
@@ -283,8 +276,7 @@ class Source:
         self._last_log_messages = self._last_log_messages[-10:]
 
     def _execute(self, args: list[str]) -> Iterator[AirbyteMessage]:
-        """
-        Execute the connector with the given arguments.
+        """Execute the connector with the given arguments.
 
         This involves the following steps:
         * Locate the right venv. It is called ".venv-<connector_name>"
