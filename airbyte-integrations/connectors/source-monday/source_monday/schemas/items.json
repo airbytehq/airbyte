@@ -20,7 +20,7 @@
           "uploaded_by": {
             "type": ["null", "object"],
             "properties": {
-              "id": { "type": ["null", "integer"] }
+              "id": { "type": ["null", "string"] }
             }
           },
           "url": { "type": ["null", "string"] },
@@ -68,7 +68,7 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] }
+          "id": { "type": ["null", "string"] }
         }
       }
     },
