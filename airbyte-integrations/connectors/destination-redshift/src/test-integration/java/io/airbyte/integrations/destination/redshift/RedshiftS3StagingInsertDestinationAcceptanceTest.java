@@ -9,7 +9,11 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.nio.file.Path;
 
-public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftStagingS3DestinationAcceptanceTest {
+/**
+ * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration
+ * test credentials contain S3 credentials - this automatically causes COPY to be selected.
+ */
+public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftDestinationAcceptanceTest {
 
   public JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config_staging.json")));
