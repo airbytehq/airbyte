@@ -1,5 +1,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-"""Defines the `airbyte-lib-validate-source` CLI, which checks if connectors are compatible with airbyte-lib."""
+"""Defines the `airbyte-lib-validate-source` CLI.
+
+This tool checks if connectors are compatible with airbyte-lib.
+"""
 
 import argparse
 import json
@@ -67,7 +70,9 @@ def tests(connector_name: str, sample_config: str) -> None:
 def run() -> None:
     """Handle CLI entrypoint for the `airbyte-lib-validate-source` command.
 
-    It's called like this: airbyte-lib-validate-source —connector-dir . -—sample-config secrets/config.json
+    It's called like this:
+    > airbyte-lib-validate-source —connector-dir . -—sample-config secrets/config.json
+
     It performs a basic smoke test to make sure the connector in question is airbyte-lib compliant:
     * Can be installed into a venv
     * Can be called via cli entrypoint

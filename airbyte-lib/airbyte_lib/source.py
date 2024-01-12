@@ -78,7 +78,8 @@ class Source:
         for stream in streams:
             if stream not in available_streams:
                 raise Exception(
-                    f"Stream {stream} is not available for connector {self.name}, choose from {available_streams}",
+                    f"Stream {stream} is not available for connector {self.name}. "
+                    f"Choose from: {available_streams}",
                 )
         self.streams = streams
 
@@ -281,7 +282,8 @@ class Source:
         This involves the following steps:
         * Locate the right venv. It is called ".venv-<connector_name>"
         * Spawn a subprocess with .venv-<connector_name>/bin/<connector-name> <args>
-        * Read the output line by line of the subprocess and serialize them AirbyteMessage objects. Drop if not valid.
+        * Read the output line by line of the subprocess and serialize them AirbyteMessage objects.
+          Drop if not valid.
         """
         self.executor.ensure_installation()
 

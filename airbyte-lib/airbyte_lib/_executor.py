@@ -97,8 +97,9 @@ class VenvExecutor(Executor):
         self,
         metadata: ConnectorMetadata,
         target_version: str | None = None,
-        install_if_missing: bool = False,
         pip_url: str | None = None,
+        *,
+        install_if_missing: bool = False,
     ) -> None:
         super().__init__(metadata, target_version)
         self.install_if_missing = install_if_missing
@@ -166,14 +167,16 @@ class VenvExecutor(Executor):
         if not venv_path.exists():
             if not self.install_if_missing:
                 raise Exception(
-                    f"Connector {self.metadata.name} is not available - venv {venv_name} does not exist"
+                    f"Connector {self.metadata.name} is not available - "
+                    f"venv {venv_name} does not exist"
                 )
             self.install()
 
         connector_path = self._get_connector_path()
         if not connector_path.exists():
             raise FileNotFoundError(
-                f"Could not find connector '{self.metadata.name}' in venv '{venv_name}' with connector path '{connector_path}'.",
+                f"Could not find connector '{self.metadata.name}' in venv '{venv_name}' with "
+                f"connector path '{connector_path}'.",
             )
 
         if self.enforce_version:
@@ -186,7 +189,8 @@ class VenvExecutor(Executor):
                 version_after_install = self._get_installed_version()
                 if version_after_install != self.target_version:
                     raise Exception(
-                        f"Failed to install connector {self.metadata.name} version {self.target_version}. Installed version is {version_after_install}",
+                        f"Failed to install connector {self.metadata.name} version "
+                        f"{self.target_version}. Installed version is {version_after_install}",
                     )
 
     def execute(self, args: list[str]) -> Iterator[str]:
@@ -210,7 +214,8 @@ class PathExecutor(Executor):
 
     def uninstall(self) -> NoReturn:
         raise Exception(
-            f"Connector {self.metadata.name} is installed manually and not managed by airbyte-lib - please remove it manually"
+            f"Connector {self.metadata.name} is installed manually and not managed by airbyte-lib -"
+            " please remove it manually"
         )
 
     def execute(self, args: list[str]) -> Iterator[str]:

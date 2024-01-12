@@ -20,7 +20,7 @@ def run() -> None:
     if pathlib.Path("docs/generated").exists():
         shutil.rmtree("docs/generated")
 
-    # determine all folders in airbyte_lib that don't start with an underscore and add them to public_modules
+    # All folders in `airbyte_lib` that don't start with "_" are treated as public modules.
     for d in os.listdir("airbyte_lib"):
         dir_path = pathlib.Path(f"airbyte_lib/{d}")
         if dir_path.is_dir() and not d.startswith("_"):
