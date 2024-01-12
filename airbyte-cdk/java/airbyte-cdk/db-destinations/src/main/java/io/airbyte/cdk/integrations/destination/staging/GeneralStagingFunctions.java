@@ -45,7 +45,6 @@ public class GeneralStagingFunctions {
         final String schema = writeConfig.getOutputSchemaName();
         final String stream = writeConfig.getStreamName();
         final String dstTableName = writeConfig.getOutputTableName();
-        final String stageName = stagingOperations.getStageName(schema, dstTableName);
         final String stagingPath =
             stagingOperations.getStagingPath(SerialStagingConsumerFactory.RANDOM_CONNECTION_ID, schema, stream, writeConfig.getOutputTableName(),
                 writeConfig.getWriteDatetime());
@@ -55,7 +54,7 @@ public class GeneralStagingFunctions {
 
         stagingOperations.createSchemaIfNotExists(database, schema);
         stagingOperations.createTableIfNotExists(database, schema, dstTableName);
-        stagingOperations.createStageIfNotExists(database, stageName);
+        stagingOperations.createStageIfNotExists();
 
         /*
          * When we're in OVERWRITE, clear out the table at the start of a sync, this is an expected side
@@ -79,7 +78,6 @@ public class GeneralStagingFunctions {
    * upload was unsuccessful
    */
   public static void copyIntoTableFromStage(final JdbcDatabase database,
-                                            final String stageName,
                                             final String stagingPath,
                                             final List<String> stagedFiles,
                                             final String tableName,
@@ -94,8 +92,8 @@ public class GeneralStagingFunctions {
       final Lock rawTableInsertLock = typerDeduper.getRawTableInsertLock(streamNamespace, streamName);
       rawTableInsertLock.lock();
       try {
-        stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
-            tableName, schemaName);
+        stagingOperations.copyIntoTableFromStage(database, stagingPath, stagedFiles,
+                                                 tableName, schemaName);
       } finally {
         rawTableInsertLock.unlock();
       }
@@ -107,8 +105,6 @@ public class GeneralStagingFunctions {
         typerDeduperValve.updateTimeAndIncreaseInterval(streamId);
       }
     } catch (final Exception e) {
-      stagingOperations.cleanUpStage(database, stageName, stagedFiles);
-      log.info("Cleaning stage path {}", stagingPath);
       throw new RuntimeException("Failed to upload data from stage " + stagingPath, e);
     }
   }

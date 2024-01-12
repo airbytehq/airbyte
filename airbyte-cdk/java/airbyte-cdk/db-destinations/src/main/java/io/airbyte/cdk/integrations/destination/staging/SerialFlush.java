@@ -81,21 +81,20 @@ public class SerialFlush {
 
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
       final String schemaName = writeConfig.getOutputSchemaName();
-      final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
       final String stagingPath =
           stagingOperations.getStagingPath(
               SerialStagingConsumerFactory.RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(),
               writeConfig.getOutputTableName(), writeConfig.getWriteDatetime());
       try (writer) {
         writer.flush();
-        final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
-        GeneralStagingFunctions.copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(),
-            schemaName,
-            stagingOperations,
-            writeConfig.getNamespace(),
-            writeConfig.getStreamName(),
-            typerDeduperValve,
-            typerDeduper);
+        final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stagingPath);
+        GeneralStagingFunctions.copyIntoTableFromStage(database, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(),
+                                                       schemaName,
+                                                       stagingOperations,
+                                                       writeConfig.getNamespace(),
+                                                       writeConfig.getStreamName(),
+                                                       typerDeduperValve,
+                                                       typerDeduper);
       } catch (final Exception e) {
         log.error("Failed to flush and commit buffer data into destination's raw table", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
