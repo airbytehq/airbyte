@@ -78,26 +78,24 @@ class WeaviateIndexer(Indexer):
                 self.client.schema.create_class(schema)
                 logging.info(f"Recreated class {class_name}")
             elif class_name not in classes:
-                self.client.schema.create_class(
-                    {
-                        "class": class_name,
-                        "multiTenancyConfig": {
-                            "enabled": True if self.config.tenant_id.strip() else False,
-                        },
-                        "vectorizer": self.config.default_vectorizer,
-                        "properties": [
-                            {
-                                # Record ID is used for bookkeeping, not for searching
-                                "name": METADATA_RECORD_ID_FIELD,
-                                "dataType": ["text"],
-                                "description": "Record ID, used for bookkeeping.",
-                                "indexFilterable": True,
-                                "indexSearchable": False,
-                                "tokenization": "field",
-                            }
-                        ],
-                    }
-                )
+                config = {
+                    "class": class_name,
+                    "vectorizer": self.config.default_vectorizer,
+                    "properties": [
+                        {
+                            # Record ID is used for bookkeeping, not for searching
+                            "name": METADATA_RECORD_ID_FIELD,
+                            "dataType": ["text"],
+                            "description": "Record ID, used for bookkeeping.",
+                            "indexFilterable": True,
+                            "indexSearchable": False,
+                            "tokenization": "field",
+                        }
+                    ],
+                }
+                if self.config.text_field.strip():
+                    config["multiTenancyConfig"] = {"enabled": True}
+                self.client.schema.create_class(config)
                 logging.info(f"Created class {class_name}")
                 if self.config.tenant_id.strip():
                     self.client.schema.add_class_tenants(
