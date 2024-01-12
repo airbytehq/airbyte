@@ -46,6 +46,9 @@
     "email": {
       "type": ["null", "string"]
     },
+    "userId": {
+      "type": ["null", "string"]
+    },
     "channelId": {
       "type": ["null", "integer"]
     }
