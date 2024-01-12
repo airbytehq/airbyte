@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from source_linkedin_ads.analytics import make_date_slices
+from source_linkedin_ads.analytics_streams import LinkedInAdsAnalyticsStream
 
 TEST_START_DATE = "2021-08-01"
 TEST_END_DATE = "2021-10-01"
 
 
-def test_make_date_slices():
+def test_get_date_slices():
     """
     : By default we use the `WINDOW_SIZE = 30`, as it set in the analytics module
     : This value could be changed by setting the corresponding argument in the method.
@@ -21,4 +21,4 @@ def test_make_date_slices():
         {"dateRange": {"start.day": 30, "start.month": 9, "start.year": 2021, "end.day": 30, "end.month": 10, "end.year": 2021}},
     ]
 
-    assert list(make_date_slices(TEST_START_DATE, TEST_END_DATE)) == expected_output
+    assert list(LinkedInAdsAnalyticsStream.get_date_slices(TEST_START_DATE, TEST_END_DATE)) == expected_output
