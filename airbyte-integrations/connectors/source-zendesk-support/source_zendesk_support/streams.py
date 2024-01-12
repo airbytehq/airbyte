@@ -626,6 +626,23 @@ class TicketAudits(IncrementalZendeskSupportStream):
         response_json = response.json()
         return {"cursor": response.json().get("before_cursor")} if response_json.get("before_cursor") else None
 
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == requests.codes.GATEWAY_TIMEOUT:
+                self.logger.error(f"Skipping stream `{self.name}`. Timed out waiting for response: {e.response.text}...")
+            else:
+                raise e
+
 
 class Tags(FullRefreshZendeskSupportStream):
     """Tags stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/tags/"""

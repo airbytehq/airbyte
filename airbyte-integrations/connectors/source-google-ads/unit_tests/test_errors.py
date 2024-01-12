@@ -10,10 +10,20 @@ import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads.google_ads import GoogleAds
+from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupLabel, Label, ServiceAccounts
 
 from .common import MockGoogleAdsClient, mock_google_ads_request_failure
+
+
+@pytest.fixture
+def mock_get_customers(mocker):
+    mocker.patch(
+        "source_google_ads.source.SourceGoogleAds.get_customers",
+        Mock(return_value=[CustomerModel(is_manager_account=False, time_zone="Europe/Berlin", id="123")]),
+    )
+
 
 params = [
     (
@@ -51,6 +61,10 @@ params = [
 @pytest.mark.parametrize(("exception", "error_message"), params)
 def test_expected_errors(mocker, config, exception, error_message):
     mock_google_ads_request_failure(mocker, exception)
+    mocker.patch(
+        "source_google_ads.google_ads.GoogleAds.get_accessible_accounts",
+        Mock(return_value=["123", "12345"]),
+    )
     source = SourceGoogleAds()
     with pytest.raises(AirbyteTracedException) as exception:
         status_ok, error = source.check_connection(AirbyteLogger(), config)
@@ -74,7 +88,7 @@ def test_read_record_error_handling(mocker, config, customers, cls, raise_expect
     context = pytest.raises(AirbyteTracedException) if raise_expected else does_not_raise()
 
     with context as exception:
-        for _ in stream.read_records(sync_mode=Mock(), stream_slice={"customer_id": "1234567890"}):
+        for _ in stream.read_records(sync_mode=Mock(), stream_slice={"customer_id": "1234567890", "login_customer_id": "default"}):
             pass
 
     if raise_expected:
@@ -131,8 +145,8 @@ def test_read_record_error_handling(mocker, config, customers, cls, raise_expect
 def test_check_custom_queries(mocker, config, custom_query, is_manager_account, error_message, warning):
     config["custom_queries_array"] = [custom_query]
     mocker.patch(
-        "source_google_ads.source.SourceGoogleAds.get_account_info",
-        Mock(return_value=[[{"customer.manager": is_manager_account, "customer.time_zone": "Europe/Berlin", "customer.id": "8765"}]]),
+        "source_google_ads.source.SourceGoogleAds.get_customers",
+        Mock(return_value=[CustomerModel(is_manager_account=is_manager_account, time_zone="Europe/Berlin", id="8765")]),
     )
     mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
     source = SourceGoogleAds()

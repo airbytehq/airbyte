@@ -178,17 +178,25 @@ class CsvParser(FileTypeParser):
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
-        config_format = _extract_format(config)
-        if discovered_schema:
-            property_types = {col: prop["type"] for col, prop in discovered_schema["properties"].items()}  # type: ignore # discovered_schema["properties"] is known to be a mapping
-            deduped_property_types = CsvParser._pre_propcess_property_types(property_types)
-        else:
-            deduped_property_types = {}
-        cast_fn = CsvParser._get_cast_function(deduped_property_types, config_format, logger, config.schemaless)
-        data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
-        for row in data_generator:
-            yield CsvParser._to_nullable(cast_fn(row), deduped_property_types, config_format.null_values, config_format.strings_can_be_null)
-        data_generator.close()
+        line_no = 0
+        try:
+            config_format = _extract_format(config)
+            if discovered_schema:
+                property_types = {col: prop["type"] for col, prop in discovered_schema["properties"].items()}  # type: ignore # discovered_schema["properties"] is known to be a mapping
+                deduped_property_types = CsvParser._pre_propcess_property_types(property_types)
+            else:
+                deduped_property_types = {}
+            cast_fn = CsvParser._get_cast_function(deduped_property_types, config_format, logger, config.schemaless)
+            data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
+            for row in data_generator:
+                line_no += 1
+                yield CsvParser._to_nullable(
+                    cast_fn(row), deduped_property_types, config_format.null_values, config_format.strings_can_be_null
+                )
+        except RecordParseError as parse_err:
+            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no) from parse_err
+        finally:
+            data_generator.close()
 
     @property
     def file_read_mode(self) -> FileReadMode:
