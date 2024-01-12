@@ -3,14 +3,9 @@
 
 from typing import Any
 
-from airbyte_lib.cache import InMemoryCache
-from airbyte_lib.executor import Executor, PathExecutor, VenvExecutor
+from airbyte_lib._executor import Executor, PathExecutor, VenvExecutor
 from airbyte_lib.registry import get_connector_metadata
 from airbyte_lib.source import Source
-
-
-def get_in_memory_cache():
-    return InMemoryCache()
 
 
 def get_connector(
@@ -20,7 +15,7 @@ def get_connector(
     config: dict[str, Any] | None = None,
     use_local_install: bool = False,
     install_if_missing: bool = True,
-):
+) -> Source:
     """
     Get a connector by name and version.
     :param name: connector name
