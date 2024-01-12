@@ -2,12 +2,18 @@
 
 """Global pytest fixtures."""
 
+import logging
 import socket
 import time
 
 import docker
+import psycopg
 import pytest
+
 from airbyte_lib.caches import PostgresCacheConfig
+
+logger = logging.getLogger(__name__)
+
 
 PYTEST_POSTGRES_IMAGE = "postgres:13"
 PYTEST_POSTGRES_CONTAINER = "postgres_pytest_container"
@@ -51,9 +57,22 @@ def pg_dsn():
         detach=True,
     )
     # Wait for the database to start (assumes image is already downloaded)
-    time.sleep(5.0)
-    url = "postgresql://postgres:postgres@localhost:5432/postgres"
-    yield url
+    pg_url = f"postgresql://postgres:postgres@localhost:{PYTEST_POSTGRES_PORT}/postgres"
+
+    max_attempts = 10
+    for attempt in range(max_attempts):
+        try:
+            conn = psycopg.connect(pg_url)
+            conn.close()
+            break
+        except psycopg.OperationalError:
+            logger.info(f"Waiting for postgres to start (attempt {attempt + 1}/{max_attempts})")
+            time.sleep(1.0)
+
+    else:
+        raise Exception("Failed to connect to the PostgreSQL database.")
+
+    yield pg_url
     # Stop and remove the container after the tests are done
     postgres.stop()
     postgres.remove()
