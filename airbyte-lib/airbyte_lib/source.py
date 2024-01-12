@@ -3,9 +3,9 @@
 import json
 import tempfile
 from collections.abc import Generator, Iterable, Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from functools import lru_cache
-from typing import Any, Optional
+from typing import Any
 
 import jsonschema
 
@@ -43,10 +43,8 @@ def as_temp_files(files: list[Any]) -> Generator[list[Any], Any, None]:
         yield [file.name for file in temp_files]
     finally:
         for temp_file in temp_files:
-            try:
+            with suppress(Exception):
                 temp_file.close()
-            except Exception:
-                pass
 
 
 class Source:
@@ -56,14 +54,14 @@ class Source:
         self,
         executor: Executor,
         name: str,
-        config: Optional[dict[str, Any]] = None,
-        streams: Optional[list[str]] = None,
-    ):
+        config: dict[str, Any] | None = None,
+        streams: list[str] | None = None,
+    ) -> None:
         self.executor = executor
         self.name = name
-        self.streams: Optional[list[str]] = None
+        self.streams: list[str] | None = None
         self._processed_records = 0
-        self._config_dict: Optional[dict[str, Any]] = None
+        self._config_dict: dict[str, Any] | None = None
         self._last_log_messages: list[str] = []
         if config is not None:
             self.set_config(config)
@@ -145,8 +143,7 @@ class Source:
         """
         Get the raw catalog for the given streams.
         """
-        catalog = self._discover()
-        return catalog
+        return self._discover()
 
     @property
     @lru_cache(maxsize=1)
@@ -282,10 +279,9 @@ class Source:
             config_file,
             catalog_file,
         ]:
-            for msg in self._execute(
+            yield from self._execute(
                 ["read", "--config", config_file, "--catalog", catalog_file],
-            ):
-                yield msg
+            )
 
     def _add_to_logs(self, message: str) -> None:
         self._last_log_messages.append(message)

@@ -84,7 +84,7 @@ def _stream_from_subprocess(args: list[str]) -> Generator[Iterable[str], None, N
         exit_code = process.wait()
 
         # If the exit code is not 0 or -15 (SIGTERM), raise an exception
-        if exit_code != 0 and exit_code != -15:
+        if exit_code not in (0, -15):
             raise Exception(f"Process exited with code {exit_code}")
 
 
@@ -186,7 +186,7 @@ class VenvExecutor(Executor):
     def execute(self, args: list[str]) -> Iterator[str]:
         connector_path = self._get_connector_path()
 
-        with _stream_from_subprocess([str(connector_path)] + args) as stream:
+        with _stream_from_subprocess([str(connector_path), *args]) as stream:
             yield from stream
 
 
@@ -208,5 +208,5 @@ class PathExecutor(Executor):
         )
 
     def execute(self, args: list[str]) -> Iterator[str]:
-        with _stream_from_subprocess([self.metadata.name] + args) as stream:
+        with _stream_from_subprocess([self.metadata.name, *args]) as stream:
             yield from stream

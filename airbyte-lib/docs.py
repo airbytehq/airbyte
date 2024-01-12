@@ -7,7 +7,7 @@ import shutil
 import pdoc
 
 
-def run():
+def run() -> None:
     """
     Generate docs for all public modules in airbyte_lib and save them to docs/generated.
     Public modules are:
@@ -17,7 +17,7 @@ def run():
     public_modules = ["airbyte_lib"]
 
     # recursively delete the docs/generated folder if it exists
-    if os.path.exists("docs/generated"):
+    if pathlib.Path("docs/generated").exists():
         shutil.rmtree("docs/generated")
 
     # determine all folders in airbyte_lib that don't start with an underscore and add them to public_modules
