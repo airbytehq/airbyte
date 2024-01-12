@@ -28,6 +28,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -80,18 +81,17 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && !stream.primaryKey().isEmpty()) {
-      return List.of(
-          getDslContext().createIndex().on(
-              name(stream.id().finalNamespace(), stream.id().finalName() + suffix),
-              stream.primaryKey().stream()
-                  .map(pk -> quotedName(pk.name()))
-                  .toList())
-              .getSQL());
-    } else {
-      return emptyList();
-    }
+  public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
+    return Sql.concat(
+        super.createTable(stream, suffix, force),
+        // index on PK
+        Sql.of(getDslContext().createIndex().on(
+                name(stream.id().finalNamespace(), stream.id().finalName() + suffix),
+                stream.primaryKey().stream()
+                    .map(pk -> quotedName(pk.name()))
+                    .toList())
+            .getSQL())
+    );
   }
 
   @Override
