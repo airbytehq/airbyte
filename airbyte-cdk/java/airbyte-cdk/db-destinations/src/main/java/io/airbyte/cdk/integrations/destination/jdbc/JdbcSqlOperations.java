@@ -71,6 +71,9 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
     try {
       database.execute(createTableQuery(database, schemaName, tableName));
+      for (final String postCreateSql : postCreateTableQueries(schemaName, tableName)) {
+        database.execute(postCreateSql);
+      }
     } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
@@ -83,6 +86,10 @@ public abstract class JdbcSqlOperations implements SqlOperations {
     } else {
       return createTableQueryV1(schemaName, tableName);
     }
+  }
+
+  protected List<String> postCreateTableQueries(final String schemaName, final String tableName) {
+    return List.of();
   }
 
   protected String createTableQueryV1(final String schemaName, final String tableName) {
