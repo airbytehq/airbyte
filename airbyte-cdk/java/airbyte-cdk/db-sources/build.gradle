@@ -105,10 +105,12 @@ dependencies {
 
     implementation libs.testcontainers
     implementation libs.testcontainers.mysql
+    implementation libs.testcontainers.mssqlserver
     implementation libs.testcontainers.jdbc
     implementation libs.testcontainers.postgresql
     testImplementation libs.testcontainers.jdbc
     testImplementation libs.testcontainers.mysql
+    testImplementation libs.testcontainers.mssqlserver
     testImplementation libs.testcontainers.postgresql
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
 
@@ -157,6 +159,7 @@ dependencies {
     // Mark as compile only to avoid leaking transitively to connectors
     testFixturesCompileOnly libs.testcontainers.jdbc
     testFixturesCompileOnly libs.testcontainers.postgresql
+    testFixturesCompileOnly libs.testcontainers.mssqlserver
     testFixturesCompileOnly libs.testcontainers.cockroachdb
     testFixturesImplementation libs.testcontainers.cockroachdb
 }
