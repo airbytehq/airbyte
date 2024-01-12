@@ -17,9 +17,6 @@ from source_linkedin_ads.streams import Campaigns, Creatives, IncrementalLinkedi
 
 from .utils import get_parent_stream_values, transform_data
 
-# LinkedIn has a max of 20 fields per request. We make chunks by size of 19 fields
-# to have the `dateRange` be included as well.
-FIELDS_CHUNK_SIZE = 19
 # Number of days ahead for date slices, from start date.
 WINDOW_IN_DAYS = 30
 # List of Reporting Metrics fields available for fetch
@@ -133,6 +130,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     primary_key = ["pivotValue", "end_date"]
     cursor_field = "end_date"
     records_limit = 15000
+    FIELDS_CHUNK_SIZE = 19
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
@@ -205,7 +203,20 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    ) -> Iterable[Optional[List[Mapping[str, Any]]]]:
+        """
+        LinkedIn has a max of 20 fields per request. We make chunks by size of 19 fields to have the `dateRange` be included as well.
+        https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-05&tabs=http#requesting-specific-metrics-in-the-analytics-finder
+
+        :param sync_mode:
+        :param cursor_field:
+        :param stream_state:
+        :return: List of stream slices within the same date range and chunked fields, example
+        [{'campaign_id': 123, 'fields': 'field_1,field_2,dateRange', 'dateRange': {'start.day': 1, 'start.month': 1, 'start.year': 2020, 'end.day': 30, 'end.month': 1, 'end.year': 2020}},
+        {'campaign_id': 123, 'fields': 'field_2,field_3,dateRange',  'dateRange': {'start.day': 1, 'start.month': 1, 'start.year': 2020, 'end.day': 30, 'end.month': 1, 'end.year': 2020}},
+        {'campaign_id': 123, 'fields': 'field_4,field_5,dateRange',  'dateRange': {'start.day': 1, 'start.month': 1, 'start.year': 2020, 'end.day': 30, 'end.month': 1, 'end.year': 2020}}]
+
+        """
         parent_stream = self.parent_stream(config=self.config)
         stream_state = stream_state or {self.cursor_field: self.config.get("start_date")}
         for record in parent_stream.read_records(sync_mode=sync_mode):
@@ -255,24 +266,6 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
             if "dateRange" not in chunk:
                 chunk.append("dateRange")
         yield from chunks
-
-    def make_analytics_slices(
-        self, record: Mapping[str, Any], key_value_map: Mapping[str, Any], start_date: str, end_date: str = None
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        We drive the ability to directly pass the prepared parameters inside the stream_slice.
-        The output of this method is ready slices for analytics streams:
-        """
-        # define the base_slice
-        base_slice = get_parent_stream_values(record, key_value_map)
-        # add chunked fields, date_slices to the base_slice
-        analytics_slices = []
-        for fields_set in self.chunk_analytics_fields():
-            base_slice["fields"] = ",".join(map(str, fields_set))
-            for date_slice in self.make_date_slices(start_date, end_date):
-                base_slice.update(**date_slice)
-                analytics_slices.append(base_slice.copy())
-        yield from analytics_slices
 
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
