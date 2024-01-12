@@ -57,7 +57,7 @@ class Source:
         self.executor = executor
         self.name = name
         self.streams: Optional[List[str]] = None
-        self.config: Optional[Dict[str, Any]] = None
+        self._config_dict: Optional[Dict[str, Any]] = None
         self._last_log_messages: List[str] = []
         if config is not None:
             self.set_config(config)
@@ -73,7 +73,13 @@ class Source:
 
     def set_config(self, config: Dict[str, Any]):
         self._validate_config(config)
-        self.config = config
+        self._config_dict = config
+
+    @property
+    def _config(self) -> Dict[str, Any]:
+        if self._config_dict is None:
+            raise Exception("Config is not set, either set in get_connector or via source.set_config")
+        return self._config_dict
 
     def _discover(self) -> AirbyteCatalog:
         """
@@ -85,7 +91,7 @@ class Source:
         * Listen to the messages and return the first AirbyteCatalog that comes along.
         * Make sure the subprocess is killed when the function returns.
         """
-        with as_temp_files([self.config]) as [config_file]:
+        with as_temp_files([self._config]) as [config_file]:
             for msg in self._execute(["discover", "--config", config_file]):
                 if msg.type == Type.CATALOG and msg.catalog:
                     return msg.catalog
@@ -158,7 +164,7 @@ class Source:
         * Listen to the messages and return the first AirbyteCatalog that comes along.
         * Make sure the subprocess is killed when the function returns.
         """
-        with as_temp_files([self.config]) as [config_file]:
+        with as_temp_files([self._config]) as [config_file]:
             for msg in self._execute(["check", "--config", config_file]):
                 if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
                     if msg.connectionStatus.status == Status.FAILED:
@@ -168,7 +174,16 @@ class Source:
             raise Exception(f"Connector did not return check status. Last logs: {self._last_log_messages}")
 
     def install(self):
+        """
+        Install the connector if it is not yet installed.
+        """
         self.executor.install()
+
+    def uninstall(self):
+        """
+        Uninstall the connector if it is installed. This only works if the use_local_install flag wasn't used and installation is managed by airbyte-lib.
+        """
+        self.executor.uninstall()
 
     def _read(self, cache_type: CacheType) -> Iterable[AirbyteRecordMessage]:
         """
@@ -208,7 +223,7 @@ class Source:
         source_tracking_information = self.executor.get_telemetry_info()
         send_telemetry(source_tracking_information, cache_type, SyncState.STARTED)
         try:
-            with as_temp_files([self.config, catalog.json()]) as [
+            with as_temp_files([self._config, catalog.json()]) as [
                 config_file,
                 catalog_file,
             ]:
