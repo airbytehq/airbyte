@@ -98,7 +98,7 @@ select = [
     "SLF", # flake8-self
     "SLOT", # flake8-slots
     "T10", # debugger calls
-    "T20", # flake8-print
+    # "T20", # flake8-print # TODO: Re-enable once we have logging
     "TCH", # flake8-type-checking
     "TD", # flake8-todos
     "TID", # flake8-tidy-imports
@@ -125,7 +125,11 @@ ignore = [
     "TD003", # Require links for TODOs
     "TRY003",  # Raising exceptions with too-long string descriptions  # TODO: re-evaluate once we have our own exception classes
     "S", # flake8-bandit (noisy, security related)
-    "TRIO"  # flake8-trio (opinionated, noisy)
+    "TRIO", # flake8-trio (opinionated, noisy)
+
+    # TODO: Definitely re-enable these:
+    "TRY002", # TODO: When we have time to tackle exception management ("Create your own exception")
+    "FIX002", "FIX001" # A bit meta: these fails if we have any TODOs/FIXMEs in the codebase
 ]
 fixable = ["ALL"]
 unfixable = [
