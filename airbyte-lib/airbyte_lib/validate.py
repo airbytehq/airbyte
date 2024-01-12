@@ -73,7 +73,6 @@ def run() -> None:
     * Can be called via cli entrypoint
     * Answers according to the Airbyte protocol when called with spec, check, discover and read
     """
-
     # parse args
     args = _parse_args()
     connector_dir = args.connector_dir

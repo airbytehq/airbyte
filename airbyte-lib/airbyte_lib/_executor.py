@@ -1,15 +1,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import os
 import subprocess
 import sys
 from abc import ABC, abstractmethod
-from collections.abc import Generator, Iterable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, NoReturn
+from typing import IO, TYPE_CHECKING, Any, NoReturn
 
-from airbyte_lib.registry import ConnectorMetadata
+
+if TYPE_CHECKING:
+    from collections.abc import Generator, Iterable, Iterator
+
+    from airbyte_lib.registry import ConnectorMetadata
 
 
 _LATEST_VERSION = "latest"

@@ -1,13 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 """A SQL Cache implementation."""
+from __future__ import annotations
 
 import abc
 import enum
 from collections.abc import Generator, Iterator, Mapping
 from contextlib import contextmanager
 from functools import cached_property, lru_cache
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast, final
 
 import pandas as pd
@@ -16,10 +16,7 @@ import sqlalchemy
 import ulid
 from overrides import overrides
 from sqlalchemy import CursorResult, Executable, TextClause, create_engine, text
-from sqlalchemy.engine import Engine
 from sqlalchemy.pool import StaticPool
-
-from airbyte_protocol.models import ConfiguredAirbyteStream
 
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
@@ -28,8 +25,12 @@ from airbyte_lib.types import SQLTypeConverter
 
 
 if TYPE_CHECKING:
-    from sqlalchemy.engine import Connection
+    from pathlib import Path
+
+    from sqlalchemy.engine import Connection, Engine
     from sqlalchemy.engine.reflection import Inspector
+
+    from airbyte_protocol.models import ConfiguredAirbyteStream
 
     from airbyte_lib.datasets._base import DatasetBase
 
@@ -206,7 +207,7 @@ class SQLCacheBase(RecordProcessor):
     @property
     def streams(
         self,
-    ) -> dict[str, "DatasetBase"]:
+    ) -> dict[str, DatasetBase]:
         """Return a temporary table name."""
         # TODO: Add support for streams map, based on the cached catalog.
         raise NotImplementedError("Streams map is not yet supported.")

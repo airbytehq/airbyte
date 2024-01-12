@@ -1,11 +1,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import json
 import tempfile
-from collections.abc import Generator, Iterable, Iterator
 from contextlib import contextmanager, suppress
 from functools import lru_cache
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import jsonschema
 
@@ -22,11 +22,16 @@ from airbyte_protocol.models import (
     Type,
 )
 
-from airbyte_lib._executor import Executor
 from airbyte_lib._factories.cache_factories import get_default_cache
 from airbyte_lib._util import protocol_util  # Internal utility functions
-from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.results import ReadResult
+
+
+if TYPE_CHECKING:
+    from collections.abc import Generator, Iterable, Iterator
+
+    from airbyte_lib._executor import Executor
+    from airbyte_lib.caches import SQLCacheBase
 
 
 @contextmanager
@@ -296,7 +301,6 @@ class Source:
         * Spawn a subprocess with .venv-<connector_name>/bin/<connector-name> <args>
         * Read the output line by line of the subprocess and serialize them AirbyteMessage objects. Drop if not valid.
         """
-
         self.executor.ensure_installation()
 
         try:

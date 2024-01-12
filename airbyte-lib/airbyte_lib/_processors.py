@@ -229,7 +229,7 @@ class RecordProcessor(abc.ABC):
         For instance, file writers can override this method to delete the files created. Caches,
         similarly, can override this method to delete any other temporary artifacts.
         """
-        pass  # noqa: PIE790 # Intentional no-op
+        pass
 
     def _new_batch_id(self) -> str:
         """Return a new batch handle."""
