@@ -359,8 +359,8 @@
         "type": "string"
       },
       "role_arn": {
-        "title": "AWS Role ARN",
-        "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set External ID as 'None'.",
+        "title": "AWS Role ARN (External ID is '8eee93517501b43a')",
+        "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set External ID as '8eee93517501b43a'.",
         "airbyte_secret": true,
         "order": 6,
         "type": "string"

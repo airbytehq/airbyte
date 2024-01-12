@@ -10,7 +10,7 @@ from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import Abstr
 from airbyte_cdk.utils import is_cloud_environment
 from pydantic import AnyUrl, Field, ValidationError, root_validator
 
-AWS_EXTERNAL_ID = getenv("AWS_EXTERNAL_ID")
+AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class Config(AbstractFileBasedSpec):

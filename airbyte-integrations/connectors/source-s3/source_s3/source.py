@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from .source_files_abstract.spec import SourceFilesAbstractSpec
 
-AWS_EXTERNAL_ID = getenv("AWS_EXTERNAL_ID")
+AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):

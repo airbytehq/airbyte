@@ -24,7 +24,7 @@ from botocore.session import get_session
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
-AWS_EXTERNAL_ID = getenv("AWS_EXTERNAL_ID")
+AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
