@@ -24,7 +24,8 @@ class GainsightCsObjectStream(GainsightCsStream):
     gainsight_airbyte_type_map = {
         "STRING": ["null", "string"],
         "BOOLEAN": ["null", "boolean"],
-        "NUMBER": ["null", "integer"],
+        "NUMBER": ["null", "number"],
+        "PERCENTAGE": ["null", "number"],
         "GSID": ["null", "string"],
         "DATETIME": ["null", "string"],
         "EMAIL": ["null", "string"],
