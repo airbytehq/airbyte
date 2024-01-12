@@ -236,7 +236,6 @@ class CustomerClient(GoogleAdsStream):
     Customer Client stream: https://developers.google.com/google-ads/api/fields/v15/customer_client
     """
 
-    CATCH_CUSTOMER_NOT_ENABLED_ERROR = False
     primary_key = ["customer_client.id"]
 
     def __init__(self, customer_status_filter: List[str], **kwargs):
