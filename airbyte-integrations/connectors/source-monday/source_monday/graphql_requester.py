@@ -79,38 +79,37 @@ class MondayGraphqlRequester(HttpRequester):
         arguments = f"({arguments})" if arguments else ""
         fields = ",".join(fields)
 
-        print(f"======_build_query========= arguments: {arguments}")
         if object_name in ['items_page', 'next_items_page']:
             query = f"{object_name}{arguments}{{cursor,items{{{fields}}}}}"
         else:
             query = f"{object_name}{arguments}{{{fields}}}"
-        print(f"query: {query}")
         return query
 
     def _build_items_query(self, object_name: str, field_schema: dict, sub_page: Optional[int], **object_arguments) -> str:
         """
         Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
+
+        Comparison of different APIs queries:
+        2023-07:
+            boards(limit: 1)         {      items(limit: 20)                 {              field1, field2, ...  }}
+            boards(limit: 1, page:2) {      items(limit: 20, page:2)         {              field1, field2, ...  }} boards and items paginations
+        2024_01:
+            boards(limit: 1)         { items_page(limit: 20)                 {cursor, items{field1, field2, ...} }}
+            boards(limit: 1, page:2) { items_page(limit: 20)                 {cursor, items{field1, field2, ...} }} - boards pagination
+                                  next_items_page(limit: 20, cursor: "blaa") {cursor, items{field1, field2, ...} }  - items pagination
+
         """
         nested_limit = self.nested_limit.eval(self.config)
-        # Paginations:             Incremental |                       Cursor
-        # q_2023-07 = boards(limit: 1)         {      items(limit: 20)                 {              field1, field2, ...  }}
-        #             boards(limit: 1, page:2) {      items(limit: 20, page:1)         {              field1, field2, ...  }}
-        # q_2024_01 = boards(limit: 1)         { items_page(limit: 20)                 {cursor, items{field1, field2, ...} }}
-        #             boards(limit: 1, page:2) { items_page(limit: 20)                 {cursor, items{field1, field2, ...} }}
-        #                                   next_items_page(limit: 20, cursor: "blaa") {cursor, items{field1, field2, ...} }
 
-        print(f'----------------- object_name {object_name}, sub_page: {sub_page} object_arguments: {object_arguments}')
-        if not sub_page:
+        if sub_page:
+            query = self._build_query("next_items_page", field_schema, limit=nested_limit, cursor=f'"{sub_page}"')
+        else:
             query = self._build_query("items_page", field_schema, limit=nested_limit, page=sub_page)
             arguments = self._get_object_arguments(**object_arguments)
+            query = f"boards({arguments}){{{query}}}"
 
-            q = f"boards({arguments}){{{query}}}"
-        else:
-            q = self._build_query("next_items_page", field_schema, limit=nested_limit, cursor=f'"{sub_page}"')
-
-        print(f"final query: {q}")
-        return q
+        return query
 
     def _build_items_incremental_query(self, object_name: str, field_schema: dict, stream_slice: dict, **object_arguments) -> str:
         """
@@ -179,13 +178,10 @@ class MondayGraphqlRequester(HttpRequester):
         limit = self.limit.eval(self.config)
 
         page = next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME]
-
-        print(f"======================== limit {limit}, next_page_token {next_page_token}, page {page}")
-
         if self.name == "boards" and stream_slice:
             query_builder = partial(self._build_query, **stream_slice)
         elif self.name == "items":
-
+            # `items` stream use a separate pagination strategy where first level pages are across `boards` and sub-pages are across `items`
             page, sub_page = page if page else (None, None)
             if not stream_slice:
                 query_builder = partial(self._build_items_query, sub_page=sub_page)
@@ -198,7 +194,6 @@ class MondayGraphqlRequester(HttpRequester):
             query_builder = partial(self._build_activity_query, sub_page=sub_page, stream_state=stream_state)
         else:
             query_builder = self._build_query
-
         query = query_builder(
             object_name=self.name,
             field_schema=self._get_schema_root_properties(),

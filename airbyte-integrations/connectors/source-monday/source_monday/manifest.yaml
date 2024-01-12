@@ -106,7 +106,7 @@ definitions:
   double_paginator:
     $ref: "#/definitions/default_paginator"
     pagination_strategy:
-      class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategyXXXX"
+      class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategy"
       type: "CustomPaginationStrategy"
 
   activity_logs_stream:
