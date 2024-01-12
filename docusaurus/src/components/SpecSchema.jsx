@@ -18,7 +18,6 @@ export const SpecSchema = ({
 
 function JSONSchemaViewer(props) {
   return <div>
-    {/* <pre>{JSON.stringify(props.schema, null, 2)}</pre> */}
     <Heading as="h4">Config fields reference</Heading>
     <JSONSchemaObject schema={props.schema} />
   </div>
@@ -77,14 +76,14 @@ function JSONSchemaProperty({ propertyKey, schema, required }) {
         {propertyKey && <div className={styles.propertyName}>{propertyKey}</div>}
         {schema.title && <div>{schema.title}</div>}
         {required && <div className={styles.tag}>required</div>}
-        <div className={styles.tag}>Type: {schema.type}</div>
+        <div className={styles.tag}>type: {schema.type}</div>
         {schema.const && <div className={styles.tag}>constant value: {JSON.stringify(schema.const)}</div>}
       </div></div>
   } else {
     return <Disclosure initiallyOpen={false}>
       {({ open }) => (
         <div className={styles.block}>
-          <Disclosure.Button className={styles.header}>
+          <Disclosure.Button className={className(styles.header, styles.clickable)}>
             <div className={className({ [styles.open]: open })}>›</div>
             {propertyKey && <div className={styles.propertyName}>{propertyKey}</div>}
             {schema.title && <div>{schema.title}</div>}
@@ -95,14 +94,13 @@ function JSONSchemaProperty({ propertyKey, schema, required }) {
             <div className={styles.propertyDocumentation}>
               <div>Type: {schema.type}</div>
               {schema.default && !schema.const && <div>Default: <pre>{JSON.stringify(schema.default, null, 2)}</pre></div>}
-              {schema.pattern && <div>Pattern: {schema.pattern} {schema.pattern_descriptor && <pre>({schema.pattern_descriptor})</pre>}</div>}
+              {schema.pattern && <div>Pattern{schema.pattern_descriptor && <> ({schema.pattern_descriptor})</>}: <pre>{schema.pattern}</pre></div>}
               {schema.examples && schema.examples.length > 1 && <div>Examples: <ul>
-                {schema.examples.map((example, i) => <li key={i}>{JSON.stringify(example)}</li>)}
+                {schema.examples.map((example, i) => <li key={i}><pre>{JSON.stringify(example)}</pre></li>)}
               </ul></div>}
-              {schema.examples && schema.examples.length === 1 && <div>Example: {JSON.stringify(schema.examples[0])}</div>}
+              {schema.examples && schema.examples.length === 1 && <div>Example: <pre>{JSON.stringify(schema.examples[0])}</pre></div>}
               {schema.description && <div><TextWithHTML text={schema.description} /></div>}
               {schema.type === "object" && schema.oneOf && <JSONSchemaOneOf schema={schema} />}
-              {((schema.type === "object" && (schema.properties)) || schema.type === "array") && <div>Sub-properties:</div>}
               {schema.type === "object" && schema.properties && <JSONSchemaObject schema={schema} />}
               {schema.type === "array" && <JSONSchemaProperty propertyKey="items[x]" schema={schema.items} />}
             </div>
