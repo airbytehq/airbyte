@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
