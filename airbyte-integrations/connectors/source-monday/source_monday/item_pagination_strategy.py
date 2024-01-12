@@ -54,4 +54,3 @@ class ItemPaginationStrategy(PageIncrement):
         else:
             self._page += 1
             return self._page, None
-

@@ -79,7 +79,7 @@ class MondayGraphqlRequester(HttpRequester):
         arguments = f"({arguments})" if arguments else ""
         fields = ",".join(fields)
 
-        if object_name in ['items_page', 'next_items_page']:
+        if object_name in ["items_page", "next_items_page"]:
             query = f"{object_name}{arguments}{{cursor,items{{{fields}}}}}"
         else:
             query = f"{object_name}{arguments}{{{fields}}}"
@@ -160,7 +160,7 @@ class MondayGraphqlRequester(HttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         headers = super().get_request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        headers['API-Version'] = '2024-01'
+        headers["API-Version"] = "2024-01"
         return headers
 
     def get_request_params(
