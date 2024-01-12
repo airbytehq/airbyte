@@ -67,11 +67,9 @@ class PyPIPublishContext(PipelineContext):
             build_docker_image = connector_context.connector.metadata["connectorBuildOptions"]["baseImage"]
         else:
             build_docker_image = "mwalbeck/python-poetry"
-        # copy everything except the connector
-        # the package_path is the path to the connector, the package name is airbyte-{connector_name} and the version is the docker image tag of the connector
         return PyPIPublishContext(
             pypi_token=os.environ["PYPI_TOKEN"],
-            test_pypi=True,
+            test_pypi=True,  # TODO: Go live
             package_path=connector_context.connector.code_directory,
             package_name=connector_context.connector.metadata["name"],
             version=connector_context.connector.metadata["dockerImageTag"],
@@ -90,26 +88,24 @@ class PyPIPublishContext(PipelineContext):
 
 
 class PublishToPyPI(Step):
+    context: PyPIPublishContext
     title = "Publish package to PyPI"
 
     async def _run(self) -> StepResult:
-        context: PyPIPublishContext = (
-            self.context
-        )  # TODO: Add logic to create a PyPIPublishContext out of a ConnectorContext (check the instance type to decide whether it's necessary)
-        dir_to_publish = await context.get_repo_dir(context.package_path)
+        dir_to_publish = await self.context.get_repo_dir(self.context.package_path)
 
         files = await dir_to_publish.entries()
         is_poetry_package = "pyproject.toml" in files
         is_pip_package = "setup.py" in files
 
-        if not context.package_name or not context.version:
-            # check whether it has a pyproject.toml file
+        # Try to infer package name and version from the pyproject.toml file. If it is not present, we need to have the package name and version set
+        # Setup.py packages need to set package name and version as parameter
+        if not self.context.package_name or not self.context.version:
             if not is_poetry_package:
                 return self.skip(
                     "Connector does not have a pyproject.toml file and version and package name is not set otherwise, skipping."
                 )
 
-            # get package name and version from pyproject.toml
             pyproject_toml = dir_to_publish.file("pyproject.toml")
             pyproject_toml_content = await pyproject_toml.contents()
             contents = tomli.loads(pyproject_toml_content)
@@ -123,17 +119,20 @@ class PublishToPyPI(Step):
                     "Connector does not have a pyproject.toml file which specifies package name and version and they are not set otherwise, skipping."
                 )
 
-            context.package_name = contents["tool"]["poetry"]["name"]
-            context.version = contents["tool"]["poetry"]["version"]
+            self.context.package_name = contents["tool"]["poetry"]["name"]
+            self.context.version = contents["tool"]["poetry"]["version"]
 
-        print(f"Uploading package {context.package_name} version {context.version} to {'testpypi' if context.test_pypi else 'pypi'}...")
+        print(
+            f"Uploading package {self.context.package_name} version {self.context.version} to {'testpypi' if self.context.test_pypi else 'pypi'}..."
+        )
 
         if is_pip_package:
+            # legacy publish logic
             pypi_username = self.context.dagger_client.set_secret("pypi_username", "__token__")
-            pypi_password = self.context.dagger_client.set_secret("pypi_password", f"pypi-{context.pypi_token}")
+            pypi_password = self.context.dagger_client.set_secret("pypi_password", f"pypi-{self.context.pypi_token}")
             metadata = {
-                "name": context.package_name,
-                "version": context.version,
+                "name": self.context.package_name,
+                "version": self.context.version,
                 "author": "Airbyte",
                 "author_email": "contact@airbyte.io",
             }
@@ -141,7 +140,6 @@ class PublishToPyPI(Step):
                 metadata["long_description"] = await dir_to_publish.file("README.md").contents()
                 metadata["long_description_content_type"] = "text/markdown"
 
-            # legacy publish logic
             config = configparser.ConfigParser()
             config["metadata"] = metadata
 
@@ -151,7 +149,7 @@ class PublishToPyPI(Step):
 
             twine_upload = (
                 self.context.dagger_client.container()
-                .from_(context.build_docker_image)
+                .from_(self.context.build_docker_image)
                 .with_exec(["apt-get", "update"])
                 .with_exec(["apt-get", "install", "-y", "twine"])
                 .with_directory("package", dir_to_publish)
@@ -163,29 +161,31 @@ class PublishToPyPI(Step):
                 .with_exec(["python", "setup.py", "sdist", "bdist_wheel"])
                 .with_secret_variable("TWINE_USERNAME", pypi_username)
                 .with_secret_variable("TWINE_PASSWORD", pypi_password)
-                .with_exec(["twine", "upload", "--verbose", "--repository", "testpypi" if context.test_pypi else "pypi", "dist/*"])
+                .with_exec(["twine", "upload", "--verbose", "--repository", "testpypi" if self.context.test_pypi else "pypi", "dist/*"])
             )
 
             return await self.get_step_result(twine_upload)
         else:
-            pypi_token = self.context.dagger_client.set_secret("pypi_token", f"pypi-{context.pypi_token}")
+            # poetry publish logic
+            pypi_token = self.context.dagger_client.set_secret("pypi_token", f"pypi-{self.context.pypi_token}")
             pyproject_toml = dir_to_publish.file("pyproject.toml")
             pyproject_toml_content = await pyproject_toml.contents()
             contents = tomli.loads(pyproject_toml_content)
-            # set package name and version
-            contents["tool"]["poetry"]["name"] = context.package_name
-            contents["tool"]["poetry"]["version"] = context.version
-            # poetry publish logic
+            # make sure package name and version are set to the configured one
+            contents["tool"]["poetry"]["name"] = self.context.package_name
+            contents["tool"]["poetry"]["version"] = self.context.version
             poetry_publish = (
                 self.context.dagger_client.container()
-                .from_(context.build_docker_image)
+                .from_(self.context.build_docker_image)
                 .with_secret_variable("PYPI_TOKEN", pypi_token)
                 .with_directory("package", dir_to_publish)
                 .with_workdir("package")
                 .with_new_file("pyproject.toml", contents=tomli_w.dumps(contents))
                 .with_exec(["poetry", "config", "repositories.testpypi", "https://test.pypi.org/legacy/"])
-                .with_exec(["sh", "-c", f"poetry config {'pypi-token.testpypi' if context.test_pypi else 'pypi-token.pypi'} $PYPI_TOKEN"])
-                .with_exec(["poetry", "publish", "--build", "--repository", "testpypi" if context.test_pypi else "pypi"])
+                .with_exec(
+                    ["sh", "-c", f"poetry config {'pypi-token.testpypi' if self.context.test_pypi else 'pypi-token.pypi'} $PYPI_TOKEN"]
+                )
+                .with_exec(["poetry", "publish", "--build", "--repository", "testpypi" if self.context.test_pypi else "pypi"])
             )
 
             return await self.get_step_result(poetry_publish)
