@@ -51,27 +51,86 @@ max-args = 8  # Relaxed from default of 5
 
 [tool.ruff]
 target-version = "py39"
-select = ["F", "E"]
-extend-select = [
-    "W", "C90", "I", "N", "UP", "YTT", "ANN", "ASYNC", "BLE", "B", "A", "COM", "C4", "EXE", "FA", "ISC", "ICN", "INP", "PIE", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD", "FIX", "PD", "PL", "TRY", "FLY", "NPY", "PERF", "RUF"
+select = [
+    # For rules reference, see https://docs.astral.sh/ruff/rules/
+    "A", # flake8-builtins
+    "ANN", # flake8-annotations
+    "ARG", # flake8-unused-arguments
+    "ASYNC", # flake8-async
+    "B", # flake8-bugbear
+    "FBT", # flake8-boolean-trap
+    "BLE", # Blind except
+    "C4", # flake8-comprehensions
+    "C90", # mccabe (complexity)
+    "COM", # flake8-commas
+    "CPY", # missing copyright notice
+    "D", # pydocstyle
+    "DTZ", # flake8-datetimez
+    "E", # pycodestyle (errors)
+    "ERA", # flake8-eradicate (commented out code)
+    "EXE", # flake8-executable
+    "F", # Pyflakes
+    "FA", # flake8-future-annotations
+    "FIX", # flake8-fixme
+    "FLY", # flynt
+    "FURB", # Refurb
+    "I", # isort
+    "ICN", # flake8-import-conventions
+    "INP", # flake8-no-pep420
+    "INT", # flake8-gettext
+    "ISC", # flake8-implicit-str-concat
+    "ICN", # flake8-import-conventions
+    "LOG", # flake8-logging
+    "N", # pep8-naming
+    "PD", # pandas-vet
+    "PERF", # Perflint
+    "PIE", # flake8-pie
+    "PGH", # pygrep-hooks
+    "PL", # Pylint
+    "PT", # flake8-pytest-style
+    "PTH", # flake8-use-pathlib
+    "PYI", # flake8-pyi
+    "Q", # flake8-quotes
+    "RET", # flake8-return
+    "RSE", # flake8-raise
+    "RUF", # Ruff-specific rules
+    "SIM", # flake8-simplify
+    "SLF", # flake8-self
+    "SLOT", # flake8-slots
+    "T10", # debugger calls
+    "T20", # flake8-print
+    "TCH", # flake8-type-checking
+    "TD", # flake8-todos
+    "TID", # flake8-tidy-imports
+    "TRY", # tryceratops
+    "UP", # pyupgrade
+    "W", # pycodestyle (warnings)
+    "YTT" # flake8-2020
 ]
 ignore = [
     # For rules reference, see https://docs.astral.sh/ruff/rules/
-    # "I001",  # Sorted imports
-    # "ANN401",  # Any-typed expressions
+    "AIR", # Airbyte-specific rules
     "ANN003",  # kwargs missing type annotations
-    # "SIM300",  # 'yoda' conditions
-    "PERF203",  # exception handling in loop
     "ANN101",  # Type annotations for 'self' args
-    "TD002", # Require author for TODOs
-    "TD003", # Require links for TODOs
     "B019", # lru_cache on class methods keep instance from getting garbage collected
     "COM812", # Conflicts with ruff auto-format
+    "EM", # flake8-errmsgs (may reconsider later)
+    "DJ", # Django linting
+    "G", # flake8-logging-format
     "ISC001", # Conflicts with ruff auto-format
-    "TRY003"  # Raising exceptions with too-long string descriptions  # TODO: re-evaluate once we have our own exception classes
+    "NPY", # NumPy-specific rules
+    "PIE790", # Allow unnecssary 'pass' (sometimes useful for readability)
+    "PERF203",  # exception handling in loop
+    "TD002", # Require author for TODOs
+    "TD003", # Require links for TODOs
+    "TRY003",  # Raising exceptions with too-long string descriptions  # TODO: re-evaluate once we have our own exception classes
+    "S", # flake8-bandit (noisy, security related)
+    "TRIO"  # flake8-trio (opinionated, noisy)
 ]
 fixable = ["ALL"]
-unfixable = []
+unfixable = [
+    "ERA001" # Commented-out code (avoid silent loss of code)
+]
 line-length = 100
 extend-exclude = ["docs", "test", "tests"]
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
