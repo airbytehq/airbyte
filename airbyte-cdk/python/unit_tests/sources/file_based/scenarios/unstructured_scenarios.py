@@ -231,6 +231,10 @@ unstructured_invalid_file_type_discover_scenario_no_skip = (
     )
     .set_expected_records([])
     .set_expected_discover_error(AirbyteTracedException, "Error inferring schema from files")
+    .set_expected_read_error(
+        AirbyteTracedException,
+        "Please check the logged errors for more information.",
+    )
 ).build()
 
 # If skip unprocessable file types is set to true, then discover will succeed even if there are non-matching file types
