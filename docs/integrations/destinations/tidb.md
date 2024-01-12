@@ -99,6 +99,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date       | Pull Request                                               | Subject                                                                                       |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| 0.1.5    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.4   | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                             |
 | 0.1.3   | 2023-06-05 | [\#27025](https://github.com/airbytehq/airbyte/pull/27025) | Internal code change for future development (install normalization packages inside connector) |
 | 0.1.2   | 2023-05-23 | [\#19109](https://github.com/airbytehq/airbyte/pull/19109) | Enabled Append Dedub mode                                                                     |

@@ -102,6 +102,7 @@ _NOTE_: Some configurations for SSL are not available yet.
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------- |
+| 0.1.11   | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.10  | 2022-08-04 | [15287](https://github.com/airbytehq/airbyte/pull/15287) | Update Kafka destination to use outputRecordCollector to properly store state |
 | 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                        |
 | 0.1.7   | 2022-04-19 | [12134](https://github.com/airbytehq/airbyte/pull/12134) | Add PLAIN Auth                                                                |

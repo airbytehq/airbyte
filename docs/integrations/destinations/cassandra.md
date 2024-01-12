@@ -50,4 +50,5 @@ data from the connector.
 
 | Version | Date       | Pull Request                                             | Subject                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------- |
+| 0.1.5    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.4   | 2022-08-23 | [15894](https://github.com/airbytehq/airbyte/pull/15894) | Replace batch insert with async method |

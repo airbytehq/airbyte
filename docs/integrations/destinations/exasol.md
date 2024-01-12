@@ -69,5 +69,6 @@ You should now have all the requirements needed to configure Exasol as a destina
 
 | Version | Date       | Pull Request                                             | Subject                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------- |
+| 0.1.2    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.1   | 2023-02-21 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)     | Fix the build                             |
 | 0.1.0   | 2023-01-?? | [21200](https://github.com/airbytehq/airbyte/pull/21200) | Initial version of the Exasol destination |

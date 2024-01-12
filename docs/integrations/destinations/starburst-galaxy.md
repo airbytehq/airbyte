@@ -98,4 +98,5 @@ Learn more about [Starburst Galaxy Iceberg type mapping](https://docs.starburst.
 
 | Version | Date       | Pull Request                                               | Subject                 |
 | :------ | :--------- | :--------------------------------------------------------- | :---------------------- |
+| 0.0.2    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.0.1   | 2023-03-28 | [\#24620](https://github.com/airbytehq/airbyte/pull/24620) | Initial public release. |

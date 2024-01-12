@@ -160,4 +160,5 @@ Each stream will be mapped to a separate table in Vertica. Each table will conta
 
 | Version | Date       | Pull Request                                               | Subject                 |
 | :------ | :--------- | :--------------------------------------------------------- | :---------------------- |
+| 0.1.1    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.0   | 2023-05-29 | [\#25682](https://github.com/airbytehq/airbyte/pull/25682) | Add Vertica Destination |

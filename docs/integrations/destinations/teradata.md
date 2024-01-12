@@ -86,6 +86,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                    | Subject                          |
 | :------ | :--------- | :---------------------------------------------- | :------------------------------- |
+| 0.1.4    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.3   | 2023-08-17 | https://github.com/airbytehq/airbyte/pull/30740 | Enable custom DBT transformation |
 | 0.1.2   | 2023-08-09 | https://github.com/airbytehq/airbyte/pull/29174 | Small internal refactor          |
 | 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760 | Added SSL support                |

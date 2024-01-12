@@ -82,6 +82,7 @@ If you have any questions, please reach out to us at team@keen.io and we’ll be
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| 0.2.5    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.2.4   | 2022-08-04 | [15291](https://github.com/airbytehq/airbyte/pull/15291) | Update Keen destination to use outputRecordCollector to properly store state |
 | 0.2.3   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                       |
 | 0.2.1   | 2021-12-30 | [8809](https://github.com/airbytehq/airbyte/pull/8809)   | Update connector fields title/description                                    |

@@ -117,6 +117,7 @@ Collection names should begin with an underscore or a letter character, and cann
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.2.1    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.2.0   | 2023-06-27 | [27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                       |
 | 0.1.9   | 2022-11-08 | [18892](https://github.com/airbytehq/airbyte/pull/18892) | Adds check for TLS flag                                    |
 | 0.1.8   | 2022-10-26 | [18280](https://github.com/airbytehq/airbyte/pull/18280) | Adds SSH tunneling                                         |

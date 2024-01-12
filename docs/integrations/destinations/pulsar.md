@@ -94,4 +94,5 @@ More info about this can be found in the [Pulsar producer configs documentation 
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| 0.1.4    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.3   | 2022-08-05 | [15349](https://github.com/airbytehq/airbyte/pull/15349) | Update Pulsar destination to use outputRecordCollector to properly store state |

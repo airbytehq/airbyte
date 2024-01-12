@@ -48,4 +48,5 @@ The connector buffer size should also be tweaked according to your data size and
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------- |
+| 0.1.6    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.5   | 2022-09-22 | [16952](https://github.com/airbytehq/airbyte/pull/16952) | Add required config fields |

@@ -76,6 +76,7 @@ provision more capacity units in the DynamoDB console when there are performance
 
 | Version | Date       | Pull Request                                               | Subject                                                     |
 | :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.1.9    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.8   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924)  | Add new ap-southeast-3 AWS region                           |
 | 0.1.7   | 2022-11-03 | [\#18672](https://github.com/airbytehq/airbyte/pull/18672) | Added strict-encrypt cloud runner                           |
 | 0.1.6   | 2022-11-01 | [\#18672](https://github.com/airbytehq/airbyte/pull/18672) | Enforce to use ssl connection                               |

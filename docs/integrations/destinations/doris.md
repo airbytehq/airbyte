@@ -57,4 +57,5 @@ You need to prepare tables that will be used to store synced data from Airbyte, 
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.1.1    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.0   | 2022-11-14 | [17884](https://github.com/airbytehq/airbyte/pull/17884) | Initial Commit |

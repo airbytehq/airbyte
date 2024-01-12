@@ -33,6 +33,7 @@
 
 | Version | Date       | Pull Request                                             | Subject                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------- |
+| 0.1.5    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.4   | 2022-06-17 | [15395](https://github.com/airbytehq/airbyte/pull/15395) | Updated Destination Rockset to handle per-stream state |
 | 0.1.3   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.2   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                 |

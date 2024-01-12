@@ -62,4 +62,5 @@ _NOTE_: Configurations for SSL are not available yet.
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.1.1    | 2024-01-17 | [34235](https://github.com/airbytehq/airbyte/pull/34235) | bump CDK to 0.2.3 |
 | 0.1.0   | 2022-08-05 | [18884](https://github.com/airbytehq/airbyte/pull/18884) | Initial commit |
