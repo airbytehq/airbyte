@@ -133,8 +133,10 @@ class VenvExecutor(Executor):
         self._run_subprocess_and_raise_on_failure([pip_path, "install", "-e", self.pip_url])
 
     def _get_installed_version(self) -> str:
-        """
-        In the venv, run the following: python -c "from importlib.metadata import version; print(version('<connector-name>'))"
+        """Detect the version of the connector installed.
+
+        In the venv, we run the following:
+        > python -c "from importlib.metadata import version; print(version('<connector-name>'))"
         """
         venv_name = self._get_venv_name()
         connector_name = self.metadata.name
@@ -150,8 +152,8 @@ class VenvExecutor(Executor):
     def ensure_installation(
         self,
     ) -> None:
-        """
-        Ensure that the connector is installed in a virtual environment.
+        """Ensure that the connector is installed in a virtual environment.
+
         If not yet installed and if install_if_missing is True, then install.
 
         Optionally, verify that the installed version matches the target version.

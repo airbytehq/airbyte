@@ -39,8 +39,9 @@ def _update_cache() -> None:
 
 
 def get_connector_metadata(name: str) -> ConnectorMetadata:
-    """
-    check the cache for the connector. If the cache is empty, populate by calling update_cache
+    """Check the cache for the connector.
+
+    If the cache is empty, populate by calling update_cache.
     """
     if not _cache:
         _update_cache()

@@ -8,11 +8,11 @@ import pdoc
 
 
 def run() -> None:
-    """
-    Generate docs for all public modules in airbyte_lib and save them to docs/generated.
+    """Generate docs for all public modules in airbyte_lib and save them to docs/generated.
+
     Public modules are:
     * The main airbyte_lib module
-    * All directory modules in airbyte_lib that don't start with an underscore
+    * All directory modules in airbyte_lib that don't start with an underscore.
     """
     public_modules = ["airbyte_lib"]
 

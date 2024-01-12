@@ -53,7 +53,7 @@ def as_temp_files(files: list[Any]) -> Generator[list[Any], Any, None]:
 
 
 class Source:
-    """This class is representing a source that can be called"""
+    """A class representing a source that can be called."""
 
     def __init__(
         self,
@@ -113,16 +113,12 @@ class Source:
             )
 
     def _validate_config(self, config: dict[str, Any]) -> None:
-        """
-        Validate the config against the spec.
-        """
+        """Validate the config against the spec."""
         spec = self._spec()
         jsonschema.validate(config, spec.connectionSpecification)
 
     def get_available_streams(self) -> list[str]:
-        """
-        Get the available streams from the spec.
-        """
+        """Get the available streams from the spec."""
         return [s.name for s in self._discover().streams]
 
     @lru_cache(maxsize=1)
@@ -145,17 +141,13 @@ class Source:
     @property
     @lru_cache(maxsize=1)
     def raw_catalog(self) -> AirbyteCatalog:
-        """
-        Get the raw catalog for the given streams.
-        """
+        """Get the raw catalog for the given streams."""
         return self._discover()
 
     @property
     @lru_cache(maxsize=1)
     def configured_catalog(self) -> ConfiguredAirbyteCatalog:
-        """
-        Get the configured catalog for the given streams.
-        """
+        """Get the configured catalog for the given streams."""
         catalog = self._discover()
         return ConfiguredAirbyteCatalog(
             streams=[
@@ -229,9 +221,7 @@ class Source:
             )
 
     def install(self) -> None:
-        """
-        Install the connector if it is not yet installed.
-        """
+        """Install the connector if it is not yet installed."""
         self.executor.install()
 
     def uninstall(self) -> None:

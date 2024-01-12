@@ -65,13 +65,13 @@ def tests(connector_name: str, sample_config: str) -> None:
 
 
 def run() -> None:
-    """
-    This is a CLI entrypoint for the `airbyte-lib-validate-source` command.
+    """Handle CLI entrypoint for the `airbyte-lib-validate-source` command.
+
     It's called like this: airbyte-lib-validate-source —connector-dir . -—sample-config secrets/config.json
     It performs a basic smoke test to make sure the connector in question is airbyte-lib compliant:
     * Can be installed into a venv
     * Can be called via cli entrypoint
-    * Answers according to the Airbyte protocol when called with spec, check, discover and read
+    * Answers according to the Airbyte protocol when called with spec, check, discover and read.
     """
     # parse args
     args = _parse_args()
