@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "airbyte_lib"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.9"
 
 airbyte-cdk = "^0.58.3"
 # airbyte-protocol-models = "^1.0.1"  # Conflicts with airbyte-cdk # TODO: delete or resolve
@@ -50,7 +50,7 @@ build-backend = "poetry.core.masonry.api"
 max-args = 8  # Relaxed from default of 5
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py39"
 select = ["F", "E"]
 extend-select = [
     "W", "C90", "I", "N", "UP", "YTT", "ANN", "ASYNC", "BLE", "B", "A", "COM", "C4", "EXE", "FA", "ISC", "ICN", "INP", "PIE", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD", "FIX", "PD", "PL", "TRY", "FLY", "NPY", "PERF", "RUF"
@@ -113,7 +113,7 @@ docstring-code-format = true
 
 [tool.mypy]
 # Platform configuration
-python_version = "3.10"
+python_version = "3.9"
 # imports related
 ignore_missing_imports = true
 follow_imports = "silent"
