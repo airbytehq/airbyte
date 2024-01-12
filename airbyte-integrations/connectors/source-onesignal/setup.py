@@ -12,6 +12,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["pytest~=6.2", "pytest-mock~=3.6.1", "connector-acceptance-test"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-onesignal=source_onesignal.run:run",
+        ],
+    },
     name="source_onesignal",
     description="Source implementation for Onesignal.",
     author="Airbyte",
