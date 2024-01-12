@@ -2,7 +2,7 @@
 
 ## Upgrading to 2.0.0
 
-Connector migrated to the latest API Version 2024-01. Type of Id fields was changed from integer to string for the following streams: "boards", "items", "teams", "users", "workspaces"
+Source Monday has deprecated API version 2023-07. We have upgraded the connector to the latest API version 2024-01. In this new version, the Id field has changed from an integer to a string in the streams Boards, Items, Tags, Teams, Updates, Users and Workspaces. Please reset affected streams.
 
 ## Connector Upgrade Guide
 
