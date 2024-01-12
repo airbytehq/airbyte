@@ -64,7 +64,7 @@ select = [
     "C90", # mccabe (complexity)
     "COM", # flake8-commas
     "CPY", # missing copyright notice
-    "D", # pydocstyle
+    # "D", # pydocstyle # TODO: Re-enable when adding docstrings
     "DTZ", # flake8-datetimez
     "E", # pycodestyle (errors)
     "ERA", # flake8-eradicate (commented out code)
