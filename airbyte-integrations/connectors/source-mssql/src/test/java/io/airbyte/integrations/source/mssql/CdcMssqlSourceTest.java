@@ -34,15 +34,24 @@ import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
 import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlDebeziumStateUtil;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -204,6 +213,49 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     Assertions.assertTrue(debeziumState.has("mssql_db_history"));
     Assertions.assertNotNull(debeziumState.get("mssql_db_history"));
     Assertions.assertTrue(debeziumState.has("mssql_cdc_offset"));
+  }
+
+  // Tests even with consistent inserting operations, CDC snapshot and incremental load will not lose
+  // data.
+  @Test
+  public void testCdcNotLoseDataWithConsistentWriting() throws Exception {
+    ExecutorService executor = Executors.newFixedThreadPool(10);
+
+    // Inserting 50 records in 10 seconds.
+    // Intention is to insert records while we are running the first snapshot read. And we check with
+    // the first snapshot read operations
+    // and a following incremental read operation, we will be able to capture all data.
+    int numberOfRecordsToInsert = 50;
+    var insertingProcess = executor.submit(() -> {
+      for (int i = 0; i < numberOfRecordsToInsert; i++) {
+        testdb.with("INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');",
+            modelsSchema(), MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, 910019 + i, i, "car description");
+        try {
+          Thread.sleep(200);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
+
+    final AutoCloseableIterator<AirbyteMessage> read1 = source()
+        .read(config(), getConfiguredCatalog(), null);
+    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
+    final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords1);
+    final List<AirbyteStateMessage> stateMessagesFromFirstSync = extractStateMessages(actualRecords1);
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessagesFromFirstSync.get(stateMessagesFromFirstSync.size() - 1)));
+    // Make sure we have finished inserting process and read from previous state.
+    insertingProcess.get();
+
+    final AutoCloseableIterator<AirbyteMessage> read2 = source()
+        .read(config(), getConfiguredCatalog(), state);
+    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
+
+    recordMessages.addAll(extractRecordMessages(actualRecords2));
+
+    final Set<Integer> ids = recordMessages.stream().map(message -> message.getData().get("id").intValue()).collect(Collectors.toSet());
+    // Originally in setup we have inserted 6 records in the table.
+    assertEquals(ids.size(), numberOfRecordsToInsert + 6);
   }
 
   @Override
