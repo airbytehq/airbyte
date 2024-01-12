@@ -11,6 +11,7 @@ definitions:
       field_path:
         - "data"
         - "{{ parameters['name'] }}"
+
   requester:
     type: CustomRequester
     class_name: "source_monday.MondayGraphqlRequester"
@@ -48,6 +49,7 @@ definitions:
               action: RETRY
           backoff_strategies:
             - type: ExponentialBackoffStrategy
+
   default_paginator:
     type: "DefaultPaginator"
     pagination_strategy:
@@ -61,6 +63,7 @@ definitions:
       $ref: "#/definitions/requester"
     paginator:
       $ref: "#/definitions/default_paginator"
+
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -72,6 +75,7 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         type: NoPagination
+
   tags_stream:
     $ref: "#/definitions/base_nopagination_stream"
     $parameters:
@@ -101,7 +105,7 @@ definitions:
   double_paginator:
     $ref: "#/definitions/default_paginator"
     pagination_strategy:
-      class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategy"
+      class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategyXXXX"
       type: "CustomPaginationStrategy"
 
   activity_logs_stream:
@@ -172,8 +176,8 @@ definitions:
       page_size: 20
       nested_items_per_page: 20
       parent_key: "pulse_id"
-      field_path: ["data", "boards", "*", 'items_page', "items", "*"]
-      additional_field_path: ["data", "boards", "*", "items", "*"]
+      field_path: ["data", "boards", "*", 'items_page', "items", "*"]  # for first and further incremental pagination responses
+      additional_field_path: ["data", "next_items_page", "items", "*"]  # for cursor pagination responses
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
