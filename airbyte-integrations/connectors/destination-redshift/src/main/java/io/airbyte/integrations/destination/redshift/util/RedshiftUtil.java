@@ -41,7 +41,7 @@ public class RedshiftUtil {
 
   public static void checkSvvTableAccess(final JdbcDatabase database) throws Exception {
     log.info("checking SVV_TABLE_INFO permissions");
-    database.queryJsons("SELECT 1 FROM SVV_TABLE_INFO LIMIT;");
+    database.queryJsons("SELECT 1 FROM SVV_TABLE_INFO LIMIT 1;");
   }
 
 }
