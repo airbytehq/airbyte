@@ -44,12 +44,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 import org.jooq.CommonTableExpression;
 import org.jooq.Condition;
 import org.jooq.CreateSchemaFinalStep;

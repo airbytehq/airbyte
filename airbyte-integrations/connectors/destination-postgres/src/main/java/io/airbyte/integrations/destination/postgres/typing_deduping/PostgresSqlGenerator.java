@@ -24,7 +24,6 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
-import io.airbyte.commons.text.Sqls;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
@@ -97,24 +96,23 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
           .map(pk -> quotedName(pk.name()))
           .toList();
       statements.add(Sql.of(getDslContext().createIndex().on(
-              finalTableName,
-              Stream.of(
-                  pkNames.stream(),
-                  // if cursor is present, then a stream containing its name
-                  // but if no cursor, then empty stream
-                  stream.cursor().stream().map(cursor -> quotedName(cursor.name())),
-                  Stream.of(name(COLUMN_NAME_AB_EXTRACTED_AT))
-              ).flatMap(Function.identity()).toList())
+          finalTableName,
+          Stream.of(
+              pkNames.stream(),
+              // if cursor is present, then a stream containing its name
+              // but if no cursor, then empty stream
+              stream.cursor().stream().map(cursor -> quotedName(cursor.name())),
+              Stream.of(name(COLUMN_NAME_AB_EXTRACTED_AT))).flatMap(Function.identity()).toList())
           .getSQL()));
     }
     statements.add(Sql.of(getDslContext().createIndex().on(
-            finalTableName,
-            name(COLUMN_NAME_AB_EXTRACTED_AT))
+        finalTableName,
+        name(COLUMN_NAME_AB_EXTRACTED_AT))
         .getSQL()));
 
     statements.add(Sql.of(getDslContext().createIndex().on(
-            finalTableName,
-            name(COLUMN_NAME_AB_RAW_ID))
+        finalTableName,
+        name(COLUMN_NAME_AB_RAW_ID))
         .getSQL()));
 
     return Sql.concat(statements);
