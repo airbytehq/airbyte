@@ -835,8 +835,7 @@ public abstract class BaseTypingDedupingTest {
           final Thread t = Executors.defaultThreadFactory().newThread(r);
           t.setDaemon(true);
           return t;
-        }
-    );
+        });
     messageHandler.submit(() -> {
       while (!destination.isFinished()) {
         // attemptRead isn't threadsafe, we read stdout fully here.
