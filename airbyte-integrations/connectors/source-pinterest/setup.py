@@ -15,6 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-pinterest=source_pinterest.run:run",
+        ],
+    },
     name="source_pinterest",
     description="Source implementation for Pinterest.",
     author="Airbyte",
