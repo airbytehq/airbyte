@@ -129,7 +129,8 @@ ignore = [
 ]
 fixable = ["ALL"]
 unfixable = [
-    "ERA001" # Commented-out code (avoid silent loss of code)
+    "ERA001", # Commented-out code (avoid silent loss of code)
+    "T201" # print() calls (avoid silent loss of code / log messages)
 ]
 line-length = 100
 extend-exclude = ["docs", "test", "tests"]
