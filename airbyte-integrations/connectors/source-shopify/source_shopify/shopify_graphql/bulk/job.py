@@ -158,7 +158,7 @@ class ShopifyBulkJob:
                 if status == ShopifyBulkStatus.RUNNING.value:
                     self.job_log_status(bulk_job_id, status)
                     sleep(self.job_check_interval_sec)
-                    # this is needed for test purposes,
+                    # this is needed for test purposes
                     if is_test:
                         return None
                 elif status == ShopifyBulkStatus.FAILED.value:

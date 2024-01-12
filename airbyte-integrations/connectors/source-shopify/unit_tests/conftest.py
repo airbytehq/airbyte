@@ -86,7 +86,8 @@ def bulk_error() -> dict[str, Any]:
             }
         },
     }
-    
+
+
 @pytest.fixture
 def bulk_unknown_error() -> dict[str, Any]:
     return {
@@ -107,7 +108,7 @@ def bulk_unknown_error() -> dict[str, Any]:
             }
         },
     }
-    
+
 
 @pytest.fixture
 def bulk_no_errors() -> dict[str, Any]:
@@ -170,8 +171,38 @@ def bulk_successful_response():
             }
         },
     }
-    
-    
+
+
+@pytest.fixture
+def bulk_successful_response_with_errors():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/4046733967549",
+                "status": "UNKNOWN",
+            },
+            "bulkOperationRunQuery": {
+                "userErrors": [
+                    {
+                        "message": "something wrong with the job",
+                    },
+                ],
+            },
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 10,
+                "actualQueryCost": 10,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 990,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
 @pytest.fixture
 def bulk_successful_response_with_no_id():
     return {
@@ -334,8 +365,8 @@ def bulk_job_timeout_response():
             }
         },
     }
-    
-    
+
+
 @pytest.fixture
 def bulk_job_running_response():
     return {
@@ -362,8 +393,8 @@ def bulk_job_running_response():
             }
         },
     }
-    
-    
+
+
 @pytest.fixture
 def bulk_job_running_response_without_id():
     return {
@@ -474,7 +505,7 @@ def filfillment_order_jsonl_content_example():
 
 @pytest.fixture
 def inventory_items_jsonl_content_example():
-    return """{"__typename":"InventoryItem","id":"gid:\/\/shopify\/InventoryItem\/44871665713341","unitCost":{"cost":"60.0"},"countryCodeOfOrigin":null,"harmonizedSystemCode":null,"provinceCodeOfOrigin":null,"updatedAt":"2023-04-14T10:29:27Z","createdAt":"2023-04-14T10:29:27Z","sku":"","tracked":true,"requiresShipping":false}
+    return """{"__typename":"InventoryItem","id":"gid:\/\/shopify\/InventoryItem\/44871665713341","unitCost":null,"countryCodeOfOrigin":null,"harmonizedSystemCode":null,"provinceCodeOfOrigin":null,"updatedAt":"2023-04-14T10:29:27Z","createdAt":"2023-04-14T10:29:27Z","sku":"","tracked":true,"requiresShipping":false}
 {"__typename":"InventoryItem","id":"gid:\/\/shopify\/InventoryItem\/45419395743933","unitCost":{"cost":"29.0"},"countryCodeOfOrigin":"UA","harmonizedSystemCode":"330510","provinceCodeOfOrigin":null,"updatedAt":"2023-12-11T10:37:41Z","createdAt":"2023-12-11T10:37:41Z","sku":"123","tracked":true,"requiresShipping":true}\n"""
 
 
@@ -631,7 +662,7 @@ def inventory_items_response_expected_result():
             "tracked": True,
             "requires_shipping": False,
             "admin_graphql_api_id": "gid://shopify/InventoryItem/44871665713341",
-            "cost": 60.0,
+            "cost": None,
             "country_harmonized_system_codes": [],
             "shop_url": "test_shop",
         },

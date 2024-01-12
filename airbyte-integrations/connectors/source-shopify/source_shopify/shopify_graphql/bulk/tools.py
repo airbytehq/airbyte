@@ -45,9 +45,9 @@ class BulkTools:
         # Regular expression pattern to extract the filename
         filename_pattern = r'filename\*?=(?:UTF-8\'\')?"([^"]+)"'
         parsed_url = dict(parse_qsl(urlparse(job_result_url).query))
-        match = re.search(filename_pattern, parsed_url.get("response-content-disposition")).group(1)
+        match = re.search(filename_pattern, parsed_url.get("response-content-disposition", ""))
         if match:
-            return match
+            return match.group(1)
         else:
             raise ShopifyBulkExceptions.BulkJobResultUrlError(
                 f"Could not extract the `filename` from `result_url` provided, details: {job_result_url}",

@@ -22,7 +22,7 @@ from source_shopify.streams.streams import (
     [
         ("bulk_error", 1),
         ("bulk_unknown_error", 1),
-        ("bulk_no_errors", 0),        
+        ("bulk_no_errors", 0),
     ],
 )
 def test_get_errors_from_response(request, requests_mock, bulk_job_response, expected_len, auth_config) -> None:
@@ -31,6 +31,17 @@ def test_get_errors_from_response(request, requests_mock, bulk_job_response, exp
     test_response = requests.get(stream.graphql_path)
     test_errors = stream.bulk_job.get_errors_from_response(test_response)
     assert len(test_errors) == expected_len
+
+
+def test_get_errors_from_response_invalid_response(auth_config):
+    expected = "Couldn't check the `response` for `errors`"
+    stream = MetafieldOrders(auth_config)
+    response = requests.Response()
+    response.status_code = 404
+    response.url = "https://example.com/invalid"
+    with pytest.raises(ShopifyBulkExceptions.BulkJobBadResponse) as error:
+        stream.bulk_job.get_errors_from_response(response)
+    assert expected in repr(error.value)
 
 
 @pytest.mark.parametrize(
@@ -68,7 +79,7 @@ def test_job_check_for_errors(request, requests_mock, bulk_job_response, auth_co
 @pytest.mark.parametrize(
     "bulk_job_response, expected",
     [
-        ("bulk_successful_response", "gid://shopify/BulkOperation/4046733967549"), 
+        ("bulk_successful_response", "gid://shopify/BulkOperation/4046733967549"),
         ("bulk_error", None),
         ("bulk_successful_response_with_no_id", None),
     ],
@@ -121,9 +132,25 @@ def test_job_create(request, requests_mock, bulk_job_response, auth_config, erro
         ("bulk_job_failed_response", ShopifyBulkExceptions.BulkJobFailed, False, "exited with FAILED"),
         ("bulk_job_timeout_response", ShopifyBulkExceptions.BulkJobTimout, False, "exited with TIMEOUT"),
         ("bulk_job_access_denied_response", ShopifyBulkExceptions.BulkJobAccessDenied, False, "exited with ACCESS_DENIED"),
-        # is_test should be set to `True` to exit from the while loop in `job_check_status()` 
+        # is_test should be set to `True` to exit from the while loop in `job_check_status()`
         ("bulk_job_running_response", None, True, None),
         ("bulk_job_running_response_without_id", None, True, None),
+        # bulk job with unknown status
+        (
+            "bulk_successful_response_with_errors",
+            ShopifyBulkExceptions.BulkJobUnknownError,
+            False,
+            "Could not validate the status of the BULK Job",
+        ),
+    ],
+    ids=[
+        "completed",
+        "failed",
+        "timeout",
+        "access_denied",
+        "running",
+        "running_no_id (edge)",
+        "success_with_erros (edge)",
     ],
 )
 def test_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, is_test, expected) -> None:
@@ -146,6 +173,17 @@ def test_job_check(mocker, request, requests_mock, job_response, auth_config, er
     else:
         result = stream.bulk_job.job_check(stream.graphql_path, test_job_status_response, is_test)
         assert expected == result
+
+
+def test_job_record_producer_invalid_filename(mocker, auth_config) -> None:
+    stream = MetafieldOrders(auth_config)
+    expected = "An error occured while producing records from BULK Job result"
+    # patching the method to get the filename
+    mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkJob.job_retrieve_result", value="test.jsonl")
+    mocker.patch("source_shopify.shopify_graphql.bulk.record.ShopifyBulkRecord.produce_records", side_effect=Exception)
+    with pytest.raises(ShopifyBulkExceptions.BulkRecordProduceError) as error:
+        list(stream.bulk_job.job_record_producer(None))
+    assert expected in repr(error.value)
 
 
 @pytest.mark.parametrize(

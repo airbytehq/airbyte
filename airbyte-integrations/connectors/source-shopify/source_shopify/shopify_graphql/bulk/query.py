@@ -224,8 +224,6 @@ class Metafield(ShopifyBulkQuery):
             return self.type.value[0]
         elif isinstance(self.type.value, str):
             return self.type.value
-        else:
-            raise Exception(f"Invalid type for `query_name`: {self.type}.")
 
     @property
     @abstractmethod
@@ -254,8 +252,6 @@ class Metafield(ShopifyBulkQuery):
             return ["__typename", "id", self.get_edge_node(self.type.value[1], ["__typename", "id", metafield_node])]
         elif isinstance(self.type.value, str):
             return ["__typename", "id", metafield_node]
-        else:
-            raise Exception(f"Invalid type for `query_nodes`: {self.type}.")
 
     def record_process_components(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         # resolve parent id from `str` to `int`
