@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Slack Spec",
     "type": "object",
-    "required": ["start_date", "lookback_window", "join_channels"],
+    "required": ["start_date", "threads_lookback_window", "messages_lookback_window", "join_channels"],
     "additionalProperties": true,
     "properties": {
       "start_date": {
@@ -15,10 +15,19 @@
         "title": "Start Date",
         "format": "date-time"
       },
-      "lookback_window": {
+      "threads_lookback_window": {
         "type": "integer",
         "title": "Threads Lookback window (Days)",
         "description": "How far into the past to look for messages in threads, default is 0 days",
+        "examples": [7, 14],
+        "minimum": 0,
+        "default": 0,
+        "maximum": 365
+      },
+      "messages_lookback_window": {
+        "type": "integer",
+        "title": "Messages Lookback window (Days)",
+        "description": "How far into the past to look for edited messages, default is 0 days",
         "examples": [7, 14],
         "minimum": 0,
         "default": 0,

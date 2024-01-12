@@ -207,6 +207,17 @@
     },
     "username": {
       "type": ["null", "string"]
+    },
+    "edited": {
+      "properties": {
+        "ts": {
+          "type": ["null", "string"]
+        },
+        "user": {
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["null", "object"]
     }
   },
   "type": ["null", "object"]

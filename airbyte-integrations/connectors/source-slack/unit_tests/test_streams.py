@@ -63,7 +63,7 @@ def test_threads_stream_slices(
         authenticator=authenticator,
         default_start_date=start_date,
         end_date=end_date,
-        lookback_window=pendulum.Duration(days=legacy_token_config["lookback_window"]),
+        lookback_window=pendulum.Duration(days=legacy_token_config["threads_lookback_window"]),
         channel_filter=legacy_token_config["channel_filter"],
     )
     slices = list(stream.stream_slices(stream_state=stream_state))
@@ -83,7 +83,7 @@ def test_get_updated_state(authenticator, legacy_token_config, current_state, la
     stream = Threads(
         authenticator=authenticator,
         default_start_date=pendulum.parse(legacy_token_config["start_date"]),
-        lookback_window=legacy_token_config["lookback_window"],
+        lookback_window=legacy_token_config["threads_lookback_window"],
         channel_filter=legacy_token_config["channel_filter"],
     )
     assert stream.get_updated_state(current_stream_state=current_state, latest_record=latest_record) == expected_state

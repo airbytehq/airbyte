@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerImageTag: 0.3.6
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-slack
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   githubIssueLabel: source-slack
@@ -33,4 +33,9 @@ data:
   supportLevel: certified
   tags:
     - language:python
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "This change requires users to set a new config 'messages_lookback_window' to specify how many days to offset when extracting the 'channel_messages' stream incrementally. This allows messages to be extracted incrementally while information regarding edits to a message are fresh as of the offset days amount set. To keep the same functionality as before, set the 'messages_lookback_window' to 0."
+        upgradeDeadline: "2024-03-01"
 metadataSpecVersion: "1.0"
