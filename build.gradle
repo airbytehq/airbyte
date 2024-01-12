@@ -1,6 +1,5 @@
 import com.github.spotbugs.snom.SpotBugsTask
 
-
 plugins {
     id 'base'
     id 'com.github.node-gradle.node' version '3.5.1'
