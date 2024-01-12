@@ -11,6 +11,14 @@ data:
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
   dockerImageTag: 2.0.0
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "Connector migrated to the latest API Version 2024-01. Type of Id field changed from integer to string. After upgrading, please reset the stream."
+        upgradeDeadline: "2024-01-15"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["boards", "items", "teams", "users", "workspaces"]
   dockerRepository: airbyte/source-monday
   documentationUrl: https://docs.airbyte.com/integrations/sources/monday
   githubIssueLabel: source-monday
