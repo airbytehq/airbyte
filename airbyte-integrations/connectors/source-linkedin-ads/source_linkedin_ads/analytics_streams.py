@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import urlencode
@@ -144,6 +144,27 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         super().__init__(**kwargs)
 
     @property
+    @abstractmethod
+    def search_param(self) -> str:
+        """
+        :return: Search parameters for the request
+        """
+
+    @property
+    @abstractmethod
+    def search_param_value(self) -> str:
+        """
+        :return: Name field to filter by
+        """
+
+    @property
+    @abstractmethod
+    def parent_values_map(self) -> Mapping[str, str]:
+        """
+        :return: Mapping for parent child relation
+        """
+
+    @property
     def name(self) -> str:
         """We override the stream name to let the user change it via configuration."""
         name = self.user_stream_name or self.__class__.__name__
@@ -221,7 +242,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         stream_state = stream_state or {self.cursor_field: self.config.get("start_date")}
         for record in parent_stream.read_records(sync_mode=sync_mode):
             base_slice = get_parent_stream_values(record, self.parent_values_map)
-            for date_slice in self.make_date_slices(stream_state.get(self.cursor_field), self.config.get("end_date")):
+            for date_slice in self.get_date_slices(stream_state.get(self.cursor_field), self.config.get("end_date")):
                 date_slice_with_fields: List = []
                 for fields_set in self.chunk_analytics_fields():
                     base_slice["fields"] = ",".join(fields_set)
@@ -229,7 +250,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
                 yield date_slice_with_fields
 
     @staticmethod
-    def make_date_slices(start_date: str, end_date: str = None, window_in_days: int = WINDOW_IN_DAYS) -> Iterable[Mapping[str, Any]]:
+    def get_date_slices(start_date: str, end_date: str = None, window_in_days: int = WINDOW_IN_DAYS) -> Iterable[Mapping[str, Any]]:
         """
         Produces date slices from start_date to end_date (if specified),
         otherwise end_date will be present time.
