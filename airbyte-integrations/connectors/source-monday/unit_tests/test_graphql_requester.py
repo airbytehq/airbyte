@@ -53,7 +53,6 @@ nested_array_schema = {
             nested_array_schema,
             "items",
             {},
-            # {"query": "query{boards(limit:100,page:2){items(limit:100,page:1){root{nested{nested_of_nested}},sibling}}}"},
             {"query": 'query{next_items_page(limit:100,cursor:"cursor_bla"){cursor,items{root{nested{nested_of_nested}},sibling}}}'},
             {"next_page_token": (2, "cursor_bla")},
             id="test_get_request_params_produces_graphql_query_for_items_stream",
@@ -151,6 +150,7 @@ def test_build_items_incremental_query(monday_requester):
     built_query = monday_requester._build_items_incremental_query(object_name, field_schema, stream_slice)
 
     assert built_query == 'items(limit:100,ids:[1, 2, 3]){id,name}'
+
 
 def test_get_request_headers(monday_requester):
 
