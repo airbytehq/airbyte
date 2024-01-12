@@ -357,6 +357,13 @@ definitions:
       path: "conversations/search"
       data_field: "conversations"
       page_size: 150
+  tickets: # Will be unsupported until Intercom API v2.10 is fully supported in Airbyte
+    $ref: "#/definitions/stream_incremental_search"
+    $parameters:
+      name: "tickets"
+      path: "tickets/search"
+      data_field: "tickets"
+      page_size: 150
 
 streams:
   - "#/definitions/admins"
@@ -373,6 +380,7 @@ streams:
   - "#/definitions/conversation_parts"
   - "#/definitions/conversation_contacts"
   - "#/definitions/company_segments"
+  - "#/definitions/tickets"
 
 check:
   stream_names:
