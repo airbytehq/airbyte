@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 294a4790-429b-40ae-9516-49826b9702e1
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   dockerRepository: airbyte/destination-mariadb-columnstore
   githubIssueLabel: destination-mariadb-columnstore
   icon: mariadb.svg

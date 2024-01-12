@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 2c9d93a7-9a17-4789-9de9-f46f0097eb70
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/destination-rockset
   githubIssueLabel: destination-rockset
   license: MIT

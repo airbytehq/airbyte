@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/destination-keen
   githubIssueLabel: destination-keen
   icon: chargify.svg

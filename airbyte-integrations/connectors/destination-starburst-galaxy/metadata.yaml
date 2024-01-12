@@ -2,7 +2,7 @@ data:
   connectorType: destination
   connectorSubtype: file
   definitionId: 4528e960-6f7b-4412-8555-7e0097e1da17
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/destination-starburst-galaxy
   githubIssueLabel: destination-starburst-galaxy
   icon: starburst-galaxy.svg

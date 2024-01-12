@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/destination-redis
   githubIssueLabel: destination-redis
   icon: redis.svg

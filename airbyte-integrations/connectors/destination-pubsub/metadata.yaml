@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/destination-pubsub
   githubIssueLabel: destination-pubsub
   icon: googlepubsub.svg

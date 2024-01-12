@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/destination-cassandra
   githubIssueLabel: destination-cassandra
   icon: cassandra.svg

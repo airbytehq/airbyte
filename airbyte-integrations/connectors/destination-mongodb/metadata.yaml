@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/destination-mongodb
   githubIssueLabel: destination-mongodb
   icon: mongodb.svg

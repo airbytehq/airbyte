@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 3dc6f384-cd6b-4be3-ad16-a41450899bf0
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/destination-scylla
   githubIssueLabel: destination-scylla
   icon: scylla.svg

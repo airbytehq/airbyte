@@ -2,7 +2,7 @@ data:
   connectorSubtype: message_queue
   connectorType: destination
   definitionId: f3802bc4-5406-4752-9e8d-01e504ca8194
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/destination-mqtt
   githubIssueLabel: destination-mqtt
   icon: mqtt.svg

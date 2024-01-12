@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 2300fdcf-a532-419f-9f24-a014336e7966
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/destination-yugabytedb
   githubIssueLabel: destination-yugabytedb
   icon: yugabytedb.svg

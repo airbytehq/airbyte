@@ -1,7 +1,7 @@
 data:
   connectorType: destination
   definitionId: 50a559a7-6323-4e33-8aa0-51dfd9dfadac
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   connectorSubtype: database
   dockerRepository: airbyte/destination-selectdb
   githubIssueLabel: destination-selectdb

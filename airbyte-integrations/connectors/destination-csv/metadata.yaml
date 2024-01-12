@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/destination-csv
   githubIssueLabel: destination-csv
   icon: file-csv.svg

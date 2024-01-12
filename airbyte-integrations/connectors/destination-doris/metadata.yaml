@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 05c161bf-ca73-4d48-b524-d392be417002
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/destination-doris
   githubIssueLabel: destination-doris
   icon: apachedoris.svg

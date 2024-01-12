@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: a625d593-bba5-4a1c-a53d-2d246268a816
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.2.12
   dockerRepository: airbyte/destination-local-json
   githubIssueLabel: destination-local-json
   icon: file-json.svg

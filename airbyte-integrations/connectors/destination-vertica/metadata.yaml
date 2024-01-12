@@ -7,7 +7,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: ca81ee7c-3163-9678-af40-094cc31e5e42
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/destination-vertica
   githubIssueLabel: destination-vertica
   icon: vertica.svg
