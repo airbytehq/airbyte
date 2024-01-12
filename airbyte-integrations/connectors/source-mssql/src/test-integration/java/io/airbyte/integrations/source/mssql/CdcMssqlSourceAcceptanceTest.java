@@ -145,7 +145,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     final List<AirbyteStreamState> streamStates = stateMessages.get(0).getGlobal().getStreamStates();
 
     assertEquals(3, recordMessages.size());
-    assertEquals(1, stateMessages.size());
+    assertEquals(2, stateMessages.size());
     assertEquals(1, streamStates.size());
     assertEquals(STREAM_NAME, streamStates.get(0).getStreamDescriptor().getName());
     assertEquals(SCHEMA_NAME, streamStates.get(0).getStreamDescriptor().getNamespace());
