@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_DEFAULT_CURSOR;
@@ -11,6 +12,8 @@ import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_EVENT_SERIAL_
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.ORDERED_COL_STATE_TYPE;
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.STATE_TYPE_KEY;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,16 +40,20 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -127,6 +134,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         .withSchemas(modelsSchema(), randomSchema())
         .withCdcReplication()
         .withoutSsl()
+        .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build();
   }
 
@@ -432,6 +440,35 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     assertNotNull(stateMessages.get(0).getData());
     assertNotNull(stateMessages.get(0).getData().get("cdc_state").get("state").get(MSSQL_CDC_OFFSET));
     assertNotNull(stateMessages.get(0).getData().get("cdc_state").get("state").get(MSSQL_DB_HISTORY));
+  }
+
+  @Override
+  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
+    assertEquals(27, stateAfterFirstBatch.size());
+    assertStateTypes(stateAfterFirstBatch, 24);
+  }
+
+  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectOcState) {
+    JsonNode sharedState = null;
+    for (int i = 0; i < stateMessages.size(); i++) {
+      final AirbyteStateMessage stateMessage = stateMessages.get(i);
+      assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());
+      final AirbyteGlobalState global = stateMessage.getGlobal();
+      assertNotNull(global.getSharedState());
+      if (Objects.isNull(sharedState)) {
+        sharedState = global.getSharedState();
+      } else {
+        assertEquals(sharedState, global.getSharedState());
+      }
+      assertEquals(1, global.getStreamStates().size());
+      final AirbyteStreamState streamState = global.getStreamStates().get(0);
+      if (i <= indexTillWhichExpectOcState) {
+        assertTrue(streamState.getStreamState().has(STATE_TYPE_KEY));
+        assertEquals(ORDERED_COL_STATE_TYPE, streamState.getStreamState().get(STATE_TYPE_KEY).asText());
+      } else {
+        assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
+      }
+    }
   }
 
 }
