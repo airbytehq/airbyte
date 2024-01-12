@@ -81,6 +81,9 @@ class WeaviateIndexer(Indexer):
                 self.client.schema.create_class(
                     {
                         "class": class_name,
+                        "multiTenancyConfig": {
+                            "enabled": True if self.config.tenant_id.strip() else False,
+                        },
                         "vectorizer": self.config.default_vectorizer,
                         "properties": [
                             {
@@ -96,6 +99,12 @@ class WeaviateIndexer(Indexer):
                     }
                 )
                 logging.info(f"Created class {class_name}")
+                if self.config.tenant_id.strip():
+                    self.client.schema.add_class_tenants(
+                        class_name=class_name,  # The class to which the tenants will be added
+                        tenants=[weaviate.Tenant(name=self.config.tenant_id)],
+                    )
+                    logging.info(f"Added tenant {self.config.tenant_id} to class {class_name}")
             else:
                 self.has_record_id_metadata[class_name] = schema is not None and any(
                     prop.get("name") == METADATA_RECORD_ID_FIELD for prop in schema.get("properties", {})
@@ -124,7 +133,12 @@ class WeaviateIndexer(Indexer):
                     weaviate_object[self.config.text_field] = chunk.page_content
                 object_id = str(uuid.uuid4())
                 class_name = self._stream_to_class_name(chunk.record.stream)
-                self.client.batch.add_data_object(weaviate_object, class_name, object_id, vector=chunk.embedding)
+                if self.config.tenant_id.strip():
+                    self.client.batch.add_data_object(
+                        weaviate_object, class_name, object_id, vector=chunk.embedding, tenant=self.config.tenant_id
+                    )
+                else:
+                    self.client.batch.add_data_object(weaviate_object, class_name, object_id, vector=chunk.embedding)
             self._flush()
 
     def _stream_to_class_name(self, stream_name: str) -> str:
