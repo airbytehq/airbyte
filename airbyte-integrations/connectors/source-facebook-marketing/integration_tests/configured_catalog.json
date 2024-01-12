@@ -14,7 +14,7 @@
     },
     {
       "stream": {
-        "name": "ad_account",
+        "name": "ads_insights",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",
@@ -26,7 +26,7 @@
     },
     {
       "stream": {
-        "name": "ads_insights",
+        "name": "ad_account",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",

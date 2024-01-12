@@ -46,6 +46,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         error_patterns = [
             "Please reduce the amount of data you're asking for, then retry your request",
             "An unknown error occurred",
+            'An unknown error has occurred.'
         ]
         if (
             details.get("kwargs", {}).get("params", {}).get("limit")
