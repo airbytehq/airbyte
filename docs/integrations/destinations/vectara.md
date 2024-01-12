@@ -2,6 +2,8 @@
 
 This page contains the setup guide and reference information for the Vectara destination connector.
 
+Vectara is the trusted GenAI platform that provides Retrieval Augmented Generation or RAG as a service
+
 [Vectara](https://vectara.com/) is the trusted GenAI platform that provides a managed service for Retrieval Augmented Generation or [RAG](https://vectara.com/grounded-generation/).
 
 The Vectara destination connector allows you to connect any Airbyte source to Vectara and ingest data into Vectara for your RAG pipeline.
@@ -9,10 +11,9 @@ The Vectara destination connector allows you to connect any Airbyte source to Ve
 :::info
 In case of issues, the following public channels are available for support:
 
-* Airbyte related issues: [Open a Github issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug%2Carea%2Fconnectors%2Cneeds-triage&projects=&template=1-issue-connector.yaml)
-* Vectara related issues:  Create a post in the [Vectara forum](https://discuss.vectara.com/) or reach out on [Vectara's Discord server](https://discord.gg/GFb8gMz6UH)
+* For Airbyte related issues such as data source or processing: [Open a Github issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug%2Carea%2Fconnectors%2Cneeds-triage&projects=&template=1-issue-connector.yaml)
+* For Vectara related issues such as data indexing or RAG: Create a post in the [Vectara forum](https://discuss.vectara.com/) or reach out on [Vectara's Discord server](https://discord.gg/GFb8gMz6UH)
 
-In case you are not sure if the issue is related to Airbyte or Vectara, please start with Vectara's support channels.
 :::
 
 ## Overview
