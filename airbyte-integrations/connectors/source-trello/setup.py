@@ -16,6 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-trello=source_trello.run:run",
+        ],
+    },
     name="source_trello",
     description="Source implementation for Trello.",
     author="Airbyte",
