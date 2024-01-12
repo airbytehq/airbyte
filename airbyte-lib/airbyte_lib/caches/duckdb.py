@@ -110,6 +110,7 @@ class DuckDBCache(DuckDBCacheBase):
         self,
         stream_name: str,
         table_name: str,
+        *,
         raise_on_error: bool = True,
     ) -> bool:
         """Return true if the given table is compatible with the stream's schema.

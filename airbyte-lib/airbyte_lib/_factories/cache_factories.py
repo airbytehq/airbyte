@@ -23,6 +23,7 @@ def get_default_cache() -> DuckDBCache:
 def new_local_cache(
     cache_name: str | None = None,
     cache_dir: str | Path | None = None,
+    *,
     cleanup: bool = True,
 ) -> DuckDBCache:
     """Get a local cache for storing data, using a name string to seed the path.

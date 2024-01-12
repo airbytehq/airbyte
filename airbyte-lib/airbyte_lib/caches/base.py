@@ -325,6 +325,7 @@ class SQLCacheBase(RecordProcessor):
     def _ensure_final_table_exists(
         self,
         stream_name: str,
+        *,
         create_if_missing: bool = True,
     ) -> str:
         """Create the final table if it doesn't already exist.
@@ -348,6 +349,7 @@ class SQLCacheBase(RecordProcessor):
         self,
         stream_name: str,
         table_name: str,
+        *,
         raise_on_error: bool = False,
     ) -> bool:
         """Return true if the given table is compatible with the stream's schema.
@@ -557,6 +559,7 @@ class SQLCacheBase(RecordProcessor):
     def _drop_temp_table(
         self,
         table_name: str,
+        *,
         if_exists: bool = True,
     ) -> None:
         """Drop the given table."""
