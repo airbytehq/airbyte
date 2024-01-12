@@ -280,6 +280,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `3.2.1`  | 2024-01-12 | [34200](https://github.com/airbytehq/airbyte/pull/34200) | Disable raising error for not enabled accounts                                                                                                         |
 | `3.2.0`  | 2024-01-09 | [33707](https://github.com/airbytehq/airbyte/pull/33707) | Add possibility to sync all connected accounts                                                                                                         |
 | `3.1.0`  | 2024-01-09 | [33603](https://github.com/airbytehq/airbyte/pull/33603) | Fix two issues in the custom queries: automatic addition of `segments.date` in the query; incorrect field type for `DATE` fields.                      |
 | `3.0.2`  | 2024-01-08 | [33494](https://github.com/airbytehq/airbyte/pull/33494) | Add handling for 401 error while parsing response. Add `metrics.cost_micros` field to Ad Group stream.                                                 |

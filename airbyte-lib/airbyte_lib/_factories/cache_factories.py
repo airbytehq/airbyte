@@ -39,11 +39,14 @@ def new_local_cache(
         if " " in cache_name:
             raise ValueError(f"Cache name '{cache_name}' cannot contain spaces")
 
-        if not cache_name.isalnum():
-            raise ValueError(f"Cache name '{cache_name}' can only contain alphanumeric characters")
+        if not cache_name.replace("_", "").isalnum():
+            raise ValueError(
+                f"Cache name '{cache_name}' can only contain alphanumeric "
+                "characters and underscores."
+            )
 
     cache_name = cache_name or str(ulid.ULID())
-    cache_dir = cache_dir or Path("./.cache/{cache_name}")
+    cache_dir = cache_dir or Path(f"./.cache/{cache_name}")
     if not isinstance(cache_dir, Path):
         cache_dir = Path(cache_dir)
 
