@@ -80,12 +80,13 @@ public class MssqlInitialLoadHandler {
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.tableSizeInfoMap = tableSizeInfoMap;
   }
+
   private static String getCatalog(final SqlDatabase database) {
     return (database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
   }
 
   public static String discoverClusteredIndexForStream(final JdbcDatabase database,
-      final AirbyteStream stream) {
+                                                       final AirbyteStream stream) {
 
     Map<String, String> clusteredIndexes = new HashMap<>();
     try {
@@ -111,13 +112,13 @@ public class MssqlInitialLoadHandler {
 
   @VisibleForTesting
   public record ClusteredIndexAttributesFromDb(String streamName,
-                                               String columnName) {
-  }
+                                               String columnName) {}
 
   /**
    * Aggregate list of @param entries of StreamName and clustered index column name
    *
-   * @return a map by StreamName to associated columns in clustered index. If clustered index has multiple columns, we always use the first column.
+   * @return a map by StreamName to associated columns in clustered index. If clustered index has
+   *         multiple columns, we always use the first column.
    */
   @VisibleForTesting
   static Map<String, String> aggregateClusteredIndexes(final List<ClusteredIndexAttributesFromDb> entries) {
@@ -133,7 +134,6 @@ public class MssqlInitialLoadHandler {
     });
     return result;
   }
-
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
                                                                              final ConfiguredAirbyteCatalog catalog,

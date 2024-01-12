@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -72,6 +74,7 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
         .with(JdbcUtils.PASSWORD_KEY, testdb.getPassword())
         .withSchemas(modelsSchema(), randomSchema())
         .withCdcReplication()
+        .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build();
   }
 
