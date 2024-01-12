@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import asyncclick as click
 from pipelines.airbyte_ci.format.configuration import FORMATTERS_CONFIGURATIONS, Formatter
@@ -32,6 +32,12 @@ from .pipeline import PyPIPublishContext, PublishToPyPI
     type=click.STRING,
     required=True,
 )
+@click.option(
+    "--docker-image",
+    help="The docker image to run the command in.",
+    type=click.STRING,
+    default="mwalbeck/python-poetry"
+)
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
@@ -41,32 +47,37 @@ async def poetry(pipeline_context: ClickPipelineContext) -> None:
 
 @poetry.command(cls=DaggerPipelineCommand, name="publish", help="Publish a Python package to PyPI.")
 @click.option(
-    "--pypi-username",
-    help="Your username to connect to PyPI.",
+    "--pypi-token",
+    help="Access token",
     type=click.STRING,
     required=True,
-    envvar="PYPI_USERNAME",
+    envvar="PYPI_TOKEN",
 )
 @click.option(
-    "--pypi-password",
-    help="Your password to connect to PyPI.",
+    "--test-pypi",
+    help="Whether to publish to test.pypi.org instead of pypi.org.",
+    type=click.BOOL,
+    is_flag=True,
+    default=False,
+)
+@click.option(
+    "--publish-name",
+    help="The name of the package to publish. If not set, the name will be inferred from the pyproject.toml file of the package.",
     type=click.STRING,
-    required=True,
-    envvar="PYPI_PASSWORD",
 )
 @click.option(
-    "--pypi-repository",
-    help="The PyPI repository to publish to (pypi, test-pypi).",
-    type=click.Choice(["pypi", "testpypi"]),
-    default="pypi",
+    "--publish-version",
+    help="The version of the package to publish. If not set, the version will be inferred from the pyproject.toml file of the package.",
+    type=click.STRING,
 )
 @pass_pipeline_context
 @click.pass_context
 async def publish(ctx: click.Context,
     click_pipeline_context: ClickPipelineContext,
-    pypi_username: str,
-    pypi_password: str,
-    pypi_repository: str) -> None:
+    pypi_token: str,
+    test_pypi: bool,
+    publish_name: Optional[str],
+    publish_version: Optional[str]) -> None:
     context = PyPIPublishContext(
         is_local=ctx.obj["is_local"],
         git_branch=ctx.obj["git_branch"],
@@ -78,13 +89,17 @@ async def publish(ctx: click.Context,
         pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
         ci_context=ctx.obj.get("ci_context"),
         ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
-        pypi_username=pypi_username,
-        pypi_password=pypi_password,
-        pypi_repository=pypi_repository,
+        pypi_token=pypi_token,
+        test_pypi=test_pypi,
         package_path=ctx.obj["package_path"],
+        build_docker_image=ctx.obj["docker_image"],
+        package_name=publish_name,
+        version=publish_version,
     )
     dagger_client = await click_pipeline_context.get_dagger_client(pipeline_name=f"Publish {ctx.obj['package_path']} to PyPI")
     context.dagger_client = dagger_client
 
     await PublishToPyPI(context).run()
+
+    return True
 
