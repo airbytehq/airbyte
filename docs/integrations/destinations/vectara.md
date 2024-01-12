@@ -2,7 +2,7 @@
 
 This page contains the setup guide and reference information for the Vectara destination connector.
 
-[Vectara](https://vectara.com/) is the trusted GenAI platform that provides a managed service for Retrieval Augmented Generation or [RAG](https://vectara.com/grounded-generation/).
+[Vectara](https://vectara.com/) is the trusted GenAI platform that provides Retrieval Augmented Generation or [RAG](https://vectara.com/grounded-generation/) as a service.
 
 The Vectara destination connector allows you to connect any Airbyte source to Vectara and ingest data into Vectara for your RAG pipeline.
 
