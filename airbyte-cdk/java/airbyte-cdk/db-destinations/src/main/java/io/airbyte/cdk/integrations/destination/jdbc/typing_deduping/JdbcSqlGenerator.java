@@ -261,15 +261,11 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
     final String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
     if (!force) {
-      return transactionally(Stream.concat(
-          Stream.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
-          createIndexSql(stream, suffix).stream()).toList());
+      return Sql.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()));
     }
-    return transactionally(Stream.concat(
-        Stream.of(
-            dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
-            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
-        createIndexSql(stream, suffix).stream()).toList());
+    return transactionally(
+        dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
+        createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()));
   }
 
   @Override
@@ -427,14 +423,6 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         .createTable(quotedName(namespace, tableName))
         .columns(buildFinalTableFields(columns, getFinalTableMetaColumns(true)));
     return createTableSql.getSQL();
-  }
-
-  /**
-   * Subclasses may override this method to add additional indexes after their CREATE TABLE statement.
-   * This is useful if the destination's CREATE TABLE statement does not accept an index definition.
-   */
-  protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
-    return Collections.emptyList();
   }
 
   protected String beginTransaction() {
