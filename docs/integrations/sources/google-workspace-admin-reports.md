@@ -58,6 +58,7 @@ You should now be ready to use the Google Workspace Admin Reports API connector 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.9   | 2024-01-12 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib                                                        |
 | 0.1.8  | 2022-02-24 | [10244](https://github.com/airbytehq/airbyte/pull/10244) | Add Meet Stream         |
 | 0.1.7  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524) | Update connector fields title/description         |
 | 0.1.6  | 2021-11-02 | [7623](https://github.com/airbytehq/airbyte/pull/7623) | Migrate to the CDK |
