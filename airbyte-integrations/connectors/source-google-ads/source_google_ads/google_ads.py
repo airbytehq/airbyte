@@ -27,8 +27,28 @@ class GoogleAds:
         # `google-ads` library version `14.0.0` and higher requires an additional required parameter `use_proto_plus`.
         # More details can be found here: https://developers.google.com/google-ads/api/docs/client-libs/python/protobuf-messages
         credentials["use_proto_plus"] = True
-        self.client = self.get_google_ads_client(credentials)
-        self.ga_service = self.client.get_service("GoogleAdsService")
+        self.clients = {}
+        self.ga_services = {}
+        self.credentials = credentials
+
+        self.clients["default"] = self.get_google_ads_client(credentials)
+        self.ga_services["default"] = self.clients["default"].get_service("GoogleAdsService")
+
+        self.customer_service = self.clients["default"].get_service("CustomerService")
+
+    def get_client(self, login_customer_id="default"):
+        if login_customer_id in self.clients:
+            return self.clients[login_customer_id]
+        new_creds = self.credentials.copy()
+        new_creds["login_customer_id"] = login_customer_id
+        self.clients[login_customer_id] = self.get_google_ads_client(new_creds)
+        return self.clients[login_customer_id]
+
+    def ga_service(self, login_customer_id="default"):
+        if login_customer_id in self.ga_services:
+            return self.ga_services[login_customer_id]
+        self.ga_services[login_customer_id] = self.clients[login_customer_id].get_service("GoogleAdsService")
+        return self.ga_services[login_customer_id]
 
     @staticmethod
     def get_google_ads_client(credentials) -> GoogleAdsClient:
@@ -38,6 +58,14 @@ class GoogleAds:
             message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error) from e
 
+    def get_accessible_accounts(self):
+        customer_resource_names = self.customer_service.list_accessible_customers().resource_names
+        logger.info(f"Found {len(customer_resource_names)} accessible accounts: {customer_resource_names}")
+
+        for customer_resource_name in customer_resource_names:
+            customer_id = self.ga_service().parse_customer_path(customer_resource_name)["customer_id"]
+            yield customer_id
+
     @backoff.on_exception(
         backoff.expo,
         (InternalServerError, ServerError, TooManyRequests),
@@ -46,13 +74,13 @@ class GoogleAds:
         ),
         max_tries=5,
     )
-    def send_request(self, query: str, customer_id: str) -> Iterator[SearchGoogleAdsResponse]:
-        client = self.client
+    def send_request(self, query: str, customer_id: str, login_customer_id: str = "default") -> Iterator[SearchGoogleAdsResponse]:
+        client = self.get_client(login_customer_id)
         search_request = client.get_type("SearchGoogleAdsRequest")
         search_request.query = query
         search_request.page_size = self.DEFAULT_PAGE_SIZE
         search_request.customer_id = customer_id
-        return [self.ga_service.search(search_request)]
+        return [self.ga_service(login_customer_id).search(search_request)]
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """
@@ -61,8 +89,8 @@ class GoogleAds:
         :return dict of fields type info.
         """
 
-        ga_field_service = self.client.get_service("GoogleAdsFieldService")
-        request = self.client.get_type("SearchGoogleAdsFieldsRequest")
+        ga_field_service = self.get_client().get_service("GoogleAdsFieldService")
+        request = self.get_client().get_type("SearchGoogleAdsFieldsRequest")
         request.page_size = len(fields)
         fields_sql = ",".join([f"'{field}'" for field in fields])
         request.query = f"""
