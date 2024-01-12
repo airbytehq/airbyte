@@ -249,6 +249,14 @@
           }
         ]
       },
+      "use_1s1t_format": {
+        "type": "boolean",
+        "description": "Use <a href=\"https://docs.airbyte.com/understanding-airbyte/typing-deduping\" target=\"_blank\">Destinations V2</a>.",
+        "title": "Use Destinations V2",
+        "group": "connection",
+        "airbyte_hidden": true,
+        "default": true
+      },
       "raw_data_schema": {
         "type": "string",
         "description": "The schema to write raw tables into",
