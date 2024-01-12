@@ -85,6 +85,7 @@ class ItemCursorPaginationStrategy(PageIncrement):
         boards = data.get("boards", [])
         next_items_page = data.get("next_items_page", {})
         if boards:
+            # there is always only one board due to limit=1, so in one request we extract all 'items_page' for one board only
             board = boards[0]
             cursor = board.get("items_page", {}).get("cursor", None)
         elif next_items_page:

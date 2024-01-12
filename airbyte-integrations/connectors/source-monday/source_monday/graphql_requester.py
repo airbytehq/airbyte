@@ -105,7 +105,7 @@ class MondayGraphqlRequester(HttpRequester):
         if sub_page:
             query = self._build_query("next_items_page", field_schema, limit=nested_limit, cursor=f'"{sub_page}"')
         else:
-            query = self._build_query("items_page", field_schema, limit=nested_limit, page=sub_page)
+            query = self._build_query("items_page", field_schema, limit=nested_limit)
             arguments = self._get_object_arguments(**object_arguments)
             query = f"boards({arguments}){{{query}}}"
 
