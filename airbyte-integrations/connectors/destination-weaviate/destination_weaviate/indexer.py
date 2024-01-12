@@ -93,7 +93,7 @@ class WeaviateIndexer(Indexer):
                         }
                     ],
                 }
-                if self.config.text_field.strip():
+                if self.config.tenant_id.strip():
                     config["multiTenancyConfig"] = {"enabled": True}
                 self.client.schema.create_class(config)
                 logging.info(f"Created class {class_name}")
