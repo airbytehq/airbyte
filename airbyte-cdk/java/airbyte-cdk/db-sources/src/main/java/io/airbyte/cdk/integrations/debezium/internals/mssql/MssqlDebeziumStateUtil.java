@@ -117,7 +117,7 @@ public class MssqlDebeziumStateUtil {
     return Jsons.jsonNode(state);
   }
 
-  public static MssqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
+  private static MssqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
     try (final Stream<MssqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("select sys.fn_cdc_get_max_lsn()"),
         resultSet -> {
