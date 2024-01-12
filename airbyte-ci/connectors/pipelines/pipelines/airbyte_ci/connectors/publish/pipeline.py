@@ -14,6 +14,8 @@ from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
+from pipelines.airbyte_ci.poetry.pipeline import PublishToPyPI, PyPIPublishContext
+from pipelines.airbyte_ci.poetry.utils import is_package_published
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
 from pipelines.models.steps import Step, StepResult, StepStatus
@@ -50,6 +52,22 @@ class CheckConnectorImageDoesNotExist(Step):
             if docker_tag_already_exists:
                 return StepResult(self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image} already exists.")
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image}.")
+
+
+class CheckPypiPackageExists(Step):
+    context: PyPIPublishContext
+    title = "Check if the connector is published on pypi"
+
+    async def _run(self) -> StepResult:
+        is_published = is_package_published(self.context.package_name, self.context.version, self.context.test_pypi)
+        if is_published:
+            return StepResult(
+                self, status=StepStatus.SKIPPED, stderr=f"{self.context.package_name} already exists in version {self.context.version}."
+            )
+        else:
+            return StepResult(
+                self, status=StepStatus.SUCCESS, stdout=f"{self.context.package_name} does not exist in version {self.context.version}."
+            )
 
 
 class PushConnectorImageToRegistry(Step):
@@ -272,6 +290,25 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                     return create_connector_report(results)
                 metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
+
+            if (
+                "remoteRegistries" in context.connector.metadata["metadata"]
+                and "pypi" in context.connector.metadata["metadata"]["remoteRegistries"]
+                and context.connector.metadata["metadata"]["remoteRegistries"]["pypi"]["enabled"]
+            ):
+                pypi_context = PyPIPublishContext.from_connector_context(context)
+                check_pypi_package_exists_results = await CheckPypiPackageExists(pypi_context).run()
+                results.append(check_pypi_package_exists_results)
+                if check_pypi_package_exists_results.status is StepStatus.SKIPPED:
+                    context.logger.info("The connector version is already published on pypi.")
+                elif check_pypi_package_exists_results.status is StepStatus.SUCCESS:
+                    context.logger.info("The connector version is not published on pypi. Let's build and publish it.")
+                    publish_to_pypi_results = await PublishToPyPI(pypi_context).run()
+                    results.append(publish_to_pypi_results)
+                    if publish_to_pypi_results.status is StepStatus.FAILURE:
+                        return create_connector_report(results)
+                elif check_pypi_package_exists_results.status is StepStatus.FAILURE:
+                    return create_connector_report(results)
 
             # Exit early if the connector image already exists or has failed to build
             if check_connector_image_results.status is not StepStatus.SUCCESS:

@@ -15,11 +15,12 @@ import asyncclick as click
 from pipelines.airbyte_ci.format.configuration import FORMATTERS_CONFIGURATIONS, Formatter
 from pipelines.airbyte_ci.format.format_command import FormatCommand
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers.cli import LogOptions, invoke_commands_concurrently, invoke_commands_sequentially, log_command_results
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 from pipelines.models.steps import StepStatus
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from .pipeline import PyPIPublishContext, PublishToPyPI
+
+from .pipeline import PublishToPyPI, PyPIPublishContext
 
 
 @click.group(
@@ -32,12 +33,7 @@ from .pipeline import PyPIPublishContext, PublishToPyPI
     type=click.STRING,
     required=True,
 )
-@click.option(
-    "--docker-image",
-    help="The docker image to run the command in.",
-    type=click.STRING,
-    default="mwalbeck/python-poetry"
-)
+@click.option("--docker-image", help="The docker image to run the command in.", type=click.STRING, default="mwalbeck/python-poetry")
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
@@ -72,12 +68,14 @@ async def poetry(pipeline_context: ClickPipelineContext) -> None:
 )
 @pass_pipeline_context
 @click.pass_context
-async def publish(ctx: click.Context,
+async def publish(
+    ctx: click.Context,
     click_pipeline_context: ClickPipelineContext,
     pypi_token: str,
     test_pypi: bool,
     publish_name: Optional[str],
-    publish_version: Optional[str]) -> None:
+    publish_version: Optional[str],
+) -> None:
     context = PyPIPublishContext(
         is_local=ctx.obj["is_local"],
         git_branch=ctx.obj["git_branch"],
@@ -102,4 +100,3 @@ async def publish(ctx: click.Context,
     await PublishToPyPI(context).run()
 
     return True
-

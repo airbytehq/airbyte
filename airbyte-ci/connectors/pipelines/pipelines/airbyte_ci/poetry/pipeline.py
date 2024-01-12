@@ -2,19 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import tomli
-import tomli_w
-from typing import Optional
 import configparser
 import io
-
-from pipelines.airbyte_ci.connectors.context import PipelineContext
-from pipelines.models.steps import Step, StepResult
-from pipelines.models.contexts.pipeline_context import PipelineContext
-
-
-
+import os
 from textwrap import dedent
+from typing import Optional
+
+import tomli
+import tomli_w
+from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
+from pipelines.models.contexts.pipeline_context import PipelineContext
+from pipelines.models.steps import Step, StepResult
 
 
 class PyPIPublishContext(PipelineContext):
@@ -60,14 +58,46 @@ class PyPIPublishContext(PipelineContext):
             ci_gcs_credentials=ci_gcs_credentials,
         )
 
+    @staticmethod
+    def from_connector_context(connector_context: ConnectorContext) -> "PyPIPublishContext":
+        if (
+            connector_context.connector.metadata["connectorBuildOptions"]
+            and "baseImage" in connector_context.connector.metadata["connectorBuildOptions"]
+        ):
+            build_docker_image = connector_context.connector.metadata["connectorBuildOptions"]["baseImage"]
+        else:
+            build_docker_image = "mwalbeck/python-poetry"
+        # copy everything except the connector
+        # the package_path is the path to the connector, the package name is airbyte-{connector_name} and the version is the docker image tag of the connector
+        return PyPIPublishContext(
+            pypi_token=os.environ["PYPI_TOKEN"],
+            test_pypi=True,
+            package_path=connector_context.connector.code_directory,
+            package_name=connector_context.connector.metadata["name"],
+            version=connector_context.connector.metadata["dockerImageTag"],
+            build_docker_image=build_docker_image,
+            ci_report_bucket=connector_context.ci_report_bucket,
+            report_output_prefix=connector_context.report_output_prefix,
+            is_local=connector_context.is_local,
+            git_branch=connector_context.git_branch,
+            git_revision=connector_context.git_revision,
+            gha_workflow_run_url=connector_context.gha_workflow_run_url,
+            dagger_logs_url=connector_context.dagger_logs_url,
+            pipeline_start_timestamp=connector_context.pipeline_start_timestamp,
+            ci_context=connector_context.ci_context,
+            ci_gcs_credentials=connector_context.ci_gcs_credentials,
+        )
+
 
 class PublishToPyPI(Step):
     title = "Publish package to PyPI"
 
     async def _run(self) -> StepResult:
-        context: PyPIPublishContext = self.context # TODO: Add logic to create a PyPIPublishContext out of a ConnectorContext (check the instance type to decide whether it's necessary)
+        context: PyPIPublishContext = (
+            self.context
+        )  # TODO: Add logic to create a PyPIPublishContext out of a ConnectorContext (check the instance type to decide whether it's necessary)
         dir_to_publish = await context.get_repo_dir(context.package_path)
-        
+
         files = await dir_to_publish.entries()
         is_poetry_package = "pyproject.toml" in files
         is_pip_package = "setup.py" in files
@@ -75,21 +105,29 @@ class PublishToPyPI(Step):
         if not context.package_name or not context.version:
             # check whether it has a pyproject.toml file
             if not is_poetry_package:
-                return self.skip("Connector does not have a pyproject.toml file and version and package name is not set otherwise, skipping.")
-            
+                return self.skip(
+                    "Connector does not have a pyproject.toml file and version and package name is not set otherwise, skipping."
+                )
+
             # get package name and version from pyproject.toml
             pyproject_toml = dir_to_publish.file("pyproject.toml")
             pyproject_toml_content = await pyproject_toml.contents()
             contents = tomli.loads(pyproject_toml_content)
-            if "tool" not in contents or "poetry" not in contents["tool"] or "name" not in contents["tool"]["poetry"] or "version" not in contents["tool"]["poetry"]:
-                return self.skip("Connector does not have a pyproject.toml file which specifies package name and version and they are not set otherwise, skipping.")
-            
+            if (
+                "tool" not in contents
+                or "poetry" not in contents["tool"]
+                or "name" not in contents["tool"]["poetry"]
+                or "version" not in contents["tool"]["poetry"]
+            ):
+                return self.skip(
+                    "Connector does not have a pyproject.toml file which specifies package name and version and they are not set otherwise, skipping."
+                )
+
             context.package_name = contents["tool"]["poetry"]["name"]
             context.version = contents["tool"]["poetry"]["version"]
 
-
         print(f"Uploading package {context.package_name} version {context.version} to {'testpypi' if context.test_pypi else 'pypi'}...")
-        
+
         if is_pip_package:
             pypi_username = self.context.dagger_client.set_secret("pypi_username", "__token__")
             pypi_password = self.context.dagger_client.set_secret("pypi_password", f"pypi-{context.pypi_token}")
@@ -151,5 +189,3 @@ class PublishToPyPI(Step):
             )
 
             return await self.get_step_result(poetry_publish)
-
-
