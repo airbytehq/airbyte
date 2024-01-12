@@ -18,7 +18,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.connector.sqlserver.Lsn;
 import io.debezium.engine.ChangeEvent;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -78,7 +77,6 @@ public class MssqlDebeziumStateUtil {
           throw new RuntimeException(
               "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
         }
-
       }
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -115,7 +113,7 @@ public class MssqlDebeziumStateUtil {
     return Jsons.jsonNode(state);
   }
 
-  private static MssqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
+  public static MssqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
     try (final Stream<MssqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("select sys.fn_cdc_get_max_lsn()"),
         resultSet -> {
