@@ -6,7 +6,7 @@ products: all
 
 Setting up a new source in Airbyte is a quick and simple process! When viewing the Airbyte UI, you'll see the main navigation bar on the left side of your screen. Click the **Sources** tab to bring up a list of all available sources.
 
-![](./assets/getting-started-source-list.png)
+<div style="position: relative; padding-bottom: calc(56.73828125% + 41px); height: 0;"><iframe src="https://demo.arcade.software/4V0TGOX02P0rwVNwz4MR?embed" title="Getting Started (Source)" frameborder="0" loading="lazy" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;color-scheme: light;"></iframe></div>
 
 You can use the provided search bar, or simply scroll down the list to find the source you want to replicate data from. Let's use a demo source, Faker, as an example. Clicking on the **Sample Data (Faker)** card will bring us to its setup page.
 
