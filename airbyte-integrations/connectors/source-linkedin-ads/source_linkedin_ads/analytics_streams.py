@@ -224,7 +224,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[List[Mapping[str, Any]]]]:
+    ) -> Iterable[List[Mapping[str, Any]]]:
         """
         LinkedIn has a max of 20 fields per request. We make chunks by size of 19 fields to have the `dateRange` be included as well.
         https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-05&tabs=http#requesting-specific-metrics-in-the-analytics-finder
@@ -232,7 +232,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         :param sync_mode:
         :param cursor_field:
         :param stream_state:
-        :return: List of stream slices within the same date range and chunked fields, example
+        :return: Iterable with List of stream slices within the same date range and chunked fields, example
         [{'campaign_id': 123, 'fields': 'field_1,field_2,dateRange', 'dateRange': {'start.day': 1, 'start.month': 1, 'start.year': 2020, 'end.day': 30, 'end.month': 1, 'end.year': 2020}},
         {'campaign_id': 123, 'fields': 'field_2,field_3,dateRange',  'dateRange': {'start.day': 1, 'start.month': 1, 'start.year': 2020, 'end.day': 30, 'end.month': 1, 'end.year': 2020}},
         {'campaign_id': 123, 'fields': 'field_4,field_5,dateRange',  'dateRange': {'start.day': 1, 'start.month': 1, 'start.year': 2020, 'end.day': 30, 'end.month': 1, 'end.year': 2020}}]
