@@ -441,10 +441,15 @@ module.exports = {
             "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
           ],
         },
-        "using-airbyte/core-concepts/typing-deduping",
-        "using-airbyte/core-concepts/basic-normalization",
+        {
+          type: "category",
+          label: "Typing and Deduping",
+          items: [
+            "using-airbyte/core-concepts/typing-deduping",
+            "using-airbyte/core-concepts/basic-normalization"
+          ]
+        },
         "cloud/managing-airbyte-cloud/manage-schema-changes",
-        "cloud/managing-airbyte-cloud/manage-data-residency",
         "cloud/managing-airbyte-cloud/manage-connection-state",
         {
           type: "category",
@@ -476,6 +481,7 @@ module.exports = {
         "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
         "cloud/managing-airbyte-cloud/manage-credits",
         "operator-guides/using-custom-connectors",
+        "cloud/managing-airbyte-cloud/manage-data-residency",
       ]
     },
     sectionHeader("Managing Airbyte"),
