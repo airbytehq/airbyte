@@ -31,7 +31,7 @@ If you prefer more flexibility in scheduling your sync, you can also use CRON sc
 
 Airbyte uses the CRON scheduler from [Quartz](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html). We recommend reading their [documentation](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html) to learn more about how to 
 
-When setting up the cron extpression, you will also be asked to choose a time zone the sync will run in.
+When setting up the cron expression, you will also be asked to choose a time zone the sync will run in.
 
 :::note
 For Scheduled or cron scheduled syncs, Airbyte guarantees syncs will initiate with a schedule accuracy of +/- 30 minutes.
@@ -40,4 +40,4 @@ For Scheduled or cron scheduled syncs, Airbyte guarantees syncs will initiate wi
 ## Manual Syncs
 When the connection is set to replicate with `Manual` frequency, the sync will not automatically run. 
 
-It can be triggered by clicking the "Sync Now" button at any time through the UI or be triggered through the UI.
+It can be triggered by clicking the "Sync Now" button at any time through the UI or be triggered through the API.
