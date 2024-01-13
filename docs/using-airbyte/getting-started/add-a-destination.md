@@ -2,6 +2,9 @@
 products: all
 ---
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 # Add a Destination
 
 Destinations are the data warehouses, data lakes, databases and analytics tools where you will load the data from your chosen source(s). The steps to setting up your first destination are very similar to those for [setting up a source](./add-a-source).
@@ -20,13 +23,13 @@ You can filter the list of destinations by support level. Airbyte connectors are
   <TabItem value="cloud" label="Cloud">
     As an example, we'll be setting up a simple Google Sheets spreadsheet that will move data to a Google Sheet. Select **Google Sheets** from the list of destinations. This will take you to the destination setup page.
 
-    ![Destination Page](../../.gitbook/assets/add-a-destination/google-sheets-setup.png)
+    ![Destination Page](./assets/getting-started-google-sheets-destination.png)
 
-    :::info    
-    Google Sheets imposes rate limits and hard limits on the amount of data it can receive. Only use Google Sheets as a destination for small, non-production use cases, as it is not designed for handling large-scale data operations.
+:::info    
+Google Sheets imposes rate limits and hard limits on the amount of data it can receive. Only use Google Sheets as a destination for small, non-production use cases, as it is not designed for handling large-scale data operations.
 
-    Read more about the [specific limitations](/integrations/destinations/google-sheets.md#limitations) in our Google Sheets documentation.
-    :::
+Read more about the [specific limitations](/integrations/destinations/google-sheets.md#limitations) in our Google Sheets documentation.
+:::
 
     The left half of the page contains a set of fields that you will have to fill out. In the **Destination name** field, you can enter a name of your choosing to help you identify this instance of the connector. By default, this will be set to the name of the destination (i.e., `Google Sheets`).
 
@@ -34,8 +37,6 @@ You can filter the list of destinations by support level. Airbyte connectors are
   </TabItem>
   <TabItem value="self-managed" label="Self Hosted">
     As an example, we'll be setting up a simple JSON file that will be saved on our local system as the destination. Select **Local JSON** from the list of destinations. This will take you to the destination setup page.
-
-    ![Destination Page](../../.gitbook/assets/add-a-destination/getting-started-destination-page.png)
 
     The left half of the page contains a set of fields that you will have to fill out. In the **Destination name** field, you can enter a name of your choosing to help you identify this instance of the connector. By default, this will be set to the name of the destination (i.e., `Local JSON`).
 
@@ -45,7 +46,7 @@ You can filter the list of destinations by support level. Airbyte connectors are
 
 Each destination will have its own set of required fields to configure during setup. You can refer to your destination's provided setup guide on the right side of the page for specific details on the nature of each field.
 
-:::info
+:::tip
 Some destinations will also have an **Optional Fields** tab located beneath the required fields. You can open this tab to view and configure any additional optional parameters that exist for the source. These fields generally grant you more fine-grained control over your data replication, but you can safely ignore them.
 :::
 

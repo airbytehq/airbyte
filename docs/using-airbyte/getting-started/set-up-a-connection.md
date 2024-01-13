@@ -2,6 +2,9 @@
 products: all
 ---
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 # Set up a Connection
 
 Now that you've learned how to set up your first [source](./add-a-source) and [destination](./add-a-destination), it's time to finish the job by creating your very first connection!
@@ -46,7 +49,7 @@ Once the first sync has completed, you can verify the sync has completed by chec
 
 <Tabs groupId="cloud-hosted">
   <TabItem value="cloud" label="Cloud">
-     If you followed along and created your own connection using a `Google Sheets` destination, you will now see three tabs created in your Google Sheet, `products`, `users`, and `purchases`.
+     If you followed along and created your own connection using a **Google Sheets** destination, you will now see three tabs created in your Google Sheet, `products`, `users`, and `purchases`.
 
   </TabItem>
   <TabItem value="self-managed" label="Self Hosted">
@@ -58,15 +61,16 @@ Once the first sync has completed, you can verify the sync has completed by chec
 
     You should see a list of JSON objects, each containing a unique `airbyte_ab_id`, an `emitted_at` timestamp, and `airbyte_data` containing the extracted record.
 
-    :::tip 
-    If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](/integrations/locating-files-local-destination.md) to locate the replicated folder and file.
-    :::
+:::tip 
+If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](/integrations/locating-files-local-destination.md) to locate the replicated folder and file.
+:::
+
   </TabItem>
 </Tabs>
 
 ## What's next?
 
-Congratulations on successfully setting up your first connection using Airbyte Open Source! We hope that this will be just the first step on your journey with us. We support a large, ever-growing [catalog of sources and destinations](/integrations/), and you can even [contribute your own](/connector-development/).
+Congratulations on successfully setting up your first connection using Airbyte! We hope that this will be just the first step on your journey with us. We support a large, ever-growing [catalog of sources and destinations](/integrations/), and you can even [contribute your own](/connector-development/).
 
 If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). If you would like to see a missing feature or connector added, please create an issue on our [Github](https://github.com/airbytehq/airbyte). Our community's participation is invaluable in helping us grow and improve every day, and we always welcome your feedback.
 
