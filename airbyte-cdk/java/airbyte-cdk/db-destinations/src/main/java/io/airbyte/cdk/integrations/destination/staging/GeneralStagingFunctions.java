@@ -93,7 +93,7 @@ public class GeneralStagingFunctions {
       rawTableInsertLock.lock();
       try {
         stagingOperations.copyIntoTableFromStage(database, stagingPath, stagedFiles,
-                                                 tableName, schemaName);
+            tableName, schemaName);
       } finally {
         rawTableInsertLock.unlock();
       }

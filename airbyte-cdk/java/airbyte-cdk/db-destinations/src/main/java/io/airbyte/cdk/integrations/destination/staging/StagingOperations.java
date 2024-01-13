@@ -33,9 +33,9 @@ public interface StagingOperations extends SqlOperations {
   /**
    * Upload the data file into the stage area.
    *
-   * @param database    database used for syncing
+   * @param database database used for syncing
    * @param recordsData records stored in in-memory buffer
-   * @param schemaName  name of schema
+   * @param schemaName name of schema
    * @param stagingPath path of staging folder to data files
    * @return the name of the file that was uploaded.
    */
@@ -45,11 +45,11 @@ public interface StagingOperations extends SqlOperations {
   /**
    * Load the data stored in the stage area into a temporary table in the destination
    *
-   * @param database    database interface
+   * @param database database interface
    * @param stagingPath path to staging files
    * @param stagedFiles collection of staged files
-   * @param tableName   name of table to write staging files to
-   * @param schemaName  name of schema
+   * @param tableName name of table to write staging files to
+   * @param schemaName name of schema
    */
   void copyIntoTableFromStage(JdbcDatabase database,
                               String stagingPath,

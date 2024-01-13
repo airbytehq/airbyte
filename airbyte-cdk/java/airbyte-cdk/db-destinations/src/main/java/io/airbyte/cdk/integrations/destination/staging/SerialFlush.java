@@ -89,12 +89,12 @@ public class SerialFlush {
         writer.flush();
         final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stagingPath);
         GeneralStagingFunctions.copyIntoTableFromStage(database, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(),
-                                                       schemaName,
-                                                       stagingOperations,
-                                                       writeConfig.getNamespace(),
-                                                       writeConfig.getStreamName(),
-                                                       typerDeduperValve,
-                                                       typerDeduper);
+            schemaName,
+            stagingOperations,
+            writeConfig.getNamespace(),
+            writeConfig.getStreamName(),
+            typerDeduperValve,
+            typerDeduper);
       } catch (final Exception e) {
         log.error("Failed to flush and commit buffer data into destination's raw table", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
