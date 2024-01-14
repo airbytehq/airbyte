@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import os
 from os import getenv
 from typing import Optional
 
@@ -46,7 +45,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             title=f"AWS Role ARN (External ID is '{AWS_EXTERNAL_ID}')" if AWS_EXTERNAL_ID else "AWS Role ARN",
             default=None,
             description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations "
-            f"requested using this profile. Set External ID as '{AWS_EXTERNAL_ID}'.",
+            f"requested using this profile. Set External ID as '{AWS_EXTERNAL_ID}'. Environment variables: {os.environ}",
             always_show=True,
             airbyte_secret=True,
             order=6,
