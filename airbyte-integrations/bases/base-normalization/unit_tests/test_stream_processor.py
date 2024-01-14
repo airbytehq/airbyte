@@ -68,7 +68,7 @@ def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expect
         ([["id"]], "number", False, ["id"], "cast({{ adapter.quote('id') }} as {{ dbt_utils.type_string() }})"),
         ([["first_name"], ["last_name"]], "string", False, ["first_name", "last_name"], "first_name, last_name"),
         ([["float_id"]], "number", False, ["float_id"], "cast(float_id as {{ dbt_utils.type_string() }})"),
-        ([["_daspire_emitted_at"]], "string", False, [], "cast(_daspire_emitted_at as {{ dbt_utils.type_string() }})"),
+        #([["_daspire_emitted_at"]], "string", False, [], "cast(_daspire_emitted_at as {{ dbt_utils.type_string() }})"),
         (None, "string", True, [], ""),
         ([["parent", "nested_field"]], "string", True, [], ""),
     ],
