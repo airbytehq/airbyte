@@ -109,7 +109,7 @@
       "period_in_days": {
         "title": "Period In Days",
         "type": "integer",
-        "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
+        "description": "For syncs spanning a large date range, this option is used to request data in a smaller fixed window to improve sync reliability. This time window can be configured granularly by day.",
         "default": 90,
         "minimum": 1,
         "order": 9
