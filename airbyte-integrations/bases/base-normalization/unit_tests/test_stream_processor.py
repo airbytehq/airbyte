@@ -29,9 +29,9 @@ def before_tests(request):
 @pytest.mark.parametrize(
     "cursor_field, expecting_exception, expected_cursor_field",
     [
-        (None, False, "_airbyte_emitted_at"),
+        (None, False, "_daspire_emitted_at"),
         (["updated_at"], False, "updated_at"),
-        (["_airbyte_emitted_at"], False, "_airbyte_emitted_at"),
+        (["_daspire_emitted_at"], False, "_daspire_emitted_at"),
         (["parent", "nested_field"], True, "nested_field"),
     ],
 )
