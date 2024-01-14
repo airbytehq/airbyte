@@ -157,7 +157,7 @@ acceptance_tests:
     tests:
       - config_path: secrets/config_iam_role.json
         backward_compatibility_tests_config:
-          disable_for_version: "4.0.5" # new compression type added - zip
+          disable_for_version: "4.4.0" # new authentication added - IAM role
       - config_path: secrets/config.json
         backward_compatibility_tests_config:
           disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`

@@ -616,6 +616,14 @@
             "order": 2,
             "type": "string"
           },
+          "role_arn": {
+            "title": "AWS Role ARN (External ID is '8eee93517501b43a')",
+            "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set External ID as '8eee93517501b43a'.",
+            "always_show": true,
+            "airbyte_secret": true,
+            "order": 6,
+            "type": "string"
+          },
           "path_prefix": {
             "title": "Path Prefix",
             "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimize finding these in S3. This is optional but recommended if your bucket contains many folders/files which you don't need to replicate.",
