@@ -45,7 +45,7 @@ def send_telemetry(
     cache_type: CacheType,
     state: SyncState,
     number_of_records: Optional[int] = None,
-):
+) -> None:
     # If DO_NOT_TRACK is set, we don't send any telemetry
     if os.environ.get("DO_NOT_TRACK"):
         return
