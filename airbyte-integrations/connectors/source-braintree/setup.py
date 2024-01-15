@@ -13,7 +13,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_braintree_no_code",
+    entry_points={
+        "console_scripts": [
+            "source-braintree=source_braintree.run:run",
+        ],
+    },    name="source_braintree_no_code",
     description="Source implementation for Braintree No Code.",
     author="Airbyte",
     author_email="contact@airbyte.io",
