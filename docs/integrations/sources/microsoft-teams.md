@@ -29,22 +29,24 @@ Some APIs aren't supported in v1.0, e.g. channel messages and channel messages r
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| Integration Type | Airbyte Type                 |
+| :--------------- | :--------------------------- |
+| `string`         | `string`                     |
+| `number`         | `number`                     |
+| `date`           | `date`                       |
+| `datetime`       | `timestamp_without_timezone` |
+| `array`          | `array`                      |
+| `object`         | `object`                     |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Coming soon |  |
-| Replicate Incremental Deletes | Coming soon |  |
-| SSL connection | Yes |  |
-| Namespaces | No |  |
+| Feature                       | Supported? |
+| :---------------------------- | :--------- |
+| Full Refresh Sync             | Yes        |
+| Incremental Sync              | No         |
+| Replicate Incremental Deletes | No         |
+| SSL connection                | Yes        |
+| Namespaces                    | No         |
 
 ### Performance considerations
 
@@ -54,9 +56,9 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 ### Requirements
 
-* Application \(client\) ID 
+* Application \(client\) ID
 * Directory \(tenant\) ID
-* Client secrets 
+* Client secrets
 
 ### Setup guide
 
@@ -157,8 +159,9 @@ Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/az
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request | Subject |
-|:--------|:-----------| :--- | :--- |
-| 0.2.5   | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
-| 0.2.4   | 2021-12-07 | [7807](https://github.com/airbytehq/airbyte/pull/7807) | Implement OAuth support |
-| 0.2.3   | 2021-12-06 | [8469](https://github.com/airbytehq/airbyte/pull/8469) | Migrate to the CDK |
+| Version | Date       | Pull Request                                             | Subject                        |
+|:------- |:---------- | :------------------------------------------------------- | :----------------------------- |
+| 1.0.0   | 2024-01-04 | [33959](https://github.com/airbytehq/airbyte/pull/33959) | Schema updates                 |
+| 0.2.5   | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions |
+| 0.2.4   | 2021-12-07 | [7807](https://github.com/airbytehq/airbyte/pull/7807)   | Implement OAuth support        |
+| 0.2.3   | 2021-12-06 | [8469](https://github.com/airbytehq/airbyte/pull/8469)   | Migrate to the CDK             |
