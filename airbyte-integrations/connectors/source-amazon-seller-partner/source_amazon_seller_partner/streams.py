@@ -872,12 +872,15 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
 
     def get_transform_function(self):
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-            if original_value and "format" in field_schema and field_schema["format"] == "date":
+            if original_value and field_schema.get("format") == "date":
                 date_format = self.MARKETPLACE_DATE_FORMAT_MAP.get(self.marketplace_id)
                 if not date_format:
-                    raise KeyError(f"Date format not found for Markeplace ID: {self.marketplace_id}")
-                transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
-                return transformed_value
+                    raise KeyError(f"Date format not found for Marketplace ID: {self.marketplace_id}")
+                try:
+                    transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
+                    return transformed_value
+                except ValueError:
+                    pass
 
             return original_value
 

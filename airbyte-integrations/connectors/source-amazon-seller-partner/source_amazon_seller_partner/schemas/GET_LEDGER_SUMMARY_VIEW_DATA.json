@@ -4,7 +4,7 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "Date": { "type": ["null", "string"], "format": "date-time" },
+    "Date": { "type": ["null", "string"], "format": "date" },
     "FNSKU": { "type": ["null", "string"] },
     "ASIN": { "type": ["null", "string"] },
     "MSKU": { "type": ["null", "string"] },
