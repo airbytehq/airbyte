@@ -4,60 +4,33 @@
 
 from http import HTTPStatus
 from unittest.mock import MagicMock
+import requests
 
 import pytest
-from source_attio.source import AttioStream
+from source_attio.source import (
+    AttioStream,
+    WorkspaceMembers,
+)
 
 
 @pytest.fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(AttioStream, "path", "v0/example_endpoint")
     mocker.patch.object(AttioStream, "primary_key", "test_primary_key")
     mocker.patch.object(AttioStream, "__abstractmethods__", set())
 
 
-def test_request_params(patch_base_class):
-    stream = AttioStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
-    expected_params = {}
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_next_page_token(patch_base_class):
-    stream = AttioStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
-
-
-def test_parse_response(patch_base_class):
-    stream = AttioStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+# ABSTRACT STREAM CLASS TESTS
 
 
 def test_request_headers(patch_base_class):
     stream = AttioStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
-    expected_headers = {}
+    expected_headers = {
+        # Auth handled by HttpAuthenticator
+        "Content-Type": "application/json"
+    }
     assert stream.request_headers(**inputs) == expected_headers
-
-
-def test_http_method(patch_base_class):
-    stream = AttioStream()
-    # TODO: replace this with your expected http request method
-    expected_method = "GET"
-    assert stream.http_method == expected_method
 
 
 @pytest.mark.parametrize(
@@ -81,3 +54,99 @@ def test_backoff_time(patch_base_class):
     stream = AttioStream()
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+# STREAM TESTS
+
+
+@pytest.mark.parametrize(
+    ("response_data", "expected"),
+    [
+        ([], []),
+        (
+            [
+                {
+                    "id": {
+                        "workspace_id": "1eb8b8be-2b16-4795-81d8-6cd004812f92",
+                        "workspace_member_id": "08234bc6-c733-464c-b46f-11ae114aa3cc",
+                    },
+                    "first_name": "Alice",
+                    "last_name": "Adams",
+                    "avatar_url": "https://assets.attio.com/avatars/1f3l035b-fe59-4b2c-b4c9-b95e1d437e5d?etag=1182392508604",
+                    "email_address": "alice@example.com",
+                    "access_level": "admin",
+                    "created_at": "2020-03-13T23:20:19.285000000Z",
+                }
+            ],
+            [
+                {
+                    "workspace_id": "1eb8b8be-2b16-4795-81d8-6cd004812f92",
+                    "workspace_member_id": "08234bc6-c733-464c-b46f-11ae114aa3cc",
+                    "first_name": "Alice",
+                    "last_name": "Adams",
+                    "avatar_url": "https://assets.attio.com/avatars/1f3l035b-fe59-4b2c-b4c9-b95e1d437e5d?etag=1182392508604",
+                    "email_address": "alice@example.com",
+                    "access_level": "admin",
+                    "created_at": "2020-03-13T23:20:19.285000000Z",
+                }
+            ],
+        ),
+        (
+            [
+                {
+                    "id": {
+                        "workspace_id": "1eb8b8be-2b16-4795-81d8-6cd004812f92",
+                        "workspace_member_id": "08234bc6-c733-464c-b46f-11ae114aa3cc",
+                    },
+                    "first_name": "Alice",
+                    "last_name": "Adams",
+                    "avatar_url": "https://assets.attio.com/avatars/1f3l035b-fe59-4b2c-b4c9-b95e1d437e5d?etag=1182392508604",
+                    "email_address": "alice@example.com",
+                    "access_level": "admin",
+                    "created_at": "2020-03-13T23:20:19.285000000Z",
+                },
+                {
+                    "id": {
+                        "workspace_id": "d7df08f9-d8bf-4136-bfa5-88ebb0374c0e",
+                        "workspace_member_id": "26e027da-fcc7-4a47-b784-8c6cb93476e5",
+                    },
+                    "first_name": "Bob",
+                    "last_name": "Booley",
+                    "avatar_url": "https://assets.attio.com/avatars/2f3l035b-fe59-4b2c-b4c9-b95e1d437e5d?etag=1182392508604",
+                    "email_address": "bob@example.com",
+                    "access_level": "admin",
+                    "created_at": "2023-03-13T23:20:19.285000000Z",
+                },
+            ],
+            [
+                {
+                    "workspace_id": "1eb8b8be-2b16-4795-81d8-6cd004812f92",
+                    "workspace_member_id": "08234bc6-c733-464c-b46f-11ae114aa3cc",
+                    "first_name": "Alice",
+                    "last_name": "Adams",
+                    "avatar_url": "https://assets.attio.com/avatars/1f3l035b-fe59-4b2c-b4c9-b95e1d437e5d?etag=1182392508604",
+                    "email_address": "alice@example.com",
+                    "access_level": "admin",
+                    "created_at": "2020-03-13T23:20:19.285000000Z",
+                },
+                {
+                    "workspace_id": "d7df08f9-d8bf-4136-bfa5-88ebb0374c0e",
+                    "workspace_member_id": "26e027da-fcc7-4a47-b784-8c6cb93476e5",
+                    "first_name": "Bob",
+                    "last_name": "Booley",
+                    "avatar_url": "https://assets.attio.com/avatars/2f3l035b-fe59-4b2c-b4c9-b95e1d437e5d?etag=1182392508604",
+                    "email_address": "bob@example.com",
+                    "access_level": "admin",
+                    "created_at": "2023-03-13T23:20:19.285000000Z",
+                },
+            ],
+        ),
+    ],
+)
+def test_workspace_member_parse(patch_base_class, requests_mock, response_data, expected):
+    stream = WorkspaceMembers()
+    response = MagicMock()
+    response.json.return_value = {"data": response_data}
+    inputs = {"response": response, "stream_slice": None, "stream_state": None, "next_page_token": None}
+    parsed = stream.parse_response(**inputs)
+    assert parsed == expected
