@@ -68,7 +68,7 @@ class PyPIPublishContext(PipelineContext):
         If pypi is not enabled, this will return None.
         """
 
-        current_metadata = yaml.safe_load(await connector_context.get_repo_file(connector_context.connector.metadata_file_path).contents())["data"]
+        current_metadata = yaml.safe_load(await connector_context.get_repo_file(str(connector_context.connector.metadata_file_path)).contents())["data"]
         print(current_metadata)
         if(
                 not "remoteRegistries" in current_metadata
