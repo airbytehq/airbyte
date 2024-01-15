@@ -200,7 +200,7 @@ class Source:
             )
 
         iterator: Iterable[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
-            self._read_with_catalog(configured_catalog),
+            self._read_with_catalog(CacheType.STREAMING, configured_catalog),
         )
         yield from iterator  # TODO: Refactor to use LazyDataset here
 
@@ -342,7 +342,7 @@ class Source:
             cache = get_default_cache()
 
         cache.register_source(source_name=self.name, source_catalog=self.configured_catalog)
-        cache.process_airbyte_messages(self._tally_records(self._read(CacheType.IN_MEMORY)))
+        cache.process_airbyte_messages(self._tally_records(self._read(cache._cache_type)))
 
         return ReadResult(
             processed_records=self._processed_records,

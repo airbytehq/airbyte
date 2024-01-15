@@ -19,8 +19,9 @@ class SourceType(str, Enum):
 
 
 class CacheType(str, Enum):
-    # TODO: Extend once proper caches have been merged
-    IN_MEMORY = "in_memory"
+    DUCKDB = "duckdb"
+    POSTGRES = "postgres"
+    SNOWFLAKE = "snowflake"
     STREAMING = "streaming"
 
 

@@ -25,6 +25,7 @@ from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
 from airbyte_lib.types import SQLTypeConverter
+from airbyte_lib.telemetry import CacheType
 
 
 if TYPE_CHECKING:
@@ -88,6 +89,7 @@ class SQLCacheBase(RecordProcessor):
     Optionally we can use a file cache to store the data in parquet files.
     """
 
+    _cache_type: CacheType
     type_converter_class: type[SQLTypeConverter] = SQLTypeConverter
     config_class: type[SQLCacheConfigBase]
     file_writer_class: type[FileWriterBase]

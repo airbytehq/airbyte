@@ -2,12 +2,9 @@
 
 import os
 import shutil
-<<<<<<< HEAD
 from unittest.mock import Mock, call, patch
-=======
 import tempfile
 from pathlib import Path
->>>>>>> origin/master
 
 import airbyte_lib as ab
 import pandas as pd
@@ -15,11 +12,8 @@ import pytest
 
 from airbyte_lib.caches import PostgresCache, PostgresCacheConfig
 from airbyte_lib.registry import _update_cache
-<<<<<<< HEAD
 from airbyte_lib.version import get_version
-=======
 from airbyte_lib.results import ReadResult
->>>>>>> origin/master
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -250,13 +244,13 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
     mock_requests.post = mock_post
 
     source = ab.get_connector("source-test", config={"apiKey": api_key})
-    cache = ab.get_in_memory_cache()
+    cache = ab.get_default_cache()
 
     if raises:
         with pytest.raises(Exception):
-            source.read_all(cache)
+            source.read(cache)
     else:
-        source.read_all(cache)
+        source.read(cache)
     
 
     mock_post.assert_has_calls([
@@ -269,7 +263,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
                     "version": get_version(),
                     "source": {'name': 'source-test', 'version': '0.0.1', 'type': 'venv'},
                     "state": "started",
-                    "cache_type": "in_memory",
+                    "cache_type": "duckdb",
                     "ip": "0.0.0.0",
                 },
                 "timestamp": "2021-01-01T00:00:00.000000",
@@ -286,7 +280,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
                     "source": {'name': 'source-test', 'version': '0.0.1', 'type': 'venv'},
                     "state": expected_state,
                     "number_of_records": expected_number_of_records,
-                    "cache_type": "in_memory",
+                    "cache_type": "duckdb",
                     "ip": "0.0.0.0",
                 },
                 "timestamp": "2021-01-01T00:00:00.000000",

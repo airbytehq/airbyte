@@ -8,6 +8,7 @@ TODO: FIXME: Snowflake Cache doesn't work yet. It's a work in progress.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from airbyte_lib.telemetry import CacheType
 
 from overrides import overrides
 
@@ -53,6 +54,7 @@ class SnowflakeSQLCache(SQLCacheBase):
     Parquet is used for local file storage before bulk loading.
     """
 
+    _cache_type = CacheType.SNOWFLAKE
     config_class = SnowflakeCacheConfig
     file_writer_class = ParquetWriter
 

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import cast
+from airbyte_lib.telemetry import CacheType
 
 from overrides import overrides
 
@@ -51,6 +52,7 @@ class DuckDBCacheBase(SQLCacheBase):
     so we insert as values instead.
     """
 
+    _cache_type = CacheType.DUCKDB
     config_class = DuckDBCacheConfig
     supports_merge_insert = True
 

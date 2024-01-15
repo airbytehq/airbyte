@@ -3,6 +3,7 @@
 """A Postgres implementation of the cache."""
 
 from __future__ import annotations
+from airbyte_lib.telemetry import CacheType
 
 from overrides import overrides
 
@@ -46,6 +47,7 @@ class PostgresCache(SQLCacheBase):
     or another import method. (Relatively low priority, since for now it works fine as-is.)
     """
 
+    _cache_type = CacheType.POSTGRES
     config_class = PostgresCacheConfig
     file_writer_class = ParquetWriter
     supports_merge_insert = True
