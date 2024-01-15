@@ -291,14 +291,9 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
-            print(str(context.connector.metadata["remoteRegistries"]))
-            if (
-                "remoteRegistries" in context.connector.metadata
-                and "pypi" in context.connector.metadata["remoteRegistries"]
-                and context.connector.metadata["remoteRegistries"]["pypi"]["enabled"]
-            ):
-                pypi_context = PyPIPublishContext.from_connector_context(context)
-                print(str(pypi_context))
+            # Try to convert the context to a PyPIPublishContext. If it returns None, it means we don't need to publish to pypi.
+            pypi_context = await PyPIPublishContext.from_connector_context(context)
+            if pypi_context:
                 check_pypi_package_exists_results = await CheckPypiPackageExists(pypi_context).run()
                 results.append(check_pypi_package_exists_results)
                 if check_pypi_package_exists_results.status is StepStatus.SKIPPED:

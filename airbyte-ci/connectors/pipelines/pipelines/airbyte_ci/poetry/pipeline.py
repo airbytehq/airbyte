@@ -7,6 +7,7 @@ import io
 import os
 from textwrap import dedent
 from typing import Optional
+import yaml
 
 import tomli
 import tomli_w
@@ -59,20 +60,35 @@ class PyPIPublishContext(PipelineContext):
         )
 
     @staticmethod
-    def from_connector_context(connector_context: ConnectorContext) -> "PyPIPublishContext":
-        if (
-            "connectorBuildOptions" in connector_context.connector.metadata
-            and "baseImage" in connector_context.connector.metadata["connectorBuildOptions"]
+    async def from_connector_context(connector_context: ConnectorContext) -> Optional["PyPIPublishContext"]:
+        """
+        Create a PyPIPublishContext from a ConnectorContext.
+
+        The metadata of the connector is read from the current workdir to capture changes that are not yet published.
+        If pypi is not enabled, this will return None.
+        """
+
+        current_metadata = yaml.safe_load(await connector_context.get_repo_file(connector_context.connector.metadata_file_path).contents())["data"]
+        if(
+                not "remoteRegistries" in current_metadata
+                or not "pypi" in current_metadata["remoteRegistries"]
+                or not current_metadata["remoteRegistries"]["pypi"]["enabled"]
         ):
-            build_docker_image = connector_context.connector.metadata["connectorBuildOptions"]["baseImage"]
+            return None
+
+        if (
+            "connectorBuildOptions" in current_metadata
+            and "baseImage" in current_metadata["connectorBuildOptions"]
+        ):
+            build_docker_image = current_metadata["connectorBuildOptions"]["baseImage"]
         else:
             build_docker_image = "mwalbeck/python-poetry"
         pypi_context = PyPIPublishContext(
             pypi_token=os.environ["PYPI_TOKEN"],
             test_pypi=True,  # TODO: Go live
             package_path=str(connector_context.connector.code_directory),
-            package_name=connector_context.connector.metadata["remoteRegistries"]["pypi"]["packageName"],
-            version=connector_context.connector.metadata["dockerImageTag"],
+            package_name=current_metadata["remoteRegistries"]["pypi"]["packageName"],
+            version=current_metadata["dockerImageTag"],
             build_docker_image=build_docker_image,
             ci_report_bucket=connector_context.ci_report_bucket,
             report_output_prefix=connector_context.report_output_prefix,
