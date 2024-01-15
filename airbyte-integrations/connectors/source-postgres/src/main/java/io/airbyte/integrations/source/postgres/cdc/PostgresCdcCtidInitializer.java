@@ -172,6 +172,10 @@ public class PostgresCdcCtidInitializer {
 
       // Gets the target position.
       final var targetPosition = PostgresCdcTargetPosition.targetPosition(database);
+      // Attempt to advance LSN past the target position. For versions of Postgres before PG15, this
+      // ensures that there is an event that debezium will
+      // receive that is after the target LSN.
+      PostgresUtils.advanceLsn(database);
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
           targetPosition, false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);

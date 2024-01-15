@@ -5,15 +5,12 @@
 package io.airbyte.integrations.source.postgres;
 
 import io.airbyte.cdk.integrations.debug.DebugUtil;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 
 public class PostgresDebugger {
 
   @SuppressWarnings({"unchecked", "deprecation", "resource"})
   public static void main(final String[] args) throws Exception {
     final PostgresSource postgresSource = new PostgresSource();
-    postgresSource.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
     DebugUtil.debug(postgresSource);
   }
 

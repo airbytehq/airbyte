@@ -1,15 +1,19 @@
+---
+products: oss-enterprise
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Implementation Guide
 
-[Airbyte Enterprise](./README.md) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Enterprise license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
+[Airbyte Self-Managed Enterprise](./README.md) is in an early access stage for select priority users. Once you [are qualified for a Self-Managed Enterprise license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
 
-Airbyte Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
+Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
 
 ## Prerequisites
 
-There are three prerequisites to deploying Enterprise: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
+There are three prerequisites to deploying: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
 
 For production, we recommend deploying to EKS, GKE or AKS. If you are doing some local testing, follow the cluster setup instructions outlined [here](/deploying-airbyte/on-kubernetes-via-helm.md#cluster-setup).
 
@@ -57,7 +61,7 @@ Follow these instructions to add the Airbyte helm repository:
 cp configs/airbyte.sample.yml configs/airbyte.yml
 ```
 
-3. Add your Airbyte Enterprise license key to your `airbyte.yml`. 
+3. Add your Airbyte Self-Managed Enterprise license key to your `airbyte.yml`. 
 
 4. Add your [auth details](/enterprise-setup/sso) to your `airbyte.yml`. Auth configurations aren't easy to modify after Airbyte is installed, so please double check them to make sure they're accurate before proceeding.
 
@@ -139,7 +143,7 @@ minio:
 
 
 <Tabs>
-<TabItem value="S3" label="S3">
+<TabItem value="S3" label="S3" default>
 
 ```yaml
 global:
@@ -169,6 +173,37 @@ global:
 
 For each of `accessKey` and `secretKey`, the `password` and `existingSecret` fields are mutually exclusive.
 
+3. Ensure your access key is tied to an IAM user with the [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-policies-s3.html#iam-policy-ex0), allowing the user access to S3 storage:
+
+```yaml
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Effect":"Allow",
+         "Action": "s3:ListAllMyBuckets",
+         "Resource":"*"
+      },
+      {
+         "Effect":"Allow",
+         "Action":["s3:ListBucket","s3:GetBucketLocation"],
+         "Resource":"arn:aws:s3:::YOUR-S3-BUCKET-NAME"
+      },
+      {
+         "Effect":"Allow",
+         "Action":[
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:GetObject",
+            "s3:GetObjectAcl",
+            "s3:DeleteObject"
+         ],
+         "Resource":"arn:aws:s3:::YOUR-S3-BUCKET-NAME/*"
+      }
+   ]
+}
+```
+
 </TabItem>
 <TabItem value="GKE" label="GKE" default> 
 
@@ -185,7 +220,7 @@ global:
             
         gcs:
             bucket: airbyte-dev-logs # GCS bucket name that you've created.
-            credentials: "" ## ???
+            credentials: ""
             credentialsJson: "" ## Base64 encoded json GCP credentials file contents
 ```
 
@@ -200,11 +235,18 @@ Note that the `credentials` and `credentialsJson` fields are mutually exclusive.
 
 To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
 
+<details>
+<summary>Ingress configuration setup steps</summary>
+<Tabs>
+<TabItem value="Generic" label="Generic">
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: enterprise-demo
+  name: # ingress name, example: enterprise-demo
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
   - host: # host, example: enterprise-demo.airbyte.com
@@ -227,6 +269,59 @@ spec:
         path: /auth
         pathType: Prefix
 ```
+
+</TabItem>
+<TabItem value="Amazon ALB" label="Amazon ALB">
+
+If you are intending on using Amazon Application Load Balancer (ALB) for ingress, this ingress definition will be close to what's needed to get up and running:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: <INGRESS_NAME>
+  annotations:
+    # Specifies that the Ingress should use an AWS ALB.
+    kubernetes.io/ingress.class: "alb"
+    # Redirects HTTP traffic to HTTPS.
+    ingress.kubernetes.io/ssl-redirect: "true"
+    # Creates an internal ALB, which is only accessible within your VPC or through a VPN.
+    alb.ingress.kubernetes.io/scheme: internal
+    # Specifies the ARN of the SSL certificate managed by AWS ACM, essential for HTTPS.
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-x:xxxxxxxxx:certificate/xxxxxxxxx-xxxxx-xxxx-xxxx-xxxxxxxxxxx
+    # Sets the idle timeout value for the ALB.
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=30
+    # [If Applicable] Specifies the VPC subnets and security groups for the ALB
+    # alb.ingress.kubernetes.io/subnets: '' e.g. 'subnet-12345, subnet-67890'
+    # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
+spec:
+  rules:
+  - host: <WEBAPP_URL> e.g. enterprise-demo.airbyte.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: airbyte-pro-airbyte-webapp-svc 
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+      - backend:
+          service:
+            name: airbyte-pro-airbyte-keycloak-svc
+            port:
+              number: 8180
+        path: /auth
+        pathType: Prefix
+```
+
+The ALB controller will use a `ServiceAccount` that requires the [following IAM policy](https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json) to be attached.
+
+</TabItem>
+</Tabs>
+</details>
+
+Once this is complete, ensure that the value of the `webapp-url` field in your `airbyte.yml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 

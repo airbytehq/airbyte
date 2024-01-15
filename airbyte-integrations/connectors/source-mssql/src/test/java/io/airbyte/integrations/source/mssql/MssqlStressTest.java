@@ -14,11 +14,10 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcStressTest;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import java.sql.JDBCType;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -31,6 +30,7 @@ import org.testcontainers.containers.MSSQLServerContainer;
 @Disabled
 public class MssqlStressTest extends JdbcStressTest {
 
+  private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(60);
   private static MSSQLServerContainer<?> dbContainer;
   private JsonNode config;
 
@@ -56,7 +56,8 @@ public class MssqlStressTest extends JdbcStressTest {
         String.format("jdbc:sqlserver://%s:%d;",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
             configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
-        Map.of("encrypt", "false"));
+        Map.of("encrypt", "false"),
+        CONNECTION_TIMEOUT);
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
@@ -92,9 +93,7 @@ public class MssqlStressTest extends JdbcStressTest {
 
   @Override
   public AbstractJdbcSource<JDBCType> getSource() {
-    final MssqlSource source = new MssqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new MssqlSource();
   }
 
   @Override

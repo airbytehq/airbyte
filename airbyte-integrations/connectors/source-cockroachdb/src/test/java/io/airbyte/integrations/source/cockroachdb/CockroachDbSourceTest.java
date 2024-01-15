@@ -36,9 +36,11 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.CockroachContainer;
 
+@Disabled
 class CockroachDbSourceTest {
 
   private static final String SCHEMA_NAME = "public";

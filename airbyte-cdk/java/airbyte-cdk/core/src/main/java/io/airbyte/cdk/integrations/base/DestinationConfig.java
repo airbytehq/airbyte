@@ -44,6 +44,10 @@ public class DestinationConfig {
     return config;
   }
 
+  public static void clearInstance() {
+    config = null;
+  }
+
   public JsonNode getNodeValue(final String key) {
     final JsonNode node = config.root.get(key);
     if (node == null) {

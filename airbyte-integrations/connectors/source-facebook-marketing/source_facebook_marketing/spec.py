@@ -5,11 +5,11 @@
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Set
 
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
-from pydantic import BaseModel, Field, PositiveInt
+from pydantic import BaseModel, Field, PositiveInt, constr
 
 logger = logging.getLogger("airbyte")
 
@@ -97,6 +97,13 @@ class InsightConfig(BaseModel):
         mininum=1,
         default=28,
     )
+    insights_job_timeout: Optional[PositiveInt] = Field(
+        title="Custom Insights Job Timeout",
+        description="The insights job timeout",
+        maximum=60,
+        mininum=10,
+        default=60,
+    )
 
 
 class ConnectorConfig(BaseConfig):
@@ -105,18 +112,18 @@ class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
-    account_id: str = Field(
-        title="Ad Account ID",
+    account_ids: Set[constr(regex="^[0-9]+$")] = Field(
+        title="Ad Account ID(s)",
         order=0,
         description=(
-            "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. "
+            "The Facebook Ad account ID(s) to pull data from. "
             "The Ad account ID number is in the account dropdown menu or in your browser's address "
             'bar of your <a href="https://adsmanager.facebook.com/adsmanager/">Meta Ads Manager</a>. '
             'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
         ),
-        pattern="^[0-9]+$",
-        pattern_descriptor="1234567890",
+        pattern_descriptor="The Ad Account ID must be a number.",
         examples=["111111111111111"],
+        min_items=1,
     )
 
     access_token: str = Field(
@@ -200,6 +207,20 @@ class ConnectorConfig(BaseConfig):
         maximum=28,
         mininum=1,
         default=28,
+    )
+
+    insights_job_timeout: Optional[PositiveInt] = Field(
+        title="Insights Job Timeout",
+        order=9,
+        description=(
+            "Insights Job Timeout establishes the maximum amount of time (in minutes) of waiting for the report job to complete. "
+            "When timeout is reached the job is considered failed and we are trying to request smaller amount of data by breaking the job to few smaller ones. "
+            "If you definitely know that 60 minutes is not enough for your report to be processed then you can decrease the timeout value, "
+            "so we start breaking job to smaller parts faster."
+        ),
+        maximum=60,
+        mininum=10,
+        default=60,
     )
 
     action_breakdowns_allow_empty: bool = Field(
