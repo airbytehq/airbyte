@@ -61,7 +61,7 @@ class PyPIPublishContext(PipelineContext):
     @staticmethod
     def from_connector_context(connector_context: ConnectorContext) -> "PyPIPublishContext":
         if (
-            connector_context.connector.metadata["connectorBuildOptions"]
+            "connectorBuildOptions" in connector_context.connector.metadata
             and "baseImage" in connector_context.connector.metadata["connectorBuildOptions"]
         ):
             build_docker_image = connector_context.connector.metadata["connectorBuildOptions"]["baseImage"]
