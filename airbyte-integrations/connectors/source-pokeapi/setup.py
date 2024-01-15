@@ -26,4 +26,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        "console_scripts": [
+            "source-pokeapi=source_pokeapi.run:run",
+        ],
+    },
 )
