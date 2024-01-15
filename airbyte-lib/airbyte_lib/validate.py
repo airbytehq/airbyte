@@ -8,13 +8,13 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import List
 
-import airbyte_lib as ab
 import yaml
 
+import airbyte_lib as ab
 
-def _parse_args():
+
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate a connector")
     parser.add_argument(
         "--connector-dir",
@@ -31,15 +31,19 @@ def _parse_args():
     return parser.parse_args()
 
 
-def _run_subprocess_and_raise_on_failure(args: List[str]):
-    result = subprocess.run(args)
+def _run_subprocess_and_raise_on_failure(args: list[str]) -> None:
+    result = subprocess.run(args, check=False)
     if result.returncode != 0:
         raise Exception(f"{args} exited with code {result.returncode}")
 
 
-def tests(connector_name, sample_config):
+def tests(connector_name: str, sample_config: str) -> None:
     print("Creating source and validating spec and version...")
-    source = ab.get_connector(connector_name, config=json.load(open(sample_config)))
+    source = ab.get_connector(
+        # FIXME: noqa: SIM115, PTH123
+        connector_name,
+        config=json.load(open(sample_config)),  # noqa: SIM115, PTH123
+    )
 
     print("Running check...")
     source.check()
@@ -51,7 +55,7 @@ def tests(connector_name, sample_config):
     for stream in streams:
         try:
             print(f"Trying to read from stream {stream}...")
-            record = next(source.read_stream(stream))
+            record = next(source.get_records(stream))
             assert record, "No record returned"
             break
         except Exception as e:
@@ -60,7 +64,7 @@ def tests(connector_name, sample_config):
         raise Exception(f"Could not read from any stream from {streams}")
 
 
-def run():
+def run() -> None:
     """
     This is a CLI entrypoint for the `airbyte-lib-validate-source` command.
     It's called like this: airbyte-lib-validate-source —connector-dir . -—sample-config secrets/config.json
@@ -77,10 +81,10 @@ def run():
     validate(connector_dir, sample_config)
 
 
-def validate(connector_dir, sample_config):
+def validate(connector_dir: str, sample_config: str) -> None:
     # read metadata.yaml
     metadata_path = Path(connector_dir) / "metadata.yaml"
-    with open(metadata_path, "r") as stream:
+    with open(metadata_path) as stream:
         metadata = yaml.safe_load(stream)["data"]
 
     # TODO: Use remoteRegistries.pypi.packageName once set for connectors
@@ -102,8 +106,8 @@ def validate(connector_dir, sample_config):
             {
                 "dockerRepository": f"airbyte/{connector_name}",
                 "dockerImageTag": "0.0.1",
-            }
-        ]
+            },
+        ],
     }
 
     with tempfile.NamedTemporaryFile(mode="w+t", delete=True) as temp_file:
