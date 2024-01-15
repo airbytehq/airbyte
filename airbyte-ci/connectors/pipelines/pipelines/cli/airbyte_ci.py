@@ -6,8 +6,9 @@
 
 from __future__ import annotations
 
-# Important: This import and function call must be the first import in this file
+# HACK! IMPORTANT! This import and function call must be the first import in this file
 # This is needed to ensure that the working directory is the root of the airbyte repo
+# ruff: noqa: E402
 from pipelines.cli.ensure_repo_root import set_working_directory_to_root
 
 set_working_directory_to_root()
