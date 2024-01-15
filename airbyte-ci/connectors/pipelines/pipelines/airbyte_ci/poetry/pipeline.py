@@ -7,10 +7,10 @@ import io
 import os
 from textwrap import dedent
 from typing import Optional
-import yaml
 
 import tomli
 import tomli_w
+import yaml
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult
@@ -68,19 +68,18 @@ class PyPIPublishContext(PipelineContext):
         If pypi is not enabled, this will return None.
         """
 
-        current_metadata = yaml.safe_load(await connector_context.get_repo_file(str(connector_context.connector.metadata_file_path)).contents())["data"]
+        current_metadata = yaml.safe_load(
+            await connector_context.get_repo_file(str(connector_context.connector.metadata_file_path)).contents()
+        )["data"]
         print(current_metadata)
-        if(
-                not "remoteRegistries" in current_metadata
-                or not "pypi" in current_metadata["remoteRegistries"]
-                or not current_metadata["remoteRegistries"]["pypi"]["enabled"]
+        if (
+            not "remoteRegistries" in current_metadata
+            or not "pypi" in current_metadata["remoteRegistries"]
+            or not current_metadata["remoteRegistries"]["pypi"]["enabled"]
         ):
             return None
 
-        if (
-            "connectorBuildOptions" in current_metadata
-            and "baseImage" in current_metadata["connectorBuildOptions"]
-        ):
+        if "connectorBuildOptions" in current_metadata and "baseImage" in current_metadata["connectorBuildOptions"]:
             build_docker_image = current_metadata["connectorBuildOptions"]["baseImage"]
         else:
             build_docker_image = "mwalbeck/python-poetry"
