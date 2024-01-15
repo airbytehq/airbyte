@@ -128,6 +128,18 @@ class TestWeaviateIndexer(unittest.TestCase):
             where={"path": ["_ab_record_id"], "operator": "ContainsAny", "valueStringArray": ["some_id", "some_other_id"]},
         )
 
+    def test_index_deletes_by_record_id_with_tenant_id(self):
+        mock_client = Mock()
+        self.indexer.client = mock_client
+        self.indexer.has_record_id_metadata = defaultdict(None)
+        self.indexer.has_record_id_metadata["Test"] = True
+        self.indexer.delete(["some_id", "some_other_id"], None, "test")
+        mock_client.batch.delete_objects.assert_called_with(
+            class_name="Test",
+            tenant="test_tenant",
+            where={"path": ["_ab_record_id"], "operator": "ContainsAny", "valueStringArray": ["some_id", "some_other_id"]},
+        )
+
     @patch("destination_weaviate.indexer.weaviate.Client")
     def test_index_not_delete_no_metadata_field(self, MockClient):
         mock_client = Mock()
