@@ -24,6 +24,7 @@
     "afn-inbound-receiving-quantity": { "type": ["null", "string"] },
     "afn-researching-quantity": { "type": ["null", "string"] },
     "afn-reserved-future-supply": { "type": ["null", "string"] },
-    "afn-future-supply-buyable": { "type": ["null", "string"] }
+    "afn-future-supply-buyable": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }
