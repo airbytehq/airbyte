@@ -57,7 +57,6 @@ jobs:
         with:
           context: "manual"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -72,6 +71,8 @@ jobs:
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
           airbyte_ci_binary_url: ${{ github.event.inputs.airbyte-ci-binary-url }}
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
