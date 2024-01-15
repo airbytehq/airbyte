@@ -86,6 +86,7 @@ class PyPIPublishContext(PipelineContext):
             ci_gcs_credentials=connector_context.ci_gcs_credentials,
         )
         pypi_context.dagger_client = connector_context.dagger_client
+        return pypi_context
 
 
 class PublishToPyPI(Step):
