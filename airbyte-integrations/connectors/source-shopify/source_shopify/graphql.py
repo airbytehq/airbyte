@@ -26,10 +26,12 @@ def _camel_to_snake(camel_case: str):
 def get_query_products(first: int, filter_field: str, filter_value: str, next_page_token: Optional[str]):
     op = sgqlc.operation.Operation(_schema_root.query_type)
     snake_case_filter_field = _camel_to_snake(filter_field)
-    if next_page_token:
-        products = op.products(first=first, query=f"{snake_case_filter_field}:>'{filter_value}'", after=next_page_token)
-    else:
-        products = op.products(first=first, query=f"{snake_case_filter_field}:>'{filter_value}'")
+    products_args = {
+        "first": first,
+        "query": f"{snake_case_filter_field}:>'{filter_value}'" if filter_value else None,
+        "after": next_page_token,
+    }
+    products = op.products(**products_args)
     products.nodes.id()
     products.nodes.title()
     products.nodes.updated_at()
