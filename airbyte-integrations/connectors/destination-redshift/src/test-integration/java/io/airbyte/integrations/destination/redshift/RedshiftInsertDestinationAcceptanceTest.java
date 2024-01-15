@@ -13,7 +13,7 @@ import java.nio.file.Path;
 /**
  * Integration test testing the {@link RedshiftInsertDestination}.
  */
-public class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3DestinationAcceptanceTest {
+public class RedshiftInsertDestinationAcceptanceTest extends RedshiftDestinationAcceptanceTest {
 
   public JsonNode getStaticConfig() throws IOException {
     return Jsons.deserialize(Files.readString(Path.of("secrets/config.json")));

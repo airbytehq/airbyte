@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.58.8
+CDK: HttpRequester can accept http_method in str format, which is required by custom low code components
+
+## 0.58.7
+
+
+## 0.58.6
+File CDK: Added logic to emit logged `RecordParseError` errors and raise the single `AirbyteTracebackException` in the end of the sync, instead of silent skipping the parsing errors. PR: https://github.com/airbytehq/airbyte/pull/32589
+
+## 0.58.5
+Handle private network exception as config error
+
+## 0.58.4
+Add POST method to HttpMocker
+
+## 0.58.3
+fix declarative oauth initialization
+
 ## 0.58.2
 Integration tests: adding debug mode to improve logging
 
