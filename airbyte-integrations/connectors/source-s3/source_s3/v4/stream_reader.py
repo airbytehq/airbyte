@@ -157,7 +157,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 break
 
     def _handle_file(self, file):
-        if file["Key"].endswith("zip"):
+        if file["Key"].endswith(".zip"):
             yield from self._handle_zip_file(file)
         else:
             yield self._handle_regular_file(file)

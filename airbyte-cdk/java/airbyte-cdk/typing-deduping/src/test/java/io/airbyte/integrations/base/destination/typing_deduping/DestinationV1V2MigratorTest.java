@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
+import static org.mockito.ArgumentMatchers.any;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Optional;
@@ -80,7 +81,7 @@ public class DestinationV1V2MigratorTest {
     migrator.migrate(sqlGenerator, handler, stream);
     Mockito.verify(handler).execute(sql);
     // Exception thrown when executing sql, TableNotMigratedException thrown
-    Mockito.doThrow(Exception.class).when(handler).execute(Mockito.anyString());
+    Mockito.doThrow(Exception.class).when(handler).execute(any());
     final TableNotMigratedException exception = Assertions.assertThrows(TableNotMigratedException.class,
         () -> migrator.migrate(sqlGenerator, handler, stream));
     Assertions.assertEquals("Attempted and failed to migrate stream final_table", exception.getMessage());
@@ -93,12 +94,12 @@ public class DestinationV1V2MigratorTest {
                                                              final boolean v1RawTableSchemaMatches)
       throws Exception {
     final BaseDestinationV1V2Migrator migrator = Mockito.spy(BaseDestinationV1V2Migrator.class);
-    Mockito.when(migrator.doesAirbyteInternalNamespaceExist(Mockito.any())).thenReturn(v2NamespaceExists);
+    Mockito.when(migrator.doesAirbyteInternalNamespaceExist(any())).thenReturn(v2NamespaceExists);
     final var existingTable = v2TableExists ? Optional.of("v2_raw") : Optional.empty();
     Mockito.when(migrator.getTableIfExists("raw", "raw_table")).thenReturn(existingTable);
     Mockito.when(migrator.schemaMatchesExpectation("v2_raw", V2_RAW_TABLE_COLUMN_NAMES)).thenReturn(v2RawSchemaMatches);
 
-    Mockito.when(migrator.convertToV1RawName(Mockito.any())).thenReturn(new NamespacedTableName("v1_raw_namespace", "v1_raw_table"));
+    Mockito.when(migrator.convertToV1RawName(any())).thenReturn(new NamespacedTableName("v1_raw_namespace", "v1_raw_table"));
     final var existingV1RawTable = v1RawTableExists ? Optional.of("v1_raw") : Optional.empty();
     Mockito.when(migrator.getTableIfExists("v1_raw_namespace", "v1_raw_table")).thenReturn(existingV1RawTable);
     Mockito.when(migrator.schemaMatchesExpectation("v1_raw", LEGACY_RAW_TABLE_COLUMNS)).thenReturn(v1RawTableSchemaMatches);

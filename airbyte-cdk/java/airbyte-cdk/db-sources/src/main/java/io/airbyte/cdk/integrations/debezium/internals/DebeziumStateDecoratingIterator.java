@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.debezium.internals;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
@@ -11,6 +12,7 @@ import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager.DebeziumConnectorType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Duration;
 import java.time.Instant;
@@ -78,6 +80,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
   private final HashMap<String, String> previousCheckpointOffset;
   private final DebeziumConnectorType debeziumConnectorType;
   private final ConfiguredAirbyteCatalog configuredAirbyteCatalog;
+  private final JsonNode config;
 
   /**
    * @param changeEventIterator Base iterator that we want to enrich with checkpoint messages
@@ -102,7 +105,8 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
                                          final Duration checkpointDuration,
                                          final Long checkpointRecords,
                                          final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
-                                         final DebeziumConnectorType debeziumConnectorType) {
+                                         final DebeziumConnectorType debeziumConnectorType,
+                                         final JsonNode config) {
     this.changeEventIterator = changeEventIterator;
     this.cdcStateHandler = cdcStateHandler;
     this.targetPosition = targetPosition;
@@ -117,6 +121,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
     this.syncCheckpointRecords = checkpointRecords;
     this.previousCheckpointOffset = (HashMap<String, String>) offsetManager.read();
     this.debeziumConnectorType = debeziumConnectorType;
+    this.config = config;
     resetCheckpointValues();
   }
 
@@ -140,7 +145,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
 
     if (cdcStateHandler.isCdcCheckpointEnabled() && sendCheckpointMessage) {
       LOGGER.info("Sending CDC checkpoint state message.");
-      final AirbyteMessage stateMessage = createStateMessage(checkpointOffsetToSend);
+      final AirbyteMessage stateMessage = createStateMessage(checkpointOffsetToSend, recordsLastSync);
       previousCheckpointOffset.clear();
       previousCheckpointOffset.putAll(checkpointOffsetToSend);
       resetCheckpointValues();
@@ -174,11 +179,11 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
         }
       }
       recordsLastSync++;
-      return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, debeziumConnectorType);
+      return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, debeziumConnectorType, config);
     }
 
     isSyncFinished = true;
-    return createStateMessage(offsetManager.read());
+    return createStateMessage(offsetManager.read(), recordsLastSync);
   }
 
   /**
@@ -197,7 +202,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
    *
    * @return {@link AirbyteStateMessage} which includes offset and schema history if used.
    */
-  private AirbyteMessage createStateMessage(final Map<String, String> offset) {
+  private AirbyteMessage createStateMessage(final Map<String, String> offset, final long recordCount) {
     if (trackSchemaHistory && schemaHistoryManager == null) {
       throw new RuntimeException("Schema History Tracking is true but manager is not initialised");
     }
@@ -205,7 +210,9 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
       throw new RuntimeException("Offset can not be null");
     }
 
-    return cdcStateHandler.saveState(offset, schemaHistoryManager != null ? schemaHistoryManager.read() : null);
+    final AirbyteMessage message = cdcStateHandler.saveState(offset, schemaHistoryManager != null ? schemaHistoryManager.read() : null);
+    message.getState().withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
+    return message;
   }
 
 }

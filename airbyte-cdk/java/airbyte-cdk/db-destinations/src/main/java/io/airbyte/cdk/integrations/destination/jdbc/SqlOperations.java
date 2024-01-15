@@ -6,15 +6,12 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * todo (cgardens) - is it necessary to expose so much configurability in this interface. review if
- * we can narrow the surface area.
- *
  * SQL queries required for successfully syncing to a destination connector. These operations
  * include the ability to:
  * <ul>
@@ -98,7 +95,7 @@ public interface SqlOperations {
    * @param tableName Name of table
    * @throws Exception exception
    */
-  void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
+  void insertRecords(JdbcDatabase database, List<PartialAirbyteMessage> records, String schemaName, String tableName) throws Exception;
 
   /**
    * Query to insert all records from source table to destination table. Both tables must be in the
