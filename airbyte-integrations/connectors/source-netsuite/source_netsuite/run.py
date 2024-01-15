@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_netsuite import SourceNetsuite
 
+
 def run():
     source = SourceNetsuite()
     launch(source, sys.argv[1:])
