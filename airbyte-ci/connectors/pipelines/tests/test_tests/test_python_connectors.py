@@ -6,8 +6,8 @@ import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.test.steps.python_connectors import UnitTests
-from pipelines.models.steps import StepResult
+from pipelines.airbyte_ci.connectors.test.steps.python_connectors import AirbyteLibValidation, UnitTests
+from pipelines.models.steps import StepResult, StepStatus
 
 pytestmark = [
     pytest.mark.anyio,
@@ -105,3 +105,72 @@ class TestUnitTests:
             f"--cov={context_for_certified_connector_with_setup.connector.technical_name.replace('-', '_')}",
             f"--cov-fail-under={step.MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS}",
         ]
+
+
+class TestAirbyteLibValidationTests:
+    @pytest.fixture
+    def compatible_connector(self):
+        return Connector("source-faker")
+
+    @pytest.fixture
+    def valid_secrets(self, dagger_client):
+        return {
+            "valid_config.json": dagger_client.set_secret(
+                "faker_secret_config",
+                """{
+  "count": 10,
+  "seed": 0,
+  "parallelism": 1,
+  "always_updated": false
+}""",
+            )
+        }
+
+    @pytest.fixture
+    def invalid_secrets(self, dagger_client):
+        return {
+            "invalid_config.json": dagger_client.set_secret(
+                "faker_secret_config",
+                """{
+  "count": "a string even though it should be a number"
+}""",
+            )
+        }
+
+    @pytest.fixture
+    def context_for_valid_connector(self, mocker, compatible_connector, dagger_client, current_platform):
+        context = ConnectorContext(
+            pipeline_name="test airbyte-lib validation",
+            connector=compatible_connector,
+            git_branch="test",
+            git_revision="test",
+            report_output_prefix="test",
+            is_local=True,
+            use_remote_secrets=True,
+            targeted_platforms=[current_platform],
+        )
+        context.dagger_client = dagger_client
+        context.get_connector_secrets = mocker.AsyncMock(return_value={})
+        return context
+
+    @pytest.fixture
+    async def connector_container(self, context_for_valid_connector, current_platform):
+        result = await BuildConnectorImages(context_for_valid_connector).run()
+        return result.output_artifact[current_platform]
+
+    async def test__run_validation_success(self, mocker, valid_secrets, context_for_valid_connector: ConnectorContext, connector_container):
+        context_for_valid_connector.get_connector_secrets = mocker.AsyncMock(return_value=valid_secrets)
+        result = await AirbyteLibValidation(context_for_valid_connector)._run(connector_container)
+        assert isinstance(result, StepResult)
+        assert result.status == StepStatus.SUCCESS
+        assert "Creating source and validating spec and version..." in result.stdout
+        assert "Running check..." in result.stdout
+        assert "Fetching streams..." in result.stdout
+        assert "Trying to peek stream" in result.stdout
+
+    async def test__run_validation_fail(self, mocker, invalid_secrets, context_for_valid_connector: ConnectorContext, connector_container):
+        context_for_valid_connector.get_connector_secrets = mocker.AsyncMock(return_value=invalid_secrets)
+        result = await AirbyteLibValidation(context_for_valid_connector)._run(connector_container)
+        assert isinstance(result, StepResult)
+        assert result.status == StepStatus.FAILURE
+        assert "'a string even though it should be a number' is not of type 'integer'" in result.stderr

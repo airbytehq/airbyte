@@ -11,6 +11,7 @@ import dpath.util
 import pipelines.dagger.actions.python.common
 import pipelines.dagger.actions.system.docker
 from dagger import Container, File
+from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -211,8 +212,10 @@ class AirbyteLibValidation(Step):
 
         connector_secrets = await self.context.get_connector_secrets()
         first_secret_name = list(connector_secrets.keys())[0]
-        test_execution = test_environment.with_exec(
-            ["airbyte-lib-validate-source", "--connector-dir", ".", "--sample-config", "secrets/" + first_secret_name]
+        test_execution = test_environment.with_(
+            hacks.never_fail_exec(
+                ["airbyte-lib-validate-source", "--connector-dir", ".", "--sample-config", "secrets/" + first_secret_name]
+            )
         )
 
         return await self.get_step_result(test_execution)
