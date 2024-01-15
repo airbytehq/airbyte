@@ -15,6 +15,7 @@ import static org.apache.kafka.connect.data.Schema.OPTIONAL_STRING_SCHEMA;
 
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumConverterUtils;
+import io.debezium.connector.postgresql.PostgresValueConverter;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import io.debezium.time.Conversions;
@@ -125,7 +126,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       // The code below strips trailing zeros for integer numbers and represents number with exponent
       // if this number has decimals point.
       final double doubleValue = Double.parseDouble(x.toString());
-      var valueWithTruncatedZero = BigDecimal.valueOf(doubleValue).stripTrailingZeros().toString();
+      final String valueWithTruncatedZero = BigDecimal.valueOf(doubleValue).stripTrailingZeros().toPlainString();
       return valueWithTruncatedZero.contains(".") ? String.valueOf(doubleValue) : valueWithTruncatedZero;
     });
   }
@@ -239,11 +240,13 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     return field.scale().orElse(-1);
   }
 
+  private final String POSITIVE_INFINITY_VALUE = "Infinity";
+  private final String NEGATIVE_INFINITY_VALUE = "-Infinity";
+
   // Ref :
   // https://debezium.io/documentation/reference/2.2/connectors/postgresql.html#postgresql-temporal-types
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     final var fieldType = field.typeName();
-
     registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
         return DebeziumConverterUtils.convertDefaultValue(field);
@@ -252,8 +255,20 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         case "TIMETZ":
           return DateTimeConverter.convertToTimeWithTimezone(x);
         case "TIMESTAMPTZ":
+          if (x.equals(PostgresValueConverter.NEGATIVE_INFINITY_OFFSET_DATE_TIME)) {
+            return NEGATIVE_INFINITY_VALUE;
+          }
+          if (x.equals(PostgresValueConverter.POSITIVE_INFINITY_OFFSET_DATE_TIME)) {
+            return POSITIVE_INFINITY_VALUE;
+          }
           return DateTimeConverter.convertToTimestampWithTimezone(x);
         case "TIMESTAMP":
+          if (x.equals(PostgresValueConverter.NEGATIVE_INFINITY_INSTANT)) {
+            return NEGATIVE_INFINITY_VALUE;
+          }
+          if (x.equals(PostgresValueConverter.POSITIVE_INFINITY_INSTANT)) {
+            return POSITIVE_INFINITY_VALUE;
+          }
           if (x instanceof final Long l) {
             if (getTimePrecision(field) <= 3) {
               return convertToTimestamp(Conversions.toInstantFromMillis(l));
@@ -264,6 +279,12 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
           }
           return convertToTimestamp(x);
         case "DATE":
+          if (x.equals(PostgresValueConverter.NEGATIVE_INFINITY_LOCAL_DATE)) {
+            return NEGATIVE_INFINITY_VALUE;
+          }
+          if (x.equals(PostgresValueConverter.POSITIVE_INFINITY_LOCAL_DATE)) {
+            return POSITIVE_INFINITY_VALUE;
+          }
           if (x instanceof Integer) {
             return convertToDate(LocalDate.ofEpochDay((Integer) x));
           }

@@ -50,7 +50,7 @@
     },
     {
       "stream": {
-        "name": "geographic_report",
+        "name": "geographic_view",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [
@@ -74,7 +74,7 @@
     },
     {
       "stream": {
-        "name": "keyword_report",
+        "name": "keyword_view",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [
@@ -98,7 +98,7 @@
     },
     {
       "stream": {
-        "name": "display_topics_performance_report",
+        "name": "topic_view",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [
@@ -126,7 +126,7 @@
     },
     {
       "stream": {
-        "name": "shopping_performance_report",
+        "name": "shopping_performance_view",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [
@@ -150,7 +150,7 @@
     },
     {
       "stream": {
-        "name": "ad_group_ads",
+        "name": "ad_group_ad",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -168,7 +168,7 @@
     },
     {
       "stream": {
-        "name": "ad_groups",
+        "name": "ad_group",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -186,7 +186,7 @@
     },
     {
       "stream": {
-        "name": "accounts",
+        "name": "customer",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -200,7 +200,7 @@
     },
     {
       "stream": {
-        "name": "campaigns",
+        "name": "campaign",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -231,7 +231,7 @@
     },
     {
       "stream": {
-        "name": "user_location_report",
+        "name": "user_location_view",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -257,7 +257,7 @@
     },
     {
       "stream": {
-        "name": "ad_group_ad_report",
+        "name": "ad_group_ad_legacy",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -281,7 +281,7 @@
     },
     {
       "stream": {
-        "name": "display_keyword_performance_report",
+        "name": "display_keyword_view",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [
@@ -309,7 +309,7 @@
     },
     {
       "stream": {
-        "name": "campaign_bidding_strategies",
+        "name": "campaign_bidding_strategy",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [
@@ -333,7 +333,7 @@
     },
     {
       "stream": {
-        "name": "ad_group_bidding_strategies",
+        "name": "ad_group_bidding_strategy",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [
@@ -357,7 +357,7 @@
     },
     {
       "stream": {
-        "name": "ad_group_criterions",
+        "name": "ad_group_criterion",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [["ad_group_criterion.resource_name"]]

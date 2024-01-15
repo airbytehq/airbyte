@@ -89,6 +89,10 @@
           }
         }
       }
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

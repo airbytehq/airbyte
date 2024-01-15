@@ -76,6 +76,8 @@ Apart from `Fields` streams, all other streams support incremental.
 
 * [Filters](https://developers.pipedrive.com/docs/api/v1/Filters#getFilters)
 
+* [Goals](https://developers.pipedrive.com/docs/api/v1/Goals#getGoals)
+
 * [LeadLabels](https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels)
 
 * [Leads](https://developers.pipedrive.com/docs/api/v1/Leads#getLeads)
@@ -112,6 +114,10 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 2.2.1   | 2023-11-06 | [31147](https://github.com/airbytehq/airbyte/pull/31147) | Bugfix: handle records with a null data field                              |
+| 2.2.0   | 2023-10-25 | [31707](https://github.com/airbytehq/airbyte/pull/31707) | Add new stream mail                                                        |
+| 2.1.0   | 2023-10-10 | [31184](https://github.com/airbytehq/airbyte/pull/31184) | Add new stream goals                                                       |
+| 2.0.1   | 2023-10-13 | [31151](https://github.com/airbytehq/airbyte/pull/31151) | Add additionalProperties in schemas to read custom fields                  |
 | 2.0.0   | 2023-08-09 | [29293](https://github.com/airbytehq/airbyte/pull/29293) | Migrated to Low-Code CDK                                                   |
 | 1.0.0   | 2023-06-29 | [27832](https://github.com/airbytehq/airbyte/pull/27832) | Remove `followers_count` field from `Products` stream                      |
 | 0.1.19  | 2023-07-05 | [27967](https://github.com/airbytehq/airbyte/pull/27967) | Update `OrganizationFields` and `ProductFields` with `display_field` field |

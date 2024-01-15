@@ -9,6 +9,18 @@
     "orderNumber": {
       "type": ["null", "string"]
     },
+    "created": {
+      "type": ["null", "string"]
+    },
+    "modified": {
+      "type": ["null", "string"]
+    },
+    "orderBillingPeriod": {
+      "type": ["null", "string"]
+    },
+    "setOrderBillingPeriod": {
+      "type": ["null", "boolean"]
+    },
     "version": {
       "type": ["null", "number"]
     },

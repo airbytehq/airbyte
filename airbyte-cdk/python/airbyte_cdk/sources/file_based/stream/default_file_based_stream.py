@@ -58,7 +58,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     @property
     def primary_key(self) -> PrimaryKeyType:
-        return self.config.primary_key
+        return self.config.primary_key or self.get_parser().get_parser_defined_primary_key(self.config)
 
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         # Sort files by last_modified, uri and return them grouped by last_modified
@@ -87,7 +87,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             n_skipped = line_no = 0
 
             try:
-                for record in parser.parse_records(self.config, file, self._stream_reader, self.logger, schema):
+                for record in parser.parse_records(self.config, file, self.stream_reader, self.logger, schema):
                     line_no += 1
                     if self.config.schemaless:
                         record = {"data": record}
@@ -112,14 +112,20 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             except RecordParseError:
                 # Increment line_no because the exception was raised before we could increment it
                 line_no += 1
-                yield AirbyteMessage(
-                    type=MessageType.LOG,
-                    log=AirbyteLogMessage(
-                        level=Level.ERROR,
-                        message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
-                        stack_trace=traceback.format_exc(),
+                self.errors_collector.collect(
+                    AirbyteMessage(
+                        type=MessageType.LOG,
+                        log=AirbyteLogMessage(
+                            level=Level.ERROR,
+                            message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
+                            stack_trace=traceback.format_exc(),
+                        ),
                     ),
                 )
+
+            except AirbyteTracedException as exc:
+                # Re-raise the exception to stop the whole sync immediately as this is a fatal error
+                raise exc
 
             except Exception:
                 yield AirbyteMessage(
@@ -178,7 +184,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             if total_n_files == 0:
                 raise NoFilesMatchingError(FileBasedSourceError.EMPTY_STREAM, stream=self.name)
 
-            max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
+            max_n_files_for_schema_inference = self._discovery_policy.get_max_n_files_for_schema_inference(self.get_parser())
             if total_n_files > max_n_files_for_schema_inference:
                 # Use the most recent files for schema inference, so we pick up schema changes during discovery.
                 files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
@@ -199,14 +205,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
         return schema
 
-    @cache
-    def list_files(self) -> List[RemoteFile]:
+    def get_files(self) -> Iterable[RemoteFile]:
         """
-        List all files that belong to the stream as defined by the stream's globs.
-        The output of this method is cached so we don't need to list the files more than once.
-        This means we won't pick up changes to the files during a sync.
+        Return all files that belong to the stream as defined by the stream's globs.
         """
-        return list(self._stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger))
+        return self.stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger)
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
@@ -260,7 +263,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     async def _infer_file_schema(self, file: RemoteFile) -> SchemaType:
         try:
-            return await self.get_parser().infer_schema(self.config, file, self._stream_reader, self.logger)
+            return await self.get_parser().infer_schema(self.config, file, self.stream_reader, self.logger)
         except Exception as exc:
             raise SchemaInferenceError(
                 FileBasedSourceError.SCHEMA_INFERENCE_ERROR,

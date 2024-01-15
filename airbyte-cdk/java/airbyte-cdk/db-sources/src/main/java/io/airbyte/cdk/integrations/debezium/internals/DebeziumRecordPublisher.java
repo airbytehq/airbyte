@@ -77,16 +77,24 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           if (e.value() != null) {
             try {
               queue.put(e);
-            } catch (InterruptedException ex) {
+            } catch (final InterruptedException ex) {
               Thread.currentThread().interrupt();
               throw new RuntimeException(ex);
             }
           }
         })
         .using((success, message, error) -> {
-          LOGGER.info("Debezium engine shutdown.");
+          LOGGER.info("Debezium engine shutdown. Engine terminated successfully : {}", success);
           LOGGER.info(message);
-          thrownError.set(error);
+          if (!success) {
+            if (error != null) {
+              thrownError.set(error);
+            } else {
+              // There are cases where Debezium doesn't succeed but only fills the message field.
+              // In that case, we still want to fail loud and clear
+              thrownError.set(new RuntimeException(message));
+            }
+          }
           engineLatch.countDown();
         })
         .build();

@@ -11,5 +11,4 @@ import java.util.LinkedHashMap;
  *        {@link net.snowflake.client.jdbc.SnowflakeType} doesn't actually have all the types that
  *        Snowflake supports.
  */
-// TODO fields for columns + indexes... or other stuff we want to set?
-public record SnowflakeTableDefinition(LinkedHashMap<String, String> columns) {}
+public record SnowflakeTableDefinition(LinkedHashMap<String, SnowflakeColumnDefinition> columns) {}

@@ -10,13 +10,14 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing.api import API
-from source_facebook_marketing.streams import AdCreatives, AdsInsights
+from source_facebook_marketing.streams import AdAccount, AdCreatives, AdsInsights
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 account_id = "unknown_account"
-some_config = {"start_date": "2021-01-23T00:00:00Z", "account_id": account_id, "access_token": "unknown_token"}
-act_url = f"{FacebookSession.GRAPH}/{FB_API_VERSION}/act_{account_id}/"
+some_config = {"start_date": "2021-01-23T00:00:00Z", "account_ids": [account_id], "access_token": "unknown_token"}
+base_url = f"{FacebookSession.GRAPH}/{FB_API_VERSION}/"
+act_url = f"{base_url}act_{account_id}/"
 
 ad_account_response = {
     "json": {
@@ -25,8 +26,8 @@ ad_account_response = {
     }
 }
 ad_creative_data = [
-    {"id": "111111", "name": "ad creative 1", "updated_time": "2023-03-21T22:33:56-0700"},
-    {"id": "222222", "name": "ad creative 2", "updated_time": "2023-03-22T22:33:56-0700"},
+    {"account_id": account_id, "id": "111111", "name": "ad creative 1", "updated_time": "2023-03-21T22:33:56-0700"},
+    {"account_id": account_id, "id": "222222", "name": "ad creative 2", "updated_time": "2023-03-22T22:33:56-0700"},
 ]
 ad_creative_response = {
     "json": {
@@ -105,6 +106,8 @@ CONFIG_ERRORS = [
         # Re-authenticate (for cloud) or refresh access token (for oss) and check if all required permissions are granted
     ),
     (
+        # One of possible reasons why this error happen is an attempt to access `owner` field:
+        #   GET /act_<account-id>?fields=<field-1>,owner,...<field-n>
         "error_403_requires_permission",
         "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token with all required permissions.",
         {
@@ -209,6 +212,8 @@ CONFIG_ERRORS = [
     #
     # # https://developers.facebook.com/community/threads/1232870724022634/
     # # I observed that if I remove preview_shareable_link field from the request, the code is working properly.
+    # # Update (Denys Davydov): same for me, but removing the `funding_source_details` field helps, so
+    # # we do remove it and do not raise errors; this is tested by a different unit test - see `test_adaccount_list_objects_retry`.
     #
     # ),
 ]
@@ -283,9 +288,11 @@ class TestRealErrors:
         requests_mock.register_uri("GET", f"{act_url}", [retryable_error_response, ad_account_response])
         requests_mock.register_uri("GET", f"{act_url}adcreatives", [retryable_error_response, ad_creative_response])
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
-        ad_creative_records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdCreatives(api=api, account_ids=some_config["account_ids"], include_deleted=False)
+        ad_creative_records = list(
+            stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice={"account_id": account_id})
+        )
 
         assert ad_creative_records == ad_creative_data
 
@@ -296,12 +303,12 @@ class TestRealErrors:
     def test_config_error_during_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during account info read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdCreatives(api=api, account_ids=some_config["account_ids"], include_deleted=False)
 
         requests_mock.register_uri("GET", f"{act_url}", [config_error_response, ad_account_response])
         try:
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice={"account_id": account_id}))
             assert False
         except Exception as error:
             assert isinstance(error, AirbyteTracedException)
@@ -313,13 +320,13 @@ class TestRealErrors:
     def test_config_error_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdCreatives(api=api, account_ids=some_config["account_ids"], include_deleted=False)
 
         requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
         requests_mock.register_uri("GET", f"{act_url}adcreatives", [config_error_response, ad_creative_response])
         try:
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice={"account_id": account_id}))
             assert False
         except Exception as error:
             assert isinstance(error, AirbyteTracedException)
@@ -330,9 +337,10 @@ class TestRealErrors:
     def test_config_error_insights_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
+        api = API(access_token=some_config["access_token"], page_size=100)
         stream = AdsInsights(
             api=api,
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             fields=["account_id", "account_currency"],
@@ -352,9 +360,10 @@ class TestRealErrors:
     def test_config_error_insights_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
+        api = API(access_token=some_config["access_token"], page_size=100)
         stream = AdsInsights(
             api=api,
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             fields=["account_id", "account_currency"],
@@ -371,3 +380,55 @@ class TestRealErrors:
             assert isinstance(error, AirbyteTracedException)
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
+
+    @pytest.mark.parametrize(
+        "failure_response",
+        (
+            {
+                "status_code": 403,
+                "json": {
+                    "message": "(#200) Requires business_management permission to manage the object",
+                    "type": "OAuthException",
+                    "code": 200,
+                    "fbtrace_id": "AOm48i-YaiRlzqnNEnECcW8",
+                },
+            },
+            {
+                "status_code": 400,
+                "json": {
+                    "message": "Unsupported request - method type: get",
+                    "type": "GraphMethodException",
+                    "code": 100,
+                    "fbtrace_id": "AOm48i-YaiRlzqnNEnECcW8",
+                },
+            },
+        ),
+    )
+    def test_adaccount_list_objects_retry(self, requests_mock, failure_response):
+        """
+        Sometimes we get an error: "Requires business_management permission to manage the object" when account has all the required permissions:
+            [
+                'ads_management',
+                'ads_read',
+                'business_management',
+                'public_profile'
+            ]
+        As a workaround for this case we can retry the API call excluding `owner` from `?fields=` GET query param.
+        """
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdAccount(
+            api=api,
+            account_ids=some_config["account_ids"],
+        )
+
+        business_user = {"account_id": account_id, "business": {"id": "1", "name": "TEST"}}
+        requests_mock.register_uri("GET", f"{base_url}me/business_users", status_code=200, json=business_user)
+
+        assigend_users = {"account_id": account_id, "tasks": ["TASK"]}
+        requests_mock.register_uri("GET", f"{act_url}assigned_users", status_code=200, json=assigend_users)
+
+        success_response = {"status_code": 200, "json": {"account_id": account_id}}
+        requests_mock.register_uri("GET", f"{act_url}", [failure_response, success_response])
+
+        record_gen = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account_id}, stream_state={})
+        assert list(record_gen) == [{"account_id": "unknown_account", "id": "act_unknown_account"}]

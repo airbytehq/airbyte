@@ -32,10 +32,12 @@ from connector_acceptance_test.config import (
     BasicReadTestConfig,
     Config,
     ConnectionTestConfig,
+    ConnectorAttributesConfig,
     DiscoveryTestConfig,
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
     IgnoredFieldsConfiguration,
+    NoPrimaryKeyConfiguration,
     SpecTestConfig,
 )
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
@@ -54,6 +56,7 @@ from connector_acceptance_test.utils.json_schema_helper import (
     get_object_structure,
     get_paths_in_connector_config,
 )
+from connector_acceptance_test.utils.timeouts import FIVE_MINUTES, ONE_MINUTE, TEN_MINUTES
 
 pytestmark = [
     pytest.mark.anyio,
@@ -92,8 +95,9 @@ DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
 DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
 
-# The connector fixture can be long to load, we have to increase the default timeout...
-@pytest.mark.default_timeout(5 * 60)
+# Running tests in parallel can sometime delay the execution of the tests if downstream services are not able to handle the load.
+# This is why we set a timeout on tests that call command that should return quickly, like spec
+@pytest.mark.default_timeout(ONE_MINUTE)
 class TestSpec(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
     async def skip_backward_compatibility_tests_fixture(
@@ -517,7 +521,7 @@ class TestSpec(BaseTest):
         diff = paths_to_validate - set(get_expected_schema_structure(spec_schema))
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
-    @pytest.mark.default_timeout(60)
+    @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility
     def test_backward_compatibility(
         self,
@@ -567,7 +571,7 @@ class TestSpec(BaseTest):
         assert await docker_runner.get_container_env_variable_value("AIRBYTE_ENTRYPOINT") == await docker_runner.get_container_entrypoint()
 
 
-@pytest.mark.default_timeout(30)
+@pytest.mark.default_timeout(ONE_MINUTE)
 class TestConnection(BaseTest):
     async def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
@@ -592,7 +596,9 @@ class TestConnection(BaseTest):
             assert trace.error.message is not None
 
 
-@pytest.mark.default_timeout(30)
+# Running tests in parallel can sometime delay the execution of the tests if downstream services are not able to handle the load.
+# This is why we set a timeout on tests that call command that should return quickly, like discover
+@pytest.mark.default_timeout(FIVE_MINUTES)
 class TestDiscovery(BaseTest):
     VALID_TYPES = {"null", "string", "number", "integer", "boolean", "object", "array"}
     VALID_AIRBYTE_TYPES = {"timestamp_with_timezone", "timestamp_without_timezone", "integer"}
@@ -644,10 +650,25 @@ class TestDiscovery(BaseTest):
         """Verify that discover produce correct schema."""
         output = await docker_runner.call_discover(config=connector_config)
         catalog_messages = filter_output(output, Type.CATALOG)
+        duplicated_stream_names = self.duplicated_stream_names(catalog_messages[0].catalog.streams)
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
         assert catalog_messages[0].catalog, "Message should have catalog"
         assert catalog_messages[0].catalog.streams, "Catalog should contain streams"
+        assert len(duplicated_stream_names) == 0, f"Catalog should have uniquely named streams, duplicates are: {duplicated_stream_names}"
+
+    def duplicated_stream_names(self, streams) -> List[str]:
+        """Counts number of times a stream appears in the catalog"""
+        name_counts = dict()
+        for stream in streams:
+            count = name_counts.get(stream.name, 0)
+            name_counts[stream.name] = count + 1
+        return [k for k, v in name_counts.items() if v > 1]
+
+    def test_streams_have_valid_json_schemas(self, discovered_catalog: Mapping[str, Any]):
+        """Check if all stream schemas are valid json schemas."""
+        for stream_name, stream in discovered_catalog.items():
+            jsonschema.Draft7Validator.check_schema(stream.json_schema)
 
     def test_defined_cursors_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check if all of the source defined cursor fields are exists on stream's json schema."""
@@ -712,7 +733,7 @@ class TestDiscovery(BaseTest):
                     [additional_properties_value is True for additional_properties_value in additional_properties_values]
                 ), "When set, additionalProperties field value must be true for backward compatibility."
 
-    @pytest.mark.default_timeout(60)
+    @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility
     def test_backward_compatibility(
         self,
@@ -785,7 +806,7 @@ def primary_keys_for_records(streams, records):
             yield pk_values, stream_record
 
 
-@pytest.mark.default_timeout(10 * 60)
+@pytest.mark.default_timeout(TEN_MINUTES)
 class TestBasicRead(BaseTest):
     @staticmethod
     def _validate_records_structure(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
@@ -1093,9 +1114,17 @@ class TestBasicRead(BaseTest):
             missing_expected = set(expected) - set(actual)
 
             if missing_expected:
+                extra = set(actual) - set(expected)
                 msg = f"Stream {stream_name}: All expected records must be produced"
                 detailed_logger.info(msg)
-                detailed_logger.log_json_list(missing_expected)
+                detailed_logger.info("missing:")
+                detailed_logger.log_json_list(sorted(missing_expected, key=lambda record: str(record.get("ID", "0"))))
+                detailed_logger.info("expected:")
+                detailed_logger.log_json_list(sorted(expected, key=lambda record: str(record.get("ID", "0"))))
+                detailed_logger.info("actual:")
+                detailed_logger.log_json_list(sorted(actual, key=lambda record: str(record.get("ID", "0"))))
+                detailed_logger.info("extra:")
+                detailed_logger.log_json_list(sorted(extra, key=lambda record: str(record.get("ID", "0"))))
                 pytest.fail(msg)
 
             if not extra_records:
@@ -1114,3 +1143,35 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
+
+
+@pytest.mark.default_timeout(TEN_MINUTES)
+class TestConnectorAttributes(BaseTest):
+    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []  # Used so that this is not part of the mandatory high strictness test suite yet
+
+    @pytest.fixture(name="operational_certification_test")
+    async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
+        """
+        Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
+        against operational certification criteria
+        """
+
+        if connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
+            pytest.skip("Skipping operational connector certification test for uncertified connector")
+        return True
+
+    @pytest.fixture(name="streams_without_primary_key")
+    def streams_without_primary_key_fixture(self, inputs: ConnectorAttributesConfig) -> List[NoPrimaryKeyConfiguration]:
+        return inputs.streams_without_primary_key or []
+
+    async def test_streams_define_primary_key(
+        self, operational_certification_test, streams_without_primary_key, connector_config, docker_runner: ConnectorRunner
+    ):
+        output = await docker_runner.call_discover(config=connector_config)
+        catalog_messages = filter_output(output, Type.CATALOG)
+        streams = catalog_messages[0].catalog.streams
+        discovered_streams_without_primary_key = {stream.name for stream in streams if not stream.source_defined_primary_key}
+        missing_primary_keys = discovered_streams_without_primary_key - {stream.name for stream in streams_without_primary_key}
+
+        quoted_missing_primary_keys = {f"'{primary_key}'" for primary_key in missing_primary_keys}
+        assert not missing_primary_keys, f"The following streams {', '.join(quoted_missing_primary_keys)} do not define a primary_key"

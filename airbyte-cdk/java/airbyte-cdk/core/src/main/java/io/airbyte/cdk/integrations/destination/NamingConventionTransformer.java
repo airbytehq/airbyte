@@ -51,6 +51,10 @@ public interface NamingConventionTransformer {
   @Deprecated
   String getTmpTableName(String name);
 
+  default String getTmpTableName(final String streamName, final String randomSuffix) {
+    return getTmpTableName(streamName);
+  }
+
   String convertStreamName(final String input);
 
   String applyDefaultCase(final String input);

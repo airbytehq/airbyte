@@ -56,10 +56,11 @@ class MetadataDescriptor:
         if not self._metadata:
             stream = GoogleAnalyticsDataApiMetadataStream(config=instance.config, authenticator=instance.config["authenticator"])
 
+            metadata = None
             try:
                 metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
             except HTTPError as e:
-                if e.response.status_code == HTTPStatus.UNAUTHORIZED:
+                if e.response.status_code in [HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN]:
                     internal_message = "Unauthorized error reached."
                     message = "Can not get metadata with unauthorized credentials. Try to re-authenticate in source settings."
 
@@ -291,6 +292,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "returnPropertyQuota": True,
             "offset": str(0),
             "limit": str(self.page_size),
+            "keepEmptyRows": self.config.get("keep_empty_rows", False),
         }
 
         dimension_filter = self.config.get("dimensionFilter")
@@ -544,7 +546,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
     def instantiate_report_class(
         report: dict, add_name_suffix: bool, config: Mapping[str, Any], **extra_kwargs
     ) -> GoogleAnalyticsDataApiBaseStream:
-        cohort_spec = report.get("cohortSpec")
+        cohort_spec = report.get("cohortSpec", {})
         pivots = report.get("pivots")
         stream_config = {
             **config,
@@ -557,7 +559,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if pivots:
             stream_config["pivots"] = pivots
             report_class_tuple = (PivotReport,)
-        if cohort_spec:
+        if cohort_spec.pop("enabled", "") == "true":
             stream_config["cohort_spec"] = cohort_spec
             report_class_tuple = (CohortReportMixin, *report_class_tuple)
         name = report["name"]

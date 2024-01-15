@@ -4,10 +4,13 @@
 
 package io.airbyte.cdk.integrations.destination_async;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferEnqueue;
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
@@ -18,7 +21,14 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -46,9 +56,12 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   private final Set<StreamDescriptor> streamNames;
   private final FlushFailure flushFailure;
   private final String defaultNamespace;
+  // Note that this map will only be populated for streams with nonzero records.
+  private final ConcurrentMap<StreamDescriptor, AtomicLong> recordCounts;
 
   private boolean hasStarted;
   private boolean hasClosed;
+  private boolean hasFailed = false;
   // This is to account for the references when deserialization to a PartialAirbyteMessage. The
   // calculation is as follows:
   // PartialAirbyteMessage (4) + Max( PartialRecordMessage(4), PartialStateMessage(6)) with
@@ -66,6 +79,17 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, new FlushFailure(), defaultNamespace);
   }
 
+  public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                             final OnStartFunction onStart,
+                             final OnCloseFunction onClose,
+                             final DestinationFlushFunction flusher,
+                             final ConfiguredAirbyteCatalog catalog,
+                             final BufferManager bufferManager,
+                             final String defaultNamespace,
+                             final ExecutorService workerPool) {
+    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, new FlushFailure(), defaultNamespace, workerPool);
+  }
+
   @VisibleForTesting
   public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                              final OnStartFunction onStart,
@@ -74,7 +98,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
                              final ConfiguredAirbyteCatalog catalog,
                              final BufferManager bufferManager,
                              final FlushFailure flushFailure,
-                             final String defaultNamespace) {
+                             final String defaultNamespace,
+                             final ExecutorService workerPool) {
     this.defaultNamespace = defaultNamespace;
     hasStarted = false;
     hasClosed = false;
@@ -85,8 +110,22 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     this.bufferManager = bufferManager;
     bufferEnqueue = bufferManager.getBufferEnqueue();
     this.flushFailure = flushFailure;
-    flushWorkers = new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager());
+    flushWorkers =
+        new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager(), workerPool);
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
+    this.recordCounts = new ConcurrentHashMap<>();
+  }
+
+  @VisibleForTesting
+  public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                             final OnStartFunction onStart,
+                             final OnCloseFunction onClose,
+                             final DestinationFlushFunction flusher,
+                             final ConfiguredAirbyteCatalog catalog,
+                             final BufferManager bufferManager,
+                             final FlushFailure flushFailure,
+                             final String defaultNamespace) {
+    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, flushFailure, defaultNamespace, Executors.newFixedThreadPool(5));
   }
 
   @Override
@@ -115,8 +154,10 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
         message.getRecord().setNamespace(defaultNamespace);
       }
       validateRecord(message);
+
+      getRecordCounter(message.getRecord().getStreamDescriptor()).incrementAndGet();
     }
-    bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
+    bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES, defaultNamespace);
   }
 
   /**
@@ -134,7 +175,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   public static PartialAirbyteMessage deserializeAirbyteMessage(final String messageString) {
     // TODO: (ryankfu) plumb in the serialized AirbyteStateMessage to match AirbyteRecordMessage code
     // parity. https://github.com/airbytehq/airbyte/issues/27530 for additional context
-    final var partial = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
+    final var partial = Jsons.tryDeserializeExact(messageString, PartialAirbyteMessage.class)
         .orElseThrow(() -> new RuntimeException("Unable to deserialize PartialAirbyteMessage."));
 
     final var msgType = partial.getType();
@@ -166,15 +207,25 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     flushWorkers.close();
 
     bufferManager.close();
-    onClose.call();
+
+    final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries = streamNames.stream().collect(toMap(
+        streamDescriptor -> streamDescriptor,
+        streamDescriptor -> new StreamSyncSummary(
+            Optional.of(getRecordCounter(streamDescriptor).get()))));
+    onClose.accept(hasFailed, streamSyncSummaries);
 
     // as this throws an exception, we need to be after all other close functions.
     propagateFlushWorkerExceptionIfPresent();
     LOGGER.info("{} closed", AsyncStreamConsumer.class);
   }
 
+  private AtomicLong getRecordCounter(final StreamDescriptor streamDescriptor) {
+    return recordCounts.computeIfAbsent(streamDescriptor, sd -> new AtomicLong());
+  }
+
   private void propagateFlushWorkerExceptionIfPresent() throws Exception {
     if (flushFailure.isFailed()) {
+      hasFailed = true;
       if (flushFailure.getException() == null) {
         throw new RuntimeException("The Destination failed with a missing exception. This should not happen. Please check logs.");
       }

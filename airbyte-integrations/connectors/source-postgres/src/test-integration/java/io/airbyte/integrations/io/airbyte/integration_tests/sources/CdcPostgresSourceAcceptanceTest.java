@@ -8,16 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -27,101 +23,46 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 // todo (cgardens) - Sanity check that when configured for CDC that postgres performs like any other
 // incremental source. As we have more sources support CDC we will find a more reusable way of doing
 // this, but for now this is a solid sanity check.
-@ExtendWith(SystemStubsExtension.class)
 public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
 
-  protected static final String SLOT_NAME_BASE = "debezium_slot";
   protected static final String NAMESPACE = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
-  protected static final String PUBLICATION = "publication";
-  protected static final int INITIAL_WAITING_SECONDS = 30;
 
-  protected PostgreSQLContainer<?> container;
-  protected JsonNode config;
-
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
-
-  @BeforeEach
-  void setup() {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-  }
+  protected PostgresTestDatabase testdb;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new PostgreSQLContainer<>(getServerImageName())
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
-        .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
-    container.start();
-
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "CDC")
-        .put("replication_slot", SLOT_NAME_BASE)
-        .put("publication", PUBLICATION)
-        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-        .build());
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(NAMESPACE))
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication_method", replicationMethod)
-        .put(JdbcUtils.SSL_KEY, false)
-        .put("is_test", true)
-        .build());
-
-    try (final DSLContext dslContext = DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            container.getHost(),
-            container.getFirstMappedPort(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
-        SQLDialect.POSTGRES)) {
-      final Database database = new Database(dslContext);
-
-      database.query(ctx -> {
-        ctx.execute("CREATE TABLE id_and_name(id INTEGER  primary key, name VARCHAR(200));");
-        ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-        ctx.execute("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));");
-        ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-        ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
-        ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
-        return null;
-      });
-    }
+    testdb = PostgresTestDatabase.in(getServerImage(), ContainerModifier.CONF)
+        .with("CREATE TABLE id_and_name(id INTEGER  primary key, name VARCHAR(200));")
+        .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
+        .with("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));")
+        .with("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');")
+        .withReplicationSlot()
+        .withPublicationForAllTables();
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    container.close();
+  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
+    testdb.close();
   }
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    return testdb.integrationTestConfigBuilder()
+        .withSchemas(NAMESPACE)
+        .withoutSsl()
+        .withCdcReplication()
+        .build();
   }
 
   @Override
@@ -222,8 +163,8 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
         .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
   }
 
-  protected String getServerImageName() {
-    return "postgres:15-alpine";
+  protected BaseImage getServerImage() {
+    return BaseImage.POSTGRES_16;
   }
 
 }

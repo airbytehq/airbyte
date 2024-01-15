@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import re
 from typing import Optional
 
 import dagger
@@ -51,7 +52,7 @@ async def check_timezone_is_utc(container: dagger.Container):
         raise errors.SanityCheckError(f"unexpected timezone: {tz_output}")
 
 
-async def check_a_command_is_available_using_version_option(container: dagger.Container, command: str):
+async def check_a_command_is_available_using_version_option(container: dagger.Container, command: str, version_option: str = "--version"):
     """Checks that a command is available in the container by calling it with the --version option.
 
     Args:
@@ -62,8 +63,39 @@ async def check_a_command_is_available_using_version_option(container: dagger.Co
         errors.SanityCheckError: Raised if the command could not be executed or if the outputted version is not the expected one.
     """
     try:
-        command_version_output: str = await container.with_exec([command, "--version"], skip_entrypoint=True).stdout()
+        command_version_output: str = await container.with_exec([command, version_option], skip_entrypoint=True).stdout()
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
     if command_version_output == "":
         raise errors.SanityCheckError(f"unexpected {command} version: {command_version_output}")
+
+
+async def check_socat_version(container: dagger.Container, expected_socat_version: str):
+    """Checks that the socat version is the expected one.
+
+    Args:
+        container (dagger.Container): The container on which the sanity checks should run.
+        expected_socat_version (str): The expected socat version.
+
+    Raises:
+        errors.SanityCheckError: Raised if the socat --version command could not be executed or if the outputted version is not the expected one.
+    """
+    try:
+        socat_version_output: str = await container.with_exec(["socat", "-V"], skip_entrypoint=True).stdout()
+    except dagger.ExecError as e:
+        raise errors.SanityCheckError(e)
+    socat_version_line = None
+    for line in socat_version_output.splitlines():
+        if line.startswith("socat version"):
+            socat_version_line = line
+            break
+    if socat_version_line is None:
+        raise errors.SanityCheckError(f"Could not parse the socat version from the output: {socat_version_output}")
+    version_pattern = r"version (\d+\.\d+\.\d+\.\d+)"
+    match = re.search(version_pattern, socat_version_line)
+    if match:
+        version_number = match.group(1)
+        if version_number != expected_socat_version:
+            raise errors.SanityCheckError(f"unexpected socat version: {version_number}")
+    else:
+        raise errors.SanityCheckError(f"Could not find the socat version in the version output: {socat_version_line}")
