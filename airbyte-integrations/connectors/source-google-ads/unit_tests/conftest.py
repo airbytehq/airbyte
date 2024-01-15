@@ -56,3 +56,8 @@ def mock_oauth_call(requests_mock):
 @pytest.fixture
 def customers(config):
     return [CustomerModel(id=_id, time_zone="local", is_manager_account=False) for _id in config["customer_id"].split(",")]
+
+
+@pytest.fixture
+def customers_manager(config):
+    return [CustomerModel(id=_id, time_zone="local", is_manager_account=True) for _id in config["customer_id"].split(",")]
