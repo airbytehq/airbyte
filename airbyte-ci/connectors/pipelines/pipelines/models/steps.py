@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List
 
 import anyio
 import asyncer
@@ -25,9 +25,12 @@ if TYPE_CHECKING:
     from pipelines.airbyte_ci.format.format_command import FormatCommand
     from pipelines.models.contexts.pipeline_context import PipelineContext
 
+
 from abc import ABC
 
 from rich.style import Style
+
+STEP_PARAMS = Dict[str, List[str]]
 
 
 @dataclass
@@ -155,14 +158,49 @@ class Step(ABC):
     # The max duration of a step run. If the step run for more than this duration it will be considered as timed out.
     # The default of 5 hours is arbitrary and can be changed if needed.
     max_duration: ClassVar[timedelta] = timedelta(hours=5)
-
     retry_delay = timedelta(seconds=10)
+    accept_extra_params: bool = False
 
     def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
         self.retry_count = 0
         self.started_at: Optional[datetime] = None
         self.stopped_at: Optional[datetime] = None
+        self._extra_params: STEP_PARAMS = {}
+
+    @property
+    def extra_params(self) -> STEP_PARAMS:
+        return self._extra_params
+
+    @extra_params.setter
+    def extra_params(self, value: STEP_PARAMS) -> None:
+        if not self.accept_extra_params:
+            raise ValueError(f"{self.__class__.__name__} does not accept extra params.")
+        self._extra_params = value
+
+    @property
+    def default_params(self) -> STEP_PARAMS:
+        return {}
+
+    @property
+    def params(self) -> STEP_PARAMS:
+        return self.extra_params | self.default_params
+
+    @property
+    def params_as_cli_options(self) -> List[str]:
+        """Return the step params as a list of CLI options.
+
+        Returns:
+            List[str]: The step params as a list of CLI options.
+        """
+        cli_options: List[str] = []
+        for name, values in self.params.items():
+            if not values:
+                # If no values are available, we assume it is a flag
+                cli_options.append(name)
+            else:
+                cli_options.extend(f"{name}={value}" for value in values)
+        return cli_options
 
     @property
     def title(self) -> str:
