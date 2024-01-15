@@ -4,8 +4,8 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.11.0'
-    features = ['db-destinations', 's3-destinations']
+    cdkVersionRequired = '0.12.0'
+    features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }
 
@@ -29,6 +29,7 @@ application {
 airbyteJavaConnector.addCdkDependencies()
 
 dependencies {
+    // TODO: Pull out common classes into CDK instead of depending on another destination
     implementation project(':airbyte-integrations:connectors:destination-gcs')
 
     implementation 'com.google.cloud:google-cloud-bigquery:2.31.1'
@@ -46,13 +47,8 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
 
-    // TODO: declare typing-deduping as a CDK feature instead of importing from source.
-    implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
-    integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
-
-    // TODO: remove these dependencies (what's S3 doing here???)
+    // This dependency is required because GCSOperaitons is leaking S3Client interface to the BigQueryDestination.
     implementation libs.aws.java.sdk.s3
-    implementation libs.s3
 }
 
 configurations.all {
