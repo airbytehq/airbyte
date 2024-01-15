@@ -4,10 +4,12 @@ import datetime
 import os
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import requests
+
 from airbyte_lib.version import get_version
+
 
 # TODO: Use production tracking key
 TRACKING_KEY = "jxT1qP9WEKwR3vtKMwP9qKhfQEGFtIM1" or str(os.environ.get("AIRBYTE_TRACKING_KEY"))
@@ -49,7 +51,7 @@ def send_telemetry(
         return
 
     current_time = datetime.datetime.utcnow().isoformat()
-    payload: Dict[str, Any] = {
+    payload: dict[str, Any] = {
         "anonymousId": "airbyte-lib-user",
         "event": "sync",
         "properties": {

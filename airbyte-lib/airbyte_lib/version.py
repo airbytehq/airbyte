@@ -2,6 +2,7 @@
 
 import importlib.metadata
 
+
 airbyte_lib_version = importlib.metadata.version("airbyte-lib")
 
 

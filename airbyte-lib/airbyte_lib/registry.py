@@ -5,6 +5,7 @@ import os
 from dataclasses import dataclass
 
 import requests
+
 from airbyte_lib.version import get_version
 
 

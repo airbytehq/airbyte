@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Generator, Iterable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Dict, Generator, Iterable, List, Any, NoReturn
+from typing import IO, Any, NoReturn
 
 from airbyte_lib.registry import ConnectorMetadata
 from airbyte_lib.telemetry import SourceTelemetryInfo, SourceType

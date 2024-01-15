@@ -3,12 +3,12 @@
 """A Postgres implementation of the cache."""
 
 from __future__ import annotations
-from airbyte_lib.telemetry import CacheType
 
 from overrides import overrides
 
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
+from airbyte_lib.telemetry import CacheType
 
 
 class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):

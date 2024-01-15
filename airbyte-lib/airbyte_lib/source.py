@@ -8,7 +8,7 @@ from functools import lru_cache
 from typing import Any, Optional
 
 import jsonschema
-from airbyte_lib.telemetry import CacheType, SyncState, send_telemetry
+
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -27,6 +27,7 @@ from airbyte_lib._factories.cache_factories import get_default_cache
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.results import ReadResult
+from airbyte_lib.telemetry import CacheType, SyncState, send_telemetry
 
 
 @contextmanager
