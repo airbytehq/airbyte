@@ -219,22 +219,22 @@ def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, e
             check_dtype=False,
         )
 
+@patch.dict('os.environ', {'DO_NOT_TRACK': ''})
 @patch('airbyte_lib.telemetry.requests')
 @patch('airbyte_lib.telemetry.datetime')
 @pytest.mark.parametrize(
-    "raises, api_key, expected_state, expected_number_of_records",
+    "raises, api_key, expected_state, expected_number_of_records, request_call_fails",
     [
-        (True, "test_fail_during_sync", "failed", 1),
-        (False, "test", "succeeded", 3),
+        pytest.param(True, "test_fail_during_sync", "failed", 1, False, id="fail_during_sync"),
+        pytest.param(False, "test", "succeeded", 3, False, id="succeed_during_sync"),
+        pytest.param(False, "test", "succeeded", 3, True, id="fail_request_without_propagating"),
     ],
 )
-def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_key: str, expected_state: str, expected_number_of_records: int):
+def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_key: str, expected_state: str, expected_number_of_records: int, request_call_fails: bool):
     """
     Test that the telemetry is sent when the sync is successful.
     This is done by mocking the requests.post method and checking that it is called with the right arguments.
     """
-    os.environ["DO_NOT_TRACK"] = ""
-
     now_date = Mock()
     mock_datetime.datetime = Mock()
     mock_datetime.datetime.utcnow.return_value = now_date
@@ -245,6 +245,9 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
 
     source = ab.get_connector("source-test", config={"apiKey": api_key})
     cache = ab.get_default_cache()
+
+    if request_call_fails:
+        mock_post.side_effect = Exception("test exception")
 
     if raises:
         with pytest.raises(Exception):
@@ -261,9 +264,9 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
                 "event": "sync",
                 "properties": {
                     "version": get_version(),
-                    "source_info": {'name': 'source-test', 'version': '0.0.1', 'type': 'venv'},
+                    "source": {'name': 'source-test', 'version': '0.0.1', 'type': 'venv'},
                     "state": "started",
-                    "cache_info": {"type": "duckdb"},
+                    "cache": {"type": "duckdb"},
                     "ip": "0.0.0.0",
                 },
                 "timestamp": "2021-01-01T00:00:00.000000",
@@ -277,18 +280,16 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
                 "event": "sync",
                 "properties": {
                     "version": get_version(),
-                    "source_info": {'name': 'source-test', 'version': '0.0.1', 'type': 'venv'},
+                    "source": {'name': 'source-test', 'version': '0.0.1', 'type': 'venv'},
                     "state": expected_state,
                     "number_of_records": expected_number_of_records,
-                    "cache_info": {"type": "duckdb"},
+                    "cache": {"type": "duckdb"},
                     "ip": "0.0.0.0",
                 },
                 "timestamp": "2021-01-01T00:00:00.000000",
             }
         )
     ])
-
-    os.environ["DO_NOT_TRACK"] = "true"
 
 
 def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):

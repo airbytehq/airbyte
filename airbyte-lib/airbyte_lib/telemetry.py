@@ -43,8 +43,8 @@ class SourceTelemetryInfo:
 
 
 def send_telemetry(
-    source: SourceTelemetryInfo,
-    cache: CacheTelemetryInfo,
+    source_info: SourceTelemetryInfo,
+    cache_info: CacheTelemetryInfo,
     state: SyncState,
     number_of_records: Optional[int] = None,
 ) -> None:
@@ -58,9 +58,9 @@ def send_telemetry(
         "event": "sync",
         "properties": {
             "version": get_version(),
-            "source_info": asdict(source),
+            "source": asdict(source_info),
             "state": state,
-            "cache_info": asdict(cache),
+            "cache": asdict(cache_info),
             # explicitly set to 0.0.0.0 to avoid leaking IP addresses
             "ip": "0.0.0.0",
         },
@@ -70,6 +70,6 @@ def send_telemetry(
         payload["properties"]["number_of_records"] = number_of_records
 
     # Suppress exceptions if host is unreachable or network is unavailable
-    with suppress(OSError):  # Network errors are subclasses of `OSError`
+    with suppress(Exception):
         # Do not handle the response, we don't want to block the execution
         _ = requests.post("https://api.segment.io/v1/track", auth=(TRACKING_KEY, ""), json=payload)
