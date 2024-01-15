@@ -6,13 +6,5 @@
   "aws_environment": "PRODUCTION",
   "region": "US",
   "report_options": "{\"GET_REPORT\": {\"reportPeriod\": \"WEEK\"}}",
-  "advanced_stream_options": "{\"GET_REPORT_2\": {\"reportPeriod_2\": \"DAY\"}}",
-  "report_options_list": [
-    {
-      "stream_name": "GET_REPORT",
-      "options_list": [
-        { "option_name": "reportPeriod", "option_value": "WEEK" }
-      ]
-    }
-  ]
+  "advanced_stream_options": "{\"GET_REPORT_2\": {\"reportPeriod_2\": \"DAY\"}}"
 }
