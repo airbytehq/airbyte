@@ -2,10 +2,10 @@
 
 import datetime
 import os
+from contextlib import suppress
 from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Any, Optional
-from contextlib import suppress
 
 import requests
 
@@ -21,11 +21,12 @@ class SourceType(str, Enum):
     LOCAL_INSTALL = "local_install"
 
 
-class CacheType(str, Enum):
-    DUCKDB = "duckdb"
-    POSTGRES = "postgres"
-    SNOWFLAKE = "snowflake"
-    STREAMING = "streaming"
+@dataclass
+class CacheTelemetryInfo:
+    type: str
+
+
+streaming_cache_info = CacheTelemetryInfo("streaming")
 
 
 class SyncState(str, Enum):
@@ -43,7 +44,7 @@ class SourceTelemetryInfo:
 
 def send_telemetry(
     source: SourceTelemetryInfo,
-    cache_type: CacheType,
+    cache: CacheTelemetryInfo,
     state: SyncState,
     number_of_records: Optional[int] = None,
 ) -> None:
@@ -57,9 +58,9 @@ def send_telemetry(
         "event": "sync",
         "properties": {
             "version": get_version(),
-            "source": asdict(source),
+            "source_info": asdict(source),
             "state": state,
-            "cache_type": cache_type,
+            "cache_info": asdict(cache),
             # explicitly set to 0.0.0.0 to avoid leaking IP addresses
             "ip": "0.0.0.0",
         },

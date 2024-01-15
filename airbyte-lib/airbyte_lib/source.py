@@ -27,7 +27,12 @@ from airbyte_lib._factories.cache_factories import get_default_cache
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.results import ReadResult
-from airbyte_lib.telemetry import CacheType, SyncState, send_telemetry
+from airbyte_lib.telemetry import (
+    CacheTelemetryInfo,
+    SyncState,
+    send_telemetry,
+    streaming_cache_info,
+)
 
 
 @contextmanager
@@ -201,7 +206,7 @@ class Source:
             )
 
         iterator: Iterable[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
-            self._read_with_catalog(CacheType.STREAMING, configured_catalog),
+            self._read_with_catalog(streaming_cache_info, configured_catalog),
         )
         yield from iterator  # TODO: Refactor to use LazyDataset here
 
@@ -243,7 +248,7 @@ class Source:
         """
         self.executor.uninstall()
 
-    def _read(self, cache_type: CacheType) -> Iterable[AirbyteRecordMessage]:
+    def _read(self, cache_info: CacheTelemetryInfo) -> Iterable[AirbyteRecordMessage]:
         """
         Call read on the connector.
 
@@ -266,11 +271,11 @@ class Source:
                 if self.streams is None or s.name in self.streams
             ],
         )
-        yield from self._read_with_catalog(cache_type, configured_catalog)
+        yield from self._read_with_catalog(cache_info, configured_catalog)
 
     def _read_with_catalog(
         self,
-        cache_type: CacheType,
+        cache_info: CacheTelemetryInfo,
         catalog: ConfiguredAirbyteCatalog,
     ) -> Iterator[AirbyteMessage]:
         """
@@ -283,7 +288,7 @@ class Source:
         * Send out telemetry on the performed sync (with information about which source was used and the type of the cache)
         """
         source_tracking_information = self.executor.get_telemetry_info()
-        send_telemetry(source_tracking_information, cache_type, SyncState.STARTED)
+        send_telemetry(source_tracking_information, cache_info, SyncState.STARTED)
         try:
             with as_temp_files([self._config, catalog.json()]) as [
                 config_file,
@@ -295,13 +300,13 @@ class Source:
                     yield msg
         except Exception as e:
             send_telemetry(
-                source_tracking_information, cache_type, SyncState.FAILED, self._processed_records
+                source_tracking_information, cache_info, SyncState.FAILED, self._processed_records
             )
             raise e
         finally:
             send_telemetry(
                 source_tracking_information,
-                cache_type,
+                cache_info,
                 SyncState.SUCCEEDED,
                 self._processed_records,
             )
@@ -350,7 +355,7 @@ class Source:
             cache = get_default_cache()
 
         cache.register_source(source_name=self.name, source_catalog=self.configured_catalog)
-        cache.process_airbyte_messages(self._tally_records(self._read(cache._cache_type)))
+        cache.process_airbyte_messages(self._tally_records(self._read(cache.get_telemetry_info())))
 
         return ReadResult(
             processed_records=self._processed_records,

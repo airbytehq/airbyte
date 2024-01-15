@@ -8,7 +8,7 @@ from overrides import overrides
 
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
-from airbyte_lib.telemetry import CacheType
+from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
 class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -47,7 +47,10 @@ class PostgresCache(SQLCacheBase):
     or another import method. (Relatively low priority, since for now it works fine as-is.)
     """
 
-    _cache_type = CacheType.POSTGRES
     config_class = PostgresCacheConfig
     file_writer_class = ParquetWriter
     supports_merge_insert = True
+
+    @overrides
+    def get_telemetry_info(self) -> CacheTelemetryInfo:
+        return CacheTelemetryInfo("postgres")
