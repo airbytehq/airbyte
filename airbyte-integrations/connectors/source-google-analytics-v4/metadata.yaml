@@ -1,7 +1,7 @@
 data:
   ab_internal:
     ql: 400
-    sl: 200
+    sl: 100
   allowedHosts:
     hosts:
       - oauth2.googleapis.com
@@ -22,7 +22,7 @@ data:
   name: Google Analytics (Universal Analytics)
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
