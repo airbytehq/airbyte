@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 import asyncclick as click
 import asyncer
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.click_decorators import click_ci_requirements_option, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.consts import DOCKER_VERSION
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
@@ -36,6 +36,7 @@ async def run_poetry_command(container: dagger.Container, command: str) -> Tuple
 
 @click.command()
 @click.argument("poetry_package_path")
+@click_ci_requirements_option()
 @click.option(
     "-c",
     "--poetry-run-command",
