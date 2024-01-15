@@ -2,10 +2,16 @@
 
 import os
 import shutil
+import tempfile
+from pathlib import Path
 
 import airbyte_lib as ab
+import pandas as pd
 import pytest
+
+from airbyte_lib.caches import PostgresCache, PostgresCacheConfig
 from airbyte_lib.registry import _update_cache
+from airbyte_lib.results import ReadResult
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -24,11 +30,22 @@ def prepare_test_env():
 
     shutil.rmtree(".venv-source-test")
 
+@pytest.fixture
+def expected_test_stream_data() -> dict[str, list[dict[str, str | int]]]:
+    return {
+        "stream1": [
+            {"column1": "value1", "column2": 1},
+            {"column1": "value2", "column2": 2},
+        ],
+        "stream2": [
+            {"column1": "value1", "column2": 1},
+        ],
+    }
 
-def test_list_streams():
+def test_list_streams(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_connector("source-test", config={"apiKey": "test"})
 
-    assert source.get_available_streams() == ["stream1", "stream2"]
+    assert source.get_available_streams() == list(expected_test_stream_data.keys())
 
 
 def test_invalid_config():
@@ -86,12 +103,88 @@ def test_check_fail():
         source.check()
 
 
+def test_file_write_and_cleanup() -> None:
+    """Ensure files are written to the correct location and cleaned up afterwards."""
+    with tempfile.TemporaryDirectory() as temp_dir_1, tempfile.TemporaryDirectory() as temp_dir_2:
+        cache_w_cleanup = ab.new_local_cache(cache_dir=temp_dir_1, cleanup=True)
+        cache_wo_cleanup = ab.new_local_cache(cache_dir=temp_dir_2, cleanup=False)
+
+        source = ab.get_connector("source-test", config={"apiKey": "test"})
+
+        _ = source.read(cache_w_cleanup)
+        _ = source.read(cache_wo_cleanup)
+
+        assert len(list(Path(temp_dir_1).glob("*.parquet"))) == 0, "Expected files to be cleaned up"
+        assert len(list(Path(temp_dir_2).glob("*.parquet"))) == 2, "Expected files to exist"
+
+
+def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.new_local_cache()
+
+    result: ReadResult = source.read(cache)
+
+    assert result.processed_records == 3
+    for stream_name, expected_data in expected_test_stream_data.items():
+        pd.testing.assert_frame_equal(
+            result[stream_name].to_pandas(),
+            pd.DataFrame(expected_data),
+            check_dtype=False,
+        )
+
+
+def test_read_result_as_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.new_local_cache()
+
+    result: ReadResult = source.read(cache)
+    stream_1_list = list(result["stream1"])
+    stream_2_list = list(result["stream2"])
+    assert stream_1_list == expected_test_stream_data["stream1"]
+    assert stream_2_list == expected_test_stream_data["stream2"]
+
+
+def test_get_records_result_as_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.new_local_cache()
+
+    stream_1_list = list(source.get_records("stream1"))
+    stream_2_list = list(source.get_records("stream2"))
+    assert stream_1_list == expected_test_stream_data["stream1"]
+    assert stream_2_list == expected_test_stream_data["stream2"]
+
+
+
+def test_sync_with_merge_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    """Test that the merge strategy works as expected.
+
+    In this test, we sync the same data twice. If the data is not duplicated, we assume
+    the merge was successful.
+
+    # TODO: Add a check with a primary key to ensure that the merge strategy works as expected.
+    """
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.new_local_cache()
+
+    # Read twice to test merge strategy
+    result: ReadResult = source.read(cache)
+    result: ReadResult = source.read(cache)
+
+    assert result.processed_records == 3
+    for stream_name, expected_data in expected_test_stream_data.items():
+        pd.testing.assert_frame_equal(
+            result[stream_name].to_pandas(),
+            pd.DataFrame(expected_data),
+            check_dtype=False,
+        )
+
+
 @pytest.mark.parametrize(
     "method_call",
     [
         pytest.param(lambda source: source.check(), id="check"),
-        pytest.param(lambda source: list(source.read_stream("stream1")), id="read_stream"),
-        pytest.param(lambda source: source.read_all(), id="read_all"),
+        pytest.param(lambda source: list(source.get_records("stream1")), id="read_stream"),
+        pytest.param(lambda source: source.read(), id="read"),
     ],
 )
 def test_check_fail_on_missing_config(method_call):
@@ -100,41 +193,72 @@ def test_check_fail_on_missing_config(method_call):
     with pytest.raises(Exception, match="Config is not set, either set in get_connector or via source.set_config"):
         method_call(source)
 
+def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    """Test that the merge strategy works as expected.
 
-def test_sync():
+    In this test, we sync the same data twice. If the data is not duplicated, we assume
+    the merge was successful.
+
+    # TODO: Add a check with a primary key to ensure that the merge strategy works as expected.
+    """
     source = ab.get_connector("source-test", config={"apiKey": "test"})
-    cache = ab.get_in_memory_cache()
+    cache = PostgresCache(config=new_pg_cache_config)
 
-    result = source.read_all(cache)
+    # Read twice to test merge strategy
+    result: ReadResult = source.read(cache)
+    result: ReadResult = source.read(cache)
 
     assert result.processed_records == 3
-    assert list(result["stream1"]) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
-    assert list(result["stream2"]) == [{"column1": "value1", "column2": 1}]
+    for stream_name, expected_data in expected_test_stream_data.items():
+        pd.testing.assert_frame_equal(
+            result[stream_name].to_pandas(),
+            pd.DataFrame(expected_data),
+            check_dtype=False,
+        )
 
 
-def test_sync_limited_streams():
+def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_connector("source-test", config={"apiKey": "test"})
-    cache = ab.get_in_memory_cache()
+    cache = PostgresCache(config=new_pg_cache_config)
+
+    result: ReadResult = source.read(cache)
+
+    assert result.processed_records == 3
+    for stream_name, expected_data in expected_test_stream_data.items():
+        pd.testing.assert_frame_equal(
+            result[stream_name].to_pandas(),
+            pd.DataFrame(expected_data),
+            check_dtype=False,
+        )
+
+
+def test_sync_limited_streams(expected_test_stream_data):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.new_local_cache()
 
     source.set_streams(["stream2"])
 
-    result = source.read_all(cache)
+    result = source.read(cache)
 
     assert result.processed_records == 1
-    assert list(result["stream2"]) == [{"column1": "value1", "column2": 1}]
+    pd.testing.assert_frame_equal(
+        result["stream2"].to_pandas(),
+        pd.DataFrame(expected_test_stream_data["stream2"]),
+        check_dtype=False,
+    )
 
 
 def test_read_stream():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
 
-    assert list(source.read_stream("stream1")) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
+    assert list(source.get_records("stream1")) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
 
 
 def test_read_stream_nonexisting():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
 
     with pytest.raises(Exception):
-        list(source.read_stream("non-existing"))
+        list(source.get_records("non-existing"))
 
 def test_failing_path_connector():
     with pytest.raises(Exception):
