@@ -16,7 +16,8 @@ from pipelines import main_logger
 from pipelines.models.steps import StepStatus
 
 if TYPE_CHECKING:
-    from pipelines.models.steps import Step, StepResult
+    from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
+    from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
     RESULTS_DICT = Dict[str, StepResult]
     ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict], Awaitable[Dict]]
@@ -34,6 +35,7 @@ class RunStepOptions:
     skip_steps: List[str] = field(default_factory=list)
     log_step_tree: bool = True
     concurrency: int = 10
+    step_params: Dict[CONNECTOR_TEST_STEP_ID, STEP_PARAMS] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -44,7 +46,7 @@ class StepToRun:
     Used to coordinate the execution of multiple steps inside a pipeline.
     """
 
-    id: str
+    id: CONNECTOR_TEST_STEP_ID
     step: Step
     args: ARGS_TYPE = field(default_factory=dict)
     depends_on: List[str] = field(default_factory=list)
@@ -71,7 +73,7 @@ def _skip_remaining_steps(remaining_steps: STEP_TREE) -> RESULTS_DICT:
     """
     Skip all remaining steps.
     """
-    skipped_results = {}
+    skipped_results: Dict[str, StepResult] = {}
     for runnable_step in remaining_steps:
         if isinstance(runnable_step, StepToRun):
             skipped_results[runnable_step.id] = runnable_step.step.skip()
@@ -243,6 +245,7 @@ async def run_steps(
                     tasks.append(task_group.soonify(run_steps)(list(step_to_run), results, options))
                 else:
                     step_args = await evaluate_run_args(step_to_run.args, results)
+                    step_to_run.step.extra_params = options.step_params.get(step_to_run.id, {})
                     main_logger.info(f"QUEUING STEP {step_to_run.id}")
                     tasks.append(task_group.soonify(step_to_run.step.run)(**step_args))
 
