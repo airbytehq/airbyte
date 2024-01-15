@@ -12,6 +12,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2", "pytest-mock~=3.6.1"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-wrike=source_wrike.run:run",
+        ],
+    },
     name="source_wrike",
     description="Source implementation for Wrike.",
     author="Airbyte",
