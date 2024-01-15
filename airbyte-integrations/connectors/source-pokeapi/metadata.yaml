@@ -26,4 +26,5 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
   tags:
     - language:lowcode
+    - language:python
 metadataSpecVersion: "1.0"
