@@ -190,16 +190,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
-    if (!BigQueryUtils.isUsingJsonCredentials(config)) {
+    final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
+    // Follows this order of resolution:
+    // https://cloud.google.com/java/docs/reference/google-auth-library/latest/com.google.auth.oauth2.GoogleCredentials#com_google_auth_oauth2_GoogleCredentials_getApplicationDefault
+    if (serviceAccountKey == null) {
       LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
       LOGGER.info("Using the default service account credential from environment.");
       return GoogleCredentials.getApplicationDefault();
     }
 
     // The JSON credential can either be a raw JSON object, or a serialized JSON object.
-    final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
-        ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
-        : config.get(BigQueryConsts.CONFIG_CREDS).asText();
+    final String credentialsString = serviceAccountKey.isObject()
+        ? Jsons.serialize(serviceAccountKey)
+        : serviceAccountKey.asText();
     return GoogleCredentials.fromStream(
         new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
   }
@@ -236,15 +239,20 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
     final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
-    if (serviceAccountKey.isTextual()) {
-      // There are cases where we fail to deserialize the service account key. In these cases, we
-      // shouldn't do anything.
-      // Google's creds library is more lenient with JSON-parsing than Jackson, and I'd rather just let it
-      // go.
-      Jsons.tryDeserialize(serviceAccountKey.asText())
-          .ifPresent(AirbyteExceptionHandler::addAllStringsInConfigForDeinterpolation);
-    } else {
-      AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(serviceAccountKey);
+    if (serviceAccountKey != null) {
+      // If the service account key is a non-null string, we will try to
+      // deserialize it. Otherwise, we will let the Google library find it in
+      // the environment during the client initialization.
+      if (serviceAccountKey.isTextual()) {
+        // There are cases where we fail to deserialize the service account key. In these cases, we
+        // shouldn't do anything.
+        // Google's creds library is more lenient with JSON-parsing than Jackson, and I'd rather just let it
+        // go.
+        Jsons.tryDeserialize(serviceAccountKey.asText())
+            .ifPresent(AirbyteExceptionHandler::addAllStringsInConfigForDeinterpolation);
+      } else {
+        AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(serviceAccountKey);
+      }
     }
 
     if (uploadingMethod == UploadingMethod.STANDARD) {
