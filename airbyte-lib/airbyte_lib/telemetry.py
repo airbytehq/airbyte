@@ -5,6 +5,7 @@ import os
 from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Any, Optional
+from contextlib import suppress
 
 import requests
 
@@ -67,5 +68,7 @@ def send_telemetry(
     if number_of_records is not None:
         payload["properties"]["number_of_records"] = number_of_records
 
-    # Do not handle the response, we don't want to block the execution
-    _ = requests.post("https://api.segment.io/v1/track", auth=(TRACKING_KEY, ""), json=payload)
+    # Suppress exceptions if host is unreachable or network is unavailable
+    with suppress(OSError):  # Network errors are subclasses of `OSError`
+        # Do not handle the response, we don't want to block the execution
+        _ = requests.post("https://api.segment.io/v1/track", auth=(TRACKING_KEY, ""), json=payload)
