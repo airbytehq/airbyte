@@ -38,7 +38,11 @@ public class JdbcDataSourceUtils {
    * @return A mapping of connection properties
    */
   public static Map<String, String> getConnectionProperties(final JsonNode config) {
-    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY);
+    return getConnectionProperties(config, DEFAULT_JDBC_PARAMETERS_DELIMITER);
+  }
+
+  public static Map<String, String> getConnectionProperties(final JsonNode config, String parameterDelimiter) {
+    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY, parameterDelimiter);
     final Map<String, String> defaultProperties = JdbcDataSourceUtils.getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
     return MoreMaps.merge(customProperties, defaultProperties);

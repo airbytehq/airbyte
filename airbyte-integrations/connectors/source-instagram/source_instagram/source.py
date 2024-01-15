@@ -18,7 +18,7 @@ class ConnectorConfig(BaseModel):
     class Config:
         title = "Source Instagram"
 
-    start_date: Optional[str] = Field(
+    start_date: Optional[datetime] = Field(
         description="The date from which you'd like to replicate data for User Insights, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],

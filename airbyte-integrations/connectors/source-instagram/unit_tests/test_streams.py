@@ -9,6 +9,7 @@ import pytest
 from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_instagram.streams import (
+    DatetimeTransformerMixin,
     InstagramStream,
     Media,
     MediaInsights,
@@ -32,15 +33,11 @@ def test_clear_url(config):
 
 
 def test_state_outdated(api, config):
-    assert UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format(
-        {"state": MagicMock()}
-    )
+    assert UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format({"state": MagicMock()})
 
 
 def test_state_is_not_outdated(api, config):
-    assert not UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format(
-        {"state": {}}
-    )
+    assert not UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format({"state": {}})
 
 
 def test_media_get_children(api, requests_mock, some_config):
@@ -186,50 +183,22 @@ def test_user_insights_read(api, config, user_insight_data, requests_mock):
     assert records
 
 
-def test_user_lifetime_insights_read(api, config, user_insight_data, requests_mock):
+def test_user_lifetime_insights_read(api, config, user_lifetime_insight_data, requests_mock):
     test_id = "test_id"
 
     stream = UserLifetimeInsights(api=api)
 
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", [{"json": user_insight_data}])
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", [{"json": user_lifetime_insight_data}])
 
     records = read_full_refresh(stream)
-    assert records == [
-        {
-            "page_id": "act_unknown_account",
-            "business_account_id": "test_id",
-            "metric": "impressions",
-            "date": "2020-05-04T07:00:00+0000",
-            "value": 4,
-        }
-    ]
-
-
-@pytest.mark.parametrize(
-    "values,expected",
-    [
-        ({"end_time": "test_end_time", "value": "test_value"}, {"date": "test_end_time", "value": "test_value"}),
-        ({"value": "test_value"}, {"date": None, "value": "test_value"}),
-        ({"end_time": "test_end_time"}, {"date": "test_end_time", "value": None}),
-        ({}, {"date": None, "value": None}),
-    ],
-    ids=[
-        "`end_time` and `value` are present",
-        "no `end_time`, but `value` is present",
-        "`end_time` is present, but no `value`",
-        "no `end_time` and no `value`",
-    ],
-)
-def test_user_lifetime_insights_read_with_missing_keys(api, user_lifetime_insights, values, expected):
-    """
-    This tests shows the behaviour of the `read_records` when either `end_time` or `value` key is not present in the data.
-    """
-    stream = UserLifetimeInsights(api=api)
-    user_lifetime_insights(values)
-    test_slice = {"account": {"page_id": 1, "instagram_business_account": user_lifetime_insights}}
-    for insight in stream.read_records(sync_mode=None, stream_slice=test_slice):
-        assert insight["date"] == expected.get("date")
-        assert insight["value"] == expected.get("value")
+    expected_record = {
+        "breakdown": "city",
+        "business_account_id": "test_id",
+        "metric": "impressions",
+        "page_id": "act_unknown_account",
+        "value": {"London, England": 22, "Sydney, New South Wales": 33}
+    }
+    assert expected_record in records
 
 
 @pytest.mark.parametrize(
@@ -363,3 +332,22 @@ def test_exit_gracefully(api, config, requests_mock, caplog):
     assert not records
     assert requests_mock.call_count == 6  # 4 * 1 per `metric_to_period` map + 1 `summary` request + 1 `business_account_id` request
     assert "Stopping syncing stream 'user_insights'" in caplog.text
+
+
+@pytest.mark.parametrize(
+    "original_value, field_schema, expected",
+    [
+        ("2020-01-01T12:00:00Z", {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, "2020-01-01T12:00:00+00:00"),
+        ("2020-05-04T07:00:00+0000", {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, "2020-05-04T07:00:00+00:00"),
+        (None, {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, None),
+        ("2020-01-01T12:00:00", {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}, "2020-01-01T12:00:00"),
+        ("2020-01-01T14:00:00", {"format": "date-time"}, "2020-01-01T14:00:00"),
+        ("2020-02-03T12:00:00", {"type": "string"}, "2020-02-03T12:00:00"),
+    ],
+)
+def test_custom_transform_datetime_rfc3339(original_value, field_schema, expected):
+    # Call the static method
+    result = DatetimeTransformerMixin.custom_transform_datetime_rfc3339(original_value, field_schema)
+
+    # Assert the result matches the expected output
+    assert result == expected

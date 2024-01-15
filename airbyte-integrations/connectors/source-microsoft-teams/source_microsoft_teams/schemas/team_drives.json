@@ -6,19 +6,41 @@
     "id": {
       "type": ["null", "string"]
     },
-    "last_modified_date_time": {
+    "createdDateTime": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "description": {
       "type": ["null", "string"]
+    },
+    "lastModifiedBy": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "displayName": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "lastModifiedDateTime": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "name": {
       "type": ["null", "string"]
     },
-    "web_url": {
+    "webUrl": {
       "type": ["null", "string"]
     },
-    "drive_type": {
+    "driveType": {
       "type": ["null", "string"]
     },
-    "created_by": {
+    "createdBy": {
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -26,7 +48,7 @@
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
-            "display_name": {
+            "displayName": {
               "type": ["null", "string"]
             }
           }
@@ -47,7 +69,7 @@
             "id": {
               "type": ["null", "string"]
             },
-            "display_name": {
+            "displayName": {
               "type": ["null", "string"]
             }
           }

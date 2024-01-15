@@ -4,8 +4,9 @@
 
 from queue import Queue
 
-from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, QueueItem
+from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
 
 
 class PartitionEnqueuer:
@@ -13,15 +14,14 @@ class PartitionEnqueuer:
     Generates partitions from a partition generator and puts them in a queue.
     """
 
-    def __init__(self, queue: Queue[QueueItem], sentinel: PARTITIONS_GENERATED_SENTINEL) -> None:
+    def __init__(self, queue: Queue[QueueItem]) -> None:
         """
         :param queue:  The queue to put the partitions in.
         :param sentinel: The sentinel to put in the queue when all the partitions have been generated.
         """
         self._queue = queue
-        self._sentinel = sentinel
 
-    def generate_partitions(self, partition_generator: PartitionGenerator) -> None:
+    def generate_partitions(self, stream: AbstractStream) -> None:
         """
         Generate partitions from a partition generator and put them in a queue.
         When all the partitions are added to the queue, a sentinel is added to the queue to indicate that all the partitions have been generated.
@@ -33,8 +33,8 @@ class PartitionEnqueuer:
         :return:
         """
         try:
-            for partition in partition_generator.generate():
+            for partition in stream.generate_partitions():
                 self._queue.put(partition)
-            self._queue.put(self._sentinel)
+            self._queue.put(PartitionGenerationCompletedSentinel(stream))
         except Exception as e:
             self._queue.put(e)

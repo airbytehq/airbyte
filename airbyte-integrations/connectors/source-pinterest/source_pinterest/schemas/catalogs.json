@@ -4,14 +4,16 @@
   "properties": {
     "created_at": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "id": {
       "type": ["null", "string"]
     },
     "updated_at": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "name": {
       "type": ["null", "string"]

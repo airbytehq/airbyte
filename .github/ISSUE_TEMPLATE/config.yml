@@ -1,0 +1,6 @@
+---
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question, get community support or request new features/connectors
+    url: https://github.com/airbytehq/airbyte/discussions/
+    about: Use Github Discussion to request features/connectors or discuss ideas or issues.
