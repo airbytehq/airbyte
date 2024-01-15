@@ -4,7 +4,7 @@
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_connector</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">pip_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">use_local_install</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">install_if_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">):</span></span>
+        <span class="name">get_connector</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">pip_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">use_local_install</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">install_if_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="n"><a href="#Source">Source</a></span>:</span></span>
 
         
     </div>
@@ -26,114 +26,157 @@
 
 
                 </section>
-                <section id="get_in_memory_cache">
+                <section id="get_default_cache">
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_in_memory_cache</span><span class="signature pdoc-code condensed">(<span class="return-annotation">):</span></span>
+        <span class="name">get_default_cache</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBCache</span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#get_in_memory_cache"></a>
+    <a class="headerlink" href="#get_default_cache"></a>
     
-    
+            <div class="docstring"><p>Get a local cache for storing data, using the default database path.</p>
+
+<p>Cache files are stored in the <code>.cache</code> directory, relative to the current
+working directory.</p>
+</div>
+
 
                 </section>
-                <section id="Dataset">
+                <section id="new_local_cache">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">new_local_cache</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">cache_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">cleanup</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBCache</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#new_local_cache"></a>
+    
+            <div class="docstring"><p>Get a local cache for storing data, using a name string to seed the path.</p>
+
+<p>Args:
+    cache_name: Name to use for the cache. Defaults to None.
+    root_dir: Root directory to store the cache in. Defaults to None.
+    cleanup: Whether to clean up temporary files. Defaults to True.</p>
+
+<p>Cache files are stored in the <code>.cache</code> directory, relative to the current
+working directory.</p>
+</div>
+
+
+                </section>
+                <section id="CachedDataset">
                     <div class="attr class">
             
     <span class="def">class</span>
-    <span class="name">Dataset</span>:
+    <span class="name">CachedDataset</span><wbr>(<span class="base">abc.ABC</span>, <span class="base">collections.abc.Iterator[collections.abc.Mapping[str, typing.Any]]</span>):
 
         
     </div>
-    <a class="headerlink" href="#Dataset"></a>
+    <a class="headerlink" href="#CachedDataset"></a>
     
-    
+            <div class="docstring"><p>Base implementation for all datasets.</p>
+</div>
 
-                            <div id="Dataset.__init__" class="classattr">
+
+                            <div id="CachedDataset.__init__" class="classattr">
                                 <div class="attr function">
             
-        <span class="name">Dataset</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">Cache</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
+        <span class="name">CachedDataset</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
 
         
     </div>
-    <a class="headerlink" href="#Dataset.__init__"></a>
+    <a class="headerlink" href="#CachedDataset.__init__"></a>
     
     
 
                             </div>
-                            <div id="Dataset.to_pandas" class="classattr">
+                            <div id="CachedDataset.to_pandas" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">to_pandas</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+        <span class="name">to_pandas</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#Dataset.to_pandas"></a>
+    <a class="headerlink" href="#CachedDataset.to_pandas"></a>
     
-    
+            <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
+</div>
+
 
                             </div>
-                            <div id="Dataset.to_sql_table" class="classattr">
+                            <div id="CachedDataset.to_sql_table" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">to_sql_table</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+        <span class="name">to_sql_table</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">Table</span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#Dataset.to_sql_table"></a>
+    <a class="headerlink" href="#CachedDataset.to_sql_table"></a>
     
     
 
                             </div>
                 </section>
-                <section id="SyncResult">
+                <section id="ReadResult">
                     <div class="attr class">
             
     <span class="def">class</span>
-    <span class="name">SyncResult</span>:
+    <span class="name">ReadResult</span>:
 
         
     </div>
-    <a class="headerlink" href="#SyncResult"></a>
+    <a class="headerlink" href="#ReadResult"></a>
     
     
 
-                            <div id="SyncResult.__init__" class="classattr">
+                            <div id="ReadResult.__init__" class="classattr">
                                 <div class="attr function">
             
-        <span class="name">SyncResult</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">processed_records</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">Cache</span></span>)</span>
+        <span class="name">ReadResult</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">processed_records</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span></span>)</span>
 
         
     </div>
-    <a class="headerlink" href="#SyncResult.__init__"></a>
+    <a class="headerlink" href="#ReadResult.__init__"></a>
     
     
 
                             </div>
-                            <div id="SyncResult.processed_records" class="classattr">
+                            <div id="ReadResult.processed_records" class="classattr">
                                 <div class="attr variable">
             <span class="name">processed_records</span>
 
         
     </div>
-    <a class="headerlink" href="#SyncResult.processed_records"></a>
+    <a class="headerlink" href="#ReadResult.processed_records"></a>
     
     
 
                             </div>
-                            <div id="SyncResult.get_sql_engine" class="classattr">
+                            <div id="ReadResult.get_sql_engine" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_sql_engine</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">Any</span>:</span></span>
+        <span class="name">get_sql_engine</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">Engine</span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#SyncResult.get_sql_engine"></a>
+    <a class="headerlink" href="#ReadResult.get_sql_engine"></a>
+    
+    
+
+                            </div>
+                            <div id="ReadResult.cache" class="classattr">
+                                <div class="attr variable">
+            <span class="name">cache</span><span class="annotation">: airbyte_lib.caches.base.SQLCacheBase</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ReadResult.cache"></a>
     
     
 
@@ -156,7 +199,7 @@
                             <div id="Source.__init__" class="classattr">
                                 <div class="attr function">
             
-        <span class="name">Source</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">executor</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">Executor</span>,</span><span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">streams</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
+        <span class="name">Source</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">executor</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">Executor</span>,</span><span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">streams</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
 
         
     </div>
@@ -189,7 +232,7 @@
                             </div>
                             <div id="Source.streams" class="classattr">
                                 <div class="attr variable">
-            <span class="name">streams</span><span class="annotation">: Optional[List[str]]</span>
+            <span class="name">streams</span><span class="annotation">: Optional[list[str]]</span>
 
         
     </div>
@@ -202,7 +245,7 @@
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">set_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">streams</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">):</span></span>
+        <span class="name">set_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">streams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
         
     </div>
@@ -215,7 +258,7 @@
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">set_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></span><span class="return-annotation">):</span></span>
+        <span class="name">set_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
         
     </div>
@@ -228,7 +271,7 @@
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_available_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
+        <span class="name">get_available_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
 
         
     </div>
@@ -239,15 +282,41 @@
 
 
                             </div>
-                            <div id="Source.read_stream" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">read_stream</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">Iterable</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>:</span></span>
+                            <div id="Source.raw_catalog" class="classattr">
+                                <div class="attr variable">
+            <span class="name">raw_catalog</span><span class="annotation">: airbyte_protocol.models.airbyte_protocol.AirbyteCatalog</span>
 
         
     </div>
-    <a class="headerlink" href="#Source.read_stream"></a>
+    <a class="headerlink" href="#Source.raw_catalog"></a>
+    
+            <div class="docstring"><p>Get the raw catalog for the given streams.</p>
+</div>
+
+
+                            </div>
+                            <div id="Source.configured_catalog" class="classattr">
+                                <div class="attr variable">
+            <span class="name">configured_catalog</span><span class="annotation">: airbyte_protocol.models.airbyte_protocol.ConfiguredAirbyteCatalog</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.configured_catalog"></a>
+    
+            <div class="docstring"><p>Get the configured catalog for the given streams.</p>
+</div>
+
+
+                            </div>
+                            <div id="Source.get_records" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_records</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.get_records"></a>
     
             <div class="docstring"><p>Read a stream from the connector.</p>
 
@@ -269,7 +338,7 @@
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">check</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+        <span class="name">check</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
         
     </div>
@@ -293,7 +362,7 @@
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">install</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+        <span class="name">install</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
         
     </div>
@@ -308,26 +377,29 @@
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">uninstall</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+        <span class="name">uninstall</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
         
     </div>
     <a class="headerlink" href="#Source.uninstall"></a>
     
-            <div class="docstring"><p>Uninstall the connector if it is installed. This only works if the use_local_install flag wasn't used and installation is managed by airbyte-lib.</p>
+            <div class="docstring"><p>Uninstall the connector if it is installed.</p>
+
+<p>This only works if the use_local_install flag wasn't used and installation is managed by
+airbyte-lib.</p>
 </div>
 
 
                             </div>
-                            <div id="Source.read_all" class="classattr">
+                            <div id="Source.read" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">read_all</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">airbyte_lib</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">Cache</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#SyncResult">SyncResult</a></span>:</span></span>
+        <span class="name">read</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#ReadResult">ReadResult</a></span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#Source.read_all"></a>
+    <a class="headerlink" href="#Source.read"></a>
     
     
 
