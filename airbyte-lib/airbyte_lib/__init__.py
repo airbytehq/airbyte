@@ -1,12 +1,15 @@
+from airbyte_lib._factories.cache_factories import get_default_cache, new_local_cache
+from airbyte_lib._factories.connector_factories import get_connector
+from airbyte_lib.datasets import CachedDataset
+from airbyte_lib.results import ReadResult
+from airbyte_lib.source import Source
 
-from .factories import (get_connector, get_in_memory_cache)
-from .sync_result import (Dataset, SyncResult)
-from .source import (Source)
 
 __all__ = [
     "get_connector",
-    "get_in_memory_cache",
-    "Dataset",
-    "SyncResult",
+    "get_default_cache",
+    "new_local_cache",
+    "CachedDataset",
+    "ReadResult",
     "Source",
 ]
