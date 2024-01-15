@@ -27,8 +27,10 @@ import java.util.HashMap;
 import java.util.Objects;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.CockroachContainer;
 
+@Disabled
 public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";

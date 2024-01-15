@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
+import static io.airbyte.integrations.base.destination.typing_deduping.Sql.concat;
+import static io.airbyte.integrations.base.destination.typing_deduping.Sql.transactionally;
 import static io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction.SOFT_RESET_SUFFIX;
 import static java.util.stream.Collectors.joining;
 
@@ -14,6 +16,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
@@ -105,27 +108,30 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
+  public Sql createSchema(final String schema) {
+    return Sql.of(new StringSubstitutor(Map.of("schema", StringUtils.wrap(schema, QUOTE)))
+        .replace("CREATE SCHEMA IF NOT EXISTS ${schema};"));
+  }
+
+  @Override
+  public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
     final String columnDeclarations = stream.columns().entrySet().stream()
         .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()))
         .collect(joining("\n"));
     final String forceCreateTable = force ? "OR REPLACE" : "";
 
-    return new StringSubstitutor(Map.of(
-        "final_namespace", stream.id().finalNamespace(QUOTE),
+    return Sql.of(new StringSubstitutor(Map.of(
         "final_table_id", stream.id().finalTableId(QUOTE, suffix.toUpperCase()),
         "force_create_table", forceCreateTable,
         "column_declarations", columnDeclarations)).replace(
             """
-            CREATE SCHEMA IF NOT EXISTS ${final_namespace};
-
             CREATE ${force_create_table} TABLE ${final_table_id} (
               "_AIRBYTE_RAW_ID" TEXT NOT NULL,
               "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
               "_AIRBYTE_META" VARIANT NOT NULL
               ${column_declarations}
             );
-            """);
+            """));
   }
 
   @Override
@@ -134,7 +140,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final Set<String> pks = getPks(stream);
 
     // Check that the columns match, with special handling for the metadata columns.
-    final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
+    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
             LinkedHashMap::putAll);
@@ -159,10 +165,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public String updateTable(final StreamConfig stream,
-                            final String finalSuffix,
-                            final Optional<Instant> minRawTimestamp,
-                            final boolean useExpensiveSaferCasting) {
+  public Sql updateTable(final StreamConfig stream,
+                         final String finalSuffix,
+                         final Optional<Instant> minRawTimestamp,
+                         final boolean useExpensiveSaferCasting) {
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), minRawTimestamp, useExpensiveSaferCasting);
     String dedupFinalTable = "";
     String cdcDeletes = "";
@@ -172,19 +178,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     }
     final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
 
-    return new StringSubstitutor(Map.of(
-        "insert_new_records", insertNewRecords,
-        "dedup_final_table", dedupFinalTable,
-        "cdc_deletes", cdcDeletes,
-        "commit_raw_table", commitRawTable)).replace(
-            """
-            BEGIN TRANSACTION;
-            ${insert_new_records}
-            ${dedup_final_table}
-            ${cdc_deletes}
-            ${commit_raw_table}
-            COMMIT;
-            """);
+    return transactionally(insertNewRecords, dedupFinalTable, cdcDeletes, commitRawTable);
   }
 
   private String extractAndCast(final ColumnId column, final AirbyteType airbyteType, final boolean useTryCast) {
@@ -459,38 +453,35 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public String overwriteFinalTable(final StreamId stream, final String finalSuffix) {
-    return new StringSubstitutor(Map.of(
+  public Sql overwriteFinalTable(final StreamId stream, final String finalSuffix) {
+    final StringSubstitutor substitutor = new StringSubstitutor(Map.of(
         "final_table", stream.finalTableId(QUOTE),
-        "tmp_final_table", stream.finalTableId(QUOTE, finalSuffix.toUpperCase()))).replace(
-            """
-            BEGIN TRANSACTION;
-            DROP TABLE IF EXISTS ${final_table};
-            ALTER TABLE ${tmp_final_table} RENAME TO ${final_table};
-            COMMIT;
-            """);
+        "tmp_final_table", stream.finalTableId(QUOTE, finalSuffix.toUpperCase())));
+    return transactionally(
+        substitutor.replace("DROP TABLE IF EXISTS ${final_table};"),
+        substitutor.replace("ALTER TABLE ${tmp_final_table} RENAME TO ${final_table};"));
   }
 
   @Override
-  public String prepareTablesForSoftReset(final StreamConfig stream) {
-    return String.join("\n", List.of(
+  public Sql prepareTablesForSoftReset(final StreamConfig stream) {
+    return concat(
         createTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), true),
-        clearLoadedAt(stream.id())));
+        clearLoadedAt(stream.id()));
   }
 
-  private String clearLoadedAt(final StreamId streamId) {
-    return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
+  @Override
+  public Sql clearLoadedAt(final StreamId streamId) {
+    return Sql.of(new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
         .replace("""
                  UPDATE ${raw_table_id} SET "_airbyte_loaded_at" = NULL;
-                 """);
+                 """));
   }
 
   @Override
-  public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
+  public Sql migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     // In the SQL below, the v2 values are quoted to preserve their case while the v1 values are
     // intentionally _not_ quoted. This is to preserve the implicit upper-casing behavior in v1.
-    return new StringSubstitutor(Map.of(
-        "raw_namespace", StringUtils.wrap(streamId.rawNamespace(), QUOTE),
+    return Sql.of(new StringSubstitutor(Map.of(
         "raw_table_name", streamId.rawTableId(QUOTE),
         "raw_id", JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
         "extracted_at", JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
@@ -501,8 +492,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "v1_raw_table", String.join(".", namespace, tableName)))
             .replace(
                 """
-                CREATE SCHEMA IF NOT EXISTS ${raw_namespace};
-
                 CREATE OR REPLACE TABLE ${raw_table_name} (
                   "${raw_id}" VARCHAR PRIMARY KEY,
                   "${extracted_at}" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
@@ -519,7 +508,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                   FROM ${v1_raw_table}
                 )
                 ;
-                """);
+                """));
   }
 
   /**

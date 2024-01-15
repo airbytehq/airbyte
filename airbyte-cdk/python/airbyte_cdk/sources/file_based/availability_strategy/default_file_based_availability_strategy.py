@@ -43,6 +43,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         Returns (True, None) if successful, otherwise (False, <error message>).
 
         For the stream:
+        - Verify the parser config is valid per check_config method of the parser.
         - Verify that we can list files from the stream using the configured globs.
         - Verify that we can read one file from the stream as long as the stream parser is not setting parser_max_n_files_for_parsability to 0.
 
@@ -54,6 +55,9 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
           one file conform to the schema via a call to stream.conforms_to_schema(schema).
         """
         parser = stream.get_parser()
+        config_check_result, config_check_error_message = parser.check_config(stream.config)
+        if config_check_result is False:
+            return False, config_check_error_message
         try:
             file = self._check_list_files(stream)
             if not parser.parser_max_n_files_for_parsability == 0:

@@ -12,6 +12,7 @@ This page contains the setup guide and reference information for the Amazon Sell
 
 - AWS Environment
 - AWS Region
+- AWS Seller Partner Account Type
 - Granted OAuth access
 <!-- /env:cloud -->
 
@@ -21,6 +22,7 @@ This page contains the setup guide and reference information for the Amazon Sell
 
 - AWS Environment
 - AWS Region
+- AWS Seller Partner Account Type
 - LWA Client Id
 - LWA Client Secret
 - Refresh Token
@@ -48,8 +50,8 @@ This page contains the setup guide and reference information for the Amazon Sell
 4. Enter a name for the Amazon Seller Partner connector.
 5. Click `Authenticate your account`.
 6. Log in and Authorize to your Amazon Seller Partner account.
-7. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, the date 2 years ago from today will be used.
-8. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
+7. For `Start Date`, enter the date in `YYYY-MM-DD` format. The data added on and after this date will be replicated. This field is optional - if not provided, the date 2 years ago from today will be used.
+8. For `End Date`, enter the date in `YYYY-MM-DD` format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
 9. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 10. Click `Set up source`.
 
@@ -72,64 +74,66 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 
 ## Supported streams
 
-- [Active Listings Report (GET_MERCHANT_LISTINGS_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory)
-- [All Listings Report (GET_MERCHANT_LISTINGS_ALL_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory)
-- [Amazon Search Terms Report (GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS\)
-- [Brand Analytics Alternate Purchase Report (GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS\)
-- [Brand Analytics Item Comparison Report (GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS\)
-- [Repeat Purchase (GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS\)
-- [Browse Tree Report (GET_XML_BROWSE_TREE_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-browse-tree)
-- [Canceled Listings Report (GET_MERCHANT_CANCELLED_LISTINGS_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory)
-- [FBA Amazon Fulfilled Inventory Report (GET_AFN_INVENTORY_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
-- [FBA Amazon Fulfilled Shipments Report (GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-sales-reports)
-- [FBA Fee Preview Report (GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-payments-reports)
-- [FBA Manage Inventory (GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports)
-- [FBA Manage Inventory Health Report (GET_FBA_INVENTORY_PLANNING_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports)
-- [FBA Multi-Country Inventory Report (GET_AFN_INVENTORY_DATA_BY_COUNTRY)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
-- [FBA Promotions Report (GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-sales-reports)
-- [FBA Reimbursements Report (GET_FBA_REIMBURSEMENTS_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-payments-reports)
-- [FBA Removal Order Detail Report (GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-removals-reports)
-- [FBA Removal Shipment Detail Report (GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-removals-reports)
-- [FBA Replacements Report (GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-concessions-reports)
-- [FBA Returns Report (GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-concessions-reports)
-- [FBA Storage Fees Report (GET_FBA_STORAGE_FEE_CHARGES_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports)
-- [FBA Stranded Inventory Report (GET_STRANDED_INVENTORY_UI_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports)
-- [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents)
-- [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups)
-- [Flat File Archived Orders Report (GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports)
-- [Flat File Feedback Report (GET_SELLER_FEEDBACK_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-performance)
-- [Flat File Orders By Last Update Report (GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
-- [Flat File Orders By Order Date Report (GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports)
-- [Flat File Returns Report by Return Date (GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-returns)
-- [Flat File Settlement Report (GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement)
-- [Inactive Listings Report (GET_MERCHANT_LISTINGS_INACTIVE_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory)
-- [Inventory Ledger Report - Detailed View (GET_LEDGER_DETAIL_VIEW_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports)
-- [Inventory Ledger Report - Summary View (GET_LEDGER_SUMMARY_VIEW_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports)
-- [Inventory Report (GET_FLAT_FILE_OPEN_LISTINGS_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory)
-- [Market Basket Analysis Report (GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS\)
-- [Net Pure Product Margin Report (GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports)
-- [Open Listings Report (GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory)
+- [Active Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [All Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
+- [Brand Analytics Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
+- [Brand Analytics Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
+- [Browse Tree Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-browse-tree) \(incremental\)
+- [Canceled Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [FBA Amazon Fulfilled Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [FBA Amazon Fulfilled Shipments Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-sales-reports) \(incremental\)
+- [FBA Fee Preview Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-payments-reports) \(incremental\)
+- [FBA Manage Inventory](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [FBA Manage Inventory Health Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [FBA Multi-Country Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [FBA Promotions Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-sales-reports) \(incremental\)
+- [FBA Reimbursements Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-payments-reports) \(incremental\)
+- [FBA Removal Order Detail Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-removals-reports) \(incremental\)
+- [FBA Removal Shipment Detail Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-removals-reports) \(incremental\)
+- [FBA Replacements Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-concessions-reports) \(incremental\)
+- [FBA Returns Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-concessions-reports) \(incremental\)
+- [FBA Storage Fees Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [FBA Stranded Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents) \(incremental\)
+- [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups) \(incremental\)
+- [Flat File Archived Orders Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
+- [Flat File Feedback Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-performance) \(incremental\)
+- [Flat File Orders By Last Update Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
+- [Flat File Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
+- [Flat File Returns Report by Return Date](https://developer-docs.amazon.com/sp-api/docs/report-type-values-returns) \(incremental\)
+- [Flat File Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\)
+- [Inactive Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [Inventory Ledger Report - Detailed View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
+- [Net Pure Product Margin Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Open Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Orders](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) \(incremental\)
 - [Order Items](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems) \(incremental\)
-- [Rapid Retail Analytics Inventory Report (GET_VENDOR_REAL_TIME_INVENTORY_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports)
-- [Restock Inventory Report (GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports)
-- [Sales and Traffic Business Report (GET_SALES_AND_TRAFFIC_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports)
-- [Scheduled XML Order Report (Shipping) (GET_ORDER_REPORT_DATA_SHIPPING)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports)
-- [Subscribe and Save Forecast Report (GET_FBA_SNS_FORECAST_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-subscribe-and-save-reports)
-- [Subscribe and Save Performance Report (GET_FBA_SNS_PERFORMANCE_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-subscribe-and-save-reports)
-- [Suppressed Listings Report (GET_MERCHANTS_LISTINGS_FYP_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory)
-- [Unshipped Orders Report (GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports)
-- [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference)
-- [Vendor Inventory Report (GET_VENDOR_INVENTORY_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports)
-- [Vendor Sales Report (GET_VENDOR_SALES_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports)
-- [Vendor Traffic Report (GET_VENDOR_TRAFFIC_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports)
-- [XML Orders By Order Date Report (GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports)
+- [Rapid Retail Analytics Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Repeat Purchase](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
+- [Restock Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
+- [Scheduled XML Order Report (Shipping)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
+- [Subscribe and Save Forecast Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-subscribe-and-save-reports) \(incremental\)
+- [Subscribe and Save Performance Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-subscribe-and-save-reports) \(incremental\)
+- [Suppressed Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [Unshipped Orders Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
+- [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference) \(incremental\)
+- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 
 ## Report options
 
-Make sure to configure the [required parameters](https://developer-docs.amazon.com/sp-api/docs/report-type-values) in the report options setting for the reports configured.
+Report options can be assigned on a per-stream basis that alter the behavior when generating a report.
+For the full list, refer to Amazon’s report type values [documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 
-For `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL` and `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` streams maximum value for `period_in_days` 30 days and 60 days. 
+Certain report types have required parameters that must be defined.
+For `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL` and `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` streams maximum value for `period_in_days` 30 days and 60 days.
 So, for any value that exceeds the limit, the `period_in_days` will be automatically reduced to the limit for the stream.
 
 ## Performance considerations
@@ -151,6 +155,8 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version  | Date       | Pull Request                                                | Subject                                                                                                                                                                             |
 |:---------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `3.0.1`  | 2023-12-22 | [\#33741](https://github.com/airbytehq/airbyte/pull/33741)  | Improve report streams performance                                                                                                                                                  |
+| `3.0.0`  | 2023-12-12 | [\#32977](https://github.com/airbytehq/airbyte/pull/32977)  | Make all streams incremental                                                                                                                                                        |
 | `2.5.0`  | 2023-11-27 | [\#32505](https://github.com/airbytehq/airbyte/pull/32505)  | Make report options configurable via UI                                                                                                                                             |
 | `2.4.0`  | 2023-11-23 | [\#32738](https://github.com/airbytehq/airbyte/pull/32738)  | Add `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, and `GET_VENDOR_TRAFFIC_REPORT` streams                                                   |
 | `2.3.0`  | 2023-11-22 | [\#32541](https://github.com/airbytehq/airbyte/pull/32541)  | Make `GET_AFN_INVENTORY_DATA`, `GET_AFN_INVENTORY_DATA_BY_COUNTRY`, and `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` streams incremental                                               |
