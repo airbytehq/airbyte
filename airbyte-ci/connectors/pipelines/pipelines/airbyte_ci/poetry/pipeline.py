@@ -67,7 +67,7 @@ class PyPIPublishContext(PipelineContext):
             build_docker_image = connector_context.connector.metadata["connectorBuildOptions"]["baseImage"]
         else:
             build_docker_image = "mwalbeck/python-poetry"
-        return PyPIPublishContext(
+        pypi_context = PyPIPublishContext(
             pypi_token=os.environ["PYPI_TOKEN"],
             test_pypi=True,  # TODO: Go live
             package_path=str(connector_context.connector.code_directory),
@@ -85,6 +85,7 @@ class PyPIPublishContext(PipelineContext):
             ci_context=connector_context.ci_context,
             ci_gcs_credentials=connector_context.ci_gcs_credentials,
         )
+        pypi_context.dagger_client = connector_context.dagger_client
 
 
 class PublishToPyPI(Step):
