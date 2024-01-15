@@ -58,7 +58,11 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   }
 
   @Override
-  public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+  public String getStagingPath(final UUID connectionId,
+                               final String namespace,
+                               final String streamName,
+                               final String outputTableName,
+                               final DateTime writeDatetime) {
     // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
     return nameTransformer.applyDefaultCase(String.format("%s/%02d/%02d/%02d/%s/",
         writeDatetime.year().get(),
