@@ -53,23 +53,51 @@
       "expand_issue_changelog": {
         "type": "boolean",
         "title": "Expand Issue Changelog",
-        "description": "Expand the changelog when replicating issues.",
-        "default": false,
-        "order": 5
+        "airbyte_hidden": true,
+        "description": "(DEPRECATED) Expand the changelog when replicating issues.",
+        "default": false
       },
       "render_fields": {
         "type": "boolean",
         "title": "Render Issue Fields",
-        "description": "Render issue fields in HTML format in addition to Jira JSON-like format.",
-        "default": false,
-        "order": 6
+        "airbyte_hidden": true,
+        "description": "(DEPRECATED) Render issue fields in HTML format in addition to Jira JSON-like format.",
+        "default": false
+      },
+      "expand_issue_transition": {
+        "type": "boolean",
+        "title": "Expand Issue Transitions",
+        "airbyte_hidden": true,
+        "description": "(DEPRECATED) Expand the transitions when replicating issues.",
+        "default": false
+      },
+      "issues_stream_expand_with": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["renderedFields", "transitions", "changelog"]
+        },
+        "title": "Expand Issues stream",
+        "airbyte_hidden": true,
+        "description": "Select fields to Expand the `Issues` stream when replicating with: ",
+        "default": []
+      },
+      "lookback_window_minutes": {
+        "title": "Lookback window",
+        "description": "When set to N, the connector will always refresh resources created within the past N minutes. By default, updated objects that are not newly created are not incrementally synced.",
+        "examples": [60],
+        "default": 0,
+        "minimum": 0,
+        "maximum": 576000,
+        "type": "integer",
+        "order": 5
       },
       "enable_experimental_streams": {
         "type": "boolean",
         "title": "Enable Experimental Streams",
         "description": "Allow the use of experimental streams which rely on undocumented Jira API endpoints. See https://docs.airbyte.com/integrations/sources/jira#experimental-tables for more info.",
         "default": false,
-        "order": 7
+        "order": 6
       }
     }
   }

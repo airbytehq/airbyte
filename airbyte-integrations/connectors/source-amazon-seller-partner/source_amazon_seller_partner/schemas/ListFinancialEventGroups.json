@@ -36,7 +36,8 @@
       }
     },
     "FundTransferDate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "TraceId": {
       "type": ["null", "string"]
@@ -56,10 +57,12 @@
       }
     },
     "FinancialEventGroupStart": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "FinancialEventGroupEnd": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

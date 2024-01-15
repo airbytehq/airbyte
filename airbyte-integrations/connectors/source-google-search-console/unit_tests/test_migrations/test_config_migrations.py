@@ -14,6 +14,7 @@ from source_google_search_console.source import SourceGoogleSearchConsole
 # BASE ARGS
 CMD = "check"
 TEST_CONFIG_PATH = "unit_tests/test_migrations/test_config.json"
+NEW_TEST_CONFIG_PATH = "unit_tests/test_migrations/test_new_config.json"
 SOURCE_INPUT_ARGS = [CMD, "--config", TEST_CONFIG_PATH]
 SOURCE: Source = SourceGoogleSearchConsole()
 
@@ -73,3 +74,9 @@ def test_config_is_reverted():
     # check the old property is still there
     assert "custom_reports" in test_config
     assert isinstance(test_config["custom_reports"], str)
+
+
+def test_should_not_migrate_new_config():
+    new_config = load_config(NEW_TEST_CONFIG_PATH)
+    migration_instance = MigrateCustomReports()
+    assert not migration_instance.should_migrate(new_config)

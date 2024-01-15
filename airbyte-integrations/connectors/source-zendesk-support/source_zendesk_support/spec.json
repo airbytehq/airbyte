@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Zendesk Support Spec",
     "type": "object",
-    "required": ["start_date", "subdomain"],
+    "required": ["subdomain"],
     "additionalProperties": true,
     "properties": {
       "start_date": {

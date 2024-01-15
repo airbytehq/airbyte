@@ -69,6 +69,10 @@ definitions:
           - "{{ record['updates'] }}"
           - "{{ record['MetaData']['LastUpdatedTime'] }}"
           - "{{ stream_partition['segment_id'] }}"
+      value_type:
+        title: Value Type
+        description: Type of the value. If not specified, the type will be inferred from the value.
+        "$ref": "#/definitions/ValueType"
       $parameters:
         type: object
         additionalProperties: true
@@ -217,6 +221,49 @@ definitions:
         examples:
           - "{{ config['api_key'] }}"
           - "{{ config['token'] }}"
+      $parameters:
+        type: object
+        additionalProperties: true
+  SelectiveAuthenticator:
+    title: Selective Authenticator
+    description: Authenticator that selects concrete authenticator based on config property.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - authenticators
+      - authenticator_selection_path
+    properties:
+      type:
+        type: string
+        enum: [SelectiveAuthenticator]
+      authenticator_selection_path:
+        title: Authenticator Selection Path
+        description: Path of the field in config with selected authenticator name
+        type: array
+        items:
+          type: string
+        examples:
+          - ["auth"]
+          - ["auth", "type"]
+      authenticators:
+        title: Authenticators
+        description: Authenticators to select from.
+        type: object
+        additionalProperties:
+          anyOf:
+            - "$ref": "#/definitions/ApiKeyAuthenticator"
+            - "$ref": "#/definitions/BasicHttpAuthenticator"
+            - "$ref": "#/definitions/BearerAuthenticator"
+            - "$ref": "#/definitions/CustomAuthenticator"
+            - "$ref": "#/definitions/OAuthAuthenticator"
+            - "$ref": "#/definitions/NoAuth"
+            - "$ref": "#/definitions/SessionTokenAuthenticator"
+            - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
+        examples:
+          - authenticators:
+              token: "#/definitions/ApiKeyAuthenticator"
+              oauth: "#/definitions/OAuthAuthenticator"
       $parameters:
         type: object
         additionalProperties: true
@@ -1145,6 +1192,7 @@ definitions:
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
           - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
+          - "$ref": "#/definitions/SelectiveAuthenticator"
       error_handler:
         title: Error Handler
         description: Error handler component that defines how to handle errors.
@@ -1155,12 +1203,10 @@ definitions:
       http_method:
         title: HTTP Method
         description: The HTTP method used to fetch data from the source (can be GET or POST).
-        anyOf:
-          - type: string
-          - type: string
-            enum:
-              - GET
-              - POST
+        type: string
+        enum:
+          - GET
+          - POST
         default: GET
         examples:
           - GET
@@ -1240,6 +1286,11 @@ definitions:
           - query: 'last_event_time BETWEEN TIMESTAMP "{{ stream_interval.start_time }}" AND TIMESTAMP "{{ stream_interval.end_time }}"'
           - searchIn: "{{ ','.join(config.get('search_in', [])) }}"
           - sort_by[asc]: updated_at
+      use_cache:
+        title: Use Cache
+        description: Enables stream requests caching. This field is automatically set by the CDK.
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -1626,6 +1677,11 @@ definitions:
         examples:
           - 100
           - "{{ config['page_size'] }}"
+      inject_on_first_request:
+        title: Inject Offset
+        description: Using the `offset` with value `0` during the first request
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -1654,6 +1710,11 @@ definitions:
         examples:
           - 0
           - 1
+      inject_on_first_request:
+        title: Inject Page Number
+        description: Using the `page number` with value defined by `start_from_page` during the first request
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -1759,9 +1820,22 @@ definitions:
         title: Record Filter
         description: Responsible for filtering records to be emitted by the Source.
         "$ref": "#/definitions/RecordFilter"
+      schema_normalization:
+        "$ref": "#/definitions/SchemaNormalization"
+        default: None
       $parameters:
         type: object
         additionalProperties: true
+  SchemaNormalization:
+    title: Schema Normalization
+    description: Responsible for normalization according to the schema.
+    type: string
+    enum:
+      - None
+      - Default
+    examples:
+      - None
+      - Default
   RemoveFields:
     title: Remove Fields
     description: A transformation which removes fields from a record. The fields removed are designated using FieldPointers. During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
@@ -1977,6 +2051,15 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  ValueType:
+    title: Value Type
+    description: A schema type.
+    type: string
+    enum:
+      - string
+      - number
+      - integer
+      - boolean
   WaitTimeFromHeader:
     title: Wait Time Extracted From Response Header
     description: Extract wait time from a HTTP header in the response.
@@ -2190,3 +2273,26 @@ interpolation:
       examples:
         - "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
         - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+  filters:
+    - title: Hash
+      description: Convert the specified value to a hashed string.
+      arguments:
+        hash_type: Valid hash type for converts ('md5' as default value).
+        salt: An additional value to further protect sensitive data.
+      return_type: str
+      examples:
+        - "{{ 'Test client_secret' | hash() }} -> '3032d57a12f76b61a820e47b9a5a0cbb'"
+        - "{{ 'Test client_secret' | hash('md5') }} -> '3032d57a12f76b61a820e47b9a5a0cbb'"
+        - "{{ 'Test client_secret' | hash('md5', salt='salt') }} -> '5011a0168579c2d94cbbe1c6ad14327c'"
+    - title: Base64 encoder
+      description: Convert the specified value to a string in the base64 format.
+      arguments: {}
+      return_type: str
+      examples:
+        - "{{ 'Test client_secret' | base64encode }} -> 'VGVzdCBjbGllbnRfc2VjcmV0'"
+    - title: Base64 decoder
+      description: Decodes the specified base64 format value into a common string.
+      arguments: {}
+      return_type: str
+      examples:
+        - "{{ 'ZmFrZSByZWZyZXNoX3Rva2VuIHZhbHVl' | base64decode }} -> 'fake refresh_token value'"

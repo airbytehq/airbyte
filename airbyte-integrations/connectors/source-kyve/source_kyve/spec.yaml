@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - pool_ids
     - start_ids
+    - url_base
   properties:
     pool_ids:
       type: string
@@ -20,7 +21,7 @@ connectionSpecification:
       title: Bundle-Start-IDs
       description:
         The start-id defines, from which bundle id the pipeline should
-        start to extract the data (Comma separated)
+        start to extract the data. (Comma separated)
       order: 1
       examples:
         - "0"
@@ -29,11 +30,11 @@ connectionSpecification:
       type: string
       title: KYVE-API URL Base
       description: URL to the KYVE Chain API.
-      default: https://api.korellia.kyve.network
+      default: https://api.kyve.network
       order: 2
       examples:
+        - https://api.kaon.kyve.network/
         - https://api.korellia.kyve.network/
-        - https://api.beta.kyve.network/
     max_pages:
       type: integer
       description:

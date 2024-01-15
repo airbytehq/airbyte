@@ -32,6 +32,7 @@ class ProductCampaign(CatalogModel):
     endDate: str = None
     premiumBidAdjustment: bool
     bidding: Bidding
+    networks: str
 
 
 class ProductAdGroups(CatalogModel):

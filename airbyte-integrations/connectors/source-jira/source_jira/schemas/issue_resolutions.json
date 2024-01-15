@@ -17,6 +17,9 @@
     "name": {
       "type": "string",
       "description": "The name of the issue resolution."
+    },
+    "isDefault": {
+      "type": ["null", "boolean"]
     }
   },
   "additionalProperties": true,

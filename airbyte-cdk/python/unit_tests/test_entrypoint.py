@@ -28,6 +28,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class MockSource(Source):
@@ -68,14 +69,14 @@ MESSAGE_FROM_REPOSITORY = AirbyteMessage(
         type=OrchestratorType.CONNECTOR_CONFIG,
         emitted_at=10,
         connectorConfig=AirbyteControlConnectorConfigMessage(config={"any config": "a config value"}),
-    )
+    ),
 )
 
 
 @pytest.fixture
 def entrypoint(mocker) -> AirbyteEntrypoint:
     message_repository = MagicMock()
-    message_repository.consume_queue.side_effect = [[message for message in [MESSAGE_FROM_REPOSITORY]], []]
+    message_repository.consume_queue.side_effect = [[message for message in [MESSAGE_FROM_REPOSITORY]], [], []]
     mocker.patch.object(MockSource, "message_repository", new_callable=mocker.PropertyMock, return_value=message_repository)
     return AirbyteEntrypoint(MockSource())
 
@@ -242,8 +243,18 @@ def test_run_read(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock)
 
     messages = list(entrypoint.run(parsed_args))
 
-    assert [_wrap_message(expected), MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)] == messages
+    assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True), _wrap_message(expected)] == messages
     assert spec_mock.called
+
+
+def test_given_message_emitted_during_config_when_read_then_emit_message_before_next_steps(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    parsed_args = Namespace(command="read", config="config_path", state="statepath", catalog="catalogpath")
+    mocker.patch.object(MockSource, "read_catalog", side_effect=ValueError)
+
+    messages = entrypoint.run(parsed_args)
+    assert next(messages) == MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)
+    with pytest.raises(ValueError):
+        next(messages)
 
 
 def test_run_read_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
@@ -266,17 +277,17 @@ def test_invalid_command(entrypoint: AirbyteEntrypoint, config_mock):
     "deployment_mode, url, expected_error",
     [
         pytest.param("CLOUD", "https://airbyte.com", None, id="test_cloud_public_endpoint_is_successful"),
-        pytest.param("CLOUD", "https://192.168.27.30", ValueError, id="test_cloud_private_ip_address_is_rejected"),
-        pytest.param("CLOUD", "https://localhost:8080/api/v1/cast", ValueError, id="test_cloud_private_endpoint_is_rejected"),
+        pytest.param("CLOUD", "https://192.168.27.30", AirbyteTracedException, id="test_cloud_private_ip_address_is_rejected"),
+        pytest.param("CLOUD", "https://localhost:8080/api/v1/cast", AirbyteTracedException, id="test_cloud_private_endpoint_is_rejected"),
         pytest.param("CLOUD", "http://past.lives.net/api/v1/inyun", ValueError, id="test_cloud_unsecured_endpoint_is_rejected"),
         pytest.param("CLOUD", "https://not:very/cash:443.money", ValueError, id="test_cloud_invalid_url_format"),
         pytest.param("CLOUD", "https://192.168.27.30    ", ValueError, id="test_cloud_incorrect_ip_format_is_rejected"),
-        pytest.param("cloud", "https://192.168.27.30", ValueError, id="test_case_insensitive_cloud_environment_variable"),
+        pytest.param("cloud", "https://192.168.27.30", AirbyteTracedException, id="test_case_insensitive_cloud_environment_variable"),
         pytest.param("OSS", "https://airbyte.com", None, id="test_oss_public_endpoint_is_successful"),
         pytest.param("OSS", "https://192.168.27.30", None, id="test_oss_private_endpoint_is_successful"),
         pytest.param("OSS", "https://localhost:8080/api/v1/cast", None, id="test_oss_private_endpoint_is_successful"),
         pytest.param("OSS", "http://past.lives.net/api/v1/inyun", None, id="test_oss_unsecured_endpoint_is_successful"),
-    ]
+    ],
 )
 @patch.object(requests.Session, "send", lambda self, request, **kwargs: requests.Response())
 def test_filter_internal_requests(deployment_mode, url, expected_error):

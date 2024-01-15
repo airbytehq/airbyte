@@ -8,17 +8,116 @@ import logging
 import os
 import uuid
 from pathlib import Path
-from typing import List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Union
 
 import dagger
 import docker
 import pytest
-import yaml
 from airbyte_protocol.models import AirbyteMessage, ConfiguredAirbyteCatalog, OrchestratorType
 from airbyte_protocol.models import Type as AirbyteMessageType
 from anyio import Path as AnyioPath
 from connector_acceptance_test.utils import SecretDict
 from pydantic import ValidationError
+
+
+async def get_container_from_id(dagger_client: dagger.Client, container_id: str) -> dagger.Container:
+    """Get a dagger container from its id.
+    Please remind that container id are not persistent and can change between Dagger sessions.
+
+    Args:
+        dagger_client (dagger.Client): The dagger client to use to import the connector image
+    """
+    try:
+        return await dagger_client.container(id=dagger.ContainerID(container_id))
+    except dagger.DaggerError as e:
+        pytest.exit(f"Failed to load connector container: {e}")
+
+
+async def get_container_from_tarball_path(dagger_client: dagger.Client, tarball_path: Path):
+    if not tarball_path.exists():
+        pytest.exit(f"Connector image tarball {tarball_path} does not exist")
+    container_under_test_tar_file = (
+        dagger_client.host().directory(str(tarball_path.parent), include=tarball_path.name).file(tarball_path.name)
+    )
+    try:
+        return await dagger_client.container().import_(container_under_test_tar_file)
+    except dagger.DaggerError as e:
+        pytest.exit(f"Failed to import connector image from tarball: {e}")
+
+
+async def get_container_from_local_image(dagger_client: dagger.Client, local_image_name: str) -> Optional[dagger.Container]:
+    """Get a dagger container from a local image.
+    It will use Docker python client to export the image to a tarball and then import it into dagger.
+
+    Args:
+        dagger_client (dagger.Client): The dagger client to use to import the connector image
+        local_image_name (str): The name of the local image to import
+
+    Returns:
+        Optional[dagger.Container]: The dagger container for the local image or None if the image does not exist
+    """
+    docker_client = docker.from_env()
+
+    try:
+        image = docker_client.images.get(local_image_name)
+    except docker.errors.ImageNotFound:
+        return None
+
+    image_digest = image.id.replace("sha256:", "")
+    tarball_path = Path(f"/tmp/{image_digest}.tar")
+    if not tarball_path.exists():
+        logging.info(f"Exporting local connector image {local_image_name} to tarball {tarball_path}")
+        with open(tarball_path, "wb") as f:
+            for chunk in image.save(named=True):
+                f.write(chunk)
+    return await get_container_from_tarball_path(dagger_client, tarball_path)
+
+
+async def get_container_from_dockerhub_image(dagger_client: dagger.Client, dockerhub_image_name: str) -> dagger.Container:
+    """Get a dagger container from a dockerhub image.
+
+    Args:
+        dagger_client (dagger.Client): The dagger client to use to import the connector image
+        dockerhub_image_name (str): The name of the dockerhub image to import
+
+    Returns:
+        dagger.Container: The dagger container for the dockerhub image
+    """
+    try:
+        return await dagger_client.container().from_(dockerhub_image_name)
+    except dagger.DaggerError as e:
+        pytest.exit(f"Failed to import connector image from DockerHub: {e}")
+
+
+async def get_connector_container(dagger_client: dagger.Client, image_name_with_tag: str) -> dagger.Container:
+    """Get a dagger container for the connector image to test.
+
+    Args:
+        dagger_client (dagger.Client): The dagger client to use to import the connector image
+        image_name_with_tag (str): The docker image name and tag of the connector image to test
+
+    Returns:
+        dagger.Container: The dagger container for the connector image to test
+    """
+    # If a container_id.txt file is available, we'll use it to load the connector container
+    # We use a txt file as container ids can be too long to be passed as env vars
+    # It's used for dagger-in-dagger use case with airbyte-ci, when the connector container is built via an upstream dagger operation
+    connector_container_id_path = Path("/tmp/container_id.txt")
+    if connector_container_id_path.exists():
+        # If the CONNECTOR_CONTAINER_ID env var is set, we'll use it to load the connector container
+        return await get_container_from_id(dagger_client, connector_container_id_path.read_text())
+
+    # If the CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH env var is set, we'll use it to import the connector image from the tarball
+    if connector_image_tarball_path := os.environ.get("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"):
+        tarball_path = Path(connector_image_tarball_path)
+        return await get_container_from_tarball_path(dagger_client, tarball_path)
+
+    # Let's try to load the connector container from a local image
+    if connector_container := await get_container_from_local_image(dagger_client, image_name_with_tag):
+        return connector_container
+
+    # If we get here, we'll try to pull the connector image from DockerHub
+    return await get_container_from_dockerhub_image(dagger_client, image_name_with_tag)
 
 
 class ConnectorRunner:
@@ -29,33 +128,49 @@ class ConnectorRunner:
 
     def __init__(
         self,
-        image_tag: str,
-        dagger_client: dagger.Client,
+        connector_container: dagger.Container,
         connector_configuration_path: Optional[Path] = None,
         custom_environment_variables: Optional[Mapping] = {},
+        deployment_mode: Optional[str] = None,
     ):
-        self._check_connector_under_test()
-        self.image_tag = image_tag
-        self.dagger_client = dagger_client
+        env_vars = (
+            custom_environment_variables
+            if deployment_mode is None
+            else {**custom_environment_variables, "DEPLOYMENT_MODE": deployment_mode.upper()}
+        )
+        self._connector_under_test_container = self.set_env_vars(connector_container, env_vars)
         self._connector_configuration_path = connector_configuration_path
-        self._custom_environment_variables = custom_environment_variables
-        connector_image_tarball_path = self._get_connector_image_tarball_path()
-        self._connector_under_test_container = self._get_connector_container(connector_image_tarball_path)
 
-    async def load_container(self):
-        """This is to pre-load the container following instantiation of the class.
-        This is useful to make sure that when using the connector runner fixture the costly _import is already done.
+    def set_env_vars(self, container: dagger.Container, env_vars: Mapping[str, Any]) -> dagger.Container:
+        """Set environment variables on a dagger container.
+
+        Args:
+            container (dagger.Container): The dagger container to set the environment variables on.
+            env_vars (Mapping[str, str]): The environment variables to set.
+
+        Returns:
+            dagger.Container: The dagger container with the environment variables set.
         """
-        await self._connector_under_test_container.with_exec(["spec"])
+        for k, v in env_vars.items():
+            container = container.with_env_variable(k, str(v))
+        return container
 
     async def call_spec(self, raise_container_error=False) -> List[AirbyteMessage]:
         return await self._run(["spec"], raise_container_error)
 
     async def call_check(self, config: SecretDict, raise_container_error: bool = False) -> List[AirbyteMessage]:
-        return await self._run(["check", "--config", self.IN_CONTAINER_CONFIG_PATH], raise_container_error, config=config)
+        return await self._run(
+            ["check", "--config", self.IN_CONTAINER_CONFIG_PATH],
+            raise_container_error,
+            config=config,
+        )
 
     async def call_discover(self, config: SecretDict, raise_container_error: bool = False) -> List[AirbyteMessage]:
-        return await self._run(["discover", "--config", self.IN_CONTAINER_CONFIG_PATH], raise_container_error, config=config)
+        return await self._run(
+            ["discover", "--config", self.IN_CONTAINER_CONFIG_PATH],
+            raise_container_error,
+            config=config,
+        )
 
     async def call_read(
         self, config: SecretDict, catalog: ConfiguredAirbyteCatalog, raise_container_error: bool = False, enable_caching: bool = True
@@ -103,50 +218,6 @@ class ConnectorRunner:
         entrypoint = await self._connector_under_test_container.entrypoint()
         return " ".join(entrypoint)
 
-    def _get_connector_image_tarball_path(self) -> Optional[Path]:
-        if "CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH" not in os.environ and not self.image_tag.endswith(":dev"):
-            return None
-        if "CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH" in os.environ:
-            connector_under_test_image_tar_path = Path(os.environ["CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"])
-        elif self.image_tag.endswith(":dev"):
-            connector_under_test_image_tar_path = self._export_local_connector_image_to_tarball(self.image_tag)
-        assert connector_under_test_image_tar_path.exists(), "Connector image tarball does not exist"
-        return connector_under_test_image_tar_path
-
-    def _export_local_connector_image_to_tarball(self, local_image_name: str) -> Optional[Path]:
-        tarball_path = Path("/tmp/connector_under_test_image.tar")
-
-        docker_client = docker.from_env()
-        try:
-            image = docker_client.images.get(local_image_name)
-            with open(tarball_path, "wb") as f:
-                for chunk in image.save(named=True):
-                    f.write(chunk)
-
-        except docker.errors.ImageNotFound:
-            pytest.fail(f"Image {local_image_name} not found, please make sure to build or pull it before running the tests")
-        return tarball_path
-
-    def _get_connector_container_from_tarball(self, tarball_path: Path) -> dagger.Container:
-        container_under_test_tar_file = (
-            self.dagger_client.host().directory(str(tarball_path.parent), include=tarball_path.name).file(tarball_path.name)
-        )
-        return self.dagger_client.container().import_(container_under_test_tar_file)
-
-    def _get_connector_container(self, connector_image_tarball_path: Optional[Path]) -> dagger.Container:
-        if connector_image_tarball_path is not None:
-            container = self._get_connector_container_from_tarball(connector_image_tarball_path)
-        else:
-            # Try to pull the image from DockerHub
-            container = self.dagger_client.container().from_(self.image_tag)
-        # Client might pass a cachebuster env var to force recreation of the container
-        # We pass this env var to the container to ensure the cache is busted
-        if cachebuster_value := os.environ.get("CACHEBUSTER"):
-            container = container.with_env_variable("CACHEBUSTER", cachebuster_value)
-        for key, value in self._custom_environment_variables.items():
-            container = container.with_env_variable(key, str(value))
-        return container
-
     async def _run(
         self,
         airbyte_command: List[str],
@@ -156,7 +227,7 @@ class ConnectorRunner:
         state: Union[dict, list] = None,
         enable_caching=True,
     ) -> List[AirbyteMessage]:
-        """_summary_
+        """Run a command in the connector container and return the list of AirbyteMessages emitted by the connector.
 
         Args:
             airbyte_command (List[str]): The command to run in the connector container.
@@ -166,23 +237,18 @@ class ConnectorRunner:
             state (Union[dict, list], optional): The state to mount to the container. Defaults to None.
             enable_caching (bool, optional): Whether to enable command output caching. Defaults to True.
 
-        Raises:
-            e: _description_
-
         Returns:
-            List[AirbyteMessage]: _description_
+            List[AirbyteMessage]: The list of AirbyteMessages emitted by the connector.
         """
         container = self._connector_under_test_container
         if not enable_caching:
             container = container.with_env_variable("CAT_CACHEBUSTER", str(uuid.uuid4()))
         if config:
-            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, json.dumps(dict(config)))
+            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(config)))
         if state:
-            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, json.dumps(state))
+            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, contents=json.dumps(state))
         if catalog:
-            container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, catalog.json())
-        for key, value in self._custom_environment_variables.items():
-            container = container.with_env_variable(key, str(value))
+            container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, contents=catalog.json())
         try:
             output = await self._read_output_from_stdout(airbyte_command, container)
         except dagger.QueryError as e:
@@ -259,16 +325,3 @@ class ConnectorRunner:
                 json.dump(new_configuration, new_configuration_file)
             logging.info(f"Stored most recent configuration value to {new_configuration_file_path}")
             return new_configuration_file_path
-
-    def _check_connector_under_test(self):
-        """
-        As a safety measure, we check that the connector under test matches the connector being tested by comparing the content of the metadata.yaml file to the CONNECTOR_UNDER_TEST_TECHNICAL_NAME environment varialbe.
-        When running CAT from airbyte-ci we set this CONNECTOR_UNDER_TEST_TECHNICAL_NAME env var name,
-        This is a safety check to ensure the correct test inputs are mounted to the CAT container.
-        """
-        if connector_under_test_technical_name := os.environ.get("CONNECTOR_UNDER_TEST_TECHNICAL_NAME"):
-            metadata = yaml.safe_load(Path("/test_input/metadata.yaml").read_text())
-            assert metadata["data"]["dockerRepository"] == f"airbyte/{connector_under_test_technical_name}", (
-                f"Connector under test env var {connector_under_test_technical_name} does not match the connector "
-                f"being tested {metadata['data']['dockerRepository']}"
-            )

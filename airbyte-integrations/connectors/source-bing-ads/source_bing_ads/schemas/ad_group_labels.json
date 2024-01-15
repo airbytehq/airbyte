@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Account Id": {
+      "type": ["null", "integer"]
+    },
+    "Ad Group": {
+      "type": ["null", "string"]
+    },
+    "Campaign": {
+      "type": ["null", "string"]
+    },
+    "Client Id": {
+      "type": ["null", "string"]
+    },
+    "Id": {
+      "type": ["null", "integer"]
+    },
+    "Parent Id": {
+      "type": ["null", "integer"]
+    },
+    "Modified Time": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "Status": {
+      "type": ["null", "string"]
+    }
+  }
+}

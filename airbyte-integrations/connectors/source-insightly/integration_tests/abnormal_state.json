@@ -3,10 +3,142 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
+        "name": "contacts"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "events"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "knowledge_article_categories"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "knowledge_article_folders"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "knowledge_articles"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "milestones"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "notes"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "opportunities"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "organisations"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "projects"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "prospects"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tasks"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
         "name": "users"
       },
       "stream_state": {
-        "DATE_UPDATED_UTC": "2122-10-17T19:10:14+00:00"
+        "DATE_UPDATED_UTC": "2122-10-17 19:10:14"
       }
     }
   }

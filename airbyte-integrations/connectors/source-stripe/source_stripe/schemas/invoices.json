@@ -4,6 +4,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "next_payment_attempt": {
       "type": ["null", "number"]
     },
@@ -206,11 +209,7 @@
       "type": ["null", "integer"]
     },
     "lines": {
-      "type": ["null", "array", "object"],
-      "items": {
-        "type": ["null", "string"]
-      },
-      "properties": {}
+      "type": ["null", "object"]
     },
     "forgiven": {
       "type": ["null", "boolean"]
@@ -235,6 +234,14 @@
     },
     "subscription": {
       "type": ["null", "string"]
+    },
+    "subscription_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "metadata": {
+          "type": ["null", "object"]
+        }
+      }
     },
     "status": {
       "type": ["null", "string"]
@@ -492,10 +499,7 @@
       "type": ["null", "integer"]
     },
     "default_tax_rates": {
-      "type": ["null", "array"],
-      "items": {
-        "$ref": "tax_rates.json"
-      }
+      "$ref": "tax_rates.json"
     },
     "total_excluding_tax": {
       "type": ["null", "integer"]
@@ -586,6 +590,25 @@
     },
     "account_country": {
       "type": ["null", "string"]
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
+    },
+    "rendering": {
+      "type": ["object", "null"],
+      "properties": {
+        "amount_tax_display": {
+          "type": ["null", "string"]
+        },
+        "pdf": {
+          "type": ["null", "object"],
+          "properties": {
+            "page_size": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     }
   }
 }

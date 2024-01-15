@@ -51,14 +51,15 @@ class BaseDiffChecker(ABC):
     def assert_is_backward_compatible(self):  # pragma: no cover
         pass
 
-    def check_if_value_of_type_field_changed(self, diff: DeepDiff):
-        """Check if a type was changed on a property"""
-        # Detect type value change in case type field is declared as a string (e.g "str" -> "int"):
-        changes_on_property_type = [
-            change for change in diff.get("values_changed", []) if {"properties", "type"}.issubset(change.path(output_format="list"))
-        ]
-        if changes_on_property_type:
-            self._raise_error("The'type' field value was changed.", diff)
+    def check_if_value_of_a_field_changed(self, diff: DeepDiff, field: str):
+        """
+        Check if a type / airbyte_type / format was changed on a property.
+        Detect field value change: "str" -> "int" / "date-time" -> "date" / "timestamp_without_timezone" -> "timestamp_with_timezone"
+        """
+        diffs = diff.get("values_changed", set()) | diff.get("dictionary_item_added", set()) | diff.get("dictionary_item_removed", set())
+        field_value_changes = [change for change in diffs if {"properties", field}.issubset(change.path(output_format="list"))]
+        if field_value_changes:
+            self._raise_error(f"The '{field}' field value was changed.", diff)
 
     def check_if_new_type_was_added(self, diff: DeepDiff):  # pragma: no cover
         """Detect type value added to type list if new type value is not None (e.g ["str"] -> ["str", "int"])"""
@@ -129,7 +130,9 @@ class SpecDiffChecker(BaseDiffChecker):
     def assert_is_backward_compatible(self):
         self.check_if_declared_new_required_field(self.connection_specification_diff)
         self.check_if_added_a_new_required_property(self.connection_specification_diff)
-        self.check_if_value_of_type_field_changed(self.connection_specification_diff)
+        self.check_if_value_of_a_field_changed(self.connection_specification_diff, "type")
+        self.check_if_value_of_a_field_changed(self.connection_specification_diff, "airbyte_type")
+        self.check_if_value_of_a_field_changed(self.connection_specification_diff, "format")
         # self.check_if_new_type_was_added(self.connection_specification_diff) We want to allow type expansion atm
         self.check_if_type_of_type_field_changed(self.connection_specification_diff, allow_type_widening=True)
         self.check_if_field_was_made_not_nullable(self.connection_specification_diff)
@@ -257,8 +260,10 @@ class CatalogDiffChecker(BaseDiffChecker):
 
     def assert_is_backward_compatible(self):
         self.check_if_stream_was_removed(self.streams_json_schemas_diff)
-        self.check_if_value_of_type_field_changed(self.streams_json_schemas_diff)
         self.check_if_type_of_type_field_changed(self.streams_json_schemas_diff, allow_type_widening=False)
+        self.check_if_value_of_a_field_changed(self.streams_json_schemas_diff, "type")
+        self.check_if_value_of_a_field_changed(self.streams_json_schemas_diff, "format")
+        self.check_if_value_of_a_field_changed(self.streams_json_schemas_diff, "airbyte_type")
         self.check_if_field_removed(self.streams_json_schemas_diff)
         self.check_if_cursor_field_was_changed(self.streams_cursor_fields_diff)
 

@@ -32,6 +32,9 @@
     "absoluteUrl": {
       "type": ["null", "string"]
     },
+    "aifeatures": {
+      "type": ["null", "string"]
+    },
     "allEmailCampaignIds": {
       "type": ["null", "array"],
       "items": {

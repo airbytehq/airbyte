@@ -138,22 +138,22 @@ def test_attribution_report_slices(config):
     slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
 
     assert slices == [
-        {'profileId': 1, 'startDate': '20220514', 'endDate': '20220515'},
-        {'profileId': 2, 'startDate': '20220514', 'endDate': '20220515'}
+        {"profileId": 1, "startDate": "20220514", "endDate": "20220515"},
+        {"profileId": 2, "startDate": "20220514", "endDate": "20220515"},
     ]
 
     config["start_date"] = pendulum.from_format("2022-05-01", "YYYY-MM-DD").date()
     stream = AttributionReportProducts(config, profiles=profiles)
     slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
     assert slices == [
-        {'profileId': 1, 'startDate': '20220501', 'endDate': '20220515'},
-        {'profileId': 2, 'startDate': '20220501', 'endDate': '20220515'}
+        {"profileId": 1, "startDate": "20220501", "endDate": "20220515"},
+        {"profileId": 2, "startDate": "20220501", "endDate": "20220515"},
     ]
 
     config["start_date"] = pendulum.from_format("2022-01-01", "YYYY-MM-DD").date()
     stream = AttributionReportProducts(config, profiles=profiles)
     slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
     assert slices == [
-        {'profileId': 1, 'startDate': '20220214', 'endDate': '20220515'},
-        {'profileId': 2, 'startDate': '20220214', 'endDate': '20220515'}
+        {"profileId": 1, "startDate": "20220214", "endDate": "20220515"},
+        {"profileId": 2, "startDate": "20220214", "endDate": "20220515"},
     ]

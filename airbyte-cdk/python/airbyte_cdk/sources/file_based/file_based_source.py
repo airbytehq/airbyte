@@ -5,15 +5,16 @@
 import logging
 import traceback
 from abc import ABC
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from collections import Counter
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedErrorsCollector, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -22,6 +23,7 @@ from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, Defau
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils.analytics_message import create_analytics_message
 from pydantic.error_wrappers import ValidationError
 
 
@@ -33,7 +35,7 @@ class FileBasedSource(AbstractSource, ABC):
         catalog_path: Optional[str] = None,
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
-        parsers: Mapping[str, FileTypeParser] = default_parsers,
+        parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
         validation_policies: Mapping[ValidationPolicy, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
         cursor_cls: Type[AbstractFileBasedCursor] = DefaultFileBasedCursor,
     ):
@@ -47,6 +49,7 @@ class FileBasedSource(AbstractSource, ABC):
         self.stream_schemas = {s.stream.name: s.stream.json_schema for s in catalog.streams} if catalog else {}
         self.cursor_cls = cursor_cls
         self.logger = logging.getLogger(f"airbyte.{self.name}")
+        self.errors_collector: FileBasedErrorsCollector = FileBasedErrorsCollector()
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -89,7 +92,7 @@ class FileBasedSource(AbstractSource, ABC):
         Return a list of this source's streams.
         """
         try:
-            parsed_config = self.spec_class(**config)
+            parsed_config = self._get_parsed_config(config)
             self.stream_reader.config = parsed_config
             streams: List[Stream] = []
             for stream_config in parsed_config.streams:
@@ -104,12 +107,28 @@ class FileBasedSource(AbstractSource, ABC):
                         parsers=self.parsers,
                         validation_policy=self._validate_and_get_validation_policy(stream_config),
                         cursor=self.cursor_cls(stream_config),
+                        errors_collector=self.errors_collector,
                     )
                 )
             return streams
 
         except ValidationError as exc:
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
+
+    def read(
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+    ) -> Iterator[AirbyteMessage]:
+        yield from super().read(logger, config, catalog, state)
+        # emit all the errors collected
+        yield from self.errors_collector.yield_and_raise_collected()
+        # count streams using a certain parser
+        parsed_config = self._get_parsed_config(config)
+        for parser, count in Counter(stream.format.filetype for stream in parsed_config.streams).items():
+            yield create_analytics_message(f"file-cdk-{parser}-stream-count", count)
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
@@ -120,6 +139,9 @@ class FileBasedSource(AbstractSource, ABC):
             documentationUrl=self.spec_class.documentation_url(),
             connectionSpecification=self.spec_class.schema(),
         )
+
+    def _get_parsed_config(self, config: Mapping[str, Any]) -> AbstractFileBasedSpec:
+        return self.spec_class(**config)
 
     def _validate_and_get_validation_policy(self, stream_config: FileBasedStreamConfig) -> AbstractSchemaValidationPolicy:
         if stream_config.validation_policy not in self.validation_policies:

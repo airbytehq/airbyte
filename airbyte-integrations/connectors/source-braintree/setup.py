@@ -10,7 +10,6 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "braintree~=4.21.0"]
 TEST_REQUIREMENTS = [
     "pytest~=6.2",
     "pytest-mock~=3.6.1",
-    "connector-acceptance-test",
 ]
 
 setup(

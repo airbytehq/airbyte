@@ -1,3 +1,7 @@
+---
+products: oss-*
+---
+
 # Configuring Airbyte
 
 This section covers how to configure Airbyte, and the various configuration Airbyte accepts.
@@ -41,14 +45,6 @@ The following variables are relevant to both Docker and Kubernetes.
 3. `WORKER_ENVIRONMENT` - Defines if the deployment is Docker or Kubernetes. Airbyte behaves accordingly.
 4. `CONFIG_ROOT` - Defines the configs directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
 5. `WORKSPACE_ROOT` - Defines the Airbyte workspace directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
-
-#### Access
-
-Set to empty values, e.g. "" to disable basic auth. **Be sure to change these values**.
-
-1. BASIC_AUTH_USERNAME=airbyte
-2. BASIC_AUTH_PASSWORD=password
-3. BASIC_AUTH_PROXY_TIMEOUT=600 - Defines the proxy timeout time for requests to Airbyte Server. Main use should be for dynamic discover when creating a connection (S3, JDBC, etc) that takes a long time.
 
 #### Secrets
 
@@ -125,6 +121,14 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 1. `WORKSPACE_DOCKER_MOUNT` - Defines the name of the Airbyte docker volume.
 2. `DOCKER_NETWORK` - Defines the docker network the new Scheduler launches jobs on.
 3. `LOCAL_DOCKER_MOUNT` - Defines the name of the docker mount that is used for local file handling. On Docker, this allows connector pods to interact with a volume for "local file" operations.
+
+#### Access
+
+Set to empty values, e.g. "" to disable basic auth. **Be sure to change these values**.
+
+1. `BASIC_AUTH_USERNAME=airbyte`
+2. `BASIC_AUTH_PASSWORD=password`
+3. `BASIC_AUTH_PROXY_TIMEOUT=600` - Defines the proxy timeout time for requests to Airbyte Server. Main use should be for dynamic discover when creating a connection (S3, JDBC, etc) that takes a long time.
 
 ### Kubernetes-Only
 
