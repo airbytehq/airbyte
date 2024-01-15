@@ -41,9 +41,9 @@ def test_invalid_service_host(logger, flawed_config):
   assert result[1] == "Invalid service_host: aaaaaa-sb1.connect.api.  Must be of the form: *******.connect.api.netsuite.com"
      
 
-def test_invalid_starting_year(logger, flawed_config):
+def test_invalid_starting_year(logger, flawed_config_two):
   source = SourceNetsuiteOdbc()
-  result = source.check_connection(logger, flawed_config)
+  result = source.check_connection(logger, flawed_config_two)
   assert result[0] == False
   assert result[1] == f"Invalid starting_year: {1899}.  Must be between 1900 and {datetime.now().year}"
      
