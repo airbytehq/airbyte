@@ -14,7 +14,7 @@ from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBas
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedErrorsCollector, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -49,6 +49,7 @@ class FileBasedSource(AbstractSource, ABC):
         self.stream_schemas = {s.stream.name: s.stream.json_schema for s in catalog.streams} if catalog else {}
         self.cursor_cls = cursor_cls
         self.logger = logging.getLogger(f"airbyte.{self.name}")
+        self.errors_collector: FileBasedErrorsCollector = FileBasedErrorsCollector()
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -106,6 +107,7 @@ class FileBasedSource(AbstractSource, ABC):
                         parsers=self.parsers,
                         validation_policy=self._validate_and_get_validation_policy(stream_config),
                         cursor=self.cursor_cls(stream_config),
+                        errors_collector=self.errors_collector,
                     )
                 )
             return streams
@@ -121,6 +123,8 @@ class FileBasedSource(AbstractSource, ABC):
         state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         yield from super().read(logger, config, catalog, state)
+        # emit all the errors collected
+        yield from self.errors_collector.yield_and_raise_collected()
         # count streams using a certain parser
         parsed_config = self._get_parsed_config(config)
         for parser, count in Counter(stream.format.filetype for stream in parsed_config.streams).items():

@@ -2,14 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import json
 
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
-from google.ads.googleads.v13 import GoogleAdsFailure
-from google.ads.googleads.v13.errors.types.authentication_error import AuthenticationErrorEnum
-from google.ads.googleads.v13.errors.types.query_error import QueryErrorEnum
-from google.ads.googleads.v13.errors.types.quota_error import QuotaErrorEnum
+from google.ads.googleads.v15 import GoogleAdsFailure
+from google.ads.googleads.v15.errors.types.authentication_error import AuthenticationErrorEnum
+from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v15.errors.types.query_error import QueryErrorEnum
+from google.ads.googleads.v15.errors.types.quota_error import QuotaErrorEnum
 
 
 class MockSearchRequest:
@@ -43,8 +44,11 @@ class MockGoogleAdsClient:
     def load_from_dict(config, version=None):
         return MockGoogleAdsClient(config)
 
-    def send_request(self, query, customer_id):
+    def send_request(self, query, customer_id, login_customer_id="none"):
         yield from ()
+
+    def get_accessible_accounts(self):
+        yield from ["fake_customer_id", "fake_customer_id_2"]
 
 
 class MockGoogleAdsFieldService:

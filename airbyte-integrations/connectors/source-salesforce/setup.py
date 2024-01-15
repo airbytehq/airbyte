@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.50", "pandas"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.55.2", "pandas"]
 
 TEST_REQUIREMENTS = ["freezegun", "pytest~=6.1", "pytest-mock~=3.6", "requests-mock~=1.9.3", "pytest-timeout"]
 
@@ -19,5 +19,10 @@ setup(
     package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
+    },
+    entry_points={
+        "console_scripts": [
+            "source-salesforce=source_salesforce.run:run",
+        ],
     },
 )
