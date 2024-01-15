@@ -71,7 +71,7 @@ class PyPIPublishContext(PipelineContext):
             pypi_token=os.environ["PYPI_TOKEN"],
             test_pypi=True,  # TODO: Go live
             package_path=connector_context.connector.code_directory,
-            package_name=connector_context.connector.metadata["name"],
+            package_name=connector_context.connector.metadata["remoteRegistries"]["pypi"]["packageName"],
             version=connector_context.connector.metadata["dockerImageTag"],
             build_docker_image=build_docker_image,
             ci_report_bucket=connector_context.ci_report_bucket,
