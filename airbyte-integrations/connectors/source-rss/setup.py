@@ -14,6 +14,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-rss=source_rss.run:run",
+        ],
+    },
     name="source_rss",
     description="Source implementation for Rss.",
     author="Airbyte",
