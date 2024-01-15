@@ -223,14 +223,16 @@ def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, e
 @patch('airbyte_lib.telemetry.requests')
 @patch('airbyte_lib.telemetry.datetime')
 @pytest.mark.parametrize(
-    "raises, api_key, expected_state, expected_number_of_records, request_call_fails",
+    "raises, api_key, expected_state, expected_number_of_records, request_call_fails, extra_env, expected_flags",
     [
-        pytest.param(True, "test_fail_during_sync", "failed", 1, False, id="fail_during_sync"),
-        pytest.param(False, "test", "succeeded", 3, False, id="succeed_during_sync"),
-        pytest.param(False, "test", "succeeded", 3, True, id="fail_request_without_propagating"),
+        pytest.param(True, "test_fail_during_sync", "failed", 1, False, {}, {"CI": False}, id="fail_during_sync"),
+        pytest.param(False, "test", "succeeded", 3, False, {}, {"CI": False}, id="succeed_during_sync"),
+        pytest.param(False, "test", "succeeded", 3, True, {}, {"CI": False}, id="fail_request_without_propagating"),
+        pytest.param(False, "test", "succeeded", 3, False, {"CI": ""}, {"CI": False}, id="falsy_ci_flag"),
+        pytest.param(False, "test", "succeeded", 3, False, {"CI": "true"}, {"CI": True}, id="truthy_ci_flag"),
     ],
 )
-def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_key: str, expected_state: str, expected_number_of_records: int, request_call_fails: bool):
+def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_key: str, expected_state: str, expected_number_of_records: int, request_call_fails: bool, extra_env: dict[str, str], expected_flags: dict[str, bool]):
     """
     Test that the telemetry is sent when the sync is successful.
     This is done by mocking the requests.post method and checking that it is called with the right arguments.
@@ -249,11 +251,12 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
     if request_call_fails:
         mock_post.side_effect = Exception("test exception")
 
-    if raises:
-        with pytest.raises(Exception):
+    with patch.dict('os.environ', extra_env):
+        if raises:
+            with pytest.raises(Exception):
+                source.read(cache)
+        else:
             source.read(cache)
-    else:
-        source.read(cache)
     
 
     mock_post.assert_has_calls([
@@ -268,6 +271,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
                     "state": "started",
                     "cache": {"type": "duckdb"},
                     "ip": "0.0.0.0",
+                    "flags": expected_flags
                 },
                 "timestamp": "2021-01-01T00:00:00.000000",
             }
@@ -285,6 +289,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
                     "number_of_records": expected_number_of_records,
                     "cache": {"type": "duckdb"},
                     "ip": "0.0.0.0",
+                    "flags": expected_flags
                 },
                 "timestamp": "2021-01-01T00:00:00.000000",
             }

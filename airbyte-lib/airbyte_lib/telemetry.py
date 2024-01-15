@@ -63,6 +63,9 @@ def send_telemetry(
             "cache": asdict(cache_info),
             # explicitly set to 0.0.0.0 to avoid leaking IP addresses
             "ip": "0.0.0.0",
+            "flags": {
+                "CI": bool(os.environ.get("CI")),
+            },
         },
         "timestamp": current_time,
     }
