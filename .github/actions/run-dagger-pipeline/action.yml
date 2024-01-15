@@ -10,6 +10,9 @@ inputs:
   github_token:
     description: "GitHub token"
     required: true
+  dagger_cloud_token:
+    description: "Dagger Cloud token"
+    required: true
   docker_hub_username:
     description: "Dockerhub username"
     required: true
@@ -153,7 +156,6 @@ runs:
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
         airbyte-ci --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
-        _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
         CI_CONTEXT: "${{ inputs.context }}"
         CI_GIT_BRANCH: ${{ inputs.git_branch || github.head_ref }}
         CI_GIT_REVISION: ${{ inputs.git_revision || github.sha }}
@@ -161,6 +163,7 @@ runs:
         CI_JOB_KEY: ${{ inputs.ci_job_key }}
         CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
         CI_REPORT_BUCKET_NAME: ${{ inputs.report_bucket_name }}
+        DAGGER_CLOUD_TOKEN: "${{ inputs.dagger_cloud_token }}"
         GCP_GSM_CREDENTIALS: ${{ inputs.gcp_gsm_credentials }}
         GCS_CREDENTIALS: ${{ inputs.gcs_credentials }}
         METADATA_SERVICE_BUCKET_NAME: ${{ inputs.metadata_service_bucket_name }}
