@@ -16,6 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-zoho-crm=source_zoho_crm.run:run",
+        ],
+    },
     name="source_zoho_crm",
     description="Source implementation for Zoho Crm.",
     author="Airbyte",
