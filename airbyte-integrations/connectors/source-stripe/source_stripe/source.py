@@ -14,11 +14,14 @@ from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import SyncMode
@@ -46,11 +49,25 @@ USE_CACHE = not _CACHE_DISABLED
 STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
+_WITH_STATE = True
+_WITHOUT_STATE = False
+
+
 class SourceStripe(ConcurrentSourceAdapter):
 
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
+    _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION_AND_HAS_STATE = {
+        (IncrementalStripeStream, _WITHOUT_STATE): ("created[gte]", "created[lte]"),
+        (IncrementalStripeStream, _WITH_STATE): None,
+    }
 
-    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], **kwargs):
+    def __init__(
+        self,
+        catalog: Optional[ConfiguredAirbyteCatalog],
+        config: Optional[Mapping[str, Any]],
+        state: Optional[TState],
+        **kwargs
+    ):
         if config:
             concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
         else:
@@ -60,6 +77,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository
         )
         super().__init__(concurrent_source)
+        self._state = state
         if catalog:
             self._streams_configured_as_full_refresh = {
                 configured_stream.stream.name
@@ -511,12 +529,36 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
         ]
 
-        return [
-            StreamFacade.create_from_stream(stream, self, entrypoint_logger, self._create_empty_state(), NoopCursor())
-            if stream.name in self._streams_configured_as_full_refresh
-            else stream
-            for stream in streams
-        ]
+        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
+        return [self._to_concurrent(stream, state_manager) for stream in streams]
+
+    def _to_concurrent(self, stream: Stream, state_manager: ConnectorStateManager) -> Stream:
+        if os.environ.get("SKIP_CONCURRENCY"):
+            return stream
+        if stream.name in self._streams_configured_as_full_refresh:
+            return StreamFacade.create_from_stream(stream, self, entrypoint_logger, self._create_empty_state(), NoopCursor())
+
+        state = state_manager.get_stream_state(stream.name, stream.namespace)
+        slice_boundary_fields = self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION_AND_HAS_STATE.get((type(stream), bool(state)), None)
+        # it is important to check if the key is in `_SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION_AND_HAS_STATE` instead of
+        # `slice_boundary_fields` as in some situation, streams do not have slice boundary fields
+        if (type(stream), bool(state)) in self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION_AND_HAS_STATE:
+            cursor_field = CursorField(stream.cursor_field) if isinstance(stream.cursor_field, str) else CursorField(stream.cursor_field[0])
+            converter = EpochValueConcurrentStreamStateConverter()
+            cursor = ConcurrentCursor(
+                stream.name,
+                stream.namespace,
+                converter.get_concurrent_stream_state(cursor_field, state),
+                self.message_repository,
+                state_manager,
+                converter,
+                cursor_field,
+                slice_boundary_fields,
+            )
+            return StreamFacade.create_from_stream(stream, self, entrypoint_logger, state, cursor)
+
+        return stream
+
 
     def _create_empty_state(self) -> MutableMapping[str, Any]:
         # The state is known to be empty because concurrent CDK is currently only used for full refresh
