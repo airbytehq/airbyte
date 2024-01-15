@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import anyio
@@ -29,11 +28,6 @@ LANGUAGE_MAPPING = {
         ConnectorLanguage.JAVA: java_connectors.get_test_steps,
     },
 }
-
-
-EXTRA_PARAMS_PATTERN = re.compile(r"^--([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_-][a-zA-Z0-9_-]*)=([^=]+)$")
-EXTRA_PARAMS_PATTERN_FOR_FLAG = re.compile(r"^--([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_-][a-zA-Z0-9_-]*)$")
-EXTRA_PARAMS_PATTERN_ERROR_MESSAGE = "The extra params must be structured as --<step_id>.<param_name>=<param_value>"
 
 
 def get_test_steps(context: ConnectorContext) -> STEP_TREE:

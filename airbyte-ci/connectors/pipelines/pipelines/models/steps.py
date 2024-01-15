@@ -185,7 +185,7 @@ class Step(ABC):
 
     @property
     def params(self) -> STEP_PARAMS:
-        return self.extra_params | self.default_params
+        return self.default_params | self.extra_params
 
     @property
     def params_as_cli_options(self) -> List[str]:
