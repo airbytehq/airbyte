@@ -17,6 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-okta=source_okta.run:run",
+        ],
+    },
     name="source_okta",
     description="Source implementation for Okta.",
     author="Airbyte",
