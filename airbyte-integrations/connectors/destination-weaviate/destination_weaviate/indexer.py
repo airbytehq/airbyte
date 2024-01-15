@@ -70,7 +70,7 @@ class WeaviateIndexer(Indexer):
         classes = {c["class"]: c for c in self.client.schema.get().get("classes", [])}
         self.has_record_id_metadata = defaultdict(lambda: False)
         for stream in catalog.streams:
-            class_name = self.stream_to_class_name(stream.stream.name)
+            class_name = self._stream_to_class_name(stream.stream.name)
             schema = classes[class_name] if class_name in classes else None
             if stream.destination_sync_mode == DestinationSyncMode.overwrite and schema is not None:
                 self.client.schema.delete_class(class_name=class_name)
@@ -103,7 +103,7 @@ class WeaviateIndexer(Indexer):
 
     def delete(self, delete_ids, namespace, stream):
         if len(delete_ids) > 0:
-            class_name = self.stream_to_class_name(stream)
+            class_name = self._stream_to_class_name(stream)
             if self.has_record_id_metadata[class_name]:
                 self.client.batch.delete_objects(
                     class_name=class_name,
@@ -119,24 +119,36 @@ class WeaviateIndexer(Indexer):
         for batch in batches:
             for i in range(len(batch)):
                 chunk = batch[i]
-                weaviate_object = {**self._normalize(chunk.metadata), self.config.text_field: chunk.page_content}
+                weaviate_object = {**self._normalize(chunk.metadata)}
+                if chunk.page_content is not None:
+                    weaviate_object[self.config.text_field] = chunk.page_content
                 object_id = str(uuid.uuid4())
-                class_name = self.stream_to_class_name(chunk.record.stream)
+                class_name = self._stream_to_class_name(chunk.record.stream)
                 self.client.batch.add_data_object(weaviate_object, class_name, object_id, vector=chunk.embedding)
             self._flush()
 
-    def stream_to_class_name(self, stream_name: str) -> str:
+    def _stream_to_class_name(self, stream_name: str) -> str:
         pattern = "[^0-9A-Za-z_]+"
         stream_name = re.sub(pattern, "", stream_name)
         stream_name = stream_name.replace(" ", "")
         return stream_name[0].upper() + stream_name[1:]
+
+    def _normalize_property_name(self, field_name: str) -> str:
+        # Remove invalid characters and replace spaces with underscores
+        normalized = re.sub(r"[^0-9A-Za-z_]", "", field_name.replace(" ", "_"))
+
+        # Ensure the name starts with a letter or underscore
+        if not re.match(r"^[_A-Za-z]", normalized):
+            normalized = "_" + normalized
+
+        return normalized[0].lower() + normalized[1:]
 
     def _normalize(self, metadata: dict) -> dict:
         result = {}
 
         for key, value in metadata.items():
             # Property names in Weaviate have to start with lowercase letter
-            normalized_key = key[0].lower() + key[1:]
+            normalized_key = self._normalize_property_name(key)
             # "id" and "additional" are reserved properties in Weaviate, prefix to disambiguate
             if key == "id" or key == "_id" or key == "_additional":
                 normalized_key = f"raw_{key}"

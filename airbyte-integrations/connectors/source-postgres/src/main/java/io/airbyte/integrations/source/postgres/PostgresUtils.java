@@ -23,6 +23,7 @@ import static io.airbyte.integrations.source.postgres.PostgresType.TINYINT;
 import static io.airbyte.integrations.source.postgres.PostgresType.VARCHAR;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Duration;
 import java.util.List;
@@ -50,6 +51,14 @@ public class PostgresUtils {
   private static final int MIN_QUEUE_SIZE = 1000;
   private static final int MAX_QUEUE_SIZE = 10000;
 
+  private static final String DROP_AGGREGATE_IF_EXISTS_STATEMENT = "DROP aggregate IF EXISTS EPHEMERAL_HEARTBEAT(float4)";
+  private static final String CREATE_AGGREGATE_STATEMENT = "CREATE AGGREGATE EPHEMERAL_HEARTBEAT(float4) (SFUNC = float4pl, STYPE = float4)";
+  private static final String DROP_AGGREGATE_STATEMENT = "DROP aggregate EPHEMERAL_HEARTBEAT(float4)";
+  private static final List<String> EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS =
+      List.of(DROP_AGGREGATE_IF_EXISTS_STATEMENT, CREATE_AGGREGATE_STATEMENT, DROP_AGGREGATE_STATEMENT);
+
+  private static final int POSTGRESQL_VERSION_15 = 15;
+
   public static String getPluginValue(final JsonNode field) {
     return field.has("plugin") ? field.get("plugin").asText() : PGOUTPUT_PLUGIN;
   }
@@ -68,6 +77,10 @@ public class PostgresUtils {
         && config.get("replication_method").get("lsn_commit_behaviour").asText().equals("After loading Data in the destination");
     LOGGER.info("Should flush after sync: {}", shouldFlushAfterSync);
     return shouldFlushAfterSync;
+  }
+
+  public static boolean isDebugMode(final JsonNode config) {
+    return config.hasNonNull("debug_mode");
   }
 
   public static Optional<Integer> getFirstRecordWaitSeconds(final JsonNode config) {
@@ -180,6 +193,17 @@ public class PostgresUtils {
 
   public static String prettyPrintConfiguredAirbyteStreamList(final List<ConfiguredAirbyteStream> streamList) {
     return streamList.stream().map(s -> "%s.%s".formatted(s.getStream().getNamespace(), s.getStream().getName())).collect(Collectors.joining(", "));
+  }
+
+  public static void advanceLsn(final JdbcDatabase database) {
+    try {
+      if (database.getMetaData().getDatabaseMajorVersion() < POSTGRESQL_VERSION_15) {
+        database.executeWithinTransaction(EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS);
+        LOGGER.info("Succesfully forced LSN advancement by creating & dropping an ephemeral heartbeat aggregate");
+      }
+    } catch (final Exception e) {
+      LOGGER.info("Failed to force LSN advancement by creating & dropping an ephemeral heartbeat aggregate.");
+    }
   }
 
 }

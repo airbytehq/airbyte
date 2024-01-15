@@ -2,92 +2,138 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"updatedAt": "2050-05-01"},
-      "stream_descriptor": {"name": "companies"}
+      "stream_state": { "updatedAt": "2050-05-01" },
+      "stream_descriptor": { "name": "companies" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"timestamp": "2021-02-23T00:00:00Z"},
-      "stream_descriptor": {"name": "contact_lists"}
+      "stream_state": { "timestamp": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "contact_lists" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"updatedAt": "2021-02-23T00:00:00Z"},
-      "stream_descriptor": {"name": "contacts"}
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "contacts" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"updatedAt": "2021-02-23T00:00:00Z"},
-      "stream_descriptor": {"name": "deals"}
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "deals" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"timestamp": "2021-02-23T00:00:00Z"},
-      "stream_descriptor": {"name": "email_events"}
+      "stream_state": { "timestamp": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "email_events" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"lastUpdated": 1614038400000},
-      "stream_descriptor": {"name": "engagements"}
+      "stream_state": { "lastUpdated": 1614038400000 },
+      "stream_descriptor": { "name": "engagements" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"updatedAt": "2021-02-23T00:00:00Z"},
-      "stream_descriptor": {"name": "goals"}
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "goals" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"updatedAt": "2021-02-23T00:00:00Z"},
-      "stream_descriptor": {"name": "line_items"}
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "line_items" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"updatedAt": "2021-02-23T00:00:00Z"},
-      "stream_descriptor": {"name": "products"}
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "products" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"timestamp": "2021-02-23T00:00:00Z"},
-      "stream_descriptor": {"name": "subscription_changes"}
+      "stream_state": { "timestamp": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "subscription_changes" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"updatedAt": "2021-02-23T00:00:00Z"},
-      "stream_descriptor": {"name": "tickets"}
+      "stream_state": { "updatedAt": "2021-02-23T00:00:00Z" },
+      "stream_descriptor": { "name": "tickets" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"updatedAt": ""},
-      "stream_descriptor": {"name": "forms"}
+      "stream_state": { "updatedAt": "" },
+      "stream_descriptor": { "name": "forms" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {"timestamp": 1700681340514},
-      "stream_descriptor": {"name": "property_history"}
+      "stream_state": { "timestamp": 1700681340514 },
+      "stream_descriptor": { "name": "contacts_property_history" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": 1700681340514 },
+      "stream_descriptor": { "name": "companies_property_history" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": 1700681340514 },
+      "stream_descriptor": { "name": "deals_property_history" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "contacts_web_analytics" },
+      "stream_state": {
+        "601": {
+          "occurredAt": "2023-12-01T22:09:29.626Z"
+        },
+        "2601": {
+          "occurredAt": "2023-12-01T22:11:15.870Z"
+        },
+        "251": {
+          "occurredAt": "2023-12-01T22:08:24.346Z"
+        },
+        "2501": {
+          "occurredAt": "2023-12-01T22:10:02.613Z"
+        },
+        "401": {
+          "occurredAt": "2023-12-01T22:08:57.083Z"
+        },
+        "151": {
+          "occurredAt": "2023-12-01T22:07:17.836Z"
+        },
+        "2551": {
+          "occurredAt": "2023-12-01T22:10:43.512Z"
+        },
+        "651": {
+          "occurredAt": "2023-12-01T22:07:51.996Z"
+        }
+      }
     }
   }
 ]

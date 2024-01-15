@@ -5,7 +5,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.4.10'
+    cdkVersionRequired = '0.7.9'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -58,7 +58,12 @@ dependencies {
     dataGeneratorImplementation libs.kotlinx.cli.jvm
     dataGeneratorImplementation 'org.yaml:snakeyaml:2.2'
 
-    debeziumTestImplementation libs.bundles.debezium.bundle
+    debeziumTestImplementation libs.debezium.api
+    debeziumTestImplementation libs.debezium.embedded
+    debeziumTestImplementation libs.debezium.sqlserver
+    debeziumTestImplementation libs.debezium.mysql
+    debeziumTestImplementation libs.debezium.postgres
+    debeziumTestImplementation libs.debezium.mongodb
     debeziumTestImplementation libs.bundles.slf4j
     debeziumTestImplementation libs.slf4j.simple
     debeziumTestImplementation libs.kotlinx.cli.jvm
