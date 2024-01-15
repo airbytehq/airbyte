@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_marketo",
+    entry_points={
+        "console_scripts": [
+            "source-marketo=source_marketo.run:run",
+        ],
+    },    name="source_marketo",
     description="Source implementation for Marketo.",
     author="Airbyte",
     author_email="contact@airbyte.io",
