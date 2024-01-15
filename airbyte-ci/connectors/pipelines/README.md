@@ -264,10 +264,23 @@ flowchart TD
 | `--fail-fast`       | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
 | `--code-tests-only` | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`  | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
+| `--<step-id>.<extra-parameter>=<extra-parameter-value>`  | True    |          | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                              |
 
 Note:
 
 - The above options are implemented for Java connectors but may not be available for Python connectors. If an option is not supported, the pipeline will not fail but instead the 'default' behavior will be executed.
+
+#### Extra parameters
+You can pass extra parameters to the following steps:
+* `unit` 
+* `integration` 
+* `acceptance` 
+
+This allows you to override the default parameters of these steps. 
+For example, you can only run the `test_read` test of the acceptance test suite with:
+`airbyte-ci connectors --name=source-pokeapi test --acceptance.-k=test_read`
+Here the `-k` parameter is passed to the pytest command running acceptance tests.
+Please keep in mind that the extra parameters are not validated by the CLI: if you pass an invalid parameter, you'll face a late failure during the pipeline execution.
 
 ### <a id="connectors-build-command"></a>`connectors build` command
 
