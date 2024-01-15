@@ -7,9 +7,11 @@ import sys
 
 from airbyte_cdk.entrypoint import launch
 
+from .config_migrations import MigrateAccountIdToArray
 from .source import SourceFacebookMarketing
 
 
 def run():
     source = SourceFacebookMarketing()
+    MigrateAccountIdToArray.migrate(sys.argv[1:], source)
     launch(source, sys.argv[1:])

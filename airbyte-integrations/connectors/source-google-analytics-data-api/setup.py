@@ -15,6 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-google-analytics-data-api=source_google_analytics_data_api.run:run",
+        ],
+    },
     name="source_google_analytics_data_api",
     description="Source implementation for Google Analytics Data Api.",
     author="Airbyte",
