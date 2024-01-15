@@ -292,9 +292,9 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 results.append(metadata_upload_results)
 
             if (
-                "remoteRegistries" in context.connector.metadata["metadata"]
-                and "pypi" in context.connector.metadata["metadata"]["remoteRegistries"]
-                and context.connector.metadata["metadata"]["remoteRegistries"]["pypi"]["enabled"]
+                "remoteRegistries" in context.connector.metadata
+                and "pypi" in context.connector.metadata["remoteRegistries"]
+                and context.connector.metadata["remoteRegistries"]["pypi"]["enabled"]
             ):
                 pypi_context = PyPIPublishContext.from_connector_context(context)
                 check_pypi_package_exists_results = await CheckPypiPackageExists(pypi_context).run()
