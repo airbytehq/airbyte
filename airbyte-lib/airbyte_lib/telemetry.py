@@ -38,7 +38,12 @@ class SourceTelemetryInfo:
     version: Optional[str]
 
 
-def send_telemetry(source: SourceTelemetryInfo, cache_type: CacheType, state: SyncState, number_of_records: Optional[int] = None):
+def send_telemetry(
+    source: SourceTelemetryInfo,
+    cache_type: CacheType,
+    state: SyncState,
+    number_of_records: Optional[int] = None,
+):
     # If DO_NOT_TRACK is set, we don't send any telemetry
     if os.environ.get("DO_NOT_TRACK"):
         return

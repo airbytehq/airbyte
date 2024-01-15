@@ -293,10 +293,17 @@ class Source:
                 ):
                     yield msg
         except Exception as e:
-            send_telemetry(source_tracking_information, cache_type, SyncState.FAILED, self._processed_records)
+            send_telemetry(
+                source_tracking_information, cache_type, SyncState.FAILED, self._processed_records
+            )
             raise e
         finally:
-            send_telemetry(source_tracking_information, cache_type, SyncState.SUCCEEDED, self._processed_records)
+            send_telemetry(
+                source_tracking_information,
+                cache_type,
+                SyncState.SUCCEEDED,
+                self._processed_records,
+            )
 
     def _add_to_logs(self, message: str) -> None:
         self._last_log_messages.append(message)
