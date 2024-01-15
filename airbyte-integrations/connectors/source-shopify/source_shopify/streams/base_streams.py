@@ -499,7 +499,7 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
                 # add parent_id key, value from mutation_map, if passed.
                 self.add_parent_id(record)
                 # yield nested sub-rcords
-                yield {self.nested_entity: sub_record for sub_record in record.get(self.nested_entity)}
+                yield from [{self.nested_entity: sub_record} for sub_record in record.get(self.nested_entity, [])]
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs
