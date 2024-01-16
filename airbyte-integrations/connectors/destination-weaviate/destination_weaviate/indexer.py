@@ -96,8 +96,11 @@ class WeaviateIndexer(Indexer):
                 if self.config.tenant_id.strip():
                     config["multiTenancyConfig"] = {"enabled": True}
 
-                self.client.schema.create_class(config)
-                logging.info(f"Created class {class_name}")
+                try:
+                    self.client.schema.create_class(config)
+                    logging.info(f"Created class {class_name}")
+                except Exception as e:
+                    logging.error(f"Failed to create class or class already exists {class_name}: {e}")
 
                 if self.config.tenant_id.strip():
                     class_tenants = self.client.schema.get_class_tenants(class_name=class_name)
