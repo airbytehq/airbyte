@@ -153,7 +153,7 @@ public class MssqlQueryUtils {
             && tableEstimateResult.get(0).get(NUM_ROWS) != null) {
           final long tableEstimateBytes = toBytes(tableEstimateResult.get(0).get(DATA_SIZE_HUMAN_READABLE).asText());
           final long numRows = tableEstimateResult.get(0).get(NUM_ROWS).asLong();
-          final long avgTableRowSizeBytes = tableEstimateBytes / numRows;
+          final long avgTableRowSizeBytes = numRows > 0 ? tableEstimateBytes / numRows : 0;
           LOGGER.info("Stream {} size estimate is {}, average row size estimate is {}", fullTableName, tableEstimateBytes, avgTableRowSizeBytes);
           final TableSizeInfo tableSizeInfo = new TableSizeInfo(tableEstimateBytes, avgTableRowSizeBytes);
           final AirbyteStreamNameNamespacePair namespacePair =
