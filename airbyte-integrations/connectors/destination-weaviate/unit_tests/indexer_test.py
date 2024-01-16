@@ -74,6 +74,7 @@ class TestWeaviateIndexer(unittest.TestCase):
     @patch("destination_weaviate.indexer.weaviate.Client")
     def test_pre_sync_that_creates_class_with_multi_tenancy_enabled(self, MockClient):
         mock_client = Mock()
+        self.config.tenant_id = "test_tenant"
         mock_client.schema.get.return_value = {"classes": []}
         MockClient.return_value = mock_client
         self.indexer.pre_sync(self.mock_catalog)
@@ -130,6 +131,7 @@ class TestWeaviateIndexer(unittest.TestCase):
 
     def test_index_deletes_by_record_id_with_tenant_id(self):
         mock_client = Mock()
+        self.config.tenant_id = "test_tenant"
         self.indexer.client = mock_client
         self.indexer.has_record_id_metadata = defaultdict(None)
         self.indexer.has_record_id_metadata["Test"] = True
