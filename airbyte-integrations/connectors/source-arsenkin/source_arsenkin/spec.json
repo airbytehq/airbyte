@@ -1,0 +1,80 @@
+{
+  "documentationUrl" : "https://docs.airbyte.io/connector-development",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Arsenkin Spec",
+    "type" : "object",
+    "required" : [
+      "token",
+      "keywords",
+      "device",
+      "region_yandex"
+    ],
+    "additionalProperties" : true,
+    "properties" : {
+      "token" : {
+        "type" : "string",
+        "title" : "Access Token",
+        "description" : "Arsenkin API token",
+        "airbyre_secret" : true,
+        "order" : 0
+      },
+      "region_yandex" : {
+        "type" : "string",
+        "title" : "Yandex search region",
+        "description" : "Location for advertisement parsing",
+        "order" : 1,
+        "default" : 213,
+        "examples" : [
+          213
+        ]
+      },
+      "device" : {
+        "type" : "object",
+        "title" : "Device type",
+        "order" : 2,
+        "oneOf" : [
+          {
+            "required": ["device_type"],
+            "properties" : {
+              "device_type" : {
+                "type" : "string",
+                "const" : "desktop",
+                "title" : "Desktop",
+                "description" : "Parse ads from desktop",
+                 "order" : 0
+              }
+            }
+          },
+          {
+            "required": ["device_type"],
+            "properties" : {
+              "device_type" : {
+                "type" : "string",
+                "const" : "mobile",
+                "title" : "Mobile",
+                "description" : "Parse ads from smartphone",
+                 "order" : 0
+              }
+            }
+          }
+        ]
+      },
+      "keywords" : {
+        "type" : "array",
+        "title" : "Parsing keywords",
+        "description" : "List of search keywords",
+        "order" : 3,
+        "items" : {
+          "type" : "string",
+          "title" : "Keyword",
+          "description" : "Single search keyword",
+          "examples" : [
+            "Купить холодильник",
+            "Автомобиль БУ"
+          ]
+        }
+      }
+    }
+  }
+}
