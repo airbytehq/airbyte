@@ -1,12 +1,16 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from queue import Queue
 
 from airbyte_cdk.sources.concurrent_source.throttler import Throttler
 from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
 
+
 class ThrottledQueue:
     """
     A queue that throttles the number of items that can be added to it.
     """
+
     def __init__(self, queue: Queue[QueueItem], throttler: Throttler, timeout: float) -> None:
         """
         :param queue: The queue to throttle
