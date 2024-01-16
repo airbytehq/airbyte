@@ -39,4 +39,4 @@ def test_partition_generator(slices):
         actual_partitions.append(partition)
 
     assert actual_partitions == partitions
-    assert throttler.wait_and_acquire.call_count == len(partitions)
+    assert throttler.wait_and_acquire.call_count == len(partitions) + 1

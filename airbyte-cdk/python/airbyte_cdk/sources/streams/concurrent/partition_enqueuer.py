@@ -18,7 +18,7 @@ class PartitionEnqueuer:
     def __init__(self, queue: Queue[QueueItem], throttler: Throttler) -> None:
         """
         :param queue:  The queue to put the partitions in.
-        :param sentinel: The sentinel to put in the queue when all the partitions have been generated.
+        :param throttler: The throttler to use to throttle the partition generation.
         """
         self._queue = queue
         self._throttler = throttler
@@ -38,6 +38,7 @@ class PartitionEnqueuer:
             for partition in stream.generate_partitions():
                 self._throttler.wait_and_acquire()
                 self._queue.put(partition)
+            self._throttler.wait_and_acquire()
             self._queue.put(PartitionGenerationCompletedSentinel(stream))
         except Exception as e:
             self._queue.put(e)
