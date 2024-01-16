@@ -14,18 +14,32 @@ on:
       publish-options:
         description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
         default: "--pre-release"
-      runs-on:
-        type: string
-        default: ci-runner-connector-publish-large-dagger-0-9-5
-        required: true
-      airbyte-ci-binary-url:
-        description: "URL to airbyte-ci binary"
-        required: false
-        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
 jobs:
+  get_ci_runner:
+    runs-on: ubuntu-latest
+    name: Get CI runner
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          fetch-depth: 1
+      - name: Get CI runner
+        id: get_ci_runner
+        uses: ./.github/actions/airbyte-ci-requirements
+        with:
+          runner_type: "publish"
+          runner_size: "large"
+          airbyte_ci_command: "connectors publish"
+          github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+    outputs:
+      runner_name: ${{ steps.get_ci_runner.outputs.runner_name }}
   publish_connectors:
     name: Publish connectors
-    runs-on: ${{ inputs.runs-on || 'ci-runner-connector-publish-large-dagger-0-9-5' }}
+    needs: get_ci_runner
+    runs-on: ${{ needs.get_ci_runner.outputs.runner_name }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -70,7 +84,6 @@ jobs:
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
-          airbyte_ci_binary_url: ${{ github.event.inputs.airbyte-ci-binary-url }}
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
