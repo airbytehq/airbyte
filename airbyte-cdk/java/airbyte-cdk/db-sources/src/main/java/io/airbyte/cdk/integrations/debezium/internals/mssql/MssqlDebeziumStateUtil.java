@@ -43,6 +43,7 @@ public class MssqlDebeziumStateUtil {
   public JsonNode constructInitialDebeziumState(final Properties properties,
                                                 final ConfiguredAirbyteCatalog catalog,
                                                 final JdbcDatabase database) {
+    properties.setProperty("heartbeat.interval.ms", "0");
     final JsonNode highWaterMark = constructLsnSnapshotState(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText());
     final AirbyteFileOffsetBackingStore emptyOffsetManager = AirbyteFileOffsetBackingStore.initializeState(null,
         Optional.empty());

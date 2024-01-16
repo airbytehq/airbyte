@@ -73,5 +73,4 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   public boolean compressSchemaHistoryForState() {
     return true;
   }
-
 }
