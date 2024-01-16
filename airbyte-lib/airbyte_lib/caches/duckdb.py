@@ -11,6 +11,7 @@ from overrides import overrides
 
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
+from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
 class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -53,6 +54,10 @@ class DuckDBCacheBase(SQLCacheBase):
 
     config_class = DuckDBCacheConfig
     supports_merge_insert = True
+
+    @overrides
+    def get_telemetry_info(self) -> CacheTelemetryInfo:
+        return CacheTelemetryInfo("duckdb")
 
     @overrides
     def _setup(self) -> None:
