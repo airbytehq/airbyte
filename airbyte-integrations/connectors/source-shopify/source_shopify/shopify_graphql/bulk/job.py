@@ -35,9 +35,10 @@ class ShopifyBulkJob:
     Class to create, check, retrieve the result for Shopify GraphQL Bulk Jobs.
     """
 
-    def __init__(self, session: requests.Session, logger: AirbyteLogger, query: ShopifyBulkQuery) -> None:
+    def __init__(self, session: requests.Session, logger: AirbyteLogger, query: ShopifyBulkQuery, base_url: str) -> None:
         self.session = session
         self.logger = logger
+        self.base_url = base_url
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(query)
         self.tools: BulkTools = BulkTools()
 
@@ -91,6 +92,21 @@ class ShopifyBulkJob:
     def has_reached_max_concurrency_attempt(self) -> bool:
         return self.concurrent_attempt == self.concurrent_max_retry
 
+    def _job_create(self, request: requests.PreparedRequest) -> requests.Response:
+        """
+        Sends HTTPS request to create Shopify BULK Operatoion.
+        https://shopify.dev/docs/api/usage/bulk-operations/queries#bulk-query-overview
+        """
+        return self.session.send(request)
+
+    def _job_status_args(self, bulk_job_id: str) -> Mapping[str, Any]:
+        return {
+            "method": "POST",
+            "url": self.base_url,
+            "data": ShopifyBulkTemplates.status(bulk_job_id),
+            "headers": {"Content-Type": "application/graphql"},
+        }
+
     def retry_concurrent_request(self, request: requests.PreparedRequest) -> Optional[requests.Response]:
         # increment attempt
         self.concurrent_attempt += 1
@@ -100,15 +116,10 @@ class ShopifyBulkJob:
         )
         sleep(self.concurrent_interval_sec)
         # retry current `request`
-        return self.job_create(request)
+        return self.job_healthcheck(self._job_create(request))
 
-    def job_check_for_errors(self, errors: Optional[Iterable[Mapping[str, Any]]] = None) -> None:
-        if errors:
-            # when we have the scenario we didn't face yet.
-            raise ShopifyBulkExceptions.BulkJobError(f"Something wong with the BULK job, errors: {errors}")
-
-    def job_get_id(self, response: Optional[requests.Response] = None) -> Optional[str]:
-        response_data = response.json() if response else {}
+    def job_get_id(self, response: requests.Response) -> Optional[str]:
+        response_data = response.json()
         bulk_response = response_data.get("data", {}).get("bulkOperationRunQuery", {}).get("bulkOperation", {})
         if bulk_response and bulk_response.get("status") == ShopifyBulkStatus.CREATED.value:
             job_id = bulk_response.get("id")
@@ -125,29 +136,23 @@ class ShopifyBulkJob:
         else:
             return self.retry_concurrent_request(request)
 
-    def job_create(self, request: requests.PreparedRequest) -> Optional[requests.Response]:
-        # create the server-side job
-        response = self.session.send(request)
+    def job_healthcheck(self, response: requests.Response) -> Optional[requests.Response]:
         # errors check
         errors = self.get_errors_from_response(response)
         # when the concurrent job takes place, we typically need to wait and retry, but no longer than 10 min.
         if not self.has_running_concurrent_job(errors):
-            # the errors are handled in `job_check_for_errors`
-            return response if not self.job_check_for_errors(errors) else None
+            return response if not errors else None
         else:
+            # get the latest request to retry
+            request: requests.PreparedRequest = response.request
             return self.job_retry_on_concurrency(request)
 
     def job_log_status(self, bulk_job_id: str, status: str) -> None:
         self.logger.info(f"The BULK Job: `{bulk_job_id}` is {status}.")
 
-    def job_check_status(self, url: str, bulk_job_id: str, is_test: bool = False) -> Optional[str]:
-        request_args = {
-            "method": "POST",
-            "url": url,
-            "data": ShopifyBulkTemplates.status(bulk_job_id),
-            "headers": {"Content-Type": "application/graphql"},
-        }
+    def job_status_check(self, bulk_job_id: str, is_test: bool = False) -> Optional[str]:
         status: str = None
+        request_args = self._job_status_args(bulk_job_id)
         while status != ShopifyBulkStatus.COMPLETED.value:
             # re-use of `self._session(*, **)` to make BULK Job status checks
             response = self.session.request(**request_args)
@@ -177,38 +182,40 @@ class ShopifyBulkJob:
                         f"The BULK Job: `{bulk_job_id}` exited with {status}, please check your PERMISSION to fetch the data for this stream.",
                     )
             else:
-                raise Exception(f"Could not validate the status of the BULK Job `{bulk_job_id}`. Errors: {errors}.")
+                raise ShopifyBulkExceptions.BulkJobUnknownError(
+                    f"Could not validate the status of the BULK Job `{bulk_job_id}`. Errors: {errors}."
+                )
 
         # return when status is `COMPLETED`
         self.job_log_status(bulk_job_id, status)
         return response.json().get("data", {}).get("node", {}).get("url")
 
-    def job_check(self, url: str, created_job_response: requests.Response, is_test: bool = False) -> Optional[str]:
+    def job_check(self, created_job_response: requests.Response, is_test: bool = False) -> Optional[str]:
         """
         This method checks the status for the BULK Job created, using it's `ID`.
         The time spent for the Job execution is tracked to understand the effort.
 
         :: is_test: bool (default = False) - service flag to be able to manage unit_tests for `RUNNING` status.
         """
-        bulk_job_id: str = self.job_get_id(created_job_response)
-        if bulk_job_id:
+        job_response = self.job_healthcheck(created_job_response)
+        if job_response:
+            bulk_job_id: str = self.job_get_id(job_response)
             job_started = time()
             try:
-                return self.job_check_status(url, bulk_job_id, is_test)
+                return self.job_status_check(bulk_job_id, is_test)
             except (
                 ShopifyBulkExceptions.BulkJobFailed,
                 ShopifyBulkExceptions.BulkJobTimout,
                 ShopifyBulkExceptions.BulkJobAccessDenied,
+                ShopifyBulkExceptions.BulkJobUnknownError,
             ) as bulk_job_error:
                 raise bulk_job_error
-            except Exception as e:
-                raise ShopifyBulkExceptions.BulkJobUnknownError(f"The BULK Job: `{bulk_job_id}` has unknown status. Trace: {repr(e)}.")
             finally:
                 time_elapsed = round((time() - job_started), 3)
                 self.logger.info(f"The BULK Job: `{bulk_job_id}` time elapsed: {time_elapsed} sec.")
         else:
-            # the `bulk_job_id` could be `None`, indicating the `concurrent` backoff,
-            # since the BULK job was  not created, it doesn't have the ID.
+            # the `job_response` could be `None`, indicating the `concurrent` backoff,
+            # since the BULK job was not created, most likely due to the running concurent BULK job.
             return None
 
     def job_retrieve_result(self, job_result_url: str) -> str:

@@ -581,6 +581,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             session=self._session,
             logger=self.logger,
             query=self.query,
+            base_url=f"{self.url_base}/{self.path()}",
         )
 
     @property
@@ -589,10 +590,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         Defines date range per single BULK Job.
         """
         return self.config.get("bulk_window_in_days", 30)
-
-    @property
-    def graphql_path(self) -> str:
-        return f"{self.url_base}/{self.path()}"
 
     @property
     @abstractmethod
@@ -637,14 +634,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         """
         return {"query": ShopifyBulkTemplates.prepare(stream_slice.get("query"))}
 
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> Optional[requests.Response]:
-        """
-        Override for _send_request CDK method to send HTTP request to Shopify BULK Operatoions.
-        https://shopify.dev/docs/api/usage/bulk-operations/queries#bulk-query-overview
-        """
-        # Create the BULK Job
-        return self.bulk_job.job_create(request)
-
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.filter_field:
@@ -668,11 +657,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # for the streams that don't support filtering
             yield {"query": self.query.get()}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # get the cached substream state, to avoid state collisions for Incremental Syncs
-        stream_state = stream_state_cache.cached_state.get(self.name, {self.cursor_field: self.config["start_date"]})
-        # get job_result from COMPLETED BULK Job
-        job_result_url = self.bulk_job.job_check(self.graphql_path, response)
+    def process_bulk_results(self, job_result_url: Optional[str] = None, stream_state: Optional[Mapping[str, Any]] = None) -> dict:
         # the `job_result_url` could be `None`,
         # meaning there are no data available for the slice period.
         if job_result_url:
@@ -682,3 +667,10 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 self.bulk_job.job_record_producer(job_result_url)
             )
             yield from self.filter_records_newer_than_state(stream_state, records)
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # get the cached substream state, to avoid state collisions for Incremental Syncs
+        stream_state = stream_state_cache.cached_state.get(self.name, {self.cursor_field: self.config["start_date"]})
+        # get job_result from COMPLETED BULK Job
+        job_result_url = self.bulk_job.job_check(response)
+        yield from self.process_bulk_results(job_result_url, stream_state)

@@ -179,7 +179,7 @@ def bulk_successful_response_with_errors():
         "data": {
             "node": {
                 "id": "gid://shopify/BulkOperation/4046733967549",
-                "status": "UNKNOWN",
+                "status": "RUNNING",
             },
             "bulkOperationRunQuery": {
                 "userErrors": [
