@@ -24,6 +24,7 @@ from airbyte_protocol.models import ConfiguredAirbyteStream
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
+from airbyte_lib.telemetry import CacheTelemetryInfo
 from airbyte_lib.types import SQLTypeConverter
 
 
@@ -736,3 +737,7 @@ class SQLCacheBase(RecordProcessor):
     ) -> bool:
         """Return true if the given table exists."""
         return table_name in self._get_tables_list()
+
+    @abc.abstractmethod
+    def get_telemetry_info(self) -> CacheTelemetryInfo:
+        pass

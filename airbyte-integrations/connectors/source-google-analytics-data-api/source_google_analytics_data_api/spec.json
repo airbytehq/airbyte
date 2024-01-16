@@ -2235,6 +2235,13 @@
         "maximum": 364,
         "default": 1,
         "order": 5
+      },
+      "keep_empty_rows": {
+        "type": "boolean",
+        "title": "Keep Empty Rows",
+        "description": "If false, each row with all metrics equal to 0 will not be returned. If true, these rows will be returned if they are not separately removed by a filter. More information is available in <a href=\"https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport#request-body\">the documentation</a>.",
+        "default": false,
+        "order": 6
       }
     }
   },
