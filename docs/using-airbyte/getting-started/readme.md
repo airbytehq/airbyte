@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Getting Started
 
 Getting started with Airbyte takes only a few steps! This page guides you through the initial steps to get started and you'll learn how to setup your first connection on the following pages.
@@ -24,7 +28,7 @@ To use Airbyte Open Source, you can use on the following options to deploy it on
 - [On Aws](/deploying-airbyte/on-aws-ec2.md)
 - [On Azure VM Cloud Shell](/deploying-airbyte/on-azure-vm-cloud-shell.md)
 - [On Digital Ocean Droplet](/deploying-airbyte/on-digitalocean-droplet.md)
-- [On GCP.md](/deploying-airbyte/on-gcp-compute-engine.md)
+- [On GCP](/deploying-airbyte/on-gcp-compute-engine.md)
 - [On Kubernetes](/deploying-airbyte/on-kubernetes-via-helm.md)
 - [On OCI VM](/deploying-airbyte/on-oci-vm.md)
 - [On Restack](/deploying-airbyte/on-restack.md)

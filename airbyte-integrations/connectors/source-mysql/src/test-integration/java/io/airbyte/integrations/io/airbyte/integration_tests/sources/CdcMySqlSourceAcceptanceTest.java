@@ -15,10 +15,10 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -32,7 +32,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 
 public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -41,11 +41,6 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected static final String STREAM_NAME2 = "starships";
 
   protected MySQLTestDatabase testdb;
-
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
 
   @Override
   protected String getImageName() {
@@ -101,7 +96,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) {
-    testdb = MySQLTestDatabase.in("mysql:8.0", extraContainerFactoryMethods().toArray(String[]::new))
+    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, getContainerModifiers())
         .withCdcPermissions()
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
         .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
@@ -109,8 +104,8 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .with("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
   }
 
-  protected Stream<String> extraContainerFactoryMethods() {
-    return Stream.empty();
+  protected ContainerModifier[] getContainerModifiers() {
+    return ArrayUtils.toArray();
   }
 
   @Override
@@ -137,7 +132,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
-    final JsonNode latestState = Jsons.jsonNode(supportsPerStream() ? stateMessages : List.of(Iterables.getLast(stateMessages)));
+    final JsonNode latestState = Jsons.jsonNode(List.of(Iterables.getLast(stateMessages)));
     // RESET MASTER removes all binary log files that are listed in the index file,
     // leaving only a single, empty binary log file with a numeric suffix of .000001
     testdb.with("RESET MASTER;");

@@ -99,7 +99,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
-  protected static final HashSet<String> TEST_SCHEMAS = new HashSet<>();
+  protected HashSet<String> TEST_SCHEMAS;
 
   private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
@@ -357,7 +357,7 @@ public abstract class DestinationAcceptanceTest {
     LOGGER.info("localRoot: {}", localRoot);
     testEnv = new TestDestinationEnv(localRoot);
     mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
-
+    TEST_SCHEMAS = new HashSet<>();
     setup(testEnv, TEST_SCHEMAS);
 
     processFactory = new DockerProcessFactory(
@@ -1268,6 +1268,13 @@ public abstract class DestinationAcceptanceTest {
         .stream()
         .filter(m -> m.getType() == Type.STATE)
         .findFirst()
+        .map(msg -> {
+          // Modify state message to remove destination stats.
+          final AirbyteStateMessage clone = msg.getState();
+          clone.setDestinationStats(null);
+          msg.setState(clone);
+          return msg;
+        })
         .orElseGet(() -> {
           fail("Destination failed to output state");
           return null;
