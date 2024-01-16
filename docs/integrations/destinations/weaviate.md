@@ -79,6 +79,8 @@ You can also create the class in Weaviate in advance if you need more control ov
 
 As properties have to start will a lowercase letter in Weaviate and can't contain spaces or special characters.  Field names might be updated during the loading process. The field names `id`, `_id` and `_additional` are reserved keywords in Weaviate, so they will be renamed to `raw_id`, `raw__id` and `raw_additional` respectively.
 
+When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/multi-tenancy), the tenant id can be configured in the connector configuration. If not specified, multi-tenancy will be disabled. In case You want to index into an already created class, you need to make sure the class is created with multi-tenancy enabled and the tenant id matches the one configured in the connector. In case the class doesn't exist, it will be created with multi-tenancy properly configured.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
