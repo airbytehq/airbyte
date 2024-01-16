@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import time
 from abc import ABC
 from datetime import date
@@ -123,6 +124,7 @@ class AdsStream(Stream, ABC):
     def _get_campaigns(self) -> None:
         for campaign_id in get_campaign_ids(headers=self.headers):
             self.campaigns_ids.append(campaign_id)
+        print(f"Data will be fetched for {len(self.campaigns_ids)} campaigns: {self.campaigns_ids}")
 
     def _get_campaign_data(self) -> Iterable[Mapping[str, Any]]:
         attempts_count = 0
@@ -167,7 +169,7 @@ class FullStatStream(AdsStream):
     SCHEMA: Type[AdsFullStat] = AdsFullStat
     URL: str = "https://advert-api.wb.ru/adv/v2/fullstats"
     RATE_LIMIT: int = 1
-    CAMPAIGNS_PER_REQUEST: int = 100  # -1 – все кампании в 1 запросе; 100 – MAX(?)
+    CAMPAIGNS_PER_REQUEST: int = 50  # -1 – все кампании в 1 запросе; 100 – MAX(?)
 
     def __init__(self, credentials: WildberriesCredentials, campaign_id: int | None, date_from: date | None, date_to: date | None):
         super().__init__(credentials, campaign_id)
