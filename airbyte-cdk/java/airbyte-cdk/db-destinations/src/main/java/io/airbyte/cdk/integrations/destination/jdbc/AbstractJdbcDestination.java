@@ -92,6 +92,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
         final var v2RawSchema = namingResolver.getIdentifier(TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
             .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
         attemptTableOperations(v2RawSchema, database, namingResolver, sqlOperations, false);
+        destinationSpecificTableOperations(database);
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
@@ -113,6 +114,15 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
       }
     }
   }
+
+  /**
+   * Specific Databases may have additional checks unique to them which they need to perform, override
+   * this method to add additional checks.
+   *
+   * @param database the database to run checks against
+   * @throws Exception
+   */
+  protected void destinationSpecificTableOperations(final JdbcDatabase database) throws Exception {}
 
   /**
    * This method is deprecated. It verifies table creation, but not insert right to a newly created
