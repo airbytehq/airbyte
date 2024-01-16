@@ -136,6 +136,6 @@ class TestMyFacebookAdsApi:
 
     def test_find_account(self, api, account_id, requests_mock):
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", [{"json": {"id": "act_test"}}])
-        account = api._find_account(account_id)
+        account = api.get_account(account_id)
         assert isinstance(account, AdAccount)
         assert account.get_id() == "act_test"
