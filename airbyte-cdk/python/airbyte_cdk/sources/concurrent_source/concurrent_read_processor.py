@@ -68,7 +68,8 @@ class ConcurrentReadProcessor:
         self._streams_currently_generating_partitions.remove(sentinel.stream.name)
         ret = []
         # It is possible for the stream to already be done if no partitions were generated
-        if self._is_stream_done(stream_name):
+        # If the partition generation process was completed and there are no partitions left to process, the stream is done
+        if self._is_stream_done(stream_name) or len(self._streams_to_running_partitions[stream_name]) == 0:
             ret.append(self._on_stream_is_done(stream_name))
         if self._stream_instances_to_start_partition_generation:
             ret.append(self.start_next_partition_generator())
@@ -172,9 +173,7 @@ class ConcurrentReadProcessor:
         )
 
     def _is_stream_done(self, stream_name: str) -> bool:
-        return stream_name in self._streams_done or (
-            len(self._streams_to_running_partitions[stream_name]) == 0 and stream_name not in self._streams_currently_generating_partitions
-        )
+        return stream_name in self._streams_done
 
     def _on_stream_is_done(self, stream_name: str) -> AirbyteMessage:
         self._logger.info(f"Read {self._record_counter[stream_name]} records from {stream_name} stream")

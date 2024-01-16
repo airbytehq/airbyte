@@ -74,6 +74,19 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         self._record.stream_name = _STREAM_NAME
         self._record.data = self._record_data
 
+    def test_stream_is_not_done_initially(self):
+        stream_instances_to_read_from = [self._stream]
+        handler = ConcurrentReadProcessor(
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+        assert not handler._is_stream_done(self._stream.name)
+
     def test_handle_partition_done_no_other_streams_to_generate_partitions_for(self):
         stream_instances_to_read_from = [self._stream]
 
@@ -469,9 +482,69 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             self._message_repository,
             self._partition_reader,
         )
-        handler._streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}, _ANOTHER_STREAM_NAME: {self._a_closed_partition}}
 
         handler.start_next_partition_generator()
+
+        another_stream = Mock(spec=AbstractStream)
+        another_stream.name = _STREAM_NAME
+        another_stream.as_airbyte_stream.return_value = AirbyteStream(
+            name=_ANOTHER_STREAM_NAME,
+            json_schema={},
+            supported_sync_modes=[SyncMode.full_refresh],
+        )
+
+        exception = RuntimeError("Something went wrong")
+
+        messages = []
+
+        with self.assertRaises(RuntimeError):
+            for m in handler.on_exception(exception):
+                messages.append(m)
+
+        expected_message = [
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=1577836800000.0,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
+                    ),
+                ),
+            ),
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=1577836800000.0,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(name=_ANOTHER_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
+                    ),
+                ),
+            )
+        ]
+
+        assert messages == expected_message
+        self._thread_pool_manager.shutdown.assert_called_once()
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_on_exception_does_not_stop_streams_that_are_already_done(self):
+        stream_instances_to_read_from = [self._stream, self._another_stream]
+
+        handler = ConcurrentReadProcessor(
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        handler.start_next_partition_generator()
+        handler.on_partition(self._an_open_partition)
+        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream))
+        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream))
 
         another_stream = Mock(spec=AbstractStream)
         another_stream.name = _STREAM_NAME
