@@ -2,12 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_paypal_transaction import SourcePaypalTransaction
+from source_paypal_transaction.run import run
 
 if __name__ == "__main__":
-    source = SourcePaypalTransaction()
-    launch(source, sys.argv[1:])
+    run()
