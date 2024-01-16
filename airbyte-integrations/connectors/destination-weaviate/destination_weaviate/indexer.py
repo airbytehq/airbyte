@@ -69,6 +69,14 @@ class WeaviateIndexer(Indexer):
         self._create_client()
         classes = {c["class"]: c for c in self.client.schema.get().get("classes", [])}
         self.has_record_id_metadata = defaultdict(lambda: False)
+
+        if self.config.tenant_id.strip():
+            for class_name in classes.keys():
+                class_tenants = self.client.schema.get_class_tenants(class_name=class_name)
+                if class_tenants is not None and self.config.tenant_id not in [tenant.name for tenant in class_tenants]:
+                    self.client.schema.add_class_tenants(class_name=class_name, tenants=[weaviate.Tenant(name=self.config.tenant_id)])
+                    logging.info(f"Added tenant {self.config.tenant_id} to class {class_name}")
+
         for stream in catalog.streams:
             class_name = self._stream_to_class_name(stream.stream.name)
             schema = classes[class_name] if class_name in classes else None
