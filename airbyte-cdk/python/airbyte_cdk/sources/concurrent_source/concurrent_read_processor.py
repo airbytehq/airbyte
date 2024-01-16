@@ -166,12 +166,7 @@ class ConcurrentReadProcessor:
         2. There are no more streams to read from
         3. All partitions for all streams are closed
         """
-        return (
-            not self._streams_currently_generating_partitions
-            and not self._stream_instances_to_start_partition_generation
-            and all([len(running_partitions) == 0 for running_partitions in self._streams_to_running_partitions.values()])
-            and len(self._streams_done) == len(self._stream_name_to_instance)
-        )
+        return all([self._is_stream_done(stream_name) for stream_name in self._stream_name_to_instance.keys()])
 
     def _is_stream_done(self, stream_name: str) -> bool:
         return stream_name in self._streams_done
