@@ -1979,7 +1979,7 @@ class CompaniesPropertyHistory(PropertyHistory):
 
     @property
     def more_key(self) -> str:
-        return "hasMore"
+        return "has-more"
 
     @property
     def entity(self) -> str:
