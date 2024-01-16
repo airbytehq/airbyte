@@ -1,0 +1,34 @@
+{
+    "properties": {
+        "steps": {
+            "items": {
+              "properties": {
+                "overall_conv_ratio": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "step_conv_ratio": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "avg_time": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "avg_time_from_start": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  }
+              }
+            }
+        }
+    }
+}
