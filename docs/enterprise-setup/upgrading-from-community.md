@@ -1,3 +1,7 @@
+---
+products: oss-enterprise
+---
+
 # Existing Instance Upgrades
 
 This page supplements the [Self-Managed Enterprise implementation guide](./implementation-guide.md). It highlights the steps to take if you are currently using Airbyte Self-Managed Community, our free open source offering, and are ready to upgrade to [Airbyte Self-Managed Enterprise](./README.md). 
