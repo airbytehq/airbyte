@@ -1,16 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import os
-from os import getenv
 from typing import Any, Dict, Optional
 
 import dpath.util
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.utils import is_cloud_environment
 from pydantic import AnyUrl, Field, ValidationError, root_validator
-
-AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class Config(AbstractFileBasedSpec):
@@ -35,11 +31,10 @@ class Config(AbstractFileBasedSpec):
     )
 
     role_arn: Optional[str] = Field(
-        title=f"AWS Role ARN (External ID is '{AWS_EXTERNAL_ID}')" if AWS_EXTERNAL_ID else "AWS Role ARN",
+        title=f"AWS Role ARN",
         default=None,
         description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations "
-        f"requested using this profile. Set External ID as '{AWS_EXTERNAL_ID}'. Environment variables: {os.environ}",
-        airbyte_secret=True,
+        f"requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
         order=6,
     )
 

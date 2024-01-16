@@ -366,9 +366,8 @@
         "type": "string"
       },
       "role_arn": {
-        "title": "AWS Role ARN (External ID is '8eee93517501b43a')",
-        "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set External ID as '8eee93517501b43a'.",
-        "airbyte_secret": true,
+        "title": "AWS Role ARN",
+        "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
         "order": 6,
         "type": "string"
       },
@@ -617,10 +616,9 @@
             "type": "string"
           },
           "role_arn": {
-            "title": "AWS Role ARN (External ID is '8eee93517501b43a')",
-            "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set External ID as '8eee93517501b43a'.",
+            "title": "AWS Role ARN",
+            "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
             "always_show": true,
-            "airbyte_secret": true,
             "order": 6,
             "type": "string"
           },
