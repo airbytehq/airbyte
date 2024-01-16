@@ -6,21 +6,38 @@ on:
     - cron: "0 0 * * *"
   workflow_dispatch:
     inputs:
-      runs-on:
-        type: string
-        default: ci-runner-connector-nightly-xlarge-dagger-0-9-5
-        required: true
       test-connectors-options:
         default: --concurrency=5 --support-level=certified
         required: true
 
-run-name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }} - on ${{ inputs.runs-on || 'ci-runner-connector-nightly-xlarge-dagger-0-9-5' }}"
+run-name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }}"
 
 jobs:
+  get_ci_runner:
+    runs-on: ubuntu-latest
+    name: Get CI runner
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          fetch-depth: 1
+      - name: Get CI runner
+        id: get_ci_runner
+        uses: ./.github/actions/airbyte-ci-requirements
+        with:
+          runner_type: "nightly"
+          runner_size: "xlarge"
+          airbyte_ci_command: "connectors test"
+          github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+    outputs:
+      runner_name: ${{ steps.get_ci_runner.outputs.runner_name }}
   test_connectors:
-    name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }} - on ${{ inputs.runs-on || 'ci-runner-connector-nightly-xlarge-dagger-0-9-5' }}"
+    name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }}"
     timeout-minutes: 720 # 12 hours
-    runs-on: ${{ inputs.runs-on || 'ci-runner-connector-nightly-xlarge-dagger-0-9-5' }}
+    runs-on: ${{ needs.get_ci_runner.outputs.runner_name }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
