@@ -4,7 +4,9 @@
 import logging
 from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Any, Callable, List
+
 from airbyte_cdk.sources.concurrent_source.throttler import Throttler
+
 
 class ThreadPoolManager:
     """
@@ -13,7 +15,6 @@ class ThreadPoolManager:
 
     DEFAULT_SLEEP_TIME = 0.1
     DEFAULT_MAX_QUEUE_SIZE = 10_000
-
 
     def __init__(
         self,

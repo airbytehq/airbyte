@@ -8,9 +8,9 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
+from airbyte_cdk.sources.concurrent_source.throttler import Throttler
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamPartition
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
-from airbyte_cdk.sources.concurrent_source.throttler import Throttler
 
 
 @pytest.mark.parametrize(

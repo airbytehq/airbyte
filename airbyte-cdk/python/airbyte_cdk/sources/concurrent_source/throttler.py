@@ -1,6 +1,9 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
+import time
 from concurrent.futures import Future
 from typing import Any, List
-import time
+
 
 class Throttler:
     """

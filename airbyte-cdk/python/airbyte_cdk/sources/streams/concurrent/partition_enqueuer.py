@@ -5,9 +5,9 @@
 from queue import Queue
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
+from airbyte_cdk.sources.concurrent_source.throttler import Throttler
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
-from airbyte_cdk.sources.concurrent_source.throttler import Throttler
 
 
 class PartitionEnqueuer:
