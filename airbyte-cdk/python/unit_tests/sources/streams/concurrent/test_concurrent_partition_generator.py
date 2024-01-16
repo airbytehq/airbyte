@@ -3,23 +3,22 @@
 #
 
 from queue import Queue
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
-from airbyte_cdk.sources.concurrent_source.throttler import Throttler
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamPartition
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
+from airbyte_cdk.sources.streams.concurrent.partitions.types import ThrottledQueue
 
 
 @pytest.mark.parametrize(
     "slices", [pytest.param([], id="test_no_partitions"), pytest.param([{"partition": 1}, {"partition": 2}], id="test_two_partitions")]
 )
 def test_partition_generator(slices):
-    queue = Queue()
-    throttler = Mock(spec=Throttler)
-    partition_generator = PartitionEnqueuer(queue, throttler)
+    queue = Mock(spec=ThrottledQueue)
+    partition_generator = PartitionEnqueuer(queue)
 
     stream = Mock()
     message_repository = Mock()
@@ -32,11 +31,4 @@ def test_partition_generator(slices):
 
     partition_generator.generate_partitions(stream)
 
-    actual_partitions = []
-    while partition := queue.get(False):
-        if isinstance(partition, PartitionGenerationCompletedSentinel):
-            break
-        actual_partitions.append(partition)
-
-    assert actual_partitions == partitions
-    assert throttler.wait_and_acquire.call_count == len(partitions) + 1
+    assert queue.put.has_calls([call(p) for p in partitions] + [call(PartitionGenerationCompletedSentinel(stream))])

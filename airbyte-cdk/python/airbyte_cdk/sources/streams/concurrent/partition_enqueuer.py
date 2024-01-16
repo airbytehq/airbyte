@@ -5,9 +5,8 @@
 from queue import Queue
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
-from airbyte_cdk.sources.concurrent_source.throttler import Throttler
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
+from airbyte_cdk.sources.streams.concurrent.partitions.types import ThrottledQueue
 
 
 class PartitionEnqueuer:
@@ -15,13 +14,12 @@ class PartitionEnqueuer:
     Generates partitions from a partition generator and puts them in a queue.
     """
 
-    def __init__(self, queue: Queue[QueueItem], throttler: Throttler) -> None:
+    def __init__(self, queue: ThrottledQueue) -> None:
         """
         :param queue:  The queue to put the partitions in.
         :param throttler: The throttler to use to throttle the partition generation.
         """
         self._queue = queue
-        self._throttler = throttler
 
     def generate_partitions(self, stream: AbstractStream) -> None:
         """
@@ -36,9 +34,7 @@ class PartitionEnqueuer:
         """
         try:
             for partition in stream.generate_partitions():
-                self._throttler.wait_and_acquire()
                 self._queue.put(partition)
-            self._throttler.wait_and_acquire()
             self._queue.put(PartitionGenerationCompletedSentinel(stream))
         except Exception as e:
             self._queue.put(e)
