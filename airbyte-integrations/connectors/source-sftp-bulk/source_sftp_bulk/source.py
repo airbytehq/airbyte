@@ -62,8 +62,8 @@ class SourceFtp(AbstractSource):
         # Contains the date when a file was last modified or added
         df["last_modified"] = files[-1]["last_modified"]
 
-        if len(df) < 1:
-            logger.warning(f"No records found in file {files[0]}, can't infer json schema")
+        if len(df) < 1 and not df.dtypes.to_dict():
+            logger.warning(f"No records and header found in file {files[0]}, can't infer json schema")
             return self._default_json_schema
 
         return self._generate_json_schema(df.dtypes.to_dict())
