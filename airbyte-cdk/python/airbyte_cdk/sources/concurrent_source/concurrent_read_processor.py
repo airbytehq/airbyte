@@ -100,7 +100,8 @@ class ConcurrentReadProcessor:
         partitions_running = self._streams_to_running_partitions[partition.stream_name()]
         if partition in partitions_running:
             partitions_running.remove(partition)
-            if len(partitions_running) == 0 and partition.stream_name() not in self._streams_currently_generating_partitions:
+            # If all partitions were generated and this was the last one, the stream is done
+            if partition.stream_name() not in self._streams_currently_generating_partitions and len(partitions_running) == 0:
                 yield self._on_stream_is_done(partition.stream_name())
         yield from self._message_repository.consume_queue()
 
