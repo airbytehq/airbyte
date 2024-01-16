@@ -143,7 +143,7 @@ minio:
 
 
 <Tabs>
-<TabItem value="S3" label="S3">
+<TabItem value="S3" label="S3" default>
 
 ```yaml
 global:
@@ -172,6 +172,37 @@ global:
 ```
 
 For each of `accessKey` and `secretKey`, the `password` and `existingSecret` fields are mutually exclusive.
+
+3. Ensure your access key is tied to an IAM user with the [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-policies-s3.html#iam-policy-ex0), allowing the user access to S3 storage:
+
+```yaml
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Effect":"Allow",
+         "Action": "s3:ListAllMyBuckets",
+         "Resource":"*"
+      },
+      {
+         "Effect":"Allow",
+         "Action":["s3:ListBucket","s3:GetBucketLocation"],
+         "Resource":"arn:aws:s3:::YOUR-S3-BUCKET-NAME"
+      },
+      {
+         "Effect":"Allow",
+         "Action":[
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:GetObject",
+            "s3:GetObjectAcl",
+            "s3:DeleteObject"
+         ],
+         "Resource":"arn:aws:s3:::YOUR-S3-BUCKET-NAME/*"
+      }
+   ]
+}
+```
 
 </TabItem>
 <TabItem value="GKE" label="GKE" default> 
@@ -204,6 +235,11 @@ Note that the `credentials` and `credentialsJson` fields are mutually exclusive.
 
 To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
 
+<details>
+<summary>Ingress configuration setup steps</summary>
+<Tabs>
+<TabItem value="Generic" label="Generic">
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -233,6 +269,59 @@ spec:
         path: /auth
         pathType: Prefix
 ```
+
+</TabItem>
+<TabItem value="Amazon ALB" label="Amazon ALB">
+
+If you are intending on using Amazon Application Load Balancer (ALB) for ingress, this ingress definition will be close to what's needed to get up and running:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: <INGRESS_NAME>
+  annotations:
+    # Specifies that the Ingress should use an AWS ALB.
+    kubernetes.io/ingress.class: "alb"
+    # Redirects HTTP traffic to HTTPS.
+    ingress.kubernetes.io/ssl-redirect: "true"
+    # Creates an internal ALB, which is only accessible within your VPC or through a VPN.
+    alb.ingress.kubernetes.io/scheme: internal
+    # Specifies the ARN of the SSL certificate managed by AWS ACM, essential for HTTPS.
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-x:xxxxxxxxx:certificate/xxxxxxxxx-xxxxx-xxxx-xxxx-xxxxxxxxxxx
+    # Sets the idle timeout value for the ALB.
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=30
+    # [If Applicable] Specifies the VPC subnets and security groups for the ALB
+    # alb.ingress.kubernetes.io/subnets: '' e.g. 'subnet-12345, subnet-67890'
+    # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
+spec:
+  rules:
+  - host: <WEBAPP_URL> e.g. enterprise-demo.airbyte.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: airbyte-pro-airbyte-webapp-svc 
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+      - backend:
+          service:
+            name: airbyte-pro-airbyte-keycloak-svc
+            port:
+              number: 8180
+        path: /auth
+        pathType: Prefix
+```
+
+The ALB controller will use a `ServiceAccount` that requires the [following IAM policy](https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json) to be attached.
+
+</TabItem>
+</Tabs>
+</details>
+
+Once this is complete, ensure that the value of the `webapp-url` field in your `airbyte.yml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
