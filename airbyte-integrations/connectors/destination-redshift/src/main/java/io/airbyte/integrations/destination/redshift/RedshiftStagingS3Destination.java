@@ -51,6 +51,7 @@ import io.airbyte.integrations.destination.redshift.operations.RedshiftS3Staging
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
+import io.airbyte.integrations.destination.redshift.util.RedshiftUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -103,7 +104,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations);
+      attemptTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations, false);
+      RedshiftUtil.checkSvvTableAccess(database);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
       final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
