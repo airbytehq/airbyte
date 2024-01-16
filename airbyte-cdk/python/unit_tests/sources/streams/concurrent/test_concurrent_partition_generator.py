@@ -10,6 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamPartition
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
+from airbyte_cdk.sources.concurrent_source.throttler import Throttler
 
 
 @pytest.mark.parametrize(
@@ -17,7 +18,8 @@ from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionE
 )
 def test_partition_generator(slices):
     queue = Queue()
-    partition_generator = PartitionEnqueuer(queue)
+    throttler = Mock(spec=Throttler)
+    partition_generator = PartitionEnqueuer(queue, throttler)
 
     stream = Mock()
     message_repository = Mock()
@@ -37,3 +39,4 @@ def test_partition_generator(slices):
         actual_partitions.append(partition)
 
     assert actual_partitions == partitions
+    assert throttler.wait_and_acquire.call_count == len(partitions)

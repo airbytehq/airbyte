@@ -4,7 +4,7 @@
 import logging
 from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Any, Callable, List
-
+from airbyte_cdk.sources.concurrent_source.throttler import Throttler
 
 class ThreadPoolManager:
     """
@@ -14,12 +14,13 @@ class ThreadPoolManager:
     DEFAULT_SLEEP_TIME = 0.1
     DEFAULT_MAX_QUEUE_SIZE = 10_000
 
+
     def __init__(
         self,
         threadpool: ThreadPoolExecutor,
         logger: logging.Logger,
-        max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
         sleep_time: float = DEFAULT_SLEEP_TIME,
+        max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
     ):
         """
         :param threadpool: The threadpool to use
@@ -30,8 +31,11 @@ class ThreadPoolManager:
         self._threadpool = threadpool
         self._logger = logger
         self._max_concurrent_tasks = max_concurrent_tasks
-        self._sleep_time = sleep_time
         self._futures: List[Future[Any]] = []
+        self._throttler = Throttler(self._futures, sleep_time, max_concurrent_tasks)
+
+    def get_throttler(self) -> Throttler:
+        return self._throttler
 
     def submit(self, function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, removing completed tasks if there are too many tasks in self._futures.

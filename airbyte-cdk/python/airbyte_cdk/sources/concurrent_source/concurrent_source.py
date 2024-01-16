@@ -85,7 +85,7 @@ class ConcurrentSource:
         queue: Queue[QueueItem] = Queue()
         concurrent_stream_processor = ConcurrentReadProcessor(
             stream_instances_to_read_from,
-            PartitionEnqueuer(queue),
+            PartitionEnqueuer(queue, self._threadpool.get_throttler()),
             self._threadpool,
             self._logger,
             self._slice_logger,
