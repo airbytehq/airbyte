@@ -74,7 +74,7 @@ public interface CdcTargetPosition<T> {
    * @return Returns `true` if both offsets are at the same position. Otherwise, it returns `false`
    */
   default boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
-    return true;
+    return false;
   }
 
 }

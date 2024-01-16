@@ -164,7 +164,6 @@ public class CdcStateCompressionTest {
         .with("replication_method", Map.of(
             "method", "CDC",
             "initial_waiting_seconds", 60))
-
         .build();
   }
 

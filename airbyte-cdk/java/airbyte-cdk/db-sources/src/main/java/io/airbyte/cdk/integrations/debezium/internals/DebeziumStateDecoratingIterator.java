@@ -58,7 +58,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
   private final Duration syncCheckpointDuration;
   private final Long syncCheckpointRecords;
   private OffsetDateTime dateTimeLastSync;
-  private Long recordsLastSync;
+  private long recordsLastSync, recordsAllSyncs;
   private boolean sendCheckpointMessage = false;
 
   /**
@@ -77,7 +77,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
    * we just rely on the `offsetManger.read()`, there is a chance to sent duplicate states, generating
    * an unneeded usage of networking and processing.
    */
-  private final HashMap<String, String> previousCheckpointOffset;
+  private final HashMap<String, String> initialOffset, previousCheckpointOffset;
   private final DebeziumConnectorType debeziumConnectorType;
   private final ConfiguredAirbyteCatalog configuredAirbyteCatalog;
   private final JsonNode config;
@@ -120,6 +120,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
     this.syncCheckpointDuration = checkpointDuration;
     this.syncCheckpointRecords = checkpointRecords;
     this.previousCheckpointOffset = (HashMap<String, String>) offsetManager.read();
+    this.initialOffset = new HashMap<>(this.previousCheckpointOffset);
     this.debeziumConnectorType = debeziumConnectorType;
     this.config = config;
     resetCheckpointValues();
@@ -179,11 +180,20 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
         }
       }
       recordsLastSync++;
+      recordsAllSyncs++;
       return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, debeziumConnectorType, config);
     }
 
     isSyncFinished = true;
-    return createStateMessage(offsetManager.read(), recordsLastSync);
+    final var syncFinishedOffset = (HashMap<String, String>) offsetManager.read();
+    if (recordsAllSyncs == 0L && targetPosition.isSameOffset(initialOffset, syncFinishedOffset)) {
+      // Edge case where no progress has been made: wrap up the sync by returning the initial offset instead of the
+      // current offset. We do this because we found that for some databases, heartbeats will cause Debezium to
+      // overwrite the offset file with a state which doesn't include all necessary data such as snapshot completion.
+      // This is the case for MS SQL Server, at least.
+      return createStateMessage(initialOffset, 0);
+    }
+    return createStateMessage(syncFinishedOffset, recordsLastSync);
   }
 
   /**
