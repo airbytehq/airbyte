@@ -452,6 +452,7 @@
           "tenant_id": {
             "title": "Tenant ID",
             "description": "The tenant ID to use for multi tenancy",
+            "airbyte_secret": true,
             "default": "",
             "type": "string"
           },
