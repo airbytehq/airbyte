@@ -10,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamPartition
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
-from airbyte_cdk.sources.streams.concurrent.partitions.types import ThrottledQueue
+from airbyte_cdk.sources.streams.concurrent.partitions.throttled_queue import ThrottledQueue
 
 
 @pytest.mark.parametrize(

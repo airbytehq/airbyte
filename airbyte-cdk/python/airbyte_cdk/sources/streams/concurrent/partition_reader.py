@@ -5,7 +5,8 @@
 from queue import Queue
 
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, ThrottledQueue
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
+from airbyte_cdk.sources.streams.concurrent.partitions.throttled_queue import ThrottledQueue
 
 
 class PartitionReader:

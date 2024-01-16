@@ -6,7 +6,7 @@ from queue import Queue
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.partitions.types import ThrottledQueue
+from airbyte_cdk.sources.streams.concurrent.partitions.throttled_queue import ThrottledQueue
 
 
 class PartitionEnqueuer:
