@@ -246,7 +246,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     // 3 from stream1 and 3 from stream2
     assertEquals(6, actualFirstSyncState.size());
 
-    // The expected state type should be 2 primaryKey's and the last one being standard
+    // The expected state type should be 2 ordered_column's and the last one being cursor_based
     final List<String> expectedStateTypesFromFirstSync = List.of("ordered_column", "ordered_column", "cursor_based");
     final List<String> stateTypeOfStreamOneStatesFromFirstSync =
         extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamOneName, STATE_TYPE_KEY);
@@ -256,20 +256,20 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     assertEquals(stateTypeOfStreamOneStatesFromFirstSync, expectedStateTypesFromFirstSync);
     assertEquals(stateTypeOfStreamTwoStatesFromFirstSync, expectedStateTypesFromFirstSync);
 
-    // Create the expected primaryKeys that we should see
-    final List<String> expectedPrimaryKeysFromFirstSync = List.of("1", "2");
-    final List<String> primaryKeyFromStreamOneStatesFromFirstSync =
+    // Create the expected ordered_column values that we should see
+    final List<String> expectedOrderedColumnValueFromFirstSync = List.of("1", "2");
+    final List<String> orderedColumnValuesOfStreamOneFromFirstSync =
         extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamOneName, "ordered_col_val");
-    final List<String> primaryKeyFromStreamTwoStatesFromFirstSync =
+    final List<String> orderedColumnValuesOfStreamTwoFromFirstSync =
         extractSpecificFieldFromCombinedMessages(messagesFromFirstSync, streamOneName, "ordered_col_val");
 
     // Verifying each element and its index to match.
     // Only checking the first 2 elements since we have verified that the last state_type is
     // "cursor_based"
-    assertEquals(expectedPrimaryKeysFromFirstSync.get(0), primaryKeyFromStreamOneStatesFromFirstSync.get(0));
-    assertEquals(expectedPrimaryKeysFromFirstSync.get(1), primaryKeyFromStreamOneStatesFromFirstSync.get(1));
-    assertEquals(expectedPrimaryKeysFromFirstSync.get(0), primaryKeyFromStreamTwoStatesFromFirstSync.get(0));
-    assertEquals(expectedPrimaryKeysFromFirstSync.get(1), primaryKeyFromStreamTwoStatesFromFirstSync.get(1));
+    assertEquals(expectedOrderedColumnValueFromFirstSync.get(0), orderedColumnValuesOfStreamOneFromFirstSync.get(0));
+    assertEquals(expectedOrderedColumnValueFromFirstSync.get(1), orderedColumnValuesOfStreamOneFromFirstSync.get(1));
+    assertEquals(expectedOrderedColumnValueFromFirstSync.get(0), orderedColumnValuesOfStreamTwoFromFirstSync.get(0));
+    assertEquals(expectedOrderedColumnValueFromFirstSync.get(1), orderedColumnValuesOfStreamTwoFromFirstSync.get(1));
 
     // Extract only state messages for each stream
     final List<AirbyteStateMessage> streamOneStateMessagesFromFirstSync = extractStateMessage(messagesFromFirstSync, streamOneName);
@@ -292,10 +292,11 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     assertEquals(streamTwoIncrementalStatesFromFirstSync.get(0), streamTwoFinalStreamStateFromFirstSync);
     assertEquals(streamTwoIncrementalStatesFromFirstSync.get(1), streamTwoFinalStreamStateFromFirstSync);
 
-    // Sync should work with a primaryKey state AND a cursor-based state from each stream
+    // Sync should work with a ordered_column state AND a cursor-based state from each stream
     // Forcing a sync with
-    // - stream one state still being the first record read via Primary Key.
-    // - stream two state being the Primary Key state before the final emitted state before the cursor
+    // - stream one state still being the first record read via Ordered column.
+    // - stream two state being the Ordered Column state before the final emitted state before the
+    // cursor
     // switch
     final List<AirbyteMessage> messagesFromSecondSyncWithMixedStates = MoreIterators
         .toList(source().read(config, configuredCatalog,
@@ -324,7 +325,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     assertEquals(List.of("cursor_based"), stateTypeOfStreamTwoStatesFromSecondSync);
 
     // Add some data to each table and perform a third read.
-    // Expect to see all records be synced via cursorBased method and not primaryKey
+    // Expect to see all records be synced via cursorBased method and not ordered_column
     testdb.with("INSERT INTO %s (id, name, updated_at) VALUES (4,'Hooper','2006-10-19')",
         getFullyQualifiedTableName(streamOneName))
         .with("INSERT INTO %s (id, name, updated_at) VALUES (43, 'Iron Man', '2006-10-19')",
