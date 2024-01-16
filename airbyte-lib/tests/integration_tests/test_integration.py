@@ -2,6 +2,7 @@
 
 import os
 import shutil
+from unittest.mock import Mock, call, patch
 import tempfile
 from pathlib import Path
 
@@ -11,6 +12,7 @@ import pytest
 
 from airbyte_lib.caches import PostgresCache, PostgresCacheConfig
 from airbyte_lib.registry import _update_cache
+from airbyte_lib.version import get_version
 from airbyte_lib.results import ReadResult
 
 
@@ -25,6 +27,7 @@ def prepare_test_env():
     os.system("python -m venv .venv-source-test")
     os.system("source .venv-source-test/bin/activate && pip install -e ./tests/integration_tests/fixtures/source-test")
     os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/integration_tests/fixtures/registry.json"
+    os.environ["DO_NOT_TRACK"] = "true"
 
     yield
 
@@ -215,6 +218,83 @@ def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, e
             pd.DataFrame(expected_data),
             check_dtype=False,
         )
+
+@patch.dict('os.environ', {'DO_NOT_TRACK': ''})
+@patch('airbyte_lib.telemetry.requests')
+@patch('airbyte_lib.telemetry.datetime')
+@pytest.mark.parametrize(
+    "raises, api_key, expected_state, expected_number_of_records, request_call_fails, extra_env, expected_flags",
+    [
+        pytest.param(True, "test_fail_during_sync", "failed", 1, False, {}, {"CI": False}, id="fail_during_sync"),
+        pytest.param(False, "test", "succeeded", 3, False, {}, {"CI": False}, id="succeed_during_sync"),
+        pytest.param(False, "test", "succeeded", 3, True, {}, {"CI": False}, id="fail_request_without_propagating"),
+        pytest.param(False, "test", "succeeded", 3, False, {"CI": ""}, {"CI": False}, id="falsy_ci_flag"),
+        pytest.param(False, "test", "succeeded", 3, False, {"CI": "true"}, {"CI": True}, id="truthy_ci_flag"),
+    ],
+)
+def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_key: str, expected_state: str, expected_number_of_records: int, request_call_fails: bool, extra_env: dict[str, str], expected_flags: dict[str, bool]):
+    """
+    Test that the telemetry is sent when the sync is successful.
+    This is done by mocking the requests.post method and checking that it is called with the right arguments.
+    """
+    now_date = Mock()
+    mock_datetime.datetime = Mock()
+    mock_datetime.datetime.utcnow.return_value = now_date
+    now_date.isoformat.return_value = "2021-01-01T00:00:00.000000"
+
+    mock_post = Mock()
+    mock_requests.post = mock_post
+
+    source = ab.get_connector("source-test", config={"apiKey": api_key})
+    cache = ab.get_default_cache()
+
+    if request_call_fails:
+        mock_post.side_effect = Exception("test exception")
+
+    with patch.dict('os.environ', extra_env):
+        if raises:
+            with pytest.raises(Exception):
+                source.read(cache)
+        else:
+            source.read(cache)
+    
+
+    mock_post.assert_has_calls([
+            call("https://api.segment.io/v1/track",
+            auth=("jxT1qP9WEKwR3vtKMwP9qKhfQEGFtIM1", ""),
+            json={
+                "anonymousId": "airbyte-lib-user",
+                "event": "sync",
+                "properties": {
+                    "version": get_version(),
+                    "source": {'name': 'source-test', 'version': '0.0.1', 'type': 'venv'},
+                    "state": "started",
+                    "cache": {"type": "duckdb"},
+                    "ip": "0.0.0.0",
+                    "flags": expected_flags
+                },
+                "timestamp": "2021-01-01T00:00:00.000000",
+            }
+        ),
+    call(
+            "https://api.segment.io/v1/track",
+            auth=("jxT1qP9WEKwR3vtKMwP9qKhfQEGFtIM1", ""),
+            json={
+                "anonymousId": "airbyte-lib-user",
+                "event": "sync",
+                "properties": {
+                    "version": get_version(),
+                    "source": {'name': 'source-test', 'version': '0.0.1', 'type': 'venv'},
+                    "state": expected_state,
+                    "number_of_records": expected_number_of_records,
+                    "cache": {"type": "duckdb"},
+                    "ip": "0.0.0.0",
+                    "flags": expected_flags
+                },
+                "timestamp": "2021-01-01T00:00:00.000000",
+            }
+        )
+    ])
 
 
 def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
