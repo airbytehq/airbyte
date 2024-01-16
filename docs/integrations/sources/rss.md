@@ -34,5 +34,5 @@ None
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.1   | 2024-01-15 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib                                                        |
+| 0.1.1   | 2024-01-15 | [34249](https://github.com/airbytehq/airbyte/pull/34249) | prepare for airbyte-lib                                                        |
 | 0.1.0 | 2022-10-12 | [18838](https://github.com/airbytehq/airbyte/pull/18838) | Initial release supporting RSS |
