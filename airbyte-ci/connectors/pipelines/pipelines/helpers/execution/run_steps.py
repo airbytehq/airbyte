@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Tuple, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import anyio
 import asyncer
@@ -16,7 +16,8 @@ from pipelines import main_logger
 from pipelines.models.steps import StepStatus
 
 if TYPE_CHECKING:
-    from pipelines.models.steps import Step, StepResult
+    from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
+    from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
     RESULTS_DICT = Dict[str, StepResult]
     ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict], Awaitable[Dict]]
@@ -26,14 +27,77 @@ class InvalidStepConfiguration(Exception):
     pass
 
 
+def _get_dependency_graph(steps: STEP_TREE) -> Dict[str, List[str]]:
+    """
+    Get the dependency graph of a step tree.
+    """
+    dependency_graph: Dict[str, List[str]] = {}
+    for step in steps:
+        if isinstance(step, StepToRun):
+            dependency_graph[step.id] = step.depends_on
+        elif isinstance(step, list):
+            nested_dependency_graph = _get_dependency_graph(list(step))
+            dependency_graph = {**dependency_graph, **nested_dependency_graph}
+        else:
+            raise Exception(f"Unexpected step type: {type(step)}")
+
+    return dependency_graph
+
+
+def _get_transitive_dependencies_for_step_id(
+    dependency_graph: Dict[str, List[str]], step_id: str, visited: Optional[Set[str]] = None
+) -> List[str]:
+    """Get the transitive dependencies for a step id.
+
+    Args:
+        dependency_graph (Dict[str, str]): The dependency graph to use.
+        step_id (str): The step id to get the transitive dependencies for.
+        visited (Optional[Set[str]], optional): The set of visited step ids. Defaults to None.
+
+    Returns:
+        List[str]: List of transitive dependencies as step ids.
+    """
+    if visited is None:
+        visited = set()
+
+    if step_id not in visited:
+        visited.add(step_id)
+
+        dependencies: List[str] = dependency_graph.get(step_id, [])
+        for dependency in dependencies:
+            dependencies.extend(_get_transitive_dependencies_for_step_id(dependency_graph, dependency, visited))
+
+        return dependencies
+    else:
+        return []
+
+
 @dataclass
 class RunStepOptions:
     """Options for the run_step function."""
 
     fail_fast: bool = True
     skip_steps: List[str] = field(default_factory=list)
+    keep_steps: List[str] = field(default_factory=list)
     log_step_tree: bool = True
     concurrency: int = 10
+    step_params: Dict[CONNECTOR_TEST_STEP_ID, STEP_PARAMS] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if self.skip_steps and self.keep_steps:
+            raise ValueError("Cannot use both skip_steps and keep_steps at the same time")
+
+    def get_step_ids_to_skip(self, runnables: STEP_TREE) -> List[str]:
+        if self.skip_steps:
+            return self.skip_steps
+        if self.keep_steps:
+            step_ids_to_keep = set(self.keep_steps)
+            dependency_graph = _get_dependency_graph(runnables)
+            all_step_ids = set(dependency_graph.keys())
+            for step_id in self.keep_steps:
+                step_ids_to_keep.update(_get_transitive_dependencies_for_step_id(dependency_graph, step_id))
+            return list(all_step_ids - step_ids_to_keep)
+        return []
 
 
 @dataclass(frozen=True)
@@ -44,7 +108,7 @@ class StepToRun:
     Used to coordinate the execution of multiple steps inside a pipeline.
     """
 
-    id: str
+    id: CONNECTOR_TEST_STEP_ID
     step: Step
     args: ARGS_TYPE = field(default_factory=dict)
     depends_on: List[str] = field(default_factory=list)
@@ -71,7 +135,7 @@ def _skip_remaining_steps(remaining_steps: STEP_TREE) -> RESULTS_DICT:
     """
     Skip all remaining steps.
     """
-    skipped_results = {}
+    skipped_results: Dict[str, StepResult] = {}
     for runnable_step in remaining_steps:
         if isinstance(runnable_step, StepToRun):
             skipped_results[runnable_step.id] = runnable_step.step.skip()
@@ -215,6 +279,7 @@ async def run_steps(
     if not runnables:
         return results
 
+    step_ids_to_skip = options.get_step_ids_to_skip(runnables)
     # Log the step tree
     if options.log_step_tree:
         main_logger.info(f"STEP TREE: {runnables}")
@@ -230,7 +295,7 @@ async def run_steps(
     steps_to_evaluate, remaining_steps = _get_next_step_group(runnables)
 
     # Remove any skipped steps
-    steps_to_run, results = _filter_skipped_steps(steps_to_evaluate, options.skip_steps, results)
+    steps_to_run, results = _filter_skipped_steps(steps_to_evaluate, step_ids_to_skip, results)
 
     # Run all steps in list concurrently
     semaphore = anyio.Semaphore(options.concurrency)
@@ -243,6 +308,7 @@ async def run_steps(
                     tasks.append(task_group.soonify(run_steps)(list(step_to_run), results, options))
                 else:
                     step_args = await evaluate_run_args(step_to_run.args, results)
+                    step_to_run.step.extra_params = options.step_params.get(step_to_run.id, {})
                     main_logger.info(f"QUEUING STEP {step_to_run.id}")
                     tasks.append(task_group.soonify(step_to_run.step.run)(**step_args))
 
