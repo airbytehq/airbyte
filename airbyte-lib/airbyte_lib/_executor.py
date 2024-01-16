@@ -8,6 +8,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, NoReturn
 
+from airbyte_lib.telemetry import SourceTelemetryInfo, SourceType
+
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable, Iterator
@@ -42,6 +44,10 @@ class Executor(ABC):
 
     @abstractmethod
     def install(self) -> None:
+        pass
+
+    @abstractmethod
+    def get_telemetry_info(self) -> SourceTelemetryInfo:
         pass
 
     @abstractmethod
@@ -199,6 +205,9 @@ class VenvExecutor(Executor):
         with _stream_from_subprocess([str(connector_path), *args]) as stream:
             yield from stream
 
+    def get_telemetry_info(self) -> SourceTelemetryInfo:
+        return SourceTelemetryInfo(self.metadata.name, SourceType.VENV, self.target_version)
+
 
 class PathExecutor(Executor):
     def ensure_installation(self) -> None:
@@ -221,3 +230,6 @@ class PathExecutor(Executor):
     def execute(self, args: list[str]) -> Iterator[str]:
         with _stream_from_subprocess([self.metadata.name, *args]) as stream:
             yield from stream
+
+    def get_telemetry_info(self) -> SourceTelemetryInfo:
+        return SourceTelemetryInfo(self.metadata.name, SourceType.LOCAL_INSTALL, version=None)
