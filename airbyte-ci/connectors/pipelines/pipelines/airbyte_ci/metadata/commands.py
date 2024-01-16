@@ -3,12 +3,14 @@
 #
 
 import asyncclick as click
+from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 # MAIN GROUP
 
 
 @click.group(help="Commands related to the metadata service.")
+@click_ci_requirements_option()
 @click.pass_context
 def metadata(ctx: click.Context) -> None:
     pass
