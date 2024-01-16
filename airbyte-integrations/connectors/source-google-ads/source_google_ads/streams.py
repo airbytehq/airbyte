@@ -353,6 +353,21 @@ class AdGroup(IncrementalGoogleAdsStream):
 
     primary_key = ["ad_group.id", "segments.date"]
 
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
+        # validation that the customer is not a manager
+        # due to unsupported metrics.cost_micros field and removing it in case custom is a manager
+        if [customer for customer in self.customers if customer.id == stream_slice["customer_id"]][0].is_manager_account:
+            fields = [field for field in fields if field != "metrics.cost_micros"]
+        table_name = get_resource_name(self.name)
+        start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
+        cursor_condition = [f"{self.cursor_field} >= '{start_date}' AND {self.cursor_field} <= '{end_date}'"]
+
+        query = GoogleAds.convert_schema_into_query(
+            fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field
+        )
+        return query
+
 
 class AdGroupLabel(GoogleAdsStream):
     """
