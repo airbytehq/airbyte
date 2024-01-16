@@ -35,14 +35,12 @@ class ArsenkinStream(HttpStream, ABC):
         # TODO (may be raise NotImplementedError)
         pass
 
-    def transform_config(self, user_config: dict[str, any], stream: "ArsenkinStream") -> MutableMapping[str, any]:
-        """Process config"""
-        # TODO
-        pass
-
 
 class ParserADS(ArsenkinStream):
     """Ads parser for Arsenkin"""
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pass
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     # TODO: check if this is correct
@@ -59,14 +57,20 @@ class ParserADS(ArsenkinStream):
     def request_params(
             self, **kwargs
     ) -> MutableMapping[str, Any]:
-        # TODO: remake it!
         return {
             "token": self.config["token"],
             "tools_name": "parser-ads",
-            "keywords": json.dumps(["Автомобили БУ"]),
-            "region_yandex": 213,
-            "device": "desktop",
+            "keywords": json.dumps(self.config["keywords"]),
+            "region_yandex": self.config["region_yandex"],
+            "device": self.config["device"],
         }
+
+    @staticmethod
+    def transform_config(user_config: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        """Pre-process config for Arsenkin ads stream"""
+        config = user_config.copy()
+        config["device"] = user_config["device"]["device_type"]
+        return config
 
 
 class SourceArsenkin(AbstractSource):
@@ -99,4 +103,4 @@ class SourceArsenkin(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [ParserADS(authenticator=None, config=self.transform_config(config, ParserADS))]
+        return [ParserADS(authenticator=None, config=ParserADS.transform_config(user_config=config))]

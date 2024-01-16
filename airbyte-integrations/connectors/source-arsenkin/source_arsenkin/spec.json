@@ -10,7 +10,7 @@
       "device",
       "region_yandex"
     ],
-    "additionalProperties" : true,
+    "additionalProperties" : false,
     "properties" : {
       "token" : {
         "type" : "string",
@@ -30,33 +30,37 @@
         ]
       },
       "device" : {
-        "type" : "object",
         "title" : "Device type",
         "order" : 2,
+        "type" : "object",
         "oneOf" : [
           {
-            "required": ["device_type"],
+            "title" : "Desktop",
+            "description" : "Parse ads from desktop",
             "properties" : {
               "device_type" : {
                 "type" : "string",
                 "const" : "desktop",
-                "title" : "Desktop",
-                "description" : "Parse ads from desktop",
-                 "order" : 0
+                "order" : 0
               }
-            }
+            },
+            "required" : [
+              "device_type"
+            ]
           },
           {
-            "required": ["device_type"],
+            "title" : "Mobile",
+            "description" : "Parse ads from smartphone",
             "properties" : {
               "device_type" : {
                 "type" : "string",
                 "const" : "mobile",
-                "title" : "Mobile",
-                "description" : "Parse ads from smartphone",
-                 "order" : 0
+                "order" : 0
               }
-            }
+            },
+            "required" : [
+              "device_type"
+            ]
           }
         ]
       },
