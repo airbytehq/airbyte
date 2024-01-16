@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import IO, Any, NoReturn
 
 from airbyte_lib.registry import ConnectorMetadata
+from airbyte_lib.telemetry import SourceTelemetryInfo, SourceType
 
 
 _LATEST_VERSION = "latest"
@@ -38,6 +39,10 @@ class Executor(ABC):
 
     @abstractmethod
     def install(self) -> None:
+        pass
+
+    @abstractmethod
+    def get_telemetry_info(self) -> SourceTelemetryInfo:
         pass
 
     @abstractmethod
@@ -189,6 +194,9 @@ class VenvExecutor(Executor):
         with _stream_from_subprocess([str(connector_path)] + args) as stream:
             yield from stream
 
+    def get_telemetry_info(self) -> SourceTelemetryInfo:
+        return SourceTelemetryInfo(self.metadata.name, SourceType.VENV, self.target_version)
+
 
 class PathExecutor(Executor):
     def ensure_installation(self) -> None:
@@ -210,3 +218,6 @@ class PathExecutor(Executor):
     def execute(self, args: list[str]) -> Iterator[str]:
         with _stream_from_subprocess([self.metadata.name] + args) as stream:
             yield from stream
+
+    def get_telemetry_info(self) -> SourceTelemetryInfo:
+        return SourceTelemetryInfo(self.metadata.name, SourceType.LOCAL_INSTALL, version=None)

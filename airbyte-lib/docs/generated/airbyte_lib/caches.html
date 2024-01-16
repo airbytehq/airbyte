@@ -34,7 +34,7 @@ so we insert as values instead.</p>
                                 <h5>Inherited Members</h5>
                                 <dl>
                                     <div><dt><a href="#SQLCacheBase">SQLCacheBase</a></dt>
-                                <dd id="DuckDBCache.__init__" class="function"><a href="#SQLCacheBase.__init__">SQLCacheBase</a></dd>
+                                <dd id="DuckDBCache.__init__" class="function">SQLCacheBase</dd>
                 <dd id="DuckDBCache.type_converter_class" class="variable"><a href="#SQLCacheBase.type_converter_class">type_converter_class</a></dd>
                 <dd id="DuckDBCache.use_singleton_connection" class="variable"><a href="#SQLCacheBase.use_singleton_connection">use_singleton_connection</a></dd>
                 <dd id="DuckDBCache.config" class="variable"><a href="#SQLCacheBase.config">config</a></dd>
@@ -54,6 +54,7 @@ so we insert as values instead.</p>
             <div><dt>airbyte_lib.caches.duckdb.DuckDBCacheBase</dt>
                                 <dd id="DuckDBCache.config_class" class="variable">config_class</dd>
                 <dd id="DuckDBCache.supports_merge_insert" class="variable">supports_merge_insert</dd>
+                <dd id="DuckDBCache.get_telemetry_info" class="function">get_telemetry_info</dd>
 
             </div>
             <div><dt>airbyte_lib._processors.RecordProcessor</dt>
@@ -235,11 +236,25 @@ or another import method. (Relatively low priority, since for now it works fine 
     
 
                             </div>
+                            <div id="PostgresCache.get_telemetry_info" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">get_telemetry_info</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">telemetry</span><span class="o">.</span><span class="n">CacheTelemetryInfo</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCache.get_telemetry_info"></a>
+    
+    
+
+                            </div>
                             <div class="inherited">
                                 <h5>Inherited Members</h5>
                                 <dl>
                                     <div><dt><a href="#SQLCacheBase">SQLCacheBase</a></dt>
-                                <dd id="PostgresCache.__init__" class="function"><a href="#SQLCacheBase.__init__">SQLCacheBase</a></dd>
+                                <dd id="PostgresCache.__init__" class="function">SQLCacheBase</dd>
                 <dd id="PostgresCache.type_converter_class" class="variable"><a href="#SQLCacheBase.type_converter_class">type_converter_class</a></dd>
                 <dd id="PostgresCache.use_singleton_connection" class="variable"><a href="#SQLCacheBase.use_singleton_connection">use_singleton_connection</a></dd>
                 <dd id="PostgresCache.config" class="variable"><a href="#SQLCacheBase.config">config</a></dd>
@@ -421,19 +436,6 @@ or another import method. (Relatively low priority, since for now it works fine 
 </div>
 
 
-                            <div id="SQLCacheBase.__init__" class="classattr">
-                                <div class="attr function">
-                    <div class="decorator">@final</div>
-
-        <span class="name">SQLCacheBase</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheConfigBase</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">file_writer</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">_file_writers</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">FileWriterBase</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span></span>)</span>
-
-        
-    </div>
-    <a class="headerlink" href="#SQLCacheBase.__init__"></a>
-    
-    
-
-                            </div>
                             <div id="SQLCacheBase.type_converter_class" class="classattr">
                                 <div class="attr variable">
             <span class="name">type_converter_class</span><span class="annotation">: type[airbyte_lib.types.SQLTypeConverter]</span>        =
@@ -661,6 +663,20 @@ or another import method. (Relatively low priority, since for now it works fine 
             <div class="docstring"><p>Return a Pandas data frame with the stream's data.</p>
 </div>
 
+
+                            </div>
+                            <div id="SQLCacheBase.get_telemetry_info" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@abc.abstractmethod</div>
+
+        <span class="def">def</span>
+        <span class="name">get_telemetry_info</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">telemetry</span><span class="o">.</span><span class="n">CacheTelemetryInfo</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.get_telemetry_info"></a>
+    
+    
 
                             </div>
                             <div class="inherited">
