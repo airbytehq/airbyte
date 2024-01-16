@@ -6,8 +6,9 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from .source import Source{{properCase name}}
+from source_pipedrive import SourcePipedrive
+
 
 def run():
-    source = Source{{properCase name}}()
+    source = SourcePipedrive()
     launch(source, sys.argv[1:])

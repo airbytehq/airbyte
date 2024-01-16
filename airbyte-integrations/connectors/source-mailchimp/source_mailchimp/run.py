@@ -6,8 +6,9 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from .source import Source{{properCase name}}
+from source_mailchimp import SourceMailchimp
+
 
 def run():
-    source = Source{{properCase name}}()
+    source = SourceMailchimp()
     launch(source, sys.argv[1:])
