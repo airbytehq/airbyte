@@ -75,6 +75,7 @@ class TestWeaviateIndexer(unittest.TestCase):
     def test_pre_sync_that_creates_class_with_multi_tenancy_enabled(self, MockClient):
         mock_client = Mock()
         self.config.tenant_id = "test_tenant"
+        mock_client.schema.get_class_tenants.return_value = []
         mock_client.schema.get.return_value = {"classes": []}
         MockClient.return_value = mock_client
         self.indexer.pre_sync(self.mock_catalog)
