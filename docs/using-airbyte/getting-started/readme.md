@@ -43,4 +43,4 @@ With Airbyte Self-Managed Community (Open Source), you can use one of the follow
 ### Self-Managed Enterprise
 Airbyte Self-Managed Enterprise enables multiple users, and multiple teams to use Airbyte all on one instance througb Single Sign-On (SSO) and role-based access control (RBAC). Store all connector secrets in your company secret stores (e.g. Amazon KMS) and quickly get an overview of Airbyte health with our Datadog integration.
 
-To start with Self-Managed Enterprrise, navigate to our [Enterprise setup guide](./enterprise-setup/README.md).
+To start with Self-Managed Enterprrise, navigate to our [Enterprise setup guide](/enterprise-setup/README.md).
