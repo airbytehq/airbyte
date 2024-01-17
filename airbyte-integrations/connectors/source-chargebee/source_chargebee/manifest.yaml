@@ -88,7 +88,7 @@ definitions:
       path: "/addons"
       stream_cursor_field: "updated_at"
   attached_item_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/base_incremental_stream"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -96,12 +96,13 @@ definitions:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/item_stream"
-            parent_key: id
-            partition_field: id
+            parent_key: "id"
+            partition_field: "id"
     $parameters:
       name: "attached_item"
       primary_key: "id"
       path: "/items/{{ stream_slice.id }}/attached_items"
+      stream_cursor_field: "updated_at"
   customer_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
