@@ -111,7 +111,7 @@ class ConcurrentCursor(Cursor):
     def _add_slice_to_state(self, partition: Partition) -> None:
         if self._slice_boundary_fields:
             if "slices" not in self.state:
-                self.state["slices"] = []
+                raise RuntimeError(f"The state should have at least one slice to delineate the sync start time, but no slices are present. This is unexpected. Please contact Support.")
             self.state["slices"].append(
                 {
                     "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
@@ -127,8 +127,8 @@ class ConcurrentCursor(Cursor):
 
             self.state["slices"].append(
                 {
-                    "start": self.state["start"] or self._connector_state_converter.zero_value,
-                    "end": self._extract_cursor_value(self._most_recent_record),
+                    self._connector_state_converter.START_KEY: self._connector_state_converter.actual_sync_start,
+                    self._connector_state_converter.END_KEY: self._extract_cursor_value(self._most_recent_record),
                 }
             )
 

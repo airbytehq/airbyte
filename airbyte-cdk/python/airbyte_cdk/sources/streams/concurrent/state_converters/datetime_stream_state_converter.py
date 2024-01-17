@@ -16,18 +16,27 @@ from pendulum.datetime import DateTime
 
 
 class DateTimeStreamStateConverter(AbstractStreamStateConverter):
-    START_KEY = "start"
-    END_KEY = "end"
+
+    def __init__(self, start: Optional[Any], cursor_start: Optional[Any]):
+        start = self.parse_timestamp(start) or self.zero_value
+        self.prev_sync_low_water_mark = self.parse_timestamp(cursor_start) if cursor_start else None
+        if self.prev_sync_low_water_mark and self.prev_sync_low_water_mark >= start:
+            self._actual_sync_start = self.prev_sync_low_water_mark
+        else:
+            self._actual_sync_start = start
+
+    @property
+    def actual_sync_start(self) -> datetime:
+        return self._actual_sync_start
 
     def get_concurrent_stream_state(
-        self, cursor_field: Optional["CursorField"], start: Any, state: MutableMapping[str, Any]
+        self, cursor_field: Optional["CursorField"], state: MutableMapping[str, Any]
     ) -> Optional[MutableMapping[str, Any]]:
         if not cursor_field:
             return None
         if self.is_state_message_compatible(state):
-            compatible_state = self.deserialize(state)
-            compatible_state["start"] = self.parse_timestamp(start) if start else self.zero_value
-        return self.convert_from_sequential_state(cursor_field, start, state)
+            return self.deserialize(state)
+        return self.convert_from_sequential_state(cursor_field, state)
 
     @property
     @abstractmethod
@@ -54,10 +63,6 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
         for stream_slice in state.get("slices", []):
             stream_slice[self.START_KEY] = self.parse_timestamp(stream_slice[self.START_KEY])
             stream_slice[self.END_KEY] = self.parse_timestamp(stream_slice[self.END_KEY])
-        if "start" in state:
-            state["start"] = self.parse_timestamp(state["start"])
-        if "low_water_mark" in state:
-            state["low_water_mark"] = self.parse_timestamp(state["low_water_mark"])
         return state
 
     def parse_value(self, value: Any) -> Any:
@@ -87,7 +92,7 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
     def compare_intervals(self, end_time: Any, start_time: Any) -> bool:
         return bool(self.increment(end_time) >= start_time)
 
-    def convert_from_sequential_state(self, cursor_field: CursorField, start: Optional[datetime], stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def convert_from_sequential_state(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Convert the state message to the format required by the ConcurrentCursor.
 
@@ -95,36 +100,24 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
         {
             "state_type": ConcurrencyCompatibleStateType.date_range.value,
             "metadata": { … },
-            "start": <timestamp representing the beginning of the stream's sync>,
-            "low_water_mark": <timestamp representing the latest date before which all records were synced>,
             "slices": [
-                {"start": 0, "end": "2021-01-18T21:18:20.000+00:00"},
+                {"start": "2021-01-18T21:18:20.000+00:00", "end": "2021-01-18T21:18:20.000+00:00"},
             ]
         }
         """
         if self.is_state_message_compatible(stream_state):
             return stream_state
-        start_timestamp = (self.parse_timestamp(start) if start is not None else None) or self.zero_value
-        _low_water_mark = (
-            self.parse_timestamp(stream_state[cursor_field.cursor_field_key])
-            if cursor_field.cursor_field_key in stream_state
-            else start_timestamp
-        )
-        low_water_mark = _low_water_mark if _low_water_mark >= start_timestamp else start_timestamp
+
         if cursor_field.cursor_field_key in stream_state:
-            slices = [
-                {
-                    self.START_KEY: start_timestamp,
-                    self.END_KEY: low_water_mark,
-                },
-            ]
+            # Create a slice to represent the records synced during prior syncs.
+            # The start and end are the same to avoid confusion as to whether the records for this slice
+            # were actually synced
+            slices = [{self.START_KEY: self.actual_sync_start, self.END_KEY: self.actual_sync_start}]
         else:
             slices = []
         return {
             "state_type": ConcurrencyCompatibleStateType.date_range.value,
             "slices": slices,
-            "start": start_timestamp,
-            "low_water_mark": low_water_mark,
             "legacy": stream_state,
         }
 
