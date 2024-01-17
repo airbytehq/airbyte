@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.58.8
+CDK: HttpRequester can accept http_method in str format, which is required by custom low code components
+
 ## 0.58.7
 
 
