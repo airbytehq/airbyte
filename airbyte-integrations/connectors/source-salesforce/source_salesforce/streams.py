@@ -11,6 +11,7 @@ import urllib.parse
 import uuid
 from abc import ABC
 from contextlib import closing
+from datetime import datetime, timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import pandas as pd
@@ -18,6 +19,7 @@ import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -37,9 +39,11 @@ CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
 DEFAULT_ENCODING = "utf-8"
+LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
 
 
 class SalesforceStream(HttpStream, ABC):
+    state_converter = IsoMillisConcurrentStreamStateConverter()
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     encoding = DEFAULT_ENCODING
@@ -108,6 +112,16 @@ class SalesforceStream(HttpStream, ABC):
             return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
         return super().get_error_display_message(exception)
 
+    def get_start_date_from_state(self, stream_state: Mapping[str, Any] = None) -> datetime:
+        if self.state_converter.is_state_message_compatible(stream_state):
+            # stream_state is in the concurrent format
+            if stream_state.get("slices", []):
+                return stream_state["slices"][0]["end"]
+        elif stream_state and not self.state_converter.is_state_message_compatible(stream_state):
+            # stream_state has not been converted to the concurrent format; this is not expected
+            return pendulum.parse(stream_state.get(self.cursor_field), tz="UTC")
+        return pendulum.parse(self.start_date, tz="UTC")
+
 
 class PropertyChunk:
     """
@@ -127,6 +141,8 @@ class PropertyChunk:
 
 
 class RestSalesforceStream(SalesforceStream):
+    state_converter = IsoMillisConcurrentStreamStateConverter()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         assert self.primary_key or not self.too_many_properties
@@ -302,6 +318,7 @@ class RestSalesforceStream(SalesforceStream):
 
 
 class BatchedSubStream(HttpSubStream):
+    state_converter = IsoMillisConcurrentStreamStateConverter()
     SLICE_BATCH_SIZE = 200
 
     def stream_slices(
@@ -684,7 +701,8 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start, end = (None, None)
         now = pendulum.now(tz="UTC")
-        initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
+        assert LOOKBACK_SECONDS is not None and LOOKBACK_SECONDS >= 0
+        initial_date = self.get_start_date_from_state(stream_state) - timedelta(seconds=LOOKBACK_SECONDS)
 
         slice_number = 1
         while not end == now:
@@ -768,6 +786,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
 
 class Describe(Stream):
+    state_converter = IsoMillisConcurrentStreamStateConverter()
     """
     Stream of sObjects' (Salesforce Objects) describe:
     https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm
