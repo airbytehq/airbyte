@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import asyncclick as click
 import asyncer
@@ -35,7 +35,7 @@ async def run_poetry_command(container: dagger.Container, command: str) -> Tuple
     return await container.stdout(), await container.stderr()
 
 
-def validate_env_vars_exist(ctx, param, value):
+def validate_env_vars_exist(_ctx: Any, _param: Any, value: List[str]):
     for var in value:
         if var not in os.environ:
             raise click.BadParameter(f"Environment variable {var} does not exist.")
@@ -54,6 +54,8 @@ def validate_env_vars_exist(ctx, param, value):
 )
 @click.option(
     "--pass-env-var",
+    "-e",
+    "passed_env_vars",
     multiple=True,
     help="The environment variables to pass to the container.",
     required=False,
@@ -128,7 +130,7 @@ async def test(pipeline_context: ClickPipelineContext) -> None:
     )
 
     # register passed env vars as secrets and add them to the container
-    for var in pipeline_context.params["pass_env_var"]:
+    for var in pipeline_context.params["passed_env_vars"]:
         secret = dagger_client.set_secret(var, os.environ[var])
         test_container = test_container.with_secret_variable(var, secret)
 
