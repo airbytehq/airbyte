@@ -13,16 +13,11 @@ class AstraIndexingModel(BaseModel):
         airbyte_secret=True,
         description="AstraDB Application Token",
     )
-    astra_db_id: str = Field(
+    astra_db_endpoint: str = Field(
         ...,
-        title="AstraDB Id",
-        airbyte_secret=True,
-        description="AstraDB Id",
-    )
-    astra_db_region: str = Field(
-        ...,
-        title="AstraDB Region",
-        description="AstraDB Region",
+        title="AstraDB Endpoint",
+        description="AstraDB Endpoint",
+        pattern="^https:\/\/([a-z]|[0-9]){8}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){12}-(af|il|ap|ca|eu|me|sa|us|cn|us-gov|us-iso|us-isob)-(central|north|(north(?:east|west))|south|south(?:east|west)|east|west)([0-9]{1})\\.apps\\.astra\\.datastax\\.com",
         examples=["us-east1"],
     )
     astra_db_keyspace: str = Field(

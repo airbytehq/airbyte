@@ -29,7 +29,7 @@ class AstraIndexer(Indexer):
         super().__init__(config)
 
         self.client = AstraClient(
-            config.astra_db_id, config.astra_db_region, config.astra_db_app_token, config.astra_db_keyspace, embedding_dimensions, "cosine"
+            config.astra_db_endpoint, config.astra_db_app_token, config.astra_db_keyspace, embedding_dimensions, "cosine"
         )
 
         self.embedding_dimensions = embedding_dimensions
