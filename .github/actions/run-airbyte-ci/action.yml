@@ -19,11 +19,6 @@ inputs:
   docker_hub_password:
     description: "Dockerhub password"
     required: true
-  docker_registry_mirror_url:
-    description: "Docker registry mirror URL (not including http or https)"
-    required: false
-    # Do not use http or https here
-    default: "ci-dockerhub-registry.airbyte.com"
   options:
     description: "Options for the subcommand"
     required: false
@@ -77,8 +72,6 @@ inputs:
   s3_build_cache_secret_key:
     description: "Gradle S3 Build Cache AWS secret key"
     required: false
-  tailscale_auth_key:
-    description: "Tailscale auth key"
   airbyte_ci_binary_url:
     description: "URL to airbyte-ci binary"
     required: false
@@ -90,7 +83,13 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Get start timestamp
+      id: get-start-timestamp
+      shell: bash
+      run: echo "name=start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+
     - name: Check if PR is from a fork
+      id: check-if-pr-is-from-fork
       if: github.event_name == 'pull_request'
       shell: bash
       run: |
@@ -99,64 +98,23 @@ runs:
           exit 78
         fi
 
-    - name: Get changed files
-      uses: tj-actions/changed-files@v39
-      id: changes
-      with:
-        files_yaml: |
-          pipelines:
-            - 'airbyte-ci/connectors/pipelines/**'
-
-    - name: Determine how Airbyte CI should be installed
-      shell: bash
-      id: determine-install-mode
-      run: |
-        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
-          echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
-          echo "install-mode=dev" >> $GITHUB_OUTPUT
-        else
-          echo "install-mode=production" >> $GITHUB_OUTPUT
-        fi
-
     - name: Docker login
-      uses: docker/login-action@v1
+      id: docker-login
+      uses: docker/login-action@v3
       with:
         username: ${{ inputs.docker_hub_username }}
         password: ${{ inputs.docker_hub_password }}
 
-    - name: Get start timestamp
-      id: get-start-timestamp
-      shell: bash
-      run: echo "name=start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
-
-    - name: Install airbyte-ci binary
+    - name: Install Airbyte CI
       id: install-airbyte-ci
-      if: steps.determine-install-mode.outputs.install-mode == 'production'
-      shell: bash
-      run: |
-        curl -sSL ${{ inputs.airbyte_ci_binary_url }} --output airbyte-ci-bin
-        sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci
-        sudo chmod +x /usr/local/bin/airbyte-ci
-
-    - name: Install Python 3.10
-      uses: actions/setup-python@v4
-      if: steps.determine-install-mode.outputs.install-mode == 'dev'
+      uses: ./.github/actions/install-airbyte-ci
       with:
-        python-version: "3.10"
-        token: ${{ inputs.github_token }}
-
-    - name: Install ci-connector-ops package
-      if: steps.determine-install-mode.outputs.install-mode == 'dev'
-      shell: bash
-      run: |
-        pip install pipx
-        pipx ensurepath
-        pipx install airbyte-ci/connectors/pipelines/
+        airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
 
     - name: Run airbyte-ci
+      id: run-airbyte-ci
       shell: bash
       run: |
-        export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
         airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
         CI_CONTEXT: "${{ inputs.context }}"
@@ -166,23 +124,27 @@ runs:
         CI_JOB_KEY: ${{ inputs.ci_job_key }}
         CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
         CI_REPORT_BUCKET_NAME: ${{ inputs.report_bucket_name }}
+        CI: "True"
         DAGGER_CLOUD_TOKEN: "${{ inputs.dagger_cloud_token }}"
+        DOCKER_HUB_PASSWORD: ${{ inputs.docker_hub_password }}
+        DOCKER_HUB_USERNAME: ${{ inputs.docker_hub_username }}
         GCP_GSM_CREDENTIALS: ${{ inputs.gcp_gsm_credentials }}
         GCS_CREDENTIALS: ${{ inputs.gcs_credentials }}
         METADATA_SERVICE_BUCKET_NAME: ${{ inputs.metadata_service_bucket_name }}
         METADATA_SERVICE_GCS_CREDENTIALS: ${{ inputs.metadata_service_gcs_credentials }}
         PRODUCTION: ${{ inputs.production }}
         PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+        PYTHON_REGISTRY_TOKEN: ${{ inputs.python_registry_token }}
+        S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ inputs.s3_build_cache_access_key_id }}
+        S3_BUILD_CACHE_SECRET_KEY: ${{ inputs.s3_build_cache_secret_key }}
         SENTRY_DSN: ${{ inputs.sentry_dsn }}
         SENTRY_ENVIRONMENT: ${{ steps.determine-install-mode.outputs.install-mode }}
         SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
         SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
-        DOCKER_HUB_USERNAME: ${{ inputs.docker_hub_username }}
-        DOCKER_HUB_PASSWORD: ${{ inputs.docker_hub_password }}
-        S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ inputs.s3_build_cache_access_key_id }}
-        S3_BUILD_CACHE_SECRET_KEY: ${{ inputs.s3_build_cache_secret_key }}
-        CI: "True"
-        TAILSCALE_AUTH_KEY: ${{ inputs.tailscale_auth_key }}
-        DOCKER_REGISTRY_MIRROR_URL: ${{ inputs.docker_registry_mirror_url }}
-        PYTHON_REGISTRY_TOKEN: ${{ inputs.python_registry_token }}
+    # give the Dagger Engine more time to push cache data to Dagger Cloud
+    - name: Stop Engine
+      id: stop-engine
+      if: always()
+      shell: bash
+      run: docker stop --time 300 $(docker ps --filter name="dagger-engine-*" -q)
