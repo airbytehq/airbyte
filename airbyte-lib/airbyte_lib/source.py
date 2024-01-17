@@ -159,7 +159,7 @@ class Source:
     def configured_catalog(self) -> ConfiguredAirbyteCatalog:
         """Get the configured catalog for the given streams."""
         if self._discovered_catalog is None:
-            self._discovered_catalog: AirbyteCatalog = self._discover()
+            self._discovered_catalog = self._discover()
 
         return ConfiguredAirbyteCatalog(
             streams=[
