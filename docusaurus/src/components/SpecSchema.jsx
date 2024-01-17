@@ -26,7 +26,16 @@ function JSONSchemaViewer(props) {
 function JSONSchemaObject(props) {
   const requiredProperties = new Set(props.schema.required || []);
   return <div>
-    {Object.entries(props.schema.properties).map(([key, schema]) => {
+    {Object.entries(props.schema.properties).sort(([a], [b]) => {
+      // Sort required properties first, then respect the order of the schema
+      if (requiredProperties.has(a) && !requiredProperties.has(b)) {
+        return -1;
+      } else if (requiredProperties.has(b) && !requiredProperties.has(a)) {
+        return 1;
+      } else {
+        return 0;
+      }
+    }).map(([key, schema]) => {
       return <JSONSchemaProperty key={key} propertyKey={key} schema={schema} required={requiredProperties.has(key)} />
     })}
   </div>
