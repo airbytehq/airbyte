@@ -1,9 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 """Internal utility functions, especially for dealing with Airbyte Protocol."""
+from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from airbyte_protocol.models import (
     AirbyteMessage,
@@ -11,6 +11,10 @@ from airbyte_protocol.models import (
     ConfiguredAirbyteCatalog,
     Type,
 )
+
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator
 
 
 def airbyte_messages_to_record_dicts(

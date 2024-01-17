@@ -39,18 +39,8 @@ class TestGradleTask:
 
     def test_params(self, test_context):
         step = self.DummyStep(test_context)
+        step.extra_params = {"-x": ["dummyTask", "dummyTask2"]}
         assert set(step.params_as_cli_options) == {
-            f"-Ds3BuildCachePrefix={test_context.connector.technical_name}",
-            "--build-cache",
-            "--scan",
-            "--console=plain",
-        }
-        step.extra_params = {"-x": ["dummyTask", "dummyTask2"], "--console": ["rich"]}
-        assert set(step.params_as_cli_options) == {
-            f"-Ds3BuildCachePrefix={test_context.connector.technical_name}",
-            "--build-cache",
-            "--scan",
-            "--console=rich",
             "-x=dummyTask",
             "-x=dummyTask2",
         }
