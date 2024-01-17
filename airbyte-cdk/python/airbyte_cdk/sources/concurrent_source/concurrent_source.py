@@ -3,7 +3,7 @@
 #
 import concurrent
 import logging
-from queue import Queue
+from queue import Queue, PriorityQueue
 from typing import Iterable, Iterator, List
 
 from airbyte_cdk.models import AirbyteMessage
@@ -19,7 +19,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 
-
+# Define your custom priority function
 class ConcurrentSource:
     """
     A Source that reads data from multiple AbstractStreams concurrently.
@@ -82,7 +82,7 @@ class ConcurrentSource:
         if not stream_instances_to_read_from:
             return
 
-        queue: Queue[QueueItem] = Queue()
+        queue: Queue[QueueItemObject] = PriorityQueue()
         concurrent_stream_processor = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             PartitionEnqueuer(queue),
@@ -116,6 +116,7 @@ class ConcurrentSource:
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
+            airbyte_message_or_record_or_exception = airbyte_message_or_record_or_exception.value
             yield from self._handle_item(
                 airbyte_message_or_record_or_exception,
                 concurrent_stream_processor,
@@ -154,9 +155,9 @@ class ConcurrentSource:
         """
         stream_instances_to_read_from = []
         for stream in streams:
-            stream_availability = stream.check_availability()
-            if not stream_availability.is_available():
-                self._logger.warning(f"Skipped syncing stream '{stream.name}' because it was unavailable. {stream_availability.message()}")
-                continue
+            # stream_availability = stream.check_availability()
+            # if not stream_availability.is_available():
+            #     self._logger.warning(f"Skipped syncing stream '{stream.name}' because it was unavailable. {stream_availability.message()}")
+            #     continue
             stream_instances_to_read_from.append(stream)
         return stream_instances_to_read_from
