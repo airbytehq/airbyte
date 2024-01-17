@@ -21,7 +21,7 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/dixa
   tags:
-    - language:lowcode
+    - language:low-code
   ab_internal:
     sl: 100
     ql: 100
