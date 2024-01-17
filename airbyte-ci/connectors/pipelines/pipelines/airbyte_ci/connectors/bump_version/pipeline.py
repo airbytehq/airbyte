@@ -139,7 +139,7 @@ class BumpDockerImageTagInMetadata(Step):
 
 async def run_connector_version_bump_pipeline(
     context: ConnectorContext,
-    semaphore: Semaphore,
+    semaphore: "Semaphore",
     bump_type: str,
     changelog_entry: str,
     pull_request_number: str,

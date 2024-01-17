@@ -194,6 +194,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void setup() throws Exception {
     generator = getSqlGenerator();
     destinationHandler = getDestinationHandler();
+
     final ColumnId id1 = generator.buildColumnId("id1");
     final ColumnId id2 = generator.buildColumnId("id2");
     primaryKey = List.of(id1, id2);
@@ -403,6 +404,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void allTypes() throws Exception {
+    // Add case-sensitive columnName to test json path querying
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("IamACaseSensitiveColumnName"),
+        AirbyteProtocolType.STRING);
     createRawTable(streamId);
     createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
@@ -418,6 +423,26 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpRawTableRecords(streamId),
         "sqlgenerator/alltypes_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, ""));
+    assertFalse(destinationHandler.isFinalTableEmpty(streamId), "Final table should not be empty after T+D");
+  }
+
+  /**
+   * Run a basic test to verify that we don't throw an exception on basic data values.
+   */
+  @Test
+  public void allTypesUnsafe() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(incrementalDedupStream, "");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_unsafe_inputrecords.jsonl"));
+
+    assertTrue(destinationHandler.isFinalTableEmpty(streamId), "Final table should be empty before T+D");
+
+    // Instead of using the full T+D transaction, explicitly run with useSafeCasting=false.
+    final Sql unsafeSql = generator.updateTable(incrementalDedupStream, "", Optional.empty(), false);
+    destinationHandler.execute(unsafeSql);
+
     assertFalse(destinationHandler.isFinalTableEmpty(streamId), "Final table should not be empty after T+D");
   }
 
@@ -514,6 +539,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void handlePreexistingRecords() throws Exception {
+    // Add case-sensitive columnName to test json path querying
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("IamACaseSensitiveColumnName"),
+        AirbyteProtocolType.STRING);
     createRawTable(streamId);
     createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
@@ -541,6 +570,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void handleNoPreexistingRecords() throws Exception {
+    // Add case-sensitive columnName to test json path querying
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("IamACaseSensitiveColumnName"),
+        AirbyteProtocolType.STRING);
     createRawTable(streamId);
     final DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(streamId);
     assertAll(
@@ -1124,6 +1157,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void testV1V2migration() throws Exception {
     // This is maybe a little hacky, but it avoids having to refactor this entire class and subclasses
     // for something that is going away
+    // Add case-sensitive columnName to test json path querying
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("IamACaseSensitiveColumnName"),
+        AirbyteProtocolType.STRING);
     final StreamId v1RawTableStreamId = new StreamId(null, null, streamId.finalNamespace(), "v1_" + streamId.rawName(), null, null);
     createV1RawTable(v1RawTableStreamId);
     insertV1RawTableRecords(v1RawTableStreamId, BaseTypingDedupingTest.readRecords(
@@ -1169,8 +1206,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         record -> record.get("_airbyte_raw_id").asText(),
         Function.identity()));
     assertAll(
-        () -> assertEquals(5, v1RawRecords.size()),
-        () -> assertEquals(5, v2RawRecords.size()));
+        () -> assertEquals(6, v1RawRecords.size()),
+        () -> assertEquals(6, v2RawRecords.size()));
     v1RawRecords.forEach(v1Record -> {
       final var v1id = v1Record.get("_airbyte_ab_id").asText();
       assertAll(

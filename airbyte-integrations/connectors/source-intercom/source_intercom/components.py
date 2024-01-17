@@ -167,7 +167,6 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
         )
 
         for parent_slice in parent_stream_slices_gen:
-
             parent_records_gen = self.parent_stream.read_records(
                 sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
             )
