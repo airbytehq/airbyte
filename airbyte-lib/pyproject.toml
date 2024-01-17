@@ -109,11 +109,11 @@ select = [
 ]
 ignore = [
     # For rules reference, see https://docs.astral.sh/ruff/rules/
-    "AIR", # Airbyte-specific rules
+
+    # These we don't agree with or don't want to prioritize to enforce:
     "ANN003",  # kwargs missing type annotations
     "ANN101",  # Type annotations for 'self' args
-    "B019", # lru_cache on class methods keep instance from getting garbage collected
-    "COM812", # Conflicts with ruff auto-format
+    "COM812", # Because it conflicts with ruff auto-format
     "EM", # flake8-errmsgs (may reconsider later)
     "DJ", # Django linting
     "G", # flake8-logging-format
@@ -121,15 +121,20 @@ ignore = [
     "NPY", # NumPy-specific rules
     "PIE790", # Allow unnecssary 'pass' (sometimes useful for readability)
     "PERF203",  # exception handling in loop
-    "TD002", # Require author for TODOs
-    "TD003", # Require links for TODOs
-    "TRY003",  # Raising exceptions with too-long string descriptions  # TODO: re-evaluate once we have our own exception classes
     "S", # flake8-bandit (noisy, security related)
+    "TD002", # Require author for TODOs
     "TRIO", # flake8-trio (opinionated, noisy)
+    "TRY003",  # Exceptions with too-long string descriptions  # TODO: re-evaluate once we have our own exception classes
+    "INP001", # Dir 'examples' is part of an implicit namespace package. Add an __init__.py.
 
-    # TODO: Definitely re-enable these:
+    # TODO: Consider re-enabling these before release:
+    "A003", # Class attribute 'type' is shadowing a Python builtin
+    "BLE001", # Do not catch blind exception: Exception
+    "ERA001", # Remove commented-out code
+    "FIX002", # Allow "TODO:" until release (then switch to requiring links via TDO003)
+    "PLW0603", # Using the global statement to update _cache is discouraged
+    "TD003", # Require links for TODOs # TODO: Re-enable when we disable FIX002
     "TRY002", # TODO: When we have time to tackle exception management ("Create your own exception")
-    "FIX002", "FIX001" # A bit meta: these fails if we have any TODOs/FIXMEs in the codebase
 ]
 fixable = ["ALL"]
 unfixable = [
