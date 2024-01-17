@@ -52,6 +52,14 @@ class WeaviateIndexer(Indexer):
             batch_size=None, dynamic=False, weaviate_error_retries=weaviate.WeaviateErrorRetryConf(number_retries=5)
         )
 
+    def _add_tenant_to_class_if_missing(self, class_name: str):
+        class_tenants = self.client.schema.get_class_tenants(class_name=class_name)
+        if class_tenants is not None and self.config.tenant_id not in [tenant.name for tenant in class_tenants]:
+            self.client.schema.add_class_tenants(class_name=class_name, tenants=[weaviate.Tenant(name=self.config.tenant_id)])
+            logging.info(f"Added tenant {self.config.tenant_id} to class {class_name}")
+        else:
+            logging.info(f"Tenant {self.config.tenant_id} already exists in class {class_name}")
+
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
         if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self._uses_safe_config():
@@ -72,10 +80,7 @@ class WeaviateIndexer(Indexer):
 
         if self.config.tenant_id.strip():
             for class_name in classes.keys():
-                class_tenants = self.client.schema.get_class_tenants(class_name=class_name)
-                if class_tenants is not None and self.config.tenant_id not in [tenant.name for tenant in class_tenants]:
-                    self.client.schema.add_class_tenants(class_name=class_name, tenants=[weaviate.Tenant(name=self.config.tenant_id)])
-                    logging.info(f"Added tenant {self.config.tenant_id} to class {class_name}")
+                self._add_tenant_to_class_if_missing(class_name)
 
         for stream in catalog.streams:
             class_name = self._stream_to_class_name(stream.stream.name)
@@ -108,14 +113,7 @@ class WeaviateIndexer(Indexer):
                 logging.info(f"Created class {class_name}")
 
                 if self.config.tenant_id.strip():
-                    class_tenants = self.client.schema.get_class_tenants(class_name=class_name)
-                    if class_tenants is not None and self.config.tenant_id not in [tenant.name for tenant in class_tenants]:
-                        self.client.schema.add_class_tenants(class_name=class_name, tenants=[weaviate.Tenant(name=self.config.tenant_id)])
-
-                        logging.info(f"Added tenant {self.config.tenant_id} to class {class_name}")
-
-                    else:
-                        logging.info(f"Tenant {self.config.tenant_id} already exists in class {class_name}")
+                    self._add_tenant_to_class_if_missing(class_name)
             else:
                 self.has_record_id_metadata[class_name] = schema is not None and any(
                     prop.get("name") == METADATA_RECORD_ID_FIELD for prop in schema.get("properties", {})
