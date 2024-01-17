@@ -50,7 +50,7 @@ jobs:
       - checkout
 
   dependencies_snapchat:
-    working_directory: ~/airbyte/airbyte-integrations/connectors/source-snapchat
+    working_directory: ~/airbyte/airbyte-integrations/connectors/source-snapchat-marketing
     machine:
       image: ubuntu-2004:202201-02
     steps:
@@ -206,7 +206,7 @@ workflows:
 
 
       - aws-ecr/build-and-push-image:
-          path: airbyte-integrations/connectors/source-snapchat/
+          path: airbyte-integrations/connectors/source-snapchat-marketing/
           executor:
             name: aws-ecr/default
             use-docker-layer-caching: true
