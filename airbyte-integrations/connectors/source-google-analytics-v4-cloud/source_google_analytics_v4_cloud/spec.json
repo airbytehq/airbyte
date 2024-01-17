@@ -1,10 +1,10 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-v4",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-v4-cloud",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Analytics (V4) Spec",
     "type": "object",
-    "required": ["view_id", "start_date"],
+    "required": ["view_id", "start_date", "credentials_json"],
     "additionalProperties": true,
     "properties": {
       "credentials_json": {
