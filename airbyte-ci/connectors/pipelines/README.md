@@ -578,6 +578,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.7.0   | [#34343](https://github.com/airbytehq/airbyte/pull/34343)  | allow running connector upgrade_cdk for java connectors                                                             |
 | 3.6.0   | [#34111](https://github.com/airbytehq/airbyte/pull/34111)  | Add python registry publishing                                                                                    |
 | 3.5.3   | [#34339](https://github.com/airbytehq/airbyte/pull/34339)  | only do minimal changes on a connector version_bump                                                               |
 | 3.5.2   | [#34381](https://github.com/airbytehq/airbyte/pull/34381)  | Bind a sidecar docker host for `airbyte-ci test`                                                                  |
