@@ -13,7 +13,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-google-analytics-v4-cloud
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4-cloud
   githubIssueLabel: source-google-analytics-v4-cloud
@@ -26,7 +26,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportLevel: certified
+  supportLevel: community
   tags:
     - language:python
 metadataSpecVersion: "1.0"

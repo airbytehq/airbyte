@@ -279,8 +279,8 @@ The Google Analytics connector should not run into the "requests per 100 seconds
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject         |
-|:--------|:-----------|:-------------------------------------------------------|:----------------|
-| 0.1.0   | 2021-08-10 | [5290](https://github.com/airbytehq/airbyte/pull/5290) | Initial Release |
+| Version | Date       | Pull Request                                              | Subject         |
+|:--------|:-----------|:----------------------------------------------------------|:----------------|
+| 0.0.1   | 2023-01-17 | [34323](https://github.com/airbytehq/airbyte/pull/34323)  | Initial Release |
 
 </HideInUI>
