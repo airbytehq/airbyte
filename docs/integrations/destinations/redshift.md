@@ -98,10 +98,10 @@ connection only. S3 is secured through public HTTPS access only.
 ### Permissions in Redshift
 Airbyte writes data into two schemas, whichever schema you want your data to land in, e.g. `my_schema`
 and a "Raw Data" schema that Airbyte uses to improve ELT reliability. By default, this raw data schema
-is `airbyte_internal` but this can be overridden in the Redshift Destination's advanced settings.
+is `airbyte_internal` but this can be overridden in the Redshift Destination's advanced settings. 
 Airbyte also needs to query Redshift's
-[SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for
-metadata about the tables airbyte manages.
+[SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for 
+metadata about the tables airbyte manages. 
 
 To ensure the `airbyte_user` has the correction permissions to:
 - create schemas in your database
@@ -229,7 +229,6 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.7.16  | 2024-01-16 | [\#34177](https://github.com/airbytehq/airbyte/pull/34177) | Update to java CDK 0.13.0 (no changes)                                                                                                                                                                           |
 | 0.7.15  | 2024-01-11 | [\#34186](https://github.com/airbytehq/airbyte/pull/34186) | Update check method with svv_table_info permission check, fix bug where s3 staging files were not being deleted.                                                                                                 |
 | 0.7.14  | 2024-01-08 | [\#34014](https://github.com/airbytehq/airbyte/pull/34014) | Update order of options in spec                                                                                                                                                                                  |
 | 0.7.13  | 2024-01-05 | [\#33948](https://github.com/airbytehq/airbyte/pull/33948) | Fix NPE when prepare tables fail; Add case sensitive session for super; Bastion heartbeats added                                                                                                                 |
