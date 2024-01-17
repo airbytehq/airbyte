@@ -17,26 +17,13 @@ from pendulum.datetime import DateTime
 
 class DateTimeStreamStateConverter(AbstractStreamStateConverter):
 
-    def __init__(self, start: Optional[Any], cursor_start: Optional[Any]):
-        start = self.parse_timestamp(start) or self.zero_value
-        self.prev_sync_low_water_mark = self.parse_timestamp(cursor_start) if cursor_start else None
-        if self.prev_sync_low_water_mark and self.prev_sync_low_water_mark >= start:
-            self._actual_sync_start = self.prev_sync_low_water_mark
+    def get_sync_start(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: Optional[Any]) -> datetime:
+        sync_start = self.parse_timestamp(start) if start is not None else self.zero_value
+        prev_sync_low_water_mark = self.parse_timestamp(stream_state[cursor_field.cursor_field_key]) if cursor_field.cursor_field_key in stream_state else None
+        if prev_sync_low_water_mark and prev_sync_low_water_mark >= sync_start:
+            return prev_sync_low_water_mark
         else:
-            self._actual_sync_start = start
-
-    @property
-    def actual_sync_start(self) -> datetime:
-        return self._actual_sync_start
-
-    def get_concurrent_stream_state(
-        self, cursor_field: Optional["CursorField"], state: MutableMapping[str, Any]
-    ) -> Optional[MutableMapping[str, Any]]:
-        if not cursor_field:
-            return None
-        if self.is_state_message_compatible(state):
-            return self.deserialize(state)
-        return self.convert_from_sequential_state(cursor_field, state)
+            return sync_start
 
     @property
     @abstractmethod
@@ -81,7 +68,7 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
         for interval in sorted_intervals[1:]:
             last_end_time = merged_intervals[-1][self.END_KEY]
             current_start_time = interval[self.START_KEY]
-            if self.compare_intervals(last_end_time, current_start_time):
+            if self._compare_intervals(last_end_time, current_start_time):
                 merged_end_time = max(last_end_time, interval[self.END_KEY])
                 merged_intervals[-1][self.END_KEY] = merged_end_time
             else:
@@ -89,10 +76,10 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
 
         return merged_intervals
 
-    def compare_intervals(self, end_time: Any, start_time: Any) -> bool:
+    def _compare_intervals(self, end_time: Any, start_time: Any) -> bool:
         return bool(self.increment(end_time) >= start_time)
 
-    def convert_from_sequential_state(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def convert_from_sequential_state(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: datetime) -> MutableMapping[str, Any]:
         """
         Convert the state message to the format required by the ConcurrentCursor.
 
@@ -108,13 +95,11 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
         if self.is_state_message_compatible(stream_state):
             return stream_state
 
-        if cursor_field.cursor_field_key in stream_state:
-            # Create a slice to represent the records synced during prior syncs.
-            # The start and end are the same to avoid confusion as to whether the records for this slice
-            # were actually synced
-            slices = [{self.START_KEY: self.actual_sync_start, self.END_KEY: self.actual_sync_start}]
-        else:
-            slices = []
+        # Create a slice to represent the records synced during prior syncs.
+        # The start and end are the same to avoid confusion as to whether the records for this slice
+        # were actually synced
+        slices = [{self.START_KEY: start, self.END_KEY: start}]
+
         return {
             "state_type": ConcurrencyCompatibleStateType.date_range.value,
             "slices": slices,
@@ -130,36 +115,23 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
         """
         if self.is_state_message_compatible(stream_state):
             legacy_state = stream_state.get("legacy", {})
-            latest_complete_time = self._get_latest_complete_time(stream_state["low_water_mark"], stream_state.get("slices", []))
+            latest_complete_time = self._get_latest_complete_time(stream_state.get("slices", []))
             if latest_complete_time is not None:
                 legacy_state.update({cursor_field.cursor_field_key: self.output_format(latest_complete_time)})
             return legacy_state or {}
         else:
             return stream_state
 
-    def _get_latest_complete_time(self, previous_sync_end: datetime, slices: List[MutableMapping[str, Any]]) -> Optional[datetime]:
+    def _get_latest_complete_time(self, slices: List[MutableMapping[str, Any]]) -> Optional[datetime]:
         """
         Get the latest time before which all records have been processed.
         """
-        if slices:
-            merged_intervals = self.merge_intervals(slices)
-            first_interval = merged_intervals[0]
-            if previous_sync_end < first_interval[self.START_KEY]:
-                # There is a region between `previous_sync_end` and the first interval that hasn't been synced yet, so
-                # we don't advance the state message timestamp
-                return previous_sync_end
+        if not slices:
+            raise RuntimeError("Expected at least one slice but there were none. This is unexpected; please contact Support.")
 
-            if first_interval[self.START_KEY] <= previous_sync_end <= first_interval[self.END_KEY]:
-                # `previous_sync_end` is between the beginning and end of the first interval, so we know we've synced
-                # up to `self.END_KEY`
-                return first_interval[self.END_KEY]
-
-            # `previous_sync_end` falls outside of the first interval; this is unexpected because we shouldn't have tried
-            # to sync anything before `previous_sync_end`, but we can handle it anyway.
-            return self._get_latest_complete_time(previous_sync_end, merged_intervals[1:])
-        else:
-            # Nothing has been synced so we don't advance
-            return previous_sync_end
+        merged_intervals = self.merge_intervals(slices)
+        first_interval = merged_intervals[0]
+        return first_interval[self.END_KEY]
 
 
 class EpochValueConcurrentStreamStateConverter(DateTimeStreamStateConverter):

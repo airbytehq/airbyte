@@ -4,7 +4,7 @@
 import functools
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, List, Mapping, Optional, Protocol, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Protocol, Tuple
 
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
@@ -74,6 +74,7 @@ class ConcurrentCursor(Cursor):
         connector_state_converter: AbstractStreamStateConverter,
         cursor_field: CursorField,
         slice_boundary_fields: Optional[Tuple[str, str]],
+        start: Optional[Any],
     ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
@@ -83,9 +84,17 @@ class ConcurrentCursor(Cursor):
         self._cursor_field = cursor_field
         # To see some example where the slice boundaries might not be defined, check https://github.com/airbytehq/airbyte/blob/1ce84d6396e446e1ac2377362446e3fb94509461/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L363-L379
         self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
+        self._start = start
         self._most_recent_record: Optional[Record] = None
         self._has_closed_at_least_one_slice = False
-        self.state = stream_state
+        self.start, self.state = self._get_concurrent_state(stream_state)
+
+    def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[datetime, MutableMapping[str, Any]]:
+        if self._connector_state_converter.is_state_message_compatible(state):
+            return self._start or self._connector_state_converter.zero_value, self._connector_state_converter.deserialize(state)
+        # The actual start of the sync, taking into account the last cursor value
+        start = self._connector_state_converter.get_sync_start(self._cursor_field, state, self._start)
+        return start, self._connector_state_converter.convert_from_sequential_state(self._cursor_field, state, start)
 
     def observe(self, record: Record) -> None:
         if self._slice_boundary_fields:
@@ -103,7 +112,7 @@ class ConcurrentCursor(Cursor):
     def close_partition(self, partition: Partition) -> None:
         slice_count_before = len(self.state.get("slices", []))
         self._add_slice_to_state(partition)
-        if slice_count_before < len(self.state["slices"]):
+        if slice_count_before < len(self.state["slices"]):  # only emit if at least one slice has been processed
             self._merge_partitions()
             self._emit_state_message()
         self._has_closed_at_least_one_slice = True
@@ -127,7 +136,7 @@ class ConcurrentCursor(Cursor):
 
             self.state["slices"].append(
                 {
-                    self._connector_state_converter.START_KEY: self._connector_state_converter.actual_sync_start,
+                    self._connector_state_converter.START_KEY: self.start,
                     self._connector_state_converter.END_KEY: self._extract_cursor_value(self._most_recent_record),
                 }
             )
