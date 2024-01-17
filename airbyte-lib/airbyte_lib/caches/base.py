@@ -1,13 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 """A SQL Cache implementation."""
+from __future__ import annotations
 
 import abc
 import enum
 from collections.abc import Generator, Iterator, Mapping
 from contextlib import contextmanager
-from functools import cached_property, lru_cache
-from pathlib import Path
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, cast, final
 
 import pandas as pd
@@ -16,23 +16,24 @@ import sqlalchemy
 import ulid
 from overrides import overrides
 from sqlalchemy import CursorResult, Executable, TextClause, create_engine, text
-from sqlalchemy.engine import Engine
 from sqlalchemy.pool import StaticPool
-
-from airbyte_protocol.models import ConfiguredAirbyteStream
 
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
-from airbyte_lib.telemetry import CacheTelemetryInfo
 from airbyte_lib.types import SQLTypeConverter
 
 
 if TYPE_CHECKING:
-    from sqlalchemy.engine import Connection
+    from pathlib import Path
+
+    from sqlalchemy.engine import Connection, Engine
     from sqlalchemy.engine.reflection import Inspector
 
+    from airbyte_protocol.models import ConfiguredAirbyteStream
+
     from airbyte_lib.datasets._base import DatasetBase
+    from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
 DEBUG_MODE = False  # Set to True to enable additional debug logging.
@@ -207,7 +208,7 @@ class SQLCacheBase(RecordProcessor):
     @property
     def streams(
         self,
-    ) -> dict[str, "DatasetBase"]:
+    ) -> dict[str, DatasetBase]:
         """Return a temporary table name."""
         # TODO: Add support for streams map, based on the cached catalog.
         raise NotImplementedError("Streams map is not yet supported.")
@@ -253,7 +254,7 @@ class SQLCacheBase(RecordProcessor):
 
         try:
             self._execute_sql(sql)
-        except Exception as ex:  # noqa: BLE001 # Too-wide catch because we don't know what the DB will throw.
+        except Exception as ex:
             # Ignore schema exists errors.
             if "already exists" not in str(ex):
                 raise
@@ -279,7 +280,6 @@ class SQLCacheBase(RecordProcessor):
         table_name: str,
     ) -> str:
         """Return the fully qualified name of the given table."""
-        # return f"{self.database_name}.{self.config.schema_name}.{table_name}"
         return f"{self.config.schema_name}.{table_name}"
 
     @final
@@ -325,10 +325,10 @@ class SQLCacheBase(RecordProcessor):
     def _ensure_final_table_exists(
         self,
         stream_name: str,
+        *,
         create_if_missing: bool = True,
     ) -> str:
-        """
-        Create the final table if it doesn't already exist.
+        """Create the final table if it doesn't already exist.
 
         Return the table name.
         """
@@ -349,6 +349,7 @@ class SQLCacheBase(RecordProcessor):
         self,
         stream_name: str,
         table_name: str,
+        *,
         raise_on_error: bool = False,
     ) -> bool:
         """Return true if the given table is compatible with the stream's schema.
@@ -460,8 +461,7 @@ class SQLCacheBase(RecordProcessor):
         batch_id: str,
         record_batch: pa.Table | pa.RecordBatch,
     ) -> FileWriterBatchHandle:
-        """
-        Process a record batch.
+        """Process a record batch.
 
         Return the path to the cache file.
         """
@@ -559,6 +559,7 @@ class SQLCacheBase(RecordProcessor):
     def _drop_temp_table(
         self,
         table_name: str,
+        *,
         if_exists: bool = True,
     ) -> None:
         """Drop the given table."""
@@ -592,7 +593,7 @@ class SQLCacheBase(RecordProcessor):
                     schema=self.config.schema_name,
                     if_exists="append",
                     index=False,
-                    dtype=self._get_sql_column_definitions(stream_name),  # type: ignore
+                    dtype=self._get_sql_column_definitions(stream_name),  # type: ignore[arg-type]
                 )
         return temp_table_name
 
@@ -649,7 +650,6 @@ class SQLCacheBase(RecordProcessor):
             """,
         )
 
-    @lru_cache
     def _get_primary_keys(
         self,
         stream_name: str,

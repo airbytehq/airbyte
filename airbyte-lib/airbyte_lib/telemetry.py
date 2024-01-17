@@ -1,11 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import datetime
 import os
 from contextlib import suppress
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 import requests
 
@@ -13,7 +14,8 @@ from airbyte_lib.version import get_version
 
 
 # TODO: Use production tracking key
-TRACKING_KEY = "jxT1qP9WEKwR3vtKMwP9qKhfQEGFtIM1" or str(os.environ.get("AIRBYTE_TRACKING_KEY"))
+# TODO: This 'or' is a no-op. Intentional? Should we switch order to prefer env var if available?
+TRACKING_KEY = "jxT1qP9WEKwR3vtKMwP9qKhfQEGFtIM1" or str(os.environ.get("AIRBYTE_TRACKING_KEY"))  # noqa: SIM222
 
 
 class SourceType(str, Enum):
@@ -39,20 +41,20 @@ class SyncState(str, Enum):
 class SourceTelemetryInfo:
     name: str
     type: SourceType
-    version: Optional[str]
+    version: str | None
 
 
 def send_telemetry(
     source_info: SourceTelemetryInfo,
     cache_info: CacheTelemetryInfo,
     state: SyncState,
-    number_of_records: Optional[int] = None,
+    number_of_records: int | None = None,
 ) -> None:
     # If DO_NOT_TRACK is set, we don't send any telemetry
     if os.environ.get("DO_NOT_TRACK"):
         return
 
-    current_time = datetime.datetime.utcnow().isoformat()
+    current_time: str = datetime.datetime.utcnow().isoformat()  # noqa: DTZ003 # prefer now() over utcnow()
     payload: dict[str, Any] = {
         "anonymousId": "airbyte-lib-user",
         "event": "sync",

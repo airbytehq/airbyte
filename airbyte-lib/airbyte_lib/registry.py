@@ -1,8 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import json
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 import requests
 
@@ -23,7 +25,7 @@ REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.
 def _update_cache() -> None:
     global _cache
     if os.environ.get("AIRBYTE_LOCAL_REGISTRY"):
-        with open(str(os.environ.get("AIRBYTE_LOCAL_REGISTRY"))) as f:
+        with Path(str(os.environ.get("AIRBYTE_LOCAL_REGISTRY"))).open() as f:
             data = json.load(f)
     else:
         response = requests.get(
@@ -38,8 +40,9 @@ def _update_cache() -> None:
 
 
 def get_connector_metadata(name: str) -> ConnectorMetadata:
-    """
-    check the cache for the connector. If the cache is empty, populate by calling update_cache
+    """Check the cache for the connector.
+
+    If the cache is empty, populate by calling update_cache.
     """
     if not _cache:
         _update_cache()
