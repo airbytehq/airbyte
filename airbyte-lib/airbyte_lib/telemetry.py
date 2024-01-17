@@ -54,7 +54,7 @@ def send_telemetry(
     if os.environ.get("DO_NOT_TRACK"):
         return
 
-    current_time = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
+    current_time: str = datetime.datetime.utcnow().isoformat()  # noqa: DTZ003 # prefer now() over utcnow()
     payload: dict[str, Any] = {
         "anonymousId": "airbyte-lib-user",
         "event": "sync",
