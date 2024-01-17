@@ -23,6 +23,7 @@ requests = "^2.31.0"
 SQLAlchemy = "^2.0.23"
 types-pyyaml = "^6.0.12.12"
 ulid = "^1.1"
+airbyte-api = "^0.44.2"
 
 [tool.poetry.group.dev.dependencies]
 docker = "^7.0.0"
