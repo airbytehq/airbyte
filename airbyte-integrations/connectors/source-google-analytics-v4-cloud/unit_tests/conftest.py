@@ -111,20 +111,6 @@ def test_config():
         "metrics": [],
         "start_date": pendulum.now().subtract(days=2).date().strftime("%Y-%m-%d"),
         "dimensions": [],
-        "credentials": {
-            "auth_type": "Client",
-            "client_id": "client_id_val",
-            "client_secret": "client_secret_val",
-            "refresh_token": "refresh_token_val",
-        },
-    }
-    return copy.deepcopy(test_conf)
-
-
-@pytest.fixture()
-def test_config_auth_service(test_config):
-    test_config["credentials"] = {
-        "auth_type": "Service",
         "credentials_json": '{"client_email": "", "private_key": "", "private_key_id": ""}',
     }
-    return copy.deepcopy(test_config)
+    return copy.deepcopy(test_conf)

@@ -4,7 +4,6 @@
 
 import logging
 from unittest.mock import MagicMock, patch
-from urllib.parse import unquote
 
 import pendulum
 import pytest
@@ -50,7 +49,9 @@ def test_lookup_metrics_dimensions_data_type(test_config, metrics_dimensions_map
     assert test == expected
 
 
+@patch("source_google_analytics_v4_cloud.source.jwt")
 def test_data_is_not_golden_is_logged_as_warning(
+    jwt_encode_mock,
     mock_api_returns_is_data_golden_false,
     test_config,
     configured_catalog,
@@ -63,7 +64,9 @@ def test_data_is_not_golden_is_logged_as_warning(
     assert DATA_IS_NOT_GOLDEN_MSG in caplog.text
 
 
+@patch("source_google_analytics_v4_cloud.source.jwt")
 def test_sampled_result_is_logged_as_warning(
+    jwt_encode_mock,
     mock_api_returns_sampled_results,
     test_config,
     configured_catalog,
@@ -76,7 +79,9 @@ def test_sampled_result_is_logged_as_warning(
     assert RESULT_IS_SAMPLED_MSG in caplog.text
 
 
+@patch("source_google_analytics_v4_cloud.source.jwt")
 def test_no_regressions_for_result_is_sampled_and_data_is_golden_warnings(
+    jwt_encode_mock,
     mock_api_returns_valid_records,
     test_config,
     configured_catalog,
@@ -91,9 +96,7 @@ def test_no_regressions_for_result_is_sampled_and_data_is_golden_warnings(
 
 
 @patch("source_google_analytics_v4_cloud.source.jwt")
-def test_check_connection_fails_jwt(
-    jwt_encode_mock, test_config_auth_service, requests_mock, mock_metrics_dimensions_type_list_link, mock_auth_call
-):
+def test_check_connection_fails_jwt(jwt_encode_mock, test_config, requests_mock, mock_metrics_dimensions_type_list_link, mock_auth_call):
     """
     check_connection fails because of the API returns no records,
     then we assume than user doesn't have permission to read requested `view`
@@ -105,10 +108,10 @@ def test_check_connection_fails_jwt(
         [{"status_code": 403, "json": {"results": [], "error": "User does not have sufficient permissions for this profile."}}],
     )
 
-    is_success, msg = source.check_connection(MagicMock(), test_config_auth_service)
+    is_success, msg = source.check_connection(MagicMock(), test_config)
     assert is_success is False
     assert (
-        msg == f"Please check the permissions for the requested view_id: {test_config_auth_service['view_id']}. "
+        msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}. "
         f"User does not have sufficient permissions for this profile."
     )
     jwt_encode_mock.encode.assert_called()
@@ -117,54 +120,6 @@ def test_check_connection_fails_jwt(
 
 @patch("source_google_analytics_v4_cloud.source.jwt")
 def test_check_connection_success_jwt(
-    jwt_encode_mock,
-    test_config_auth_service,
-    mocker,
-    mock_metrics_dimensions_type_list_link,
-    mock_auth_call,
-    mock_api_returns_valid_records,
-):
-    """
-    check_connection succeeds because of the API returns valid records for the latest date based slice,
-    then we assume than user has permission to read requested `view`
-    """
-    source = SourceGoogleAnalyticsV4()
-    is_success, msg = source.check_connection(MagicMock(), test_config_auth_service)
-    assert is_success is True
-    assert msg is None
-    jwt_encode_mock.encode.assert_called()
-    assert mock_auth_call.called
-    assert mock_api_returns_valid_records.called
-
-
-@patch("source_google_analytics_v4_cloud.source.jwt")
-def test_check_connection_fails_oauth(jwt_encode_mock, test_config, mock_metrics_dimensions_type_list_link, mock_auth_call, requests_mock):
-    """
-    check_connection fails because of the API returns no records,
-    then we assume than user doesn't have permission to read requested `view`
-    """
-    source = SourceGoogleAnalyticsV4()
-    requests_mock.register_uri(
-        "POST",
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        [{"status_code": 403, "json": {"results": [], "error": "User does not have sufficient permissions for this profile."}}],
-    )
-    is_success, msg = source.check_connection(MagicMock(), test_config)
-    assert is_success is False
-    assert (
-        msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}."
-        f" User does not have sufficient permissions for this profile."
-    )
-    jwt_encode_mock.encode.assert_not_called()
-    assert "https://www.googleapis.com/auth/analytics.readonly" in unquote(mock_auth_call.last_request.body)
-    assert "client_id_val" in unquote(mock_auth_call.last_request.body)
-    assert "client_secret_val" in unquote(mock_auth_call.last_request.body)
-    assert "refresh_token_val" in unquote(mock_auth_call.last_request.body)
-    assert mock_auth_call.called
-
-
-@patch("source_google_analytics_v4_cloud.source.jwt")
-def test_check_connection_success_oauth(
     jwt_encode_mock,
     test_config,
     mocker,
@@ -180,11 +135,7 @@ def test_check_connection_success_oauth(
     is_success, msg = source.check_connection(MagicMock(), test_config)
     assert is_success is True
     assert msg is None
-    jwt_encode_mock.encode.assert_not_called()
-    assert "https://www.googleapis.com/auth/analytics.readonly" in unquote(mock_auth_call.last_request.body)
-    assert "client_id_val" in unquote(mock_auth_call.last_request.body)
-    assert "client_secret_val" in unquote(mock_auth_call.last_request.body)
-    assert "refresh_token_val" in unquote(mock_auth_call.last_request.body)
+    jwt_encode_mock.encode.assert_called()
     assert mock_auth_call.called
     assert mock_api_returns_valid_records.called
 
@@ -245,6 +196,7 @@ def test_connection_fail_invalid_reports_json(test_config):
     assert "Invalid custom reports json structure." in error
 
 
+@patch("source_google_analytics_v4_cloud.source.jwt")
 @pytest.mark.parametrize(
     ("status", "json_resp"),
     (
@@ -253,7 +205,7 @@ def test_connection_fail_invalid_reports_json(test_config):
     ),
 )
 def test_connection_fail_due_to_http_status(
-    mocker, test_config, requests_mock, mock_auth_call, mock_metrics_dimensions_type_list_link, status, json_resp
+    jwt_encode_mock, mocker, test_config, requests_mock, mock_auth_call, mock_metrics_dimensions_type_list_link, status, json_resp
 ):
     mocker.patch("time.sleep")
     requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", status_code=status, json=json_resp)
@@ -266,8 +218,14 @@ def test_connection_fail_due_to_http_status(
     assert json_resp["error"] in error
 
 
+@patch("source_google_analytics_v4_cloud.source.jwt")
 def test_is_data_golden_flag_missing_equals_false(
-    mock_api_returns_is_data_golden_false, test_config, configured_catalog, mock_metrics_dimensions_type_list_link, mock_auth_call
+    jwt_encode_mock,
+    mock_api_returns_is_data_golden_false,
+    test_config,
+    configured_catalog,
+    mock_metrics_dimensions_type_list_link,
+    mock_auth_call,
 ):
     source = SourceGoogleAnalyticsV4()
     for message in source.read(logging.getLogger(), test_config, configured_catalog):
