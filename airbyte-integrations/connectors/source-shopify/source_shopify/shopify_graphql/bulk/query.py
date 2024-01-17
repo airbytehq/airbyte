@@ -126,6 +126,7 @@ class ShopifyBulkQuery:
         name: str,
         edges: Optional[Union[List[Field], List[InlineFragment], Field, InlineFragment]] = None,
         filter_query: Optional[str] = None,
+        additional_query_args: Optional[Mapping[str, Any]] = None,
     ) -> Query:
         """
         Defines the root of the graph with edges.
@@ -136,6 +137,9 @@ class ShopifyBulkQuery:
             args.append(Argument(name="query", value=f'"{filter_query}"'))
         if self.sort_key:
             args.append(Argument(name="sortKey", value=self.sort_key))
+        if additional_query_args:
+            for k, v in additional_query_args.items():
+                args.append(Argument(name=k, value=v))
         # constructing edges
         fields = [
             Field(name="edges", fields=[Field(name="node", fields=edges if edges else ["id"])]),
@@ -825,7 +829,7 @@ class InventoryLevel(ShopifyBulkQuery):
     """
     Output example to BULK query `inventory_levels` from `locations` with `filter query` by `updated_at`:
         {
-            locations {
+            locations(includeLegacy: true, includeInactive: true) {
                 edges {
                     node {
                         __typename
@@ -850,6 +854,12 @@ class InventoryLevel(ShopifyBulkQuery):
     """
 
     query_name = "locations"
+    # in order to return all the locations, additional query args must be provided
+    # https://shopify.dev/docs/api/admin-graphql/2023-10/queries/locations#query-arguments
+    locations_query_args = {
+        "includeLegacy": "true",
+        "includeInactive": "true",
+    }
     record_composition = {
         "new_record": "InventoryLevel",
     }
@@ -867,7 +877,12 @@ class InventoryLevel(ShopifyBulkQuery):
         inventory_levels: List[Query] = [self.build("inventoryLevels", self.inventory_levels_fields, filter_query)]
         # build the main query around previous
         # return the constructed query operation
-        return self.build(self.query_name, self.query_nodes + inventory_levels)
+        return self.build(
+            name=self.query_name,
+            edges=self.query_nodes + inventory_levels,
+            # passing more query args for `locations` query
+            additional_query_args=self.locations_query_args,
+        )
 
     def record_process_components(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """

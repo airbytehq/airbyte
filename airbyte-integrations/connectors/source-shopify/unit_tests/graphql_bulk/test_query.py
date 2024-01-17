@@ -152,6 +152,10 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                 queries=[
                     Query(
                         name='locations',
+                        arguments=[
+                            Argument(name="includeLegacy", value="true"),
+                            Argument(name="includeInactive", value="true"),
+                        ], 
                         fields=[
                             Field(
                                 name='edges', 
