@@ -19,6 +19,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-instagram=source_instagram.run:run",
+        ],
+    },
     name="source_instagram",
     description="Source implementation for Instagram.",
     author="Airbyte",

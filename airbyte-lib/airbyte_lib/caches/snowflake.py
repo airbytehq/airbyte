@@ -13,6 +13,7 @@ from overrides import overrides
 
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
+from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
 if TYPE_CHECKING:
@@ -68,3 +69,7 @@ class SnowflakeSQLCache(SQLCacheBase):
         TODO: Override the base implementation to use the COPY command.
         """
         return super()._write_files_to_new_table(files, stream_name, batch_id)
+
+    @overrides
+    def get_telemetry_info(self) -> CacheTelemetryInfo:
+        return CacheTelemetryInfo("snowflake")
