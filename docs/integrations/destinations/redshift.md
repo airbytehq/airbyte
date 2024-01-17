@@ -9,7 +9,7 @@ The Airbyte Redshift destination allows you to sync data to Redshift.
 This Redshift destination connector has two replication strategies:
 
 1. INSERT: Replicates data via SQL INSERT queries. This is built on top of the destination-jdbc code
-   base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Mulesoft
+   base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Maven Central
    [here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in
    Redshift documentation
    [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html). **Not recommended
@@ -28,8 +28,8 @@ For INSERT strategy:
 
 2. COPY: Replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is
    the recommended loading approach described by Redshift
-   [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html).
-   Requires an S3 bucket and credentials.
+   [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html).
+   Requires an S3 bucket and credentials. Data is copied into S3 as multiple files with a manifest file. 
 
 Airbyte automatically picks an approach depending on the given configuration - if S3 configuration
 is present, Airbyte will use the COPY strategy and vice versa.
@@ -76,8 +76,9 @@ Optional parameters:
     (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command
     completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
 
-NOTE: S3 staging does not use the SSH Tunnel option, if configured. SSH Tunnel supports the SQL
-connection only. S3 is secured through public HTTPS access only.
+NOTE: S3 staging does not use the SSH Tunnel option for copying data, if configured. SSH Tunnel supports the SQL
+connection only. S3 is secured through public HTTPS access only. Subsequent typing and deduping queries on final table 
+are executed over using provided SSH Tunnel configuration. 
 
 ## Step 1: Set up Redshift
 
@@ -204,10 +205,12 @@ All Redshift connections are encrypted using SSL.
 
 Each stream will be output into its own raw table in Redshift. Each table will contain 3 columns:
 
-- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
+- `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
   Redshift is `VARCHAR`.
-- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
+- `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source.
   The column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
+- `_airbyte_loaded_at`: a timestamp representing when the row was processed into final table.
+    The column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Redshift is
   `SUPER`.
 
