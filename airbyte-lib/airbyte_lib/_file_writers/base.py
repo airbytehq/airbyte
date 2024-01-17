@@ -53,8 +53,7 @@ class FileWriterBase(RecordProcessor, abc.ABC):
         batch_id: str,
         record_batch: pa.Table | pa.RecordBatch,
     ) -> FileWriterBatchHandle:
-        """
-        Process a record batch.
+        """Process a record batch.
 
         Return a list of paths to one or more cache files.
         """
