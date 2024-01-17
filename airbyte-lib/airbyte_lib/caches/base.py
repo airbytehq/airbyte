@@ -7,7 +7,7 @@ import abc
 import enum
 from collections.abc import Generator, Iterator, Mapping
 from contextlib import contextmanager
-from functools import cached_property, lru_cache
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, cast, final
 
 import pandas as pd
@@ -21,7 +21,6 @@ from sqlalchemy.pool import StaticPool
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
-from airbyte_lib.telemetry import CacheTelemetryInfo
 from airbyte_lib.types import SQLTypeConverter
 
 
@@ -34,6 +33,7 @@ if TYPE_CHECKING:
     from airbyte_protocol.models import ConfiguredAirbyteStream
 
     from airbyte_lib.datasets._base import DatasetBase
+    from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
 DEBUG_MODE = False  # Set to True to enable additional debug logging.
@@ -254,7 +254,7 @@ class SQLCacheBase(RecordProcessor):
 
         try:
             self._execute_sql(sql)
-        except Exception as ex:  # noqa: BLE001 # Too-wide catch because we don't know what the DB will throw.
+        except Exception as ex:
             # Ignore schema exists errors.
             if "already exists" not in str(ex):
                 raise
@@ -650,7 +650,6 @@ class SQLCacheBase(RecordProcessor):
             """,
         )
 
-    @lru_cache
     def _get_primary_keys(
         self,
         stream_name: str,

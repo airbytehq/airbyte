@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from airbyte_lib.registry import ConnectorMetadata
 
 
-
 _LATEST_VERSION = "latest"
 
 
