@@ -4,7 +4,6 @@ from __future__ import annotations
 import json
 import tempfile
 from contextlib import contextmanager, suppress
-from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
 import jsonschema
@@ -75,6 +74,8 @@ class Source:
         self._processed_records = 0
         self._config_dict: dict[str, Any] | None = None
         self._last_log_messages: list[str] = []
+        self._discovered_catalog: AirbyteCatalog | None = None
+        self._spec: ConnectorSpecification | None = None
         if config is not None:
             self.set_config(config)
         if streams is not None:
@@ -121,15 +122,14 @@ class Source:
 
     def _validate_config(self, config: dict[str, Any]) -> None:
         """Validate the config against the spec."""
-        spec = self._spec()
+        spec = self._get_spec(force_refresh=False)
         jsonschema.validate(config, spec.connectionSpecification)
 
     def get_available_streams(self) -> list[str]:
         """Get the available streams from the spec."""
         return [s.name for s in self._discover().streams]
 
-    @lru_cache(maxsize=1)
-    def _spec(self) -> ConnectorSpecification:
+    def _get_spec(self, *, force_refresh: bool = False) -> ConnectorSpecification:
         """Call spec on the connector.
 
         This involves the following steps:
@@ -137,24 +137,30 @@ class Source:
         * Listen to the messages and return the first AirbyteCatalog that comes along.
         * Make sure the subprocess is killed when the function returns.
         """
-        for msg in self._execute(["spec"]):
-            if msg.type == Type.SPEC and msg.spec:
-                return msg.spec
+        if force_refresh or self._spec is None:
+            for msg in self._execute(["spec"]):
+                if msg.type == Type.SPEC and msg.spec:
+                    self._spec = msg.spec
+                    break
+
+        if self._spec:
+            return self._spec
+
         raise Exception(
             f"Connector did not return a spec. Last logs: {self._last_log_messages}",
         )
 
     @property
-    @lru_cache(maxsize=1)
     def raw_catalog(self) -> AirbyteCatalog:
         """Get the raw catalog for the given streams."""
         return self._discover()
 
     @property
-    @lru_cache(maxsize=1)
     def configured_catalog(self) -> ConfiguredAirbyteCatalog:
         """Get the configured catalog for the given streams."""
-        catalog = self._discover()
+        if self._discovered_catalog is None:
+            self._discovered_catalog: AirbyteCatalog = self._discover()
+
         return ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
@@ -163,7 +169,7 @@ class Source:
                     destination_sync_mode=DestinationSyncMode.overwrite,
                     primary_key=None,
                 )
-                for s in catalog.streams
+                for s in self._discovered_catalog.streams
                 if self.streams is None or s.name in self.streams
             ],
         )
@@ -215,7 +221,7 @@ class Source:
             for msg in self._execute(["check", "--config", config_file]):
                 if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
                     if msg.connectionStatus.status != Status.FAILED:
-                        return # Success!
+                        return  # Success!
 
                     raise Exception(
                         f"Connector returned failed status: {msg.connectionStatus.message}",
@@ -282,15 +288,14 @@ class Source:
                 config_file,
                 catalog_file,
             ]:
-                for msg in self._execute(
+                yield from self._execute(
                     ["read", "--config", config_file, "--catalog", catalog_file],
-                ):
-                    yield msg
-        except Exception as e:
+                )
+        except Exception:
             send_telemetry(
                 source_tracking_information, cache_info, SyncState.FAILED, self._processed_records
             )
-            raise e
+            raise
         finally:
             send_telemetry(
                 source_tracking_information,
