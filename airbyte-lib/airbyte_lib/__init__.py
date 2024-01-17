@@ -1,3 +1,5 @@
+"""AirbyteLib brings Airbyte ELT to every Python developer."""
+
 from airbyte_lib._factories.cache_factories import get_default_cache, new_local_cache
 from airbyte_lib._factories.connector_factories import get_connector
 from airbyte_lib.datasets import CachedDataset
