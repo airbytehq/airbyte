@@ -1,16 +1,16 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - ${domain_name}/api/v2
   registries:
     oss:
-      enabled: false
+      enabled: true
     cloud:
       enabled: false
   connectorSubtype: api
   connectorType: source
   definitionId: 9bb85338-ea95-4c93-b267-6be89125b267
-  dockerImageTag: 1.2.0
+  dockerImageTag: 1.3.0
   dockerRepository: airbyte/source-freshservice
   githubIssueLabel: source-freshservice
   icon: freshservice.svg
