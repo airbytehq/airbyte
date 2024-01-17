@@ -1,62 +1,46 @@
 # Astra Destination
 
 This page contains the setup guide and reference information for the destination-astra connector.
+## Pre-Requisites
 
-## Prerequisites
-
-#### Minimum Python version required `= 3.9.0`
+- An OpenAI, AzureOpenAI, Cohere, etc. API Key
 
 ## Setup Guide
 
-#### Activate Virtual Environment and install dependencies
-From this connector directory, create a virtual environment:
-```
-python -m venv .venv
-```
+#### Set Up an Astra Database
 
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
-```
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
+- Create an Astra account [here](https://astra.datastax.com/signup)
+- In the Astra Portal, select Databases in the main navigation.
+- Click Create Database.
+- In the Create Database dialog, select the Serverless (Vector) deployment type.
+- In the Configuration section, enter a name for the new database in the Database name field.
+-- Because database names can’t be changed later, it’s best to name your database something meaningful. Database names must start and end with an alphanumeric character, and may contain the following special characters: & + - _ ( ) < > . , @.
+- Select your preferred Provider and Region.
+-- You can select from a limited number of regions if you’re on the Free plan. Regions with a lock icon require that you upgrade to a Pay As You Go plan.
+- Click Create Database.
+-- You are redirected to your new database’s Overview screen. Your database starts in Pending status before transitioning to Initializing. You’ll receive a notification once your database is initialized.
 
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
+#### Setting up a Vector Collection
 
-#### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/destinations/astra)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `destination_astra/spec.json` file.
-Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
-See `integration_tests/sample_config.json` for a sample config file.
+- From the database Overview screen, click on the Data Explorer tab
+- Either enter default_namespace into the Airbyte UI under astra_db_keyspace or open the namespace dropdown, create a new namespace, and enter that instead
+- Click Create Collection
+- Enter a name for the collection
+-- Also enter this name into the Airbyte UI as collection
+- Enter a vector length under Dimensions
+-- This should match with the embedding model you plan to use. The default model for openai is text-embedding-ada-002 which produced vectors of length 1536.
+- Select a similarity metric
+-- Default is cosine
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `destination astra test creds`
-and place them into `secrets/config.json`.
+#### Gathering other credentials
 
-### Locally running the connector
-```
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
-```
-
-### Locally running the connector docker image
-
-#### Use `airbyte-ci` to build your connector
-The Airbyte way of building this connector is to use our `airbyte-ci` tool.
-You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1).
-Then running the following command will build your connector:
-
-```bash
-airbyte-ci connectors --name destination-astra build
-```
-Once the command is done, you will find your connector image in your local docker registry: `airbyte/destination-astra:dev`.
+- Go back to the Overview tab on the Astra UI
+- Copy the Endpoint under Database Details and load into Airbyte under the name astra_db_endpoint
+- Click generate token, copy the application token and load under astra_db_app_token
 
 ## Supported Sync Modes
 
-## Supported Streams
+Full Refresh Sync
 
 ## Changelog
 | Version | Date       | Pull Request                                             | Subject                     |
