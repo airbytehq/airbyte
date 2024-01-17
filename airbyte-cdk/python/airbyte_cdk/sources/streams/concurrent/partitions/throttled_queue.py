@@ -9,6 +9,15 @@ from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
 class ThrottledQueue:
     """
     A queue that throttles the number of items that can be added to it.
+
+    We throttle the queue using custom logic instead of relying on the queue's max size
+    because the main thread can continuously dequeue before submitting a future.
+
+    Since the main thread doesn't wait, it'll be able to remove items from the queue even if the tasks should be throttled,
+    so the tasks won't wait.
+
+    This class solves this issue by checking if we should throttle the queue before adding an item to it.
+    An example implementation of a throttler would check if the number of pending futures is greater than a certain threshold.
     """
 
     def __init__(self, queue: Queue[QueueItem], throttler: Throttler, timeout: float) -> None:
