@@ -9,9 +9,31 @@ concurrency:
 on:
   workflow_dispatch:
 jobs:
+  get_ci_runner:
+    runs-on: ubuntu-latest
+    name: Get CI runner
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          fetch-depth: 1
+      - name: Get CI runner
+        id: get_ci_runner
+        uses: ./.github/actions/airbyte-ci-requirements
+        with:
+          runner_type: "format"
+          runner_size: "large"
+          airbyte_ci_command: "format"
+          github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+    outputs:
+      runner_name: ${{ steps.get_ci_runner.outputs.runner_name }}
   format-fix:
-    runs-on: "ci-runner-connector-format-medium-dagger-0-9-5"
     name: "Run airbyte-ci format fix all"
+    needs: get_ci_runner
+    runs-on: ${{ needs.get_ci_runner.outputs.runner_name }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3

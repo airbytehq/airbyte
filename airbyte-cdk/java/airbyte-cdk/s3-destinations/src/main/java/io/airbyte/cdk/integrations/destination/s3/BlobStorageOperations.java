@@ -31,7 +31,7 @@ public abstract class BlobStorageOperations {
    *
    * @return the name of the file that was uploaded.
    */
-  public abstract String uploadRecordsToBucket(SerializableBuffer recordsData, String namespace, String streamName, String objectPath)
+  public abstract String uploadRecordsToBucket(SerializableBuffer recordsData, String namespace, String objectPath)
       throws Exception;
 
   /**
