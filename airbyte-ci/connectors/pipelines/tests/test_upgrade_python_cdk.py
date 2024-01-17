@@ -69,6 +69,9 @@ def connector_context(sample_connector, dagger_client, current_platform):
         (get_sample_setup_py("airbyte-cdk==1.2.3"), get_sample_setup_py("airbyte-cdk>=6.6.6")),
         (get_sample_setup_py("airbyte-cdk>=1.2.3"), get_sample_setup_py("airbyte-cdk>=6.6.6")),
         (get_sample_setup_py("airbyte-cdk[file-based]>=1.2.3"), get_sample_setup_py("airbyte-cdk[file-based]>=6.6.6")),
+        (get_sample_setup_py("airbyte-cdk==1.2"), get_sample_setup_py("airbyte-cdk>=6.6.6")),
+        (get_sample_setup_py("airbyte-cdk>=1.2"), get_sample_setup_py("airbyte-cdk>=6.6.6")),
+        (get_sample_setup_py("airbyte-cdk[file-based]>=1.2"), get_sample_setup_py("airbyte-cdk[file-based]>=6.6.6")),
     ],
 )
 async def test_run_connector_cdk_upgrade_pipeline(
