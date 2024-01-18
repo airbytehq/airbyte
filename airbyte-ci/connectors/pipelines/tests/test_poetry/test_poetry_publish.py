@@ -54,9 +54,9 @@ def context(dagger_client: Client):
             id="setup.py project",
         ),
         pytest.param(
-            "airbyte-lib",
-            "airbyte-lib",
-            "airbyte_lib-0.2.0-py3-none-any.whl",
+            "airbyte-integrations/connectors/destination-duckdb",
+            "destination-duckdb",
+            "destination_duckdb-0.2.0-py3-none-any.whl",
             id="poetry project",
         ),
     ],
