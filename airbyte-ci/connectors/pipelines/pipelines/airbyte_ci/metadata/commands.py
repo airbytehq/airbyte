@@ -30,6 +30,7 @@ async def deploy_orchestrator(ctx: click.Context) -> None:
 
     await run_metadata_orchestrator_deploy_pipeline(
         ctx.obj["is_local"],
+        ctx.obj["target_repo"],
         ctx.obj["git_branch"],
         ctx.obj["git_revision"],
         ctx.obj["report_output_prefix"],

@@ -40,7 +40,7 @@ class TestAcceptanceTests:
         return container.with_new_file("/stupid_bash_script.sh", contents=f"echo {stdout}; echo {stderr} >&2; exit {exit_code}")
 
     @pytest.fixture
-    def test_context_ci(self, current_platform, dagger_client):
+    def test_context_ci(self, current_platform, dagger_client, target_repo):
         context = ConnectorContext(
             pipeline_name="test",
             connector=ConnectorWithModifiedFiles("source-faker", frozenset()),
@@ -48,6 +48,7 @@ class TestAcceptanceTests:
             git_revision="test",
             report_output_prefix="test",
             is_local=False,
+            target_repo=target_repo,
             use_remote_secrets=True,
             targeted_platforms=[current_platform],
         )

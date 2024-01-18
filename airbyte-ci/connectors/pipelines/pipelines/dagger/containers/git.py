@@ -1,13 +1,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 from dagger import Client, Container
-from pipelines.helpers.utils import AIRBYTE_REPO_URL
+
+if TYPE_CHECKING:
+    from pipelines.models.repo import Repo
 
 
 async def checked_out_git_container(
     dagger_client: Client,
+    repo: Repo,
     current_git_branch: str,
     current_git_revision: str,
     diffed_branch: Optional[str] = None,
@@ -31,7 +36,7 @@ async def checked_out_git_container(
                 "--track",
                 diffed_branch if diffed_branch is not None else current_git_branch,
                 "origin",
-                AIRBYTE_REPO_URL,
+                repo.url,
             ]
         )
         .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])

@@ -16,10 +16,11 @@ pytestmark = [
 
 
 @pytest.fixture
-def context(dagger_client):
+def context(dagger_client, target_repo):
     context = PipelineContext(
         pipeline_name="test",
         is_local=True,
+        target_repo=target_repo,
         git_branch="test",
         git_revision="test",
         report_output_prefix="test",

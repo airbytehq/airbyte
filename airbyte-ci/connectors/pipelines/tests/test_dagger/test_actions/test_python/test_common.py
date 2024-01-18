@@ -33,7 +33,7 @@ def python_connector_with_setup_not_latest_cdk(all_connectors):
 
 
 @pytest.fixture(scope="module")
-def context_with_setup(dagger_client, python_connector_with_setup_not_latest_cdk):
+def context_with_setup(dagger_client, python_connector_with_setup_not_latest_cdk, target_repo):
     context = ConnectorContext(
         pipeline_name="test python common",
         connector=python_connector_with_setup_not_latest_cdk,
@@ -41,6 +41,7 @@ def context_with_setup(dagger_client, python_connector_with_setup_not_latest_cdk
         git_revision="test",
         report_output_prefix="test",
         is_local=True,
+        target_repo=target_repo,
         use_remote_secrets=False,
     )
     context.dagger_client = dagger_client

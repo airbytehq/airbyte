@@ -60,6 +60,7 @@ POETRY_CACHE_VOLUME_NAME = "poetry_cache"
 POETRY_CACHE_PATH = "/root/.cache/pypoetry"
 STORAGE_DRIVER = "fuse-overlayfs"
 TAILSCALE_AUTH_KEY = os.getenv("TAILSCALE_AUTH_KEY")
+AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 
 
 class CIContext(str, Enum):

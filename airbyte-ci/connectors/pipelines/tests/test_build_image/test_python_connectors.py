@@ -51,7 +51,7 @@ class TestBuildConnectorImage:
 
     @pytest.fixture
     def test_context_with_real_connector_using_base_image(
-        self, connector_with_base_image_no_build_customization, dagger_client, current_platform
+        self, connector_with_base_image_no_build_customization, dagger_client, current_platform, target_repo
     ):
         context = ConnectorContext(
             pipeline_name="test build",
@@ -60,6 +60,7 @@ class TestBuildConnectorImage:
             git_revision="test",
             report_output_prefix="test",
             is_local=True,
+            target_repo=target_repo,
             use_remote_secrets=True,
             targeted_platforms=[current_platform],
         )
@@ -68,7 +69,7 @@ class TestBuildConnectorImage:
 
     @pytest.fixture
     def test_context_with_real_connector_using_base_image_with_build_customization(
-        self, connector_with_base_image_with_build_customization, dagger_client, current_platform
+        self, connector_with_base_image_with_build_customization, dagger_client, current_platform, target_repo
     ):
         context = ConnectorContext(
             pipeline_name="test build",
@@ -77,6 +78,7 @@ class TestBuildConnectorImage:
             git_revision="test",
             report_output_prefix="test",
             is_local=True,
+            target_repo=target_repo,
             use_remote_secrets=True,
             targeted_platforms=[current_platform],
         )
@@ -91,7 +93,7 @@ class TestBuildConnectorImage:
         pytest.skip("No connector without a connectorBuildOptions.baseImage metadata found")
 
     @pytest.fixture
-    def test_context_with_real_connector_without_base_image(self, connector_without_base_image, dagger_client, current_platform):
+    def test_context_with_real_connector_without_base_image(self, connector_without_base_image, dagger_client, current_platform, target_repo):
         context = ConnectorContext(
             pipeline_name="test build",
             connector=connector_without_base_image,
@@ -99,6 +101,7 @@ class TestBuildConnectorImage:
             git_revision="test",
             report_output_prefix="test",
             is_local=True,
+            target_repo=target_repo,
             use_remote_secrets=True,
             targeted_platforms=[current_platform],
         )

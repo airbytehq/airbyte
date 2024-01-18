@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 
 from github import Github, PullRequest
 
-AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
 GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
 GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS = "Running connectors tests"
 
@@ -33,6 +32,7 @@ def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> Non
 
 
 def update_commit_status_check(
+    repo_name: str,
     sha: str,
     state: str,
     target_url: str,
@@ -59,7 +59,7 @@ def update_commit_status_check(
     safe_log(logger, f"Attempting to create {state} status for commit {sha} on Github in {context} context.")
     try:
         github_client = Github(os.environ["CI_GITHUB_ACCESS_TOKEN"])
-        airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
+        airbyte_repo = github_client.get_repo(repo_name)
     except Exception as e:
         if logger:
             logger.error("No commit status check sent, the connection to Github API failed", exc_info=True)
@@ -84,23 +84,25 @@ def update_commit_status_check(
     safe_log(logger, f"Created {state} status for commit {sha} on Github in {context} context with desc: {description}.")
 
 
-def get_pull_request(pull_request_number: int, github_access_token: str) -> PullRequest.PullRequest:
+def get_pull_request(repo_name: str, pull_request_number: int, github_access_token: str) -> PullRequest.PullRequest:
     """Get a pull request object from its number.
 
     Args:
+        repo_name (str): The name of the repo to get the pull request from.
         pull_request_number (str): The number of the pull request to get.
         github_access_token (str): The GitHub access token to use to authenticate.
     Returns:
         PullRequest: The pull request object.
     """
     github_client = Github(github_access_token)
-    airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
+    airbyte_repo = github_client.get_repo(repo_name)
     return airbyte_repo.get_pull(pull_request_number)
 
 
 def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Optional[Logger] = None) -> None:
 
     update_commit_status_check(
+        click_context["target_repo"].name,
         click_context["git_revision"],
         github_state,
         click_context["gha_workflow_run_url"],

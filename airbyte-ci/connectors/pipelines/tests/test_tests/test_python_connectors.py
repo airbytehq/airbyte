@@ -28,7 +28,9 @@ class TestUnitTests:
         pytest.skip("No certified connector with setup.py found.")
 
     @pytest.fixture
-    def context_for_certified_connector_with_setup(self, mocker, certified_connector_with_setup, dagger_client, current_platform):
+    def context_for_certified_connector_with_setup(
+        self, mocker, certified_connector_with_setup, dagger_client, current_platform, target_repo
+    ):
         context = ConnectorContext(
             pipeline_name="test unit tests",
             connector=certified_connector_with_setup,
@@ -36,6 +38,7 @@ class TestUnitTests:
             git_revision="test",
             report_output_prefix="test",
             is_local=True,
+            target_repo=target_repo,
             use_remote_secrets=True,
             targeted_platforms=[current_platform],
         )
@@ -49,7 +52,7 @@ class TestUnitTests:
         return result.output_artifact[current_platform]
 
     @pytest.fixture
-    def context_for_connector_with_poetry(self, mocker, connector_with_poetry, dagger_client, current_platform):
+    def context_for_connector_with_poetry(self, mocker, connector_with_poetry, dagger_client, current_platform, target_repo):
         context = ConnectorContext(
             pipeline_name="test unit tests",
             connector=connector_with_poetry,
@@ -57,6 +60,7 @@ class TestUnitTests:
             git_revision="test",
             report_output_prefix="test",
             is_local=True,
+            target_repo=target_repo,
             use_remote_secrets=True,
             targeted_platforms=[current_platform],
         )

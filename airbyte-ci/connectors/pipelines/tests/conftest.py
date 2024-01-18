@@ -13,7 +13,9 @@ import git
 import pytest
 import requests
 from connector_ops.utils import Connector
+from pipelines.consts import AIRBYTE_REPO_URL
 from pipelines.helpers import utils
+from pipelines.models.repo import Repo
 from tests.utils import ALL_CONNECTORS
 
 
@@ -81,3 +83,8 @@ def all_connectors() -> List[Connector]:
 @pytest.fixture(scope="session")
 def current_platform():
     return dagger.Platform(f"linux/{platform.machine()}")
+
+
+@pytest.fixture(scope="session")
+def target_repo():
+    return Repo.from_url(AIRBYTE_REPO_URL)

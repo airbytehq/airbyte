@@ -46,7 +46,7 @@ setup(
 
 
 @pytest.fixture
-def connector_context(sample_connector, dagger_client, current_platform):
+def connector_context(sample_connector, dagger_client, current_platform, target_repo):
     context = ConnectorContext(
         pipeline_name="test",
         connector=sample_connector,
@@ -54,6 +54,7 @@ def connector_context(sample_connector, dagger_client, current_platform):
         git_revision="test",
         report_output_prefix="test",
         is_local=True,
+        target_repo=target_repo,
         use_remote_secrets=True,
         targeted_platforms=[current_platform],
     )

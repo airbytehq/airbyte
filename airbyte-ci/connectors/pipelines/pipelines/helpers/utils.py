@@ -27,7 +27,6 @@ if TYPE_CHECKING:
     from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
-AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 METADATA_FILE_NAME = "metadata.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
