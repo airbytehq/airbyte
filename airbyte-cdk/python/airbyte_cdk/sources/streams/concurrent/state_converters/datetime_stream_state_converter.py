@@ -16,7 +16,6 @@ from pendulum.datetime import DateTime
 
 
 class DateTimeStreamStateConverter(AbstractStreamStateConverter):
-
     @property
     @abstractmethod
     def _zero_value(self) -> Any:

@@ -37,7 +37,6 @@ class CursorField:
 
 
 class Cursor(ABC):
-
     @property
     @abstractmethod
     def state(self) -> MutableMapping[str, Any]:
@@ -59,7 +58,6 @@ class Cursor(ABC):
 
 
 class NoopCursor(Cursor):
-
     @property
     def state(self) -> MutableMapping[str, Any]:
         return {}
