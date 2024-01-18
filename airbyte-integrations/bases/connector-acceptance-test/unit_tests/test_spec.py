@@ -681,8 +681,134 @@ def test_enum_usage(connector_spec, should_fail):
                 },
             ),
             "",
+        )
+    ],
+)
+def test_validate_oauth_flow(connector_spec, expected_error):
+    t = _TestSpec()
+    if expected_error:
+        with pytest.raises(AssertionError, match=expected_error):
+            t.test_oauth_flow_parameters(connector_spec)
+    else:
+        t.test_oauth_flow_parameters(connector_spec)
+
+
+@pytest.mark.parametrize(
+    "connector_spec, expected_error",
+    [
+        # FAIL: OAuth is not default
+        (
+                ConnectorSpecification(
+                    connectionSpecification={
+                        "type": "object",
+                        "properties": {
+                            "api_url": {
+                                "type": "string"
+                            },
+                            "credentials": {
+                                "type": "object",
+                                "oneOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "auth_type": {
+                                                "type": "string",
+                                                "const": "access_token"
+                                            },
+                                            "access_token": {
+                                                "type": "string",
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "auth_type": {
+                                                "type": "string",
+                                                "const": "oauth2.0"
+                                            },
+                                            "client_id": {
+                                                "type": "string"
+                                            },
+                                            "client_secret": {
+                                                "type": "string"
+                                            },
+                                            "access_token": {
+                                                "type": "string"
+                                            },
+                                            "token_expiry_date": {
+                                                "type": "string",
+                                            },
+                                            "refresh_token": {
+                                                "type": "string",
+                                            }
+                                        }
+                                    },
+                                ]
+                            }
+                        }
+                    },
+                    advanced_auth={
+                        "auth_flow_type": "oauth2.0",
+                        "predicate_key": ["credentials", "auth_type"],
+                        "predicate_value": "oauth2.0",
+                        "oauth_config_specification": {
+                            "oauth_user_input_from_connector_config_specification": {
+                                "type": "object",
+                                "properties": {
+                                    "domain": {
+                                        "type": "string",
+                                        "path_in_connector_config": ["api_url"]
+                                    }
+                                }
+                            },
+                            "complete_oauth_output_specification": {
+                                "type": "object",
+                                "properties": {
+                                    "access_token": {
+                                        "type": "string",
+                                        "path_in_connector_config": ["credentials", "access_token"]
+                                    },
+                                    "refresh_token": {
+                                        "type": "string",
+                                        "path_in_connector_config": ["credentials", "refresh_token"]
+                                    },
+                                    "token_expiry_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "path_in_connector_config": ["credentials", "token_expiry_date"]
+                                    }
+                                }
+                            },
+                            "complete_oauth_server_input_specification": {
+                                "type": "object",
+                                "properties": {
+                                    "client_id": {
+                                        "type": "string"
+                                    },
+                                    "client_secret": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "complete_oauth_server_output_specification": {
+                                "type": "object",
+                                "properties": {
+                                    "client_id": {
+                                        "type": "string",
+                                        "path_in_connector_config": ["credentials", "client_id"]
+                                    },
+                                    "client_secret": {
+                                        "type": "string",
+                                        "path_in_connector_config": ["credentials", "client_secret"]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ), "Oauth method should be a default option. Current default method is access_token."
         ),
-        # SUCCESS: Fields specified in advanced_auth exist in spec, Oauth is default
+        # SUCCESS: Oauth is default
         (
                 ConnectorSpecification(
                     connectionSpecification={
@@ -794,127 +920,85 @@ def test_enum_usage(connector_spec, should_fail):
                     }
                 ), ""
         ),
-        # FAIL: Fields specified in advanced_auth exist in spec, but OAuth is not default
+        # SUCCESS: no advancedAuth specified
+        (ConnectorSpecification(connectionSpecification={}), ""),
+        # SUCCESS: only OAuth option to auth
         (
-                ConnectorSpecification(
-                    connectionSpecification={
-                        "type": "object",
-                         "properties": {
-                             "api_url": {
-                                 "type": "string"
-                             },
-                             "credentials": {
-                                 "type": "object",
-                                 "oneOf": [
-                                    {
-                                         "type": "object",
-                                         "properties": {
-                                             "auth_type": {
-                                                 "type": "string",
-                                                 "const": "access_token"
-                                             },
-                                             "access_token": {
-                                                 "type": "string",
-                                             }
-                                         }
-                                     },
-                                     {
-                                         "type": "object",
-                                         "properties": {
-                                             "auth_type": {
-                                                 "type": "string",
-                                                 "const": "oauth2.0"
-                                             },
-                                             "client_id": {
-                                                 "type": "string"
-                                             },
-                                             "client_secret": {
-                                                 "type": "string"
-                                             },
-                                             "access_token": {
-                                                 "type": "string"
-                                             },
-                                             "token_expiry_date": {
-                                                 "type": "string",
-                                             },
-                                             "refresh_token": {
-                                                 "type": "string",
-                                             }
-                                         }
-                                     },
-                                 ]
-                            }
-                         }
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "api_url": {"type": "object"},
+                        "credentials": {
+                            "type": "object",
+                            "properties": {
+                                "auth_type": {"type": "string", "const": "oauth2.0"},
+                                "client_id": {"type": "string"},
+                                "client_secret": {"type": "string"},
+                                "access_token": {"type": "string"},
+                                "refresh_token": {"type": "string"},
+                                "token_expiry_date": {"type": "string", "format": "date-time"},
+                            },
+                        },
                     },
-                    advanced_auth={
-                        "auth_flow_type": "oauth2.0",
-                        "predicate_key": ["credentials", "auth_type"],
-                        "predicate_value": "oauth2.0",
-                        "oauth_config_specification": {
-                              "oauth_user_input_from_connector_config_specification": {
-                                "type": "object",
-                                "properties": {
-                                  "domain": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["api_url"]
-                                  }
-                                }
-                              },
-                              "complete_oauth_output_specification": {
-                                "type": "object",
-                                "properties": {
-                                  "access_token": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["credentials", "access_token"]
-                                  },
-                                  "refresh_token": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["credentials", "refresh_token"]
-                                  },
-                                  "token_expiry_date": {
+                },
+                advanced_auth={
+                    "auth_flow_type": "oauth2.0",
+                    "predicate_key": ["credentials", "auth_type"],
+                    "predicate_value": "oauth2.0",
+                    "oauth_config_specification": {
+                        "oauth_user_input_from_connector_config_specification": {
+                            "type": "object",
+                            "properties": {"domain": {"type": "string", "path_in_connector_config": ["api_url"]}},
+                        },
+                        "complete_oauth_output_specification": {
+                            "type": "object",
+                            "properties": {
+                                "access_token": {"type": "string", "path_in_connector_config": ["credentials", "access_token"]},
+                                "refresh_token": {"type": "string", "path_in_connector_config": ["credentials", "refresh_token"]},
+                                "token_expiry_date": {
                                     "type": "string",
                                     "format": "date-time",
-                                    "path_in_connector_config": ["credentials", "token_expiry_date"]
-                                  }
-                                }
-                              },
-                              "complete_oauth_server_input_specification": {
-                                "type": "object",
-                                "properties": {
-                                  "client_id": {
-                                    "type": "string"
-                                  },
-                                  "client_secret": {
-                                    "type": "string"
-                                  }
-                                }
-                              },
-                              "complete_oauth_server_output_specification": {
-                                "type": "object",
-                                "properties": {
-                                  "client_id": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["credentials", "client_id"]
-                                  },
-                                  "client_secret": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["credentials", "client_secret"]
-                                  }
-                                }
-                              }
-                            }
-                    }
-                ), "Oauth method should be a default option. Current default method is access_token."
-        )
-    ],
+                                    "path_in_connector_config": ["credentials", "token_expiry_date"],
+                                },
+                            },
+                        },
+                        "complete_oauth_server_input_specification": {
+                            "type": "object",
+                            "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                        },
+                        "complete_oauth_server_output_specification": {
+                            "type": "object",
+                            "properties": {
+                                "client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]},
+                                "client_secret": {"type": "string", "path_in_connector_config": ["credentials", "client_secret"]},
+                            },
+                        },
+                    },
+                },
+            ),
+            "",
+        ),
+        # SUCCESS: Credentials object does not have oneOf option.
+        (
+            ConnectorSpecification(
+                connectionSpecification={"type": "object"},
+                advanced_auth={
+                    "auth_type": "oauth2.0",
+                    "predicate_key": ["credentials", "auth_type"],
+                },
+            ),
+            "Credentials object does not have oneOf option.",
+        ),
+    ]
 )
-def test_validate_oauth_flow(connector_spec, expected_error):
+def test_validate_auth_default_method(connector_spec, expected_error):
     t = _TestSpec()
     if expected_error:
         with pytest.raises(AssertionError, match=expected_error):
-            t.test_oauth_flow_parameters(connector_spec)
+            t.test_oauth_is_default_method(skip_oauth_default_method_test=False, actual_connector_spec=connector_spec)
     else:
-        t.test_oauth_flow_parameters(connector_spec)
+        t.test_oauth_is_default_method(skip_oauth_default_method_test=False, actual_connector_spec=connector_spec)
 
 
 @pytest.mark.parametrize(
