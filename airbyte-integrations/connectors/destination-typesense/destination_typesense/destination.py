@@ -50,7 +50,7 @@ class DestinationTypesense(Destination):
                 continue
         writer.flush()
 
-    def check(self,  logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         logger.debug("TypeSense Destination Config Check")
         try:
             client = get_client(config=config)
