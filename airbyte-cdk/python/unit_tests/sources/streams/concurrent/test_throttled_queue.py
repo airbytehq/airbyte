@@ -54,6 +54,7 @@ def test_throttled_queue_blocks_for_timeout_seconds_if_no_items():
 
     assert queue.get.is_called_once_with(block=True, timeout=timeout)
 
+
 def test_throttled_queue_raises_an_error_if_no_items_after_timeout():
     queue = Queue()
     throttler = Mock(spec=Throttler)
