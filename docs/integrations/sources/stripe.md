@@ -216,7 +216,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:--------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.4   | 2024-01-18 | [](https://github.com/airbytehq/airbyte/pull//) | Bump CDK version to improve resource usage and remove extra logging in substreams|
+| 5.1.4   | 2024-01-18 | [34347](https://github.com/airbytehq/airbyte/pull//34347) | Bump CDK version to improve resource usage and remove extra logging in substreams|
 | 5.1.3   | 2023-12-18 | [33306](https://github.com/airbytehq/airbyte/pull/33306/) | Adding integration tests                                                                                                                                                                                                      |
 | 5.1.2   | 2024-01-04 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
 | 5.1.1   | 2024-01-04 | [33926](https://github.com/airbytehq/airbyte/pull/33926/)    | Update endpoint for `bank_accounts` stream                                                                                                                                                                                      |
