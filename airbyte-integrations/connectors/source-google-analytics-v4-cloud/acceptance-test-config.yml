@@ -1,9 +1,9 @@
-connector_image: airbyte/source-google-analytics-v4:dev
+connector_image: airbyte/source-google-analytics-v4-cloud:dev
 test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: source_google_analytics_v4/spec.json
+      - spec_path: source_google_analytics_v4_cloud/spec.json
   discovery:
     tests:
       - config_path: secrets/service_config.json
