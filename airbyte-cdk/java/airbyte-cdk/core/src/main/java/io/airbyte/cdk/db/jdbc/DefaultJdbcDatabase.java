@@ -31,13 +31,13 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   protected final DataSource dataSource;
 
-  protected Long wmTenantId;
+  protected String wmTenantId;
 
   public DefaultJdbcDatabase(final DataSource dataSource) {
     this(dataSource, JdbcUtils.getDefaultSourceOperations());
   }
 
-  public DefaultJdbcDatabase(final DataSource dataSource, Long wmTenantId) {
+  public DefaultJdbcDatabase(final DataSource dataSource, String wmTenantId) {
     this(dataSource, JdbcUtils.getDefaultSourceOperations());
     this.wmTenantId = wmTenantId;
   }
@@ -47,7 +47,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
     this.dataSource = dataSource;
   }
 
-  public Long getWmTenantId() {
+  public String getWmTenantId() {
     return wmTenantId;
   }
 

@@ -14,7 +14,7 @@
       "wm_tenant_id": {
         "title": "WorkMagic Tenant ID",
         "description": "WorkMagic Tenant ID",
-        "type": "integer",
+        "type": "string",
         "order": 0
       },
       "host": {
