@@ -543,6 +543,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.4.2   | [#34301](https://github.com/airbytehq/airbyte/pull/34301)  | Pass extra params after Gradle tasks.                                                                             |
 | 3.4.1   | [#34067](https://github.com/airbytehq/airbyte/pull/34067)  | Use dagster-cloud 1.5.7 for deploy |
 | 3.4.0   | [#34276](https://github.com/airbytehq/airbyte/pull/34276)  | Introduce `--only-step` option for connector tests.                                                               |
 | 3.3.0   | [#34218](https://github.com/airbytehq/airbyte/pull/34218)  | Introduce `--ci-requirements` option for client defined CI runners.                                               |

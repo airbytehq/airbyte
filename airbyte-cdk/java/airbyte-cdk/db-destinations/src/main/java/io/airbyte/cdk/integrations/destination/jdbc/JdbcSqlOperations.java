@@ -87,22 +87,26 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   protected String createTableQueryV1(final String schemaName, final String tableName) {
     return String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s VARCHAR PRIMARY KEY,\n"
-            + "%s JSONB,\n"
-            + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
-            + ");\n",
+        """
+        CREATE TABLE IF NOT EXISTS %s.%s (
+          %s VARCHAR PRIMARY KEY,
+          %s JSONB,
+          %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+        """,
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   protected String createTableQueryV2(final String schemaName, final String tableName) {
     return String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s VARCHAR PRIMARY KEY,\n"
-            + "%s JSONB,\n"
-            + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
-            + "%s TIMESTAMP WITH TIME ZONE DEFAULT NULL\n"
-            + ");\n",
+        """
+        CREATE TABLE IF NOT EXISTS %s.%s (
+          %s VARCHAR PRIMARY KEY,
+          %s JSONB,
+          %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          %s TIMESTAMP WITH TIME ZONE DEFAULT NULL
+        );
+        """,
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT);
   }
