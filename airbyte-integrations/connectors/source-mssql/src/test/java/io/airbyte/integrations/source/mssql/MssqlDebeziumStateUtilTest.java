@@ -2,12 +2,13 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.integrations.debezium.internals.mssql;
+package io.airbyte.integrations.source.mssql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
+import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
+import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
 import io.debezium.connector.sqlserver.Lsn;
 import org.junit.jupiter.api.Test;
 

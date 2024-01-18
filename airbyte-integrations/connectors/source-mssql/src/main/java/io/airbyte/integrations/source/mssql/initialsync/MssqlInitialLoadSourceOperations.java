@@ -6,10 +6,10 @@ package io.airbyte.integrations.source.mssql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mssql.MssqlCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mssql.MssqlSourceOperations;
+import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;

@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql.initialsync;
 import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.getDebeziumProperties;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.prettyPrintConfiguredAirbyteStreamList;
+import static io.airbyte.integrations.source.mssql.cdc.MssqlCdcStateConstants.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler.discoverClusteredIndexForStream;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.ORDERED_COL_STATE_TYPE;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.STATE_TYPE_KEY;
@@ -17,10 +18,9 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager.DebeziumConnectorType;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlDebeziumStateUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
@@ -36,6 +36,8 @@ import io.airbyte.integrations.source.mssql.MssqlCdcSavedInfoFetcher;
 import io.airbyte.integrations.source.mssql.MssqlCdcStateHandler;
 import io.airbyte.integrations.source.mssql.MssqlCdcTargetPosition;
 import io.airbyte.integrations.source.mssql.MssqlQueryUtils;
+import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
+import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadSourceOperations.CdcMetadataInjector;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -58,7 +60,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -105,20 +106,15 @@ public class MssqlInitialReadUtil {
             ? initialDebeziumState
             : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
 
-    /*
-     * final Optional<MysqlDebeziumStateAttributes> savedOffset = mySqlDebeziumStateUtil.savedOffset(
-     * MySqlCdcProperties.getDebeziumProperties(database), catalog, state.get(MYSQL_CDC_OFFSET),
-     * sourceConfig);
-     *
-     * final boolean savedOffsetStillPresentOnServer = savedOffset.isPresent() &&
-     * mySqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
-     *
-     * if (!savedOffsetStillPresentOnServer) { LOGGER.
-     * warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch"
-     * ); }
-     *
-     */
-    final boolean savedOffsetStillPresentOnServer = true; // TEMP
+    final Optional<MssqlDebeziumStateAttributes> savedOffset = mssqlDebeziumStateUtil.savedOffset(
+        getDebeziumProperties(database, catalog, true), catalog, state.get(MSSQL_CDC_OFFSET), sourceConfig);
+    final boolean savedOffsetStillPresentOnServer =
+        savedOffset.isPresent() && mssqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
+
+    if (!savedOffsetStillPresentOnServer) {
+      LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
+    }
+
     final InitialLoadStreams initialLoadStreams =
         cdcStreamsForInitialOrderedCoumnLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
     final CdcState stateToBeUsed = (!savedOffsetStillPresentOnServer || (stateManager.getCdcStateManager().getCdcState() == null
@@ -161,16 +157,13 @@ public class MssqlInitialReadUtil {
         true,
         firstRecordWaitTime,
         subsequentRecordWaitTime,
-        OptionalInt.empty());
+        AirbyteDebeziumHandler.QUEUE_CAPACITY,
+        false);
 
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(catalog,
-        new MssqlCdcSavedInfoFetcher(stateToBeUsed),
-        new MssqlCdcStateHandler(stateManager),
-        metadataInjector,
-        getDebeziumProperties(database, catalog, false),
-        DebeziumConnectorType.RELATIONALDB,
-        emittedAt,
-        true); // TODO: check why add db name to state
+    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(getDebeziumProperties(database, catalog, false), sourceConfig, catalog);
+    final var eventConverter = new RelationalDbDebeziumEventConverter(metadataInjector, emittedAt);
+    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(
+        propertiesManager, eventConverter, new MssqlCdcSavedInfoFetcher(stateToBeUsed), new MssqlCdcStateHandler(stateManager));
 
     // This starts processing the transaction logs as soon as initial sync is complete,
     // this is a bit different from the current cdc syncs.

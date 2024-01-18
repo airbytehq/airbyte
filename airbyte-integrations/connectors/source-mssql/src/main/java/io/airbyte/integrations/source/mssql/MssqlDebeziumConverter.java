@@ -144,7 +144,6 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
       }
 
       if (input instanceof DateTimeOffset) {
-        LOGGER.info("*** input:{}", input);
         return DataTypeUtils.toISO8601String(
             OffsetDateTime.parse(input.toString(),
                 DateTimeFormatter.ofPattern(DEBEZIUM_DATETIMEOFFSET_FORMAT)));

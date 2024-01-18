@@ -83,10 +83,9 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
 
         LOGGER.info("Subquery number : {}", numSubqueries);
         final Stream<JsonNode> stream = database.unsafeQuery(
-            this::getPkPreparedStatement, sourceOperations::rowToJson);
+            this::getOcPreparedStatement, sourceOperations::rowToJson);
         currentIterator = AutoCloseableIterators.fromStream(stream, pair);
         numSubqueries++;
-        // TODO: check if a subquery can be dry
         // If the current subquery has no records associated with it, the entire stream has been read.
         if (!currentIterator.hasNext()) {
           return endOfData();
@@ -104,7 +103,7 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
     return (currentIterator == null || !currentIterator.hasNext());
   }
 
-  private PreparedStatement getPkPreparedStatement(final Connection connection) {
+  private PreparedStatement getOcPreparedStatement(final Connection connection) {
     try {
       final String tableName = pair.getName();
       final String schemaName = pair.getNamespace();
@@ -114,20 +113,19 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
       final String wrappedColumnNames = MssqlQueryUtils.getWrappedColumnNames(database, quoteString, columnNames, schemaName, tableName);
       final OrderedColumnLoadStatus ocLoadStatus = initialLoadStateManager.getOrderedColumnLoadStatus(pair);
       if (ocLoadStatus == null) {
-        final String quotedCursorField = enquoteIdentifier(ocInfo.ocFieldName(), quoteString); // TODO: check quoting
+        final String quotedCursorField = enquoteIdentifier(ocInfo.ocFieldName(), quoteString);
         final String sql;
-        // TODO: deal with composite ordered column
         if (isCompositeKeyLoad) {
           sql = "SELECT %s FROM %s ORDER BY %s".formatted(wrappedColumnNames, fullTableName, quotedCursorField);
         } else {
           sql = "SELECT TOP %s %s FROM %s ORDER BY %s".formatted(chunkSize, wrappedColumnNames, fullTableName, quotedCursorField);
         }
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+        LOGGER.info("Executing query for table {}: {}", tableName, sql);
         return preparedStatement;
       } else {
         LOGGER.info("ocLoadStatus value is : {}", ocLoadStatus.getOrderedColVal());
-        final String quotedCursorField = enquoteIdentifier(ocInfo.ocFieldName(), quoteString); // TODO: check quoting
+        final String quotedCursorField = enquoteIdentifier(ocInfo.ocFieldName(), quoteString);
         final String sql;
         if (isCompositeKeyLoad) {
           sql = "SELECT %s FROM %s WHERE %s >= ? ORDER BY %s".formatted(wrappedColumnNames, fullTableName,
@@ -148,9 +146,9 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         final JDBCType cursorFieldType = ocInfo.fieldType();
         sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, ocLoadStatus.getOrderedColVal());
         if (!isCompositeKeyLoad && ocInfo.ocMaxValue() != null) {
-          sourceOperations.setCursorField(preparedStatement, 2, cursorFieldType, ocInfo.ocMaxValue()); // TODO: check here
+          sourceOperations.setCursorField(preparedStatement, 2, cursorFieldType, ocInfo.ocMaxValue());
         }
-        LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+        LOGGER.info("Executing query for table {}: {}", tableName, sql);
         return preparedStatement;
       }
     } catch (final SQLException e) {

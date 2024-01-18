@@ -168,9 +168,12 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
     isSyncFinished = true;
     final var syncFinishedOffset = (HashMap<String, String>) offsetManager.read();
     if (recordsAllSyncs == 0L && targetPosition.isSameOffset(initialOffset, syncFinishedOffset)) {
-      // Edge case where no progress has been made: wrap up the sync by returning the initial offset instead of the
-      // current offset. We do this because we found that for some databases, heartbeats will cause Debezium to
-      // overwrite the offset file with a state which doesn't include all necessary data such as snapshot completion.
+      // Edge case where no progress has been made: wrap up the
+      // sync by returning the initial offset instead of the
+      // current offset. We do this because we found that
+      // for some databases, heartbeats will cause Debezium to
+      // overwrite the offset file with a state which doesn't
+      // include all necessary data such as snapshot completion.
       // This is the case for MS SQL Server, at least.
       return createStateMessage(initialOffset, 0);
     }
