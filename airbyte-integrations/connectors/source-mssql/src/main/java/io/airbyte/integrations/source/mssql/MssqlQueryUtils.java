@@ -3,13 +3,16 @@
  */
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
+import static io.airbyte.integrations.source.mssql.MssqlSource.HIERARCHYID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
@@ -23,6 +26,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -244,6 +248,57 @@ public class MssqlQueryUtils {
 
   public static String prettyPrintConfiguredAirbyteStreamList(final List<ConfiguredAirbyteStream> streamList) {
     return streamList.stream().map(s -> "%s.%s".formatted(s.getStream().getNamespace(), s.getStream().getName())).collect(Collectors.joining(", "));
+  }
+
+  /**
+   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be
+   * converted to a nvarchar(4000) data type by calling the ToString() method. So we make a separate
+   * query to get Table's MetaData, check is there any hierarchyid columns, and wrap required fields
+   * with the ToString() function in the final Select query. Reference:
+   * https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
+   * Note: This is where the main logic for the same method in MssqlSource. Extracted logic in order
+   * to be used in MssqlInitialLoadRecordIterator
+   *
+   * @return the list with Column names updated to handle functions (if nay) properly
+   */
+  public static String getWrappedColumnNames(
+                                             final JdbcDatabase database,
+                                             final String quoteString,
+                                             final List<String> columnNames,
+                                             final String schemaName,
+                                             final String tableName) {
+    final List<String> hierarchyIdColumns = new ArrayList<>();
+    try {
+      final String identifierQuoteString = database.getMetaData().getIdentifierQuoteString();
+      final SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
+          .queryMetadata(String
+              .format("SELECT TOP 1 %s FROM %s", // only first row is enough to get field's type
+                  enquoteIdentifierList(columnNames, quoteString),
+                  getFullyQualifiedTableNameWithQuoting(schemaName, tableName, quoteString)));
+
+      // metadata will be null if table doesn't contain records
+      if (sqlServerResultSetMetaData != null) {
+        for (int i = 1; i <= sqlServerResultSetMetaData.getColumnCount(); i++) {
+          if (HIERARCHYID.equals(sqlServerResultSetMetaData.getColumnTypeName(i))) {
+            hierarchyIdColumns.add(sqlServerResultSetMetaData.getColumnName(i));
+          }
+        }
+      }
+
+      // iterate through names and replace Hierarchyid field for query is with toString() function
+      // Eventually would get columns like this: testColumn.toString as "testColumn"
+      // toString function in SQL server is the only way to get human readable value, but not mssql
+      // specific HEX value
+      return String.join(", ", columnNames.stream()
+          .map(
+              el -> hierarchyIdColumns.contains(el) ? String
+                  .format("%s.ToString() as %s%s%s", el, identifierQuoteString, el, identifierQuoteString)
+                  : getIdentifierWithQuoting(el, quoteString))
+          .toList());
+    } catch (final SQLException e) {
+      LOGGER.error("Failed to fetch metadata to prepare a proper request.", e);
+      throw new RuntimeException(e);
+    }
   }
 
 }
