@@ -35,7 +35,7 @@ async def run_poetry_command(container: dagger.Container, command: str) -> Tuple
     return await container.stdout(), await container.stderr()
 
 
-def validate_env_vars_exist(_ctx: Any, _param: Any, value: List[str]):
+def validate_env_vars_exist(_ctx: dict, _param: dict, value: List[str]) -> List[str]:
     for var in value:
         if var not in os.environ:
             raise click.BadParameter(f"Environment variable {var} does not exist.")
