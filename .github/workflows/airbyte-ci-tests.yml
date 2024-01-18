@@ -6,20 +6,37 @@ concurrency:
 
 on:
   workflow_dispatch:
-    inputs:
-      airbyte_ci_binary_url:
-        description: "URL to airbyte-ci binary"
-        required: false
-        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
   pull_request:
     types:
       - opened
       - reopened
       - synchronize
 jobs:
+  get_ci_runner:
+    runs-on: ubuntu-latest
+    name: Get CI runner
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          fetch-depth: 1
+      - name: Get CI runner
+        id: get_ci_runner
+        uses: ./.github/actions/airbyte-ci-requirements
+        with:
+          runner_type: "test"
+          runner_size: "large"
+          airbyte_ci_command: "test"
+          github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+    outputs:
+      runner_name: ${{ steps.get_ci_runner.outputs.runner_name }}
   run-airbyte-ci-tests:
     name: Run Airbyte CI tests
-    runs-on: "ci-runner-connector-test-large-dagger-0-9-5"
+    needs: get_ci_runner
+    runs-on: ${{ needs.get_ci_runner.outputs.runner_name }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -78,7 +95,6 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/connector_ops --poetry-run-command='pytest tests'"
-          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run airbyte-ci/connectors/pipelines tests
@@ -94,7 +110,6 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines --disallow-untyped-defs' --poetry-run-command='ruff check pipelines'"
-          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run airbyte-ci/connectors/base_images tests
@@ -110,7 +125,6 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/base_images --poetry-run-command='pytest tests'"
-          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run test pipeline for the metadata lib
@@ -124,7 +138,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run test for the metadata orchestrator
@@ -138,7 +151,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run airbyte-lib tests
@@ -153,5 +165,4 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-lib"
-          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
