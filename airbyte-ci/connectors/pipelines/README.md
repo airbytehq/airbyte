@@ -528,6 +528,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 | Option                    | Required | Default | Mapped environment variable | Description                                                                                 |
 | ------------------------- | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
 | `-c/--poetry-run-command` | True     | None    |                             | The command to run with `poetry run`                                                        |
+| `-e/--pass-env-var`       | False    | None    |                             | Host environment variable that is passed to the container running the poetry command        |
 | `--ci-requirements`       | False    |         |                             | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 #### Examples
@@ -536,6 +537,9 @@ You can pass multiple `-c/--poetry-run-command` options to run multiple commands
 E.G.: running `pytest` and `mypy`:
 `airbyte-ci test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines'`
 
+E.G.: passing the environment variable `GCP_GSM_CREDENTIALS` environment variable to the container running the poetry command:
+`airbyte-ci test airbyte-lib --pass-env-var='GCP_GSM_CREDENTIALS'`
+
 E.G.: running `pytest` on a specific test folder:
 `airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --poetry-run-command='pytest tests/unit_tests'`
 
@@ -543,6 +547,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.5.0   | [#33313](https://github.com/airbytehq/airbyte/pull/33313)  | Pass extra params after Gradle tasks.                                                                             |
 | 3.4.2   | [#34301](https://github.com/airbytehq/airbyte/pull/34301)  | Pass extra params after Gradle tasks.                                                                             |
 | 3.4.1   | [#34067](https://github.com/airbytehq/airbyte/pull/34067)  | Use dagster-cloud 1.5.7 for deploy |
 | 3.4.0   | [#34276](https://github.com/airbytehq/airbyte/pull/34276)  | Introduce `--only-step` option for connector tests.                                                               |
