@@ -14,7 +14,7 @@ from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
 from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests, Unauthenticated
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import ClickView, Customer, CustomerLabel
+from source_google_ads.streams import AdGroup, ClickView, Customer, CustomerLabel
 
 # EXPIRED_PAGE_TOKEN exception will be raised when page token has expired.
 exception = GoogleAdsException(
@@ -287,3 +287,14 @@ def test_read_records_unauthenticated(mocker, customers, config):
     assert exc_info.value.message == (
         "Authentication failed for the customer 'customer_id'. " "Please try to Re-authenticate your credentials on set up Google Ads page."
     )
+
+
+def test_ad_group_stream_query_removes_metrics_field_for_manager(customers_manager, customers, config):
+    credentials = config["credentials"]
+    api = GoogleAds(credentials=credentials)
+    stream_config = dict(api=api, customers=customers_manager, start_date="2020-01-01", conversion_window_days=10)
+    stream = AdGroup(**stream_config)
+    assert "metrics" not in stream.get_query(stream_slice={"customer_id": "123"})
+    stream_config = dict(api=api, customers=customers, start_date="2020-01-01", conversion_window_days=10)
+    stream = AdGroup(**stream_config)
+    assert "metrics" in stream.get_query(stream_slice={"customer_id": "123"})
