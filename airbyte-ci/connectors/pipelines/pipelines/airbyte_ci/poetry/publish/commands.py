@@ -10,12 +10,13 @@ from __future__ import annotations
 from typing import Optional
 
 import asyncclick as click
-from connector_ops.utils import CONNECTOR_PATH_PREFIX
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 
 from .context import PyPIPublishContext
 from .pipeline import PublishToPyPI
+
+CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 
 
 @click.command(cls=DaggerPipelineCommand, name="publish", help="Publish a Python package to PyPI.")
@@ -48,10 +49,10 @@ async def publish(
     ctx: click.Context,
     click_pipeline_context: ClickPipelineContext,
     pypi_token: str,
-    registry_url: bool,
+    registry_url: str,
     publish_name: Optional[str],
     publish_version: Optional[str],
-) -> None:
+) -> bool:
     context = PyPIPublishContext(
         is_local=ctx.obj["is_local"],
         git_branch=ctx.obj["git_branch"],

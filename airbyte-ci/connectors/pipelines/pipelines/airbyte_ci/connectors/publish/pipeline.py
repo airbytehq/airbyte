@@ -59,7 +59,11 @@ class CheckPypiPackageDoesNotExist(Step):
     title = "Check if the connector is published on pypi"
 
     async def _run(self) -> StepResult:
-        is_published = is_package_published(self.context.package_name, self.context.version, self.context.registry)
+        is_published = (
+            self.context.package_name
+            and self.context.version
+            and is_package_published(self.context.package_name, self.context.version, self.context.registry)
+        )
         if is_published:
             return StepResult(
                 self, status=StepStatus.SKIPPED, stderr=f"{self.context.package_name} already exists in version {self.context.version}."
@@ -340,7 +344,7 @@ async def _run_pypi_publish_pipeline(context: PublishConnectorContext) -> Tuple[
     Run the pypi publish pipeline for a single connector.
     Return the results of the steps and a boolean indicating whether there was an error and the pipeline should be stopped.
     """
-    results = []
+    results: List[StepResult] = []
     # Try to convert the context to a PyPIPublishContext. If it returns None, it means we don't need to publish to pypi.
     pypi_context = await PyPIPublishContext.from_publish_connector_context(context)
     if not pypi_context:

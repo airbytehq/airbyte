@@ -6,7 +6,7 @@ import configparser
 import io
 import uuid
 from enum import Enum, auto
-from typing import Optional, Tuple
+from typing import Mapping, Optional, Tuple
 
 import tomli
 import tomli_w
@@ -116,7 +116,7 @@ class PublishToPyPI(Step):
         files = await dir_to_publish.entries()
         pypi_username = self.context.dagger_client.set_secret("pypi_username", "__token__")
         pypi_password = self.context.dagger_client.set_secret("pypi_password", f"pypi-{self.context.pypi_token}")
-        metadata = {
+        metadata: Mapping[str, str] = {
             "name": self.context.package_name,
             "version": self.context.version,
             # Enforce consistent author
