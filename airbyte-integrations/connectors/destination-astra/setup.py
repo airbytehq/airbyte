@@ -6,10 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk==0.55.1",
-    "langchain==0.0.271",
-    "openai==0.27.9",
-    "tiktoken==0.4.0",
+    "airbyte-cdk[vector-db-based]==0.57.0"
 ]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]
