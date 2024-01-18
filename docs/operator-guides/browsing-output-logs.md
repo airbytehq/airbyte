@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Browsing Logs
+# Browsing logs
 
 Airbyte records the full logs as a part of each sync. These logs can be used to understand the underlying operations Airbyte performs to read data from the source and write to the destination as a part of the [Airbyte Protocol](/understanding-airbyte/airbyte-protocol.md). The logs includes many details, including any errors that can be helpful when troubleshooting sync errors. 
 
