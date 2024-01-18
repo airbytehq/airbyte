@@ -1,6 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import builtins
 from unittest.mock import patch
 
 from airbyte_cdk.sources.concurrent_source.throttler import Throttler

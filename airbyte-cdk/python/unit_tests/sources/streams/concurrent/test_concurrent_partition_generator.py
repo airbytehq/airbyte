@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from queue import Queue
 from unittest.mock import Mock, call
 
 import pytest
