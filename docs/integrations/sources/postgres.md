@@ -1,6 +1,7 @@
 # Postgres
 
 Airbyte's certified Postgres connector offers the following features:
+* Replicate data from tables, views and materilized views. Other data objects won't be replicated to the destination like indexes, permissions.
 * Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication using the [xmin system column](#xmin). 
 * All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
 * Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
