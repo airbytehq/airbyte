@@ -160,7 +160,7 @@
           "previous_filename": {
             "type": ["null", "string"]
           }
-        }, 
+        },
         "additionalProperties": true
       }
     }
