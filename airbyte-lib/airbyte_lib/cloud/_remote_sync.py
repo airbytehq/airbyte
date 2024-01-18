@@ -60,6 +60,7 @@ class SyncMode(Enum, str):
     Fail if the resource does not exist.
     """
 
+
 def sync_source_definition(
     source: Source,
     airbyte_instance: HostedAirbyteInstance,

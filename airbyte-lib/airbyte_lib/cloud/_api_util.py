@@ -27,7 +27,6 @@ from airbyte_lib.exceptions import (
 JOB_WAIT_INTERVAL_SECS = 2.0
 
 
-
 def status_ok(status_code: int) -> bool:
     """Check if a status code is OK."""
     return status_code >= 200 and status_code < 300  # noqa: PLR2004  # allow inline magic numbers
@@ -121,12 +120,11 @@ def get_connection(
         api_key=api_key,
         api_root=api_root,
     )
-    response = airbyte_instance.connections \
-        .get_connection(
-            api_models.GetConnectionRequest(
-                connection_id=connection_id,
-            ),
-        )
+    response = airbyte_instance.connections.get_connection(
+        api_models.GetConnectionRequest(
+            connection_id=connection_id,
+        ),
+    )
     if status_ok(response.status_code) and response.connection_response:
         return response.connection_response
 
@@ -228,12 +226,10 @@ def get_connection_by_name(
         api_root=api_root,
     )
     found: list[api_models.ConnectionResponse] = [
-        connection for connection in connections
-        if connection.name == connection_name
+        connection for connection in connections if connection.name == connection_name
     ]
     if len(found) == 0:
-        raise MissingResourceError(
-            connection_name, "connection", f"Workspace: {workspace_id}")
+        raise MissingResourceError(connection_name, "connection", f"Workspace: {workspace_id}")
 
     if len(found) > 1:
         raise Exception(
@@ -256,12 +252,11 @@ def get_source(
         api_key=api_key,
         api_root=api_root,
     )
-    response = airbyte_instance.sources \
-        .get_source(
-            api_operations.GetSourceRequest(
-                source_id=source_id,
-            ),
-        )
+    response = airbyte_instance.sources.get_source(
+        api_operations.GetSourceRequest(
+            source_id=source_id,
+        ),
+    )
     if status_ok(response.status_code) and response.connection_response:
         return response.connection_response
 
@@ -282,16 +277,15 @@ def create_source(
         api_key=api_key,
         api_root=api_root,
     )
-    response = airbyte_instance.sources \
-        .create_source(
-            api_models.SourceCreateRequest(
-                name=name,
-                workspace_id=workspace_id,
-                configuration=config, # TODO: wrap in a proper configuration object
-                definition_id=None,  # Not used alternative to config.sourceType.
-                secret_id=None, # For OAuth, not yet supported
-            ),
-        )
+    response = airbyte_instance.sources.create_source(
+        api_models.SourceCreateRequest(
+            name=name,
+            workspace_id=workspace_id,
+            configuration=config,  # TODO: wrap in a proper configuration object
+            definition_id=None,  # Not used alternative to config.sourceType.
+            secret_id=None,  # For OAuth, not yet supported
+        ),
+    )
     if status_ok(response.status_code) and response.connection_response:
         return response.source_response
 
@@ -311,10 +305,10 @@ def get_destination(
         api_root=api_root,
     )
     response = airbyte_instance.sources.get_destination(
-            api_operations.GetDestinationRequest(
-                destination_id=destination_id,
-            ),
-        )
+        api_operations.GetDestinationRequest(
+            destination_id=destination_id,
+        ),
+    )
     if status_ok(response.status_code) and response.connection_response:
         return response.connection_response
 

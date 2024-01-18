@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from dataclasses import dataclass
 
 
-
 class HostedAirbyteResourceBase(ABC, BaseModel):
     """Base class for a resource hosted on Airbyte Cloud, OSS, or Enterprise."""
 

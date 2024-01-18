@@ -44,9 +44,7 @@ class HostedConnection(HostedAirbyteResource):
     def refresh_state(self) -> None:
         """Fetch the connection state from the Airbyte API."""
         self._cached_state = _api_util.get_connection(
-            workspace_id=self.workspace_id,
-            connection_id=self.connection_id,
-            api_key=self.api_key
+            workspace_id=self.workspace_id, connection_id=self.connection_id, api_key=self.api_key
         )
 
     @property
@@ -94,6 +92,7 @@ class HostedConnection(HostedAirbyteResource):
 
 
 class HostedSource(HostedAirbyteResource):
+    """A Cloud, OSS, or Enterprise-hosted source."""
 
     _cached_state: api_models.SourceResponse | None = None
 
@@ -108,10 +107,7 @@ class HostedSource(HostedAirbyteResource):
     @overrides
     def refresh_state(self) -> None:
         """Fetch the connection state from the Airbyte API."""
-        self._cached_state = _api_util.get_source(
-            source_id=self.source_id,
-            api_key=self.api_key
-        )
+        self._cached_state = _api_util.get_source(source_id=self.source_id, api_key=self.api_key)
 
     @requires_state
     def get_config(self) -> dataclass:
@@ -138,6 +134,11 @@ class HostedSource(HostedAirbyteResource):
         airbyte_instance: HostedAirbyteInstance,
         sync_mode: SyncMode = SyncMode.FAIL,
     ) -> HostedSource:
+        """Create a hosted source from a local source.
+
+        The 'name' arg is required and will be used for deduping, according to the provided
+        sync_mode.
+        """
         sync_source_definition(
             source=source,
             airbyte_instance=airbyte_instance,
@@ -146,9 +147,7 @@ class HostedSource(HostedAirbyteResource):
         )
 
 
-
 class HostedDestination(HostedAirbyteResource):
-
     _cached_state: PrivateAttr(api_models.DestinationResponse) | None = None
 
     @overrides
