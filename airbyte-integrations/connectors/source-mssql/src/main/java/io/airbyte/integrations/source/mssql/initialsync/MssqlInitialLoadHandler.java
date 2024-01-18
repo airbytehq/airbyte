@@ -70,8 +70,7 @@ public class MssqlInitialLoadHandler {
     this.tableSizeInfoMap = tableSizeInfoMap;
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-                                                                             final ConfiguredAirbyteCatalog catalog,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final Instant emittedAt) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();

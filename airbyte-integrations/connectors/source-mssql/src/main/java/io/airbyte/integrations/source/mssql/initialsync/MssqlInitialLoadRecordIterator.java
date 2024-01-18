@@ -11,10 +11,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mssql.MssqlQueryUtils;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.OrderedColumnInfo;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
@@ -110,7 +110,7 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
           quoteString);
       LOGGER.info("Preparing query for table: {}", fullTableName);
-      final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
+      final String wrappedColumnNames = MssqlQueryUtils.getWrappedColumnNames(database, quoteString, columnNames, schemaName, tableName);
       final OrderedColumnLoadStatus ocLoadStatus = initialLoadStateManager.getOrderedColumnLoadStatus(pair);
       if (ocLoadStatus == null) {
         final String quotedCursorField = enquoteIdentifier(ocInfo.ocFieldName(), quoteString); // TODO: check quoting
