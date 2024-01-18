@@ -1,5 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-
+from __future__ import annotations
 
 from pathlib import Path
 
@@ -23,13 +23,14 @@ def get_default_cache() -> DuckDBCache:
 def new_local_cache(
     cache_name: str | None = None,
     cache_dir: str | Path | None = None,
+    *,
     cleanup: bool = True,
 ) -> DuckDBCache:
     """Get a local cache for storing data, using a name string to seed the path.
 
     Args:
         cache_name: Name to use for the cache. Defaults to None.
-        root_dir: Root directory to store the cache in. Defaults to None.
+        cache_dir: Root directory to store the cache in. Defaults to None.
         cleanup: Whether to clean up temporary files. Defaults to True.
 
     Cache files are stored in the `.cache` directory, relative to the current

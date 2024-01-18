@@ -23,8 +23,7 @@ class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     password: str
     database: str
 
-    # Already defined in base class:
-    # schema_name: str
+    # Already defined in base class: `schema_name`
 
     @overrides
     def get_sql_alchemy_url(self) -> str:
