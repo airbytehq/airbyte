@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, List, MutableMapping, Tuple
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
@@ -25,13 +25,6 @@ class AbstractStreamStateConverter(ABC):
         """
         ...
 
-    @abstractmethod
-    def get_sync_start(self, cursor_field: "CursorField", stream_state: MutableMapping[str, Any], start: Optional[Any]) -> Any:
-        """
-        Return the start position for this sync.
-        """
-        ...
-
     @staticmethod
     def is_state_message_compatible(state: MutableMapping[str, Any]) -> bool:
         return bool(state) and state.get("state_type") in [t.value for t in ConcurrencyCompatibleStateType]
@@ -42,7 +35,7 @@ class AbstractStreamStateConverter(ABC):
         cursor_field: "CursorField",
         stream_state: MutableMapping[str, Any],
         start: Any,
-    ) -> MutableMapping[str, Any]:
+    ) -> Tuple[Any, MutableMapping[str, Any]]:
         """
         Convert the state message to the format required by the ConcurrentCursor.
 

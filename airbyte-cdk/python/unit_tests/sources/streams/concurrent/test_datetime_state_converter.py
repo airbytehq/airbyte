@@ -162,7 +162,7 @@ def test_concurrent_stream_state_converter_is_state_message_compatible(converter
     ]
 )
 def test_get_sync_start(converter, start, state, expected_start):
-    assert converter.get_sync_start(CursorField("created_at"), state, start) == expected_start
+    assert converter._get_sync_start(CursorField("created_at"), state, start) == expected_start
 
 
 @pytest.mark.parametrize(
@@ -198,8 +198,8 @@ def test_get_sync_start(converter, start, state, expected_start):
             {"created": "2021-08-22T05:03:27.000Z"},
             {
                 "state_type": "date-range",
-                "slices": [{"start": datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-                            "end": datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc)}],
+                "slices": [{"start": datetime(2021, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
+                            "end": datetime(2021, 8, 22, 5, 3, 27, tzinfo=timezone.utc)}],
                 "legacy": {"created": "2021-08-22T05:03:27.000Z"},
             },
             id="with-input-state-isomillis",
@@ -209,14 +209,15 @@ def test_get_sync_start(converter, start, state, expected_start):
 def test_convert_from_sequential_state(converter, start, sequential_state, expected_output_state):
     comparison_format = "%Y-%m-%dT%H:%M:%S.%f"
     if expected_output_state["slices"]:
-        conversion = converter.convert_from_sequential_state(CursorField("created"), sequential_state, converter.parse_value(start))
+        _, conversion = converter.convert_from_sequential_state(CursorField("created"), sequential_state, start)
         assert conversion["state_type"] == expected_output_state["state_type"]
         assert conversion["legacy"] == expected_output_state["legacy"]
         for actual, expected in zip(conversion["slices"], expected_output_state["slices"]):
             assert actual["start"].strftime(comparison_format) == expected["start"].strftime(comparison_format)
             assert actual["end"].strftime(comparison_format) == expected["end"].strftime(comparison_format)
     else:
-        assert converter.convert_from_sequential_state(CursorField("created"), sequential_state, start) == expected_output_state
+        _, conversion = converter.convert_from_sequential_state(CursorField("created"), sequential_state, start)
+        assert conversion == expected_output_state
 
 
 @pytest.mark.parametrize(

@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from datetime import datetime, timedelta
-from typing import Any, List, MutableMapping, Optional
+from typing import Any, List, MutableMapping, Optional, Tuple
 
 import pendulum
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
@@ -16,15 +16,6 @@ from pendulum.datetime import DateTime
 
 
 class DateTimeStreamStateConverter(AbstractStreamStateConverter):
-    def get_sync_start(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: Optional[Any]) -> datetime:
-        sync_start = self.parse_timestamp(start) if start is not None else self.zero_value
-        prev_sync_low_water_mark = (
-            self.parse_timestamp(stream_state[cursor_field.cursor_field_key]) if cursor_field.cursor_field_key in stream_state else None
-        )
-        if prev_sync_low_water_mark and prev_sync_low_water_mark >= sync_start:
-            return prev_sync_low_water_mark
-        else:
-            return sync_start
 
     @property
     @abstractmethod
@@ -82,7 +73,7 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
 
     def convert_from_sequential_state(
         self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: datetime
-    ) -> MutableMapping[str, Any]:
+    ) -> Tuple[datetime, MutableMapping[str, Any]]:
         """
         Convert the state message to the format required by the ConcurrentCursor.
 
@@ -95,19 +86,30 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
             ]
         }
         """
+        sync_start = self._get_sync_start(cursor_field, stream_state, start)
         if self.is_state_message_compatible(stream_state):
-            return stream_state
+            return sync_start, stream_state
 
         # Create a slice to represent the records synced during prior syncs.
         # The start and end are the same to avoid confusion as to whether the records for this slice
         # were actually synced
-        slices = [{self.START_KEY: start, self.END_KEY: start}]
+        slices = [{self.START_KEY: sync_start, self.END_KEY: sync_start}]
 
-        return {
+        return sync_start, {
             "state_type": ConcurrencyCompatibleStateType.date_range.value,
             "slices": slices,
             "legacy": stream_state,
         }
+
+    def _get_sync_start(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: Optional[Any]) -> datetime:
+        sync_start = self.parse_timestamp(start) if start is not None else self.zero_value
+        prev_sync_low_water_mark = (
+            self.parse_timestamp(stream_state[cursor_field.cursor_field_key]) if cursor_field.cursor_field_key in stream_state else None
+        )
+        if prev_sync_low_water_mark and prev_sync_low_water_mark >= sync_start:
+            return prev_sync_low_water_mark
+        else:
+            return sync_start
 
     def convert_to_sequential_state(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """

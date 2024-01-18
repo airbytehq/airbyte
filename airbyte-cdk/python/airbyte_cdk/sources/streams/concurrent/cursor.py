@@ -107,9 +107,7 @@ class ConcurrentCursor(Cursor):
     def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[datetime, MutableMapping[str, Any]]:
         if self._connector_state_converter.is_state_message_compatible(state):
             return self._start or self._connector_state_converter.zero_value, self._connector_state_converter.deserialize(state)
-        # The actual start of the sync, taking into account the last cursor value
-        start = self._connector_state_converter.get_sync_start(self._cursor_field, state, self._start)
-        return start, self._connector_state_converter.convert_from_sequential_state(self._cursor_field, state, start)
+        return self._connector_state_converter.convert_from_sequential_state(self._cursor_field, state, self._start)
 
     def observe(self, record: Record) -> None:
         if self._slice_boundary_fields:
