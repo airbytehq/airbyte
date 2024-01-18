@@ -63,8 +63,8 @@ class PyPIPublishContext(PipelineContext):
 
         current_metadata = connector_context.connector.metadata
         if (
-            not "remoteRegistries" in current_metadata
-            or not "pypi" in current_metadata["remoteRegistries"]
+            "remoteRegistries" not in current_metadata
+            or "pypi" not in current_metadata["remoteRegistries"]
             or not current_metadata["remoteRegistries"]["pypi"]["enabled"]
         ):
             return None
@@ -80,7 +80,7 @@ class PyPIPublishContext(PipelineContext):
             registry="https://test.pypi.org/legacy/",  # TODO: go live
             package_path=str(connector_context.connector.code_directory),
             package_name=current_metadata["remoteRegistries"]["pypi"]["packageName"],
-            version=current_metadata["dockerImageTag"],
+            version=version,
             ci_report_bucket=connector_context.ci_report_bucket,
             report_output_prefix=connector_context.report_output_prefix,
             is_local=connector_context.is_local,

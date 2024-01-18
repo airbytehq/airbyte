@@ -10,7 +10,7 @@ from typing import Optional, Tuple
 
 import tomli
 import tomli_w
-from dagger import Directory
+from dagger import Container, Directory
 from pipelines.airbyte_ci.poetry.publish.context import PyPIPublishContext
 from pipelines.consts import PYPROJECT_TOML_FILE_PATH, SETUP_PY_FILE_PATH
 from pipelines.dagger.actions.python.poetry import with_poetry
@@ -28,7 +28,7 @@ class PublishToPyPI(Step):
     context: PyPIPublishContext
     title = "Publish package to PyPI"
 
-    def _get_base_container(self):
+    def _get_base_container(self) -> Container:
         return with_poetry(self.context)
 
     async def _get_package_metadata_from_pyproject_toml(self, dir_to_publish: Directory) -> Optional[Tuple[str, str]]:
@@ -105,7 +105,7 @@ class PublishToPyPI(Step):
             .with_workdir("package")
             .with_new_file(PYPROJECT_TOML_FILE_PATH, contents=tomli_w.dumps(contents))
             .with_exec(["poetry", "config", "repositories.mypypi", self.context.registry])
-            .with_exec(sh_dash_c([f"poetry config pypi-token.mypypi $PYPI_TOKEN"]))
+            .with_exec(sh_dash_c(["poetry config pypi-token.mypypi $PYPI_TOKEN"]))
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_exec(sh_dash_c(["poetry publish --build --repository mypypi -vvv --no-interaction"]))
         )
