@@ -14,7 +14,7 @@ from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
-from pipelines.airbyte_ci.poetry.pipeline import PublishToPyPI, PyPIPublishContext
+from pipelines.airbyte_ci.poetry.publish.pipeline import PublishToPyPI, PyPIPublishContext
 from pipelines.airbyte_ci.poetry.utils import is_package_published
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
@@ -54,12 +54,12 @@ class CheckConnectorImageDoesNotExist(Step):
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image}.")
 
 
-class CheckPypiPackageExists(Step):
+class CheckPypiPackageDoesNotExist(Step):
     context: PyPIPublishContext
     title = "Check if the connector is published on pypi"
 
     async def _run(self) -> StepResult:
-        is_published = is_package_published(self.context.package_name, self.context.version, self.context.test_pypi)
+        is_published = is_package_published(self.context.package_name, self.context.version, self.context.registry)
         if is_published:
             return StepResult(
                 self, status=StepStatus.SKIPPED, stderr=f"{self.context.package_name} already exists in version {self.context.version}."
@@ -291,21 +291,10 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
-            # Try to convert the context to a PyPIPublishContext. If it returns None, it means we don't need to publish to pypi.
-            pypi_context = await PyPIPublishContext.from_connector_context(context)
-            if pypi_context:
-                check_pypi_package_exists_results = await CheckPypiPackageExists(pypi_context).run()
-                results.append(check_pypi_package_exists_results)
-                if check_pypi_package_exists_results.status is StepStatus.SKIPPED:
-                    context.logger.info("The connector version is already published on pypi.")
-                elif check_pypi_package_exists_results.status is StepStatus.SUCCESS:
-                    context.logger.info("The connector version is not published on pypi. Let's build and publish it.")
-                    publish_to_pypi_results = await PublishToPyPI(pypi_context).run()
-                    results.append(publish_to_pypi_results)
-                    if publish_to_pypi_results.status is StepStatus.FAILURE:
-                        return create_connector_report(results)
-                elif check_pypi_package_exists_results.status is StepStatus.FAILURE:
-                    return create_connector_report(results)
+            pypi_steps, terminate_early = await _run_pypi_publish_pipeline(context)
+            results.extend(pypi_steps)
+            if terminate_early:
+                return create_connector_report(results)
 
             # Exit early if the connector image already exists or has failed to build
             if check_connector_image_results.status is not StepStatus.SUCCESS:
@@ -344,6 +333,33 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             results.append(metadata_upload_results)
             connector_report = create_connector_report(results)
     return connector_report
+
+
+async def _run_pypi_publish_pipeline(context: PublishConnectorContext) -> Tuple[List[StepResult], bool]:
+    """
+    Run the pypi publish pipeline for a single connector.
+    Return the results of the steps and a boolean indicating whether there was an error and the pipeline should be stopped.
+    """
+    results = []
+    # Try to convert the context to a PyPIPublishContext. If it returns None, it means we don't need to publish to pypi.
+    pypi_context = await PyPIPublishContext.from_publish_connector_context(context)
+    if not pypi_context:
+        return results, False
+
+    check_pypi_package_exists_results = await CheckPypiPackageDoesNotExist(pypi_context).run()
+    results.append(check_pypi_package_exists_results)
+    if check_pypi_package_exists_results.status is StepStatus.SKIPPED:
+        context.logger.info("The connector version is already published on pypi.")
+    elif check_pypi_package_exists_results.status is StepStatus.SUCCESS:
+        context.logger.info("The connector version is not published on pypi. Let's build and publish it.")
+        publish_to_pypi_results = await PublishToPyPI(pypi_context).run()
+        results.append(publish_to_pypi_results)
+        if publish_to_pypi_results.status is StepStatus.FAILURE:
+            return results, True
+    elif check_pypi_package_exists_results.status is StepStatus.FAILURE:
+        return results, True
+
+    return results, False
 
 
 def reorder_contexts(contexts: List[PublishConnectorContext]) -> List[PublishConnectorContext]:
