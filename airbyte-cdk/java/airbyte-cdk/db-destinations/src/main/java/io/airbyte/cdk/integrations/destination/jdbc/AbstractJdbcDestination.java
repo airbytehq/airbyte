@@ -7,11 +7,12 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
@@ -30,7 +31,9 @@ import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopV2TableMigrator;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -50,7 +53,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcDestination extends BaseConnector implements Destination {
+public abstract class AbstractJdbcDestination extends JdbcConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
@@ -58,7 +61,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   public static final String DISABLE_TYPE_DEDUPE = "disable_type_dedupe";
 
-  private final String driverClass;
   private final NamingConventionTransformer namingResolver;
   private final SqlOperations sqlOperations;
 
@@ -73,7 +75,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public AbstractJdbcDestination(final String driverClass,
                                  final NamingConventionTransformer namingResolver,
                                  final SqlOperations sqlOperations) {
-    this.driverClass = driverClass;
+    super(driverClass);
     this.namingResolver = namingResolver;
     this.sqlOperations = sqlOperations;
   }
@@ -90,6 +92,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         final var v2RawSchema = namingResolver.getIdentifier(TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
             .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
         attemptTableOperations(v2RawSchema, database, namingResolver, sqlOperations, false);
+        destinationSpecificTableOperations(database);
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
@@ -111,6 +114,15 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       }
     }
   }
+
+  /**
+   * Specific Databases may have additional checks unique to them which they need to perform, override
+   * this method to add additional checks.
+   *
+   * @param database the database to run checks against
+   * @throws Exception
+   */
+  protected void destinationSpecificTableOperations(final JdbcDatabase database) throws Exception {}
 
   /**
    * This method is deprecated. It verifies table creation, but not insert right to a newly created
@@ -188,17 +200,30 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         .withSerialized(dummyDataToInsert.toString());
   }
 
-  protected DataSource getDataSource(final JsonNode config) {
+  /**
+   * Subclasses which need to modify the DataSource should override
+   * {@link #modifyDataSourceBuilder(DataSourceFactory.DataSourceBuilder)} rather than this method.
+   */
+  @VisibleForTesting
+  public DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
-    return DataSourceFactory.create(
+    final Map<String, String> connectionProperties = getConnectionProperties(config);
+    final DataSourceFactory.DataSourceBuilder builder = new DataSourceFactory.DataSourceBuilder(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClass,
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        getConnectionProperties(config));
+        driverClassName,
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText())
+            .withConnectionProperties(connectionProperties)
+            .withConnectionTimeout(getConnectionTimeout(connectionProperties));
+    return modifyDataSourceBuilder(builder).build();
   }
 
-  protected JdbcDatabase getDatabase(final DataSource dataSource) {
+  protected DataSourceFactory.DataSourceBuilder modifyDataSourceBuilder(final DataSourceFactory.DataSourceBuilder builder) {
+    return builder;
+  }
+
+  @VisibleForTesting
+  public JdbcDatabase getDatabase(final DataSource dataSource) {
     return new DefaultJdbcDatabase(dataSource);
   }
 
@@ -224,7 +249,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   protected abstract JdbcSqlGenerator getSqlGenerator();
 
-  protected JdbcDestinationHandler getDestinationHandler(String databaseName, JdbcDatabase database) {
+  protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
     return new JdbcDestinationHandler(databaseName, database);
   }
 
@@ -269,8 +294,17 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
           .parseCatalog(catalog);
       final String databaseName = getDatabaseName(config);
       final var migrator = new JdbcV1V2Migrator(namingResolver, database, databaseName);
+      final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
       final DestinationHandler<TableDefinition> destinationHandler = getDestinationHandler(databaseName, database);
-      final TyperDeduper typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, 8);
+      final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
+      final TyperDeduper typerDeduper;
+      if (disableTypeDedupe) {
+        typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator,
+            8);
+      } else {
+        typerDeduper =
+            new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator, 8);
+      }
       return JdbcBufferedConsumerFactory.createAsync(
           outputRecordCollector,
           database,

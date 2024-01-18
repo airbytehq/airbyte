@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Set up a Connection
 
 Now that you've learned how to set up your first [source](./add-a-source) and [destination](./add-a-destination), it's time to finish the job by creating your very first connection!

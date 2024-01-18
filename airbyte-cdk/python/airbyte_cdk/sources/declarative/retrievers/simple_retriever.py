@@ -3,6 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
+from functools import partial
 from itertools import islice
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
@@ -215,6 +216,7 @@ class SimpleRetriever(Retriever):
         self,
         response: Optional[requests.Response],
         stream_state: StreamState,
+        records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Record]:
@@ -225,7 +227,11 @@ class SimpleRetriever(Retriever):
 
         self._last_response = response
         records = self.record_selector.select_records(
-            response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            response=response,
+            stream_state=stream_state,
+            records_schema=records_schema,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
         )
         self._records_from_last_response = records
         return records
@@ -271,16 +277,15 @@ class SimpleRetriever(Retriever):
     # This logic is similar to _read_pages in the HttpStream class. When making changes here, consider making changes there as well.
     def _read_pages(
         self,
-        records_generator_fn: Callable[[Optional[requests.Response], Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]],
+        records_generator_fn: Callable[[Optional[requests.Response]], Iterable[StreamData]],
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any],
     ) -> Iterable[StreamData]:
-        stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
         while not pagination_complete:
             response = self._fetch_next_page(stream_state, stream_slice, next_page_token)
-            yield from records_generator_fn(response, stream_state, stream_slice)
+            yield from records_generator_fn(response)
 
             if not response:
                 pagination_complete = True
@@ -294,14 +299,28 @@ class SimpleRetriever(Retriever):
 
     def read_records(
         self,
+        records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
+        """
+        Fetch a stream's records from an HTTP API source
+
+        :param records_schema: json schema to describe record
+        :param stream_slice: The stream slice to read data for
+        :return: The records read from the API source
+        """
         stream_slice = stream_slice or {}  # None-check
         # Fixing paginator types has a long tail of dependencies
         self._paginator.reset()
 
         most_recent_record_from_slice = None
-        for stream_data in self._read_pages(self._parse_records, self.state, stream_slice):
+        record_generator = partial(
+            self._parse_records,
+            stream_state=self.state or {},
+            stream_slice=stream_slice,
+            records_schema=records_schema,
+        )
+        for stream_data in self._read_pages(record_generator, self.state, stream_slice):
             most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, stream_data, stream_slice)
             yield stream_data
 
@@ -361,9 +380,15 @@ class SimpleRetriever(Retriever):
         self,
         response: Optional[requests.Response],
         stream_state: Mapping[str, Any],
+        records_schema: Mapping[str, Any],
         stream_slice: Optional[Mapping[str, Any]],
     ) -> Iterable[StreamData]:
-        yield from self._parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
+        yield from self._parse_response(
+            response,
+            stream_slice=stream_slice,
+            stream_state=stream_state,
+            records_schema=records_schema,
+        )
 
     def must_deduplicate_query_params(self) -> bool:
         return True

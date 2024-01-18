@@ -52,19 +52,6 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
     }
   }
 
-  /**
-   * I suspect this value is ignored. The stage name is eventually passed into
-   * {@link io.airbyte.cdk.integrations.destination.s3.S3StorageOperations#uploadRecordsToBucket(SerializableBuffer, String, String, String)}
-   * as the streamName parameter... which is completely ignored.
-   *
-   */
-  @Override
-  public String getStageName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
-        nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)));
-  }
-
   @Override
   public String getStagingPath(final UUID connectionId,
                                final String namespace,
@@ -84,9 +71,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
+  public void createStageIfNotExists() throws Exception {
     s3StorageOperations.createBucketIfNotExists();
   }
 
@@ -94,10 +79,9 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   public String uploadRecordsToStage(final JdbcDatabase database,
                                      final SerializableBuffer recordsData,
                                      final String schemaName,
-                                     final String stageName,
                                      final String stagingPath)
       throws Exception {
-    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath);
+    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stagingPath);
   }
 
   private String putManifest(final String manifestContents, final String stagingPath) {
@@ -108,7 +92,6 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   @Override
   public void copyIntoTableFromStage(final JdbcDatabase database,
-                                     final String stageName,
                                      final String stagingPath,
                                      final List<String> stagedFiles,
                                      final String tableName,
@@ -177,17 +160,8 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    s3StorageOperations.cleanUpBucketObject(prefix + stageName, stagedFiles);
-  }
-
-  @Override
   public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    s3StorageOperations.dropBucketObject(prefix + stageName);
+    s3StorageOperations.dropBucketObject(stageName);
   }
 
 }

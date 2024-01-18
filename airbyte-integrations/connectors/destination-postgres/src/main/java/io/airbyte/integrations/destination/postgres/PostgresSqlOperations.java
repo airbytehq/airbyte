@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.postgres;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -25,8 +25,18 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
+  protected void insertRecordsInternalV2(final JdbcDatabase database,
+                                         final List<PartialAirbyteMessage> records,
+                                         final String schemaName,
+                                         final String tableName)
+      throws Exception {
+    // idk apparently this just works
+    insertRecordsInternal(database, records, schemaName, tableName);
+  }
+
+  @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
+                                    final List<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tmpTableName)
       throws SQLException {

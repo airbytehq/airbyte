@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.58.9
+concurrent-cdk: improve resource usage when reading from substreams
+
+## 0.58.8
+CDK: HttpRequester can accept http_method in str format, which is required by custom low code components
+
+## 0.58.7
+
+
+## 0.58.6
+File CDK: Added logic to emit logged `RecordParseError` errors and raise the single `AirbyteTracebackException` in the end of the sync, instead of silent skipping the parsing errors. PR: https://github.com/airbytehq/airbyte/pull/32589
+
+## 0.58.5
+Handle private network exception as config error
+
+## 0.58.4
+Add POST method to HttpMocker
+
+## 0.58.3
+fix declarative oauth initialization
+
+## 0.58.2
+Integration tests: adding debug mode to improve logging
+
+## 0.58.1
+Add schema normalization to declarative stream
+
+## 0.58.0
+Concurrent CDK: add state converter for ISO timestamps with millisecond granularity
+
+## 0.57.8
+add SelectiveAuthenticator
+
+## 0.57.7
+File CDK: Support raw txt file
+
 ## 0.57.6
 Adding more tooling to cover source-stripe events stream
 
@@ -20,6 +56,9 @@ Improve integration tests tooling
 
 ## 0.57.0
 low-code: cache requests sent for parent streams
+File-based CDK: Add support for automatic primary key for document file type format
+File-based CDK: Add support for remote parsing of document file type format via API
+Vector DB CDK: Fix bug with embedding tokens with special meaning like `<|endoftext|>`
 
 ## 0.56.1
 no-op to verify pypi publish flow
