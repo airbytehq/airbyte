@@ -115,13 +115,13 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     stream.resumeAfter(savedOffset);
     try (final var ignored = stream.cursor()) {
       LOGGER.info("Valid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}.  Incremental sync will be performed for "
-              + "up-to-date streams.",
+          + "up-to-date streams.",
           ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
       return true;
     } catch (final MongoCommandException | MongoChangeStreamException e) {
       LOGGER.info("Invalid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}.  Initial snapshot will be performed for "
-              + "all streams.",
-          ResumeTokens.getData(savedOffset).asString().getValue(),ResumeTokens.getTimestamp(savedOffset).getTime());
+          + "all streams.",
+          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
       return false;
     }
   }
