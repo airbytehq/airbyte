@@ -200,17 +200,26 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
         .withSerialized(dummyDataToInsert.toString());
   }
 
+  /**
+   * Subclasses which need to modify the DataSource should override
+   * {@link #modifyDataSourceBuilder(DataSourceFactory.DataSourceBuilder)} rather than this method.
+   */
   @VisibleForTesting
   public DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
     final Map<String, String> connectionProperties = getConnectionProperties(config);
-    return DataSourceFactory.create(
+    final DataSourceFactory.DataSourceBuilder builder = new DataSourceFactory.DataSourceBuilder(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClassName,
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        connectionProperties,
-        getConnectionTimeout(connectionProperties));
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText())
+            .withConnectionProperties(connectionProperties)
+            .withConnectionTimeout(getConnectionTimeout(connectionProperties));
+    return modifyDataSourceBuilder(builder).build();
+  }
+
+  protected DataSourceFactory.DataSourceBuilder modifyDataSourceBuilder(final DataSourceFactory.DataSourceBuilder builder) {
+    return builder;
   }
 
   @VisibleForTesting
@@ -287,7 +296,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
       final var migrator = new JdbcV1V2Migrator(namingResolver, database, databaseName);
       final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
       final DestinationHandler<TableDefinition> destinationHandler = getDestinationHandler(databaseName, database);
-      boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
+      final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
       final TyperDeduper typerDeduper;
       if (disableTypeDedupe) {
         typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator,
