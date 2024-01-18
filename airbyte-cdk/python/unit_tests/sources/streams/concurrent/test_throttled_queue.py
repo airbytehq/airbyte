@@ -1,13 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from _queue import Empty
 from queue import Queue
 from unittest.mock import Mock
 
+import pytest
+from _queue import Empty
 from airbyte_cdk.sources.concurrent_source.throttler import Throttler
 from airbyte_cdk.sources.streams.concurrent.partitions.throttled_queue import ThrottledQueue
-
-import pytest
 
 _AN_ITEM = Mock()
 
