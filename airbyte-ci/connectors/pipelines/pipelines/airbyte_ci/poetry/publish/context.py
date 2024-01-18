@@ -8,7 +8,6 @@ from typing import Optional
 
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
-from pipelines.models.contexts.pipeline_context import PipelineContext
 
 
 class PyPIPublishContext(PipelineContext):
@@ -29,7 +28,7 @@ class PyPIPublishContext(PipelineContext):
         ci_gcs_credentials: str = None,
         package_name: Optional[str] = None,
         version: Optional[str] = None,
-    ):
+    ) -> None:
         self.pypi_token = pypi_token
         self.registry = registry or "https://pypi.org/simple"
         self.package_path = package_path
