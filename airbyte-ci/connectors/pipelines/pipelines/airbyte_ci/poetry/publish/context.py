@@ -77,7 +77,7 @@ class PyPIPublishContext(PipelineContext):
 
         pypi_context = PyPIPublishContext(
             pypi_token=os.environ["PYPI_TOKEN"],
-            registry="https://test.pypi.org/",  # TODO: go live
+            registry="https://test.pypi.org/legacy/",  # TODO: go live
             package_path=str(connector_context.connector.code_directory),
             package_name=current_metadata["remoteRegistries"]["pypi"]["packageName"],
             version=current_metadata["dockerImageTag"],
