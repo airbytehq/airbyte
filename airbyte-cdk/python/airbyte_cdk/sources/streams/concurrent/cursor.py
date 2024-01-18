@@ -40,7 +40,7 @@ class Cursor(ABC):
 
     @property
     @abstractmethod
-    def state(self):
+    def state(self) -> MutableMapping[str, Any]:
         ...
 
     @abstractmethod
@@ -60,7 +60,8 @@ class Cursor(ABC):
 
 class NoopCursor(Cursor):
 
-    def state(self):
+    @property
+    def state(self) -> MutableMapping[str, Any]:
         return {}
 
     def observe(self, record: Record) -> None:
@@ -100,7 +101,7 @@ class ConcurrentCursor(Cursor):
         self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
 
     @property
-    def state(self):
+    def state(self) -> MutableMapping[str, Any]:
         return self._concurrent_state
 
     def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[datetime, MutableMapping[str, Any]]:
