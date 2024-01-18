@@ -1,6 +1,9 @@
 # Changelog
 
-## 2.3.0
+## 3.0.1
+Upgrade to Dagger 0.9.6
+
+## 3.0.0
 Upgrade to Dagger 0.9.5
 
 ## 2.2.0

@@ -194,6 +194,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void setup() throws Exception {
     generator = getSqlGenerator();
     destinationHandler = getDestinationHandler();
+
     final ColumnId id1 = generator.buildColumnId("id1");
     final ColumnId id2 = generator.buildColumnId("id2");
     primaryKey = List.of(id1, id2);
@@ -422,6 +423,26 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpRawTableRecords(streamId),
         "sqlgenerator/alltypes_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, ""));
+    assertFalse(destinationHandler.isFinalTableEmpty(streamId), "Final table should not be empty after T+D");
+  }
+
+  /**
+   * Run a basic test to verify that we don't throw an exception on basic data values.
+   */
+  @Test
+  public void allTypesUnsafe() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(incrementalDedupStream, "");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_unsafe_inputrecords.jsonl"));
+
+    assertTrue(destinationHandler.isFinalTableEmpty(streamId), "Final table should be empty before T+D");
+
+    // Instead of using the full T+D transaction, explicitly run with useSafeCasting=false.
+    final Sql unsafeSql = generator.updateTable(incrementalDedupStream, "", Optional.empty(), false);
+    destinationHandler.execute(unsafeSql);
+
     assertFalse(destinationHandler.isFinalTableEmpty(streamId), "Final table should not be empty after T+D");
   }
 

@@ -7,6 +7,7 @@ from importlib import metadata
 INFRA_SUPPORTED_DAGGER_VERSIONS = {
     "0.6.4",
     "0.9.5",
+    "0.9.6",
 }
 
 
