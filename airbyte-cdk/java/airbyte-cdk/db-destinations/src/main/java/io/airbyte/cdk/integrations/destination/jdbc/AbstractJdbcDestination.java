@@ -205,8 +205,8 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
 
   @VisibleForTesting
   public JdbcDatabase getDatabase(final DataSource dataSource, JsonNode config) {
-    Long wmTenantId = config.has("wm_tenant_id") ? config.get("wm_tenant_id").asLong() : null;
-    return new DefaultJdbcDatabase(dataSource, wmTenantId == null ? 0L : wmTenantId);
+    String wmTenantId = config.has("wm_tenant_id") ? config.get("wm_tenant_id").asText() : null;
+    return new DefaultJdbcDatabase(dataSource, wmTenantId == null ? "0" : wmTenantId);
   }
 
   protected Map<String, String> getConnectionProperties(final JsonNode config) {

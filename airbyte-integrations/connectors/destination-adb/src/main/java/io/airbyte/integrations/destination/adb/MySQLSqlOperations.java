@@ -75,10 +75,10 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
 
   @Override
   protected void writeBatchToFile(final File tmpFile, final List<PartialAirbyteMessage> records) throws Exception {
-    writeBatchToFile(tmpFile, records, 0L);
+    writeBatchToFile(tmpFile, records, "0");
   }
 
-  protected void writeBatchToFile(final File tmpFile, final List<PartialAirbyteMessage> records, Long wmTenantId) throws Exception {
+  protected void writeBatchToFile(final File tmpFile, final List<PartialAirbyteMessage> records, String wmTenantId) throws Exception {
     try (final PrintWriter writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
          final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.MYSQL.withEscape(null).withNullString(null))) {
       for (final PartialAirbyteMessage record : records) {
@@ -111,7 +111,7 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     database.execute(connection -> {
       try {
         // hack wm_tenant_id
-        Long wm_tenant_id = 0L;
+        String wm_tenant_id = "0";
         if (database instanceof DefaultJdbcDatabase jdbcDatabase) {
           wm_tenant_id = jdbcDatabase.getWmTenantId();
         }
