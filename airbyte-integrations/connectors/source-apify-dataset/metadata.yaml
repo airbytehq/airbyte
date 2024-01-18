@@ -16,10 +16,6 @@ data:
   icon: apify.svg
   license: MIT
   name: Apify Dataset
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-apify-dataset
   releaseDate: 2023-08-25
   releaseStage: alpha
   releases:
