@@ -38,7 +38,10 @@ class AbstractStreamStateConverter(ABC):
 
     @abstractmethod
     def convert_from_sequential_state(
-        self, cursor_field: "CursorField", stream_state: MutableMapping[str, Any], start: Any,
+        self,
+        cursor_field: "CursorField",
+        stream_state: MutableMapping[str, Any],
+        start: Any,
     ) -> MutableMapping[str, Any]:
         """
         Convert the state message to the format required by the ConcurrentCursor.

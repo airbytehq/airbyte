@@ -16,10 +16,11 @@ from pendulum.datetime import DateTime
 
 
 class DateTimeStreamStateConverter(AbstractStreamStateConverter):
-
     def get_sync_start(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: Optional[Any]) -> datetime:
         sync_start = self.parse_timestamp(start) if start is not None else self.zero_value
-        prev_sync_low_water_mark = self.parse_timestamp(stream_state[cursor_field.cursor_field_key]) if cursor_field.cursor_field_key in stream_state else None
+        prev_sync_low_water_mark = (
+            self.parse_timestamp(stream_state[cursor_field.cursor_field_key]) if cursor_field.cursor_field_key in stream_state else None
+        )
         if prev_sync_low_water_mark and prev_sync_low_water_mark >= sync_start:
             return prev_sync_low_water_mark
         else:
@@ -79,7 +80,9 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
     def _compare_intervals(self, end_time: Any, start_time: Any) -> bool:
         return bool(self.increment(end_time) >= start_time)
 
-    def convert_from_sequential_state(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: datetime) -> MutableMapping[str, Any]:
+    def convert_from_sequential_state(
+        self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: datetime
+    ) -> MutableMapping[str, Any]:
         """
         Convert the state message to the format required by the ConcurrentCursor.
 

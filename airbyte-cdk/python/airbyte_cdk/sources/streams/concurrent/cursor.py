@@ -37,6 +37,12 @@ class CursorField:
 
 
 class Cursor(ABC):
+
+    @property
+    @abstractmethod
+    def state(self):
+        ...
+
     @abstractmethod
     def observe(self, record: Record) -> None:
         """
@@ -53,6 +59,10 @@ class Cursor(ABC):
 
 
 class NoopCursor(Cursor):
+
+    def state(self):
+        return {}
+
     def observe(self, record: Record) -> None:
         pass
 
@@ -87,7 +97,11 @@ class ConcurrentCursor(Cursor):
         self._start = start
         self._most_recent_record: Optional[Record] = None
         self._has_closed_at_least_one_slice = False
-        self.start, self.state = self._get_concurrent_state(stream_state)
+        self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
+
+    @property
+    def state(self):
+        return self._concurrent_state
 
     def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[datetime, MutableMapping[str, Any]]:
         if self._connector_state_converter.is_state_message_compatible(state):
@@ -120,7 +134,9 @@ class ConcurrentCursor(Cursor):
     def _add_slice_to_state(self, partition: Partition) -> None:
         if self._slice_boundary_fields:
             if "slices" not in self.state:
-                raise RuntimeError(f"The state should have at least one slice to delineate the sync start time, but no slices are present. This is unexpected. Please contact Support.")
+                raise RuntimeError(
+                    f"The state for stream {self._stream_name} should have at least one slice to delineate the sync start time, but no slices are present. This is unexpected. Please contact Support."
+                )
             self.state["slices"].append(
                 {
                     "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),

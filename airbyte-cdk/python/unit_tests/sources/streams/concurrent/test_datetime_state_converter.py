@@ -5,22 +5,13 @@
 from datetime import datetime, timezone
 
 import pytest
-from airbyte_cdk.models import (
-    AirbyteStateBlob,
-    AirbyteStateMessage,
-    AirbyteStateType,
-    AirbyteStream,
-    AirbyteStreamState,
-    StreamDescriptor,
-    SyncMode,
-)
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import ConcurrencyCompatibleStateType
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
     EpochValueConcurrentStreamStateConverter,
     IsoMillisConcurrentStreamStateConverter,
 )
+
 
 @pytest.mark.parametrize(
     "converter, input_state, is_compatible",
