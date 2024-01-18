@@ -26,12 +26,17 @@ class GainsightCsObjectStream(GainsightCsStream):
         "BOOLEAN": ["null", "boolean"],
         "NUMBER": ["null", "number"],
         "PERCENTAGE": ["null", "number"],
+        "CURRENCY": ["null", "number"],
         "GSID": ["null", "string"],
         "DATETIME": ["null", "string"],
         "EMAIL": ["null", "string"],
         "URL": ["null", "string"],
         "RICHTEXTAREA": ["null", "string"],
         "LOOKUP": ["null", "string"],
+        "JSON": ["null", "object"],
+        "JSONBOOLEAN": ["null", "boolean"],
+        "JSONNUMBER": ["null", "number"],
+        "JSONSTRING": ["null", "string"]
     }
 
     def __init__(self, name: str, domain_url: str, **kwargs):
