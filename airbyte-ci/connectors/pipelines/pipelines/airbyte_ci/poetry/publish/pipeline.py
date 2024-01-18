@@ -6,7 +6,7 @@ import configparser
 import io
 import uuid
 from enum import Enum, auto
-from typing import Dict, Mapping, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import tomli
 import tomli_w
