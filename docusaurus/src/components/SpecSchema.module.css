@@ -1,23 +1,13 @@
 .block {
-  padding: 10px 0;
+  display: contents;
 }
 
-.block + .block {
-  border-top: 1px solid var(--ifm-color-emphasis-300);
+.contents {
+  display: contents;
 }
 
 .open {
   transform: rotate(90deg);
-}
-
-.header {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  border: none;
-  background: none;
-  padding: 0;
-  font-size: inherit;
 }
 
 .clickable {
@@ -35,16 +25,60 @@
   background-color: #c5c5c5;
 }
 
-.propertyDocumentation {
-  margin-left: 15px;
-  display: flex;
-  gap: 10px;
-  flex-direction: column;
-  margin-top: 18px;
-}
-
 .oneOfList {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.oneOfHeader {
+  margin-bottom: 0;
+  margin-top: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+
+  background: var(--ifm-table-border-color);
+  gap: 1px;
+  border: 1px solid var(--ifm-table-border-color);
+}
+
+.headerItem {
+  grid-row: span 1;
+  grid-column: span 1;
+  background-color: white;
+  text-align: left;
+  align-items: center;
+
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  padding: 7px;
+}
+
+.tableHeader {
+  background-color: #eee;
+  font-weight: bold;
+  border-bottom: 1px solid var(--ifm-table-border-color);
+  padding: 7px;
+}
+
+.contentItem {
+  grid-row: span 1;
+  grid-column: span 1;
+  background-color: white;
+  padding: 7px;
+}
+
+.descriptionItem {
+  grid-row: span 1;
+  grid-column: span 3;
+  background-color: white;
+  margin: 0;
+  padding: 7px;
 }
