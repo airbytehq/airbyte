@@ -6,7 +6,7 @@ import configparser
 import io
 import uuid
 from enum import Enum, auto
-from typing import Mapping, Optional, Tuple
+from typing import Dict, Mapping, Optional, Tuple
 
 import tomli
 import tomli_w
@@ -116,9 +116,9 @@ class PublishToPyPI(Step):
         files = await dir_to_publish.entries()
         pypi_username = self.context.dagger_client.set_secret("pypi_username", "__token__")
         pypi_password = self.context.dagger_client.set_secret("pypi_password", f"pypi-{self.context.pypi_token}")
-        metadata: Mapping[str, str] = {
-            "name": self.context.package_name,
-            "version": self.context.version,
+        metadata: Dict[str, str] = {
+            "name": str(self.context.package_name),
+            "version": str(self.context.version),
             # Enforce consistent author
             "author": "Airbyte",
             "author_email": "contact@airbyte.io",
