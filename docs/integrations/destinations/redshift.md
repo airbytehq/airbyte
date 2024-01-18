@@ -94,12 +94,26 @@ connection only. S3 is secured through public HTTPS access only.
 5. (Optional)
    [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
    staging S3 bucket \(for the COPY strategy\).
-6. Create a user with at least create table permissions for the schema. If the schema does not exist
-   you need to add permissions for that, too. Something like this:
 
-```
-GRANT CREATE ON DATABASE database_name TO airflow_user; -- add create schema permission
-GRANT usage, create on schema my_schema TO airflow_user; -- add create table permission
+### Permissions in Redshift
+Airbyte writes data into two schemas, whichever schema you want your data to land in, e.g. `my_schema`
+and a "Raw Data" schema that Airbyte uses to improve ELT reliability. By default, this raw data schema
+is `airbyte_internal` but this can be overridden in the Redshift Destination's advanced settings. 
+Airbyte also needs to query Redshift's
+[SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for 
+metadata about the tables airbyte manages. 
+
+To ensure the `airbyte_user` has the correction permissions to:
+- create schemas in your database
+- grant usage to any existing schemas you want Airbyte to use
+- grant select to the `svv_table_info` table
+
+You can execute the following SQL statements
+
+```sql
+GRANT CREATE ON DATABASE database_name TO airbyte_user; -- add create schema permission
+GRANT usage, create on schema my_schema TO airbyte_user; -- add create table permission
+GRANT SELECT ON TABLE SVV_TABLE_INFO TO airbyte_user; -- add select permission for svv_table_info
 ```
 
 ### Optional Use of SSH Bastion Host
@@ -215,6 +229,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.15  | 2024-01-11 | [\#34186](https://github.com/airbytehq/airbyte/pull/34186) | Update check method with svv_table_info permission check, fix bug where s3 staging files were not being deleted.                                                                                                 |
 | 0.7.14  | 2024-01-08 | [\#34014](https://github.com/airbytehq/airbyte/pull/34014) | Update order of options in spec                                                                                                                                                                                  |
 | 0.7.13  | 2024-01-05 | [\#33948](https://github.com/airbytehq/airbyte/pull/33948) | Fix NPE when prepare tables fail; Add case sensitive session for super; Bastion heartbeats added                                                                                                                 |
 | 0.7.12  | 2024-01-03 | [\#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                                                                                                                                                                                |
