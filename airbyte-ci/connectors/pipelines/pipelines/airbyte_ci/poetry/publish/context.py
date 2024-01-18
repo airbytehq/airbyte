@@ -3,7 +3,7 @@
 #
 
 import os
-from datetime import date
+from datetime import datetime
 from typing import Optional
 
 from pipelines.airbyte_ci.connectors.context import PipelineContext
@@ -72,8 +72,8 @@ class PyPIPublishContext(PipelineContext):
         version = current_metadata["dockerImageTag"]
         if connector_context.pre_release:
             # use current date as pre-release version
-            rc_tag = date.today().strftime("%Y-%m-%d-%H-%M")
-            version = f"{version}rc{rc_tag}"
+            rc_tag = datetime.now().strftime("%Y%m%d%H%M")
+            version = f"{version}.dev{rc_tag}"
 
         pypi_context = PyPIPublishContext(
             pypi_token=os.environ["PYPI_TOKEN"],
