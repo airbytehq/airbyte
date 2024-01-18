@@ -36,7 +36,8 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
           // also, intentionally don't specify the type of index (btree, hash, etc). Just use the default.
           "CREATE INDEX IF NOT EXISTS " + tableName + "_raw_id" + " ON " + schemaName + "." + tableName + "(_airbyte_raw_id)",
           "CREATE INDEX IF NOT EXISTS " + tableName + "_extracted_at" + " ON " + schemaName + "." + tableName + "(_airbyte_extracted_at)",
-          "CREATE INDEX IF NOT EXISTS " + tableName + "_loaded_at" + " ON " + schemaName + "." + tableName + "(_airbyte_loaded_at, _airbyte_extracted_at)");
+          "CREATE INDEX IF NOT EXISTS " + tableName + "_loaded_at" + " ON " + schemaName + "." + tableName
+              + "(_airbyte_loaded_at, _airbyte_extracted_at)");
     } else {
       return Collections.emptyList();
     }

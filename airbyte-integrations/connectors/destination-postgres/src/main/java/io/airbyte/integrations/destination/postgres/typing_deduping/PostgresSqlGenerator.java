@@ -118,7 +118,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
     return Sql.concat(statements);
   }
-  
+
   @Override
   protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && !stream.primaryKey().isEmpty()) {
