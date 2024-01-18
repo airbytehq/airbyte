@@ -10,14 +10,22 @@ from __future__ import annotations
 
 import os
 from time import sleep
+from typing import Any
 
 import airbyte as airbyte_api
 from airbyte.models import operations as api_operations
 from airbyte.models import shared as api_models
 from airbyte.models.shared.jobcreaterequest import JobCreateRequest, JobTypeEnum
 
+from airbyte_lib.exceptions import (
+    HostedAirbyteError,
+    HostedConnectionSyncError,
+    MissingResourceError,
+)
+
 
 JOB_WAIT_INTERVAL_SECS = 2.0
+
 
 
 def status_ok(status_code: int) -> bool:
@@ -31,14 +39,15 @@ def get_default_bearer_token() -> str:
 
 
 def get_airbyte_server_instance(
-    bearer_token: str | None = None,
+    *,
+    api_key: str | None = None,
     api_root: str = "https://api.airbyte.com/v1",
 ) -> airbyte_api.Airbyte:
     """Get an Airbyte instance."""
-    bearer_token = bearer_token or get_default_bearer_token()
+    api_key = api_key or get_default_bearer_token()
     return airbyte_api.Airbyte(
         api_models.Security(
-            bearer_auth=bearer_token,
+            bearer_auth=api_key,
         ),
         api_root=api_root,
     )
@@ -46,13 +55,14 @@ def get_airbyte_server_instance(
 
 def get_workspace(
     workspace_id: str,
+    *,
     api_root: str = "https://api.airbyte.com/v1",
-    bearer_token: str | None = None,
+    api_key: str | None = None,
 ) -> api_models.WorkspaceResponse:
     """Get a connection."""
-    bearer_token = bearer_token or get_default_bearer_token()
+    api_key = api_key or get_default_bearer_token()
     airbyte_instance = get_airbyte_server_instance(
-        bearer_token=bearer_token,
+        api_key=api_key,
         api_root=api_root,
     )
     response = airbyte_instance.workspaces.get_workspace(
@@ -63,19 +73,24 @@ def get_workspace(
     if status_ok(response.status_code) and response.workspace_response:
         return response.workspace_response
 
-    raise Exception(f"Failed to get workspace {workspace_id}: {response.text}")
+    raise MissingResourceError(
+        workspace_id,
+        "workspace",
+        more_info=response.text,
+    )
 
 
 def list_connections(
     workspace_id: str,
+    *,
     api_root: str = "https://api.airbyte.com/v1",
-    bearer_token: str | None = None,
+    api_key: str | None = None,
 ) -> list[api_models.ConnectionResponse]:
     """Get a connection."""
     _ = workspace_id  # Not used (yet)
-    bearer_token = bearer_token or get_default_bearer_token()
+    api_key = api_key or get_default_bearer_token()
     airbyte_instance = get_airbyte_server_instance(
-        bearer_token=bearer_token,
+        api_key=api_key,
         api_root=api_root,
     )
     response = airbyte_instance.connections.list_connections(
@@ -87,20 +102,23 @@ def list_connections(
     if status_ok(response.status_code) and response.connections_response:
         return response.connections_response.data
 
-    raise Exception(f"Failed to list connections from workspace {workspace_id}: {response.text}")
+    raise HostedAirbyteError(
+        f"Failed to list connections from workspace {workspace_id}: {response.text}"
+    )
 
 
 def get_connection(
     workspace_id: str,
     connection_id: str,
+    *,
     api_root: str = "https://api.airbyte.com/v1",
-    bearer_token: str | None = None,
+    api_key: str | None = None,
 ) -> api_models.ConnectionResponse:
     """Get a connection."""
     _ = workspace_id  # Not used (yet)
-    bearer_token = bearer_token or get_default_bearer_token()
+    api_key = api_key or get_default_bearer_token()
     airbyte_instance = get_airbyte_server_instance(
-        bearer_token=bearer_token,
+        api_key=api_key,
         api_root=api_root,
     )
     response = airbyte_instance.connections \
@@ -112,15 +130,15 @@ def get_connection(
     if status_ok(response.status_code) and response.connection_response:
         return response.connection_response
 
-    raise Exception(f"Failed to get connection {connection_id}: {response.text}")
+    raise MissingResourceError(connection_id, "connection", response.text)
 
 
 def run_connection(
     workspace_id: str,
     connection_id: str,
-    api_root: str = "https://api.airbyte.com/v1",
-    bearer_token: str | None = None,
     *,
+    api_root: str = "https://api.airbyte.com/v1",
+    api_key: str | None = None,
     wait_for_job: bool = True,
     raise_on_failure: bool = True,
 ) -> api_models.ConnectionResponse:
@@ -131,9 +149,9 @@ def run_connection(
     If raise_on_failure is True, this will raise an exception if the connection fails.
     """
     _ = workspace_id  # Not used (yet)
-    bearer_token = bearer_token or get_default_bearer_token()
+    api_key = api_key or get_default_bearer_token()
     airbyte_instance = get_airbyte_server_instance(
-        bearer_token=bearer_token,
+        api_key=api_key,
         api_root=api_root,
     )
     response = airbyte_instance.jobs.create_job(
@@ -147,29 +165,29 @@ def run_connection(
             job_info = wait_for_job(
                 workspace_id=workspace_id,
                 job_id=response.job_response.job_id,
-                bearer_token=bearer_token,
+                api_key=api_key,
                 api_root=api_root,
                 raise_on_failure=raise_on_failure,
             )
 
         return job_info
 
-    raise Exception(f"Failed to run connection {connection_id}: {response.text}")
+    raise HostedConnectionSyncError(f"Failed to run connection {connection_id}.", response.text)
 
 
 def wait_for_job(
     workspace_id: str,
     job_id: str,
-    api_root: str = "https://api.airbyte.com/v1",
-    bearer_token: str | None = None,
     *,
+    api_root: str = "https://api.airbyte.com/v1",
+    api_key: str | None = None,
     raise_on_failure: bool = True,
 ) -> api_models.JobInfo:
     """Wait for a job to finish running."""
     _ = workspace_id  # Not used (yet)
-    bearer_token = bearer_token or get_default_bearer_token()
+    api_key = api_key or get_default_bearer_token()
     airbyte_instance = get_airbyte_server_instance(
-        bearer_token=bearer_token,
+        api_key=api_key,
         api_root=api_root,
     )
     while True:
@@ -186,26 +204,27 @@ def wait_for_job(
 
             if job_info.status == api_models.StatusEnum.failed:
                 if raise_on_failure:
-                    raise Exception(f"Job {job_id} failed: {job_info.message}")
+                    raise HostedConnectionSyncError(f"Job {job_id} failed: {job_info.message}")
 
                 return job_info
 
             # Else: Job is still running
             pass
         else:
-            raise Exception(f"Failed to get job {job_id}: {response.text}")
+            raise MissingResourceError(job_id, "job", response.text)
 
 
 def get_connection_by_name(
     workspace_id: str,
     connection_name: str,
+    *,
     api_root: str = "https://api.airbyte.com/v1",
-    bearer_token: str | None = None,
+    api_key: str | None = None,
 ) -> api_models.ConnectionResponse:
     """Get a connection."""
     connections = list_connections(
         workspace_id=workspace_id,
-        bearer_token=bearer_token,
+        api_key=api_key,
         api_root=api_root,
     )
     found: list[api_models.ConnectionResponse] = [
@@ -213,8 +232,8 @@ def get_connection_by_name(
         if connection.name == connection_name
     ]
     if len(found) == 0:
-        raise Exception(
-            f"Failed to find connection '{connection_name}' in workspace '{workspace_id}'")
+        raise MissingResourceError(
+            connection_name, "connection", f"Workspace: {workspace_id}")
 
     if len(found) > 1:
         raise Exception(
@@ -227,13 +246,14 @@ def get_connection_by_name(
 
 def get_source(
     source_id: str,
+    *,
     api_root: str = "https://api.airbyte.com/v1",
-    bearer_token: str | None = None,
+    api_key: str | None = None,
 ) -> api_models.SourceResponse:
     """Get a connection."""
-    bearer_token = bearer_token or get_default_bearer_token()
+    api_key = api_key or get_default_bearer_token()
     airbyte_instance = get_airbyte_server_instance(
-        bearer_token=bearer_token,
+        api_key=api_key,
         api_root=api_root,
     )
     response = airbyte_instance.sources \
@@ -245,18 +265,49 @@ def get_source(
     if status_ok(response.status_code) and response.connection_response:
         return response.connection_response
 
-    raise Exception(f"Failed to get source {source_id}: {response.text}")
+    raise MissingResourceError(source_id, "source", response.text)
+
+
+def create_source(
+    name: str,
+    *,
+    workspace_id: str,
+    config: dict[str, Any],
+    api_root: str = "https://api.airbyte.com/v1",
+    api_key: str | None = None,
+) -> api_models.SourceResponse:
+    """Get a connection."""
+    api_key = api_key or get_default_bearer_token()
+    airbyte_instance = get_airbyte_server_instance(
+        api_key=api_key,
+        api_root=api_root,
+    )
+    response = airbyte_instance.sources \
+        .create_source(
+            api_models.SourceCreateRequest(
+                name=name,
+                workspace_id=workspace_id,
+                configuration=config, # TODO: wrap in a proper configuration object
+                definition_id=None,  # Not used alternative to config.sourceType.
+                secret_id=None, # For OAuth, not yet supported
+            ),
+        )
+    if status_ok(response.status_code) and response.connection_response:
+        return response.source_response
+
+    raise HostedAirbyteError("Could not create source.")
 
 
 def get_destination(
     destination_id: str,
+    *,
     api_root: str = "https://api.airbyte.com/v1",
-    bearer_token: str | None = None,
+    api_key: str | None = None,
 ) -> api_models.DestinationResponse:
     """Get a connection."""
-    bearer_token = bearer_token or get_default_bearer_token()
+    api_key = api_key or get_default_bearer_token()
     airbyte_instance = get_airbyte_server_instance(
-        bearer_token=bearer_token,
+        api_key=api_key,
         api_root=api_root,
     )
     response = airbyte_instance.sources.get_destination(
@@ -267,4 +318,4 @@ def get_destination(
     if status_ok(response.status_code) and response.connection_response:
         return response.connection_response
 
-    raise Exception(f"Failed to get destination {destination_id}: {response.text}")
+    raise MissingResourceError(destination_id, "destination", response.text)

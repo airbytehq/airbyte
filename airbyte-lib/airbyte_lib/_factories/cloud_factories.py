@@ -7,7 +7,8 @@ from airbyte_lib.cloud.connections import HostedConnection
 def get_cloud_connection(
     workspace_id: str,
     connection_id: str,
-    bearer_token: str | None = None,
+    *,
+    api_key: str | None = None,
 ) -> HostedConnection:
     """Get a connection object.
 
@@ -17,5 +18,5 @@ def get_cloud_connection(
     return HostedConnection(
         workspace_id=workspace_id,
         connection_id=connection_id,
-        bearer_token=bearer_token,
+        api_key=api_key,
     )

@@ -114,6 +114,7 @@ ignore = [
     # These we don't agree with or don't want to prioritize to enforce:
     "ANN003",  # kwargs missing type annotations
     "ANN101",  # Type annotations for 'self' args
+    "ANN102",  # Type annotations for 'cls' args
     "COM812", # Because it conflicts with ruff auto-format
     "EM", # flake8-errmsgs (may reconsider later)
     "DJ", # Django linting

@@ -1,19 +1,23 @@
 """This module defines classes and methods for working with Airbyte Cloud and OSS connections."""
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable
 
 from overrides import overrides
-from pydantic import BaseModel, PrivateAttr
 
 from airbyte_lib.cloud import _api_util
+from airbyte_lib.cloud._remote_sync import SyncMode, sync_source_definition
+from airbyte_lib.cloud.resources import HostedAirbyteResource
 
 
 if TYPE_CHECKING:
     from airbyte.models import shared as api_models
     from attr import dataclass
+    from pydantic import PrivateAttr
+
+    from airbyte_lib.cloud.hosts import HostedAirbyteInstance
+    from airbyte_lib.source import Source
 
 
 def requires_state(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -29,23 +33,6 @@ def requires_state(func: Callable[..., Any]) -> Callable[..., Any]:
     return wrapper
 
 
-class HostedAirbyteResource(ABC, BaseModel):
-    """Base class for a resource hosted on Airbyte Cloud, OSS, or Enterprise."""
-
-    workspace_id: str
-    api_root: str = "https://api.airbyte.com/v1"
-    web_root: str = "https://cloud.airbyte.com"
-    bearer_token: str | None = None
-
-    _cached_state: dataclass | None = None
-    """The cached state of the resource."""
-
-    @abstractmethod
-    def refresh_state(self) -> dataclass:
-        """Fetch the state from the Airbyte API."""
-        raise NotImplementedError
-
-
 class HostedConnection(HostedAirbyteResource):
     """A Cloud or OSS connection between a source and destination."""
 
@@ -59,7 +46,7 @@ class HostedConnection(HostedAirbyteResource):
         self._cached_state = _api_util.get_connection(
             workspace_id=self.workspace_id,
             connection_id=self.connection_id,
-            bearer_token=self.bearer_token
+            api_key=self.api_key
         )
 
     @property
@@ -77,7 +64,7 @@ class HostedConnection(HostedAirbyteResource):
             self._cached_source = HostedDestination(
                 workspace_id=self.workspace_id,
                 destination_id=self._state.destination_id,
-                bearer_token=self.bearer_token,
+                api_key=self.api_key,
             )
 
         return self._cached_destination
@@ -92,7 +79,7 @@ class HostedConnection(HostedAirbyteResource):
             self._cached_source = HostedSource(
                 workspace_id=self.workspace_id,
                 source_id=self._state.source_id,
-                bearer_token=self.bearer_token,
+                api_key=self.api_key,
             )
 
         return self._cached_source
@@ -102,7 +89,7 @@ class HostedConnection(HostedAirbyteResource):
         _api_util.run_connection(
             workspace_id=self.workspace_id,
             connection_id=self.connection_id,
-            bearer_token=self.bearer_token,
+            api_key=self.api_key,
         )
 
 
@@ -123,7 +110,7 @@ class HostedSource(HostedAirbyteResource):
         """Fetch the connection state from the Airbyte API."""
         self._cached_state = _api_util.get_source(
             source_id=self.source_id,
-            bearer_token=self.bearer_token
+            api_key=self.api_key
         )
 
     @requires_state
@@ -143,6 +130,22 @@ class HostedSource(HostedAirbyteResource):
         """Get the source type."""
         return self._state.name
 
+    @classmethod
+    def from_local_source(
+        cls,
+        source: Source,
+        name: str,
+        airbyte_instance: HostedAirbyteInstance,
+        sync_mode: SyncMode = SyncMode.FAIL,
+    ) -> HostedSource:
+        sync_source_definition(
+            source=source,
+            airbyte_instance=airbyte_instance,
+            name=name,
+            on_duplicate=sync_mode,
+        )
+
+
 
 class HostedDestination(HostedAirbyteResource):
 
@@ -153,7 +156,7 @@ class HostedDestination(HostedAirbyteResource):
         """Fetch the connection state from the Airbyte API."""
         self._cached_state = _api_util.get_destination(
             destination_id=self.source_id,
-            bearer_token=self.bearer_token,
+            api_key=self.api_key,
         )
 
     @requires_state
