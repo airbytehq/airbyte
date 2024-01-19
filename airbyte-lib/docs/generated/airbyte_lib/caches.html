@@ -694,6 +694,252 @@ or another import method. (Relatively low priority, since for now it works fine 
                                 </dl>
                             </div>
                 </section>
+                <section id="SnowflakeCacheConfig">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SnowflakeCacheConfig</span><wbr>(<span class="base">airbyte_lib.caches.base.SQLCacheConfigBase</span>, <span class="base">airbyte_lib._file_writers.parquet.ParquetWriterConfig</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig"></a>
+    
+            <div class="docstring"><p>Configuration for the Snowflake cache.</p>
+
+<p>Also inherits config from the ParquetWriter, which is responsible for writing files to disk.</p>
+</div>
+
+
+                            <div id="SnowflakeCacheConfig.account" class="classattr">
+                                <div class="attr variable">
+            <span class="name">account</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.account"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.username" class="classattr">
+                                <div class="attr variable">
+            <span class="name">username</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.username"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.password" class="classattr">
+                                <div class="attr variable">
+            <span class="name">password</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.password"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.warehouse" class="classattr">
+                                <div class="attr variable">
+            <span class="name">warehouse</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.warehouse"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.database" class="classattr">
+                                <div class="attr variable">
+            <span class="name">database</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.database"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.role" class="classattr">
+                                <div class="attr variable">
+            <span class="name">role</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.role"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.dedupe_mode" class="classattr">
+                                <div class="attr variable">
+            <span class="name">dedupe_mode</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.dedupe_mode"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.get_sql_alchemy_url" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">get_sql_alchemy_url</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.get_sql_alchemy_url"></a>
+    
+            <div class="docstring"><p>Return the SQLAlchemy URL to use.</p>
+</div>
+
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.get_database_name" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_database_name</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.get_database_name"></a>
+    
+            <div class="docstring"><p>Return the name of the database.</p>
+</div>
+
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>pydantic.main.BaseModel</dt>
+                                <dd id="SnowflakeCacheConfig.__init__" class="function">BaseModel</dd>
+                <dd id="SnowflakeCacheConfig.Config" class="variable">Config</dd>
+                <dd id="SnowflakeCacheConfig.dict" class="function">dict</dd>
+                <dd id="SnowflakeCacheConfig.json" class="function">json</dd>
+                <dd id="SnowflakeCacheConfig.parse_obj" class="function">parse_obj</dd>
+                <dd id="SnowflakeCacheConfig.parse_raw" class="function">parse_raw</dd>
+                <dd id="SnowflakeCacheConfig.parse_file" class="function">parse_file</dd>
+                <dd id="SnowflakeCacheConfig.from_orm" class="function">from_orm</dd>
+                <dd id="SnowflakeCacheConfig.construct" class="function">construct</dd>
+                <dd id="SnowflakeCacheConfig.copy" class="function">copy</dd>
+                <dd id="SnowflakeCacheConfig.schema" class="function">schema</dd>
+                <dd id="SnowflakeCacheConfig.schema_json" class="function">schema_json</dd>
+                <dd id="SnowflakeCacheConfig.validate" class="function">validate</dd>
+                <dd id="SnowflakeCacheConfig.update_forward_refs" class="function">update_forward_refs</dd>
+
+            </div>
+            <div><dt>airbyte_lib.caches.base.SQLCacheConfigBase</dt>
+                                <dd id="SnowflakeCacheConfig.schema_name" class="variable">schema_name</dd>
+                <dd id="SnowflakeCacheConfig.table_prefix" class="variable">table_prefix</dd>
+                <dd id="SnowflakeCacheConfig.table_suffix" class="variable">table_suffix</dd>
+
+            </div>
+            <div><dt>airbyte_lib._file_writers.base.FileWriterConfigBase</dt>
+                                <dd id="SnowflakeCacheConfig.cache_dir" class="variable">cache_dir</dd>
+                <dd id="SnowflakeCacheConfig.cleanup" class="variable">cleanup</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="SnowflakeSQLCache">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SnowflakeSQLCache</span><wbr>(<span class="base"><a href="#SQLCacheBase">airbyte_lib.caches.SQLCacheBase</a></span>):
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeSQLCache"></a>
+    
+            <div class="docstring"><p>A Snowflake implementation of the cache.</p>
+
+<p>Parquet is used for local file storage before bulk loading.</p>
+</div>
+
+
+                            <div id="SnowflakeSQLCache.config_class" class="classattr">
+                                <div class="attr variable">
+            <span class="name">config_class</span>        =
+<span class="default_value">&lt;class &#39;<a href="#SnowflakeCacheConfig">SnowflakeCacheConfig</a>&#39;&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeSQLCache.config_class"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeSQLCache.file_writer_class" class="classattr">
+                                <div class="attr variable">
+            <span class="name">file_writer_class</span>        =
+<span class="default_value">&lt;class &#39;airbyte_lib._file_writers.parquet.ParquetWriter&#39;&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeSQLCache.file_writer_class"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeSQLCache.get_telemetry_info" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">get_telemetry_info</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">telemetry</span><span class="o">.</span><span class="n">CacheTelemetryInfo</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeSQLCache.get_telemetry_info"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt><a href="#SQLCacheBase">SQLCacheBase</a></dt>
+                                <dd id="SnowflakeSQLCache.__init__" class="function">SQLCacheBase</dd>
+                <dd id="SnowflakeSQLCache.type_converter_class" class="variable"><a href="#SQLCacheBase.type_converter_class">type_converter_class</a></dd>
+                <dd id="SnowflakeSQLCache.supports_merge_insert" class="variable"><a href="#SQLCacheBase.supports_merge_insert">supports_merge_insert</a></dd>
+                <dd id="SnowflakeSQLCache.use_singleton_connection" class="variable"><a href="#SQLCacheBase.use_singleton_connection">use_singleton_connection</a></dd>
+                <dd id="SnowflakeSQLCache.config" class="variable"><a href="#SQLCacheBase.config">config</a></dd>
+                <dd id="SnowflakeSQLCache.file_writer" class="variable"><a href="#SQLCacheBase.file_writer">file_writer</a></dd>
+                <dd id="SnowflakeSQLCache.type_converter" class="variable"><a href="#SQLCacheBase.type_converter">type_converter</a></dd>
+                <dd id="SnowflakeSQLCache.get_sql_alchemy_url" class="function"><a href="#SQLCacheBase.get_sql_alchemy_url">get_sql_alchemy_url</a></dd>
+                <dd id="SnowflakeSQLCache.database_name" class="variable"><a href="#SQLCacheBase.database_name">database_name</a></dd>
+                <dd id="SnowflakeSQLCache.get_sql_engine" class="function"><a href="#SQLCacheBase.get_sql_engine">get_sql_engine</a></dd>
+                <dd id="SnowflakeSQLCache.get_sql_connection" class="function"><a href="#SQLCacheBase.get_sql_connection">get_sql_connection</a></dd>
+                <dd id="SnowflakeSQLCache.get_sql_table_name" class="function"><a href="#SQLCacheBase.get_sql_table_name">get_sql_table_name</a></dd>
+                <dd id="SnowflakeSQLCache.get_sql_table" class="function"><a href="#SQLCacheBase.get_sql_table">get_sql_table</a></dd>
+                <dd id="SnowflakeSQLCache.streams" class="variable"><a href="#SQLCacheBase.streams">streams</a></dd>
+                <dd id="SnowflakeSQLCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
+                <dd id="SnowflakeSQLCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
+
+            </div>
+            <div><dt>airbyte_lib._processors.RecordProcessor</dt>
+                                <dd id="SnowflakeSQLCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
+                <dd id="SnowflakeSQLCache.source_catalog" class="variable">source_catalog</dd>
+                <dd id="SnowflakeSQLCache.register_source" class="function">register_source</dd>
+                <dd id="SnowflakeSQLCache.process_stdin" class="function">process_stdin</dd>
+                <dd id="SnowflakeSQLCache.process_input_stream" class="function">process_input_stream</dd>
+                <dd id="SnowflakeSQLCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
 </main>
 
 
