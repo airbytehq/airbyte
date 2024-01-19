@@ -1,0 +1,5 @@
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source/destination.
+3. On the Set up the source page, select {connector_name} from the Source type dropdown.
+4. Enter a name for the {connector_name} connector.

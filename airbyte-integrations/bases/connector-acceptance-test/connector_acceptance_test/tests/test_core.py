@@ -9,6 +9,7 @@ import re
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
+from pathlib import Path
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple
 from xmlrpc.client import Boolean
 
@@ -57,6 +58,8 @@ from connector_acceptance_test.utils.json_schema_helper import (
     get_paths_in_connector_config,
 )
 from connector_acceptance_test.utils.timeouts import FIVE_MINUTES, ONE_MINUTE, TEN_MINUTES
+from markdown_it import MarkdownIt
+from markdown_it.tree import SyntaxTreeNode
 
 pytestmark = [
     pytest.mark.anyio,
@@ -1175,3 +1178,188 @@ class TestConnectorAttributes(BaseTest):
 
         quoted_missing_primary_keys = {f"'{primary_key}'" for primary_key in missing_primary_keys}
         assert not missing_primary_keys, f"The following streams {', '.join(quoted_missing_primary_keys)} do not define a primary_key"
+
+
+class TestConnectorDocumentation(BaseTest):
+    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []  # Used so that this is not part of the mandatory high strictness test suite yet
+
+    PREREQUISITES = "Prerequisites"
+    HEADING = "heading"
+    CREDENTIALS_KEYWORDS = ["account", "auth", "credentials", "access"]
+    CONNECTOR_SPECIFIC_HEADINGS = "<Connector-specific features>"
+
+    def _get_template_headings(self, connector_name: str) -> tuple[tuple[str], tuple[str]]:
+        """
+        https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw - standard template
+        Headings in order to docs structure.
+        """
+        all_headings = (
+            connector_name,
+            "Prerequisites",
+            "Setup guide",
+            f"Set up {connector_name}",
+            "For Airbyte Cloud:",
+            "For Airbyte Open Source:",
+            f"Set up the {connector_name} connector in Airbyte",
+            "For Airbyte Cloud:",
+            "For Airbyte Open Source:",
+            "Supported sync modes",
+            "Supported Streams",
+            self.CONNECTOR_SPECIFIC_HEADINGS,
+            "Performance considerations",
+            "Data type map",
+            "Troubleshooting",
+            "Tutorials",
+            "Changelog",
+        )
+        not_required_heading = (
+            f"Set up the {connector_name} connector in Airbyte",
+            "For Airbyte Cloud:",
+            "For Airbyte Open Source:",
+            self.CONNECTOR_SPECIFIC_HEADINGS,
+            "Performance considerations",
+            "Data type map",
+            "Troubleshooting",
+            "Tutorials",
+        )
+        return all_headings, not_required_heading
+
+    def _headings_description(self, connector_name: str) -> dict[str:Path]:
+        """
+        Headings with path to file with template description
+        """
+        descriptions_paths = {
+            connector_name: Path(__file__).parent / "doc_templates/source.txt",
+            "For Airbyte Cloud:": Path(__file__).parent / "doc_templates/for_airbyte_cloud.txt",
+            "For Airbyte Open Source:": Path(__file__).parent / "doc_templates/for_airbyte_open_source.txt",
+            "Supported sync modes": Path(__file__).parent / "doc_templates/supported_sync_modes.txt",
+            "Tutorials": Path(__file__).parent / "doc_templates/tutorials.txt",
+        }
+        return descriptions_paths
+
+    def _remove_step_from_heading(self, heading: str) -> str:
+        if "Step 1: " in heading:
+            return heading.replace("Step 1: ", "")
+        if "Step 2: " in heading:
+            return heading.replace("Step 2: ", "")
+        return heading
+
+    def _get_required_field_titles_from_spec(self, spec: dict[str, Any]) -> tuple[list[str], bool]:
+        titles = [spec["properties"][field]["title"].lower() for field in spec["required"] if field != "credentials"]
+        has_credentials = True if "credentials" in spec["required"] else False
+        return titles, has_credentials
+
+    def _get_documentation_node(self, connector_documentation: str) -> SyntaxTreeNode:
+        md = MarkdownIt("commonmark")
+        tokens = md.parse(connector_documentation)
+        return SyntaxTreeNode(tokens)
+
+    def _get_header_name(self, n: SyntaxTreeNode) -> str:
+        return n.to_tokens()[1].children[0].content
+
+    def test_prerequisites_content(self, actual_connector_spec: ConnectorSpecification, connector_documentation: str, docs_path: str):
+        node = self._get_documentation_node(connector_documentation)
+        header_line_map = {self._get_header_name(n): n.map[1] for n in node if n.type == self.HEADING}
+        headings = tuple(header_line_map.keys())
+
+        if not header_line_map.get(self.PREREQUISITES):
+            pytest.fail(f"Documentation does not have {self.PREREQUISITES} section.")
+
+        prereq_start_line = header_line_map[self.PREREQUISITES]
+        if headings.index(self.PREREQUISITES) + 1 == len(headings):
+            prereq_end_line = -1
+        else:
+            prereq_end_line = header_line_map[headings[headings.index(self.PREREQUISITES) + 1]]
+
+        with open(docs_path, "r") as docs_file:
+            prereq_content_lines = docs_file.readlines()[prereq_start_line:prereq_end_line]
+            prereq_content = "".join(prereq_content_lines).lower()
+            required_titles, has_credentials = self._get_required_field_titles_from_spec(actual_connector_spec.connectionSpecification)
+
+            for title in required_titles:
+                assert title in prereq_content, f"Required '{title}' field is not in {self.PREREQUISITES} section."
+
+            if has_credentials:
+                credentials_validation = [k in prereq_content for k in self.CREDENTIALS_KEYWORDS]
+                assert True in credentials_validation, f"Required 'credentials' field is not in {self.PREREQUISITES} section."
+
+    def test_docs_structure(self, connector_documentation: str, connector_metadata: dict):
+        node = self._get_documentation_node(connector_documentation)
+        heading_names = tuple([self._remove_step_from_heading(self._get_header_name(n)) for n in node if n.type == self.HEADING])
+        template_headings, non_required_heading = self._get_template_headings(connector_metadata["data"]["name"])
+
+        heading_names_len, template_headings_len = len(heading_names), len(template_headings)
+        heading_names_index, template_headings_index = 0, 0
+
+        while heading_names_index < heading_names_len and template_headings_index < template_headings_len:
+            heading_names_value = heading_names[heading_names_index]
+            template_headings_value = template_headings[template_headings_index]
+
+            if template_headings_value == self.CONNECTOR_SPECIFIC_HEADINGS:
+                if heading_names_value not in template_headings:
+                    heading_names_index += 1
+                    continue
+                else:
+                    template_headings_index += 1
+                    continue
+            if heading_names_value == template_headings_value:
+                heading_names_index += 1
+                template_headings_index += 1
+                continue
+            if template_headings_value in non_required_heading:
+                template_headings_index += 1
+                continue
+
+            pytest.fail(
+                f"Documentation structure doesn't follow standard template."
+                f" Heading '{heading_names_value}' is not on a right place, name of heading is incorrect or heading name is not expected.\n"
+                f"Diff:\nCurrent Heading: '{heading_names_value}'. Expected Heading: '{template_headings_value}'"
+            )
+
+        if template_headings_index != template_headings_len:
+            pytest.fail(
+                f"Documentation structure doesn't follow standard template. docs is not full.\nMissing headers: {template_headings[template_headings_index:]}"
+            )
+
+    def _prepare_lines_to_compare(self, connector_name: str, docs_line: str, template_line: str) -> tuple[str, str]:
+        def _replace_link(docs_string: str, link_to_replace: str) -> str:
+            docs_string = docs_string[: docs_string.index("(")] + link_to_replace + docs_string[docs_string.index(")") + 1 :]
+            return docs_string
+
+        connector_name_to_replace = "{connector_name}"
+        link_to_replace = "({docs_link})"
+
+        template_line = (
+            template_line.replace(connector_name_to_replace, connector_name)
+            if connector_name_to_replace in template_line
+            else template_line
+        )
+        docs_line = _replace_link(docs_line, link_to_replace) if link_to_replace in template_line else docs_line
+
+        return docs_line, template_line
+
+    def test_docs_descriptions(self, docs_path: str, connector_documentation: str, connector_metadata: dict):
+        connector_name = connector_metadata["data"]["name"]
+        template_descriptions = self._headings_description(connector_name)
+
+        node = self._get_documentation_node(connector_documentation)
+        header_line_map = {self._get_header_name(n): n.map[1] for n in node if n.type == self.HEADING}
+        actual_headings = tuple(header_line_map.keys())
+
+        for heading, description in template_descriptions.items():
+            if heading in actual_headings:
+
+                description_start_line = header_line_map[heading]
+                if actual_headings.index(heading) + 1 == len(actual_headings):
+                    description_end_line = -1
+                else:
+                    description_end_line = header_line_map[actual_headings[actual_headings.index(heading) + 1]]
+
+                with open(docs_path, "r") as docs_file, open(description, "r") as template_file:
+
+                    docs_description_content = docs_file.readlines()[description_start_line:description_end_line]
+                    template_description_content = template_file.readlines()
+
+                    for d, t in zip(docs_description_content, template_description_content):
+                        d, t = self._prepare_lines_to_compare(connector_name, d, t)
+                        assert d == t, f"Description for '{heading}' does not follow structure.\nExpected: {t} Actual: {d}"
