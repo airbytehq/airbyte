@@ -50,6 +50,7 @@ from connector_acceptance_test.utils.common import (
     find_keyword_schema,
 )
 from connector_acceptance_test.utils.compare import diff_dicts
+import connector_acceptance_test.utils.docs as docs_utils
 from connector_acceptance_test.utils.json_schema_helper import (
     JsonSchemaHelper,
     flatten_tuples,
@@ -58,8 +59,6 @@ from connector_acceptance_test.utils.json_schema_helper import (
     get_paths_in_connector_config,
 )
 from connector_acceptance_test.utils.timeouts import FIVE_MINUTES, ONE_MINUTE, TEN_MINUTES
-from markdown_it import MarkdownIt
-from markdown_it.tree import SyntaxTreeNode
 
 pytestmark = [
     pytest.mark.anyio,
@@ -1237,29 +1236,9 @@ class TestConnectorDocumentation(BaseTest):
         }
         return descriptions_paths
 
-    def _remove_step_from_heading(self, heading: str) -> str:
-        if "Step 1: " in heading:
-            return heading.replace("Step 1: ", "")
-        if "Step 2: " in heading:
-            return heading.replace("Step 2: ", "")
-        return heading
-
-    def _get_required_field_titles_from_spec(self, spec: dict[str, Any]) -> tuple[list[str], bool]:
-        titles = [spec["properties"][field]["title"].lower() for field in spec["required"] if field != "credentials"]
-        has_credentials = True if "credentials" in spec["required"] else False
-        return titles, has_credentials
-
-    def _get_documentation_node(self, connector_documentation: str) -> SyntaxTreeNode:
-        md = MarkdownIt("commonmark")
-        tokens = md.parse(connector_documentation)
-        return SyntaxTreeNode(tokens)
-
-    def _get_header_name(self, n: SyntaxTreeNode) -> str:
-        return n.to_tokens()[1].children[0].content
-
     def test_prerequisites_content(self, actual_connector_spec: ConnectorSpecification, connector_documentation: str, docs_path: str):
-        node = self._get_documentation_node(connector_documentation)
-        header_line_map = {self._get_header_name(n): n.map[1] for n in node if n.type == self.HEADING}
+        node = docs_utils.documentation_node(connector_documentation)
+        header_line_map = {docs_utils.header_name(n): n.map[1] for n in node if n.type == self.HEADING}
         headings = tuple(header_line_map.keys())
 
         if not header_line_map.get(self.PREREQUISITES):
@@ -1274,7 +1253,7 @@ class TestConnectorDocumentation(BaseTest):
         with open(docs_path, "r") as docs_file:
             prereq_content_lines = docs_file.readlines()[prereq_start_line:prereq_end_line]
             prereq_content = "".join(prereq_content_lines).lower()
-            required_titles, has_credentials = self._get_required_field_titles_from_spec(actual_connector_spec.connectionSpecification)
+            required_titles, has_credentials = docs_utils.required_titles_from_spec(actual_connector_spec.connectionSpecification)
 
             for title in required_titles:
                 assert title in prereq_content, f"Required '{title}' field is not in {self.PREREQUISITES} section."
@@ -1284,8 +1263,8 @@ class TestConnectorDocumentation(BaseTest):
                 assert True in credentials_validation, f"Required 'credentials' field is not in {self.PREREQUISITES} section."
 
     def test_docs_structure(self, connector_documentation: str, connector_metadata: dict):
-        node = self._get_documentation_node(connector_documentation)
-        heading_names = tuple([self._remove_step_from_heading(self._get_header_name(n)) for n in node if n.type == self.HEADING])
+        node = docs_utils.documentation_node(connector_documentation)
+        heading_names = tuple([docs_utils.remove_step_from_heading(docs_utils.header_name(n)) for n in node if n.type == self.HEADING])
         template_headings, non_required_heading = self._get_template_headings(connector_metadata["data"]["name"])
 
         heading_names_len, template_headings_len = len(heading_names), len(template_headings)
@@ -1321,29 +1300,12 @@ class TestConnectorDocumentation(BaseTest):
                 f"Documentation structure doesn't follow standard template. docs is not full.\nMissing headers: {template_headings[template_headings_index:]}"
             )
 
-    def _prepare_lines_to_compare(self, connector_name: str, docs_line: str, template_line: str) -> tuple[str, str]:
-        def _replace_link(docs_string: str, link_to_replace: str) -> str:
-            docs_string = docs_string[: docs_string.index("(")] + link_to_replace + docs_string[docs_string.index(")") + 1 :]
-            return docs_string
-
-        connector_name_to_replace = "{connector_name}"
-        link_to_replace = "({docs_link})"
-
-        template_line = (
-            template_line.replace(connector_name_to_replace, connector_name)
-            if connector_name_to_replace in template_line
-            else template_line
-        )
-        docs_line = _replace_link(docs_line, link_to_replace) if link_to_replace in template_line else docs_line
-
-        return docs_line, template_line
-
     def test_docs_descriptions(self, docs_path: str, connector_documentation: str, connector_metadata: dict):
         connector_name = connector_metadata["data"]["name"]
         template_descriptions = self._headings_description(connector_name)
 
-        node = self._get_documentation_node(connector_documentation)
-        header_line_map = {self._get_header_name(n): n.map[1] for n in node if n.type == self.HEADING}
+        node = docs_utils.documentation_node(connector_documentation)
+        header_line_map = {docs_utils.header_name(n): n.map[1] for n in node if n.type == self.HEADING}
         actual_headings = tuple(header_line_map.keys())
 
         for heading, description in template_descriptions.items():
@@ -1361,5 +1323,5 @@ class TestConnectorDocumentation(BaseTest):
                     template_description_content = template_file.readlines()
 
                     for d, t in zip(docs_description_content, template_description_content):
-                        d, t = self._prepare_lines_to_compare(connector_name, d, t)
+                        d, t = docs_utils.prepare_lines_to_compare(connector_name, d, t)
                         assert d == t, f"Description for '{heading}' does not follow structure.\nExpected: {t} Actual: {d}"
