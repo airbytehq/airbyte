@@ -282,7 +282,7 @@ const connectorCatalog = {
       label: "Destinations",
       link: {
         type: "doc",
-        id: "integrations/README#destinations",
+        id: "integrations/README",
       },
       items: getDestinationConnectors(),
     },
