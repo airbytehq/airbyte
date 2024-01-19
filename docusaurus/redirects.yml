@@ -96,5 +96,5 @@
 - from:
     - /category/sources
     - /category/destinations
-  to: /integrations
+  to: /integrations/README.md
    
