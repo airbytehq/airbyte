@@ -9,5 +9,5 @@ from pydantic import BaseModel
 
 class CacheConfigBase(
     BaseModel
-):  # TODO: meta=EnforceOverrides (Pydantic doesn't like it currently)
+):  # TODO: meta=EnforceOverrides (Pydantic doesn't like it currently.)
     pass
