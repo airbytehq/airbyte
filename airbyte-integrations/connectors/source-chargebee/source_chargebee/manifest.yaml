@@ -198,12 +198,11 @@ definitions:
       path: "/events"
       stream_cursor_field: "occurred_at"
   gift_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "gift"
       primary_key: "id"
       path: "/gifts"
-      stream_cursor_field: "updated_at"
   order_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
