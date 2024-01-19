@@ -9,7 +9,7 @@ This page contains the setup guide and reference information for the Chargebee s
 ## Prerequisites
 
 To set up the Chargebee source connector, you will need:
- - [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication)
+ - [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth)
  - [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html) of the Chargebee site you are syncing.
 
 :::info
@@ -37,6 +37,7 @@ The Chargebee source connector supports the following [sync modes](https://docs.
 * [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Append - Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported streams
 

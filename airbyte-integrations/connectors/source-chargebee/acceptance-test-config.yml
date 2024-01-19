@@ -28,12 +28,8 @@ acceptance_tests:
             bypass_reason: "Not available for Product Catalog 2.0 sites."
           - name: "virtual_bank_account"
             bypass_reason: "Cannot populate with test data"
-          - name: "unbilled_charge"
-            bypass_reason: "Empty stream. Unstable data"
-          - name: "hosted_page"
-            bypass_reason: "Empty stream. Unstable data"
           - name: "event"
-            bypass_reason: "Unstable data. Updated daily."
+            bypass_reason: "Unstable data. Test data is not persistent."
           - name: "site_migration_detail"
             bypass_reason: "Cannnot populate with test data."
         ignored_fields:
