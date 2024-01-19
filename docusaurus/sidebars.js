@@ -273,7 +273,7 @@ const connectorCatalog = {
       label: "Sources",
       link: {
         type: "doc",
-        id: "integrations/README",
+        id: "integrations/sources/README",
       },
       items: [sourcePostgres, sourceMysql, ...getSourceConnectors()].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
@@ -282,7 +282,7 @@ const connectorCatalog = {
       label: "Destinations",
       link: {
         type: "doc",
-        id: "integrations/README",
+        id: "integrations/destinations/README",
       },
       items: getDestinationConnectors(),
     },

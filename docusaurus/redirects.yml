@@ -93,8 +93,4 @@
     - /enterprise-setup/self-managed/sso
     - /enterprise-setup/sso
   to: /access-management/sso
-- from:
-    - /category/sources
-    - /category/destinations
-  to: /integrations/
    
