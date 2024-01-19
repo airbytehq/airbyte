@@ -94,12 +94,26 @@ connection only. S3 is secured through public HTTPS access only.
 5. (Optional)
    [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
    staging S3 bucket \(for the COPY strategy\).
-6. Create a user with at least create table permissions for the schema. If the schema does not exist
-   you need to add permissions for that, too. Something like this:
 
-```
-GRANT CREATE ON DATABASE database_name TO airflow_user; -- add create schema permission
-GRANT usage, create on schema my_schema TO airflow_user; -- add create table permission
+### Permissions in Redshift
+Airbyte writes data into two schemas, whichever schema you want your data to land in, e.g. `my_schema`
+and a "Raw Data" schema that Airbyte uses to improve ELT reliability. By default, this raw data schema
+is `airbyte_internal` but this can be overridden in the Redshift Destination's advanced settings. 
+Airbyte also needs to query Redshift's
+[SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for 
+metadata about the tables airbyte manages. 
+
+To ensure the `airbyte_user` has the correction permissions to:
+- create schemas in your database
+- grant usage to any existing schemas you want Airbyte to use
+- grant select to the `svv_table_info` table
+
+You can execute the following SQL statements
+
+```sql
+GRANT CREATE ON DATABASE database_name TO airbyte_user; -- add create schema permission
+GRANT usage, create on schema my_schema TO airbyte_user; -- add create table permission
+GRANT SELECT ON TABLE SVV_TABLE_INFO TO airbyte_user; -- add select permission for svv_table_info
 ```
 
 ### Optional Use of SSH Bastion Host
@@ -214,8 +228,12 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
-| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.7.12  | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924)  | Add new ap-southeast-3 AWS region                                                                                                                                                                                |
+|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.8.0   | 2024-01-18 | [34236](https://github.com/airbytehq/airbyte/pull/34236)   | Upgrade CDK to 0.13.0                                                                                                                                                                                            |
+| 0.7.15  | 2024-01-11 | [\#34186](https://github.com/airbytehq/airbyte/pull/34186) | Update check method with svv_table_info permission check, fix bug where s3 staging files were not being deleted.                                                                                                 |
+| 0.7.14  | 2024-01-08 | [\#34014](https://github.com/airbytehq/airbyte/pull/34014) | Update order of options in spec                                                                                                                                                                                  |
+| 0.7.13  | 2024-01-05 | [\#33948](https://github.com/airbytehq/airbyte/pull/33948) | Fix NPE when prepare tables fail; Add case sensitive session for super; Bastion heartbeats added                                                                                                                 |
+| 0.7.12  | 2024-01-03 | [\#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                                                                                                                                                                                |
 | 0.7.11  | 2024-01-04 | [\#33730](https://github.com/airbytehq/airbyte/pull/33730) | Internal code structure changes                                                                                                                                                                                  |
 | 0.7.10  | 2024-01-04 | [\#33728](https://github.com/airbytehq/airbyte/pull/33728) | Allow users to disable final table creation                                                                                                                                                                      |
 | 0.7.9   | 2024-01-03 | [\#33877](https://github.com/airbytehq/airbyte/pull/33877) | Fix Jooq StackOverflowError                                                                                                                                                                                      |
@@ -255,7 +273,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 0.3.55  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                                                                                         |
 | 0.3.54  | 2023-01-18 | [\#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                                                                                                                  |
 | 0.3.53  | 2023-01-03 | [\#17273](https://github.com/airbytehq/airbyte/pull/17273) | Flatten JSON arrays to fix maximum size check for SUPER field                                                                                                                                                    |
-| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                      |
+| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                       |
 | 0.3.51  | 2022-10-26 | [\#18434](https://github.com/airbytehq/airbyte/pull/18434) | Fix empty S3 bucket path handling                                                                                                                                                                                |
 | 0.3.50  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                                                                                   |
 | 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields)                                                                                         |

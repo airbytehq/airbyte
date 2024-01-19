@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 import anyio
 import asyncclick as click
 import asyncer
-from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, Platform, QueryError, Secret
+from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, Platform, Secret
 from more_itertools import chunked
 
 if TYPE_CHECKING:
@@ -101,13 +101,10 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
     Returns:
         Optional[str]: The file content if the file exists in the container, None otherwise.
     """
-    try:
-        return await container.file(path).contents()
-    except QueryError as e:
-        if "no such file or directory" not in str(e):
-            # this error could come from a network issue
-            raise
-    return None
+    dir_name, file_name = os.path.split(path)
+    if file_name not in set(await container.directory(dir_name).entries()):
+        return None
+    return await container.file(path).contents()
 
 
 @contextlib.contextmanager

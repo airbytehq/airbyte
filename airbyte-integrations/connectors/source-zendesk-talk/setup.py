@@ -15,6 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-zendesk-talk=source_zendesk_talk.run:run",
+        ],
+    },
     name="source_zendesk_talk",
     description="Source implementation for Zendesk Talk.",
     author="Airbyte",

@@ -121,6 +121,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     }
     overwriteStreamsWithTmpTable = ConcurrentHashMap.newKeySet();
     LOGGER.info("Preparing tables");
+
     prepareSchemas(parsedCatalog);
     final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
     for (final StreamConfig stream : parsedCatalog.streams()) {
@@ -205,16 +206,25 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     return tdLocks.get(streamConfig.id()).readLock();
   }
 
+  private boolean streamSetupSucceeded(final StreamConfig streamConfig) {
+    final var originalNamespace = streamConfig.id().originalNamespace();
+    final var originalName = streamConfig.id().originalName();
+    if (!streamsWithSuccessfulSetup.contains(Pair.of(originalNamespace, originalName))) {
+      // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
+      // we should skip it.
+      LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace,
+          originalName);
+      return false;
+    }
+    return true;
+  }
+
   public CompletableFuture<Optional<Exception>> typeAndDedupeTask(final StreamConfig streamConfig, final boolean mustRun) {
     return CompletableFuture.supplyAsync(() -> {
       final var originalNamespace = streamConfig.id().originalNamespace();
       final var originalName = streamConfig.id().originalName();
       try {
-        if (!streamsWithSuccessfulSetup.contains(Pair.of(originalNamespace, originalName))) {
-          // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
-          // we should skip it.
-          LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace,
-              originalName);
+        if (!streamSetupSucceeded(streamConfig)) {
           return Optional.empty();
         }
 
@@ -264,6 +274,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     final Set<CompletableFuture<Optional<Exception>>> typeAndDedupeTasks = new HashSet<>();
     parsedCatalog.streams().stream()
         .filter(streamConfig -> {
+          // Skip if stream setup failed.
+          if (!streamSetupSucceeded(streamConfig)) {
+            return false;
+          }
+          // Skip if we don't have any records for this stream.
           final StreamSyncSummary streamSyncSummary = streamSyncSummaries.getOrDefault(
               streamConfig.id().asStreamDescriptor(),
               StreamSyncSummary.DEFAULT);
