@@ -1,4 +1,7 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from typing import Any
+
 from markdown_it import MarkdownIt
 from markdown_it.tree import SyntaxTreeNode
 
@@ -29,16 +32,14 @@ def header_name(n: SyntaxTreeNode) -> str:
 
 def prepare_lines_to_compare(connector_name: str, docs_line: str, template_line: str) -> tuple[str, str]:
     def _replace_link(docs_string: str, link_to_replace: str) -> str:
-        docs_string = docs_string[: docs_string.index("(")] + link_to_replace + docs_string[docs_string.index(")") + 1:]
+        docs_string = docs_string[: docs_string.index("(")] + link_to_replace + docs_string[docs_string.index(")") + 1 :]
         return docs_string
 
     connector_name_to_replace = "{connector_name}"
     link_to_replace = "({docs_link})"
 
     template_line = (
-        template_line.replace(connector_name_to_replace, connector_name)
-        if connector_name_to_replace in template_line
-        else template_line
+        template_line.replace(connector_name_to_replace, connector_name) if connector_name_to_replace in template_line else template_line
     )
     docs_line = _replace_link(docs_line, link_to_replace) if link_to_replace in template_line else docs_line
 

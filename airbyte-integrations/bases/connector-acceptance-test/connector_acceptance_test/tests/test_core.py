@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple
 from xmlrpc.client import Boolean
 
+import connector_acceptance_test.utils.docs as docs_utils
 import dpath.util
 import jsonschema
 import pytest
@@ -50,7 +51,6 @@ from connector_acceptance_test.utils.common import (
     find_keyword_schema,
 )
 from connector_acceptance_test.utils.compare import diff_dicts
-import connector_acceptance_test.utils.docs as docs_utils
 from connector_acceptance_test.utils.json_schema_helper import (
     JsonSchemaHelper,
     flatten_tuples,
