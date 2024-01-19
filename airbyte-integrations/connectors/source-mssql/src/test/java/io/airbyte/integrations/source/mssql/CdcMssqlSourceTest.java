@@ -206,7 +206,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   }
 
   // Utilize the setup to do test on MssqlDebeziumStateUtil.
-  @Disabled
   @Test
   public void testCdcSnapshot() {
     MssqlDebeziumStateUtil util = new MssqlDebeziumStateUtil();
