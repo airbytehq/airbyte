@@ -320,17 +320,26 @@ definitions:
             stream: "#/definitions/quote_stream"
             parent_key: id
             partition_field: id
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [404]
+                  action: IGNORE
+                  error_message: "Entity unavailable. Quote may have been deleted."
     $parameters:
       name: "quote_line_group"
       primary_key: "id"
       path: "/quotes/{{ stream_slice.id }}/quote_line_groups"
   site_migration_detail_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "site_migration_detail"
       primary_key: "entity_id"
       path: "/site_migration_details"
-      stream_cursor_field: "migrated_at"
   comment_stream:
     $ref: "#/definitions/base_stream"
     retriever:

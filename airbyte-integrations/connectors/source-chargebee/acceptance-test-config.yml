@@ -58,6 +58,8 @@ acceptance_tests:
               bypass_reason: "This stream is Full-Refresh only"
             - name: gift
               bypass_reason: "This stream is Full-Refresh only"
+            - name: site_migration_detail
+              bypass_reason: "This stream is Full-Refresh only"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
