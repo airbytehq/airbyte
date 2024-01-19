@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import os
 from pathlib import Path
 
 from setuptools import find_packages, setup
@@ -13,11 +12,7 @@ def local_dependency(name: str) -> str:
     return f"{name} @ file://{Path.cwd().parent / name}"
 
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "PyJWT", "cryptography", "requests"]
-
-
-if not os.environ.get("DOCKER_BUILD"):
-    MAIN_REQUIREMENTS.append(local_dependency("source-google-analytics-v4"))
+MAIN_REQUIREMENTS = ["airbyte-cdk", "PyJWT", "cryptography", "requests", local_dependency("source-google-analytics-v4")]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
