@@ -80,10 +80,6 @@ public class MssqlInitialLoadHandler {
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.tableSizeInfoMap = tableSizeInfoMap;
   }
-
-<<<<<<< Updated upstream
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
-=======
   private static String getCatalog(final SqlDatabase database) {
     return (database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
   }
@@ -141,7 +137,6 @@ public class MssqlInitialLoadHandler {
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
                                                                              final ConfiguredAirbyteCatalog catalog,
->>>>>>> Stashed changes
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final Instant emittedAt) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
