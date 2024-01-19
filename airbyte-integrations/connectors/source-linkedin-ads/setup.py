@@ -14,6 +14,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-linkedin-ads=source_linkedin_ads.run:run",
+        ],
+    },
     name="source_linkedin_ads",
     description="Source implementation for Linkedin Ads.",
     author="Airbyte",
