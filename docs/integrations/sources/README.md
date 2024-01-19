@@ -10,4 +10,4 @@ Learn about our [Connector Support Levels](/integrations/connector-support-level
 
 <ConnectorRegistry type="source"/>
 
-_[View the connector registry in full](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html)_
+_[View the connector registry in full](/integrations)_
