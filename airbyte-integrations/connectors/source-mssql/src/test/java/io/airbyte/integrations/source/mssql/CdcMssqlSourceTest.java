@@ -206,13 +206,13 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   }
 
   // Utilize the setup to do test on MssqlDebeziumStateUtil.
-  @Disabled
   @Test
   public void testCdcSnapshot() {
     MssqlDebeziumStateUtil util = new MssqlDebeziumStateUtil();
 
     JdbcDatabase testDatabase = testDatabase();
     testDatabase.setSourceConfig(config());
+    testDatabase.setDatabaseConfig(source().toDatabaseConfig(config()));
 
     JsonNode debeziumState = util.constructInitialDebeziumState(MssqlCdcHelper.getDebeziumProperties(testDatabase, getConfiguredCatalog(), true),
         getConfiguredCatalog(), testDatabase);
