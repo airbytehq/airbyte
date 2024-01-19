@@ -119,9 +119,9 @@ class Users(Stream, IncrementalMixin):
                 if records_remaining_this_loop == 0:
                     break
 
-                self.state = {"seed": self.seed, "updated_at": updated_at}
+                self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
 
-        self.state = {"seed": self.seed, "updated_at": updated_at}
+            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
 
 
 class Purchases(Stream, IncrementalMixin):
@@ -180,6 +180,6 @@ class Purchases(Stream, IncrementalMixin):
                 if records_remaining_this_loop == 0:
                     break
 
-                self.state = {"seed": self.seed, "updated_at": updated_at}
+                self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
 
-        self.state = {"seed": self.seed, "updated_at": updated_at}
+            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}

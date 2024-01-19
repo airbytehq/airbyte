@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-import time
 from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Any, Callable, List
+
+from airbyte_cdk.sources.concurrent_source.throttler import Throttler
 
 
 class ThreadPoolManager:
@@ -19,8 +20,8 @@ class ThreadPoolManager:
         self,
         threadpool: ThreadPoolExecutor,
         logger: logging.Logger,
-        max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
         sleep_time: float = DEFAULT_SLEEP_TIME,
+        max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
     ):
         """
         :param threadpool: The threadpool to use
@@ -31,22 +32,16 @@ class ThreadPoolManager:
         self._threadpool = threadpool
         self._logger = logger
         self._max_concurrent_tasks = max_concurrent_tasks
-        self._sleep_time = sleep_time
         self._futures: List[Future[Any]] = []
+        self._throttler = Throttler(self._futures, sleep_time, max_concurrent_tasks)
+
+    def get_throttler(self) -> Throttler:
+        return self._throttler
 
     def submit(self, function: Callable[..., Any], *args: Any) -> None:
-        # Submit a task to the threadpool, waiting if there are too many pending tasks
-        self._wait_while_too_many_pending_futures(self._futures)
+        # Submit a task to the threadpool, removing completed tasks if there are too many tasks in self._futures.
+        self._prune_futures(self._futures)
         self._futures.append(self._threadpool.submit(function, *args))
-
-    def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
-        # Wait until the number of pending tasks is < self._max_concurrent_tasks
-        while True:
-            self._prune_futures(futures)
-            if len(futures) < self._max_concurrent_tasks:
-                break
-            self._logger.info("Main thread is sleeping because the task queue is full...")
-            time.sleep(self._sleep_time)
 
     def _prune_futures(self, futures: List[Future[Any]]) -> None:
         """
@@ -60,12 +55,14 @@ class ThreadPoolManager:
 
         for index in reversed(range(len(futures))):
             future = futures[index]
-            optional_exception = future.exception()
-            if optional_exception:
-                exception = RuntimeError(f"Failed reading with error: {optional_exception}")
-                self._stop_and_raise_exception(exception)
 
             if future.done():
+                # Only call future.exception() if the future is known to be done because it will block until the future is done.
+                # See https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.Future.exception
+                optional_exception = future.exception()
+                if optional_exception:
+                    exception = RuntimeError(f"Failed reading with error: {optional_exception}")
+                    self._stop_and_raise_exception(exception)
                 futures.pop(index)
 
     def shutdown(self) -> None:
