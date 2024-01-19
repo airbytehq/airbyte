@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql.initialsync;
 import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.getDebeziumProperties;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.prettyPrintConfiguredAirbyteStreamList;
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler.discoverClusteredIndexForStream;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.ORDERED_COL_STATE_TYPE;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.STATE_TYPE_KEY;
 
@@ -257,7 +258,9 @@ public class MssqlInitialReadUtil {
     if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) { // TODO: validate the seleted column rather than primary key
       LOGGER.info("Composite primary key detected for {namespace, stream} : {}, {}", stream.getStream().getNamespace(), stream.getStream().getName());
     }
-    final String ocFieldName = stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
+    final String clusterdIndexField = discoverClusteredIndexForStream(database, stream.getStream());
+    final String ocFieldName = clusterdIndexField != null ? clusterdIndexField : stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
+    LOGGER.info("selected ordered column field name: " + ocFieldName);
     final String fullyQualifiedTableName =
         DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
     final TableInfo<CommonField<JDBCType>> table = tableNameToTable

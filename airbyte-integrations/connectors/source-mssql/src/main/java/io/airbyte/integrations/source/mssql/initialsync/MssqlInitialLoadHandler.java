@@ -4,11 +4,19 @@
 
 package io.airbyte.integrations.source.mssql.initialsync;
 
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_DATABASE_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE;
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.db.SqlDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
@@ -27,10 +35,13 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -70,7 +81,67 @@ public class MssqlInitialLoadHandler {
     this.tableSizeInfoMap = tableSizeInfoMap;
   }
 
+<<<<<<< Updated upstream
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
+=======
+  private static String getCatalog(final SqlDatabase database) {
+    return (database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
+  }
+
+  public static String discoverClusteredIndexForStream(final JdbcDatabase database,
+      final AirbyteStream stream) {
+
+    Map<String, String> clusteredIndexes = new HashMap<>();
+    try {
+      // Get all clustered index names without specifying a table name
+      clusteredIndexes = aggregateClusteredIndexes(database.bufferedResultSetQuery(
+          connection -> connection.getMetaData().getIndexInfo(getCatalog(database), stream.getNamespace(), stream.getName(), false, false),
+          r -> {
+            if (r.getShort(JDBC_COLUMN_TYPE) == DatabaseMetaData.tableIndexClustered) {
+              final String schemaName =
+                  r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
+              final String streamName = JdbcUtils.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
+              final String columnName = r.getString(JDBC_COLUMN_COLUMN_NAME);
+              return new ClusteredIndexAttributesFromDb(streamName, columnName);
+            } else {
+              return null;
+            }
+          }));
+    } catch (final SQLException e) {
+      LOGGER.debug(String.format("Could not retrieve clustered indexes without a table name (%s), not blocking, fall back to use pk.", e));
+    }
+    return clusteredIndexes.getOrDefault(stream.getName(), null);
+  }
+
+  @VisibleForTesting
+  public record ClusteredIndexAttributesFromDb(String streamName,
+                                               String columnName) {
+  }
+
+  /**
+   * Aggregate list of @param entries of StreamName and clustered index column name
+   *
+   * @return a map by StreamName to associated columns in clustered index. If clustered index has multiple columns, we always use the first column.
+   */
+  @VisibleForTesting
+  static Map<String, String> aggregateClusteredIndexes(final List<ClusteredIndexAttributesFromDb> entries) {
+    final Map<String, String> result = new HashMap<>();
+    entries.forEach(entry -> {
+      if (entry == null) {
+        return;
+      }
+      if (result.containsKey(entry.streamName())) {
+        return;
+      }
+      result.put(entry.streamName, entry.columnName());
+    });
+    return result;
+  }
+
+
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+                                                                             final ConfiguredAirbyteCatalog catalog,
+>>>>>>> Stashed changes
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final Instant emittedAt) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
@@ -79,7 +150,13 @@ public class MssqlInitialLoadHandler {
       final String streamName = stream.getName();
       final String namespace = stream.getNamespace();
       // TODO: need to select column according to indexing status of table. may not be primary key
-      final List<String> primaryKeys = stream.getSourceDefinedPrimaryKey().stream().flatMap(pk -> Stream.of(pk.get(0))).toList();
+      List<String> keys = new ArrayList<>();
+      final String clusteredFirstColumn = discoverClusteredIndexForStream(database, stream);
+      if (clusteredFirstColumn == null) {
+        keys = stream.getSourceDefinedPrimaryKey().stream().flatMap(pk -> Stream.of(pk.get(0))).toList();
+      } else {
+        keys.add(clusteredFirstColumn);
+      }
       final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
       final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
       if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
@@ -94,9 +171,9 @@ public class MssqlInitialLoadHandler {
             .map(CommonField::getName)
             .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
             .toList();
-        primaryKeys.forEach(pk -> {
-          if (!selectedDatabaseFields.contains(pk)) {
-            selectedDatabaseFields.add(0, pk);
+        keys.forEach(key -> {
+          if (!selectedDatabaseFields.contains(key)) {
+            selectedDatabaseFields.add(0, key);
           }
         });
 
