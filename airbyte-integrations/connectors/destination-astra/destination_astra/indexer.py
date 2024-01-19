@@ -71,6 +71,7 @@ class AstraIndexer(Indexer):
 
     def check(self) -> Optional[str]:
         try:
+            self._create_collection()
             collections = self.client.find_collections()
             collection = next(filter(lambda f: f["name"] == self.config.collection, collections), None)
             if collection is None:
