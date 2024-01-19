@@ -5,19 +5,24 @@
 
 from io import TextIOWrapper
 from json import loads
+from os import remove
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
+from airbyte_cdk import AirbyteLogger
+
+from .exceptions import ShopifyBulkExceptions
 from .query import ShopifyBulkQuery
 from .tools import END_OF_FILE, BulkTools
 
 
 class ShopifyBulkRecord:
-    def __init__(self, query: ShopifyBulkQuery) -> None:
+    def __init__(self, query: ShopifyBulkQuery, logger: AirbyteLogger) -> None:
         self.composition = query.record_composition
         self.record_process_components = query.record_process_components
         self.components: List[str] = self.composition.get("record_components", []) if self.composition else []
         self.buffer: List[MutableMapping[str, Any]] = []
         self.tools: BulkTools = BulkTools()
+        self.logger = logger
 
     @staticmethod
     def check_type(record: Mapping[str, Any], types: Union[List[str], str]) -> bool:
@@ -116,3 +121,23 @@ class ShopifyBulkRecord:
         with open(filename, "r") as jsonl_file:
             for record in self.process_line(jsonl_file):
                 yield self.tools.fields_names_to_snake_case(record)
+
+    def read_file(self, filename: str, remove_file: Optional[bool] = True) -> Iterable[Mapping[str, Any]]:
+        try:
+            # produce records from saved result
+            yield from self.produce_records(filename)
+        except Exception as e:
+            raise ShopifyBulkExceptions.BulkRecordProduceError(
+                f"An error occured while producing records from BULK Job result. Trace: {repr(e)}.",
+            )
+        finally:
+            # removing the tmp file, if requested
+            if remove_file and filename:
+                try:
+                    remove(filename)
+                except Exception as e:
+                    self.logger.info(f"Failed to remove the `tmp job result` file, the file doen't exist. Details: {repr(e)}.")
+                    # we should pass here, if the file wasn't removed , it's either:
+                    # - doesn't exist
+                    # - will be dropped with the container shut down.
+                    pass

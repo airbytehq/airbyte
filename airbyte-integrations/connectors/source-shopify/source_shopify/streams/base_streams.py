@@ -13,8 +13,9 @@ import pendulum as pdm
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import RequestException
-from source_shopify.shopify_graphql.bulk.job import ShopifyBulkJob
+from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
 from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery, ShopifyBulkTemplates
+from source_shopify.shopify_graphql.bulk.record import ShopifyBulkRecord
 from source_shopify.transform import DataTypeEnforcer
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from source_shopify.utils import ShopifyNonRetryableErrors
@@ -576,13 +577,14 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         super().__init__(config)
         # init BULK Query instance, pass `shop_id` from config
         self.query = self.bulk_query(shop_id=config.get("shop_id"))
-        # define default BULK instance
-        self.bulk_job: ShopifyBulkJob = ShopifyBulkJob(
+        # define BULK Manager instance
+        self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
             session=self._session,
-            logger=self.logger,
-            query=self.query,
             base_url=f"{self.url_base}/{self.path()}",
+            logger=self.logger,
         )
+        # define Record Producer instance
+        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query, self.logger)
 
     @property
     def slice_interval_in_days(self) -> int:
@@ -641,7 +643,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             end = pdm.now()
             while start < end:
                 # check if we reached the max attempts retry with concurent BULK job.
-                if self.bulk_job.has_reached_max_concurrency_attempt():
+                if self.job_manager.has_reached_max_concurrency_attempt():
                     # exit gracefully from the sync
                     return []
                 else:
@@ -657,20 +659,19 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # for the streams that don't support filtering
             yield {"query": self.query.get()}
 
-    def process_bulk_results(self, job_result_url: Optional[str] = None, stream_state: Optional[Mapping[str, Any]] = None) -> dict:
-        # the `job_result_url` could be `None`,
-        # meaning there are no data available for the slice period.
-        if job_result_url:
+    def process_bulk_results(self, response: requests.Response, stream_state: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+        # get results fetched from COMPLETED BULK Job or `None`
+        filename = self.job_manager.job_check(response)
+        # the `filename` could be `None`, meaning there are no data available for the slice period.
+        if filename:
             # add `shop_url` field to each record produced
             records = self.add_shop_url_field(
                 # produce records from saved bulk job result
-                self.bulk_job.job_record_producer(job_result_url)
+                self.record_producer.read_file(filename)
             )
             yield from self.filter_records_newer_than_state(stream_state, records)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs
         stream_state = stream_state_cache.cached_state.get(self.name, {self.cursor_field: self.config["start_date"]})
-        # get job_result from COMPLETED BULK Job
-        job_result_url = self.bulk_job.job_check(response)
-        yield from self.process_bulk_results(job_result_url, stream_state)
+        yield from self.process_bulk_results(response, stream_state)

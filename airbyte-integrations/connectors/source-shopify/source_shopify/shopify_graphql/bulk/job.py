@@ -4,9 +4,8 @@
 
 
 from enum import Enum
-from os import remove
 from time import sleep, time
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -15,9 +14,8 @@ from source_shopify.utils import ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
 from .exceptions import ShopifyBulkExceptions
-from .query import ShopifyBulkQuery, ShopifyBulkTemplates
-from .record import END_OF_FILE, ShopifyBulkRecord
-from .tools import BulkTools
+from .query import ShopifyBulkTemplates
+from .tools import END_OF_FILE, BulkTools
 
 
 class ShopifyBulkStatus(Enum):
@@ -29,42 +27,148 @@ class ShopifyBulkStatus(Enum):
     ACCESS_DENIED = "ACCESS_DENIED"
 
 
-class ShopifyBulkJob:
-
-    """
-    Class to create, check, retrieve the result for Shopify GraphQL Bulk Jobs.
-    """
-
-    def __init__(self, session: requests.Session, logger: AirbyteLogger, query: ShopifyBulkQuery, base_url: str) -> None:
+class ShopifyBulkManager:
+    def __init__(self, session: requests.Session, base_url: str, logger: AirbyteLogger) -> None:
         self.session = session
-        self.logger = logger
         self.base_url = base_url
-        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(query)
+        self.logger = logger
         self.tools: BulkTools = BulkTools()
+        # current job attributes
+        self.job_id: str = None
+        self.job_state: ShopifyBulkStatus[str] = None
 
     # 5Mb chunk size to save the file
-    retrieve_chunk_size = 1024 * 1024 * 5
+    retrieve_chunk_size: int = 1024 * 1024 * 5
 
     # time between job status checks
     job_check_interval_sec: int = 5
 
     # max attempts for job creation
-    concurrent_max_retry = 10
+    concurrent_max_retry: int = 19
     # attempt counter
-    concurrent_attempt = 0
+    concurrent_attempt: int = 0
     # attempt limit indicator
-    concurrent_max_attempt_reached = False
+    concurrent_max_attempt_reached: bool = False
     # sleep time per creation attempt
-    concurrent_interval_sec = 45
+    concurrent_interval_sec = 30
+
+    @property
+    def process_job_fn_mapping(self) -> Mapping[str, Any]:
+        return {
+            ShopifyBulkStatus.RUNNING.value: self.on_running_job,
+            ShopifyBulkStatus.TIMEOUT.value: self.on_timeout_job,
+            ShopifyBulkStatus.FAILED.value: self.on_failed_job,
+            ShopifyBulkStatus.ACCESS_DENIED.value: self.on_access_denied_job,
+        }
 
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
-    def get_errors_from_response(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+    def check_for_errors(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         try:
             return response.json().get("errors") or response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("userErrors", [])
         except (Exception, JSONDecodeError) as e:
             raise ShopifyBulkExceptions.BulkJobBadResponse(
                 f"Couldn't check the `response` for `errors`, response: `{response.text}`. Trace: {repr(e)}."
             )
+
+    def update_status(self, response: Optional[requests.Response] = None) -> None:
+        if response:
+            response_data = response.json().get("data", {}).get("node", {})
+            self.job_id = response_data.get("id")
+            self.job_state = response_data.get("status")
+            self.log_state()
+
+    def reset_state(self) -> None:
+        # set current job status and id to default value
+        self.job_state, self.job_id = None, None
+
+    def completed(self) -> bool:
+        return self.job_state == ShopifyBulkStatus.COMPLETED.value
+
+    def running(self) -> bool:
+        return self.job_state == ShopifyBulkStatus.RUNNING.value
+
+    def failed(self) -> bool:
+        return self.job_state == ShopifyBulkStatus.FAILED.value
+
+    def timeout(self) -> bool:
+        return self.job_state == ShopifyBulkStatus.TIMEOUT.value
+
+    def access_denied(self) -> bool:
+        return self.job_state == ShopifyBulkStatus.ACCESS_DENIED.value
+
+    def get_status_args(self, bulk_job_id: str) -> Mapping[str, Any]:
+        return {
+            "method": "POST",
+            "url": self.base_url,
+            "data": ShopifyBulkTemplates.status(bulk_job_id),
+            "headers": {"Content-Type": "application/graphql"},
+        }
+
+    def log_state(self) -> None:
+        self.logger.info(f"The BULK Job: `{self.job_id}` is {self.job_state}.")
+
+    def on_running_job(self, **kwargs) -> None:
+        sleep(self.job_check_interval_sec)
+
+    def on_completed_job(self, response: Optional[requests.Response] = None) -> Optional[requests.Response]:
+        # reset status on COMPLETED job
+        self.reset_state()
+        return self.retrieve_result(response)
+
+    def retrieve_result(self, response: Optional[requests.Response] = None) -> Optional[str]:
+        job_result_url = response.json().get("data", {}).get("node", {}).get("url") if response else None
+        if job_result_url:
+            # save to local file using chunks to avoid OOM
+            filename = self.tools.filename_from_url(job_result_url)
+            with self.session.get(job_result_url, stream=True) as response:
+                response.raise_for_status()
+                with open(filename, "wb") as file:
+                    for chunk in response.iter_content(chunk_size=self.retrieve_chunk_size):
+                        file.write(chunk)
+                    # add `<end_of_file>` line to the bottom  of the saved data for easy parsing
+                    file.write(END_OF_FILE.encode())
+            return filename
+
+    def on_failed_job(self, response: requests.Response) -> None:
+        raise ShopifyBulkExceptions.BulkJobFailed(
+            f"The BULK Job: `{self.job_id}` exited with {self.job_state}, details: {response.text}",
+        )
+
+    def on_timeout_job(self, **kwargs) -> None:
+        raise ShopifyBulkExceptions.BulkJobTimout(
+            f"The BULK Job: `{self.job_id}` exited with {self.job_state}, please reduce the `GraphQL BULK Date Range in Days` in SOURCES > Your Shopify Source > SETTINGS.",
+        )
+
+    def on_access_denied_job(self, **kwagrs) -> None:
+        raise ShopifyBulkExceptions.BulkJobAccessDenied(
+            f"The BULK Job: `{self.job_id}` exited with {self.job_state}, please check your PERMISSION to fetch the data for this stream.",
+        )
+
+    def on_job_with_errors(self, errors: List[Mapping[str, Any]]) -> None:
+        raise ShopifyBulkExceptions.BulkJobUnknownError(f"Could not validate the status of the BULK Job `{self.job_id}`. Errors: {errors}.")
+
+    def on_successful_job(self, response: requests.Response) -> None:
+        self.update_status(response)
+        process_fn = self.process_job_fn_mapping.get(self.job_state)
+        if process_fn:
+            process_fn(response=response)
+
+    def check_state(self, bulk_job_id: str, is_running_test: bool = False) -> Optional[str]:
+        response = None
+        status_args = self.get_status_args(bulk_job_id)
+        while not self.completed():
+            # re-use of `self._session(*, **)` to make BULK Job status checks
+            response = self.session.request(**status_args)
+            errors = self.check_for_errors(response)
+            if not errors:
+                self.on_successful_job(response)
+                if is_running_test:
+                    return None
+            else:
+                # execute ERRORS scenario
+                self.on_job_with_errors(errors)
+        # return `job_result_url`: str when status is `COMPLETED`
+        return self.on_completed_job(response)
 
     def has_running_concurrent_job(self, errors: Optional[Iterable[Mapping[str, Any]]] = None) -> bool:
         """
@@ -99,14 +203,6 @@ class ShopifyBulkJob:
         """
         return self.session.send(request)
 
-    def _job_status_args(self, bulk_job_id: str) -> Mapping[str, Any]:
-        return {
-            "method": "POST",
-            "url": self.base_url,
-            "data": ShopifyBulkTemplates.status(bulk_job_id),
-            "headers": {"Content-Type": "application/graphql"},
-        }
-
     def retry_concurrent_request(self, request: requests.PreparedRequest) -> Optional[requests.Response]:
         # increment attempt
         self.concurrent_attempt += 1
@@ -138,7 +234,7 @@ class ShopifyBulkJob:
 
     def job_healthcheck(self, response: requests.Response) -> Optional[requests.Response]:
         # errors check
-        errors = self.get_errors_from_response(response)
+        errors = self.check_for_errors(response)
         # when the concurrent job takes place, we typically need to wait and retry, but no longer than 10 min.
         if not self.has_running_concurrent_job(errors):
             return response if not errors else None
@@ -147,62 +243,20 @@ class ShopifyBulkJob:
             request: requests.PreparedRequest = response.request
             return self.job_retry_on_concurrency(request)
 
-    def job_log_status(self, bulk_job_id: str, status: str) -> None:
-        self.logger.info(f"The BULK Job: `{bulk_job_id}` is {status}.")
-
-    def job_status_check(self, bulk_job_id: str, is_test: bool = False) -> Optional[str]:
-        status: str = None
-        request_args = self._job_status_args(bulk_job_id)
-        while status != ShopifyBulkStatus.COMPLETED.value:
-            # re-use of `self._session(*, **)` to make BULK Job status checks
-            response = self.session.request(**request_args)
-            # errors check
-            errors = self.get_errors_from_response(response)
-            if not errors:
-                status = response.json().get("data", {}).get("node", {}).get("status")
-                if status == ShopifyBulkStatus.RUNNING.value:
-                    self.job_log_status(bulk_job_id, status)
-                    sleep(self.job_check_interval_sec)
-                    # this is needed for test purposes
-                    if is_test:
-                        return None
-                elif status == ShopifyBulkStatus.FAILED.value:
-                    self.job_log_status(bulk_job_id, status)
-                    raise ShopifyBulkExceptions.BulkJobFailed(
-                        f"The BULK Job: `{bulk_job_id}` exited with {status}, details: {self.get_errors_from_response(response)}",
-                    )
-                elif status == ShopifyBulkStatus.TIMEOUT.value:
-                    self.job_log_status(bulk_job_id, status)
-                    raise ShopifyBulkExceptions.BulkJobTimout(
-                        f"The BULK Job: `{bulk_job_id}` exited with {status}, please reduce the `GraphQL BULK Date Range in Days` in SOURCES > Your Shopify Source > SETTINGS.",
-                    )
-                elif status == ShopifyBulkStatus.ACCESS_DENIED.value:
-                    self.job_log_status(bulk_job_id, status)
-                    raise ShopifyBulkExceptions.BulkJobAccessDenied(
-                        f"The BULK Job: `{bulk_job_id}` exited with {status}, please check your PERMISSION to fetch the data for this stream.",
-                    )
-            else:
-                raise ShopifyBulkExceptions.BulkJobUnknownError(
-                    f"Could not validate the status of the BULK Job `{bulk_job_id}`. Errors: {errors}."
-                )
-
-        # return when status is `COMPLETED`
-        self.job_log_status(bulk_job_id, status)
-        return response.json().get("data", {}).get("node", {}).get("url")
-
-    def job_check(self, created_job_response: requests.Response, is_test: bool = False) -> Optional[str]:
+    @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
+    def job_check(self, created_job_response: requests.Response, is_running_test: bool = False) -> Optional[str]:
         """
         This method checks the status for the BULK Job created, using it's `ID`.
         The time spent for the Job execution is tracked to understand the effort.
 
-        :: is_test: bool (default = False) - service flag to be able to manage unit_tests for `RUNNING` status.
+        :: is_running_test: bool (default = False) - service flag to be able to manage unit_tests for `RUNNING` status.
         """
         job_response = self.job_healthcheck(created_job_response)
         if job_response:
             bulk_job_id: str = self.job_get_id(job_response)
             job_started = time()
             try:
-                return self.job_status_check(bulk_job_id, is_test)
+                return self.check_state(bulk_job_id, is_running_test)
             except (
                 ShopifyBulkExceptions.BulkJobFailed,
                 ShopifyBulkExceptions.BulkJobTimout,
@@ -217,37 +271,3 @@ class ShopifyBulkJob:
             # the `job_response` could be `None`, indicating the `concurrent` backoff,
             # since the BULK job was not created, most likely due to the running concurent BULK job.
             return None
-
-    def job_retrieve_result(self, job_result_url: str) -> str:
-        # save to local file using chunks to avoid OOM
-        filename = self.tools.filename_from_url(job_result_url)
-        with self.session.get(job_result_url, stream=True) as response:
-            response.raise_for_status()
-            with open(filename, "wb") as file:
-                for chunk in response.iter_content(chunk_size=self.retrieve_chunk_size):
-                    file.write(chunk)
-                # add `<end_of_file>` line to the bottom  of the saved data for easy parsing
-                file.write(END_OF_FILE.encode())
-        return filename
-
-    def job_record_producer(self, job_result_url: str, remove_file: Optional[bool] = True) -> Iterable[Mapping[str, Any]]:
-        try:
-            # save the content to the local file
-            filename = self.job_retrieve_result(job_result_url)
-            # produce records from saved result
-            yield from self.record_producer.produce_records(filename)
-        except Exception as e:
-            raise ShopifyBulkExceptions.BulkRecordProduceError(
-                f"An error occured while producing records from BULK Job result. Trace: {repr(e)}.",
-            )
-        finally:
-            # removing the tmp file, if requested
-            if remove_file and filename:
-                try:
-                    remove(filename)
-                except Exception as e:
-                    self.logger.info(f"Failed to remove the `tmp job result` file, the file doen't exist. Details: {repr(e)}.")
-                    # we should pass here, if the file wasn't removed , it's either:
-                    # - doesn't exist
-                    # - will be dropped with the container shut down.
-                    pass
