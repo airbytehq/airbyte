@@ -98,6 +98,16 @@ definitions:
             stream: "#/definitions/item_stream"
             parent_key: "id"
             partition_field: "id"
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [404]
+                  action: IGNORE
+                  error_message: "Entity unavailable. Item may have been deleted."
     $parameters:
       name: "attached_item"
       primary_key: "id"
@@ -130,7 +140,7 @@ definitions:
               response_filters:
                 - http_codes: [404]
                   action: IGNORE
-                  error_message: "Entity unavailable. Customer must have been deleted."
+                  error_message: "Entity unavailable. Customer may have been deleted."
                 - error_message_contains: "This API operation is not enabled for this site"
                   action: IGNORE
                   error_message: "Stream is available only for Product Catalog 1.0"
