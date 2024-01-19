@@ -2,10 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from queue import Queue
-
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
+from airbyte_cdk.sources.streams.concurrent.partitions.throttled_queue import ThrottledQueue
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
 
 
 class PartitionReader:
@@ -13,7 +12,7 @@ class PartitionReader:
     Generates records from a partition and puts them in a queue.
     """
 
-    def __init__(self, queue: Queue[QueueItem]) -> None:
+    def __init__(self, queue: ThrottledQueue) -> None:
         """
         :param queue: The queue to put the records in.
         """

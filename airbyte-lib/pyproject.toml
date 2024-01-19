@@ -11,18 +11,21 @@ python = "^3.9"
 
 airbyte-cdk = "^0.58.3"
 # airbyte-protocol-models = "^1.0.1"  # Conflicts with airbyte-cdk # TODO: delete or resolve
-duckdb-engine = "^0.9.5"
 jsonschema = "3.2.0"
 orjson = "^3.9.10"
 overrides = "^7.4.0"
 pandas = "^2.1.4"
 psycopg = {extras = ["binary", "pool"], version = "^3.1.16"}
-pyarrow = "^14.0.1"
 python-ulid = "^2.2.0"
-requests = "^2.31.0"
-SQLAlchemy = "^2.0.23"
 types-pyyaml = "^6.0.12.12"
 ulid = "^1.1"
+sqlalchemy = "1.4.51"
+snowflake-connector-python = "3.6.0"
+snowflake-sqlalchemy = "^1.5.1"
+duckdb-engine = "^0.10.0"
+requests = "^2.31.0"
+pyarrow = "^14.0.2"
+psycopg2 = "^2.9.9"
 
 [tool.poetry.group.dev.dependencies]
 docker = "^7.0.0"
@@ -37,7 +40,8 @@ pytest-mypy = "^0.10.3"
 pytest-postgresql = "^5.0.0"
 ruff = "^0.1.11"
 types-jsonschema = "^4.20.0.0"
-types-requests = "^2.31.0.10"
+google-cloud-secret-manager = "^2.17.0"
+types-requests = "2.31.0.4"
 
 [build-system]
 requires = ["poetry-core"]
