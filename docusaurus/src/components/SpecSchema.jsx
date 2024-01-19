@@ -35,6 +35,9 @@ function JSONSchemaViewer(props) {
 }
 
 function getOrderedProperties(schema) {
+  if (!schema.properties) {
+    return [];
+  }
   const requiredProperties = new Set(schema.required || []);
   return Object.entries(schema.properties).sort(([a], [b]) => {
     // Sort required properties first, then respect the order of the schema
@@ -75,18 +78,32 @@ function isOneOf(schema) {
   return schema.type === "object" && schema.oneOf;
 }
 
+function isObjectArray(schema) {
+  return schema.type === "array" && schema.items && schema.items.type === "object";
+}
+
 function showCollapsible(schema) {
-  return schema.type === "array" || (schema.type === "object" && schema.properties) || showDescription(schema)
+  return (schema.type === "array" && schema.items && schema.items.type !== "object") || (schema.type === "object" && schema.properties) || showDescription(schema)
 }
 
 function showDescription(schema) {
-  return schema.const || typeof schema.default !== "undefined" || schema.pattern || schema.examples || schema.description || isOneOf(schema);
+  return typeof schema.default !== "undefined" || schema.pattern || schema.examples || schema.description || isOneOf(schema);
 }
 
 function getIndentStyle(depth) {
   return {
     paddingLeft: `${depth * 13}px`
   };
+}
+
+function getType(schema) {
+  if (schema.const) {
+    return JSON.stringify(schema.const);
+  }
+  if (schema.type === "array" && schema.items) {
+    return `${schema.type}<${schema.items.type}>`;
+  }
+  return schema.type;
 }
 
 function JSONSchemaProperty({ propertyKey, schema, required, depth = 0 }) {
@@ -97,7 +114,7 @@ function JSONSchemaProperty({ propertyKey, schema, required, depth = 0 }) {
   </>;
   const typeAndTitle = <>
     <div className={styles.headerItem}>
-      {schema.type}
+      {getType(schema)}
     </div>
     <div className={styles.headerItem}>
       {schema.title && <div>{schema.title}</div>}
@@ -116,7 +133,7 @@ function JSONSchemaProperty({ propertyKey, schema, required, depth = 0 }) {
             {showDescription(schema) && <Description schema={schema} style={getIndentStyle(newDepth + 1)} />}
             {schema.type === "object" && schema.oneOf && <JSONSchemaOneOf schema={schema} depth={newDepth} />}
             {schema.type === "object" && schema.properties && <JSONSchemaObject schema={schema} depth={newDepth} />}
-            {schema.type === "array" && <JSONSchemaProperty propertyKey="items[x]" schema={schema.items} depth={newDepth} />}
+            {schema.type === "array" && <JSONSchemaObject schema={schema.items} depth={newDepth} />}
           </Disclosure.Panel>
         </>)}
     </Disclosure>
@@ -142,6 +159,7 @@ function Description({ schema, style }) {
   {schema.description && <div><TextWithHTML text={schema.description} /></div>}
   {isOneOf(schema) &&
     <Heading as="h5" className={styles.oneOfHeader}>One of:</Heading>}
+  {isObjectArray(schema) && <Heading as="h5" className={styles.oneOfHeader}>Item properties:</Heading>}
 </div>
 }
 
