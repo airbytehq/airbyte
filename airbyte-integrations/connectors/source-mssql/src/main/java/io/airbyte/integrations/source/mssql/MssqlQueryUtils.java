@@ -28,7 +28,7 @@ public class MssqlQueryUtils {
       @JsonProperty("index_name") String name,
       @JsonProperty("index_description") String description,
       @JsonProperty("index_keys") String keys
-  ) { };
+  ) { }
 
   public static void getIndexInfoForStreams(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final String quoteString) {
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
