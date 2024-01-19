@@ -79,7 +79,7 @@ jobs:
               - 'airbyte-ci/connectors/metadata_service/orchestrator/**'
               - '!**/*.md'
             airbyte_lib:
-              - 'airbyte_lib/**'
+              - 'airbyte-lib/**'
               - '!**/*.md'
 
       - name: Run airbyte-ci/connectors/connector_ops tests
