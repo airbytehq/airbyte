@@ -12,7 +12,7 @@ TOKEN_PATTERN = re.compile(r"[A-Z]+[a-z]*|[a-z]+|\d+|(?P<NoToken>[^a-zA-Z\d]+)")
 DEFAULT_SEPARATOR = "_"
 
 
-def name_conversion(text):
+def name_conversion(text: str) -> str:
     """
     convert name using a set of rules, for example: '1MyName' -> '_1_my_name'
     """
@@ -36,7 +36,9 @@ def name_conversion(text):
     return text
 
 
-def safe_name_conversion(text):
+def safe_name_conversion(text: str) -> str:
+    if not text:
+        return text
     new = name_conversion(text)
     if not new:
         raise Exception(f"initial string '{text}' converted to empty")
