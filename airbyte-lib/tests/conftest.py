@@ -2,13 +2,17 @@
 
 """Global pytest fixtures."""
 
+import json
 import logging
+import os
 import socket
 import time
+from airbyte_lib.caches.snowflake import SnowflakeCacheConfig
 
 import docker
 import psycopg
 import pytest
+from google.cloud import secretmanager
 
 from airbyte_lib.caches import PostgresCacheConfig
 
@@ -88,4 +92,27 @@ def new_pg_cache_config(pg_dsn):
         database="postgres",
         schema_name="public",
     )
+    yield config
+
+@pytest.fixture
+def snowflake_config():
+    if "GCP_GSM_CREDENTIALS" not in os.environ:
+        raise Exception("GCP_GSM_CREDENTIALS env variable not set, can't fetch secrets for Snowflake. Make sure they are set up as described: https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md#get-gsm-access")
+    secret_client = secretmanager.SecretManagerServiceClient.from_service_account_info(
+        json.loads(os.environ["GCP_GSM_CREDENTIALS"])
+    )
+    secret = json.loads(
+        secret_client.access_secret_version(
+            name="projects/dataline-integration-testing/secrets/AIRBYTE_LIB_SNOWFLAKE_CREDS/versions/latest"
+        ).payload.data.decode("UTF-8")
+    )
+    config = SnowflakeCacheConfig(
+        account=secret["account"],
+        username=secret["username"],
+        password=secret["password"],
+        database=secret["database"],
+        warehouse=secret["warehouse"],
+        role=secret["role"],
+    )
+
     yield config

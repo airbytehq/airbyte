@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 
 import airbyte_lib as ab
+from airbyte_lib.caches import SnowflakeCacheConfig, SnowflakeSQLCache
 import pandas as pd
 import pytest
 
@@ -311,6 +312,22 @@ def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_tes
             check_dtype=False,
         )
 
+def test_sync_to_snowflake(snowflake_config: SnowflakeCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = SnowflakeSQLCache(config=snowflake_config)
+
+    with cache.get_sql_connection() as con:
+        con.execute("DROP SCHEMA IF EXISTS AIRBYTE_RAW")
+
+    result: ReadResult = source.read(cache)
+
+    assert result.processed_records == 3
+    for stream_name, expected_data in expected_test_stream_data.items():
+        pd.testing.assert_frame_equal(
+            result[stream_name].to_pandas(),
+            pd.DataFrame(expected_data),
+            check_dtype=False,
+        )
 
 def test_sync_limited_streams(expected_test_stream_data):
     source = ab.get_connector("source-test", config={"apiKey": "test"})
