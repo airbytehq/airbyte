@@ -56,6 +56,8 @@ acceptance_tests:
               bypass_reason: "This stream is Full-Refresh only"
             - name: unbilled_charge
               bypass_reason: "This stream is Full-Refresh only"
+            - name: gift
+              bypass_reason: "This stream is Full-Refresh only"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
