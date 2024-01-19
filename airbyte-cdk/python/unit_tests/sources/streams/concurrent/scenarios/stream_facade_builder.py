@@ -52,8 +52,7 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in self._streams}, state=self._state)
         state_converter = StreamFacadeConcurrentConnectorStateConverter()
-        stream_states = [state_converter.get_concurrent_stream_state(self._cursor_field, state_manager.get_stream_state(stream.name, stream.namespace))
-                         for stream in self._streams]
+        stream_states = [state_manager.get_stream_state(stream.name, stream.namespace) for stream in self._streams]
         return [
             StreamFacade.create_from_stream(
                 stream,
@@ -69,6 +68,7 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
                     state_converter,
                     self._cursor_field,
                     self._cursor_boundaries,
+                    None,
                 )
                 if self._cursor_field
                 else NoopCursor(),

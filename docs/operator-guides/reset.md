@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Resetting Your Data
+# Resetting your data
 
 Resetting your data allows you to drop all previously synced data so that any ensuing sync can start syncing fresh. This is useful if you don't require the data replicated to your destination to be saved permanently or are just testing Airbyte.
 

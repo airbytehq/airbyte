@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.postgres;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.io.BufferedReader;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -22,6 +24,23 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
 
   public PostgresSqlOperations() {
     super(new PostgresDataAdapter());
+  }
+
+  @Override
+  protected List<String> postCreateTableQueries(final String schemaName, final String tableName) {
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      return List.of(
+          // the raw_id index _could_ be unique (since raw_id is a UUID)
+          // but there's no reason to do that (because it's a UUID :P )
+          // and it would just slow down inserts.
+          // also, intentionally don't specify the type of index (btree, hash, etc). Just use the default.
+          "CREATE INDEX IF NOT EXISTS " + tableName + "_raw_id" + " ON " + schemaName + "." + tableName + "(_airbyte_raw_id)",
+          "CREATE INDEX IF NOT EXISTS " + tableName + "_extracted_at" + " ON " + schemaName + "." + tableName + "(_airbyte_extracted_at)",
+          "CREATE INDEX IF NOT EXISTS " + tableName + "_loaded_at" + " ON " + schemaName + "." + tableName
+              + "(_airbyte_loaded_at, _airbyte_extracted_at)");
+    } else {
+      return Collections.emptyList();
+    }
   }
 
   @Override
