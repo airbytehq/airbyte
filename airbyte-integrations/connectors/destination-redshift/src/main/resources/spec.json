@@ -249,10 +249,10 @@
           }
         ]
       },
-      "use_1s1t_format": {
+      "is_v2_destination": {
         "type": "boolean",
-        "description": "Use <a href=\"https://docs.airbyte.com/understanding-airbyte/typing-deduping\" target=\"_blank\">Destinations V2</a>.",
-        "title": "Use Destinations V2",
+        "description": "(For internal use.) Declares this is a V2 destination.",
+        "title": "(Internal) Is V2 Destination",
         "group": "connection",
         "airbyte_hidden": true,
         "default": true
