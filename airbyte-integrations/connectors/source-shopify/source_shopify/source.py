@@ -120,6 +120,10 @@ class ConnectionCheckTest:
 
 
 class SourceShopify(AbstractSource):
+    @property
+    def continue_sync_on_stream_failure(self) -> bool:
+        return True
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.

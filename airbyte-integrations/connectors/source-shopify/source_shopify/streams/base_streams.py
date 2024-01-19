@@ -642,19 +642,14 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             start = pdm.parse(stream_state.get(self.cursor_field) if stream_state else self.config.get("start_date"))
             end = pdm.now()
             while start < end:
-                # check if we reached the max attempts retry with concurent BULK job.
-                if self.job_manager.has_reached_max_concurrency_attempt():
-                    # exit gracefully from the sync
-                    return []
-                else:
-                    slice_end = start.add(days=self.slice_interval_in_days)
-                    # check end period is less than now() or now() is applied otherwise.
-                    slice_end = slice_end if slice_end < end else end
-                    # making pre-defined sliced query to pass it directly
-                    prepared_query = self.query.get(self.filter_field, start.to_rfc3339_string(), slice_end.to_rfc3339_string())
-                    self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}.")
-                    yield {"query": prepared_query}
-                    start = slice_end
+                slice_end = start.add(days=self.slice_interval_in_days)
+                # check end period is less than now() or now() is applied otherwise.
+                slice_end = slice_end if slice_end < end else end
+                # making pre-defined sliced query to pass it directly
+                prepared_query = self.query.get(self.filter_field, start.to_rfc3339_string(), slice_end.to_rfc3339_string())
+                self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}.")
+                yield {"query": prepared_query}
+                start = slice_end
         else:
             # for the streams that don't support filtering
             yield {"query": self.query.get()}

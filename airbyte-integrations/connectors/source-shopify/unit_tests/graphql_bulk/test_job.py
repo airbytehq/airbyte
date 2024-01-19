@@ -119,30 +119,37 @@ def test_job_state_access_denied(auth_config) -> None:
     assert stream.job_manager.access_denied() == True
 
 @pytest.mark.parametrize(
-    "bulk_job_response, concurrent_max_retry, expected",
+    "bulk_job_response, concurrent_max_retry, error_type, expected",
     [
         # method should return this response fixture, once retried.
-        ("bulk_successful_completed_response", 2, "gid://shopify/BulkOperation/4046733967549"),
-        # method should return None, because the concurrent BULK Job is in progress
-        ("bulk_error_with_concurrent_job", 1, None),
+        ("bulk_successful_completed_response", 2, None, "gid://shopify/BulkOperation/4046733967549"),
+        # method should raise AirbyteTracebackException, because the concurrent BULK Job is in progress
+        (
+            "bulk_error_with_concurrent_job", 
+            1, 
+            ShopifyBulkExceptions.BulkJobConcurrentError, 
+            "The BULK Job couldn't be created at this time, since another job is running",
+        ),
     ],
     ids=[
         "regular concurrent request",
         "max atttempt reached",
     ]
 )
-def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, concurrent_max_retry, auth_config, expected) -> None:
+def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, concurrent_max_retry, error_type, auth_config, expected) -> None:
     stream = MetafieldOrders(auth_config)
     # patching concurent settings
     stream.job_manager.concurrent_max_retry = concurrent_max_retry
     stream.job_manager.concurrent_interval_sec = 1
-    
     requests_mock.get(stream.job_manager.base_url, json=request.getfixturevalue(bulk_job_response))
-    result = stream.job_manager.job_retry_on_concurrency(requests.get(stream.job_manager.base_url).request)
-    if result:
-        assert stream.job_manager.job_get_id(result) == expected
+    if error_type:
+        with pytest.raises(error_type) as error:
+            stream.job_manager.job_retry_on_concurrency(requests.get(stream.job_manager.base_url).request)
+        assert expected in repr(error.value)
     else:
-        assert result == expected
+        result = stream.job_manager.job_retry_on_concurrency(requests.get(stream.job_manager.base_url).request)
+        assert stream.job_manager.job_get_id(result) == expected
+
 
 
 @pytest.mark.parametrize(
@@ -162,8 +169,6 @@ def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, con
         # is_test should be set to `True` to exit from the while loop in `job_check_status()`
         ("bulk_job_running_response", None, False, True, None),
         ("bulk_job_running_response_without_id", None, False, True, None),
-        # bulk job with unknown status
-        ("bulk_error_with_concurrent_job", None, False, False, None),
     ],
     ids=[
         "completed",
@@ -173,7 +178,6 @@ def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, con
         "success with errors (edge)",
         "running",
         "running_no_id (edge)",
-        "concurrent request max attempt reached (edge)",
     ],
 )
 def test_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, patch_healthcheck, is_test, expected) -> None:

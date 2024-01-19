@@ -227,8 +227,11 @@ class ShopifyBulkManager:
     def job_retry_on_concurrency(self, request: requests.PreparedRequest) -> Optional[requests.Response]:
         if self.has_reached_max_concurrency_attempt():
             # indicate we're out of attempts to retry with job creation
-            self.logger.error(f"The BULK Job couldn't be created at this time, since another job is running.")
-            return None
+            message = f"The BULK Job couldn't be created at this time, since another job is running."
+            # log the message
+            self.logger.error(message)
+            # raise AibyteTracebackException with `INCOMPLETE` status
+            raise ShopifyBulkExceptions.BulkJobConcurrentError(message)
         else:
             return self.retry_concurrent_request(request)
 
@@ -252,22 +255,17 @@ class ShopifyBulkManager:
         :: is_running_test: bool (default = False) - service flag to be able to manage unit_tests for `RUNNING` status.
         """
         job_response = self.job_healthcheck(created_job_response)
-        if job_response:
-            bulk_job_id: str = self.job_get_id(job_response)
-            job_started = time()
-            try:
-                return self.check_state(bulk_job_id, is_running_test)
-            except (
-                ShopifyBulkExceptions.BulkJobFailed,
-                ShopifyBulkExceptions.BulkJobTimout,
-                ShopifyBulkExceptions.BulkJobAccessDenied,
-                ShopifyBulkExceptions.BulkJobUnknownError,
-            ) as bulk_job_error:
-                raise bulk_job_error
-            finally:
-                time_elapsed = round((time() - job_started), 3)
-                self.logger.info(f"The BULK Job: `{bulk_job_id}` time elapsed: {time_elapsed} sec.")
-        else:
-            # the `job_response` could be `None`, indicating the `concurrent` backoff,
-            # since the BULK job was not created, most likely due to the running concurent BULK job.
-            return None
+        bulk_job_id: str = self.job_get_id(job_response)
+        job_started = time()
+        try:
+            return self.check_state(bulk_job_id, is_running_test)
+        except (
+            ShopifyBulkExceptions.BulkJobFailed,
+            ShopifyBulkExceptions.BulkJobTimout,
+            ShopifyBulkExceptions.BulkJobAccessDenied,
+            ShopifyBulkExceptions.BulkJobUnknownError,
+        ) as bulk_job_error:
+            raise bulk_job_error
+        finally:
+            time_elapsed = round((time() - job_started), 3)
+            self.logger.info(f"The BULK Job: `{bulk_job_id}` time elapsed: {time_elapsed} sec.")
