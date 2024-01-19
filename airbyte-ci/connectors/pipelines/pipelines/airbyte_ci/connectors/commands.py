@@ -145,6 +145,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     cls=LazyGroup,
     help="Commands related to connectors and connector acceptance tests.",
     lazy_subcommands={
+        "add_changelog_entries": "pipelines.airbyte_ci.connectors.add_changelog_entries.commands.add_changelog_entries",
         "build": "pipelines.airbyte_ci.connectors.build_image.commands.build",
         "test": "pipelines.airbyte_ci.connectors.test.commands.test",
         "list": "pipelines.airbyte_ci.connectors.list.commands.list_connectors",
