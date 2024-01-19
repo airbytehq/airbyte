@@ -39,7 +39,7 @@ This page contains the setup guide and reference information for the Amazon Ads 
 
 
 
-To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us/reference/api-overview),  you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all steps you will have to get the Amazon client application's:
+To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us/reference/api-overview),  you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all the steps you will have to get the Amazon client application's:
 * `Client ID`
 * `Client Secret`
 * `Refresh Token`
@@ -77,7 +77,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us/refere
 
 ## For Airbyte Open Source
 
-Install the [Airbyte Protocol Docker Interface](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol-docker#docker), and decide where you would like to [Deploy Airbyte](https://docs.airbyte.com/category/deploy-airbyte). 
+Install Airbyte on your [local machine](https://docs.airbyte.com/deploying-airbyte/local-deployment).
 
 1. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 2. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
@@ -86,13 +86,15 @@ Install the [Airbyte Protocol Docker Interface](https://docs.airbyte.com/underst
     * North America (NA)
     * Europe (EU)
     * Far East (FE)
-5. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in `YYYY-MM-DD` format and not more than 60 days in the past.
+5. **Start Date (Optional)** generates reports starting from the specified start date. This should be in `YYYY-MM-DD` format and not more than 60 days in the past.
 > [!NOTE]  
-> If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.9. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-6. **Marketplace IDs (Optional)** you want to fetch data for.
+> If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+6. **Profile IDs** (Optional) you want to fetch data for.
+7. **Marketplace IDs (Optional)** you want to fetch data for.
 > [!IMPORTANT]  
 > If Profile IDs are also selected, profiles will be selected if they match the **Profile ID** OR the **Marketplace ID**.
 
+Follow the Amazon Ads guidelines to [interact with the API](https://advertising.amazon.com/API/docs/en-us/reference/api-overview). 
 
 
 <!-- /env:oss -->
