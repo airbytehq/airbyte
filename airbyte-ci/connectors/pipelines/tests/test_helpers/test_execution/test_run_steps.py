@@ -359,3 +359,66 @@ async def test_run_steps_with_params():
     TestStep.accept_extra_params = True
     await run_steps(steps, options=options)
     assert steps[0].step.params_as_cli_options == ["--param1=value1"]
+
+
+class TestRunStepOptions:
+    def test_init(self):
+        options = RunStepOptions()
+        assert options.fail_fast is True
+        assert options.concurrency == 10
+        assert options.skip_steps == []
+        assert options.step_params == {}
+
+        options = RunStepOptions(fail_fast=False, concurrency=1, skip_steps=["step1"], step_params={"step1": {"--param1": ["value1"]}})
+        assert options.fail_fast is False
+        assert options.concurrency == 1
+        assert options.skip_steps == ["step1"]
+        assert options.step_params == {"step1": {"--param1": ["value1"]}}
+
+        with pytest.raises(ValueError):
+            RunStepOptions(skip_steps=["step1"], keep_steps=["step2"])
+
+    @pytest.mark.parametrize(
+        "step_tree, options, expected_skipped_ids",
+        [
+            (
+                [
+                    [StepToRun(id="step1", step=TestStep(test_context)), StepToRun(id="step2", step=TestStep(test_context))],
+                    StepToRun(id="step3", step=TestStep(test_context)),
+                    StepToRun(id="step4", step=TestStep(test_context), depends_on=["step3", "step1"]),
+                    StepToRun(id="step5", step=TestStep(test_context)),
+                ],
+                RunStepOptions(keep_steps=["step4"]),
+                {"step2", "step5"},
+            ),
+            (
+                [
+                    [StepToRun(id="step1", step=TestStep(test_context)), StepToRun(id="step2", step=TestStep(test_context))],
+                    StepToRun(id="step3", step=TestStep(test_context)),
+                    [
+                        StepToRun(id="step4", step=TestStep(test_context), depends_on=["step1"]),
+                        StepToRun(id="step6", step=TestStep(test_context), depends_on=["step4", "step5"]),
+                    ],
+                    StepToRun(id="step5", step=TestStep(test_context), depends_on=["step3"]),
+                ],
+                RunStepOptions(keep_steps=["step6"]),
+                {"step2"},
+            ),
+            (
+                [
+                    [StepToRun(id="step1", step=TestStep(test_context)), StepToRun(id="step2", step=TestStep(test_context))],
+                    StepToRun(id="step3", step=TestStep(test_context)),
+                    [
+                        StepToRun(id="step4", step=TestStep(test_context), depends_on=["step1"]),
+                        StepToRun(id="step6", step=TestStep(test_context), depends_on=["step4", "step5"]),
+                    ],
+                    StepToRun(id="step5", step=TestStep(test_context), depends_on=["step3"]),
+                ],
+                RunStepOptions(skip_steps=["step1"]),
+                {"step1"},
+            ),
+        ],
+    )
+    def test_get_step_ids_to_skip(self, step_tree, options, expected_skipped_ids):
+        skipped_ids = options.get_step_ids_to_skip(step_tree)
+        assert set(skipped_ids) == expected_skipped_ids

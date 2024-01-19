@@ -2,11 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from queue import Queue
-
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
+from airbyte_cdk.sources.streams.concurrent.partitions.throttled_queue import ThrottledQueue
 
 
 class PartitionEnqueuer:
@@ -14,10 +12,10 @@ class PartitionEnqueuer:
     Generates partitions from a partition generator and puts them in a queue.
     """
 
-    def __init__(self, queue: Queue[QueueItem]) -> None:
+    def __init__(self, queue: ThrottledQueue) -> None:
         """
         :param queue:  The queue to put the partitions in.
-        :param sentinel: The sentinel to put in the queue when all the partitions have been generated.
+        :param throttler: The throttler to use to throttle the partition generation.
         """
         self._queue = queue
 

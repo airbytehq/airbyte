@@ -3,7 +3,10 @@
 ## 3.1.0
 Add TestConnectorDocumentation suite for validating connectors documentation structure and content. 
 
-## 2.3.0
+## 3.0.1
+Upgrade to Dagger 0.9.6
+
+## 3.0.0
 Upgrade to Dagger 0.9.5
 
 ## 2.2.0

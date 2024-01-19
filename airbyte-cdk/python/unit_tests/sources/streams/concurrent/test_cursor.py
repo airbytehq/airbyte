@@ -45,30 +45,47 @@ class ConcurrentCursorTest(TestCase):
         return ConcurrentCursor(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
-            self._state_converter.get_concurrent_stream_state(CursorField(_A_CURSOR_FIELD_KEY), {}),
+            {},
             self._message_repository,
             self._state_manager,
             self._state_converter,
             CursorField(_A_CURSOR_FIELD_KEY),
             _SLICE_BOUNDARY_FIELDS,
+            None,
         )
 
     def _cursor_without_slice_boundary_fields(self) -> ConcurrentCursor:
         return ConcurrentCursor(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
-            self._state_converter.get_concurrent_stream_state(CursorField(_A_CURSOR_FIELD_KEY), {}),
+            {},
             self._message_repository,
             self._state_manager,
             self._state_converter,
             CursorField(_A_CURSOR_FIELD_KEY),
             None,
+            None,
         )
 
     def test_given_boundary_fields_when_close_partition_then_emit_state(self) -> None:
-        self._cursor_with_slice_boundary_fields().close_partition(
+        cursor = self._cursor_with_slice_boundary_fields()
+        cursor.close_partition(
             _partition(
                 {_LOWER_SLICE_BOUNDARY_FIELD: 12, _UPPER_SLICE_BOUNDARY_FIELD: 30},
+            )
+        )
+
+        self._message_repository.emit_message.assert_called_once_with(self._state_manager.create_state_message.return_value)
+        self._state_manager.update_state_for_stream.assert_called_once_with(
+            _A_STREAM_NAME,
+            _A_STREAM_NAMESPACE,
+            {_A_CURSOR_FIELD_KEY: 0},  # State message is updated to the legacy format before being emitted
+        )
+
+    def test_given_boundary_fields_when_close_partition_then_emit_updated_state(self) -> None:
+        self._cursor_with_slice_boundary_fields().close_partition(
+            _partition(
+                {_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 30},
             )
         )
 
