@@ -10,9 +10,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from overrides import overrides
+from snowflake.sqlalchemy import URL
 
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
-from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
+from airbyte_lib.caches.base import RecordDedupeMode, SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
@@ -31,6 +32,9 @@ class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     password: str
     warehouse: str
     database: str
+    role: str
+
+    dedupe_mode = RecordDedupeMode.APPEND
 
     # Already defined in base class:
     # schema_name: str
@@ -38,9 +42,15 @@ class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     @overrides
     def get_sql_alchemy_url(self) -> str:
         """Return the SQLAlchemy URL to use."""
-        return (
-            f"snowflake://{self.username}:{self.password}@{self.account}/"
-            f"?warehouse={self.warehouse}&database={self.database}&schema={self.schema_name}"
+        return str(
+            URL(
+                account=self.account,
+                user=self.username,
+                password=self.password,
+                database=self.database,
+                warehouse=self.warehouse,
+                role=self.role,
+            )
         )
 
     def get_database_name(self) -> str:
@@ -67,6 +77,7 @@ class SnowflakeSQLCache(SQLCacheBase):
         """Write a file(s) to a new table.
 
         TODO: Override the base implementation to use the COPY command.
+        TODO: Make sure this works for all data types.
         """
         return super()._write_files_to_new_table(files, stream_name, batch_id)
 
