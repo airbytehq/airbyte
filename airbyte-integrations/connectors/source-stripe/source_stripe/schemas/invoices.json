@@ -530,6 +530,14 @@
         }
       }
     },
+    "issuer": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "latest_revision": {
       "type": ["null", "string"]
     },
@@ -593,12 +601,6 @@
     },
     "is_deleted": {
       "type": ["null", "boolean"]
-    },
-    "issuer": {
-      "type": ["null", "object"],
-      "properties": {
-        "type": ["null", "string"]
-      }
     },
     "rendering": {
       "type": ["object", "null"],
