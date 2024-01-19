@@ -155,6 +155,13 @@ However, not all the entities are supported by the Events API, so the Stripe con
 - `Shipping Rates`
 
 On the other hand, the following streams use the `updated` field value as a cursor:
+
+:::note
+
+`updated` is an artificial cursor field introduced by Airbyte for the Incremental sync option.
+
+:::
+
 - `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
