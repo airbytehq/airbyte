@@ -87,7 +87,6 @@ public class MssqlInitialLoadHandler {
 
   public static String discoverClusteredIndexForStream(final JdbcDatabase database,
                                                        final AirbyteStream stream) {
-
     Map<String, String> clusteredIndexes = new HashMap<>();
     try {
       // Get all clustered index names without specifying a table name
