@@ -2,11 +2,13 @@
 
 import os
 import shutil
+import subprocess
 from unittest.mock import Mock, call, patch
 import tempfile
 from pathlib import Path
 
 import airbyte_lib as ab
+from airbyte_lib.caches import SnowflakeCacheConfig, SnowflakeSQLCache
 import pandas as pd
 import pytest
 
@@ -25,7 +27,8 @@ def prepare_test_env():
         shutil.rmtree(".venv-source-test")
 
     os.system("python -m venv .venv-source-test")
-    os.system("source .venv-source-test/bin/activate && pip install -e ./tests/integration_tests/fixtures/source-test")
+    os.system(".venv-source-test/bin/pip install -e ./tests/integration_tests/fixtures/source-test")
+
     os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/integration_tests/fixtures/registry.json"
     os.environ["DO_NOT_TRACK"] = "true"
 
@@ -225,9 +228,9 @@ def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, e
 @pytest.mark.parametrize(
     "raises, api_key, expected_state, expected_number_of_records, request_call_fails, extra_env, expected_flags",
     [
-        pytest.param(True, "test_fail_during_sync", "failed", 1, False, {}, {"CI": False}, id="fail_during_sync"),
-        pytest.param(False, "test", "succeeded", 3, False, {}, {"CI": False}, id="succeed_during_sync"),
-        pytest.param(False, "test", "succeeded", 3, True, {}, {"CI": False}, id="fail_request_without_propagating"),
+        pytest.param(True, "test_fail_during_sync", "failed", 1, False, {"CI": ""}, {"CI": False}, id="fail_during_sync"),
+        pytest.param(False, "test", "succeeded", 3, False, {"CI": ""}, {"CI": False}, id="succeed_during_sync"),
+        pytest.param(False, "test", "succeeded", 3, True, {"CI": ""}, {"CI": False}, id="fail_request_without_propagating"),
         pytest.param(False, "test", "succeeded", 3, False, {"CI": ""}, {"CI": False}, id="falsy_ci_flag"),
         pytest.param(False, "test", "succeeded", 3, False, {"CI": "true"}, {"CI": True}, id="truthy_ci_flag"),
     ],
@@ -311,6 +314,22 @@ def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_tes
             check_dtype=False,
         )
 
+def test_sync_to_snowflake(snowflake_config: SnowflakeCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = SnowflakeSQLCache(config=snowflake_config)
+
+    with cache.get_sql_connection() as con:
+        con.execute("DROP SCHEMA IF EXISTS AIRBYTE_RAW")
+
+    result: ReadResult = source.read(cache)
+
+    assert result.processed_records == 3
+    for stream_name, expected_data in expected_test_stream_data.items():
+        pd.testing.assert_frame_equal(
+            result[stream_name].to_pandas(),
+            pd.DataFrame(expected_data),
+            check_dtype=False,
+        )
 
 def test_sync_limited_streams(expected_test_stream_data):
     source = ab.get_connector("source-test", config={"apiKey": "test"})

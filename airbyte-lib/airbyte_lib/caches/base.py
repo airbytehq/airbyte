@@ -15,8 +15,9 @@ import pyarrow as pa
 import sqlalchemy
 import ulid
 from overrides import overrides
-from sqlalchemy import CursorResult, Executable, TextClause, create_engine, text
+from sqlalchemy import create_engine, text
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.sql.elements import TextClause
 
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
@@ -28,7 +29,9 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from sqlalchemy.engine import Connection, Engine
+    from sqlalchemy.engine.cursor import CursorResult
     from sqlalchemy.engine.reflection import Inspector
+    from sqlalchemy.sql.base import Executable
 
     from airbyte_protocol.models import ConfiguredAirbyteStream
 
@@ -593,7 +596,7 @@ class SQLCacheBase(RecordProcessor):
                     schema=self.config.schema_name,
                     if_exists="append",
                     index=False,
-                    dtype=self._get_sql_column_definitions(stream_name),  # type: ignore[arg-type]
+                    dtype=self._get_sql_column_definitions(stream_name),
                 )
         return temp_table_name
 
