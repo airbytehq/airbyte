@@ -7,6 +7,7 @@ import logging
 import os
 import socket
 import time
+from typing import Optional
 from airbyte_lib.caches.snowflake import SnowflakeCacheConfig
 
 import docker
@@ -43,6 +44,23 @@ def remove_postgres_container():
             pass  # Container not found, nothing to do.
 
 
+def test_pg_connection(host) -> bool:
+    pg_url = f"postgresql://postgres:postgres@{host}:{PYTEST_POSTGRES_PORT}/postgres"
+
+    max_attempts = 10
+    for attempt in range(max_attempts):
+        try:
+            conn = psycopg.connect(pg_url)
+            conn.close()
+            return True
+        except psycopg.OperationalError:
+            logger.info(f"Waiting for postgres to start (attempt {attempt + 1}/{max_attempts})")
+            time.sleep(1.0)
+
+    else:
+        return False
+
+
 @pytest.fixture(scope="session")
 def pg_dsn():
     client = docker.from_env()
@@ -60,23 +78,18 @@ def pg_dsn():
         ports={"5432/tcp": PYTEST_POSTGRES_PORT},
         detach=True,
     )
-    # Wait for the database to start (assumes image is already downloaded)
-    pg_url = f"postgresql://postgres:postgres@localhost:{PYTEST_POSTGRES_PORT}/postgres"
+    time.sleep(0.5)
 
-    max_attempts = 10
-    for attempt in range(max_attempts):
-        try:
-            conn = psycopg.connect(pg_url)
-            conn.close()
+    final_host = None
+    # Try to connect to the database using localhost and the docker host IP
+    for host in ["localhost", "172.17.0.1"]:
+        if test_pg_connection(host):
+            final_host = host
             break
-        except psycopg.OperationalError:
-            logger.info(f"Waiting for postgres to start (attempt {attempt + 1}/{max_attempts})")
-            time.sleep(1.0)
-
     else:
         raise Exception("Failed to connect to the PostgreSQL database.")
 
-    yield pg_url
+    yield final_host
     # Stop and remove the container after the tests are done
     postgres.stop()
     postgres.remove()
@@ -85,7 +98,7 @@ def pg_dsn():
 @pytest.fixture
 def new_pg_cache_config(pg_dsn):
     config = PostgresCacheConfig(
-        host="localhost",
+        host=pg_dsn,
         port=PYTEST_POSTGRES_PORT,
         username="postgres",
         password="postgres",
