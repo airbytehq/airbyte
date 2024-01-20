@@ -14,8 +14,8 @@ from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
-from pipelines.airbyte_ci.poetry.utils import is_package_published
 from pipelines.airbyte_ci.steps.python_registry.pipeline import PublishToPythonRegistry, PythonRegistryPublishContext
+from pipelines.airbyte_ci.steps.python_registry.utils import is_package_published
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
 from pipelines.models.steps import Step, StepResult, StepStatus

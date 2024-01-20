@@ -4,6 +4,7 @@
 
 import os
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional, Type
 
 from pipelines.airbyte_ci.connectors.context import PipelineContext
@@ -80,7 +81,8 @@ class PythonRegistryPublishContext(PipelineContext):
         version = current_metadata["dockerImageTag"]
         if connector_context.pre_release:
             # use current date as pre-release version
-            version = f"{version}+{connector_context.pre_release_suffix}"
+            release_candidate_tag = datetime.now().strftime("%Y%m%d%H%M")
+            version = f"{version}.dev{release_candidate_tag}"
 
         pypi_context = cls(
             pypi_token=os.environ["PYPI_TOKEN"],
