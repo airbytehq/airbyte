@@ -20,6 +20,10 @@ data:
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pokeapi
   tags:
     - language:low-code
 metadataSpecVersion: "1.0"
