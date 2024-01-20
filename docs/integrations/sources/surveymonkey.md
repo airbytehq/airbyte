@@ -29,12 +29,11 @@ connector for EU-based accounts. If you run into issues, contact us at
 <!-- TODO: Talk to PM or Support to see if we should expand these steps. -->
 
 -   Access token for a SurveyMonkey app. The app must have the following scopes marked as **Optional** or **Required**:
-    - View Surveys
-    - View Response
-    - View Response Details
-    - View Users
-
-For more information, see [Registering an App](https://developer.surveymonkey.com/api/v3/#registering-an-app) in the SurveyMonkey developer docs.
+        - View Surveys
+        - View Responses
+        - View Response Details
+        - View Users
+    For more information, see [Registering an App](https://developer.surveymonkey.com/api/v3/#registering-an-app) in the SurveyMonkey developer docs.
 
 <!-- /env:oss -->
 
@@ -56,9 +55,9 @@ For more information, see [Registering an App](https://developer.surveymonkey.co
 1.  In **Start Date**, enter a UTC date and time in the following format: `2099-01-25T00:00:00Z`.
     The connector won't replicate data before this date.
 1.  (Optional) Click **Optional fields** to specify:
-    - **Origin datacenter of the SurveyMonkey account**. For US-based SurveyMonkey accounts, leave
+    - **Origin datacenter of the SurveyMonkey account**: For US-based SurveyMonkey accounts, leave
       this value as `USA`.
-    - **Survey Monkey survey IDs**. If specified, the connector will only replicate data for these
+    - **Survey Monkey survey IDs**: If specified, the connector will only replicate data for these
       surveys. If left blank, the connector replicates data for any survey you can access.
 1.  Click **Set up source**.
 
@@ -80,14 +79,14 @@ For more information, see [Registering an App](https://developer.surveymonkey.co
 1.  On the sources page, click **SurveyMonkey**.
 1.  Enter your SurveyMonkey access token in **Access Token**.
 1.  (Optional) Under **Access Token**, click **Optional fields** to specify:
-    - The **Client ID** for your SurveyMonkey app.
-    - *The *Client Secret** for your SurveyMonkey app.
+    - **Client ID**: Client ID for your SurveyMonkey app.
+    - **Client Secret**: Client secret for your SurveyMonkey app.
 1.  In **Start Date**, enter a UTC date and time in the following format: `2099-01-25T00:00:00Z`.
     The connector won't replicate data before this date.
 1.  (Optional) Under **Start Date**, click **Optional fields** to specify:
-    - **Origin datacenter of the SurveyMonkey account**. For US-based SurveyMonkey accounts, leave
+    - **Origin datacenter of the SurveyMonkey account**: For US-based SurveyMonkey accounts, leave
       this value as `USA`.
-    - **Survey Monkey survey IDs**. If specified, the connector will only replicate data for these
+    - **Survey Monkey survey IDs**: If specified, the connector will only replicate data for these
       surveys. If left blank, the connector replicates data for any survey you can access.
 1.  Click **Set up source**.
 <!-- /env:oss -->
@@ -106,8 +105,12 @@ For more information, see [Registering an App](https://developer.surveymonkey.co
 
 ## Performance considerations
 
+<!-- TODO: Confirm with PM or Eng -->
+
+**For Airbyte Open Source:**
+
 SurveyMonkey has [API request limits](https://api.surveymonkey.com/v3/docs?shell#request-and-response-limits) for
-private apps. The connector uses caching to avoid these limits.
+private apps. This connector uses caching to avoid these limits.
 
 <!-- /env:oss -->
 
