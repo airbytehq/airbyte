@@ -48,8 +48,10 @@ connector for EU-based accounts. If you run into issues, contact us at
 
 </HideInUI>
 
+<!-- NIT: I'd typically capitalize "Sources page," but I'm leaving as is since this seems to be Airbyte style. -->
+
 1.  [Log in to Airbyte Cloud](https://cloud.airbyte.com/login).
-1.  Click **Sources**.
+1.  In the left navigation bar, click **Sources**.
 1.  On the sources page, click **SurveyMonkey**.
 1.  Click **Authenticate your SurveyMonkey account**.
 1.  Log in to SurveyMonkey and authorize the connection.
@@ -75,7 +77,6 @@ connector for EU-based accounts. If you run into issues, contact us at
 <!-- TODO: Talk to PM or UI team about fixing "Survey Monkey survey IDs" typo in app -->
 <!-- I'm using the text with typo here for clarity. -->
 
-1.  Go to your local Airbyte page.
 1.  In the left navigation bar, click **Sources**.
 1.  On the sources page, click **SurveyMonkey**.
 1.  Enter your SurveyMonkey access token in **Access Token**.
@@ -108,7 +109,11 @@ connector for EU-based accounts. If you run into issues, contact us at
 
 <!-- TODO: Confirm with PM or Eng -->
 
+<HideInUI>
+
 **For Airbyte Open Source:**
+
+</HideInUI>
 
 SurveyMonkey has [API request limits](https://api.surveymonkey.com/v3/docs?shell#request-and-response-limits) for
 private apps. This connector uses caching to avoid these limits.
