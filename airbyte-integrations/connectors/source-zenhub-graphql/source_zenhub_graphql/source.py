@@ -17,7 +17,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 
 
-from .streams import ZenhubWorkspace, ZenhubPipelines
+from .streams import ZenhubWorkspace, ZenhubPipelines, ZenhubIssues
 from .utils import find_id_by_name, log
 
 logging.basicConfig(level=logging.INFO)
@@ -41,6 +41,24 @@ class SourceZenhubGraphql(AbstractSource):
             return True, None
         except Exception as error:
             return False, str(error)
+    
+    def _get_repo_ids(self, repo_names, workspace_data):
+        repo_ids = []
+        for repo_name in repo_names:
+            repo_id = find_id_by_name(workspace_data, repo_name)
+            if repo_id:
+                repo_ids.append(repo_id)
+            else:
+                log(Level.ERROR, f"Repository ID not found for the name: {repo_name}")
+        return repo_ids
+    
+    def _get_pipeline_ids(self, workspace_id, api_key):
+        # Implement logic to fetch pipeline IDs
+        zenhub_pipelines_stream = ZenhubPipelines(api_key, workspace_id)
+        pipeline_ids = []
+        for pipeline in zenhub_pipelines_stream.read_records(sync_mode=SyncMode.full_refresh):
+            pipeline_ids.append(pipeline.get('pipeline_id'))
+        return pipeline_ids
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
@@ -67,13 +85,14 @@ class SourceZenhubGraphql(AbstractSource):
 
         workspace_id = workspace_data['workspace_id']
         #log(Level.INFO, f"workspace_id: {workspace_id}")
-
+        repo_ids = self._get_repo_ids(config["repo_names"], workspace_data)
+        pipeline_ids = self._get_pipeline_ids(workspace_id, api_key)
         
         if not workspace_id:
             raise Exception(f"No workspace found with name: {workspace_name}")
 
-
         return [
                 ZenhubWorkspace(api_key, workspace_name)
                 ,ZenhubPipelines(api_key, workspace_id)
+                , ZenhubIssues(api_key, workspace_id, repo_ids, pipeline_ids)
                 ]

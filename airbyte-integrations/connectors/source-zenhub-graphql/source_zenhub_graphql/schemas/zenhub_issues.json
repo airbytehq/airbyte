@@ -1,0 +1,81 @@
+{
+    "streams": [
+      {
+        "sync_mode": "full_refresh",
+        "stream": {
+          "name": "zenhub_issues",
+          "supported_sync_modes": ["full_refresh"],
+          "json_schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "searchIssues": {
+                "type": "object",
+                "properties": {
+                  "totalCount": {
+                    "type": "integer"
+                  },
+                  "nodes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "ghId": {
+                          "type": "integer"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "body": {
+                          "type": ["null", "string"]
+                        },
+                        "state": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "pipelineIssue": {
+                          "type": ["null", "object"],
+                          "properties": {
+                            "pipeline": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "priority": {
+                              "type": ["null", "object"]
+                            }
+                          }
+                        }
+                      },
+                      "required": ["id", "ghId", "title", "type", "state", "createdAt", "updatedAt"]
+                    }
+                  }
+                },
+                "required": ["totalCount", "nodes"]
+              }
+            }
+          }
+        },
+        "destination_sync_mode": "append"
+      }
+    ]
+  }

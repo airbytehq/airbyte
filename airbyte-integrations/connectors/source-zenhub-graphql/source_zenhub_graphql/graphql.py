@@ -12,9 +12,6 @@ class Workspace(Type):
     repositoriesConnection = Field('RepositoryConnection')
     pipelinesConnection = Field('PipelineConnection', args={'first': int})
 
-class Query(Type):
-    viewer = Field(Viewer)
-    workspace = Field(Workspace, args={'id': ID}) 
 
 class WorkspaceConnection(Type):
     nodes = list_of('Workspace')
@@ -33,7 +30,7 @@ class Pipeline(Type):
     id = ID
     name = str
 
-class IssuesConnection(Type):
+class SearchIssues(Type):
     totalCount = int
     nodes = list_of('Issue')
 
@@ -54,3 +51,12 @@ class PipelineIssue(Type):
 class Priority(Type):
     id = ID
     name = str
+
+class Query(Type):
+    viewer = Field(Viewer)
+    workspace = Field(Workspace, args={'id': ID}) 
+    searchIssues = Field(SearchIssues, args={
+        'workspaceId': ID
+        , 'repoIds': list_of(ID)
+        , 'pipelineIds': list_of(ID)
+    })

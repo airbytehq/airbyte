@@ -26,7 +26,7 @@ from .graphql import (
     , PipelineConnection
     , PipelineIssue
     , Issue
-    , IssuesConnection
+    , SearchIssues
     , Priority
 )
 
@@ -219,6 +219,47 @@ class ZenhubPipelines(ZenhubGraphqlStream):
     def primary_key(self):
         pass
 
+
+class ZenhubIssues(ZenhubGraphqlStream):
+    def __init__(self, api_key, workspace_id, repo_ids, pipeline_ids):
+        super().__init__(api_key)
+        self.workspace_id = workspace_id
+        self.repo_ids = repo_ids
+        self.pipeline_ids = pipeline_ids
+
+    def get_issues_query(self):
+        issues_op = Operation(Query)
+        issues_query = issues_op.searchIssues(
+            workspaceId=self.workspace_id, 
+            repoIds=self.repo_ids, 
+            pipelineIds=self.pipeline_ids
+        )
+        issues_query.totalCount()
+        issue_node = issues_query.nodes.__as__(Issue)
+        issue_node.id()
+        issue_node.ghId()
+        issue_node.title()
+        issue_node.type()
+        issue_node.body()
+        issue_node.state()
+        issue_node.createdAt()
+        issue_node.updatedAt()
+        issue_node.pipelineIssue()
+        return str(issues_op)
+
+    def request_body_json(self, *args, **kwargs) -> Optional[Mapping]:
+        query = self.get_issues_query()
+        log(Level.INFO, f"Issues Query: {query}")
+        return {"query": query}
+    
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        pass
+    
+    @property
+    def primary_key(self):
+        pass
 
 # Basic incremental stream
 class IncrementalZenhubGraphqlStream(ZenhubGraphqlStream, ABC):
