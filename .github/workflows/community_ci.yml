@@ -36,7 +36,7 @@ jobs:
           # It helps prevent access to token from code executed in the workflow
           persist-credentials: false
           fetch-depth: 1
-      
+
       # Disabling this step for safety during the spike
       # - name: Get CI runner
       #   id: get_ci_runner
@@ -47,10 +47,10 @@ jobs:
       #     airbyte_ci_command: "connectors test"
       #     is_fork: ${{ github.event.pull_request.head.repo.fork }}
 
-    # We set the environment to community-ci if the PR is from a fork
-    # The community-ci environment requires manual reviewer approval to run
-    # This is a safety measure to prevent untrusted code from running on our infrastructure
-    # The internal-ci environment is reserved for internal PRs (non-forked PRs)
+      # We set the environment to community-ci if the PR is from a fork
+      # The community-ci environment requires manual reviewer approval to run
+      # This is a safety measure to prevent untrusted code from running on our infrastructure
+      # The internal-ci environment is reserved for internal PRs (non-forked PRs)
       - name: Determine environment
         id: determine_environment
         if: github.event_name == 'pull_request_target'
