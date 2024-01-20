@@ -642,5 +642,4 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     super.logPreSyncDebugData(database, catalog);
     MssqlQueryUtils.getIndexInfoForStreams(database, catalog, getQuoteString());
   }
-
 }
