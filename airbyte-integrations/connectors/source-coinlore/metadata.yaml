@@ -1,0 +1,21 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0124e4fc-cc28-47ad-a8fc-d116169d929e
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-coinlore
+  githubIssueLabel: source-coinlore
+  icon: icon.svg
+  license: MIT
+  name: Coinlore
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community qq
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coinlore
+  tags:
+    - language:low-code
+metadataSpecVersion: "1.0"

@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "symbol": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "name_id": {
+      "type": ["null", "string"]
+    },
+    "rank": {
+      "type": ["null", "integer"]
+    },
+    "price_usd": {
+      "type": ["null", "string"]
+    },
+    "percent_change_24h": {
+      "type": ["null", "string"]
+    },
+    "percent_change_1h": {
+      "type": ["null", "string"]
+    },
+    "percent_change_7d": {
+      "type": ["null", "string"]
+    },
+    "price_btc": {
+      "type": ["null", "string"]
+    },
+    "market_cap_usd": {
+      "type": ["null", "string"]
+    },
+    "volume24": {
+      "type": ["null", "double"]
+    },
+    "volume24a": {
+      "type": ["null", "double"]
+    },
+    "csupply": {
+      "type": ["null", "string"]
+    },
+    "tsupply": {
+      "type": ["null", "string"]
+    },
+    "msupply": {
+      "type": ["null", "string"]
+    }
+  }
+}
