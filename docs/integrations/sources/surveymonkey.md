@@ -77,6 +77,8 @@ connector for EU-based accounts. If you run into issues, contact us at
 <!-- TODO: Talk to PM or UI team about fixing "Survey Monkey survey IDs" typo in app -->
 <!-- I'm using the text with typo here for clarity. -->
 
+<!-- TODO: Confirm that US-based accounts should leave "Origin datacenter" as is -->
+
 1.  In the left navigation bar, click **Sources**.
 1.  On the sources page, click **SurveyMonkey**.
 1.  Enter your SurveyMonkey access token in **Access Token**.
@@ -95,7 +97,7 @@ connector for EU-based accounts. If you run into issues, contact us at
 
 ## Supported streams and sync modes
 
-<!-- TODO: Confirm with PM or Eng -->
+<!-- TODO: Confirm new links with PM or Eng -->
 
 - [Surveys](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-surveys) (Incremental)
 - [SurveyPages](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-surveys-survey_id-pages)
