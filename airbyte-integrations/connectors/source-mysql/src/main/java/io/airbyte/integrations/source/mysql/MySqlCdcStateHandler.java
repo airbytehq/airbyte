@@ -4,18 +4,17 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_CDC_OFFSET;
-import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
+import static io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.serialize;
+import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.debezium.CdcStateHandler;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
+import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -32,12 +31,13 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public AirbyteMessage saveState(final Map<String, String> offset, final String dbHistory) {
-    final Map<String, Object> state = new HashMap<>();
-    state.put(MYSQL_CDC_OFFSET, offset);
-    state.put(MYSQL_DB_HISTORY, dbHistory);
+  public boolean isCdcCheckpointEnabled() {
+    return true;
+  }
 
-    final JsonNode asJson = Jsons.jsonNode(state);
+  @Override
+  public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
+    final JsonNode asJson = serialize(offset, dbHistory);
 
     LOGGER.info("debezium state: {}", asJson);
 
@@ -60,6 +60,11 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
      */
     final AirbyteStateMessage stateMessage = stateManager.emit(Optional.empty());
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
+  }
+
+  @Override
+  public boolean compressSchemaHistoryForState() {
+    return COMPRESSION_ENABLED;
   }
 
 }

@@ -172,6 +172,168 @@
         }
       }
     },
+    "properties_hs_activity_type": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_all_assigned_business_unit_ids": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_at_mentioned_owner_ids": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_attachment_ids": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_attendee_owner_ids": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_body_preview": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_body_preview_html": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_body_preview_is_truncated": {
+      "type": ["null", "boolean"]
+    },
+    "properties_hs_created_by": {
+      "type": ["null", "number"]
+    },
+    "properties_hs_created_by_user_id": {
+      "type": ["null", "number"]
+    },
+    "properties_hs_createdate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_engagement_source": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_engagement_source_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_follow_up_action": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_gdpr_deleted": {
+      "type": ["null", "boolean"]
+    },
+    "properties_hs_i_cal_uid": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_internal_meeting_notes": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_lastmodifieddate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_meeting_body": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_calendar_event_hash": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_change_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_created_from_link_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_end_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_meeting_external_url": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_location": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_location_type": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_outcome": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_pre_meeting_prospect_reminders": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_source": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_source_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_start_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_meeting_title": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_meeting_web_conference_meeting_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_merged_object_ids": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_modified_by": {
+      "type": ["null", "number"]
+    },
+    "properties_hs_object_id": {
+      "type": ["null", "number"]
+    },
+    "properties_hs_product_name": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_queue_membership_ids": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_scheduled_tasks": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_timestamp": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_unique_creation_key": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_unique_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_updated_by_user_id": {
+      "type": ["null", "number"]
+    },
+    "properties_hs_user_ids_of_all_notification_followers": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_user_ids_of_all_notification_unfollowers": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_user_ids_of_all_owners": {
+      "type": ["null", "string"]
+    },
+    "properties_hubspot_owner_assigneddate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hubspot_owner_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hubspot_team_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_all_owner_ids": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_all_team_ids": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_all_accessible_team_ids": {
+      "type": ["null", "string"]
+    },
     "createdAt": {
       "type": ["null", "string"],
       "format": "date-time"

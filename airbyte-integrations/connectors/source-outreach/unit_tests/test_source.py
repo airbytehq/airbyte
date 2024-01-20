@@ -11,5 +11,5 @@ def test_streams(mocker):
     source = SourceOutreach()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
-    expected_streams_number = 11
+    expected_streams_number = 17
     assert len(streams) == expected_streams_number

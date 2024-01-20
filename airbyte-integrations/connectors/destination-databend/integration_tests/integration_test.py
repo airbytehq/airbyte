@@ -62,12 +62,12 @@ def client_fixture(databendConfig) -> DatabendClient:
 
 
 def test_check_valid_config(databendConfig: Mapping):
-    outcome = DestinationDatabend().check(logging.getLogger('airbyte'), databendConfig)
+    outcome = DestinationDatabend().check(logging.getLogger("airbyte"), databendConfig)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_invalid_config():
-    outcome = DestinationDatabend().check(logging.getLogger('airbyte'), {"bucket_id": "not_a_real_id"})
+    outcome = DestinationDatabend().check(logging.getLogger("airbyte"), {"bucket_id": "not_a_real_id"})
     assert outcome.status == Status.FAILED
 
 

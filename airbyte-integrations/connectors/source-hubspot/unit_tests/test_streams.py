@@ -10,6 +10,10 @@ from source_hubspot.streams import (
     Companies,
     ContactLists,
     Contacts,
+    ContactsListMemberships,
+    ContactsMergedAudit,
+    ContactsPropertyHistory,
+    ContactsWebAnalytics,
     CustomObject,
     DealPipelines,
     Deals,
@@ -27,7 +31,9 @@ from source_hubspot.streams import (
     LineItems,
     MarketingEmails,
     Owners,
+    OwnersArchived,
     Products,
+    RecordUnnester,
     TicketPipelines,
     Tickets,
     Workflows,
@@ -84,6 +90,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         (DealPipelines, "deal", {"updatedAt": 1675121674226}),
@@ -100,6 +107,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (LineItems, "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (MarketingEmails, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Owners, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (OwnersArchived, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (TicketPipelines, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -130,15 +138,34 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             "status_code": 200,
         }
     ]
+    contact_reponse = [
+        {
+            "json": {
+                stream.data_field: [
+                    {"id": "test_id", "created": "2022-06-25T16:43:11Z", "properties": {"hs_merged_object_ids": "test_id"}} | cursor_value
+                ],
+            }
+        }
+    ]
+    read_batch_contact_v1_response = [
+        {
+            "json": {
+                "test_id": {"vid": "test_id", "merge-audits": [{"canonical-vid": 2, "vid-to-merge": 5608, "timestamp": 1653322839932}]}
+            },
+            "status_code": 200,
+        }
+    ]
     is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
     stream_url = stream.url + "/test_id" if is_form_submission else stream.url
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
+    requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_reponse)
     requests_mock.register_uri("GET", "/marketing/v3/forms", responses)
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
+    requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
 
     records = read_full_refresh(stream)
     assert records
@@ -258,13 +285,21 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
 @pytest.mark.parametrize(
     "state, record, expected",
     [
-        ({"updatedAt": ""}, {"id": "test_id_1", "updatedAt": "2023-01-30T23:46:36.287Z"}, (True, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"})),
-        ({"updatedAt": "2023-01-30T23:46:36.287000+00:00"}, {"id": "test_id_1", "updatedAt": "2023-01-29T01:02:03.123Z"}, (False, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"})),
+        (
+            {"updatedAt": ""},
+            {"id": "test_id_1", "updatedAt": "2023-01-30T23:46:36.287Z"},
+            (True, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"}),
+        ),
+        (
+            {"updatedAt": "2023-01-30T23:46:36.287000+00:00"},
+            {"id": "test_id_1", "updatedAt": "2023-01-29T01:02:03.123Z"},
+            (False, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"}),
+        ),
     ],
     ids=[
         "Empty Sting in state + new record",
         "State + old record",
-    ]
+    ],
 )
 def test_empty_string_in_state(state, record, expected, requests_mock, common_params, fake_properties_list):
     stream = Forms(**common_params)
@@ -341,6 +376,7 @@ def expected_custom_object_json_schema():
             "updatedAt": {"type": ["null", "string"], "format": "date-time"},
             "archived": {"type": ["null", "boolean"]},
             "properties": {"type": ["null", "object"], "properties": {"name": {"type": ["null", "string"]}}},
+            "properties_name": {"type": ["null", "string"]},
         },
     }
 
@@ -348,7 +384,13 @@ def expected_custom_object_json_schema():
 def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_available(
     requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
 ):
-    stream = CustomObject(entity="animals", schema=expected_custom_object_json_schema, **common_params)
+    stream = CustomObject(
+        entity="animals",
+        schema=expected_custom_object_json_schema,
+        fully_qualified_name="p123_animals",
+        custom_properties={"name": {"type": ["null", "string"]}},
+        **common_params,
+    )
 
     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
     json_schema = stream.get_json_schema()
@@ -357,12 +399,217 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
     assert not adapter.called
 
 
-def test_custom_object_stream_calls_hubspot_to_get_json_schema(
-    requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
-):
-    stream = CustomObject(entity="animals", schema=None, **common_params)
+def test_contacts_merged_audit_stream_doesnt_call_hubspot_to_get_json_schema(requests_mock, common_params):
+    stream = ContactsMergedAudit(**common_params)
 
-    adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
-    json_schema = stream.get_json_schema()
-    assert json_schema == expected_custom_object_json_schema
-    assert adapter.called
+    adapter = requests_mock.register_uri(
+        "GET",
+        f"/properties/v2/{stream.entity}/properties",
+        [
+            {
+                "json": [
+                    {
+                        "name": "hs_object_id",
+                        "label": "Record ID",
+                        "type": "number",
+                    }
+                ]
+            }
+        ],
+    )
+    _ = stream.get_json_schema()
+
+    assert not adapter.called
+
+
+def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema, expected_custom_object_json_schema, api):
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
+    for (entity, fully_qualified_name, schema, custom_properties) in api.get_custom_objects_metadata():
+        assert entity == "animals"
+        assert fully_qualified_name == "p19936848_Animal"
+        assert schema == expected_custom_object_json_schema
+
+
+@pytest.mark.parametrize(
+    "input_data, unnest_fields, expected_output",
+    (
+        (
+            [{"id": 1, "createdAt": "2020-01-01", "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"}}],
+            [],
+            [{"id": 1, "createdAt": "2020-01-01", "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"}}],
+        ),
+        (
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"},
+                }
+            ],
+            [],
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"},
+                    "properties_phone": "+38044-111-111",
+                    "properties_address": "31, Cleveland str, Washington DC",
+                }
+            ],
+        ),
+        (
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                }
+            ],
+            ["email"],
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "email_from": "integration-test@airbyte.io",
+                    "email_to": "michael_scott@gmail.com",
+                }
+            ],
+        ),
+        (
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"},
+                }
+            ],
+            ["email"],
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "email_from": "integration-test@airbyte.io",
+                    "email_to": "michael_scott@gmail.com",
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"},
+                    "properties_phone": "+38044-111-111",
+                    "properties_address": "31, Cleveland str, Washington DC",
+                }
+            ],
+        ),
+    ),
+)
+def test_records_unnester(input_data, unnest_fields, expected_output):
+    unnester = RecordUnnester(fields=unnest_fields)
+    assert list(unnester.unnest(input_data)) == expected_output
+
+
+def test_web_analytics_stream_slices(common_params, mocker):
+    parent_slicer_mock = mocker.patch("airbyte_cdk.sources.streams.http.HttpSubStream.stream_slices")
+    parent_slicer_mock.return_value = (_ for _ in [{"parent": {"id": 1}}])
+
+    pendulum_now_mock = mocker.patch("pendulum.now")
+    pendulum_now_mock.return_value = pendulum.parse(common_params["start_date"]).add(days=50)
+
+    stream = ContactsWebAnalytics(**common_params)
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field="occurredAt"))
+
+    assert len(slices) == 2
+    assert all(map(lambda slice: slice["objectId"] == 1, slices))
+
+    assert [
+        ("2021-01-10T00:00:00Z", "2021-02-09T00:00:00Z"),
+        ("2021-02-09T00:00:00Z", "2021-03-01T00:00:00Z")
+    ] == [
+        (s["occurredAfter"], s["occurredBefore"]) for s in slices
+    ]
+
+
+def test_web_analytics_latest_state(common_params, mocker):
+    parent_slicer_mock = mocker.patch("airbyte_cdk.sources.streams.http.HttpSubStream.stream_slices")
+    parent_slicer_mock.return_value = (_ for _ in [{"parent": {"id": "1"}}])
+
+    pendulum_now_mock = mocker.patch("pendulum.now")
+    pendulum_now_mock.return_value = pendulum.parse(common_params["start_date"]).add(days=10)
+
+    parent_slicer_mock = mocker.patch("source_hubspot.streams.Stream.read_records")
+    parent_slicer_mock.return_value = (_ for _ in [{"objectId": "1", "occurredAt": "2021-01-02T00:00:00Z"}])
+
+    stream = ContactsWebAnalytics(**common_params)
+    stream.state = {"1": {"occurredAt": "2021-01-01T00:00:00Z"}}
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field="occurredAt"))
+    records = [list(stream.read_records(SyncMode.incremental, cursor_field="occurredAt", stream_slice=stream_slice)) for stream_slice in slices]
+
+    assert len(slices) == 1
+    assert len(records) == 1
+    assert len(records[0]) == 1
+    assert records[0][0]["objectId"] == "1"
+    assert stream.state["1"]["occurredAt"] == "2021-01-02T00:00:00Z"
+
+
+def test_property_history_transform(common_params):
+    stream = ContactsPropertyHistory(**common_params)
+    versions = [
+        {
+            "value": "Georgia",
+            "timestamp": 1645135236625
+        }
+    ]
+    records = [
+        {
+            "vid": 1,
+            "canonical-vid": 1,
+            "portal-id": 1,
+            "is-contact": True,
+            "properties": {
+                "hs_country": {"versions": versions},
+                "lastmodifieddate": {"value": 1645135236625}
+            }
+        }
+    ]
+    assert [
+        {
+            "vid": 1,
+            "canonical-vid": 1,
+            "portal-id": 1,
+            "is-contact": True,
+            "property": "hs_country",
+            **version
+        } for version in versions
+    ] == list(stream._transform(records=records))
+
+
+def test_contacts_membership_transform(common_params):
+    stream = ContactsListMemberships(**common_params)
+    versions = [
+        {
+            "value": "Georgia",
+            "timestamp": 1645135236625
+        }
+    ]
+    memberships = [
+        {"membership": 1}
+    ]
+    records = [
+        {
+            "vid": 1,
+            "canonical-vid": 1,
+            "portal-id": 1,
+            "is-contact": True,
+            "properties": {
+                "hs_country": {"versions": versions},
+                "lastmodifieddate": {"value": 1645135236625}
+            },
+            "list-memberships": memberships
+        }
+    ]
+    assert [
+        {
+            "membership": 1,
+            "canonical-vid": 1
+        } for _ in versions
+    ] == list(stream._transform(records=records))

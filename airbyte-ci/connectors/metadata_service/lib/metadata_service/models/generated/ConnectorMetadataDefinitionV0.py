@@ -4,11 +4,34 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel, Extra, Field
+from pydantic import AnyUrl, BaseModel, Extra, Field, constr
 from typing_extensions import Literal
+
+
+class ConnectorBuildOptions(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    baseImage: Optional[str] = None
+
+
+class ReleaseStage(BaseModel):
+    __root__: Literal["alpha", "beta", "generally_available", "custom"] = Field(
+        ...,
+        description="enum that describes a connector's release stage",
+        title="ReleaseStage",
+    )
+
+
+class SupportLevel(BaseModel):
+    __root__: Literal["community", "certified"] = Field(
+        ...,
+        description="enum that describes a connector's release stage",
+        title="SupportLevel",
+    )
 
 
 class AllowedHosts(BaseModel):
@@ -75,12 +98,54 @@ class JobType(BaseModel):
     )
 
 
+class StreamBreakingChangeScope(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    scopeType: Any = Field("stream", const=True)
+    impactedScopes: List[str] = Field(
+        ...,
+        description="List of streams that are impacted by the breaking change.",
+        min_items=1,
+    )
+
+
+class AirbyteInternal(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    sl: Optional[Literal[100, 200, 300]] = None
+    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
+
+
+class PyPi(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    enabled: bool
+    packageName: str = Field(..., description="The name of the package on PyPi.")
+
+
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
 
     jobType: JobType
     resourceRequirements: ResourceRequirements
+
+
+class BreakingChangeScope(BaseModel):
+    __root__: StreamBreakingChangeScope = Field(
+        ...,
+        description="A scope that can be used to limit the impact of a breaking change.",
+    )
+
+
+class RemoteRegistries(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    pypi: Optional[PyPi] = None
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -92,6 +157,28 @@ class ActorDefinitionResourceRequirements(BaseModel):
         description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
+
+
+class VersionBreakingChange(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    upgradeDeadline: date = Field(
+        ...,
+        description="The deadline by which to upgrade before the breaking change takes effect.",
+    )
+    message: str = Field(
+        ..., description="Descriptive message detailing the breaking change."
+    )
+    migrationDocumentationUrl: Optional[AnyUrl] = Field(
+        None,
+        description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
+    )
+    scopedImpact: Optional[List[BreakingChangeScope]] = Field(
+        None,
+        description="List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.",
+        min_items=1,
+    )
 
 
 class RegistryOverrides(BaseModel):
@@ -113,6 +200,16 @@ class RegistryOverrides(BaseModel):
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
 
 
+class ConnectorBreakingChanges(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
+        ...,
+        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
+    )
+
+
 class Registry(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -121,10 +218,25 @@ class Registry(BaseModel):
     cloud: Optional[RegistryOverrides] = None
 
 
+class ConnectorReleases(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    breakingChanges: ConnectorBreakingChanges
+    migrationDocumentationUrl: Optional[AnyUrl] = Field(
+        None,
+        description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations",
+    )
+
+
 class Data(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
     name: str
     icon: Optional[str] = None
     definitionId: UUID
+    connectorBuildOptions: Optional[ConnectorBuildOptions] = None
     connectorType: Literal["destination", "source"]
     dockerRepository: str
     dockerImageTag: str
@@ -145,18 +257,29 @@ class Data(BaseModel):
         None, description="the Airbyte Protocol version supported by the connector"
     )
     connectorSubtype: Literal[
-        "api", "database", "file", "custom", "message_queue", "unknown"
+        "api",
+        "database",
+        "datalake",
+        "file",
+        "custom",
+        "message_queue",
+        "unknown",
+        "vectorstore",
     ]
-    releaseStage: Literal["alpha", "beta", "generally_available", "source"]
+    releaseStage: ReleaseStage
+    supportLevel: Optional[SupportLevel] = None
     tags: Optional[List[str]] = Field(
-        None,
+        [],
         description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
     )
     registries: Optional[Registry] = None
     allowedHosts: Optional[AllowedHosts] = None
+    releases: Optional[ConnectorReleases] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
+    ab_internal: Optional[AirbyteInternal] = None
+    remoteRegistries: Optional[RemoteRegistries] = None
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

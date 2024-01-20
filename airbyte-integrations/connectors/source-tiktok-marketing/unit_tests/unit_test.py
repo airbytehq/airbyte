@@ -81,7 +81,7 @@ def unixtime2str(unix_time: int) -> str:
 def test_random_items(prepared_prod_args):
     stream = Ads(**prepared_prod_args)
     advertiser_count = 100
-    test_advertiser_ids = set([random_integer() for _ in range(advertiser_count)])
+    test_advertiser_ids = set([str(random_integer()) for _ in range(advertiser_count)])
     advertiser_count = len(test_advertiser_ids)
     page_size = 100
     with requests_mock.Mocker() as m:
@@ -134,8 +134,8 @@ def test_random_items(prepared_prod_args):
 @pytest.mark.parametrize(
     "config, stream_len",
     [
-        (PROD_CONFIG_FILE, 30),
-        (SANDBOX_CONFIG_FILE, 22),
+        (PROD_CONFIG_FILE, 36),
+        (SANDBOX_CONFIG_FILE, 28),
     ],
 )
 def test_source_streams(config, stream_len):
@@ -186,3 +186,13 @@ def test_source_prepare_stream_args(config_file):
         config = json.load(f)
         args = SourceTiktokMarketing._prepare_stream_args(config)
         assert "authenticator" in args
+
+
+def test_minimum_start_date(config, caplog):
+    config["start_date"] = "2000-01-01"
+    source = SourceTiktokMarketing()
+    streams = source.streams(config)
+
+    for stream in streams:
+        assert stream._start_time == "2012-01-01 00:00:00"
+    assert "The start date is too far in the past. Setting it to 2012-01-01" in caplog.text

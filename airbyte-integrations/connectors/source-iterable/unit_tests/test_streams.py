@@ -3,6 +3,7 @@
 #
 
 import json
+from unittest.mock import MagicMock
 
 import pendulum
 import pytest
@@ -206,12 +207,12 @@ def test_listuser_stream_keep_working_on_500():
     responses.get("https://api.iterable.com/api/lists/getUsers?listId=3000", body="one@d2.com\ntwo@d2.com\nthree@d2.com")
 
     expected_records = [
-        {'email': 'one@d1.com', 'listId': 2000},
-        {'email': 'two@d1.com', 'listId': 2000},
-        {'email': 'three@d1.com', 'listId': 2000},
-        {'email': 'one@d2.com', 'listId': 3000},
-        {'email': 'two@d2.com', 'listId': 3000},
-        {'email': 'three@d2.com', 'listId': 3000},
+        {"email": "one@d1.com", "listId": 2000},
+        {"email": "two@d1.com", "listId": 2000},
+        {"email": "three@d1.com", "listId": 2000},
+        {"email": "one@d2.com", "listId": 3000},
+        {"email": "two@d2.com", "listId": 3000},
+        {"email": "three@d2.com", "listId": 3000},
     ]
 
     records = list(read_full_refresh(users_stream))
@@ -222,7 +223,7 @@ def test_listuser_stream_keep_working_on_500():
 def test_events_read_full_refresh():
     stream = Events(authenticator=None)
     responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}]})
-    responses.get("https://api.iterable.com/api/lists/getUsers?listId=1", body='user1\nuser2\nuser3\nuser4\nuser5\nuser6')
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=1", body="user1\nuser2\nuser3\nuser4\nuser5\nuser6")
 
     def get_body(emails):
         return "\n".join([json.dumps({"email": email}) for email in emails]) + "\n"
@@ -244,8 +245,26 @@ def test_events_read_full_refresh():
     responses.get("https://api.iterable.com/api/export/userEvents?email=user5&includeCustomEvents=true", json=generic_error2, status=500)
     responses.get("https://api.iterable.com/api/export/userEvents?email=user5&includeCustomEvents=true", body=get_body(["user5"]))
 
-    m = responses.get("https://api.iterable.com/api/export/userEvents?email=user6&includeCustomEvents=true", json=generic_error2, status=500)
+    m = responses.get(
+        "https://api.iterable.com/api/export/userEvents?email=user6&includeCustomEvents=true", json=generic_error2, status=500
+    )
 
     records = list(read_full_refresh(stream))
-    assert [r["email"] for r in records] == ['user1', 'user2', 'user3', 'user5']
+    assert [r["email"] for r in records] == ["user1", "user2", "user3", "user5"]
     assert m.call_count == 3
+
+
+def test_retry_read_timeout():
+    stream = Lists(authenticator=None)
+    stream._session.send = MagicMock(side_effect=requests.exceptions.ReadTimeout)
+    with pytest.raises(requests.exceptions.ReadTimeout):
+        list(read_full_refresh(stream))
+    stream._session.send.call_args[1] == {"timeout": (60, 300)}
+    assert stream._session.send.call_count == stream.max_retries + 1
+
+    stream = Campaigns(authenticator=None)
+    stream._session.send = MagicMock(side_effect=requests.exceptions.ConnectionError)
+    with pytest.raises(requests.exceptions.ConnectionError):
+        list(read_full_refresh(stream))
+    stream._session.send.call_args[1] == {"timeout": (60, 300)}
+    assert stream._session.send.call_count == stream.max_retries + 1

@@ -11,7 +11,6 @@ TEST_REQUIREMENTS = [
     "pytest",
     "pytest-mock",
     "requests-mock",
-    "connector-acceptance-test",
 ]
 
 setup(
@@ -24,5 +23,10 @@ setup(
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
+    },
+    entry_points={
+        "console_scripts": [
+            "source-shopify=source_shopify.run:run",
+        ],
     },
 )

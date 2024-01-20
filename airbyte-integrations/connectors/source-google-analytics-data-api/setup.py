@@ -5,17 +5,21 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "PyJWT==2.4.0", "cryptography==37.0.4", "requests"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "PyJWT==2.4.0", "cryptography==37.0.4", "requests", "pandas"]
 
 TEST_REQUIREMENTS = [
     "freezegun",
     "pytest~=6.1",
     "pytest-mock~=3.6.1",
     "requests-mock",
-    "connector-acceptance-test",
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-google-analytics-data-api=source_google_analytics_data_api.run:run",
+        ],
+    },
     name="source_google_analytics_data_api",
     description="Source implementation for Google Analytics Data Api.",
     author="Airbyte",

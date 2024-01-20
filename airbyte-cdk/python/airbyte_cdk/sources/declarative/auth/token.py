@@ -9,14 +9,15 @@ from typing import Any, Mapping, Union
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
+from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 from cachetools import TTLCache, cached
 
 
 @dataclass
-class ApiKeyAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator):
+class ApiKeyAuthenticator(DeclarativeAuthenticator):
     """
     ApiKeyAuth sets a request header on the HTTP requests sent.
 
@@ -29,32 +30,47 @@ class ApiKeyAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator)
     `"Authorization": "Bearer hello"`
 
     Attributes:
-        header (Union[InterpolatedString, str]): Header key to set on the HTTP requests
-        api_token (Union[InterpolatedString, str]): Header value to set on the HTTP requests
+        request_option (RequestOption): request option how to inject the token into the request
+        token_provider (TokenProvider): Provider of the token
         config (Config): The user-provided configuration as specified by the source's spec
         parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
-    header: Union[InterpolatedString, str]
-    api_token: Union[InterpolatedString, str]
+    request_option: RequestOption
+    token_provider: TokenProvider
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self._header = InterpolatedString.create(self.header, parameters=parameters)
-        self._token = InterpolatedString.create(self.api_token, parameters=parameters)
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._field_name = InterpolatedString.create(self.request_option.field_name, parameters=parameters)
 
     @property
     def auth_header(self) -> str:
-        return self._header.eval(self.config)
+        options = self._get_request_options(RequestOptionType.header)
+        return next(iter(options.keys()), "")
 
     @property
     def token(self) -> str:
-        return self._token.eval(self.config)
+        return self.token_provider.get_token()
+
+    def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
+        options = {}
+        if self.request_option.inject_into == option_type:
+            options[self._field_name.eval(self.config)] = self.token
+        return options
+
+    def get_request_params(self) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.request_parameter)
+
+    def get_request_body_data(self) -> Union[Mapping[str, Any], str]:
+        return self._get_request_options(RequestOptionType.body_data)
+
+    def get_request_body_json(self) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.body_json)
 
 
 @dataclass
-class BearerAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator):
+class BearerAuthenticator(DeclarativeAuthenticator):
     """
     Authenticator that sets the Authorization header on the HTTP requests sent.
 
@@ -62,17 +78,14 @@ class BearerAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator)
     `"Authorization": "Bearer <token>"`
 
     Attributes:
-        api_token (Union[InterpolatedString, str]): The bearer token
+        token_provider (TokenProvider): Provider of the token
         config (Config): The user-provided configuration as specified by the source's spec
         parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
-    api_token: Union[InterpolatedString, str]
+    token_provider: TokenProvider
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self._token = InterpolatedString.create(self.api_token, parameters=parameters)
 
     @property
     def auth_header(self) -> str:
@@ -80,11 +93,11 @@ class BearerAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator)
 
     @property
     def token(self) -> str:
-        return f"Bearer {self._token.eval(self.config)}"
+        return f"Bearer {self.token_provider.get_token()}"
 
 
 @dataclass
-class BasicHttpAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator):
+class BasicHttpAuthenticator(DeclarativeAuthenticator):
     """
     Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using base64
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme
@@ -104,7 +117,7 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticat
     parameters: InitVar[Mapping[str, Any]]
     password: Union[InterpolatedString, str] = ""
 
-    def __post_init__(self, parameters):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._username = InterpolatedString.create(self.username, parameters=parameters)
         self._password = InterpolatedString.create(self.password, parameters=parameters)
 
@@ -127,7 +140,7 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticat
     i.e. by adding another item the cache would exceed its maximum size, the cache must choose which item(s) to discard
     ttl=86400 means that cached token will live for 86400 seconds (one day)
 """
-cacheSessionTokenAuthenticator = TTLCache(maxsize=1000, ttl=86400)
+cacheSessionTokenAuthenticator: TTLCache[str, str] = TTLCache(maxsize=1000, ttl=86400)
 
 
 @cached(cacheSessionTokenAuthenticator)
@@ -152,11 +165,11 @@ def get_new_session_token(api_url: str, username: str, password: str, response_k
     response.raise_for_status()
     if not response.ok:
         raise ConnectionError(f"Failed to retrieve new session token, response code {response.status_code} because {response.reason}")
-    return response.json()[response_key]
+    return str(response.json()[response_key])
 
 
 @dataclass
-class SessionTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator):
+class LegacySessionTokenAuthenticator(DeclarativeAuthenticator):
     """
     Builds auth based on session tokens.
     A session token is a random value generated by a server to identify
@@ -189,7 +202,7 @@ class SessionTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenti
     validate_session_url: Union[InterpolatedString, str]
     password: Union[InterpolatedString, str] = ""
 
-    def __post_init__(self, parameters):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._username = InterpolatedString.create(self.username, parameters=parameters)
         self._password = InterpolatedString.create(self.password, parameters=parameters)
         self._api_url = InterpolatedString.create(self.api_url, parameters=parameters)
@@ -203,13 +216,13 @@ class SessionTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenti
 
     @property
     def auth_header(self) -> str:
-        return self._header.eval(self.config)
+        return str(self._header.eval(self.config))
 
     @property
     def token(self) -> str:
         if self._session_token.eval(self.config):
             if self.is_valid_session_token():
-                return self._session_token.eval(self.config)
+                return str(self._session_token.eval(self.config))
         if self._password.eval(self.config) and self._username.eval(self.config):
             username = self._username.eval(self.config)
             password = self._password.eval(self.config)

@@ -1,0 +1,80 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+  "name": "DuckDB Destination Connector DevContainer (Python)",
+
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "image": "mcr.microsoft.com/devcontainers/python:0-3.10",
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers-contrib/features/poetry:2": {},
+    "ghcr.io/devcontainers/features/docker-in-docker": {}
+  },
+  "overrideFeatureInstallOrder": [
+    // Deterministic order maximizes cache reuse
+    "ghcr.io/devcontainers-contrib/features/poetry",
+    "ghcr.io/devcontainers/features/docker-in-docker"
+  ],
+
+  "workspaceFolder": "/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb",
+
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Python extensions:
+        "charliermarsh.ruff",
+        "matangover.mypy",
+        "ms-python.black-formatter",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+
+        // Toml support
+        "tamasfe.even-better-toml",
+
+        // Yaml and JSON Schema support:
+        "redhat.vscode-yaml",
+
+        // Contributing:
+        "GitHub.vscode-pull-request-github"
+      ],
+      "settings": {
+        "extensions.ignoreRecommendations": true,
+        "git.autofetch": true,
+        "git.openRepositoryInParentFolders": "always",
+        "python.defaultInterpreterPath": ".venv/bin/python",
+        "python.interpreter.infoVisibility": "always",
+        "python.terminal.activateEnvironment": true,
+        "python.testing.pytestEnabled": true,
+        "python.testing.cwd": "/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb",
+        "python.testing.pytestArgs": [
+          "--rootdir=/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb",
+          "."
+        ],
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter"
+        }
+      }
+    }
+  },
+  "containerEnv": {
+    "POETRY_VIRTUALENVS_IN_PROJECT": "true"
+  },
+
+  // Mark the root directory as 'safe' for git.
+  "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  // Post-create tasks:
+  // 1. Create a symlink directory.
+  // 2. Create symlinks for the devcontainer.json and docs markdown file.
+  // 3. Install the Python/Poetry dependencies.
+  "postCreateCommand": "mkdir -p ./.symlinks && echo '*' > ./.symlinks/.gitignore && ln -sf /workspaces/airbyte/.devcontainer/destination-duckdb/devcontainer.json ./.symlinks/devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/destinations/duckdb.md ./.symlinks/duckdb-docs.md && poetry install"
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
+}

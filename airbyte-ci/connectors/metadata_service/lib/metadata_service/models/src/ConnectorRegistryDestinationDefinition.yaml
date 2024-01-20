@@ -45,6 +45,8 @@ properties:
     default: false
   releaseStage:
     "$ref": ReleaseStage.yaml
+  supportLevel:
+    "$ref": SupportLevel.yaml
   releaseDate:
     description: The date when this connector was first released, in yyyy-mm-dd format.
     type: string
@@ -66,3 +68,7 @@ properties:
     description: an optional flag indicating whether DBT is used in the normalization. If the flag value is NULL - DBT is not used.
   allowedHosts:
     "$ref": AllowedHosts.yaml
+  releases:
+    "$ref": ConnectorReleases.yaml
+  ab_internal:
+    "$ref": AirbyteInternal.yaml

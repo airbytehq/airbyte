@@ -11,13 +11,217 @@ Thus, there are generally 4 types of workers.
 
 **Note: Workers here refers to Airbyte workers. Temporal, which Airbyte uses under the hood for scheduling, has its own worker concept. This distinction is important.**
 
-## Job State Machine
+## Sync Jobs
 
-Jobs have the following state machine.
+At a high level, a sync job is an individual invocation of the Airbyte pipeline to synchronize data from a source to a destination data store.
 
-![Job state machine](../.gitbook/assets/job-state-machine.png)
+### Sync Job State Machine
 
-[Image Source](https://docs.google.com/drawings/d/1cp8LRZs6UnhAt3jbQ4h40nstcNB0OBOnNRdMFwOJL8I/edit)
+Sync jobs have the following state machine.
+
+```mermaid
+---
+title: Job Status State Machine
+---
+stateDiagram-v2
+direction TB
+state NonTerminal {
+    [*] --> pending
+    pending
+    running
+    incomplete
+    note left of incomplete
+        When an attempt fails, the job status is transitioned to incomplete.
+        If this is the final attempt, then the job is transitioned to failed.
+        Otherwise it is transitioned back to running upon new attempt creation.
+            
+    end note
+}
+note left of NonSuccess 
+    All Non Terminal Statuses can be transitioned to cancelled or failed
+end note
+
+pending --> running
+running --> incomplete
+incomplete --> running
+running --> succeeded
+state NonSuccess {
+    cancelled
+    failed
+}
+NonTerminal --> NonSuccess
+```
+
+
+```mermaid
+---
+title: Attempt Status State Machine
+---
+stateDiagram-v2
+    direction LR
+    running --> succeeded
+    running --> failed
+```
+
+
+### Attempts and Retries
+
+In the event of a failure, the Airbyte platform will retry the pipeline. Each of these sub-invocations of a job is called an attempt.
+
+### Retry Rules
+
+Based on the outcome of previous attempts, the number of permitted attempts per job changes. By default, Airbyte is configured to allow the following:
+
+* 5 subsequent attempts where no data was synchronized
+* 10 total attempts where no data was synchronized
+* 10 total attempts where some data was synchronized
+
+For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+
+### Retry Backoff
+
+After an attempt where no data was synchronized, we implement a short backoff period before starting a new attempt. This will increase with each successive complete failure—a partially successful attempt will reset this value.
+
+By default, Airbyte is configured to backoff with the following values:
+* 10 seconds after the first complete failure
+* 30 seconds after the second
+* 90 seconds after the third
+* 4 minutes and 30 seconds after the fourth
+
+For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+
+The duration of expected backoff between attempts can be viewed in the logs accessible from the job history UI.
+
+### Retry examples
+
+To help illustrate what is possible, below are a couple examples of how the retry rules may play out under more elaborate circumstances. 
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Job #1</th>
+        </tr>
+        <tr>
+            <th>Attempt Number</th>
+            <th>Synced data?</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">30 second backoff</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td colspan="2">Job succeeds — all data synced</td>
+        </tr>
+    </tbody>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Job #2</th>
+        </tr>
+        <tr>
+            <th>Attempt Number</th>
+            <th>Synced data?</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">30 second backoff</td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">90 second backoff</td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">4 minute 30 second backoff</td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">Job Fails — successive failure limit reached</td>
+        </tr>
+    </tbody>
+</table>
 
 ## Worker Responsibilities
 
@@ -54,9 +258,17 @@ This section will depict the worker-job architecture as discussed above. Only th
 
 The source process should automatically exit after passing all of its messages. Similarly, the destination process shutdowns after receiving all records. Each process is given a shutdown grace period. The worker forces shutdown if this is exceeded.
 
-![Worker Lifecycle](../.gitbook/assets/worker-lifecycle.png)
+```mermaid
+sequenceDiagram
+    Worker->>Source: docker run
+    Worker->>Destination: docker run
+    Source->>Worker: STDOUT
+    Worker->>Destination: STDIN
+    Worker->>Source: exit*
+    Worker->>Destination: exit*
+    Worker->>Result: json output
+```
 
-[Image Source](https://docs.google.com/drawings/d/1k4v_m2M5o2UUoNlYM7mwtZicRkQgoGLgb3eTOVH8QFo/edit)
 
 See the [architecture overview](high-level-view.md) for more information about workers.
 
@@ -97,13 +309,40 @@ Brief description of how this works,
 
 The Cloud Storage store is treated as the source-of-truth of execution state.
 
-The Container Orchestrator is only available for Airbyte Kubernetes today and automatically enabled when running the Airbyte Helm charts/Kustomize deploys.
+The Container Orchestrator is only available for Airbyte Kubernetes today and automatically enabled when running the Airbyte Helm Charts deploys.
+
+
+```mermaid
+---
+title: Start a new Sync
+---
+sequenceDiagram
+%%    participant API
+    participant Temporal as Temporal Queues
+    participant Sync as Sync Workflow
+    participant ReplicationA as Replication Activity
+    participant ReplicationP as Replication Process
+    participant PersistA as Persistent Activity
+    participant AirbyteDB
+    Sync->>Temporal: Start a replication Activity
+    Temporal->>Sync: Pick up a new Sync
+    Temporal->>ReplicationA: Pick up a new task
+    ReplicationA->>ReplicationP: Starts a process
+    ReplicationP->>ReplicationA: Replication Summary with State message and stats
+    ReplicationA->>Temporal: Return Output (States and Summary)
+    Temporal->>Sync: Read results from Replication Activity
+    Sync->>Temporal: Start Persistent State Activity
+    Temporal->>PersistA: Pick up new task
+    PersistA->>AirbyteDB: Persist States
+    PersistA->>Temporal: Return output
+```
+
 
 Users running Airbyte Docker should be aware of the above pitfalls.
 
-## Configuring Workers
+## Configuring Jobs & Workers
 
-Details on configuring workers can be found [here](../operator-guides/configuring-airbyte.md).
+Details on configuring jobs & workers can be found [here](../operator-guides/configuring-airbyte.md).
 
 ### Worker Parallization
 Airbyte exposes the following environment variable to change the maximum number of each type of worker allowed to run in parallel. 

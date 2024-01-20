@@ -6,16 +6,21 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.2",
+    "airbyte-cdk",
 ]
 
 TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
     "pytest~=6.1",
     "pytest-mock~=3.6.1",
-    "connector-acceptance-test",
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-xero=source_xero.run:run",
+        ],
+    },
     name="source_xero",
     description="Source implementation for Xero.",
     author="Airbyte",

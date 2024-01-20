@@ -1,0 +1,3 @@
+[run]
+omit =
+    source_zendesk_talk/run.py

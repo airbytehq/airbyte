@@ -8,9 +8,9 @@ Cloud storage may incur egress costs. Egress refers to data that is transferred 
 
 ## Prerequisites
 
-* JSON credentials for the service account that has access to GCS. For more details check [instructions](https://cloud.google.com/iam/docs/creating-managing-service-accounts)
-* GCS bucket
-* Path to file(s)
+- JSON credentials for the service account that has access to GCS. For more details check [instructions](https://cloud.google.com/iam/docs/creating-managing-service-accounts)
+- GCS bucket
+- Path to file(s)
 
 ## Set up Source
 
@@ -29,11 +29,18 @@ Use the service account ID from above, grant read access to your target bucket. 
 
 ### Set up the source in Airbyte UI
 
-* Paste the service account JSON key to `service_account`
-* Enter your GCS bucket name to `gcs_bucket`
-* Enter path to your file(s) to `gcs_path`
+- Paste the service account JSON key to `service_account`
+- Enter your GCS bucket name to `gcs_bucket`
+- Enter path to your file(s) to `gcs_path`
 
 ## Changelog
-| Version | Date       | Pull Request                                             | Subject                     |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
-| 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS             |
+
+| Version | Date       | Pull Request                                             | Subject                                             |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 0.3.4   | 2024-01-11 | [34158](https://github.com/airbytehq/airbyte/pull/34158) | Fix issue in stream reader for document file type parser |
+| 0.3.3   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key |
+| 0.3.2   | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser                   |
+| 0.3.1   | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                 |
+| 0.3.0   | 2023-10-11 | [31212](https://github.com/airbytehq/airbyte/pull/31212) | Migrated to file based CDK                          |
+| 0.2.0   | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2                                |
+| 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS                                     |

@@ -1,0 +1,7 @@
+{
+  "api_key": "api_key",
+  "domain": "serpstat.com",
+  "region_id": "g_us",
+  "page_size": 10,
+  "pages_to_fetch": 1
+}

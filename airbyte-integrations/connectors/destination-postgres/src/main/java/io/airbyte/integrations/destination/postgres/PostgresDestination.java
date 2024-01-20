@@ -4,21 +4,24 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
+import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.DISABLE;
+import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
+import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
+import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
+import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.ssh.SshWrappedDestination;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -39,6 +42,28 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   public PostgresDestination() {
     super(DRIVER_CLASS, new PostgresSQLNameTransformer(), new PostgresSqlOperations());
+  }
+
+  @Override
+  protected DataSourceFactory.DataSourceBuilder modifyDataSourceBuilder(final DataSourceFactory.DataSourceBuilder builder) {
+    // Anything in the pg_temp schema is only visible to the connection that created it.
+    // So this creates an airbyte_safe_cast function that only exists for the duration of
+    // a single connection.
+    // This avoids issues with creating the same function concurrently (e.g. if multiple syncs run
+    // at the same time).
+    // Function definition copied from https://dba.stackexchange.com/a/203986
+    return builder.withConnectionInitSql("""
+                                         CREATE FUNCTION pg_temp.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
+                                           LANGUAGE plpgsql AS
+                                         $func$
+                                         BEGIN
+                                           EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
+                                           INTO  _out;
+                                         EXCEPTION WHEN others THEN
+                                           -- do nothing: _out already carries default
+                                         END
+                                         $func$;
+                                         """);
   }
 
   @Override
@@ -67,7 +92,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     if (encodedDatabase != null) {
       try {
         encodedDatabase = URLEncoder.encode(encodedDatabase, "UTF-8");
-      } catch (UnsupportedEncodingException e) {
+      } catch (final UnsupportedEncodingException e) {
         // Should never happen
         e.printStackTrace();
       }
@@ -91,6 +116,11 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator() {
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
   }
 
   public static void main(final String[] args) throws Exception {

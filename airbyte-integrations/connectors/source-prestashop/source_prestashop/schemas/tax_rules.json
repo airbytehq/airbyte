@@ -1,33 +1,33 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_tax_rules_group": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_country": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "zipcode_from": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "zipcode_to": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_tax": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "behavior": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

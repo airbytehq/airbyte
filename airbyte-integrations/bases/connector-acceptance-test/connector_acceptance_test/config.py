@@ -19,6 +19,7 @@ spec_path: str = Field(
 )
 configured_catalog_path: Optional[str] = Field(default=None, description="Path to configured catalog")
 timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
+deployment_mode: Optional[str] = Field(default=None, description="Deployment mode to run the test in", regex=r"^(cloud|oss)$")
 
 SEMVER_REGEX = r"(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*)))?(?:\-([\w][\w\.\-_]*))?)?"
 ALLOW_LEGACY_CONFIG = True
@@ -45,6 +46,7 @@ class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
     config_path: str = config_path
     timeout_seconds: int = timeout_seconds
+    deployment_mode: Optional[str] = deployment_mode
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
         description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
     )
@@ -59,11 +61,13 @@ class ConnectionTestConfig(BaseConfig):
     config_path: str = config_path
     status: Status = Field(Status.Succeed, description="Indicate if connection check should succeed with provided config")
     timeout_seconds: int = timeout_seconds
+    deployment_mode: Optional[str] = deployment_mode
 
 
 class DiscoveryTestConfig(BaseConfig):
     config_path: str = config_path
     timeout_seconds: int = timeout_seconds
+    deployment_mode: Optional[str] = deployment_mode
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
         description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
     )
@@ -120,8 +124,14 @@ ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field
 )
 
 
+class NoPrimaryKeyConfiguration(BaseConfig):
+    name: str
+    bypass_reason: Optional[str] = Field(default=None, description="Reason why this stream does not support a primary key")
+
+
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
+    deployment_mode: Optional[str] = deployment_mode
     configured_catalog_path: Optional[str] = configured_catalog_path
     empty_streams: Set[EmptyStreamConfiguration] = Field(
         default_factory=set, description="We validate that all streams has records. These are exceptions"
@@ -148,6 +158,7 @@ class FullRefreshConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
     timeout_seconds: int = timeout_seconds
+    deployment_mode: Optional[str] = deployment_mode
     ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
 
 
@@ -160,18 +171,31 @@ class FutureStateConfig(BaseConfig):
 class IncrementalConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
-    cursor_paths: Optional[Mapping[str, List[str]]] = Field(
-        description="For each stream, the path of its cursor field in the output state messages."
-    )
     future_state: Optional[FutureStateConfig] = Field(description="Configuration for the future state.")
     timeout_seconds: int = timeout_seconds
-    threshold_days: int = Field(
-        description="Allow records to be emitted with a cursor value this number of days before the state cursor",
-        default=0,
-        ge=0,
-    )
+    deployment_mode: Optional[str] = deployment_mode
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
         description="Determines whether to skip more granular testing for incremental syncs", default=False
+    )
+
+    class Config:
+        smart_union = True
+
+
+class ConnectorAttributesConfig(BaseConfig):
+    """
+    Config that is used to verify that a connector and its streams uphold certain behavior and features that are
+    required to maintain enterprise-level standard of quality.
+
+    Attributes:
+        streams_without_primary_key: A list of streams where a primary key is not available from the API or is not relevant to the record
+    """
+
+    timeout_seconds: int = timeout_seconds
+    config_path: str = config_path
+
+    streams_without_primary_key: Optional[List[NoPrimaryKeyConfiguration]] = Field(
+        description="Streams that do not support a primary key such as reports streams"
     )
 
 
@@ -193,6 +217,7 @@ class AcceptanceTestConfigurations(BaseConfig):
     basic_read: Optional[GenericTestConfig[BasicReadTestConfig]]
     full_refresh: Optional[GenericTestConfig[FullRefreshConfig]]
     incremental: Optional[GenericTestConfig[IncrementalConfig]]
+    connector_attributes: Optional[GenericTestConfig[ConnectorAttributesConfig]]
 
 
 class Config(BaseConfig):
@@ -200,9 +225,6 @@ class Config(BaseConfig):
         high = "high"
         low = "low"
 
-    cache_discovered_catalog: bool = Field(
-        default=True, description="Enable or disable caching of discovered catalog for reuse in multiple tests."
-    )
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
     acceptance_tests: AcceptanceTestConfigurations = Field(description="List of the acceptance test to run with their configs")
     base_path: Optional[str] = Field(description="Base path for all relative paths")

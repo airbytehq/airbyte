@@ -14,14 +14,17 @@ class AirbytePerformanceTestJavaPlugin implements Plugin<Project> {
                 }
             }
         }
-        project.test.dependsOn('compilePerformanceTestJavaJava')
+        project.tasks.named('check').configure {
+            dependsOn project.tasks.matching { it.name == 'compilePerformanceTestJavaJava' }
+            dependsOn project.tasks.matching { it.name == 'spotbugsPerformanceTestJava' }
+        }
 
         project.configurations {
             performanceTestJavaImplementation.extendsFrom testImplementation
             performanceTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
         }
 
-        project.task('performanceTestJava', type: Test) {
+        def performanceTestJava = project.tasks.register('performanceTestJava', Test) {
             testClassesDirs = project.sourceSets.performanceTestJava.output.classesDirs
             classpath += project.sourceSets.performanceTestJava.runtimeClasspath
 
@@ -35,21 +38,11 @@ class AirbytePerformanceTestJavaPlugin implements Plugin<Project> {
             }
 
             outputs.upToDateWhen { false }
-
-            if(project.hasProperty('airbyteDocker')) {
-                dependsOn project.airbyteDocker
-            }
-
             maxHeapSize = '3g'
-
-            mustRunAfter project.test
         }
-
-        // make sure we create the performanceTest task once in case a standard source test was already initialized
-        if(!project.hasProperty('performanceTest')) {
-            project.task('performanceTest')
+        performanceTestJava.configure {
+            mustRunAfter project.tasks.named('check')
+            dependsOn project.tasks.matching { it.name == 'assemble' }
         }
-
-        project.performanceTest.dependsOn(project.performanceTestJava)
     }
 }

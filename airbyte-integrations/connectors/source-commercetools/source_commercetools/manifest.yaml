@@ -1,0 +1,178 @@
+version: 0.50.2
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - results
+
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: offset
+    page_size_option:
+      inject_into: request_parameter
+      field_name: limit
+      type: RequestOption
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 500
+
+  requester:
+    type: HttpRequester
+    url_base: >-
+      https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{ config['project_key'] }}
+    path: "{{ parameters.path }}"
+    http_method: GET
+    request_parameters:
+      sort: lastModifiedAt asc
+      where: lastModifiedAt >= :date
+    request_headers: {}
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_commercetools.components.CommerceToolsOauth2Authenticator
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_request_body:
+        scope: manage_project:{{ config['project_key'] }}
+      token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
+      grant_type: client_credentials
+      access_token_name: access_token
+    request_body_json: {}
+
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      $ref: "#/definitions/paginator"
+
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: lastModifiedAt
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    start_time_option:
+      inject_into: request_parameter
+      field_name: var.date
+      type: RequestOption
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  base_stream:
+    type: DeclarativeStream
+    primary_key: id
+    retriever:
+      $ref: "#/definitions/retriever"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+
+  customers_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "customers"
+      path: "customers"
+
+  discount_codes_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "discount_codes"
+      path: "discount-codes"
+
+  orders_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "orders"
+      path: "orders"
+
+  payments_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "payments"
+      path: "payments"
+
+  products_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "products"
+      path: "products"
+
+streams:
+  - "#/definitions/customers_stream"
+  - "#/definitions/discount_codes_stream"
+  - "#/definitions/orders_stream"
+  - "#/definitions/payments_stream"
+  - "#/definitions/products_stream"
+
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/commercetools
+  type: Spec
+  connection_specification:
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - start_date
+      - client_id
+      - client_secret
+      - host
+      - project_key
+      - region
+    properties:
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        order: 0
+      client_id:
+        type: string
+        title: Client ID
+        airbyte_secret: true
+        description: "Id of API Client."
+        order: 1
+      client_secret:
+        type: string
+        title: Client secret
+        airbyte_secret: true
+        description: "The password of secret of API Client."
+        order: 2
+      host:
+        title: Host
+        description: >-
+          The cloud provider your shop is hosted. See: https://docs.commercetools.com/api/authorization
+        enum:
+          - gcp
+          - aws
+        type: string
+        order: 3
+      project_key:
+        title: Project key
+        description: The project key
+        type: string
+        order: 4
+      region:
+        title: Region
+        description: The region of the platform.
+        type: string
+        examples: ["us-central1", "australia-southeast1"]
+        order: 5

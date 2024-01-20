@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.destination.teradata;
 
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -24,10 +24,10 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(TeradataSqlOperations.class);
 
   @Override
-  public void insertRecordsInternal(JdbcDatabase database,
-                                    List<AirbyteRecordMessage> records,
-                                    String schemaName,
-                                    String tableName)
+  public void insertRecordsInternal(final JdbcDatabase database,
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String tableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -39,7 +39,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
     database.execute(con -> {
       try {
 
-        PreparedStatement pstmt = con.prepareStatement(insertQueryComponent);
+        final PreparedStatement pstmt = con.prepareStatement(insertQueryComponent);
 
         for (final AirbyteRecordMessage record : records) {
 
@@ -65,7 +65,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
         AirbyteTraceMessageUtility.emitSystemErrorTrace(se,
             "Connector failed while inserting records to staging table");
         throw new RuntimeException(se);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
             "Connector failed while inserting records to staging table");
         throw new RuntimeException(e);
@@ -78,7 +78,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     try {
       database.execute(String.format("CREATE DATABASE \"%s\" AS PERMANENT = 120e6, SPOOL = 120e6;", schemaName));
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       if (e.getMessage().contains("already exists")) {
         LOGGER.warn("Database " + schemaName + " already exists.");
       } else {
@@ -94,7 +94,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
       throws SQLException {
     try {
       database.execute(createTableQuery(database, schemaName, tableName));
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       if (e.getMessage().contains("already exists")) {
         LOGGER.warn("Table " + schemaName + "." + tableName + " already exists.");
       } else {
@@ -117,8 +117,8 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName)
       throws SQLException {
     try {
-      database.execute(dropTableIfExistsQuery(schemaName, tableName));
-    } catch (SQLException e) {
+      database.execute(dropTableIfExistsQueryInternal(schemaName, tableName));
+    } catch (final SQLException e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
           "Connector failed while dropping table " + schemaName + "." + tableName);
     }
@@ -128,17 +128,17 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     try {
       return String.format("DELETE %s.%s ALL;\n", schemaName, tableName);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
           "Connector failed while truncating table " + schemaName + "." + tableName);
     }
     return "";
   }
 
-  private String dropTableIfExistsQuery(final String schemaName, final String tableName) {
+  private String dropTableIfExistsQueryInternal(final String schemaName, final String tableName) {
     try {
       return String.format("DROP TABLE  %s.%s;\n", schemaName, tableName);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
           "Connector failed while dropping table " + schemaName + "." + tableName);
     }
@@ -153,7 +153,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
         appendedQueries.append(query);
       }
       database.execute(appendedQueries.toString());
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
           "Connector failed while executing queries : " + appendedQueries.toString());
     }

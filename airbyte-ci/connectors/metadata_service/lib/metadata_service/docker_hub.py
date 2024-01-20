@@ -1,6 +1,12 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import os
+import time
+from typing import Optional
+
 import requests
-from typing import List
 
 
 def get_docker_hub_auth_token() -> str:
@@ -21,41 +27,35 @@ def get_docker_hub_auth_token() -> str:
     return token
 
 
-def get_image_tags(repo: str, image: str) -> List[str]:
-    token = get_docker_hub_auth_token()
-    headers = {"Authorization": f"JWT {token}"}
-
-    tags_url = f"https://hub.docker.com/v2/repositories/{repo}/{image}/tags/"
-    params = {"page_size": 100}
-    tags = []
-
-    while True:
-        response = requests.get(tags_url, headers=headers, params=params)
-        if response.status_code != 200:
-            raise ValueError("Failed to fetch image tags from Docker Hub.")
-
-        data = response.json()
-        tags.extend([result["name"] for result in data.get("results", [])])
-
-        if data.get("next"):
-            tags_url = data["next"]
-        else:
-            break
-
-    return tags
-
-
-def is_image_on_docker_hub(image_name: str, version: str) -> bool:
+def is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None, retries: int = 0, wait_sec: int = 30) -> bool:
     """Check if a given image and version exists on Docker Hub.
 
     Args:
         image_name (str): The name of the image to check.
         version (str): The version of the image to check.
-
+        digest (str, optional): The digest of the image to check. Defaults to None.
+        retries (int, optional): The number of times to retry the request. Defaults to 0.
+        wait_sec (int, optional): The number of seconds to wait between retries. Defaults to 30.
     Returns:
         bool: True if the image and version exists on Docker Hub, False otherwise.
     """
-    repo, image = image_name.split("/", 1)
-    tags = get_image_tags(repo, image)
 
-    return version in tags
+    token = get_docker_hub_auth_token()
+    headers = {"Authorization": f"JWT {token}"}
+    tag_url = f"https://registry.hub.docker.com/v2/repositories/{image_name}/tags/{version}"
+
+    # Allow for retries as the DockerHub API is not always reliable with returning the latest publish.
+    for _ in range(retries + 1):
+        response = requests.get(tag_url, headers=headers)
+        if response.ok:
+            break
+        time.sleep(wait_sec)
+
+    if not response.ok:
+        response.raise_for_status()
+        return False
+
+    # If a digest is provided, check that it matches the digest of the image on Docker Hub.
+    if digest is not None:
+        return f"sha256:{digest}" == response.json()["digest"]
+    return True

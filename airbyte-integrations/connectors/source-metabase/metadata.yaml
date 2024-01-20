@@ -1,9 +1,16 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts:
+      - "*"
   connectorSubtype: api
   connectorType: source
   definitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
-  dockerImageTag: 0.3.1
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-metabase
+  documentationUrl: https://docs.airbyte.com/integrations/sources/metabase
   githubIssueLabel: source-metabase
   icon: metabase.svg
   license: MIT
@@ -14,7 +21,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/metabase
+  supportLevel: community
   tags:
     - language:low-code
     - language:python

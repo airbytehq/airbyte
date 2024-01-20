@@ -56,7 +56,7 @@
     },
     {
       "stream": {
-        "name": "user_availablity",
+        "name": "user_availability",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

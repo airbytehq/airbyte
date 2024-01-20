@@ -123,53 +123,53 @@
       "type": "object",
       "properties": {
         "isEligible": {
-            "type": "boolean"
+          "type": "boolean"
         },
         "requests": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "status": {
-                  "type": ["string", "null"]
-                },
-                "consumerResponse": {
-                  "type": ["object","null"],
-                  "properties": {
-                    "referenceId": {
-                      "type": ["string", "null"]
-                    },
-                    "name": {
-                      "type": ["string", "null"]
-                    },
-                    "submittedAt": {
-                      "type": ["string", "null"],
-                      "format": "date-time"
-                    },
-                    "phoneNumber": {
-                      "type": ["string", "null"]
-                    },
-                    "address": {
-                      "type": ["string", "null"]
-                    },
-                    "message": {
-                      "type": ["string", "null"]
-                    },
-                    "email": {
-                      "type": ["string", "null"]
-                    }
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": ["string", "null"]
+              },
+              "consumerResponse": {
+                "type": ["object", "null"],
+                "properties": {
+                  "referenceId": {
+                    "type": ["string", "null"]
+                  },
+                  "name": {
+                    "type": ["string", "null"]
+                  },
+                  "submittedAt": {
+                    "type": ["string", "null"],
+                    "format": "date-time"
+                  },
+                  "phoneNumber": {
+                    "type": ["string", "null"]
+                  },
+                  "address": {
+                    "type": ["string", "null"]
+                  },
+                  "message": {
+                    "type": ["string", "null"]
+                  },
+                  "email": {
+                    "type": ["string", "null"]
                   }
-                },
-                "businessUserMessage": {
-                  "type": ["string", "null"]
-                },
-                "id": {
-                  "type": ["string", "null"]
-                },
-                "created": {
-                  "type": ["string", "null"],
-                  "format": "date-time"
                 }
+              },
+              "businessUserMessage": {
+                "type": ["string", "null"]
+              },
+              "id": {
+                "type": ["string", "null"]
+              },
+              "created": {
+                "type": ["string", "null"],
+                "format": "date-time"
+              }
             }
           }
         }
@@ -219,7 +219,7 @@
       "type": ["boolean", "null"]
     },
     "invitation": {
-      "type": ["object","null"],
+      "type": ["object", "null"],
       "properties": {
         "businessUnitId": {
           "type": ["string", "null"]

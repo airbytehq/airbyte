@@ -24,6 +24,14 @@ acceptance_tests:
         empty_streams:
           - name: custom_fields
             bypass_reason: "This stream is not available on the account we're currently using. Please follow https://github.com/airbytehq/airbyte/issues/19662."
+          - name: events
+            bypass_reason: "This stream is not available on our current account."
+          - name: portfolios_compact
+            bypass_reason: "This stream is not available on our current account, it requires a business/enterprise account"
+          - name: portfolios
+            bypass_reason: "This stream is not available on our current account, it requires a business/enterprise account"
+          - name: portfolios_memberships
+            bypass_reason: "This stream is not available on our current account, it requires a business/enterprise account"
   full_refresh:
     # tests:
     #   - config_path: "secrets/config.json"

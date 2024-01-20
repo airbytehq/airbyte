@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "additionalProperties": true,
   "type": "object",
   "properties": {
@@ -16,27 +16,7 @@
           "type": ["null", "string"]
         },
         "support_address": {
-          "type": ["null", "object"],
-          "properties": {
-            "city": {
-              "type": ["null", "string"]
-            },
-            "country": {
-              "type": ["null", "string"]
-            },
-            "line1": {
-              "type": ["null", "string"]
-            },
-            "line2": {
-              "type": ["null", "string"]
-            },
-            "postal_code": {
-              "type": ["null", "string"]
-            },
-            "state": {
-              "type": ["null", "string"]
-            }
-          }
+          "$ref": "address.json"
         },
         "support_email": {
           "type": ["null", "string"]
@@ -132,28 +112,7 @@
       "additionalProperties": true,
       "properties": {
         "address": {
-          "type": ["null", "object"],
-          "additionalProperties": true,
-          "properties": {
-            "city": {
-              "type": ["null", "string"]
-            },
-            "country": {
-              "type": ["null", "string"]
-            },
-            "line1": {
-              "type": ["null", "string"]
-            },
-            "line2": {
-              "type": ["null", "string"]
-            },
-            "postal_code": {
-              "type": ["null", "string"]
-            },
-            "state": {
-              "type": ["null", "string"]
-            }
-          }
+          "$ref": "address.json"
         },
         "address_kana": {
           "type": ["null", "object"],
@@ -338,28 +297,7 @@
           "type": ["null", "string"]
         },
         "address": {
-          "type": ["null", "object"],
-          "additionalProperties": true,
-          "properties": {
-            "city": {
-              "type": ["null", "string"]
-            },
-            "country": {
-              "type": ["null", "string"]
-            },
-            "line1": {
-              "type": ["null", "string"]
-            },
-            "line2": {
-              "type": ["null", "string"]
-            },
-            "postal_code": {
-              "type": ["null", "string"]
-            },
-            "state": {
-              "type": ["null", "string"]
-            }
-          }
+          "$ref": "address.json"
         },
         "address_kana": {
           "type": ["null", "object"],
@@ -549,28 +487,7 @@
           "type": ["null", "string"]
         },
         "registered_address": {
-          "type": ["null", "object"],
-          "additionalProperties": true,
-          "properties": {
-            "city": {
-              "type": ["null", "string"]
-            },
-            "country": {
-              "type": ["null", "string"]
-            },
-            "line1": {
-              "type": ["null", "string"]
-            },
-            "line2": {
-              "type": ["null", "string"]
-            },
-            "postal_code": {
-              "type": ["null", "string"]
-            },
-            "state": {
-              "type": ["null", "string"]
-            }
-          }
+          "$ref": "address.json"
         },
         "relationship": {
           "type": ["null", "object"],
@@ -822,6 +739,89 @@
     "type": {
       "enum": ["custom", "express", "standard"],
       "type": ["null", "string"]
+    },
+    "future_requirements": {
+      "type": ["null", "object"],
+      "properties": {
+        "alternatives": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "alternative_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "original_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "current_deadline": {
+          "type": ["null", "integer"]
+        },
+        "currently_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "disabled_reason": {
+          "type": ["null", "string"]
+        },
+        "errors": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "code": {
+                "type": ["null", "string"]
+              },
+              "reason": {
+                "type": ["null", "string"]
+              },
+              "requirement": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "eventually_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "past_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "pending_verification": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "controller": {
+      "type": ["null", "object"],
+      "properties": {
+        "is_controller": {
+          "type": ["null", "boolean"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

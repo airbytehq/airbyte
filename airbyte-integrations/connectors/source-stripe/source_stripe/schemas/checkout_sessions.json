@@ -131,15 +131,7 @@
       "type": ["null", "object"],
       "properties": {
         "address": {
-          "type": ["null", "object"],
-          "properties": {
-            "city": { "type": ["null", "string"] },
-            "country": { "type": ["null", "string"] },
-            "line1": { "type": ["null", "string"] },
-            "line2": { "type": ["null", "string"] },
-            "postal_code": { "type": ["null", "string"] },
-            "state": { "type": ["null", "string"] }
-          }
+          "$ref": "address.json"
         },
         "name": { "type": ["null", "string"] }
       }
@@ -221,6 +213,250 @@
         }
       }
     },
-    "url": { "type": ["null", "string"] }
+    "url": { "type": ["null", "string"] },
+    "updated": { "type": ["null", "integer"] },
+    "created": { "type": ["null", "integer"] },
+    "currency_conversion": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount_subtotal": {
+          "type": ["null", "integer"]
+        },
+        "amount_total": {
+          "type": ["null", "integer"]
+        },
+        "fix_rate": {
+          "type": ["null", "string"]
+        },
+        "source_currency": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "dropdown": {
+            "type": ["null", "object"],
+            "properties": {
+              "options": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"]
+                }
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "key": {
+            "type": ["null", "string"]
+          },
+          "label": {
+            "type": ["null", "object"],
+            "properties": {
+              "custom": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "numeric": {
+            "type": ["null", "object"],
+            "properties": {
+              "maximum_length": {
+                "type": ["null", "integer"]
+              },
+              "minimum_length": {
+                "type": ["null", "integer"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "optional": {
+            "type": ["null", "boolean"]
+          },
+          "text": {
+            "type": ["null", "object"],
+            "properties": {
+              "maximum_length": {
+                "type": ["null", "integer"]
+              },
+              "minimum_length": {
+                "type": ["null", "integer"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "custom_text": {
+      "type": ["null", "object"],
+      "properties": {
+        "shipping_address": {
+          "type": ["null", "object"],
+          "properties": {
+            "message": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "submit": {
+          "type": ["null", "string"],
+          "properties": {
+            "message": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "terms_of_service": {
+          "type": ["null", "object"],
+          "properties": {
+            "message": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "customer_creation": { "type": ["null", "string"] },
+    "invoice": { "type": ["null", "string"] },
+    "invoice_creation": {
+      "type": ["null", "object"],
+      "properties": {
+        "enabled": {
+          "type": ["null", "boolean"]
+        },
+        "invoice_data": {
+          "type": ["null", "object"],
+          "properties": {
+            "account_tax_ids": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "custom_fields": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "value": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "footer": {
+              "type": ["null", "string"]
+            },
+            "metadata": {
+              "type": ["null", "object"]
+            },
+            "rendering_options": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount_tax_display": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "payment_link": { "type": ["null", "string"] },
+    "payment_method_collection": { "type": ["null", "string"] },
+    "shipping_cost": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount_total": {
+          "type": ["null", "integer"]
+        },
+        "amount_subtotal": {
+          "type": ["null", "integer"]
+        },
+        "amount_tax": {
+          "type": ["null", "integer"]
+        },
+        "shipping_rate": {
+          "type": ["null", "string"]
+        },
+        "taxes": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "integer"]
+              },
+              "rate": {
+                "$ref": "tax_rate.json"
+              },
+              "taxability_reason": {
+                "type": ["null", "string"]
+              },
+              "taxable_amount": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "shipping_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "address": {
+          "$ref": "address.json"
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "shipping_options": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "shipping_amount": {
+            "type": ["null", "integer"]
+          },
+          "shipping_rate": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "status": { "type": ["null", "string"] },
+    "payment_method_configuration_details": {
+      "$ref": "payment_method_configuration_details.json"
+    },
+    "client_secret": {
+      "type": ["null", "string"]
+    },
+    "ui_mode": {
+      "type": ["null", "string"]
+    }
   }
 }

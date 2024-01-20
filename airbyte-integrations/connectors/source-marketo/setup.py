@@ -14,10 +14,14 @@ TEST_REQUIREMENTS = [
     "pytest-faker==2.0.0",
     "pytest-mock~=3.6.1",
     "requests-mock",
-    "connector-acceptance-test",
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-marketo=source_marketo.run:run",
+        ],
+    },
     name="source_marketo",
     description="Source implementation for Marketo.",
     author="Airbyte",

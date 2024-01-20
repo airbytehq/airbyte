@@ -11,17 +11,17 @@ python main.py read --config path/to/config --catalog path/to/catalog
 ```
 
 Note:
-- Requires the keys `__injected_declarative_manifest` and `__command` in its config, where `__injected_declarative_manifest` is a JSON manifest and `__command` is one of the commands handled by the ConnectorBuilderHandler (`stream_read`, `list_streams`, or `resolve_manifest`), i.e.
+- Requires the keys `__injected_declarative_manifest` and `__command` in its config, where `__injected_declarative_manifest` is a JSON manifest and `__command` is one of the commands handled by the ConnectorBuilderHandler (`stream_read` or `resolve_manifest`), i.e.
 ```
 {
   "config": <normal config>,
   "__injected_declarative_manifest": {...},
-  "__command": <"resolve_manifest" | "list_streams" | "test_read">
+  "__command": <"resolve_manifest" | "test_read">
 }
 ```
 *See [ConnectionSpecification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#actor-specification) for details on the `"config"` key if needed.
 
-- When the `__command` is `list_streams` or `resolve_manifest`, the argument to `catalog` should be an empty string.
+- When the `__command` is `resolve_manifest`, the argument to `catalog` should be an empty string.
 
 ### Locally running the docker image
 

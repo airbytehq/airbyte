@@ -6,19 +6,20 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk",
     "backoff",
     "requests",
     "google-auth-httplib2",
     "google-api-python-client",
-    "PyYAML==5.4",
+    "PyYAML~=6.0",
     "pydantic~=1.9.2",
     "Unidecode",
 ]
 
 TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
+    "pytest-mock~=3.6.1",
     "pytest~=6.1",
-    "connector-acceptance-test",
 ]
 
 setup(
@@ -31,5 +32,10 @@ setup(
     package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
+    },
+    entry_points={
+        "console_scripts": [
+            "source-google-sheets=source_google_sheets.run:run",
+        ],
     },
 )

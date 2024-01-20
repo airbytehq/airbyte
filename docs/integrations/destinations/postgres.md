@@ -139,12 +139,12 @@ characters.
 The Postgres destination connector supports the
 following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature                       | Supported?\(Yes/No\) | Notes |
-| :---------------------------- | :------------------- | :---- |
-| Full Refresh Sync             | Yes                  |       |
-| Incremental - Append Sync     | Yes                  |       |
-| Incremental - Deduped History | Yes                  |       |
-| Namespaces                    | Yes                  |       |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | Yes                  |       |
+| Namespaces                     | Yes                  |       |
 
 ## Schema map
 
@@ -169,7 +169,14 @@ Now that you have set up the Postgres destination connector, check out the follo
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
-| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.5.5   | 2024-01-18 | [34236](https://github.com/airbytehq/airbyte/pull/34236)   | Upgrade CDK to 0.13.1; Add indexes in raw table for query optimization                              |
+| 0.5.4   | 2024-01-11 | [34177](https://github.com/airbytehq/airbyte/pull/34177)   | Add code for DV2 beta (no user-visible changes)                                                     |
+| 0.5.3   | 2024-01-10 | [34135](https://github.com/airbytehq/airbyte/pull/34135)   | Use published CDK missed in previous release                                                        |
+| 0.5.2   | 2024-01-08 | [33875](https://github.com/airbytehq/airbyte/pull/33875)   | Update CDK to get Tunnel heartbeats feature                                                         |
+| 0.5.1   | 2024-01-04 | [33873](https://github.com/airbytehq/airbyte/pull/33873)   | Install normalization to enable DV2 beta                                                            |
+| 0.5.0   | 2023-12-18 | [33507](https://github.com/airbytehq/airbyte/pull/33507)   | Upgrade to latest CDK; Fix DATs and tests                                                           |
+| 0.4.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
 | 0.3.27  | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                               |
 | 0.3.26  | 2022-09-27 | [\#17299](https://github.com/airbytehq/airbyte/pull/17299) | Improve error handling for strict-encrypt postgres destination                                      |
 | 0.3.24  | 2022-09-08 | [\#16046](https://github.com/airbytehq/airbyte/pull/16046) | Fix missing database name URL Encoding                                                              |

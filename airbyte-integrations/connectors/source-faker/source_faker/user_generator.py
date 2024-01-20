@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 from multiprocessing import current_process
 
 from airbyte_cdk.models import AirbyteRecordMessage, Type
@@ -38,17 +39,14 @@ class UserGenerator:
         dt = Datetime(seed=seed_with_offset)
 
     def generate(self, user_id: int):
-        time_a = dt.datetime()
-        time_b = dt.datetime()
-
         # faker doesn't always produce unique email addresses, so to enforce uniqueness, we will append the user_id to the prefix
         email_parts = person.email().split("@")
         email = f"{email_parts[0]}+{user_id + 1}@{email_parts[1]}"
 
         profile = {
             "id": user_id + 1,
-            "created_at": format_airbyte_time(time_a if time_a <= time_b else time_b),
-            "updated_at": format_airbyte_time(time_a if time_a > time_b else time_b),
+            "created_at": format_airbyte_time(dt.datetime()),
+            "updated_at": format_airbyte_time(datetime.datetime.now()),
             "name": person.name(),
             "title": person.title(),
             "age": person.age(),
@@ -75,9 +73,6 @@ class UserGenerator:
 
         while not profile["created_at"]:
             profile["created_at"] = format_airbyte_time(dt.datetime())
-
-        if not profile["updated_at"]:
-            profile["updated_at"] = profile["created_at"] + 1
 
         record = AirbyteRecordMessage(stream=self.stream_name, data=profile, emitted_at=now_millis())
         return AirbyteMessageWithCachedJSON(type=Type.RECORD, record=record)

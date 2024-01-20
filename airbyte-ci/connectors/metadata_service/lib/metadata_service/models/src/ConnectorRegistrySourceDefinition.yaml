@@ -52,6 +52,8 @@ properties:
     default: false
   releaseStage:
     "$ref": ReleaseStage.yaml
+  supportLevel:
+    "$ref": SupportLevel.yaml
   releaseDate:
     description: The date when this connector was first released, in yyyy-mm-dd format.
     type: string
@@ -68,3 +70,7 @@ properties:
   maxSecondsBetweenMessages:
     description: Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach
     type: integer
+  releases:
+    "$ref": ConnectorReleases.yaml
+  ab_internal:
+    "$ref": AirbyteInternal.yaml

@@ -6,10 +6,17 @@
 from setuptools import find_packages, setup
 
 TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
+    "pytest-mock~=3.6.1",
     "pytest~=6.1",
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-slack=source_slack.run:run",
+        ],
+    },
     name="source_slack",
     description="Source implementation for Slack.",
     author="Airbyte",

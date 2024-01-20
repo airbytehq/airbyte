@@ -1,0 +1,106 @@
+name: Connector Ops CI - Connectors Acceptance Tests
+
+concurrency:
+  # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
+  #
+  # - github.head_ref is only defined on PR runs, it makes sure that the concurrency group is unique for pull requests
+  #  ensuring that only one run per pull request is active at a time.
+  #
+  # - github.run_id is defined on all runs, it makes sure that the concurrency group is unique for workflow dispatches.
+  # This allows us to run multiple workflow dispatches in parallel.
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      test-connectors-options:
+        description: "Options to pass to the 'airbyte-ci connectors test' command"
+        default: "--modified"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+jobs:
+  get_ci_runner:
+    runs-on: ubuntu-latest
+    name: Get CI runner
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          fetch-depth: 1
+      - name: Get CI runner
+        id: get_ci_runner
+        uses: ./.github/actions/airbyte-ci-requirements
+        with:
+          runner_type: "test"
+          runner_size: "large"
+          airbyte_ci_command: "connectors test"
+          github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+    outputs:
+      runner_name: ${{ steps.get_ci_runner.outputs.runner_name }}
+  connectors_ci:
+    name: Connectors CI
+    needs: get_ci_runner
+    runs-on: ${{ needs.get_ci_runner.outputs.runner_name }}
+    timeout-minutes: 1440 # 24 hours
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Extract branch name [WORKFLOW DISPATCH]
+        shell: bash
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: Fetch last commit id from remote branch [PULL REQUESTS]
+        if: github.event_name == 'pull_request'
+        id: fetch_last_commit_id_pr
+        run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+      - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
+        if: github.event_name == 'workflow_dispatch'
+        id: fetch_last_commit_id_wd
+        run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
+      - name: Test connectors [WORKFLOW DISPATCH]
+        if: github.event_name == 'workflow_dispatch'
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          git_branch: ${{ steps.extract_branch.outputs.branch }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ env.PAT }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
+      - name: Test connectors [PULL REQUESTS]
+        if: github.event_name == 'pull_request'
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ env.PAT }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
+          subcommand: "connectors --modified test"

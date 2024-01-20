@@ -12,10 +12,15 @@ MAIN_REQUIREMENTS = [
     "requests~=2.25",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "responses==0.23.1", "freezegun==1.1.0"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "responses==0.23.1", "freezegun==1.1.0"]
 
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-iterable=source_iterable.run:run",
+        ],
+    },
     name="source_iterable",
     description="Source implementation for Iterable.",
     author="Airbyte",

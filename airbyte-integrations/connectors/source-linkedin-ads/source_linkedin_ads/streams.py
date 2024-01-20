@@ -13,7 +13,6 @@ import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
 from .utils import get_parent_stream_values, transform_data
 
 logger = logging.getLogger("airbyte")
@@ -29,17 +28,29 @@ class LinkedinAdsStream(HttpStream, ABC):
     url_base = "https://api.linkedin.com/rest/"
     primary_key = "id"
     records_limit = 500
-    endpoint = None
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config.get("authenticator"))
         self.config = config
+        self.date_time_fields = self._get_date_time_items_from_schema()
+
+    def _get_date_time_items_from_schema(self):
+        """
+        Get all properties from schema with format: 'date-time'
+        """
+        schema = self.get_json_schema()
+        return [k for k, v in schema["properties"].items() if v.get("format") == "date-time"]
 
     @property
     def accounts(self):
         """Property to return the list of the user Account Ids from input"""
-        return ",".join(map(str, self.config.get("account_ids")))
+        return ",".join(map(str, self.config.get("account_ids", [])))
+
+    @property
+    @abstractmethod
+    def endpoint(self) -> str:
+        """Endpoint associated with the current stream"""
 
     def path(
         self,
@@ -81,9 +92,19 @@ class LinkedinAdsStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
+        We need to get out the nested complex data structures for further normalization, so the transform_data method is applied.
         """
-        yield from transform_data(response.json().get("elements"))
+        for record in transform_data(response.json().get("elements")):
+            yield self._date_time_to_rfc3339(record)
+
+    def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """
+        Transform 'date-time' items to RFC3339 format
+        """
+        for item in record:
+            if item in self.date_time_fields and record[item]:
+                record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+        return record
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 429:
@@ -105,6 +126,7 @@ class Accounts(LinkedinAdsStream):
     """
 
     endpoint = "adAccounts"
+    use_cache = True
 
     def request_headers(self, stream_state: Mapping[str, Any], **kwargs) -> Mapping[str, Any]:
         """
@@ -148,31 +170,30 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
 
     @property
     @abstractmethod
-    def parent_stream(self) -> object:
-        """Defines the parrent stream for slicing, the class object should be provided."""
+    def parent_stream(self) -> LinkedinAdsStream:
+        """Defines the parent stream for slicing, the class object should be provided."""
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        """Define the checkpoint from the records output size."""
-        return super().records_limit
+        """Define the checkpoint from the record output size."""
+        return 100
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = {self.cursor_field: self.config.get("start_date")} if not current_stream_state else current_stream_state
         return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field))}
 
 
-class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
+class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream, ABC):
     """
     This class stands for provide stream slicing for other dependent streams.
     :: `parent_stream` - the reference to the parent stream class,
-        by default it's referenced to the Accounts stream class, as far as majority of streams are using it.
+        by default it's referenced to the Accounts stream class, as far as a majority of streams are using it.
     :: `parent_values_map` - key_value map for stream slices in a format: {<slice_key_name>: <key inside record>}
     :: `search_param` - the query param to pass with request_params
     """
 
     parent_stream = Accounts
     parent_values_map = {"account_id": "id"}
-    # define default additional request params
 
     def filter_records_newer_than_state(
         self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping[str, Any]] = None
@@ -256,6 +277,7 @@ class Campaigns(LinkedInAdsStreamSlicing):
     """
 
     endpoint = "adCampaigns"
+    use_cache = True
 
     def path(
         self,
@@ -294,7 +316,7 @@ class Creatives(LinkedInAdsStreamSlicing):
     endpoint = "creatives"
     parent_stream = Accounts
     cursor_field = "lastModifiedAt"
-    # standard records_limit=500 returns error 400: Request would return too many entities;  https://github.com/airbytehq/oncall/issues/2159
+    # standard records_limit=500 returns error 400: Request would return too many entities; https://github.com/airbytehq/oncall/issues/2159
     records_limit = 100
 
     def path(
@@ -332,27 +354,21 @@ class Creatives(LinkedInAdsStreamSlicing):
         return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
 
 
-class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
+class Conversions(LinkedInAdsStreamSlicing):
     """
-    AdAnalytics Streams more info:
-    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#analytics-finder
+    Get Conversions data using `account_id` slicing.
+    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account
     """
 
-    endpoint = "adAnalytics"
-    # For Analytics streams the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc] + `end_date`
-    primary_key = ["pivotValue", "end_date"]
-    cursor_field = "end_date"
-
-    @property
-    def base_analytics_params(self) -> MutableMapping[str, Any]:
-        """Define the base parameters for analytics streams"""
-        return {"q": "analytics", "pivot": self.pivot_by, "timeGranularity": "(value:DAILY)"}
+    endpoint = "conversions"
+    search_param = "account"
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
-        return headers | {"X-Restli-Protocol-Version": "2.0.0"}
+        headers.update({"X-Restli-Protocol-Version": "2.0.0"})
+        return headers
 
     def request_params(
         self,
@@ -360,61 +376,16 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = self.base_analytics_params
-        params.update(**update_analytics_params(stream_slice))
-        params[self.search_param] = f"List(urn%3Ali%3A{self.search_param_value}%3A{self.get_primary_key_from_slice(stream_slice)})"
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["q"] = self.search_param
+        params["account"] = f"urn%3Ali%3AsponsoredAccount%3A{stream_slice.get('account_id')}"
+
         return urlencode(params, safe="():,%")
 
-    def get_primary_key_from_slice(self, stream_slice) -> str:
-        return stream_slice.get(self.primary_slice_key)
-
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        stream_state = stream_state or {self.cursor_field: self.config.get("start_date")}
-        parent_stream = self.parent_stream(config=self.config)
-        for record in parent_stream.read_records(**kwargs):
-            result_chunks = []
-            for analytics_slice in make_analytics_slices(
-                record, self.parent_values_map, stream_state.get(self.cursor_field), self.config.get("end_date")
-            ):
-                child_stream_slice = super().read_records(stream_slice=analytics_slice, **kwargs)
-                result_chunks.append(child_stream_slice)
-            yield from merge_chunks(result_chunks, self.cursor_field)
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
-        """
-        for rec in transform_data(response.json().get("elements")):
-            yield rec | {"pivotValue": f"urn:li:{self.search_param_value}:{self.get_primary_key_from_slice(kwargs.get('stream_slice'))}"}
-
-
-class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
-    """
-    Campaign Analytics stream.
-    """
-
-    endpoint = "adAnalytics"
-
-    parent_stream = Campaigns
-    parent_values_map = {"campaign_id": "id"}
-    search_param = "campaigns"
-    search_param_value = "sponsoredCampaign"
-    pivot_by = "(value:CAMPAIGN)"
-
-
-class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
-    """
-    Creative Analytics stream.
-    """
-
-    parent_stream = Creatives
-    parent_values_map = {"creative_id": "id"}
-    search_param = "creatives"
-    search_param_value = "sponsoredCreative"
-    pivot_by = "(value:CREATIVE)"
-
-    def get_primary_key_from_slice(self, stream_slice) -> str:
-        creative_id = stream_slice.get(self.primary_slice_key).split(":")[-1]
-        return creative_id
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = (
+            {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
+            if not current_stream_state
+            else current_stream_state
+        )
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}

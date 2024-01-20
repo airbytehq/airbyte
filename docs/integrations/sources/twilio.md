@@ -17,7 +17,7 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio** from the <Source/Destination> type dropdown.
+3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio** from the Source/Destination type dropdown.
 4. Enter your `account_sid`.
 5. Enter your `auth_token`.
 6. Enter your `start_date`.
@@ -62,7 +62,7 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 * [Calls](https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource) \(Incremental\)
 * [Conference Participants](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources) \(Incremental\)
 * [Conferences](https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources) \(Incremental\)
-* [Conversations](https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources) 
+* [Conversations](https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources)
 * [Conversation Messages](https://www.twilio.com/docs/conversations/api/conversation-message-resource#list-all-conversation-messages)
 * [Conversation Participants](https://www.twilio.com/docs/conversations/api/conversation-participant-resource)
 * [Dependent Phone Numbers](https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources) \(Incremental\)
@@ -76,11 +76,15 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 * [Queues](https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources)
 * [Recordings](https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources) \(Incremental\)
 * [Services](https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources)
+* [Step](https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources)
 * [Roles](https://www.twilio.com/docs/chat/rest/role-resource#read-multiple-role-resources)
 * [Transcriptions](https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources)
 * [Trunks](https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties)
 * [Usage Records](https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources) \(Incremental\)
 * [Usage Triggers](https://www.twilio.com/docs/usage/api/usage-trigger#read-multiple-usagetrigger-resources)
+* [Users](https://www.twilio.com/docs/conversations/api/user-resource)
+* [UserConversations](https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations)
+* [VerifyServices](https://www.twilio.com/docs/verify/api/service#maincontent)
 
 ## Performance considerations
 
@@ -91,8 +95,13 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.7.0   | 2023-05-03 | [25781](https://github.com/airbytehq/airbyte/pull/25781)      | Add new stream `Trunks`                                                              |
-| 0.6.0   | 2023-05-03 | [](https://github.com/airbytehq/airbyte/pull/)      | Add new stream `Roles` with parent `Services`                                                              |
+| 0.10.1 | 2023-11-21 | [32718](https://github.com/airbytehq/airbyte/pull/32718) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.10.0  | 2023-07-28 | [27323](https://github.com/airbytehq/airbyte/pull/27323)  | Add new stream `Step`                                                                                  |
+| 0.9.0   | 2023-06-27 | [27221](https://github.com/airbytehq/airbyte/pull/27221)  | Add new stream `UserConversations` with parent `Users`                                                  |
+| 0.8.1   | 2023-07-12 | [28216](https://github.com/airbytehq/airbyte/pull/28216)  | Add property `channel_metadata` to `ConversationMessages` schema                                                                         |
+| 0.8.0   | 2023-06-11 | [27231](https://github.com/airbytehq/airbyte/pull/27231)  | Add new stream `VerifyServices`                                                                         |
+| 0.7.0   | 2023-05-03 | [25781](https://github.com/airbytehq/airbyte/pull/25781)  | Add new stream `Trunks`                                                                                 |
+| 0.6.0   | 2023-05-03 | [25783](https://github.com/airbytehq/airbyte/pull/25783)  | Add new stream `Roles` with parent `Services`                                                           |
 | 0.5.0   | 2023-03-21 | [23995](https://github.com/airbytehq/airbyte/pull/23995)  | Add new stream `Conversation Participants`                                                              |
 | 0.4.0   | 2023-03-18 | [23995](https://github.com/airbytehq/airbyte/pull/23995)  | Add new stream `Conversation Messages`                                                                  |
 | 0.3.0   | 2023-03-18 | [22874](https://github.com/airbytehq/airbyte/pull/22874)  | Add new stream `Executions` with parent `Flows`                                                         |

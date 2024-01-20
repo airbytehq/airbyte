@@ -7,16 +7,17 @@ package io.airbyte.integrations.source.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.test.JdbcStressTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import java.sql.JDBCType;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -29,6 +30,7 @@ import org.testcontainers.containers.MSSQLServerContainer;
 @Disabled
 public class MssqlStressTest extends JdbcStressTest {
 
+  private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(60);
   private static MSSQLServerContainer<?> dbContainer;
   private JsonNode config;
 
@@ -54,7 +56,8 @@ public class MssqlStressTest extends JdbcStressTest {
         String.format("jdbc:sqlserver://%s:%d;",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
             configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
-        Map.of("encrypt", "false"));
+        Map.of("encrypt", "false"),
+        CONNECTION_TIMEOUT);
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

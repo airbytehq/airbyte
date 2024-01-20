@@ -7,7 +7,7 @@ from datetime import date
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Extra, Field
+from pydantic import AnyUrl, BaseModel, Extra, Field, constr
 from typing_extensions import Literal
 
 
@@ -16,6 +16,14 @@ class ReleaseStage(BaseModel):
         ...,
         description="enum that describes a connector's release stage",
         title="ReleaseStage",
+    )
+
+
+class SupportLevel(BaseModel):
+    __root__: Literal["community", "certified"] = Field(
+        ...,
+        description="enum that describes a connector's release stage",
+        title="SupportLevel",
     )
 
 
@@ -65,12 +73,39 @@ class SuggestedStreams(BaseModel):
     )
 
 
+class StreamBreakingChangeScope(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    scopeType: Any = Field("stream", const=True)
+    impactedScopes: List[str] = Field(
+        ...,
+        description="List of streams that are impacted by the breaking change.",
+        min_items=1,
+    )
+
+
+class AirbyteInternal(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    sl: Optional[Literal[100, 200, 300]] = None
+    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
+
+
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
 
     jobType: JobType
     resourceRequirements: ResourceRequirements
+
+
+class BreakingChangeScope(BaseModel):
+    __root__: StreamBreakingChangeScope = Field(
+        ...,
+        description="A scope that can be used to limit the impact of a breaking change.",
+    )
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -82,6 +117,49 @@ class ActorDefinitionResourceRequirements(BaseModel):
         description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
+
+
+class VersionBreakingChange(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    upgradeDeadline: date = Field(
+        ...,
+        description="The deadline by which to upgrade before the breaking change takes effect.",
+    )
+    message: str = Field(
+        ..., description="Descriptive message detailing the breaking change."
+    )
+    migrationDocumentationUrl: Optional[AnyUrl] = Field(
+        None,
+        description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
+    )
+    scopedImpact: Optional[List[BreakingChangeScope]] = Field(
+        None,
+        description="List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.",
+        min_items=1,
+    )
+
+
+class ConnectorBreakingChanges(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
+        ...,
+        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
+    )
+
+
+class ConnectorReleases(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    breakingChanges: ConnectorBreakingChanges
+    migrationDocumentationUrl: Optional[AnyUrl] = Field(
+        None,
+        description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations",
+    )
 
 
 class ConnectorRegistrySourceDefinition(BaseModel):
@@ -109,6 +187,7 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         False, description="whether this is a custom connector definition"
     )
     releaseStage: Optional[ReleaseStage] = None
+    supportLevel: Optional[SupportLevel] = None
     releaseDate: Optional[date] = Field(
         None,
         description="The date when this connector was first released, in yyyy-mm-dd format.",
@@ -123,3 +202,5 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         None,
         description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach",
     )
+    releases: Optional[ConnectorReleases] = None
+    ab_internal: Optional[AirbyteInternal] = None

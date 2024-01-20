@@ -186,11 +186,13 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        mapping = super().request_params(stream_state, stream_slice, next_page_token)
-        if stream_state and "date" in stream_state:
-            timestamp = int(pendulum.parse(stream_state["date"]).timestamp())
-            mapping["where"] = f'properties["$time"]>=datetime({timestamp})'
-        return mapping
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        # additional filter by timestamp because required start date and end date only allow to filter by date
+        cursor_param = stream_slice.get(self.cursor_field)
+        if cursor_param:
+            timestamp = int(pendulum.parse(cursor_param).timestamp())
+            params["where"] = f'properties["$time"]>=datetime({timestamp})'
+        return params
 
     def request_kwargs(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
