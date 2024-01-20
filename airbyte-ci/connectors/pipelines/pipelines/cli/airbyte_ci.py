@@ -24,7 +24,12 @@ import docker  # type: ignore
 from github import PullRequest
 from pipelines import main_logger
 from pipelines.cli.auto_update import __installed_version__, check_for_upgrade, pre_confirm_auto_update_flag
-from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.click_decorators import (
+    CI_REQUIREMENTS_OPTION_NAME,
+    click_append_to_context_object,
+    click_ignore_unused_kwargs,
+    click_merge_args_into_context_obj,
+)
 from pipelines.cli.confirm_prompt import pre_confirm_all_flag
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
@@ -83,6 +88,9 @@ def check_local_docker_configuration() -> None:
 
 
 def is_dagger_run_enabled_by_default() -> bool:
+    if CI_REQUIREMENTS_OPTION_NAME in sys.argv:
+        return False
+
     dagger_run_by_default = [
         ["connectors", "test"],
         ["connectors", "build"],

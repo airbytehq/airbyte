@@ -16,6 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-paypal-transaction=source_paypal_transaction.run:run",
+        ],
+    },
     name="source_paypal_transaction",
     description="Source implementation for Paypal Transaction.",
     author="Airbyte",

@@ -1,12 +1,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
-from collections.abc import Callable, Iterator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from overrides import overrides
 from typing_extensions import Self
 
 from airbyte_lib.datasets import DatasetBase
+
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator
 
 
 class LazyDataset(DatasetBase):

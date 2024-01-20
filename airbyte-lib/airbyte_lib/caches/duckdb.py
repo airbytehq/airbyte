@@ -11,6 +11,7 @@ from overrides import overrides
 
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
+from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
 class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -53,6 +54,10 @@ class DuckDBCacheBase(SQLCacheBase):
 
     config_class = DuckDBCacheConfig
     supports_merge_insert = True
+
+    @overrides
+    def get_telemetry_info(self) -> CacheTelemetryInfo:
+        return CacheTelemetryInfo("duckdb")
 
     @overrides
     def _setup(self) -> None:
@@ -110,6 +115,7 @@ class DuckDBCache(DuckDBCacheBase):
         self,
         stream_name: str,
         table_name: str,
+        *,
         raise_on_error: bool = True,
     ) -> bool:
         """Return true if the given table is compatible with the stream's schema.
@@ -117,7 +123,11 @@ class DuckDBCache(DuckDBCacheBase):
         In addition to the base implementation, this also checks primary keys.
         """
         # call super
-        if not super()._ensure_compatible_table_schema(stream_name, table_name, raise_on_error):
+        if not super()._ensure_compatible_table_schema(
+            stream_name=stream_name,
+            table_name=table_name,
+            raise_on_error=raise_on_error,
+        ):
             return False
 
         pk_cols = self._get_primary_keys(stream_name)
