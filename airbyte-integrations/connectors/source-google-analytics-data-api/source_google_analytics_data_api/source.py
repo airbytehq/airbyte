@@ -22,7 +22,13 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError
 from source_google_analytics_data_api import utils
-from source_google_analytics_data_api.utils import DATE_FORMAT, WRONG_DIMENSIONS, WRONG_JSON_SYNTAX, WRONG_METRICS
+from source_google_analytics_data_api.utils import (
+    DATE_FORMAT,
+    WRONG_CUSTOM_REPORT_CONFIG,
+    WRONG_DIMENSIONS,
+    WRONG_JSON_SYNTAX,
+    WRONG_METRICS,
+)
 
 from .api_quota import GoogleAnalyticsApiQuota
 from .utils import (
@@ -37,8 +43,8 @@ from .utils import (
     transform_json,
 )
 
-# set the quota handler globaly since limitations are the same for all streams
-# the initial values should be saved once and tracked for each stream, inclusivelly.
+# set the quota handler globally since limitations are the same for all streams
+# the initial values should be saved once and tracked for each stream, inclusively.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
 LOOKBACK_WINDOW = datetime.timedelta(days=2)
@@ -292,6 +298,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "returnPropertyQuota": True,
             "offset": str(0),
             "limit": str(self.page_size),
+            "keepEmptyRows": self.config.get("keep_empty_rows", False),
         }
 
         dimension_filter = self.config.get("dimensionFilter")
@@ -519,8 +526,14 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
 
                 report_stream = self.instantiate_report_class(report, False, _config, page_size=100)
                 # check if custom_report dimensions + metrics can be combined and report generated
-                stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
-                next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
+                try:
+                    stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
+                    next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
+                except HTTPError as e:
+                    error_response = ""
+                    if e.response.status_code == HTTPStatus.BAD_REQUEST:
+                        error_response = e.response.json().get("error", {}).get("message", "")
+                    return False, WRONG_CUSTOM_REPORT_CONFIG.format(report=report["name"], error_response=error_response)
 
             return True, None
 
@@ -545,7 +558,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
     def instantiate_report_class(
         report: dict, add_name_suffix: bool, config: Mapping[str, Any], **extra_kwargs
     ) -> GoogleAnalyticsDataApiBaseStream:
-        cohort_spec = report.get("cohortSpec")
+        cohort_spec = report.get("cohortSpec", {})
         pivots = report.get("pivots")
         stream_config = {
             **config,
@@ -558,7 +571,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if pivots:
             stream_config["pivots"] = pivots
             report_class_tuple = (PivotReport,)
-        if cohort_spec:
+        if cohort_spec.pop("enabled", "") == "true":
             stream_config["cohort_spec"] = cohort_spec
             report_class_tuple = (CohortReportMixin, *report_class_tuple)
         name = report["name"]

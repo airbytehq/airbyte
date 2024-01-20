@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Configuring connections
+# Configuring Connections
 
 A connection links a source to a destination and defines how your data will sync. After you have created a connection, you can modify any of the configuration settings or stream settings.
 
@@ -28,11 +28,12 @@ You can configure the following settings:
 
 | Setting                              | Description                                                                         |
 |--------------------------------------|-------------------------------------------------------------------------------------|
-| [Replication frequency](/using-airbyte/core-concepts/sync-schedules.md)                | How often the data syncs                                                            |
-| [Destination namespace](/using-airbyte/core-concepts/namespaces.md)                | Where the replicated data is written                                                |
-| Destination stream prefix            | How you identify streams from different connectors                                  |
-| [Detect and propagate schema changes](/cloud/managing-airbyte-cloud/manage-schema-changes.md) | How Airbyte handles syncs when it detects schema changes in the source |
-| [Connection Data Residency](/cloud/managing-airbyte-cloud/manage-data-residency.md) | Where data will be processed |
+| Connection Name               | A custom name for your connection                                                    |
+| [Replication frequency](/using-airbyte/core-concepts/sync-schedules.md)                | How often data syncs (can be scheduled, cron, API-triggered or manual)                                                            |
+| [Destination namespace](/using-airbyte/core-concepts/namespaces.md)                | Where the replicated data is written to in the destination                                                |
+| Destination stream prefix            | A prefix added to each table name in the destination                                  |
+| [Detect and propagate schema changes](/cloud/managing-airbyte-cloud/manage-schema-changes.md) | How Airbyte handles schema changes in the source |
+| [Connection Data Residency](/cloud/managing-airbyte-cloud/manage-data-residency.md) | Where data will be processed (Cloud only) |
 
 ## Modify streams in your connection
 
@@ -80,9 +81,9 @@ Source-defined cursors and primary keys are selected automatically and cannot be
 
 7. The **Stream configuration changed** dialog displays. This gives you the option to reset streams when you save the changes.
 
-:::caution
+:::tip
 
-Airbyte recommends that you reset streams. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping a reset is discouraged and might lead to unexpected behavior.
+When editing the stream configuration, Airbyte recommends that you reset streams. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping a reset is discouraged and might lead to unexpected behavior.
 
 :::
 
