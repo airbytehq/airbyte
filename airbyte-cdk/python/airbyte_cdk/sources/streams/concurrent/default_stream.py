@@ -8,7 +8,12 @@ from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
+    AbstractAvailabilityStrategy,
+    StreamAvailability,
+    StreamAvailable,
+    StreamUnavailable,
+)
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 
@@ -77,3 +82,19 @@ class DefaultStream(AbstractStream):
                 "cursor_field": self.cursor_field,
             },
         )
+
+
+class FileBasedDefaultStream(DefaultStream):
+    def __init__(self, legacy_stream, *args, **kwargs):
+        self._legacy_stream = legacy_stream
+        self.availability_strategy = legacy_stream.availability_strategy
+        super().__init__(availability_strategy=self.availability_strategy, *args, **kwargs)
+
+    def check_availability(self) -> StreamAvailability:
+        is_available, reason = self.availability_strategy.check_availability(self._legacy_stream, self._logger, None)
+        if is_available:
+            return StreamAvailable()
+        return StreamUnavailable(reason)
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return self._legacy_stream.get_json_schema()

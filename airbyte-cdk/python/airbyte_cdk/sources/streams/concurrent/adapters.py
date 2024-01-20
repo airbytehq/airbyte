@@ -24,6 +24,7 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
+from airbyte_cdk.sources.streams.concurrent.helpers import get_cursor_field_from_stream, get_primary_key_from_stream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
@@ -62,8 +63,8 @@ class StreamFacade(Stream):
         :param max_workers: The maximum number of worker thread to use
         :return:
         """
-        pk = cls._get_primary_key_from_stream(stream.primary_key)
-        cursor_field = cls._get_cursor_field_from_stream(stream)
+        pk = get_primary_key_from_stream(stream.primary_key)
+        cursor_field = get_cursor_field_from_stream(stream)
 
         if not source.message_repository:
             raise ValueError(
@@ -103,32 +104,6 @@ class StreamFacade(Stream):
     def state(self, value: Mapping[str, Any]) -> None:
         if "state" in dir(self._legacy_stream):
             self._legacy_stream.state = value  # type: ignore  # validating `state` is attribute of stream using `if` above
-
-    @classmethod
-    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> List[str]:
-        if stream_primary_key is None:
-            return []
-        elif isinstance(stream_primary_key, str):
-            return [stream_primary_key]
-        elif isinstance(stream_primary_key, list):
-            if len(stream_primary_key) > 0 and all(isinstance(k, str) for k in stream_primary_key):
-                return stream_primary_key  # type: ignore # We verified all items in the list are strings
-            else:
-                raise ValueError(f"Nested primary keys are not supported. Found {stream_primary_key}")
-        else:
-            raise ValueError(f"Invalid type for primary key: {stream_primary_key}")
-
-    @classmethod
-    def _get_cursor_field_from_stream(cls, stream: Stream) -> Optional[str]:
-        if isinstance(stream.cursor_field, list):
-            if len(stream.cursor_field) > 1:
-                raise ValueError(f"Nested cursor fields are not supported. Got {stream.cursor_field} for {stream.name}")
-            elif len(stream.cursor_field) == 0:
-                return None
-            else:
-                return stream.cursor_field[0]
-        else:
-            return stream.cursor_field
 
     def __init__(self, stream: AbstractStream, legacy_stream: Stream, cursor: Cursor, slice_logger: SliceLogger, logger: logging.Logger):
         """

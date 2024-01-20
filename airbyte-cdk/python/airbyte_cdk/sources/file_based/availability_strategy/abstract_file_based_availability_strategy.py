@@ -4,7 +4,7 @@
 
 import logging
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple, Union
 
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams.core import Stream
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
+    from airbyte_cdk.sources.file_based.stream.concurrent.adapters import FileBasedStreamFacade
 
 
 class AbstractFileBasedAvailabilityStrategy(AvailabilityStrategy):
@@ -26,7 +27,7 @@ class AbstractFileBasedAvailabilityStrategy(AvailabilityStrategy):
 
     @abstractmethod
     def check_availability_and_parsability(
-        self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]
+        self, stream: Union["AbstractFileBasedStream", "FileBasedStreamFacade"], logger: logging.Logger, _: Optional[Source]
     ) -> Tuple[bool, Optional[str]]:
         """
         Performs a connection check for the stream, as well as additional checks that
