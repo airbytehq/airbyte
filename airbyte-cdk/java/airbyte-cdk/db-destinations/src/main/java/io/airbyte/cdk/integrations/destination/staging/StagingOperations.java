@@ -19,15 +19,6 @@ import org.joda.time.DateTime;
 public interface StagingOperations extends SqlOperations {
 
   /**
-   * Returns the staging environment's name
-   *
-   * @param namespace Name of schema
-   * @param streamName Name of the stream
-   * @return Fully qualified name of the staging environment
-   */
-  String getStageName(String namespace, String streamName);
-
-  /**
    * @param outputTableName The name of the table this staging file will be loaded into (typically a
    *        raw table). Not all destinations use the table name in the staging path (e.g. Snowflake
    *        simply uses a timestamp + UUID), but e.g. Redshift does rely on this to ensure uniqueness.
@@ -37,7 +28,7 @@ public interface StagingOperations extends SqlOperations {
   /**
    * Create a staging folder where to upload temporary files before loading into the final destination
    */
-  void createStageIfNotExists(JdbcDatabase database, String stageName) throws Exception;
+  void createStageIfNotExists() throws Exception;
 
   /**
    * Upload the data file into the stage area.
@@ -45,39 +36,27 @@ public interface StagingOperations extends SqlOperations {
    * @param database database used for syncing
    * @param recordsData records stored in in-memory buffer
    * @param schemaName name of schema
-   * @param stageName name of the staging area folder
    * @param stagingPath path of staging folder to data files
    * @return the name of the file that was uploaded.
    */
-  String uploadRecordsToStage(JdbcDatabase database, SerializableBuffer recordsData, String schemaName, String stageName, String stagingPath)
+  String uploadRecordsToStage(JdbcDatabase database, SerializableBuffer recordsData, String schemaName, String stagingPath)
       throws Exception;
 
   /**
    * Load the data stored in the stage area into a temporary table in the destination
    *
    * @param database database interface
-   * @param stageName name of staging area folder
    * @param stagingPath path to staging files
    * @param stagedFiles collection of staged files
    * @param tableName name of table to write staging files to
    * @param schemaName name of schema
    */
   void copyIntoTableFromStage(JdbcDatabase database,
-                              String stageName,
                               String stagingPath,
                               List<String> stagedFiles,
                               String tableName,
                               String schemaName)
       throws Exception;
-
-  /**
-   * Remove files that were just staged
-   *
-   * @param database database used for syncing
-   * @param stageName name of staging area folder
-   * @param stagedFiles collection of the staging files to remove
-   */
-  void cleanUpStage(JdbcDatabase database, String stageName, List<String> stagedFiles) throws Exception;
 
   /**
    * Delete the stage area and all staged files that was in it

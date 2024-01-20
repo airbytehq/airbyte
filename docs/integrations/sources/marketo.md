@@ -117,6 +117,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                         |
 |:---------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.5   | 2024-01-15 | [34246](https://github.com/airbytehq/airbyte/pull/34246) | prepare for airbyte-lib                                                        |
 | `1.2.4`  | 2024-01-08 | [33999](https://github.com/airbytehq/airbyte/pull/33999) | Fix for `Export daily quota exceeded`                                                                                           |
 | `1.2.3`  | 2023-08-02 | [28999](https://github.com/airbytehq/airbyte/pull/28999) | Fix for ` _csv.Error: line contains NUL`                                                                                        |
 | `1.2.2`  | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                                 |

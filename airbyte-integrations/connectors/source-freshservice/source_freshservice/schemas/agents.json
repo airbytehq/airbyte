@@ -27,6 +27,12 @@
     "mobile_phone_number": {
       "type": ["null", "string"]
     },
+    "member_of_pending_approval": {
+      "type": ["null", "array"]
+    },
+    "observer_of_pending_approval": {
+      "type": ["null", "array"]
+    },
     "department_ids": {
       "type": ["null", "array"]
     },
