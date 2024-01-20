@@ -1,72 +1,121 @@
 # SurveyMonkey
 
-This page guides you through the process of setting up the SurveyMonkey source connector.
+<HideInUI>
+
+This page contains the setup guide for the SurveyMonkey source connector.
+
+</HideInUI>
 
 :::note
 
-OAuth for Survey Monkey is officially supported only for the US. We are testing how to enable it in the EU at the moment. If you run into any issues, please [reach out to us](mailto:product@airbyte.io) so we can promptly assist you.
+<!-- TODO: Confirm new wording with PM or Eng -->
+
+This connector only supports US-based SurveyMonkey accounts. We're testing how to enable the
+connector for EU-based accounts. If you run into issues, contact us at
+[product@airbyte.io](mailto:product@airbyte.io).
 
 :::
 
 <!-- env:oss -->
+
 ## Prerequisites
+
+<HideInUI>
 
 **For Airbyte Open Source:**
 
-* Access Token
+</HideInUI>
+
+<!-- TODO: Talk to PM or Support to see if we should expand these steps. -->
+
+-   Access token for a SurveyMonkey app. The app must have the following scopes marked as **Optional** or **Required**:
+    - View Surveys
+    - View Response
+    - View Response Details
+    - View Users
+
+For more information, see [Registering an App](https://developer.surveymonkey.com/api/v3/#registering-an-app) in the SurveyMonkey developer docs.
+
 <!-- /env:oss -->
 
 ## Setup guide
-### Step 1: Set up SurveyMonkey
-Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-started). Register your application [here](https://developer.surveymonkey.com/apps/) Then go to Settings and copy your access token
-
-### Step 2: Set up the source connector in Airbyte
 
 <!-- env:cloud -->
+
+<HideInUI>
+
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-4. lick `Authenticate your account`.
-5. Log in and Authorize to the SurveyMonkey account
-6. Choose required Start date
-7. click `Set up source`.
+</HideInUI>
+
+1.  [Log in to Airbyte Cloud](https://cloud.airbyte.com/login).
+1.  Click **Sources**.
+1.  On the sources page, click **SurveyMonkey**.
+1.  Click **Authenticate your SurveyMonkey account**.
+1.  Log in to SurveyMonkey and authorize the connection.
+1.  In **Start Date**, enter a UTC date and time in the following format: `2099-01-25T00:00:00Z`.
+    The connector won't replicate data before this date.
+1.  (Optional) Click **Optional fields** to specify:
+    - **Origin datacenter of the SurveyMonkey account**. For US-based SurveyMonkey accounts, leave
+      this value as `USA`.
+    - **Survey Monkey survey IDs**. If specified, the connector will only replicate data for these
+      surveys. If left blank, the connector replicates data for any survey you can access.
+1.  Click **Set up source**.
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+<HideInUI>
+
 **For Airbyte Open Source:**
 
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-4. Add **Access Token**
-5. Choose required Start date
-6. Click `Set up source`.
+</HideInUI>
+
+<!-- TODO: Talk to PM or UI team about fixing "Survey Monkey survey IDs" typo in app -->
+<!-- I'm using the text with typo here for clarity. -->
+
+1.  Go to your local Airbyte page.
+1.  In the left navigation bar, click **Sources**.
+1.  On the sources page, click **SurveyMonkey**.
+1.  Enter your SurveyMonkey access token in **Access Token**.
+1.  (Optional) Under **Access Token**, click **Optional fields** to specify:
+    - The **Client ID** for your SurveyMonkey app.
+    - *The *Client Secret** for your SurveyMonkey app.
+1.  In **Start Date**, enter a UTC date and time in the following format: `2099-01-25T00:00:00Z`.
+    The connector won't replicate data before this date.
+1.  (Optional) Under **Start Date**, click **Optional fields** to specify:
+    - **Origin datacenter of the SurveyMonkey account**. For US-based SurveyMonkey accounts, leave
+      this value as `USA`.
+    - **Survey Monkey survey IDs**. If specified, the connector will only replicate data for these
+      surveys. If left blank, the connector replicates data for any survey you can access.
+1.  Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
 
-* [Surveys](https://developer.surveymonkey.com/api/v3/#surveys) \(Incremental\)
-* [SurveyPages](https://developer.surveymonkey.com/api/v3/#surveys-id-pages)
-* [SurveyQuestions](https://developer.surveymonkey.com/api/v3/#surveys-id-pages-id-questions)
-* [SurveyResponses](https://developer.surveymonkey.com/api/v3/#survey-responses) \(Incremental\)
-* [SurveyCollectors](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-surveys-id-collectors)
+<!-- TODO: Confirm with PM or Eng -->
 
-### Performance considerations
+- [Surveys](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-surveys) (Incremental)
+- [SurveyPages](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-surveys-survey_id-pages)
+- [SurveyQuestions](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-surveys-survey_id-pages-page_id-questions)
+- [SurveyResponses](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-surveys-id-responses) (Incremental)
+- [SurveyCollectors](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-surveys-survey_id-collectors)
 
-The SurveyMonkey API applies heavy API quotas for default private apps, which have the following limits:
+<!-- env:oss -->
 
-* 125 requests per minute
-* 500 requests per day
+## Performance considerations
 
-To cover more data from this source we use caching.
+SurveyMonkey has [API request limits](https://api.surveymonkey.com/v3/docs?shell#request-and-response-limits) for
+private apps. The connector uses caching to avoid these limits.
+
+<!-- /env:oss -->
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------|
-| 0.2.3 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.2.3   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image  |
 | 0.2.2   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Fix dependencies conflict                                                        |
 | 0.2.1   | 2023-04-27 | [25109](https://github.com/airbytehq/airbyte/pull/25109) | Fix add missing params to stream `SurveyResponses`                               |
 | 0.2.0   | 2023-04-18 | [23721](https://github.com/airbytehq/airbyte/pull/23721) | Add `SurveyCollectors` and `Collectors` stream                                   |
