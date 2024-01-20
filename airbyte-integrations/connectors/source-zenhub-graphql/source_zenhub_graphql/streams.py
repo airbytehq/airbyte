@@ -206,7 +206,9 @@ class ZenhubPipelines(ZenhubGraphqlStream):
         data = response_json.get('data', {})
 
         for pipeline in data.get('workspace', {}).get('pipelinesConnection', {}).get('nodes', []):
-            yield {'pipeline_id': pipeline.get('id'), 'pipeline_name': pipeline.get('name')}
+            yield { 'workspace_id': self.workspace_id
+                    , 'pipeline_id': pipeline.get('id')
+                    , 'pipeline_name': pipeline.get('name')}
         
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
