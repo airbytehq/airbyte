@@ -14,8 +14,11 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 
-from .streams import ZenhubWorkspace
+
+from .streams import ZenhubWorkspace, ZenhubPipelines
+from .utils import find_id_by_name, log
 
 logging.basicConfig(level=logging.INFO)
 
@@ -56,4 +59,21 @@ class SourceZenhubGraphql(AbstractSource):
         # TODO remove the authenticator if not required.
         api_key = config["access_token"]  # Oauth2Authenticator is also available if you need oauth support
         workspace_name = config["workspace_name"]
-        return [ZenhubWorkspace(api_key, workspace_name)]
+
+        # Instantiate ZenhubWorkspace to get workspace IDs
+        zenhub_workspace_stream = ZenhubWorkspace(api_key, workspace_name)
+        workspace_data = next(zenhub_workspace_stream.read_records(sync_mode=SyncMode.full_refresh))
+        log(Level.INFO, f"WorkspaceData: {workspace_data}")
+
+        workspace_id = workspace_data['workspace_id']
+        #log(Level.INFO, f"workspace_id: {workspace_id}")
+
+        
+        if not workspace_id:
+            raise Exception(f"No workspace found with name: {workspace_name}")
+
+
+        return [
+                ZenhubWorkspace(api_key, workspace_name)
+                ,ZenhubPipelines(api_key, workspace_id)
+                ]

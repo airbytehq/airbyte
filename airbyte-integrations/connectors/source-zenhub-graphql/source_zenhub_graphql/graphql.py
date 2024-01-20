@@ -6,16 +6,18 @@ class Viewer(Type):
     id = ID
     searchWorkspaces = Field('WorkspaceConnection', args={'query': str})
 
-class Query(Type):
-    viewer = Field(Viewer)
-
-class WorkspaceConnection(Type):
-    nodes = list_of('Workspace')
-
 class Workspace(Type):
     id = ID
     name = str
     repositoriesConnection = Field('RepositoryConnection')
+    pipelinesConnection = Field('PipelineConnection', args={'first': int})
+
+class Query(Type):
+    viewer = Field(Viewer)
+    workspace = Field(Workspace, args={'id': ID}) 
+
+class WorkspaceConnection(Type):
+    nodes = list_of('Workspace')
 
 class RepositoryConnection(Type):
     nodes = list_of('Repository')

@@ -1,8 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 
-from airbyte_cdk.models import Stream
+# Define the global logger function
+def log(level: Level, message: str):
+    log_message = AirbyteLogMessage(level=level, message=message)
+    print(AirbyteMessage(type="LOG", log=log_message).json(exclude_unset=True))
 
 
 def find_id_by_name(data, name_to_find):

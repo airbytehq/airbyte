@@ -13,6 +13,8 @@ from sgqlc.endpoint.http import HTTPEndpoint
 from sgqlc.operation import Operation
 from sgqlc.types import Type, Field, list_of
 
+from .utils import log
+
 from .graphql import (
     Viewer
     , Query
@@ -28,10 +30,6 @@ from .graphql import (
     , Priority
 )
 
-# Define the global logger function
-def log(level: Level, message: str):
-    log_message = AirbyteLogMessage(level=level, message=message)
-    print(AirbyteMessage(type="LOG", log=log_message).json(exclude_unset=True))
 
 # Basic full refresh stream
 class ZenhubGraphqlStream(HttpStream, ABC):
@@ -92,7 +90,7 @@ class ZenhubGraphqlStream(HttpStream, ABC):
         #log(Level.INFO, f"Full Request Object: {request.__dict__}")
         log(Level.INFO, f"Sending request to URL: {request.url}")
         #log(Level.INFO, f"Request headers: {request.headers}")
-        #log(Level.INFO, f"Request body: {request.body}")
+        log(Level.INFO, f"Request body: {request.body}")
         
         response = super()._send_request(request, request_kwargs)
         
@@ -158,10 +156,14 @@ class ZenhubWorkspace(ZenhubGraphqlStream):
 
         # Iterate through each workspace node
         for workspace in viewer_data.get('searchWorkspaces', {}).get('nodes', []):
+            workspace_id = workspace.get('id') #Extracts the workspace of that specific record
             # Extract repository data from each workspace
             for repo in workspace.get('repositoriesConnection', {}).get('nodes', []):
                 # Yield a dictionary with the repository ID and name
-                yield {'repo_id': repo.get('id'), 'repo_name': repo.get('name')}
+                yield {
+                        'workspace_id': workspace_id
+                        ,'repo_id': repo.get('id')
+                        , 'repo_name': repo.get('name')}
        
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -171,8 +173,49 @@ class ZenhubWorkspace(ZenhubGraphqlStream):
     @property
     def primary_key(self):
         pass
-    
+
+class ZenhubPipelines(ZenhubGraphqlStream):
+    """
+    Stream to fetch pipeline IDs from a specific workspace.
+    """
+    def __init__(self, api_key, workspace_id):
+        super().__init__(api_key)
+        self.workspace_id = workspace_id
+
+    def get_pipelines_query(self):
+        pipeline_op = Operation(Query)
+        workspace_query = pipeline_op.workspace(id=self.workspace_id)
+        workspace_query.id()
+        pipelines = workspace_query.pipelinesConnection(first=50).nodes
+        pipelines.id()
+        pipelines.name()
+        #log(Level.INFO, f"PIPELINE FORMED: {pipeline_op}")
+        return str(pipeline_op)
+
+    def request_body_json(self, *args, **kwargs) -> Optional[Mapping]:
+        query = self.get_pipelines_query()
+        log(Level.INFO, f"Pipeline Query: {query}")
+        return {"query": query}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+
+        if 'errors' in response_json:
+            raise Exception(f"Errors in response: {response_json['errors']}")
+
+        data = response_json.get('data', {})
+
+        for pipeline in data.get('workspace', {}).get('pipelinesConnection', {}).get('nodes', []):
+            yield {'pipeline_id': pipeline.get('id'), 'pipeline_name': pipeline.get('name')}
         
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        pass
+    
+    @property
+    def primary_key(self):
+        pass
 
 
 # Basic incremental stream
