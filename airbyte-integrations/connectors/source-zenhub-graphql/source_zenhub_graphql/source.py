@@ -45,7 +45,7 @@ class SourceZenhubGraphql(AbstractSource):
     def _get_repo_ids(self, repo_names, workspace_data):
         repo_ids = []
         for repo_name in repo_names:
-            repo_id = find_id_by_name(workspace_data, repo_name)
+            repo_id = find_id_by_name(workspace_data, 'repo_name', repo_name, 'repo_id')
             if repo_id:
                 repo_ids.append(repo_id)
             else:
