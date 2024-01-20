@@ -360,7 +360,9 @@ async def test_run_connector_pypi_publish_pipeline(
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 
-    mocked_publish_to_pypi = mocker.patch("pipelines.airbyte_ci.connectors.publish.pipeline.PublishToPyPI", return_value=mocker.AsyncMock())
+    mocked_publish_to_pypi = mocker.patch(
+        "pipelines.airbyte_ci.connectors.publish.pipeline.PublishToPythonRegistry", return_value=mocker.AsyncMock()
+    )
 
     for step in [
         publish_pipeline.MetadataValidation,
@@ -380,6 +382,7 @@ async def test_run_connector_pypi_publish_pipeline(
 
     context = mocker.MagicMock(
         ci_gcs_credentials="",
+        pre_release=False,
         connector=mocker.MagicMock(
             code_directory="path/to/connector",
             metadata={"dockerImageTag": "1.2.3", "remoteRegistries": {"pypi": {"enabled": pypi_enabled, "packageName": "test"}}},
@@ -392,9 +395,9 @@ async def test_run_connector_pypi_publish_pipeline(
         mocked_publish_to_pypi.return_value.run.assert_called_once()
         # assert that the first argument passed to mocked_publish_to_pypi contains the things from the context
         assert mocked_publish_to_pypi.call_args.args[0].pypi_token == "test"
-        assert mocked_publish_to_pypi.call_args.args[0].package_name == "test"
-        assert mocked_publish_to_pypi.call_args.args[0].version == "1.2.3"
-        assert mocked_publish_to_pypi.call_args.args[0].registry == "https://test.pypi.org/"
+        assert mocked_publish_to_pypi.call_args.args[0].package_metadata.name == "test"
+        assert mocked_publish_to_pypi.call_args.args[0].package_metadata.version == "1.2.3"
+        assert mocked_publish_to_pypi.call_args.args[0].registry == "https://test.pypi.org/legacy"
         assert mocked_publish_to_pypi.call_args.args[0].package_path == "path/to/connector"
     else:
         mocked_publish_to_pypi.return_value.run.assert_not_called()

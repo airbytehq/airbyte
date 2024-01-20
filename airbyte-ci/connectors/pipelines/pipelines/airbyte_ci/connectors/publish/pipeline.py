@@ -14,7 +14,7 @@ from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
-from pipelines.airbyte_ci.poetry.publish.pipeline import PublishToPyPI, PyPIPublishContext
+from pipelines.airbyte_ci.poetry.publish.pipeline import PublishToPythonRegistry, PythonRegistryPublishContext
 from pipelines.airbyte_ci.poetry.utils import is_package_published
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
@@ -55,22 +55,22 @@ class CheckConnectorImageDoesNotExist(Step):
 
 
 class CheckPypiPackageDoesNotExist(Step):
-    context: PyPIPublishContext
+    context: PythonRegistryPublishContext
     title = "Check if the connector is published on pypi"
 
     async def _run(self) -> StepResult:
-        is_published = (
-            self.context.package_name
-            and self.context.version
-            and is_package_published(self.context.package_name, self.context.version, self.context.registry)
-        )
+        is_published = is_package_published(self.context.package_metadata, self.context.registry)
         if is_published:
             return StepResult(
-                self, status=StepStatus.SKIPPED, stderr=f"{self.context.package_name} already exists in version {self.context.version}."
+                self,
+                status=StepStatus.SKIPPED,
+                stderr=f"{self.context.package_metadata.name} already exists in version {self.context.package_metadata.version}.",
             )
         else:
             return StepResult(
-                self, status=StepStatus.SUCCESS, stdout=f"{self.context.package_name} does not exist in version {self.context.version}."
+                self,
+                status=StepStatus.SUCCESS,
+                stdout=f"{self.context.package_metadata.name} does not exist in version {self.context.package_metadata.version}.",
             )
 
 
@@ -345,8 +345,8 @@ async def _run_pypi_publish_pipeline(context: PublishConnectorContext) -> Tuple[
     Return the results of the steps and a boolean indicating whether there was an error and the pipeline should be stopped.
     """
     results: List[StepResult] = []
-    # Try to convert the context to a PyPIPublishContext. If it returns None, it means we don't need to publish to pypi.
-    pypi_context = await PyPIPublishContext.from_publish_connector_context(context)
+    # Try to convert the context to a PythonRegistryPublishContext. If it returns None, it means we don't need to publish to pypi.
+    pypi_context = await PythonRegistryPublishContext.from_publish_connector_context(context)
     if not pypi_context:
         return results, False
 
@@ -356,7 +356,7 @@ async def _run_pypi_publish_pipeline(context: PublishConnectorContext) -> Tuple[
         context.logger.info("The connector version is already published on pypi.")
     elif check_pypi_package_exists_results.status is StepStatus.SUCCESS:
         context.logger.info("The connector version is not published on pypi. Let's build and publish it.")
-        publish_to_pypi_results = await PublishToPyPI(pypi_context).run()
+        publish_to_pypi_results = await PublishToPythonRegistry(pypi_context).run()
         results.append(publish_to_pypi_results)
         if publish_to_pypi_results.status is StepStatus.FAILURE:
             return results, True

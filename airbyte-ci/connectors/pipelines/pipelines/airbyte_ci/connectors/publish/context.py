@@ -90,11 +90,15 @@ class PublishConnectorContext(ConnectorContext):
         return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
 
     @property
+    def pre_release_suffix(self) -> str:
+        return self.git_revision[:10]
+
+    @property
     def docker_image_tag(self) -> str:
         # get the docker image tag from the parent class
         metadata_tag = super().docker_image_tag
         if self.pre_release:
-            return f"{metadata_tag}-dev.{self.git_revision[:10]}"
+            return f"{metadata_tag}-dev.{self.pre_release_suffix}"
         else:
             return metadata_tag
 

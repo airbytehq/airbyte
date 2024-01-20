@@ -2,23 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
-import random
-from pathlib import Path
-from typing import List
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
-import anyio
 import pytest
 import requests
-from connector_ops.utils import Connector, ConnectorLanguage
-from dagger import Client, Directory, Platform
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from dagger import Client, Platform
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
-from pipelines.airbyte_ci.connectors.upgrade_cdk import pipeline as upgrade_cdk_pipeline
-from pipelines.airbyte_ci.poetry.publish.context import PyPIPublishContext
+from pipelines.airbyte_ci.steps.python_registry.context import PythonPackageMetadata, PythonRegistryPublishContext
 from pipelines.dagger.actions.python.poetry import with_poetry
-from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import StepStatus
 
 pytestmark = [
@@ -28,7 +19,7 @@ pytestmark = [
 
 @pytest.fixture
 def context(dagger_client: Client):
-    context = PyPIPublishContext(
+    context = PythonRegistryPublishContext(
         package_path="test",
         version="0.2.0",
         pypi_token="test",
@@ -61,8 +52,8 @@ def context(dagger_client: Client):
         ),
     ],
 )
-async def test_run_poetry_publish(context: PyPIPublishContext, package_path: str, package_name: str, expected_asset: str):
-    context.package_name = package_name
+async def test_run_poetry_publish(context: PythonRegistryPublishContext, package_path: str, package_name: str, expected_asset: str):
+    context.package_metadata = PythonPackageMetadata(package_name, "0.2.0")
     context.package_path = package_path
     pypi_registry = (
         # need to use linux/amd64 because the pypiserver image is only available for that platform
@@ -74,7 +65,7 @@ async def test_run_poetry_publish(context: PyPIPublishContext, package_path: str
     )
 
     base_container = with_poetry(context).with_service_binding("local_registry", pypi_registry)
-    step = publish_pipeline.PublishToPyPI(context)
+    step = publish_pipeline.PublishToPythonRegistry(context)
     step._get_base_container = MagicMock(return_value=base_container)
     step_result = await step.run()
     assert step_result.status == StepStatus.SUCCESS

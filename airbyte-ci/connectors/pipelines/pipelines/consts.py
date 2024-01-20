@@ -60,8 +60,8 @@ POETRY_CACHE_VOLUME_NAME = "poetry_cache"
 POETRY_CACHE_PATH = "/root/.cache/pypoetry"
 STORAGE_DRIVER = "fuse-overlayfs"
 TAILSCALE_AUTH_KEY = os.getenv("TAILSCALE_AUTH_KEY")
-PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 SETUP_PY_FILE_PATH = "setup.py"
+DEFAULT_PYTHON_PACKAGE_REGISTRY_URL = "https://pypi.org/simple"
 
 
 class CIContext(str, Enum):

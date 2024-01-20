@@ -3,14 +3,21 @@
 #
 
 import os
-from datetime import datetime
-from typing import Optional
+from dataclasses import dataclass
+from typing import Optional, Type
 
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
+from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_URL
 
 
-class PyPIPublishContext(PipelineContext):
+@dataclass
+class PythonPackageMetadata:
+    name: Optional[str]
+    version: Optional[str]
+
+
+class PythonRegistryPublishContext(PipelineContext):
     def __init__(
         self,
         pypi_token: str,
@@ -20,7 +27,7 @@ class PyPIPublishContext(PipelineContext):
         git_branch: str,
         git_revision: str,
         ci_report_bucket: Optional[str] = None,
-        registry: Optional[str] = None,
+        registry: str = DEFAULT_PYTHON_PACKAGE_REGISTRY_URL,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -30,10 +37,9 @@ class PyPIPublishContext(PipelineContext):
         version: Optional[str] = None,
     ) -> None:
         self.pypi_token = pypi_token
-        self.registry = registry or "https://pypi.org/simple"
+        self.registry = registry
         self.package_path = package_path
-        self.package_name = package_name
-        self.version = version
+        self.package_metadata = PythonPackageMetadata(package_name, version)
 
         pipeline_name = f"Publish PyPI {package_path}"
 
@@ -51,10 +57,12 @@ class PyPIPublishContext(PipelineContext):
             ci_gcs_credentials=ci_gcs_credentials,
         )
 
-    @staticmethod
-    async def from_publish_connector_context(connector_context: PublishConnectorContext) -> Optional["PyPIPublishContext"]:
+    @classmethod
+    async def from_publish_connector_context(
+        cls: Type["PythonRegistryPublishContext"], connector_context: PublishConnectorContext
+    ) -> Optional["PythonRegistryPublishContext"]:
         """
-        Create a PyPIPublishContext from a ConnectorContext.
+        Create a PythonRegistryPublishContext from a ConnectorContext.
 
         The metadata of the connector is read from the current workdir to capture changes that are not yet published.
         If pypi is not enabled, this will return None.
@@ -71,12 +79,11 @@ class PyPIPublishContext(PipelineContext):
         version = current_metadata["dockerImageTag"]
         if connector_context.pre_release:
             # use current date as pre-release version
-            rc_tag = datetime.now().strftime("%Y%m%d%H%M")
-            version = f"{version}.dev{rc_tag}"
+            version = f"{version}+{connector_context.pre_release_suffix}"
 
-        pypi_context = PyPIPublishContext(
+        pypi_context = cls(
             pypi_token=os.environ["PYPI_TOKEN"],
-            registry="https://test.pypi.org/legacy/",  # TODO: go live
+            registry="https://test.pypi.org/legacy",  # TODO: go live
             package_path=str(connector_context.connector.code_directory),
             package_name=current_metadata["remoteRegistries"]["pypi"]["packageName"],
             version=version,
