@@ -18,9 +18,9 @@ from dagger import Client, Directory, File, GitRepository, Secret, Service
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import CIContext, ContextState
+from pipelines.helpers.execution.run_steps import RunStepOptions
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.github import update_commit_status_check
-from pipelines.helpers.run_steps import RunStepOptions
 from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import AIRBYTE_REPO_URL
 from pipelines.models.reports import Report
