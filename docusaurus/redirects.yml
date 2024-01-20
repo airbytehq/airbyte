@@ -92,4 +92,4 @@
 - from:
     - /enterprise-setup/self-managed/sso
     - /enterprise-setup/sso
-  to: /access-management/sso   
+  to: /access-management/sso
