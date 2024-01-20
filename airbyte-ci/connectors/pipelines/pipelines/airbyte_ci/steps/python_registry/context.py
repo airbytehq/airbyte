@@ -69,6 +69,7 @@ class PythonRegistryPublishContext(PipelineContext):
         """
 
         current_metadata = connector_context.connector.metadata
+        connector_context.logger.info(f"Current metadata: {str(current_metadata)}")
         if (
             "remoteRegistries" not in current_metadata
             or "pypi" not in current_metadata["remoteRegistries"]
