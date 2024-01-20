@@ -82,7 +82,7 @@ def pg_dsn():
 
     final_host = None
     # Try to connect to the database using localhost and the docker host IP
-    for host in ["localhost", "172.17.0.1"]:
+    for host in ["host.docker.internal", "localhost", "172.17.0.1"]:
         if test_pg_connection(host):
             final_host = host
             break
