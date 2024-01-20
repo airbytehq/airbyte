@@ -24,19 +24,13 @@ inputs:
     description: "URL to airbyte-ci binary"
     required: false
     default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
-
+  is_fork:
+    description: "Whether or not the repo is a fork"
+    required: false
+    default: false
 runs:
   using: "composite"
   steps:
-    - name: Check if PR is from a fork
-      if: github.event_name == 'pull_request'
-      shell: bash
-      run: |
-        if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
-          echo "PR is from a fork. Exiting workflow..."
-          exit 78
-        fi
-
     - name: Get changed files
       uses: tj-actions/changed-files@v39
       id: changes
@@ -49,7 +43,7 @@ runs:
       shell: bash
       id: determine-install-mode
       run: |
-        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
+        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]] && [[ "${{ inputs.is_fork }}" == "false" ]]; then
           echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
           echo "install-mode=dev" >> $GITHUB_OUTPUT
         else
