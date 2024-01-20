@@ -7,9 +7,6 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 
 Airbyte introduced a new schemaless mode for our MongoDB source connector to improve our ability to sync data from collections with varying fields for each document. This enhancement not only streamlines connector configuration, but also ensures reliable data propagation, even when upstream teams modify the fields uploaded to new MongoDB documents in your collection.
 
-## Platform Releases
-- **Support for SSO (Active Directory) in Cloud** We now support Active Directory in Cloud when using SSO. You can already use Okta with SSO. Reach out to our [Sales team](https://airbyte.com/company/talk-to-sales) to learn more about enabling this feature. 
-
 ## Connector Improvements
 
 In addition to our schemaless mode for MongoDB, we have also:
