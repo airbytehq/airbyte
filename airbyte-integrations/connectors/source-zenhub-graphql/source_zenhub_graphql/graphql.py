@@ -1,5 +1,5 @@
 from sgqlc.operation import Operation
-from sgqlc.types import Type, Field, list_of, ID
+from sgqlc.types import Type, Field, list_of, ID, Input
 
 
 class Viewer(Type):
@@ -34,6 +34,10 @@ class SearchIssues(Type):
     totalCount = int
     nodes = list_of('Issue')
 
+class PipelineIssue(Type):
+    pipeline = Field('Pipeline')
+    priority = Field('Priority')
+
 class Issue(Type):
     id = ID
     ghId = str
@@ -43,10 +47,11 @@ class Issue(Type):
     state = str
     createdAt = str
     updatedAt = str
-    pipelineIssue = Field('PipelineIssue')
+    pipelineIssue = Field(PipelineIssue, args={'workspaceId': ID})
 
-class PipelineIssue(Type):
-    priority = Field('Priority')
+class Filters(Input):
+    repositoryIds = list_of(ID)
+    pipelineIds = list_of(ID)
 
 class Priority(Type):
     id = ID
@@ -57,6 +62,5 @@ class Query(Type):
     workspace = Field(Workspace, args={'id': ID}) 
     searchIssues = Field(SearchIssues, args={
         'workspaceId': ID
-        , 'repoIds': list_of(ID)
-        , 'pipelineIds': list_of(ID)
+        , 'filters': Filters
     })

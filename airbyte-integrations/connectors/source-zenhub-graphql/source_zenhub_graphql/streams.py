@@ -231,8 +231,11 @@ class ZenhubIssues(ZenhubGraphqlStream):
         issues_op = Operation(Query)
         issues_query = issues_op.searchIssues(
             workspaceId=self.workspace_id, 
-            repoIds=self.repo_ids, 
-            pipelineIds=self.pipeline_ids
+            filters={
+                'repositoryIds': self.repo_ids 
+                , 'pipelineIds': self.pipeline_ids
+
+            }
         )
         issues_query.totalCount()
         issue_node = issues_query.nodes.__as__(Issue)
@@ -244,7 +247,13 @@ class ZenhubIssues(ZenhubGraphqlStream):
         issue_node.state()
         issue_node.createdAt()
         issue_node.updatedAt()
-        issue_node.pipelineIssue()
+        pipeline_issue = issue_node.pipelineIssue(workspaceId=self.workspace_id)
+        pipeline = pipeline_issue.pipeline
+        pipeline.id()
+        pipeline.name()
+        priority = pipeline_issue.priority
+        priority.id()
+        priority.name()
         return str(issues_op)
 
     def request_body_json(self, *args, **kwargs) -> Optional[Mapping]:
