@@ -84,7 +84,7 @@ class PythonRegistryPublishContext(PipelineContext):
 
         pypi_context = cls(
             pypi_token=os.environ["PYPI_TOKEN"],
-            registry="https://test.pypi.org/legacy",  # TODO: go live
+            registry="https://test.pypi.org/legacy/",  # TODO: go live
             package_path=str(connector_context.connector.code_directory),
             package_name=current_metadata["remoteRegistries"]["pypi"]["packageName"],
             version=version,
