@@ -83,7 +83,14 @@ inputs:
     description: "URL to airbyte-ci binary"
     required: false
     default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
-
+  is_fork:
+    description: "Whether or not the repo is a fork"
+    required: false
+    default: false
+  target_repo_url:
+    description: "Target repo URL"
+    required: false
+    default: "https://github.com/airbytehq/airbyte.git"
 runs:
   using: "composite"
   steps:
@@ -108,7 +115,7 @@ runs:
       shell: bash
       id: determine-install-mode
       run: |
-        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
+        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]] && [[ "${{ inputs.is_fork }}" == "false" ]]; then
           echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
           echo "install-mode=dev" >> $GITHUB_OUTPUT
         else
@@ -158,7 +165,7 @@ runs:
       env:
         CI_CONTEXT: "${{ inputs.context }}"
         CI_GIT_BRANCH: ${{ inputs.git_branch || github.head_ref }}
-        CI_GIT_REVISION: ${{ inputs.git_revision || github.sha }}
+        #CI_GIT_REVISION: ${{ inputs.git_revision || github.sha }}
         CI_GITHUB_ACCESS_TOKEN: ${{ inputs.github_token }}
         CI_JOB_KEY: ${{ inputs.ci_job_key }}
         CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
