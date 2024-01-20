@@ -28,11 +28,14 @@ connector for EU-based accounts. If you run into issues, contact us at
 
 <!-- TODO: Talk to PM or Support to see if we should expand these steps. -->
 
--   Access token for a SurveyMonkey app. The app must have the following scopes marked as **Optional** or **Required**:
+-   Access token for a SurveyMonkey app.
+
+    The app must have the following scopes marked as **Optional** or **Required**:
         - View Surveys
         - View Responses
         - View Response Details
         - View Users
+
     For more information, see [Registering an App](https://developer.surveymonkey.com/api/v3/#registering-an-app) in the SurveyMonkey developer docs.
 
 <!-- /env:oss -->
