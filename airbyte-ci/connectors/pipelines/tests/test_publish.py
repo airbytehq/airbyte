@@ -397,7 +397,7 @@ async def test_run_connector_pypi_publish_pipeline(
         assert mocked_publish_to_pypi.call_args.args[0].pypi_token == "test"
         assert mocked_publish_to_pypi.call_args.args[0].package_metadata.name == "test"
         assert mocked_publish_to_pypi.call_args.args[0].package_metadata.version == "1.2.3"
-        assert mocked_publish_to_pypi.call_args.args[0].registry == "https://test.pypi.org/legacy"
+        assert mocked_publish_to_pypi.call_args.args[0].registry == "https://test.pypi.org/legacy/"
         assert mocked_publish_to_pypi.call_args.args[0].package_path == "path/to/connector"
     else:
         mocked_publish_to_pypi.return_value.run.assert_not_called()
