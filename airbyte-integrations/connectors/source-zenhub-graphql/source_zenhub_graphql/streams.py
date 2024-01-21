@@ -95,7 +95,7 @@ class ZenhubGraphqlStream(HttpStream, ABC):
         response = super()._send_request(request, request_kwargs)
         
         log(Level.INFO, f"Response status code: {response.status_code}")
-        log(Level.INFO, f"Response text: {response.text}")
+        #log(Level.INFO, f"Response text: {response.text}")
         
         return response
         
@@ -260,6 +260,48 @@ class ZenhubIssues(ZenhubGraphqlStream):
         query = self.get_issues_query()
         log(Level.INFO, f"Issues Query: {query}")
         return {"query": query}
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        try:
+            response_json = response.json()
+        except ValueError:
+            log(Level.WARN, "Skipping non-JSON response")
+            return
+
+        if 'errors' in response_json:
+            raise Exception(f"Errors in response: {response_json['errors']}")
+        # print("#############################")
+        # print("#############################")
+        # print("#############################")
+        # print("#############################")
+        # print("  RESPONSE JSON")
+        # #print(response.json())
+        # print("#############################")
+        # print("#############################")
+        # print("#############################")
+        # print("#############################")
+        # print("  FINAL ")
+        
+        issues = response_json.get('data', {}).get('searchIssues', {}).get('nodes', [])
+        print("issues", issues[0])
+        for issue in issues:
+            pipeline_issue= issue.get('pipelineIssue', {}) or {}
+            pipeline = pipeline_issue.get('pipeline', {}) or {}
+            prioirity = pipeline_issue.get('priority', {}) or {}
+            yield {
+                'id': issue.get('id', ''),
+                'ghId': issue.get('ghId',''),
+                'title': issue.get('title',''),
+                'type': issue.get('type',''),
+                'body': issue.get('body',''),
+                'state': issue.get('state', ''),
+                'createdAt': issue.get('createdAt', ''),
+                'updatedAt': issue.get('updatedAt', ''),
+                'pipeline_id': pipeline.get('id', ''),
+                'pipeline_name': pipeline.get('name'),
+                'priority_id': prioirity.get('id', ''),
+                'priority_name': prioirity.get('name', ''),
+            }
     
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
