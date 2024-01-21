@@ -11,32 +11,14 @@
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
-              "workspace": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": ["null", "string"]
-                  },
-                  "pipelinesConnection": {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "nodes": {
-                        "type": ["null", "array"],
-                        "items": {
-                          "type": ["null", "object"],
-                          "properties": {
-                            "id": {
-                              "type": ["null", "string"]
-                            },
-                            "name": {
-                              "type": ["null", "string"]
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
+              "workspace_id": {
+                "type": "string"
+              },
+              "pipeline_id": {
+                "type": "string"
+              },
+              "pipeline_name": {
+                "type": "string"
               }
             }
           }
