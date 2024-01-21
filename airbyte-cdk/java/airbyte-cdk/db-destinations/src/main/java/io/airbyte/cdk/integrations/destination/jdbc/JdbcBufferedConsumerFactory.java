@@ -204,7 +204,9 @@ public class JdbcBufferedConsumerFactory {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
       }
-
+      for (final PartialAirbyteMessage record : records) {
+        record.setCatalog(catalog);
+      }
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
       sqlOperations.insertRecords(database, records, writeConfig.getOutputSchemaName(), writeConfig.getOutputTableName());
     };

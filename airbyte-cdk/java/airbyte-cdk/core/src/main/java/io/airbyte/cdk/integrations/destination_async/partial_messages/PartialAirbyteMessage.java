@@ -4,123 +4,137 @@
 
 package io.airbyte.cdk.integrations.destination_async.partial_messages;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PartialAirbyteMessage {
 
-  @JsonProperty("type")
-  @JsonPropertyDescription("Message type")
-  private AirbyteMessage.Type type;
+    private ConfiguredAirbyteCatalog catalog;
 
-  @JsonProperty("record")
-  private PartialAirbyteRecordMessage record;
+    @JsonProperty("type")
+    @JsonPropertyDescription("Message type")
+    private AirbyteMessage.Type type;
 
-  @JsonProperty("state")
-  private PartialAirbyteStateMessage state;
+    @JsonProperty("record")
+    private PartialAirbyteRecordMessage record;
 
-  @JsonProperty("serialized")
-  private String serialized;
+    @JsonProperty("state")
+    private PartialAirbyteStateMessage state;
 
-  public PartialAirbyteMessage() {}
+    @JsonProperty("serialized")
+    private String serialized;
 
-  @JsonProperty("type")
-  public AirbyteMessage.Type getType() {
-    return type;
-  }
-
-  @JsonProperty("type")
-  public void setType(final AirbyteMessage.Type type) {
-    this.type = type;
-  }
-
-  public PartialAirbyteMessage withType(final AirbyteMessage.Type type) {
-    this.type = type;
-    return this;
-  }
-
-  @JsonProperty("record")
-  public PartialAirbyteRecordMessage getRecord() {
-    return record;
-  }
-
-  @JsonProperty("record")
-  public void setRecord(final PartialAirbyteRecordMessage record) {
-    this.record = record;
-  }
-
-  public PartialAirbyteMessage withRecord(final PartialAirbyteRecordMessage record) {
-    this.record = record;
-    return this;
-  }
-
-  @JsonProperty("state")
-  public PartialAirbyteStateMessage getState() {
-    return state;
-  }
-
-  @JsonProperty("state")
-  public void setState(final PartialAirbyteStateMessage state) {
-    this.state = state;
-  }
-
-  public PartialAirbyteMessage withState(final PartialAirbyteStateMessage state) {
-    this.state = state;
-    return this;
-  }
-
-  /**
-   * For record messages, this stores the serialized data blob (i.e.
-   * {@code Jsons.serialize(message.getRecord().getData())}). For state messages, this stores the
-   * _entire_ message (i.e. {@code Jsons.serialize(message)}).
-   * <p>
-   * See
-   * {@link io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer#deserializeAirbyteMessage(String)}
-   * for the exact logic of how this field is populated.
-   */
-  @JsonProperty("serialized")
-  public String getSerialized() {
-    return serialized;
-  }
-
-  @JsonProperty("serialized")
-  public void setSerialized(final String serialized) {
-    this.serialized = serialized;
-  }
-
-  public PartialAirbyteMessage withSerialized(final String serialized) {
-    this.serialized = serialized;
-    return this;
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-    if (this == o) {
-      return true;
+    public PartialAirbyteMessage() {
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    @JsonProperty("type")
+    public AirbyteMessage.Type getType() {
+        return type;
     }
-    final PartialAirbyteMessage that = (PartialAirbyteMessage) o;
-    return type == that.type && Objects.equals(record, that.record) && Objects.equals(state, that.state)
-        && Objects.equals(serialized, that.serialized);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(type, record, state, serialized);
-  }
+    @JsonProperty("type")
+    public void setType(final AirbyteMessage.Type type) {
+        this.type = type;
+    }
 
-  @Override
-  public String toString() {
-    return "PartialAirbyteMessage{" +
-        "type=" + type +
-        ", record=" + record +
-        ", state=" + state +
-        ", serialized='" + serialized + '\'' +
-        '}';
-  }
+    public PartialAirbyteMessage withType(final AirbyteMessage.Type type) {
+        this.type = type;
+        return this;
+    }
 
+    @JsonProperty("record")
+    public PartialAirbyteRecordMessage getRecord() {
+        return record;
+    }
+
+    @JsonProperty("record")
+    public void setRecord(final PartialAirbyteRecordMessage record) {
+        this.record = record;
+    }
+
+    public PartialAirbyteMessage withRecord(final PartialAirbyteRecordMessage record) {
+        this.record = record;
+        return this;
+    }
+
+    @JsonProperty("state")
+    public PartialAirbyteStateMessage getState() {
+        return state;
+    }
+
+    @JsonProperty("state")
+    public void setState(final PartialAirbyteStateMessage state) {
+        this.state = state;
+    }
+
+    public PartialAirbyteMessage withState(final PartialAirbyteStateMessage state) {
+        this.state = state;
+        return this;
+    }
+
+    /**
+     * For record messages, this stores the serialized data blob (i.e.
+     * {@code Jsons.serialize(message.getRecord().getData())}). For state messages, this stores the
+     * _entire_ message (i.e. {@code Jsons.serialize(message)}).
+     * <p>
+     * See
+     * {@link io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer#deserializeAirbyteMessage(String)}
+     * for the exact logic of how this field is populated.
+     */
+    @JsonProperty("serialized")
+    public String getSerialized() {
+        return serialized;
+    }
+
+    @JsonProperty("serialized")
+    public void setSerialized(final String serialized) {
+        this.serialized = serialized;
+    }
+
+    public PartialAirbyteMessage withSerialized(final String serialized) {
+        this.serialized = serialized;
+        return this;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final PartialAirbyteMessage that = (PartialAirbyteMessage) o;
+        return type == that.type && Objects.equals(record, that.record) && Objects.equals(state, that.state)
+                && Objects.equals(serialized, that.serialized);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, record, state, serialized);
+    }
+
+    @Override
+    public String toString() {
+        return "PartialAirbyteMessage{" +
+                "type=" + type +
+                ", record=" + record +
+                ", state=" + state +
+                ", serialized='" + serialized + '\'' +
+                '}';
+    }
+
+    public ConfiguredAirbyteCatalog getCatalog() {
+        return catalog;
+    }
+
+    public void setCatalog(ConfiguredAirbyteCatalog catalog) {
+        this.catalog = catalog;
+    }
 }
