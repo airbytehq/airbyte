@@ -51,8 +51,8 @@ connector for EU-based accounts. If you run into issues, contact us at
 
 <!-- NIT: I'd typically capitalize "Sources page," but I'm leaving as is since this seems to be Airbyte style. -->
 
-1.  [Log in to Airbyte Cloud](https://cloud.airbyte.com/login).
-1.  In the left navigation bar, click **Sources**.
+1.  Log in to [Airbyte Cloud](https://cloud.airbyte.com/login).
+1.  In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 1.  On the sources page, click **SurveyMonkey**.
 1.  Click **Authenticate your SurveyMonkey account**.
 1.  Log in to SurveyMonkey and authorize the connection.
@@ -80,7 +80,7 @@ connector for EU-based accounts. If you run into issues, contact us at
 
 <!-- TODO: Confirm that US-based accounts should leave "Origin datacenter" as is -->
 
-1.  In the left navigation bar, click **Sources**.
+1.  In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 1.  On the sources page, click **SurveyMonkey**.
 1.  Enter your SurveyMonkey access token in **Access Token**.
 1.  (Optional) Under **Access Token**, click **Optional fields** to specify:
