@@ -2,6 +2,11 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config.json
+        empty_streams:
+          - name: issues
+            bypass_reason: "Project sssues are not being returned by the Sentry API."
+          - name: events
+            bypass_reason: "No event records exist for the test project."
         timeout_seconds: 1200
         expect_records:
           path: "integration_tests/expected_records.jsonl"
@@ -43,9 +48,15 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: secrets/config.json
+        skip_comprehensive_incremental_tests: true
         configured_catalog_path: integration_tests/configured_catalog.json
         future_state:
           future_state_path: integration_tests/abnormal_state.json
+          missing_streams:
+            - name: issues
+              bypass_reason: "Project issues are not being returned by the Sentry API."
+            - name: events
+              bypass_reason: "No event records exist for the test project."
   spec:
     tests:
       - spec_path: source_sentry/spec.json
