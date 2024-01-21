@@ -27,6 +27,7 @@ connector for EU-based accounts. If you run into issues, contact us at
 </HideInUI>
 
 <!-- TODO: Talk to PM or Support to see if we should expand these steps. -->
+<!-- TODO: Add SurveyMonkey plan required for OAuth with Airbyte Cloud -->
 
 -   Access token for a SurveyMonkey app. The app must have the following scopes marked as **Optional** or **Required**:
 
