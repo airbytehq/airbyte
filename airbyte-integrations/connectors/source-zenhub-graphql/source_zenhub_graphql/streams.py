@@ -3,13 +3,12 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 
 import requests, json
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 
-from sgqlc.endpoint.http import HTTPEndpoint 
 from sgqlc.operation import Operation
 from sgqlc.types import Type, Field, list_of
 
@@ -26,8 +25,6 @@ from .graphql import (
     , PipelineConnection
     , PipelineIssue
     , Issue
-    , SearchIssues
-    , Priority
 )
 
 
@@ -106,7 +103,25 @@ class ZenhubGraphqlStream(HttpStream, ABC):
             json_response = response.json()
             data = json_response.get("data", [])
         return data
-
+    
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except requests.exceptions.JSONDecodeError:
+            log(Level.INFO, f"Unknown error while reading stream {self.name}. Response cannot be read properly. ")
+    
+    def get_json_schema(self):
+        schema = super().get_json_schema()
+        log(Level.INFO, f"SCHEMA --> {schema}")
+        return schema
 
 class ZenhubWorkspace(ZenhubGraphqlStream):
 
@@ -147,7 +162,7 @@ class ZenhubWorkspace(ZenhubGraphqlStream):
 
         # Iterate over the records and yield them
         for record in self.extract_records(data):
-            print(record)
+            print("[RECORD] --> ", record)
             yield record
     
     def extract_records(self, data: Mapping) -> Iterable[Mapping]:
@@ -270,17 +285,6 @@ class ZenhubIssues(ZenhubGraphqlStream):
 
         if 'errors' in response_json:
             raise Exception(f"Errors in response: {response_json['errors']}")
-        # print("#############################")
-        # print("#############################")
-        # print("#############################")
-        # print("#############################")
-        # print("  RESPONSE JSON")
-        # #print(response.json())
-        # print("#############################")
-        # print("#############################")
-        # print("#############################")
-        # print("#############################")
-        # print("  FINAL ")
         
         issues = response_json.get('data', {}).get('searchIssues', {}).get('nodes', [])
         print("issues", issues[0])

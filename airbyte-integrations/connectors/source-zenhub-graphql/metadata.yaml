@@ -18,10 +18,10 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e9db13ca-9338-4f70-8519-cf67d689f3ed
-  dockerImageTag: 0.1.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-zenhub-graphql
   githubIssueLabel: source-zenhub-graphql
-  icon: icon.svg
+  icon: zenhub.svg
   license: MIT
   name: Zenhub Graphql
   releaseDate: TODO
