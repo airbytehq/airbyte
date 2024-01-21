@@ -578,11 +578,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         # init BULK Query instance, pass `shop_id` from config
         self.query = self.bulk_query(shop_id=config.get("shop_id"))
         # define BULK Manager instance
-        self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
-            session=self._session,
-            base_url=f"{self.url_base}/{self.path()}",
-            logger=self.logger,
-        )
+        self.job_manager: ShopifyBulkManager = ShopifyBulkManager(self._session, f"{self.url_base}/{self.path()}")
         # define Record Producer instance
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query, self.logger)
 

@@ -260,11 +260,9 @@ def bulk_successful_completed_response():
 def bulk_job_created_response():
     return {
         "data": {
-            "bulkOperationRunQuery": {
-                "bulkOperation": {
-                    "id": "gid://shopify/BulkOperation/4046733967549",
-                    "status": "CREATED",
-                },
+            "node": {
+                "id": "gid://shopify/BulkOperation/4046733967549",
+                "status": "CREATED",
                 "userErrors": [],
             }
         },
