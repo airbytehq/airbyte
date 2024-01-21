@@ -1,7 +1,10 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - api.zenhub.com
   registries:
     oss:
       enabled: false
@@ -11,14 +14,14 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: e9db13ca-9338-4f70-8519-cf67d689f3ed
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-zenhub-graphql
   githubIssueLabel: source-zenhub-graphql
-  icon: zenhub-graphql.svg
+  icon: icon.svg
   license: MIT
   name: Zenhub Graphql
   releaseDate: TODO
@@ -27,4 +30,6 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/zenhub-graphql
   tags:
     - language:python
+  suggestedStreams:
+    - zenhub_issues
 metadataSpecVersion: "1.0"
