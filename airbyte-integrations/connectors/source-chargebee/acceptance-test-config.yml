@@ -60,6 +60,8 @@ acceptance_tests:
               bypass_reason: "This stream is Full-Refresh only"
             - name: site_migration_detail
               bypass_reason: "This stream is Full-Refresh only"
+            - name: event
+              bypass_reason: "Large dataset causes timeout."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
