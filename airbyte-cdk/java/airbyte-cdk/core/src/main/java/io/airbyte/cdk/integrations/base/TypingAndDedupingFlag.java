@@ -10,7 +10,7 @@ public class TypingAndDedupingFlag {
 
   public static boolean isDestinationV2() {
     return DestinationConfig.getInstance().getBooleanValue("is_v2_destination")
-           || DestinationConfig.getInstance().getBooleanValue("use_1s1t_format");
+        || DestinationConfig.getInstance().getBooleanValue("use_1s1t_format");
   }
 
   public static Optional<String> getRawNamespaceOverride(String option) {
