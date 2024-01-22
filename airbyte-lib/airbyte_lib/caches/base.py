@@ -21,7 +21,7 @@ from sqlalchemy.sql.elements import TextClause
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
-from airbyte_lib.datasets._cached import CachedDataset
+from airbyte_lib.datasets._sql import CachedDataset
 from airbyte_lib.types import SQLTypeConverter
 
 
