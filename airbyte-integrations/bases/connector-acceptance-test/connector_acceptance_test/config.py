@@ -129,6 +129,18 @@ class NoPrimaryKeyConfiguration(BaseConfig):
     bypass_reason: Optional[str] = Field(default=None, description="Reason why this stream does not support a primary key")
 
 
+class AllowedHostsConfiguration(BaseConfig):
+    bypass_reason: Optional[str] = Field(
+        default=None, description="Reason why the Metadata `AllowedHosts` check should be skipped for this certified connector."
+    )
+
+
+class SuggestedStreamsConfiguration(BaseConfig):
+    bypass_reason: Optional[str] = Field(
+        default=None, description="Reason why the Metadata `SuggestedStreams` check should be skipped for this certified connector."
+    )
+
+
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     deployment_mode: Optional[str] = deployment_mode
@@ -197,6 +209,10 @@ class ConnectorAttributesConfig(BaseConfig):
     streams_without_primary_key: Optional[List[NoPrimaryKeyConfiguration]] = Field(
         description="Streams that do not support a primary key such as reports streams"
     )
+    allowed_hosts: Optional[AllowedHostsConfiguration] = Field(
+        description="The list of external whitelisted resources the connector is allowed to communicate with."
+    )
+    suggested_streams: Optional[SuggestedStreamsConfiguration] = Field(description="The list of suggested streams for an `Initial Sync`.")
 
 
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):

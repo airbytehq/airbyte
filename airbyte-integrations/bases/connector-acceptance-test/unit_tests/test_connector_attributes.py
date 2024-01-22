@@ -115,12 +115,14 @@ async def test_certified_connector_has_allowed_hosts(metadata_yaml, should_raise
         with pytest.raises(AssertionError) as e:
             await t.test_certified_connector_has_allowed_hosts(
                 operational_certification_test=True,
+                allowed_hosts_test=True,
                 connector_metadata=metadata_yaml
             )
         assert expected_error in repr(e.value)
     else:
         await t.test_certified_connector_has_allowed_hosts(
             operational_certification_test=True,
+            allowed_hosts_test=True,
             connector_metadata=metadata_yaml
         )
         
@@ -163,11 +165,13 @@ async def test_certified_connector_has_suggested_streams(metadata_yaml, should_r
         with pytest.raises(AssertionError) as e:
             await t.test_certified_connector_has_suggested_streams(
                 operational_certification_test=True,
+                suggested_streams_test=True,
                 connector_metadata=metadata_yaml
             )
         assert expected_error in repr(e.value)
     else:
         await t.test_certified_connector_has_suggested_streams(
             operational_certification_test=True,
+            suggested_streams_test=True,
             connector_metadata=metadata_yaml
         )
