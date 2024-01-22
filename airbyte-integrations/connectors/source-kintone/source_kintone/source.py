@@ -17,6 +17,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     Status,
     Type,
+    SyncMode,
 )
 from airbyte_cdk.sources import Source
 from .client import Client
