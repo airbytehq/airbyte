@@ -1,10 +1,11 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple
 
 import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
@@ -16,6 +17,8 @@ from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get
 from pipelines.helpers.git import get_modified_files_in_branch, get_modified_files_in_commit
 from pipelines.helpers.utils import transform_strs_to_paths
 
+if TYPE_CHECKING:
+    from pipelines.models.repo import Repo
 ALL_CONNECTORS = get_all_connectors_in_repo()
 
 
@@ -244,6 +247,7 @@ async def connectors(
     if ctx.obj["modified"] or ctx.obj["metadata_changes_only"]:
         modified_files = transform_strs_to_paths(
             await get_modified_files(
+                ctx.obj["target_repo"],
                 ctx.obj["git_branch"],
                 ctx.obj["git_revision"],
                 ctx.obj["diffed_branch"],
@@ -265,7 +269,9 @@ async def connectors(
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])
 
 
-async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext) -> Set[str]:
+async def get_modified_files(
+    target_repo: Repo, git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext
+) -> Set[str]:
     """Get the list of modified files in the current git branch.
     If the current branch is master, it will return the list of modified files in the head commit.
     The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
@@ -276,5 +282,5 @@ async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: 
     This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
     """
     if ci_context is CIContext.MASTER or (ci_context is CIContext.MANUAL and git_branch == "master"):
-        return await get_modified_files_in_commit(git_branch, git_revision, is_local)
-    return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
+        return await get_modified_files_in_commit(target_repo, git_branch, git_revision, is_local)
+    return await get_modified_files_in_branch(target_repo, git_branch, git_revision, diffed_branch, is_local)

@@ -27,6 +27,7 @@ async def bump_version(
             pipeline_name=f"Upgrade base image versions of connector {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
+            target_repo=ctx.obj["target_repo"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],

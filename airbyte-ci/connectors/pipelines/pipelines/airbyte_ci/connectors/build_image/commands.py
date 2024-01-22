@@ -48,6 +48,7 @@ async def build(ctx: click.Context, use_host_gradle_dist_tar: bool, build_archit
             pipeline_name=f"Build connector {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
+            target_repo=ctx.obj["target_repo"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],

@@ -33,11 +33,12 @@ from pipelines.cli.click_decorators import (
 from pipelines.cli.confirm_prompt import pre_confirm_all_flag
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
-from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, CIContext
+from pipelines.consts import AIRBYTE_REPO_URL, DAGGER_WRAP_ENV_VAR_NAME, CIContext
 from pipelines.dagger.actions.connector.hooks import get_dagger_sdk_version
 from pipelines.helpers import github
 from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
 from pipelines.helpers.utils import get_current_epoch_time
+from pipelines.models.repo import Repo
 
 
 def log_context_info(ctx: click.Context) -> None:
@@ -46,6 +47,7 @@ def log_context_info(ctx: click.Context) -> None:
     main_logger.info("Running airbyte-ci in CI mode.")
     main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
     main_logger.info(f"CI Report Bucket Name: {ctx.obj['ci_report_bucket_name']}")
+    main_logger.info(f"Target repo: {ctx.obj['target_repo']}")
     main_logger.info(f"Git Branch: {ctx.obj['git_branch']}")
     main_logger.info(f"Git Revision: {ctx.obj['git_revision']}")
     main_logger.info(f"GitHub Workflow Run ID: {ctx.obj['gha_workflow_run_id']}")
@@ -65,12 +67,12 @@ def _get_gha_workflow_run_url(ctx: click.Context) -> Optional[str]:
 def _get_pull_request(ctx: click.Context) -> Optional[PullRequest.PullRequest]:
     pull_request_number = ctx.obj["pull_request_number"]
     ci_github_access_token = ctx.obj["ci_github_access_token"]
-
-    can_get_pull_request = pull_request_number and ci_github_access_token
+    target_repo = ctx.obj["target_repo"]
+    can_get_pull_request = pull_request_number and ci_github_access_token and target_repo.url == AIRBYTE_REPO_URL
     if not can_get_pull_request:
         return None
 
-    return github.get_pull_request(pull_request_number, ci_github_access_token)
+    return github.get_pull_request(ctx.obj["target_repo"].name, pull_request_number, ci_github_access_token)
 
 
 def check_local_docker_configuration() -> None:
@@ -143,6 +145,14 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option("--enable-update-check/--disable-update-check", default=True)
 @click.option("--enable-auto-update/--disable-auto-update", default=True)
 @click.option("--is-local/--is-ci", default=True)
+@click.option(
+    "--target_repo_url",
+    "-r",
+    "target_repo",
+    default=AIRBYTE_REPO_URL,
+    envvar="TARGET_REPO_URL",
+    callback=lambda _, __, value: Repo.from_url(value),  # type: ignore
+)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
 @click.option(

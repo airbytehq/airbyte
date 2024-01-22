@@ -4,7 +4,9 @@
 
 """Module declaring context related classes."""
 
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 import asyncclick as click
 from dagger import Secret
@@ -14,6 +16,9 @@ from pipelines.consts import ContextState
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.utils import format_duration
+
+if TYPE_CHECKING:
+    from pipelines.models.repo import Repo
 
 
 class PublishConnectorContext(ConnectorContext):
@@ -35,6 +40,7 @@ class PublishConnectorContext(ConnectorContext):
         ci_report_bucket: str,
         report_output_prefix: str,
         is_local: bool,
+        target_repo: Repo,
         git_branch: str,
         git_revision: str,
         gha_workflow_run_url: Optional[str] = None,
@@ -64,6 +70,7 @@ class PublishConnectorContext(ConnectorContext):
             report_output_prefix=report_output_prefix,
             ci_report_bucket=ci_report_bucket,
             is_local=is_local,
+            target_repo=target_repo,
             git_branch=git_branch,
             git_revision=git_revision,
             gha_workflow_run_url=gha_workflow_run_url,

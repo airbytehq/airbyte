@@ -12,7 +12,7 @@ pytestmark = [
 
 
 @pytest.fixture
-def connector_context(dagger_client):
+def connector_context(dagger_client, target_repo):
     context = ConnectorContext(
         pipeline_name="test",
         connector="source-faker",
@@ -20,6 +20,7 @@ def connector_context(dagger_client):
         git_revision="test",
         report_output_prefix="test",
         is_local=True,
+        target_repo=target_repo,
         use_remote_secrets=True,
     )
     context.dagger_client = dagger_client

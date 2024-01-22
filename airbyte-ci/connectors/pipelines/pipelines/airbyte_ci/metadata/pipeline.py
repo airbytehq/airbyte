@@ -1,9 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import uuid
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import dagger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
@@ -18,6 +19,8 @@ from pipelines.helpers.utils import DAGGER_CONFIG, get_secret_host_variable
 from pipelines.models.reports import Report
 from pipelines.models.steps import MountPath, Step, StepResult
 
+if TYPE_CHECKING:
+    from pipelines.models.repo import Repo
 # STEPS
 
 
@@ -154,6 +157,7 @@ class TestOrchestrator(PoetryRunStep):
 
 async def run_metadata_orchestrator_deploy_pipeline(
     is_local: bool,
+    target_repo: Repo,
     git_branch: str,
     git_revision: str,
     report_output_prefix: str,
@@ -167,6 +171,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Orchestrator Unit Test Pipeline",
         is_local=is_local,
+        target_repo=target_repo,
         git_branch=git_branch,
         git_revision=git_revision,
         report_output_prefix=report_output_prefix,

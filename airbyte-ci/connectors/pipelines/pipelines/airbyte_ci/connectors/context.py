@@ -29,6 +29,8 @@ if TYPE_CHECKING:
     from pathlib import Path as NativePath
     from typing import Dict, FrozenSet, List, Optional, Sequence
 
+    from pipelines.models.repo import Repo
+
 
 class ConnectorContext(PipelineContext):
     """The connector context is used to store configuration for a specific connector pipeline run."""
@@ -40,6 +42,7 @@ class ConnectorContext(PipelineContext):
         pipeline_name: str,
         connector: ConnectorWithModifiedFiles,
         is_local: bool,
+        target_repo: Repo,
         git_branch: str,
         git_revision: str,
         report_output_prefix: str,
@@ -120,6 +123,7 @@ class ConnectorContext(PipelineContext):
         super().__init__(
             pipeline_name=pipeline_name,
             is_local=is_local,
+            target_repo=target_repo,
             git_branch=git_branch,
             git_revision=git_revision,
             report_output_prefix=report_output_prefix,

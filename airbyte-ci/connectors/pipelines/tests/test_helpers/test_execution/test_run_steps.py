@@ -4,11 +4,20 @@ import time
 
 import anyio
 import pytest
+from pipelines.consts import AIRBYTE_REPO_URL
 from pipelines.helpers.execution.run_steps import InvalidStepConfiguration, RunStepOptions, StepToRun, run_steps
 from pipelines.models.contexts.pipeline_context import PipelineContext
+from pipelines.models.repo import Repo
 from pipelines.models.steps import Step, StepResult, StepStatus
 
-test_context = PipelineContext(pipeline_name="test", is_local=True, git_branch="test", git_revision="test", report_output_prefix="test")
+test_context = PipelineContext(
+    pipeline_name="test",
+    is_local=True,
+    target_repo=Repo.from_url(AIRBYTE_REPO_URL),
+    git_branch="test",
+    git_revision="test",
+    report_output_prefix="test",
+)
 
 
 class TestStep(Step):

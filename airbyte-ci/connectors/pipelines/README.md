@@ -138,20 +138,21 @@ At this point you can run `airbyte-ci` commands.
 
 #### Options
 
-| Option                                         | Default value                   | Mapped environment variable   | Description                                                                                 |
-| ---------------------------------------------- | ------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `--yes/--y`                                    | False                           |                               | Agrees to all prompts.                                                                      |
-| `--yes-auto-update`                            | False                           |                               | Agrees to the auto update prompts.                                                          |
-| `--enable-update-check/--disable-update-check` | True                            |                               | Turns on the update check feature                                                           |
-| `--enable-dagger-run/--disable-dagger-run`     | `--enable-dagger-run`           |                               | Disables the Dagger terminal UI.                                                            |
-| `--is-local/--is-ci`                           | `--is-local`                    |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
-| `--git-branch`                                 | The checked out git branch name | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
-| `--git-revision`                               | The current branch head         | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
-| `--diffed-branch`                              | `origin/master`                 |                               | Branch to which the git diff will happen to detect new or modified files.                   |
-| `--gha-workflow-run-id`                        |                                 |                               | GHA CI only - The run id of the GitHub action workflow                                      |
-| `--ci-context`                                 | `manual`                        |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
-| `--pipeline-start-timestamp`                   | Current epoch time              | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
-| `--show-dagger-logs/--hide-dagger-logs`        | `--hide-dagger-logs`            |                               | Flag to show or hide the dagger logs.                                                       |
+| Option                                         | Default value                              | Mapped environment variable   | Description                                                                                 |
+| ---------------------------------------------- | ------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `--yes/--y`                                    | False                                      |                               | Agrees to all prompts.                                                                      |
+| `--yes-auto-update`                            | False                                      |                               | Agrees to the auto update prompts.                                                          |
+| `--enable-update-check/--disable-update-check` | True                                       |                               | Turns on the update check feature                                                           |
+| `--enable-dagger-run/--disable-dagger-run`     | `--enable-dagger-run`                      |                               | Disables the Dagger terminal UI.                                                            |
+| `--is-local/--is-ci`                           | `--is-local`                               |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
+| `--git-branch`                                 | The checked out git branch name            | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
+| `--git-revision`                               | The current branch head                    | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
+| `--diffed-branch`                              | `origin/master`                            |                               | Branch to which the git diff will happen to detect new or modified files.                   |
+| `--gha-workflow-run-id`                        |                                            |                               | GHA CI only - The run id of the GitHub action workflow                                      |
+| `--ci-context`                                 | `manual`                                   |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
+| `--pipeline-start-timestamp`                   | Current epoch time                         | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
+| `--show-dagger-logs/--hide-dagger-logs`        | `--hide-dagger-logs`                       |                               | Flag to show or hide the dagger logs.                                                       |
+| `--target-repo-url`                            | `https://github.com/airbytehq/airbyte.git` |                               | Run airbyte-ci on a specific airbyte repo fork.                                             |
 
 
 ### <a id="connectors-command-subgroup"></a>`connectors` command subgroup
@@ -547,6 +548,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.6.0   | [#34350](https://github.com/airbytehq/airbyte/pull/34350)  | Add a `--target-repo-url` option to the main command.                                                             |
 | 3.5.1   | [#34321](https://github.com/airbytehq/airbyte/pull/34321)  | Upgrade to Dagger 0.9.6 .                                                                                         |
 | 3.5.0   | [#33313](https://github.com/airbytehq/airbyte/pull/33313)  | Pass extra params after Gradle tasks.                                                                             |
 | 3.4.2   | [#34301](https://github.com/airbytehq/airbyte/pull/34301)  | Pass extra params after Gradle tasks.                                                                             |

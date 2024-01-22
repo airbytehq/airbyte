@@ -22,7 +22,7 @@ from pipelines.helpers.execution.run_steps import RunStepOptions
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
-from pipelines.helpers.utils import AIRBYTE_REPO_URL
+from pipelines.models.repo import Repo
 from pipelines.models.reports import Report
 
 if TYPE_CHECKING:
@@ -62,6 +62,7 @@ class PipelineContext:
         self,
         pipeline_name: str,
         is_local: bool,
+        target_repo: Repo,
         git_branch: str,
         git_revision: str,
         report_output_prefix: str,
@@ -99,6 +100,7 @@ class PipelineContext:
         """
         self.pipeline_name = pipeline_name
         self.is_local = is_local
+        self.target_repo = target_repo
         self.git_branch = git_branch
         self.git_revision = git_revision
         self.report_output_prefix = report_output_prefix
@@ -146,7 +148,7 @@ class PipelineContext:
 
     @property
     def repo(self) -> GitRepository:
-        return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
+        return self.dagger_client.git(self.target_repo.url, keep_git_dir=True)
 
     @property
     def report(self) -> Report | ConnectorReport | None:
@@ -175,6 +177,7 @@ class PipelineContext:
             target_url = self.report.html_report_url
 
         return {
+            "repo_name": self.target_repo.name,
             "sha": self.git_revision,
             "state": self.state.value["github_state"],
             "target_url": target_url,

@@ -98,6 +98,7 @@ async def publish(
                 ci_report_bucket=ctx.obj["ci_report_bucket_name"],
                 report_output_prefix=ctx.obj["report_output_prefix"],
                 is_local=ctx.obj["is_local"],
+                target_repo=ctx.obj["target_repo"],
                 git_branch=ctx.obj["git_branch"],
                 git_revision=ctx.obj["git_revision"],
                 gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
