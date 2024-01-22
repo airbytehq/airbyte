@@ -15,6 +15,7 @@ from source_stripe.streams import IncrementalStripeStream, StripeLazySubStream
 def stream_mock(mocker):
     def _mocker():
         return mocker.Mock(stream_slices=mocker.Mock(return_value=[{}]), read_records=mocker.Mock(return_value=[{}]))
+
     return _mocker
 
 
@@ -22,9 +23,7 @@ def test_traverse_over_substreams(stream_mock, mocker):
     # Mock base HttpAvailabilityStrategy to capture all the check_availability method calls
     check_availability_mock = mocker.MagicMock(return_value=(True, None))
     cdk_check_availability_mock = mocker.MagicMock(return_value=(True, None))
-    mocker.patch(
-        "source_stripe.availability_strategy.StripeAvailabilityStrategy.check_availability", check_availability_mock
-    )
+    mocker.patch("source_stripe.availability_strategy.StripeAvailabilityStrategy.check_availability", check_availability_mock)
     mocker.patch(
         "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability", cdk_check_availability_mock
     )
@@ -63,9 +62,7 @@ def test_traverse_over_substreams(stream_mock, mocker):
 def test_traverse_over_substreams_failure(stream_mock, mocker):
     # Mock base HttpAvailabilityStrategy to capture all the check_availability method calls
     check_availability_mock = mocker.MagicMock(side_effect=[(True, None), (False, "child_1")])
-    mocker.patch(
-        "source_stripe.availability_strategy.StripeAvailabilityStrategy.check_availability", check_availability_mock
-    )
+    mocker.patch("source_stripe.availability_strategy.StripeAvailabilityStrategy.check_availability", check_availability_mock)
 
     # Prepare tree of nested objects
     root = stream_mock()
@@ -100,9 +97,7 @@ def test_traverse_over_substreams_failure(stream_mock, mocker):
 def test_substream_availability(mocker, stream_by_name):
     check_availability_mock = mocker.MagicMock()
     check_availability_mock.return_value = (True, None)
-    mocker.patch(
-        "source_stripe.availability_strategy.StripeAvailabilityStrategy.check_availability", check_availability_mock
-    )
+    mocker.patch("source_stripe.availability_strategy.StripeAvailabilityStrategy.check_availability", check_availability_mock)
     stream = stream_by_name("invoice_line_items")
     is_available, reason = stream.availability_strategy.check_availability(stream, mocker.Mock(), mocker.Mock())
     assert is_available and reason is None
@@ -115,9 +110,7 @@ def test_substream_availability(mocker, stream_by_name):
 def test_substream_availability_no_parent(mocker, stream_by_name):
     check_availability_mock = mocker.MagicMock()
     check_availability_mock.return_value = (True, None)
-    mocker.patch(
-        "source_stripe.availability_strategy.StripeAvailabilityStrategy.check_availability", check_availability_mock
-    )
+    mocker.patch("source_stripe.availability_strategy.StripeAvailabilityStrategy.check_availability", check_availability_mock)
     stream = stream_by_name("invoice_line_items")
     stream.parent = None
 
@@ -140,78 +133,32 @@ def test_403_error_handling(stream_by_name, requests_mock):
 @pytest.mark.parametrize(
     "stream_name, endpoints, expected_calls",
     (
-        (
-            "accounts",
-            {
-                "/v1/accounts": {"data": []}
-            },
-            1
-        ),
-        (
-            "refunds",
-            {
-                "/v1/refunds": {"data": []}
-            },
-            2
-        ),
-        (
-            "credit_notes",
-            {
-                "/v1/credit_notes": {"data": []}, "/v1/events": {"data": []}
-            },
-            2
-        ),
-        (
-            "charges",
-            {
-                "/v1/charges": {"data": []}, "/v1/events": {"data": []}
-            },
-            2
-        ),
-        (
-            "subscription_items",
-            {
-                "/v1/subscriptions": {"data": [{"id": 1}]},
-                "/v1/events": {"data": []}
-            },
-            3
-        ),
-        (
-            "bank_accounts",
-            {
-                "/v1/customers": {"data": [{"id": 1}]},
-                "/v1/events": {"data": []}
-            },
-            2
-        ),
+        ("accounts", {"/v1/accounts": {"data": []}}, 1),
+        ("refunds", {"/v1/refunds": {"data": []}}, 2),
+        ("credit_notes", {"/v1/credit_notes": {"data": []}, "/v1/events": {"data": []}}, 2),
+        ("charges", {"/v1/charges": {"data": []}, "/v1/events": {"data": []}}, 2),
+        ("subscription_items", {"/v1/subscriptions": {"data": [{"id": 1}]}, "/v1/events": {"data": []}}, 3),
+        ("bank_accounts", {"/v1/customers": {"data": [{"id": 1}]}, "/v1/events": {"data": []}}, 2),
         (
             "customer_balance_transactions",
             {
-                "/v1/events": {"data": [{"data":{"object": {"id": 1}}, "created": 1, "type": "customer.updated"}]},
+                "/v1/events": {"data": [{"data": {"object": {"id": 1}}, "created": 1, "type": "customer.updated"}]},
                 "/v1/customers": {"data": [{"id": 1}]},
-                "/v1/customers/1/balance_transactions": {"data": []}
+                "/v1/customers/1/balance_transactions": {"data": []},
             },
-            4
+            4,
         ),
         (
             "transfer_reversals",
             {
                 "/v1/transfers": {"data": [{"id": 1}]},
-                "/v1/events": {"data": [{"data":{"object": {"id": 1}}, "created": 1, "type": "transfer.updated"}]},
-                "/v1/transfers/1/reversals": {"data": []}
+                "/v1/events": {"data": [{"data": {"object": {"id": 1}}, "created": 1, "type": "transfer.updated"}]},
+                "/v1/transfers/1/reversals": {"data": []},
             },
-            4
+            4,
         ),
-        (
-            "persons",
-            {
-                "/v1/accounts": {"data": [{"id": 1}]},
-                "/v1/events": {"data": []},
-                "/v1/accounts/1/persons": {"data": []}
-            },
-            4
-        )
-    )
+        ("persons", {"/v1/accounts": {"data": [{"id": 1}]}, "/v1/events": {"data": []}, "/v1/accounts/1/persons": {"data": []}}, 4),
+    ),
 )
 def test_availability_strategy_visits_endpoints(stream_by_name, stream_name, endpoints, expected_calls, requests_mock, mocker, config):
     for endpoint, data in endpoints.items():

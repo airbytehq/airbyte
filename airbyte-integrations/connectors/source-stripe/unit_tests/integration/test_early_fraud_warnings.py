@@ -69,11 +69,7 @@ def _an_event() -> RecordBuilder:
 
 
 def _events_response() -> HttpResponseBuilder:
-    return create_response_builder(
-        find_template("events", __file__),
-        FieldPath("data"),
-        pagination_strategy=StripePaginationStrategy()
-    )
+    return create_response_builder(find_template("events", __file__), FieldPath("data"), pagination_strategy=StripePaginationStrategy())
 
 
 def _an_early_fraud_warning() -> RecordBuilder:
@@ -87,31 +83,25 @@ def _an_early_fraud_warning() -> RecordBuilder:
 
 def _early_fraud_warnings_response() -> HttpResponseBuilder:
     return create_response_builder(
-        find_template(_ENDPOINT_TEMPLATE_NAME, __file__),
-        FieldPath("data"),
-        pagination_strategy=StripePaginationStrategy()
+        find_template(_ENDPOINT_TEMPLATE_NAME, __file__), FieldPath("data"), pagination_strategy=StripePaginationStrategy()
     )
 
 
 def _given_early_fraud_warnings_availability_check(http_mocker: HttpMocker) -> None:
     http_mocker.get(
         StripeRequestBuilder.radar_early_fraud_warnings_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
-        _early_fraud_warnings_response().build()
+        _early_fraud_warnings_response().build(),
     )
 
 
 def _given_events_availability_check(http_mocker: HttpMocker) -> None:
     http_mocker.get(
-        StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
-        _events_response().build()
+        StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(), _events_response().build()
     )
 
 
 def _read(
-    config_builder: ConfigBuilder,
-    sync_mode: SyncMode,
-    state: Optional[Dict[str, Any]] = None,
-    expecting_exception: bool = False
+    config_builder: ConfigBuilder, sync_mode: SyncMode, state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
@@ -120,7 +110,6 @@ def _read(
 
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):
-
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         _given_events_availability_check(http_mocker)
@@ -138,7 +127,10 @@ class FullRefreshTest(TestCase):
         _given_events_availability_check(http_mocker)
         http_mocker.get(
             _early_fraud_warnings_request().with_limit(100).build(),
-            _early_fraud_warnings_response().with_pagination().with_record(_an_early_fraud_warning().with_id("last_record_id_from_first_page")).build(),
+            _early_fraud_warnings_response()
+            .with_pagination()
+            .with_record(_an_early_fraud_warning().with_id("last_record_id_from_first_page"))
+            .build(),
         )
         http_mocker.get(
             _early_fraud_warnings_request().with_starting_after("last_record_id_from_first_page").with_limit(100).build(),
@@ -217,7 +209,7 @@ class FullRefreshTest(TestCase):
         events_requests = StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build()
         http_mocker.get(
             events_requests,
-            _events_response().build()  # it is important that the event response does not have a record. This is not far fetched as this is what would happend 30 days before now
+            _events_response().build(),  # it is important that the event response does not have a record. This is not far fetched as this is what would happend 30 days before now
         )
         http_mocker.get(
             _early_fraud_warnings_request().with_any_query_params().build(),
@@ -234,7 +226,6 @@ class FullRefreshTest(TestCase):
 
 @freezegun.freeze_time(_NOW.isoformat())
 class IncrementalTest(TestCase):
-
     @HttpMocker()
     def test_given_no_state_when_read_then_use_early_fraud_warnings_endpoint(self, http_mocker: HttpMocker) -> None:
         _given_events_availability_check(http_mocker)
@@ -255,10 +246,15 @@ class IncrementalTest(TestCase):
         _given_early_fraud_warnings_availability_check(http_mocker)
         _given_events_availability_check(http_mocker)
         http_mocker.get(
-            _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
-            _events_response().with_record(
-                _an_event().with_cursor(cursor_value).with_field(_DATA_FIELD, _an_early_fraud_warning().build())
-            ).build(),
+            _events_request()
+            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
+            _events_response()
+            .with_record(_an_event().with_cursor(cursor_value).with_field(_DATA_FIELD, _an_early_fraud_warning().build()))
+            .build(),
         )
 
         output = self._read(
@@ -274,13 +270,25 @@ class IncrementalTest(TestCase):
         _given_events_availability_check(http_mocker)
         state_datetime = _NOW - timedelta(days=5)
         http_mocker.get(
-            _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
-            _events_response().with_pagination().with_record(
-                _an_event().with_id("last_record_id_from_first_page").with_field(_DATA_FIELD, _an_early_fraud_warning().build())
-            ).build(),
+            _events_request()
+            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
+            _events_response()
+            .with_pagination()
+            .with_record(_an_event().with_id("last_record_id_from_first_page").with_field(_DATA_FIELD, _an_early_fraud_warning().build()))
+            .build(),
         )
         http_mocker.get(
-            _events_request().with_starting_after("last_record_id_from_first_page").with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_request()
+            .with_starting_after("last_record_id_from_first_page")
+            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
             _events_response().with_record(self._an_early_fraud_warning_event()).build(),
         )
 
@@ -298,13 +306,25 @@ class IncrementalTest(TestCase):
         slice_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES + slice_range
 
         _given_early_fraud_warnings_availability_check(http_mocker)
-        _given_events_availability_check(http_mocker)  # the availability check does not consider the state so we need to define a generic availability check
+        _given_events_availability_check(
+            http_mocker
+        )  # the availability check does not consider the state so we need to define a generic availability check
         http_mocker.get(
-            _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(slice_datetime).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_request()
+            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(slice_datetime)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
             _events_response().with_record(self._an_early_fraud_warning_event()).build(),
         )
         http_mocker.get(
-            _events_request().with_created_gte(slice_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_request()
+            .with_created_gte(slice_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
             _events_response().with_record(self._an_early_fraud_warning_event()).with_record(self._an_early_fraud_warning_event()).build(),
         )
 
@@ -316,7 +336,9 @@ class IncrementalTest(TestCase):
         assert len(output.records) == 3
 
     @HttpMocker()
-    def test_given_state_earlier_than_30_days_when_read_then_query_events_using_types_and_event_lower_boundary(self, http_mocker: HttpMocker) -> None:
+    def test_given_state_earlier_than_30_days_when_read_then_query_events_using_types_and_event_lower_boundary(
+        self, http_mocker: HttpMocker
+    ) -> None:
         # this seems odd as we would miss some data between start_date and events_lower_boundary. In that case, we should hit the
         # radar/early_fraud_warnings endpoint
         _given_early_fraud_warnings_availability_check(http_mocker)
@@ -324,7 +346,12 @@ class IncrementalTest(TestCase):
         state_value = _NOW - timedelta(days=39)
         events_lower_boundary = _NOW - timedelta(days=30)
         http_mocker.get(
-            _events_request().with_created_gte(events_lower_boundary).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_request()
+            .with_created_gte(events_lower_boundary)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
             _events_response().with_record(self._an_early_fraud_warning_event()).build(),
         )
 

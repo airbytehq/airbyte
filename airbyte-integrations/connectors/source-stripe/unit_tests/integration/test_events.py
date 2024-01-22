@@ -66,10 +66,7 @@ def _a_response() -> HttpResponseBuilder:
 
 
 def _read(
-    config_builder: ConfigBuilder,
-    sync_mode: SyncMode,
-    state: Optional[Dict[str, Any]] = None,
-    expecting_exception: bool = False
+    config_builder: ConfigBuilder, sync_mode: SyncMode, state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
@@ -78,7 +75,6 @@ def _read(
 
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):
-
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
@@ -95,14 +91,21 @@ class FullRefreshTest(TestCase):
             _a_response().with_pagination().with_record(_a_record().with_id("last_record_id_from_first_page")).build(),
         )
         http_mocker.get(
-            _a_request().with_starting_after("last_record_id_from_first_page").with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
+            _a_request()
+            .with_starting_after("last_record_id_from_first_page")
+            .with_created_gte(_A_START_DATE)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .build(),
             _a_response().with_record(_a_record()).with_record(_a_record()).build(),
         )
         output = self._read(_config().with_start_date(_A_START_DATE))
         assert len(output.records) == 3
 
     @HttpMocker()
-    def test_given_start_date_before_30_days_stripe_limit_and_slice_range_when_read_then_perform_request_before_30_days(self, http_mocker: HttpMocker) -> None:
+    def test_given_start_date_before_30_days_stripe_limit_and_slice_range_when_read_then_perform_request_before_30_days(
+        self, http_mocker: HttpMocker
+    ) -> None:
         """
         This case is special because the source queries for a time range that is before 30 days. That being said as of 2023-12-13, the API
         mentions that "We only guarantee access to events through the Retrieve Event API for 30 days." (see
@@ -116,7 +119,11 @@ class FullRefreshTest(TestCase):
             _a_response().build(),
         )
         http_mocker.get(
-            _a_request().with_created_gte(slice_datetime + _SECOND_REQUEST).with_created_lte(slice_datetime + slice_range + _SECOND_REQUEST).with_limit(100).build(),
+            _a_request()
+            .with_created_gte(slice_datetime + _SECOND_REQUEST)
+            .with_created_lte(slice_datetime + slice_range + _SECOND_REQUEST)
+            .with_limit(100)
+            .build(),
             _a_response().build(),
         )
         http_mocker.get(
@@ -213,7 +220,9 @@ class FullRefreshTest(TestCase):
             _a_response().build(),
         )
         self._read(_config().with_start_date(_A_START_DATE))
-        http_mocker.assert_number_of_calls(request, 3)  # one call for full_refresh availability, one call for incremental availability and one call for the actual read
+        http_mocker.assert_number_of_calls(
+            request, 3
+        )  # one call for full_refresh availability, one call for incremental availability and one call for the actual read
 
     def _read(self, config: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
@@ -221,7 +230,6 @@ class FullRefreshTest(TestCase):
 
 @freezegun.freeze_time(_NOW.isoformat())
 class IncrementalTest(TestCase):
-
     @HttpMocker()
     def test_given_no_initial_state_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
         cursor_value = int(_A_START_DATE.timestamp()) + 1
@@ -247,7 +255,7 @@ class IncrementalTest(TestCase):
 
         self._read(
             _config().with_start_date(_A_START_DATE),
-            StateBuilder().with_stream_state("events", {"created": int(state_value.timestamp())}).build()
+            StateBuilder().with_stream_state("events", {"created": int(state_value.timestamp())}).build(),
         )
 
         # request matched http_mocker
@@ -263,7 +271,7 @@ class IncrementalTest(TestCase):
 
         output = self._read(
             _config().with_start_date(_A_START_DATE),
-            StateBuilder().with_stream_state("events", {"created": more_recent_than_record_cursor}).build()
+            StateBuilder().with_stream_state("events", {"created": more_recent_than_record_cursor}).build(),
         )
 
         assert output.most_recent_state == {"events": {"created": more_recent_than_record_cursor}}

@@ -80,11 +80,7 @@ def _an_event() -> RecordBuilder:
 
 
 def _events_response() -> HttpResponseBuilder:
-    return create_response_builder(
-        find_template("events", __file__),
-        FieldPath("data"),
-        pagination_strategy=StripePaginationStrategy()
-    )
+    return create_response_builder(find_template("events", __file__), FieldPath("data"), pagination_strategy=StripePaginationStrategy())
 
 
 def _a_customer() -> RecordBuilder:
@@ -98,9 +94,7 @@ def _a_customer() -> RecordBuilder:
 
 def _customers_response() -> HttpResponseBuilder:
     return create_response_builder(
-        find_template(_CUSTOMERS_TEMPLATE_NAME, __file__),
-        FieldPath("data"),
-        pagination_strategy=StripePaginationStrategy()
+        find_template(_CUSTOMERS_TEMPLATE_NAME, __file__), FieldPath("data"), pagination_strategy=StripePaginationStrategy()
     )
 
 
@@ -114,23 +108,22 @@ def _a_bank_account() -> RecordBuilder:
 
 def _bank_accounts_response() -> HttpResponseBuilder:
     return create_response_builder(
-        find_template(_BANK_ACCOUNTS_TEMPLATE_NAME, __file__),
-        FieldPath("data"),
-        pagination_strategy=StripePaginationStrategy()
+        find_template(_BANK_ACCOUNTS_TEMPLATE_NAME, __file__), FieldPath("data"), pagination_strategy=StripePaginationStrategy()
     )
 
 
 def _given_customers_availability_check(http_mocker: HttpMocker) -> None:
     http_mocker.get(
         StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
-        _customers_response().with_record(_a_customer()).build()  # there needs to be a record in the parent stream for the child to be available
+        _customers_response()
+        .with_record(_a_customer())
+        .build(),  # there needs to be a record in the parent stream for the child to be available
     )
 
 
 def _given_events_availability_check(http_mocker: HttpMocker) -> None:
     http_mocker.get(
-        StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
-        _events_response().build()
+        StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(), _events_response().build()
     )
 
 
@@ -139,10 +132,7 @@ def _as_dict(response_builder: HttpResponseBuilder) -> Dict[str, Any]:
 
 
 def _read(
-    config_builder: ConfigBuilder,
-    sync_mode: SyncMode,
-    state: Optional[Dict[str, Any]] = None,
-    expecting_exception: bool = False
+    config_builder: ConfigBuilder, sync_mode: SyncMode, state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
@@ -163,20 +153,12 @@ class FullRefreshTest(TestCase):
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response()
             .with_record(
-                _a_customer()
-                .with_field(
-                    _SOURCES_FIELD,
-                    _as_dict(
-                        _bank_accounts_response()
-                        .with_record(_a_bank_account())
-                        .with_record(_a_bank_account())
-                    )
+                _a_customer().with_field(
+                    _SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()).with_record(_a_bank_account()))
                 )
             )
-            .with_record(
-                _a_customer()
-                .with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account())))
-            ).build(),
+            .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()))))
+            .build(),
         )
 
         output = self._read(_config().with_start_date(_A_START_DATE))
@@ -189,16 +171,8 @@ class FullRefreshTest(TestCase):
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response()
-            .with_record(
-                _a_customer()
-                .with_field(
-                    _SOURCES_FIELD,
-                    _as_dict(
-                        _bank_accounts_response()
-                        .with_record(_NOT_A_BANK_ACCOUNT)
-                    )
-                )
-            ).build(),
+            .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_NOT_A_BANK_ACCOUNT))))
+            .build(),
         )
 
         output = self._read(_config().with_start_date(_A_START_DATE))
@@ -216,13 +190,10 @@ class FullRefreshTest(TestCase):
                 .with_id("parent_id")
                 .with_field(
                     _SOURCES_FIELD,
-                    _as_dict(
-                        _bank_accounts_response()
-                        .with_pagination()
-                        .with_record(_a_bank_account().with_id("latest_bank_account_id"))
-                    )
+                    _as_dict(_bank_accounts_response().with_pagination().with_record(_a_bank_account().with_id("latest_bank_account_id"))),
                 )
-            ).build(),
+            )
+            .build(),
         )
         http_mocker.get(
             # we do not use slice boundaries here because:
@@ -247,28 +218,21 @@ class FullRefreshTest(TestCase):
             .with_record(
                 _a_customer()
                 .with_id("parent_id")
-                .with_field(
-                    _SOURCES_FIELD,
-                    _as_dict(
-                        _bank_accounts_response()
-                        .with_record(_a_bank_account())
-                    )
-                )
-            ).build(),
+                .with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account())))
+            )
+            .build(),
         )
         http_mocker.get(
-            _customers_request().with_expands(_EXPANDS).with_starting_after("parent_id").with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
+            _customers_request()
+            .with_expands(_EXPANDS)
+            .with_starting_after("parent_id")
+            .with_created_gte(_A_START_DATE)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .build(),
             _customers_response()
-            .with_record(
-                _a_customer()
-                .with_field(
-                    _SOURCES_FIELD,
-                    _as_dict(
-                        _bank_accounts_response()
-                        .with_record(_a_bank_account())
-                    )
-                )
-            ).build(),
+            .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()))))
+            .build(),
         )
 
         output = self._read(_config().with_start_date(_A_START_DATE))
@@ -295,18 +259,26 @@ class FullRefreshTest(TestCase):
 
         _given_events_availability_check(http_mocker)
         http_mocker.get(
-            _customers_request().with_expands(_EXPANDS).with_created_gte(start_date).with_created_lte(slice_datetime).with_limit(100).build(),
-            _customers_response().with_record(
-                _a_customer()
-                .with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account())))
-            ).build(),
+            _customers_request()
+            .with_expands(_EXPANDS)
+            .with_created_gte(start_date)
+            .with_created_lte(slice_datetime)
+            .with_limit(100)
+            .build(),
+            _customers_response()
+            .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()))))
+            .build(),
         )
         http_mocker.get(
-            _customers_request().with_expands(_EXPANDS).with_created_gte(slice_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).build(),
-            _customers_response().with_record(
-                _a_customer()
-                .with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account())))
-            ).build(),
+            _customers_request()
+            .with_expands(_EXPANDS)
+            .with_created_gte(slice_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .build(),
+            _customers_response()
+            .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()))))
+            .build(),
         )
 
         output = self._read(_config().with_start_date(start_date).with_slice_range_in_days(slice_range.days))
@@ -325,22 +297,25 @@ class FullRefreshTest(TestCase):
         _given_events_availability_check(http_mocker)
         http_mocker.get(
             StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
-            _customers_response().build()
+            _customers_response().build(),
         )  # catching subsequent slicing request that we don't really care for this test
         http_mocker.get(
-            _customers_request().with_expands(_EXPANDS).with_created_gte(start_date).with_created_lte(slice_datetime).with_limit(100).build(),
-            _customers_response().with_record(
+            _customers_request()
+            .with_expands(_EXPANDS)
+            .with_created_gte(start_date)
+            .with_created_lte(slice_datetime)
+            .with_limit(100)
+            .build(),
+            _customers_response()
+            .with_record(
                 _a_customer()
                 .with_id("parent_id")
                 .with_field(
                     _SOURCES_FIELD,
-                    _as_dict(
-                        _bank_accounts_response()
-                        .with_pagination()
-                        .with_record(_a_bank_account().with_id("latest_bank_account_id"))
-                    )
+                    _as_dict(_bank_accounts_response().with_pagination().with_record(_a_bank_account().with_id("latest_bank_account_id"))),
                 )
-            ).build(),
+            )
+            .build(),
         )
         http_mocker.get(
             # slice range is not applied here
@@ -370,16 +345,8 @@ class FullRefreshTest(TestCase):
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response()
-            .with_record(
-                _a_customer()
-                .with_field(
-                    _SOURCES_FIELD,
-                    _as_dict(
-                        _bank_accounts_response()
-                        .with_record(_a_bank_account())
-                    )
-                )
-            ).build(),
+            .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()))))
+            .build(),
         )
 
         output = self._read(_config().with_start_date(_A_START_DATE))
@@ -402,13 +369,9 @@ class FullRefreshTest(TestCase):
             _customers_request().with_any_query_params().build(),
             [
                 a_response_with_status(429),
-                _customers_response().with_record(_a_customer().with_field(
-                    _SOURCES_FIELD,
-                    _as_dict(
-                        _bank_accounts_response()
-                        .with_record(_a_bank_account())
-                    )
-                )).build(),
+                _customers_response()
+                .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()))))
+                .build(),
             ],
         )
         output = self._read(_config().with_start_date(_A_START_DATE))
@@ -430,7 +393,6 @@ class FullRefreshTest(TestCase):
 
 @freezegun.freeze_time(_NOW.isoformat())
 class IncrementalTest(TestCase):
-
     @HttpMocker()
     def test_given_no_state_and_successful_sync_when_read_then_set_state_to_now(self, http_mocker: HttpMocker) -> None:
         # If stripe takes some time to ingest the data, we should recommend to use a lookback window when syncing the bank_accounts stream
@@ -438,10 +400,9 @@ class IncrementalTest(TestCase):
         _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
-            _customers_response().with_record(
-                _a_customer()
-                .with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account())))
-            ).build(),
+            _customers_response()
+            .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()))))
+            .build(),
         )
 
         output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
@@ -457,10 +418,15 @@ class IncrementalTest(TestCase):
         _given_customers_availability_check(http_mocker)
         _given_events_availability_check(http_mocker)
         http_mocker.get(
-            _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
-            _events_response().with_record(
-                _an_event().with_cursor(cursor_value).with_field(_DATA_FIELD, _a_bank_account().build())
-            ).build(),
+            _events_request()
+            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
+            _events_response()
+            .with_record(_an_event().with_cursor(cursor_value).with_field(_DATA_FIELD, _a_bank_account().build()))
+            .build(),
         )
 
         output = self._read(
@@ -476,13 +442,25 @@ class IncrementalTest(TestCase):
         _given_events_availability_check(http_mocker)
         state_datetime = _NOW - timedelta(days=5)
         http_mocker.get(
-            _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
-            _events_response().with_pagination().with_record(
-                _an_event().with_id("last_record_id_from_first_page").with_field(_DATA_FIELD, _a_bank_account().build())
-            ).build(),
+            _events_request()
+            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
+            _events_response()
+            .with_pagination()
+            .with_record(_an_event().with_id("last_record_id_from_first_page").with_field(_DATA_FIELD, _a_bank_account().build()))
+            .build(),
         )
         http_mocker.get(
-            _events_request().with_starting_after("last_record_id_from_first_page").with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_request()
+            .with_starting_after("last_record_id_from_first_page")
+            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
             _events_response().with_record(self._a_bank_account_event()).build(),
         )
 
@@ -500,13 +478,25 @@ class IncrementalTest(TestCase):
         slice_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES + slice_range
 
         _given_customers_availability_check(http_mocker)
-        _given_events_availability_check(http_mocker)  # the availability check does not consider the state so we need to define a generic availability check
+        _given_events_availability_check(
+            http_mocker
+        )  # the availability check does not consider the state so we need to define a generic availability check
         http_mocker.get(
-            _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(slice_datetime).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_request()
+            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(slice_datetime)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
             _events_response().with_record(self._a_bank_account_event()).build(),
         )
         http_mocker.get(
-            _events_request().with_created_gte(slice_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_request()
+            .with_created_gte(slice_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
             _events_response().with_record(self._a_bank_account_event()).with_record(self._a_bank_account_event()).build(),
         )
 
@@ -518,7 +508,9 @@ class IncrementalTest(TestCase):
         assert len(output.records) == 3
 
     @HttpMocker()
-    def test_given_state_earlier_than_30_days_when_read_then_query_events_using_types_and_event_lower_boundary(self, http_mocker: HttpMocker) -> None:
+    def test_given_state_earlier_than_30_days_when_read_then_query_events_using_types_and_event_lower_boundary(
+        self, http_mocker: HttpMocker
+    ) -> None:
         # this seems odd as we would miss some data between start_date and events_lower_boundary. In that case, we should hit the
         # customer endpoint
         _given_customers_availability_check(http_mocker)
@@ -526,7 +518,12 @@ class IncrementalTest(TestCase):
         state_value = _NOW - timedelta(days=39)
         events_lower_boundary = _NOW - timedelta(days=30)
         http_mocker.get(
-            _events_request().with_created_gte(events_lower_boundary).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_request()
+            .with_created_gte(events_lower_boundary)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
             _events_response().with_record(self._a_bank_account_event()).build(),
         )
 
@@ -543,10 +540,13 @@ class IncrementalTest(TestCase):
         _given_events_availability_check(http_mocker)
         state_datetime = _NOW - timedelta(days=5)
         http_mocker.get(
-            _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
-            _events_response().with_record(
-                _an_event().with_field(_DATA_FIELD, _NOT_A_BANK_ACCOUNT.build())
-            ).build(),
+            _events_request()
+            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
+            _events_response().with_record(_an_event().with_field(_DATA_FIELD, _NOT_A_BANK_ACCOUNT.build())).build(),
         )
 
         output = self._read(
