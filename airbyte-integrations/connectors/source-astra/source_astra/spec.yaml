@@ -19,7 +19,7 @@ connectionSpecification:
       order: 1
     database_endpoint:
       type: string
-      title: Database ID
+      title: Database Endpoint
       description: >-
         Description
       order: 0
