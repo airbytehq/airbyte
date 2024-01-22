@@ -4,14 +4,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from overrides import overrides
-from typing_extensions import Self
 
 from airbyte_lib.datasets import DatasetBase
 
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
-
 
 
 class LazyDataset(DatasetBase):
