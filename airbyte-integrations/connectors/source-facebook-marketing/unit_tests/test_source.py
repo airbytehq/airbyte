@@ -4,6 +4,7 @@
 
 
 from copy import deepcopy
+from unittest.mock import call
 
 import pytest
 from airbyte_cdk.models import (
@@ -26,7 +27,7 @@ from .utils import command_check
 @pytest.fixture(name="config")
 def config_fixture(requests_mock):
     config = {
-        "account_id": "123",
+        "account_ids": ["123"],
         "access_token": "TOKEN",
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",
@@ -50,7 +51,7 @@ def config_gen(config):
 @pytest.fixture(name="api")
 def api_fixture(mocker):
     api_mock = mocker.patch("source_facebook_marketing.source.API")
-    api_mock.return_value = mocker.Mock(account=123)
+    api_mock.return_value = mocker.Mock(account=mocker.Mock(return_value=123))
     return api_mock
 
 
@@ -82,8 +83,13 @@ class TestSourceFacebookMarketing:
         """Check if _find_account was called to validate credentials"""
         ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
 
-        api_find_account.assert_called_once_with(config["account_id"])
-        logger_mock.info.assert_called_once_with("Select account 1234")
+        api_find_account.assert_called_once_with(config["account_ids"][0])
+        logger_mock.info.assert_has_calls(
+            [
+                call("Attempting to retrieve information for account with ID: 123"),
+                call("Successfully retrieved account information for account: 1234"),
+            ]
+        )
         assert ok
         assert not error_msg
 
