@@ -1,5 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from collections.abc import Iterator, Mapping
+
 from sqlalchemy.engine import Engine
 
 from airbyte_lib.caches import SQLCacheBase
@@ -12,10 +14,23 @@ class ReadResult:
         self._cache = cache
 
     def __getitem__(self, stream: str) -> CachedDataset:
+        if stream not in self._cache:
+            raise KeyError(f"Stream {stream} does not exist")
+
         return CachedDataset(self._cache, stream)
+
+    def __contains__(self, stream: str) -> bool:
+        return stream in self._cache
+
+    def __iter__(self) -> Iterator[str]:
+        return self._cache.__iter__()
 
     def get_sql_engine(self) -> Engine:
         return self._cache.get_sql_engine()
+
+    @property
+    def streams(self) -> Mapping[str, CachedDataset]:
+        return self._cache.streams
 
     @property
     def cache(self) -> SQLCacheBase:

@@ -23,6 +23,7 @@ from airbyte_protocol.models import (
 
 from airbyte_lib._factories.cache_factories import get_default_cache
 from airbyte_lib._util import protocol_util  # Internal utility functions
+from airbyte_lib.datasets._lazy import LazyDataset
 from airbyte_lib.results import ReadResult
 from airbyte_lib.telemetry import (
     CacheTelemetryInfo,
@@ -174,7 +175,7 @@ class Source:
             ],
         )
 
-    def get_records(self, stream: str) -> Iterator[dict[str, Any]]:
+    def get_records(self, stream: str) -> LazyDataset:
         """Read a stream from the connector.
 
         This involves the following steps:
@@ -198,15 +199,15 @@ class Source:
             ],
         )
         if len(configured_catalog.streams) == 0:
-            raise ValueError(
+            raise KeyError(
                 f"Stream {stream} is not available for connector {self.name}, "
                 f"choose from {self.get_available_streams()}",
             )
 
-        iterator: Iterable[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
+        iterator: Iterator[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
             self._read_with_catalog(streaming_cache_info, configured_catalog),
         )
-        yield from iterator  # TODO: Refactor to use LazyDataset here
+        return LazyDataset(iterator)
 
     def check(self) -> None:
         """Call check on the connector.

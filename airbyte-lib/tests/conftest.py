@@ -11,7 +11,7 @@ from typing import Optional
 from airbyte_lib.caches.snowflake import SnowflakeCacheConfig
 
 import docker
-import psycopg
+import psycopg2 as psycopg
 import pytest
 from google.cloud import secretmanager
 
