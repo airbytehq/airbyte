@@ -16,7 +16,7 @@ This connector implements the [SuiteAnalytics Connect Service](https://www.netsu
 - Consumer Secret
 - Token ID
 - Token Secret
-- Role ID
+- Role ID (Of Data Warehouse Integrator Role)
 
 ## Setup guide
 
@@ -52,7 +52,7 @@ This connector implements the [SuiteAnalytics Connect Service](https://www.netsu
 #### Step 2.3: Create Integration Record
 
 1. Go to **Setup** » **Integration** » **Manage Integrations** » **New**
-2. Fill in the **Name** field (we recommend using something memorable like 'Airbyte OBDC Integration')
+2. Fill in the **Name** field (we recommend using something memorable like 'Airbyte ODBC Integration')
 3. Make sure the **State** is `enabled`
 4. Enable checkbox `Token-Based Authentication` in **Authentication** section. Make sure everything is NOT checked, as it can cause the connector to fail
 5. Save changes
@@ -61,7 +61,7 @@ This connector implements the [SuiteAnalytics Connect Service](https://www.netsu
 #### Step 2.4: Setup Your Suite Analytics Role
 
 1. Go to **Setup** » **Users/Roles** » **Manage Roles** » **New**
-2. Fill in the **Name** field (we recommend using something memorable like 'Airbyte OBDC Role')
+2. Fill in the **Name** field (we recommend using something memorable like 'Airbyte ODBC Role')
 3. Scroll down to **Permissions** tab
 4. Click on `Setup` and manually add the `Log In Using Access Tokens` and `SuiteAnalytics Connect` permissions
 5. Click Save
@@ -126,7 +126,7 @@ You should also have a correctly configured User with permissions to access Suit
 8. Add **Token Secret**
 9. Add **Service Host**
 10. Add **Service Port**
-11. Add **Role ID**
+11. Add **Role ID** (Of Data Warehouse Integrator Role)
 12. Click `Set up source`.
 
 ### For Airbyte OSS:
@@ -141,7 +141,7 @@ You should also have a correctly configured User with permissions to access Suit
 8. Add **Token Secret**
 9. Add **Service Host**
 10. Add **Service Port**
-11. Add **Role ID**
+11. Add **Role ID** (Of Data Warehouse Integrator Role)
 12. Click `Set up source`
 
 ## Supported sync modes
