@@ -202,21 +202,25 @@ def test_cached_dataset():
     # Check that the stream appears in mapping-like attributes
     assert stream_name in result.cache._streams_with_data
     assert stream_name in result
+    assert stream_name in result.cache
     assert stream_name in result.cache.streams
     assert stream_name in result.streams
 
     stream_get_a: CachedDataset = result[stream_name]
     stream_get_b: CachedDataset = result.streams[stream_name]
-    stream_get_c: CachedDataset = result.cache.streams[stream_name]
+    stream_get_c: CachedDataset = result.cache[stream_name]
+    stream_get_d: CachedDataset = result.cache.streams[stream_name]
 
     # Check that each get method is syntactically equivalent
 
     assert isinstance(stream_get_a, CachedDataset)
     assert isinstance(stream_get_b, CachedDataset)
     assert isinstance(stream_get_c, CachedDataset)
+    assert isinstance(stream_get_d, CachedDataset)
 
     assert stream_get_a == stream_get_b
     assert stream_get_b == stream_get_c
+    assert stream_get_c == stream_get_d
 
     # Check that we can iterate over the stream
 
@@ -228,6 +232,8 @@ def test_cached_dataset():
         result[not_a_stream_name]
     with pytest.raises(KeyError):
         result.streams[not_a_stream_name]
+    with pytest.raises(KeyError):
+        result.cache[not_a_stream_name]
     with pytest.raises(KeyError):
         result.cache.streams[not_a_stream_name]
 
@@ -265,6 +271,12 @@ def test_cached_dataset_filter():
         # Assert the stream name still matches
         assert filtered_dataset.stream_name == stream_name, \
             f"Case '{case}' had incorrect stream name."
+
+        # Check that chaining filters works
+        chained_dataset = filtered_dataset.with_filter("column1 == 'value1'")
+        chained_records = [row for row in chained_dataset]
+        assert len(chained_records) == 1, \
+            f"Case '{case}' had incorrect number of records after chaining filters."
 
 
 def test_lazy_dataset_from_source():
