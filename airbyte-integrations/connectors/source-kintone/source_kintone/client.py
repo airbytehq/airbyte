@@ -1,6 +1,7 @@
 import urllib.request
 import urllib.parse
 import json
+import yaml
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -12,6 +13,8 @@ class Client:
     def __init__(self, config: json, logger: AirbyteLogger):
         self.subdomain = config.get("subdomain")
         self.api_token = config.get("api_token")
+        with open("/airbyte/integration_code/source_kintone/field_code_mappings.yaml") as f:
+            self.field_code_mappings = yaml.full_load(f)
         self.logger = logger
 
     def _get_base_url(self):
@@ -66,6 +69,10 @@ class Client:
             method="DELETE",
         )
 
+    def _rename_field_code_from_jp_to_en(self, app_id: str, field_code: str):
+        mappings = self.field_code_mappings[app_id]
+        return mappings.get(field_code, field_code)
+
     # ref. https://kintone.dev/en/docs/kintone/rest-api/apps/get-app/
     def get_app(self, app_id: str):
         url = self._get_base_url() + "/k/v1/app.json"
@@ -79,7 +86,7 @@ class Client:
         res = self._fetch_data(url, params)
         fields = res["properties"]
         without_fields = ["カテゴリー", "作業者", "ステータス"]
-        return {x: fields[x] for x in fields if x not in without_fields}
+        return {self._rename_field_code_from_jp_to_en(app_id, x): fields[x] for x in fields if x not in without_fields}
 
     # ref. https://kintone.dev/en/docs/kintone/rest-api/records/add-cursor/
     def create_cursor(self, app_id: str, cursor_field: str = None, cursor_value: str = None):
@@ -96,7 +103,7 @@ class Client:
     def get_app_records(self, app_id: str, cursor_field: str = None, cursor_value: str = None):
         cursor = self.create_cursor(app_id, cursor_field, cursor_value)
         while True:
-            records, next = self.get_records_by_cursor(cursor["id"])
+            records, next = self.get_records_by_cursor(app_id, cursor["id"])
             for record in records:
                 yield record
             if next == False:
@@ -105,7 +112,7 @@ class Client:
             
         
     # ref. https://kintone.dev/en/docs/kintone/rest-api/records/get-cursor/
-    def get_records_by_cursor(self, cursor_id: str):
+    def get_records_by_cursor(self, app_id: str, cursor_id: str):
         params = {
             "id": cursor_id,
         }
@@ -115,7 +122,7 @@ class Client:
         for record in res["records"]:
             item = {}
             for k, v in record.items():
-                item[k] = v["value"]
+                item[self._rename_field_code_from_jp_to_en(app_id, k)] = v["value"]
 
             records.append(item)
 
