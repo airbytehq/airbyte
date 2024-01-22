@@ -136,6 +136,7 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
                 if (StringUtils.isBlank(pkValue)) {
                     pkValue = c.getCursorField().stream().filter(StringUtils::isNotBlank)
                             .map(p -> data.get(p).asText()).collect(Collectors.joining("|"));
+                    pkValue = StringUtils.isBlank(pkValue) ? "" : pk.get() + "_" + pkValue;
                 }
                 if (StringUtils.isNotBlank(pkValue)) {
                     pk.set(pkValue);
