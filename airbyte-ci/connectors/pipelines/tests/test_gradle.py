@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 from pathlib import Path
 
@@ -17,6 +18,7 @@ pytestmark = [
 class TestGradleTask:
     class DummyStep(gradle.GradleTask):
         gradle_task_name = "dummyTask"
+        title = "Dummy Step"
 
         async def _run(self) -> steps.StepResult:
             return steps.StepResult(self, steps.StepStatus.SUCCESS)
@@ -34,3 +36,11 @@ class TestGradleTask:
     async def test_build_include(self, test_context):
         step = self.DummyStep(test_context)
         assert step.build_include
+
+    def test_params(self, test_context):
+        step = self.DummyStep(test_context)
+        step.extra_params = {"-x": ["dummyTask", "dummyTask2"]}
+        assert set(step.params_as_cli_options) == {
+            "-x=dummyTask",
+            "-x=dummyTask2",
+        }

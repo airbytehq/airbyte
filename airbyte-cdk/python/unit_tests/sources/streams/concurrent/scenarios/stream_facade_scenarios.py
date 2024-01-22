@@ -357,10 +357,10 @@ test_incremental_stream_with_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 1}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 1}], "state_type": "date-range", "legacy": {}}},
+            {"stream1": {'cursor_field': 1}},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 2}], "state_type": "date-range", "legacy": {}}},
+            {"stream1": {"cursor_field": 2}},
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -402,7 +402,7 @@ test_incremental_stream_without_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 3}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 3}], "state_type": "date-range", "legacy": {}}},
+            {"stream1": {"cursor_field": 3}},
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})

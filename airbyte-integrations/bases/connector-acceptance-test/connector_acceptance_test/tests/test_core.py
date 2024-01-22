@@ -32,10 +32,12 @@ from connector_acceptance_test.config import (
     BasicReadTestConfig,
     Config,
     ConnectionTestConfig,
+    ConnectorAttributesConfig,
     DiscoveryTestConfig,
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
     IgnoredFieldsConfiguration,
+    NoPrimaryKeyConfiguration,
     SpecTestConfig,
 )
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
@@ -663,6 +665,11 @@ class TestDiscovery(BaseTest):
             name_counts[stream.name] = count + 1
         return [k for k, v in name_counts.items() if v > 1]
 
+    def test_streams_have_valid_json_schemas(self, discovered_catalog: Mapping[str, Any]):
+        """Check if all stream schemas are valid json schemas."""
+        for stream_name, stream in discovered_catalog.items():
+            jsonschema.Draft7Validator.check_schema(stream.json_schema)
+
     def test_defined_cursors_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check if all of the source defined cursor fields are exists on stream's json schema."""
         for stream_name, stream in discovered_catalog.items():
@@ -1136,3 +1143,35 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
+
+
+@pytest.mark.default_timeout(TEN_MINUTES)
+class TestConnectorAttributes(BaseTest):
+    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []  # Used so that this is not part of the mandatory high strictness test suite yet
+
+    @pytest.fixture(name="operational_certification_test")
+    async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
+        """
+        Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
+        against operational certification criteria
+        """
+
+        if connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
+            pytest.skip("Skipping operational connector certification test for uncertified connector")
+        return True
+
+    @pytest.fixture(name="streams_without_primary_key")
+    def streams_without_primary_key_fixture(self, inputs: ConnectorAttributesConfig) -> List[NoPrimaryKeyConfiguration]:
+        return inputs.streams_without_primary_key or []
+
+    async def test_streams_define_primary_key(
+        self, operational_certification_test, streams_without_primary_key, connector_config, docker_runner: ConnectorRunner
+    ):
+        output = await docker_runner.call_discover(config=connector_config)
+        catalog_messages = filter_output(output, Type.CATALOG)
+        streams = catalog_messages[0].catalog.streams
+        discovered_streams_without_primary_key = {stream.name for stream in streams if not stream.source_defined_primary_key}
+        missing_primary_keys = discovered_streams_without_primary_key - {stream.name for stream in streams_without_primary_key}
+
+        quoted_missing_primary_keys = {f"'{primary_key}'" for primary_key in missing_primary_keys}
+        assert not missing_primary_keys, f"The following streams {', '.join(quoted_missing_primary_keys)} do not define a primary_key"

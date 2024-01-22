@@ -12,6 +12,8 @@ import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -49,7 +51,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2017-latest", "withNetwork");
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2017, ContainerModifier.NETWORK);
     testdb = testdb
         .with("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", testdb.getDatabaseName())
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));")
