@@ -126,7 +126,6 @@ QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = [
     "SessionHijackingEvent",
     "UriEventStream",
     "UserRecordAccess",
-    "DatacloudContact",
 ]
 
 # The following objects are not supported by the Bulk API. Listed objects are version specific.
