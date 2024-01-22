@@ -39,8 +39,7 @@ class SourceAstra(Source):
         """
         try:
             index = AstraClient(
-                astra_id=config["database_id"],
-                astra_region=config["database_region"],
+                astra_endpoint=config["database_endpoint"],
                 astra_application_token=config["application_token"],
                 keyspace_name=config["keyspace_name"],
                 collection_name=config["collection_name"],
@@ -76,8 +75,7 @@ class SourceAstra(Source):
         stream_name = config["keyspace_name"]+"."+config["collection_name"]
 
         index = AstraClient(
-            astra_id=config["database_id"],
-            astra_region=config["database_region"],
+            astra_endpoint=config["database_endpoint"],
             astra_application_token=config["application_token"],
             keyspace_name=config["keyspace_name"],
             collection_name=config["collection_name"],
@@ -141,8 +139,7 @@ class SourceAstra(Source):
         stream_name = config["keyspace_name"]+"."+config["collection_name"]
 
         index = AstraClient(
-            astra_id=config["database_id"],
-            astra_region=config["database_region"],
+            astra_endpoint=config["database_endpoint"],
             astra_application_token=config["application_token"],
             keyspace_name=config["keyspace_name"],
             collection_name=config["collection_name"],

@@ -33,29 +33,27 @@ class AstraClient:
 
     def __init__(
         self,
-        astra_id: str,
-        astra_region: str,
+        astra_endpoint: str,
         astra_application_token: str,
         keyspace_name: str,
         collection_name: str,
         embedding_dim: int,
         similarity_function: str,
     ):
-        self.astra_id = astra_id
+        self.astra_endpoint = astra_endpoint
         self.astra_application_token = astra_application_token
-        self.astra_region = astra_region
         self.keyspace_name = keyspace_name
         self.collection_name = collection_name
         self.embedding_dim = embedding_dim
         self.similarity_function = similarity_function
 
-        self.request_url = f"https://{self.astra_id}-{self.astra_region}.apps.astra.datastax.com/api/json/v1/{self.keyspace_name}/{self.collection_name}"
+        self.request_url = f"{self.astra_endpoint}/api/json/v1/{self.keyspace_name}/{self.collection_name}"
         self.request_header = {
             "x-cassandra-token": self.astra_application_token,
             "Content-Type": "application/json",
         }
         self.create_url = (
-            f"https://{self.astra_id}-{self.astra_region}.apps.astra.datastax.com/api/json/v1/{self.keyspace_name}"
+            f"{self.astra_endpoint}/api/json/v1/{self.keyspace_name}"
         )
 
         index_exists = self.find_index()

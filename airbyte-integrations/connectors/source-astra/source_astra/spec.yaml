@@ -5,8 +5,7 @@ connectionSpecification:
   type: object
   required:
     - application_token
-    - database_id
-    - database_region
+    - database_endpoint
     - keyspace_name
     - collection_name
     - embedding_dimension
@@ -17,40 +16,36 @@ connectionSpecification:
       title: Application Token
       description: >-
         Description
-      order: 2
-    database_id:
+      order: 1
+    database_endpoint:
       type: string
       title: Database ID
       description: >-
         Description
       order: 0
-    database_region:
-      type: string
-      title: Database Region
-      description: >-
-        Description
-      order: 1
+      pattern: "^https:\\/\\/([a-z]|[0-9]){8}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){12}-[^\\.]*?\\.apps\\.astra\\.datastax\\.com"
+      examples: ["https://8292d414-dd1b-4c33-8431-e838bedc04f7-us-east1.apps.astra.datastax.com"]
     keyspace_name:
       type: string
       title: Keyspace Name
       description: >-
         Description
-      order: 3
+      order: 2
     collection_name:
       type: string
       title: Collection Name
       description: >-
         Description
-      order: 4
+      order: 3
     embedding_dimension:
       type: integer
       title: Embedding Dimension
       description: >-
         Description
-      order: 5
+      order: 4
     similarity_function:
       type: string
       title: Similarity Function
       description: >-
         Description
-      order: 6
+      order: 5
