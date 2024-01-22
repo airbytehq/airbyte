@@ -151,7 +151,7 @@ class Client:
             name=app["code"],
             json_schema=json_schema,
             supported_sync_modes=["full_refresh", "incremental"],
-            default_cursor_field=["updated_at"],
+            default_cursor_field=["update_date_time"],
         )
 
 def update_url(url, params):
