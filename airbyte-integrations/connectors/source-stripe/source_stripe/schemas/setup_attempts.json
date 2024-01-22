@@ -329,9 +329,6 @@
             "created": {
               "type": ["null", "integer"]
             },
-            "updated": {
-              "type": ["null", "integer"]
-            },
             "customer": {
               "type": ["null", "string"]
             },

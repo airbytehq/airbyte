@@ -19,7 +19,7 @@
     "created": {
       "type": ["null", "number"]
     },
-    "updated": {
+    "_ab_source_record_last_modified": {
       "type": ["null", "integer"]
     },
     "fraud_type": {

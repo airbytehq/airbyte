@@ -76,7 +76,7 @@
     "unit_label": {
       "type": ["null", "string"]
     },
-    "updated": {
+    "_ab_source_record_last_modified": {
       "type": ["null", "integer"]
     },
     "url": {

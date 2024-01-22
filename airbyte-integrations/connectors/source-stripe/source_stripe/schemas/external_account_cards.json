@@ -74,7 +74,7 @@
     "account": {
       "type": ["string", "null"]
     },
-    "updated": {
+    "_ab_source_record_last_modified": {
       "type": ["null", "integer"]
     },
     "is_deleted": {

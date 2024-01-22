@@ -120,7 +120,7 @@
     "date": {
       "type": ["null", "integer"]
     },
-    "updated": {
+    "_ab_source_record_last_modified": {
       "type": ["null", "integer"]
     },
     "object": {

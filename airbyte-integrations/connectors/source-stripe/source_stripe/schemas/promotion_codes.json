@@ -43,7 +43,7 @@
     "object": { "type": ["null", "string"] },
     "active": { "type": ["null", "boolean"] },
     "created": { "type": ["null", "integer"] },
-    "updated": { "type": ["null", "integer"] },
+    "_ab_source_record_last_modified": { "type": ["null", "integer"] },
     "customer": { "type": ["null", "string"] },
     "expires_at": { "type": ["null", "integer"] },
     "livemode": { "type": ["null", "boolean"] },
