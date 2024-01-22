@@ -41,6 +41,8 @@ underlying table as a SQLAlchemy Table object.</p>
     <a class="headerlink" href="#CachedDataset.to_pandas"></a>
     
             <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
+
+<p>The base implementation simply passes the record iterator to Panda's DataFrame constructor.</p>
 </div>
 
 
@@ -94,6 +96,8 @@ underlying table as a SQLAlchemy Table object.</p>
     <a class="headerlink" href="#DatasetBase.to_pandas"></a>
     
             <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
+
+<p>The base implementation simply passes the record iterator to Panda's DataFrame constructor.</p>
 </div>
 
 
@@ -213,6 +217,8 @@ table as the query statement.</p>
     <a class="headerlink" href="#SQLDataset.to_pandas"></a>
     
             <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
+
+<p>The base implementation simply passes the record iterator to Panda's DataFrame constructor.</p>
 </div>
 
 
@@ -230,6 +236,16 @@ table as the query statement.</p>
             <div class="docstring"><p>Filter the dataset by a set of column values.</p>
 
 <p>Filters can be specified as either a string or a SQLAlchemy expression.</p>
+
+<p>Filters are lazily applied to the dataset, so they can be chained together. For example:</p>
+
+<pre><code>    dataset.with_filter("id &gt; 5").with_filter("id &lt; 10")
+</code></pre>
+
+<p>is equivalent to:</p>
+
+<pre><code>    dataset.with_filter("id &gt; 5", "id &lt; 10")
+</code></pre>
 </div>
 
 

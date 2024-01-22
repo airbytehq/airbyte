@@ -55,6 +55,14 @@ class SQLDataset(DatasetBase):
         """Filter the dataset by a set of column values.
 
         Filters can be specified as either a string or a SQLAlchemy expression.
+
+        Filters are lazily applied to the dataset, so they can be chained together. For example:
+
+                dataset.with_filter("id > 5").with_filter("id < 10")
+
+        is equivalent to:
+
+                dataset.with_filter("id > 5", "id < 10")
         """
         # Convert all strings to TextClause objects.
         filters: list[ClauseElement] = [
