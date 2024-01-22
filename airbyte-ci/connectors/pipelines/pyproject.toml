@@ -28,11 +28,6 @@ pygit2 = "^1.13.1"
 asyncclick = "^8.1.3.4"
 certifi = "^2023.11.17"
 
-[tool.poetry.group.test.dependencies]
-pytest = "^6.2.5"
-pytest-mock = "^3.10.0"
-
-
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"
 pytest-cov = "^4.1.0"
