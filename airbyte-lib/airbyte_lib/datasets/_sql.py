@@ -5,7 +5,7 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, cast
 
 from overrides import overrides
-from sqlalchemy import all_, text
+from sqlalchemy import and_, text
 
 from airbyte_lib.datasets._base import DatasetBase
 
@@ -37,6 +37,10 @@ class SQLDataset(DatasetBase):
         self._stream_name: str = stream_name
         self._query_statement: Selectable = query_statement
 
+    @property
+    def stream_name(self) -> str:
+        return self._stream_name
+
     def __iter__(self) -> Iterator[Mapping[str, Any]]:
         with self._cache.get_sql_connection() as conn:
             for row in conn.execute(self._query_statement):
@@ -44,23 +48,25 @@ class SQLDataset(DatasetBase):
                 # https://pydoc.dev/sqlalchemy/latest/sqlalchemy.engine.row.RowMapping.html
                 yield cast(Mapping[str, Any], row._mapping)  # noqa: SLF001
 
-    def __eq__(self, __value: object) -> bool:
-        if not isinstance(__value, SQLDataset):
-            return False
-
-        if self._cache is not __value._cache:
-            return False
-
-        if self._stream_name != __value._stream_name:
-            return False
-
-        if self._query_statement != __value._query_statement:
-            return False
-
-        return True
-
     def to_pandas(self) -> DataFrame:
         return self._cache.get_pandas_dataframe(self._stream_name)
+
+    def with_filter(self, *filter_expressions: ClauseElement | str) -> SQLDataset:
+        """Filter the dataset by a set of column values.
+
+        Filters can be specified as either a string or a SQLAlchemy expression.
+        """
+        # Convert all strings to TextClause objects.
+        filters: list[ClauseElement] = [
+            text(expression) if isinstance(expression, str) else expression
+            for expression in filter_expressions
+        ]
+        filtered_select = self._query_statement.where(and_(*filters))
+        return SQLDataset(
+            cache=self._cache,
+            stream_name=self._stream_name,
+            query_statement=filtered_select,
+        )
 
 
 class CachedDataset(SQLDataset):
@@ -82,19 +88,24 @@ class CachedDataset(SQLDataset):
     def to_sql_table(self) -> Table:
         return self._cache.get_sql_table(self._stream_name)
 
-    def with_filter(self, *filter_expressions: ClauseElement | str) -> SQLDataset:
-        """Filter the dataset by a set of column values.
+    def __eq__(self, value: object) -> bool:
+        """Return True if the value is a CachedDataset with the same cache and stream name.
 
-        Filters can be specified as either a string or a SQLAlchemy expression.
+        In the case of CachedDataset objects, we can simply compare the cache and stream name.
+
+        Note that this equality check is only supported on CachedDataset objects and not for
+        the base SQLDataset implementation. This is because of the complexity and computational
+        cost of comparing two arbitrary SQL queries that could be bound to different variables,
+        as well as the chance that two queries can be syntactically equivalent without being
+        text-wise equivalent.
         """
-        # Convert all strings to TextClause objects.
-        filters: list[ClauseElement] = [
-            text(expression) if isinstance(expression, str) else expression
-            for expression in filter_expressions
-        ]
-        filtered_select = self._query_statement.where(all_(*filters))
-        return SQLDataset(
-            cache=self._cache,
-            stream_name=self._stream_name,
-            query_statement=filtered_select,
-        )
+        if not isinstance(value, SQLDataset):
+            return False
+
+        if self._cache is not value._cache:
+            return False
+
+        if self._stream_name != value._stream_name:
+            return False
+
+        return True

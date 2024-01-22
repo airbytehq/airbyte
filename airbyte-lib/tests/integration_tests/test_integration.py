@@ -1,11 +1,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from collections.abc import Mapping
 import os
 import shutil
-import subprocess
+from typing import Any
 from unittest.mock import Mock, call, patch
 import tempfile
 from pathlib import Path
+
+from sqlalchemy import column, text
 
 import airbyte_lib as ab
 from airbyte_lib.caches import SnowflakeCacheConfig, SnowflakeSQLCache
@@ -16,7 +19,7 @@ from airbyte_lib.caches import PostgresCache, PostgresCacheConfig
 from airbyte_lib.registry import _update_cache
 from airbyte_lib.version import get_version
 from airbyte_lib.results import ReadResult
-from airbyte_lib.datasets import CachedDataset, DatasetBase, LazyDataset, LazySQLDataset
+from airbyte_lib.datasets import CachedDataset, LazyDataset, SQLDataset
 import airbyte_lib as ab
 
 from airbyte_lib.results import ReadResult
@@ -229,6 +232,41 @@ def test_cached_dataset():
         result.cache.streams[not_a_stream_name]
 
 
+def test_cached_dataset_filter():
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    result: ReadResult = source.read(ab.new_local_cache())
+
+    stream_name = "stream1"
+
+    # Check the many ways to add a filter:
+    cached_dataset: CachedDataset = result[stream_name]
+    filtered_dataset_a: SQLDataset = cached_dataset.with_filter("column2 == 1")
+    filtered_dataset_b: SQLDataset = cached_dataset.with_filter(text("column2 == 1"))
+    filtered_dataset_c: SQLDataset = cached_dataset.with_filter(column("column2") == 1)
+
+    assert isinstance(cached_dataset, CachedDataset)
+    all_records = list(cached_dataset)
+    assert len(all_records) == 2
+
+    for filtered_dataset, case in [
+        (filtered_dataset_a, "a"),
+        (filtered_dataset_b, "b"),
+        (filtered_dataset_c, "c"),
+    ]:
+        assert isinstance(filtered_dataset, SQLDataset)
+
+        # Check that we can iterate over each stream
+
+        filtered_records: list[Mapping[str, Any]] = [row for row in filtered_dataset]
+
+        # Check that the filter worked
+        assert len(filtered_records) == 1, f"Case '{case}' had incorrect number of records."
+
+        # Assert the stream name still matches
+        assert filtered_dataset.stream_name == stream_name, \
+            f"Case '{case}' had incorrect stream name."
+
+
 def test_lazy_dataset_from_source():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
 
@@ -237,30 +275,6 @@ def test_lazy_dataset_from_source():
 
     lazy_dataset_a = source.get_records(stream_name)
     lazy_dataset_b = source.get_records(stream_name)
-
-    assert isinstance(lazy_dataset_a, LazyDataset)
-
-    # Check that we can iterate over the stream
-
-    list_from_iter_a = list(lazy_dataset_a)
-    list_from_iter_b = [row for row in lazy_dataset_b]
-
-    assert list_from_iter_a == list_from_iter_b
-
-    # Make sure that we get a key error if we try to access a stream that doesn't exist
-    with pytest.raises(KeyError):
-        source.get_records(not_a_stream_name)
-
-
-def test_lazy_sql_dataset_from_cache():
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
-
-    stream_name = "stream1"
-    not_a_stream_name = "not_a_stream"
-
-    lazy_dataset_a = source.get_records(stream_name)
-    lazy_dataset_b = source.get_records(stream_name)
-    lazy_dataset_c = source.get_records(stream_name)
 
     assert isinstance(lazy_dataset_a, LazyDataset)
 

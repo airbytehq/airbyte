@@ -58,22 +58,15 @@ underlying table as a SQLAlchemy Table object.</p>
     
 
                             </div>
-                            <div id="CachedDataset.with_filter" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">with_filter</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="o">*</span><span class="n">filter_expressions</span><span class="p">:</span> <span class="s1">&#39;ClauseElement | str&#39;</span></span><span class="return-annotation">) -> <span class="n"><a href="#SQLDataset">SQLDataset</a></span>:</span></span>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt><a href="#SQLDataset">SQLDataset</a></dt>
+                                <dd id="CachedDataset.stream_name" class="variable"><a href="#SQLDataset.stream_name">stream_name</a></dd>
+                <dd id="CachedDataset.with_filter" class="function"><a href="#SQLDataset.with_filter">with_filter</a></dd>
 
-        
-    </div>
-    <a class="headerlink" href="#CachedDataset.with_filter"></a>
-    
-            <div class="docstring"><p>Filter the dataset by a set of column values.</p>
-
-<p>Filters can be specified as either a string or a SQLAlchemy expression.</p>
-</div>
-
-
+            </div>
+                                </dl>
                             </div>
                 </section>
                 <section id="DatasetBase">
@@ -198,6 +191,17 @@ table as the query statement.</p>
     
 
                             </div>
+                            <div id="SQLDataset.stream_name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">stream_name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLDataset.stream_name"></a>
+    
+    
+
+                            </div>
                             <div id="SQLDataset.to_pandas" class="classattr">
                                 <div class="attr function">
             
@@ -209,6 +213,23 @@ table as the query statement.</p>
     <a class="headerlink" href="#SQLDataset.to_pandas"></a>
     
             <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLDataset.with_filter" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">with_filter</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="o">*</span><span class="n">filter_expressions</span><span class="p">:</span> <span class="s1">&#39;ClauseElement | str&#39;</span></span><span class="return-annotation">) -> <span class="n"><a href="#SQLDataset">SQLDataset</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLDataset.with_filter"></a>
+    
+            <div class="docstring"><p>Filter the dataset by a set of column values.</p>
+
+<p>Filters can be specified as either a string or a SQLAlchemy expression.</p>
 </div>
 
 
