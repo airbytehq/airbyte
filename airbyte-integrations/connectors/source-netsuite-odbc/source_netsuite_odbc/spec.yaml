@@ -69,11 +69,11 @@ connectionSpecification:
       airbyte_secret: false
       default: "57"
     starting_year:
-      type: integer
+      type: string
       title: Starting Year
       description: The year to start fetching data from
       examples:
-        - 2020
+        - "2020"
       order: 8
       airbyte_secret: false
-      default: 1980
+      default: "1980"

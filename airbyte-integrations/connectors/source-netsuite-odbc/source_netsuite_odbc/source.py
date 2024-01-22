@@ -14,9 +14,10 @@ from .odbc_utils import NetsuiteODBCCursorConstructor
 
 NETSUITE_ODBC_BASE_URL = "connect.api.netsuite.com"
 
+
 class SourceNetsuiteOdbc(AbstractSource):
     logger: logging.Logger = logging.getLogger("airbyte")
-    
+
     def streams(self, config: Mapping[str, Any]) -> Iterable[Stream]:
         cursor_constructor = NetsuiteODBCCursorConstructor()
         db_connection = cursor_constructor.create_database_connection(config)
@@ -29,7 +30,7 @@ class SourceNetsuiteOdbc(AbstractSource):
             netsuite_stream = NetsuiteODBCStream(db_connection=db_connection, table_name=stream_name, stream=stream, config=config)
             yield netsuite_stream
         self.logger.info(f"Finished generating streams.  Discovered {number_streams} streams.")
-    
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         :param logger: source logger
@@ -50,6 +51,8 @@ class SourceNetsuiteOdbc(AbstractSource):
         starting_year = config.get("starting_year")
         if starting_year is None:
             starting_year = 1980
+        else:
+            starting_year = int(starting_year)
         if not (starting_year >= 1900 and starting_year <= datetime.now().year):
             return False, f"Invalid starting_year: {starting_year}.  Must be between 1900 and {datetime.now().year}"
 
@@ -63,4 +66,3 @@ class SourceNetsuiteOdbc(AbstractSource):
         except Exception as e:
             logger.error(e)
             return False, e
-

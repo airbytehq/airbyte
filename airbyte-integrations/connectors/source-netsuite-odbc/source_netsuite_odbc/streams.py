@@ -23,7 +23,6 @@ from .odbc_utils import NetsuiteODBCCursorConstructor
 StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
 NETSUITE_PAGINATION_INTERVAL: Final[int] = 10000
-EARLIEST_DATE: Final[date] = date(2020, 1, 1)
 YEARS_FORWARD_LOOKING: Final[int] = 1
 # Sometimes, system created accounts can have primary key values < 0.  To be safe, we choose
 # an arbitrary value of -10000 as the starting value for our primary key
@@ -394,7 +393,7 @@ class NetsuiteODBCStream(Stream):
         start_slice_range = self.get_earliest_date()
         if sync_mode == SyncMode.incremental:
             incremental_date = (
-                date.fromisoformat(stream_state["last_date_updated"]) if "last_date_updated" in stream_state else EARLIEST_DATE
+                date.fromisoformat(stream_state["last_date_updated"]) if "last_date_updated" in stream_state else start_slice_range
             )
             start_slice_range = incremental_date
         elif not (sync_mode == SyncMode.full_refresh):
@@ -402,7 +401,7 @@ class NetsuiteODBCStream(Stream):
         return start_slice_range, end_slice_range
 
     def get_earliest_date(self):
-        starting_year = self.config.get("starting_year", 1980)
+        starting_year = int(self.config.get("starting_year", "1980"))
         return date(starting_year, 1, 1)
 
     def get_slice_for_year(self, date_for_slice: date):
