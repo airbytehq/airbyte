@@ -123,8 +123,8 @@ public class MssqlInitialReadUtil {
         cdcStreamsForInitialOrderedCoumnLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
     final CdcState stateToBeUsed = (!savedOffsetStillPresentOnServer || (stateManager.getCdcStateManager().getCdcState() == null
         || stateManager.getCdcStateManager().getCdcState().getState() == null))
-        ? new CdcState().withState(initialDebeziumState)
-        : stateManager.getCdcStateManager().getCdcState();
+            ? new CdcState().withState(initialDebeziumState)
+            : stateManager.getCdcStateManager().getCdcState();
 
     final MssqlCdcConnectorMetadataInjector metadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
     // If there are streams to sync via ordered column load, build the relevant iterators.
@@ -174,7 +174,8 @@ public class MssqlInitialReadUtil {
 
     // This starts processing the transaction logs as soon as initial sync is complete,
     // this is a bit different from the current cdc syncs.
-    // We finish the current CDC once the initial snapshot is complete and the next sync starts processing the transaction logs
+    // We finish the current CDC once the initial snapshot is complete and the next sync starts
+    // processing the transaction logs
     return Collections.singletonList(
         AutoCloseableIterators.concatWithEagerClose(
             Stream
@@ -250,9 +251,9 @@ public class MssqlInitialReadUtil {
   }
 
   static OrderedColumnInfo getOrderedColumnInfo(final JdbcDatabase database,
-                                                      final ConfiguredAirbyteStream stream,
-                                                      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                      final String quoteString) {
+                                                final ConfiguredAirbyteStream stream,
+                                                final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                final String quoteString) {
     // For cursor-based syncs, we cannot always assume a ordered column field exists. We need to handle
     // the case where it does not exist when we support cursor-based syncs.
     if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) { // TODO: validate the seleted column rather than primary key

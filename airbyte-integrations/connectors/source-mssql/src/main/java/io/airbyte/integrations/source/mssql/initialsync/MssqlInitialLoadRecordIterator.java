@@ -99,7 +99,8 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   }
 
   private boolean shouldBuildNextSubquery() {
-    // The next sub-query should be built if (i) it is the first subquery in the sequence. (ii) the previous subquery has finished.
+    // The next sub-query should be built if (i) it is the first subquery in the sequence. (ii) the
+    // previous subquery has finished.
     return (currentIterator == null || !currentIterator.hasNext());
   }
 
@@ -132,7 +133,8 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
           sql = "SELECT %s FROM %s WHERE %s >= ? ORDER BY %s".formatted(wrappedColumnNames, fullTableName,
               quotedCursorField, quotedCursorField);
         } else {
-          // The ordered column max value could be null - this can happen in the case of empty tables. In this case,
+          // The ordered column max value could be null - this can happen in the case of empty tables. In this
+          // case,
           // we can just issue a query without any chunking.
           if (ocInfo.ocMaxValue() != null) {
             sql = "SELECT TOP %s %s FROM %s WHERE %s > ? AND %s <= ? ORDER BY %s".formatted(chunkSize, wrappedColumnNames, fullTableName,

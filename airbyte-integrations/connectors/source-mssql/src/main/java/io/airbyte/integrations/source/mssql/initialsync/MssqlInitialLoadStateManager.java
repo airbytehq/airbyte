@@ -21,6 +21,7 @@ public interface MssqlInitialLoadStateManager {
 
   /**
    * Returns an intermediate state message for the initial sync.
+   *
    * @param pair pair
    * @param ocLoadStatus ordered column load status
    * @return state message
@@ -29,6 +30,7 @@ public interface MssqlInitialLoadStateManager {
 
   /**
    * Updates the {@link OrderedColumnLoadStatus} for the state associated with the given pair.
+   *
    * @param pair pair
    * @param ocLoadStatus updated status
    */
@@ -36,6 +38,7 @@ public interface MssqlInitialLoadStateManager {
 
   /**
    * Returns the final state message for the initial sync..
+   *
    * @param pair pair
    * @param streamStateForIncrementalRun incremental status
    * @return state message
@@ -43,23 +46,25 @@ public interface MssqlInitialLoadStateManager {
   AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun);
 
   /**
-   * Returns the previous state emitted.
-   * Represented as a {@link OrderedColumnLoadStatus} associated with the stream.
+   * Returns the previous state emitted. Represented as a {@link OrderedColumnLoadStatus} associated
+   * with the stream.
+   *
    * @param pair pair
    * @return load status
    */
   OrderedColumnLoadStatus getOrderedColumnLoadStatus(final AirbyteStreamNameNamespacePair pair);
 
   /**
-   * Returns the current {@OrderedColumnInfo}, associated with the stream.
-   * This includes the data type and the column name associated with the stream.
+   * Returns the current {@OrderedColumnInfo}, associated with the stream. This includes the data type
+   * and the column name associated with the stream.
+   *
    * @param pair pair
    * @return load status
    */
   OrderedColumnInfo getOrderedColumnInfo(final AirbyteStreamNameNamespacePair pair);
 
   static Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> initPairToOrderedColumnLoadStatusMap(
-      final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOcStatus) {
+                                                                                                           final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOcStatus) {
     return pairToOcStatus.entrySet().stream()
         .collect(Collectors.toMap(
             e -> new AirbyteStreamNameNamespacePair(e.getKey().getName(), e.getKey().getNamespace()),

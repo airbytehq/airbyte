@@ -47,7 +47,7 @@ public class MssqlInitialLoadGlobalStateManager implements MssqlInitialLoadState
   }
 
   private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final InitialLoadStreams initialLoadStreams,
-      final ConfiguredAirbyteCatalog catalog) {
+                                                                                  final ConfiguredAirbyteCatalog catalog) {
 
     return catalog.getStreams().stream()
         .filter(s -> !initialLoadStreams.streamsForInitialLoad().contains(s))
@@ -60,7 +60,7 @@ public class MssqlInitialLoadGlobalStateManager implements MssqlInitialLoadState
   public AirbyteStateMessage createIntermediateStateMessage(final AirbyteStreamNameNamespacePair pair, final OrderedColumnLoadStatus ocLoadStatus) {
     final List<AirbyteStreamState> streamStates = streamsThatHaveCompletedSnapshot.stream()
         .map(s -> getAirbyteStreamState(s, Jsons.jsonNode(getFinalState(s))))
-            .collect(Collectors.toList());
+        .collect(Collectors.toList());
 
     streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(ocLoadStatus))));
     final AirbyteGlobalState globalState = new AirbyteGlobalState();

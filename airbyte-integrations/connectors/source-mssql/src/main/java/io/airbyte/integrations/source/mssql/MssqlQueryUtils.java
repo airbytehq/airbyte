@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.models.InternalModels.StateType;
@@ -55,11 +54,11 @@ public class MssqlQueryUtils {
         SELECT %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s);
       """;
   public static final String INDEX_QUERY = "EXEC sp_helpindex N'%s'";
+
   public record Index(
-      @JsonProperty("index_name") String name,
-      @JsonProperty("index_description") String description,
-      @JsonProperty("index_keys") String keys
-  ) { }
+                      @JsonProperty("index_name") String name,
+                      @JsonProperty("index_description") String description,
+                      @JsonProperty("index_keys") String keys) {}
 
   public static final String TABLE_ESTIMATE_QUERY =
       """

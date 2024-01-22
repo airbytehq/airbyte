@@ -201,8 +201,8 @@ public class MssqlInitialLoadHandler {
 
   // Augments the given iterator with record count logs.
   private AutoCloseableIterator<AirbyteMessage> augmentWithLogs(final AutoCloseableIterator<AirbyteMessage> iterator,
-      final AirbyteStreamNameNamespacePair pair,
-      final String streamName) {
+                                                                final AirbyteStreamNameNamespacePair pair,
+                                                                final String streamName) {
     final AtomicLong recordCount = new AtomicLong();
     return AutoCloseableIterators.transform(iterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
