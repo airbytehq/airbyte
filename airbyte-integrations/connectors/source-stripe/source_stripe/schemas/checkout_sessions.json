@@ -214,7 +214,7 @@
       }
     },
     "url": { "type": ["null", "string"] },
-    "updated": { "type": ["null", "integer"] },
+    "_ab_source_record_last_modified": { "type": ["null", "integer"] },
     "created": { "type": ["null", "integer"] },
     "currency_conversion": {
       "type": ["null", "object"],
