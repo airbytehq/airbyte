@@ -338,7 +338,7 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
     def __init__(
         self,
         *args,
-        cursor_field: str = "updated",
+        cursor_field: str = "_ab_source_record_last_modified",
         legacy_cursor_field: Optional[str] = "created",
         event_types: Optional[List[str]] = None,
         record_extractor: Optional[IRecordExtractor] = None,
@@ -438,7 +438,7 @@ class IncrementalStripeStream(StripeStream):
     def __init__(
         self,
         *args,
-        cursor_field: str = "updated",
+        cursor_field: str = "_ab_source_record_last_modified",
         legacy_cursor_field: Optional[str] = "created",
         event_types: Optional[List[str]] = None,
         **kwargs,
@@ -727,7 +727,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         self,
         parent: StripeStream,
         *args,
-        cursor_field: str = "updated",
+        cursor_field: str = "_ab_source_record_last_modified",
         legacy_cursor_field: Optional[str] = "created",
         event_types: Optional[List[str]] = None,
         sub_items_attr: Optional[str] = None,
