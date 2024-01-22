@@ -21,6 +21,7 @@ from airbyte_protocol.models import (
     Type,
 )
 
+from airbyte_lib import exceptions
 from airbyte_lib._factories.cache_factories import get_default_cache
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.results import ReadResult
@@ -85,9 +86,10 @@ class Source:
         available_streams = self.get_available_streams()
         for stream in streams:
             if stream not in available_streams:
-                raise Exception(
-                    f"Stream {stream} is not available for connector {self.name}. "
-                    f"Choose from: {available_streams}",
+                raise exceptions.AirbyteStreamNotFoundError(
+                    stream_name=stream,
+                    connector_name=self.name,
+                    available_streams=available_streams,
                 )
         self.streams = streams
 
@@ -98,8 +100,8 @@ class Source:
     @property
     def _config(self) -> dict[str, Any]:
         if self._config_dict is None:
-            raise Exception(
-                "Config is not set, either set in get_connector or via source.set_config",
+            raise exceptions.AirbyteConnectorConfigurationMissingError(
+                guidance="Provide via get_connector() or set_config()"
             )
         return self._config_dict
 
@@ -116,8 +118,8 @@ class Source:
             for msg in self._execute(["discover", "--config", config_file]):
                 if msg.type == Type.CATALOG and msg.catalog:
                     return msg.catalog
-            raise Exception(
-                f"Connector did not return a catalog. Last logs: {self._last_log_messages}",
+            raise exceptions.AirbyteConnectorMissingCatalogError(
+                log_text=self._last_log_messages,
             )
 
     def _validate_config(self, config: dict[str, Any]) -> None:
@@ -146,8 +148,8 @@ class Source:
         if self._spec:
             return self._spec
 
-        raise Exception(
-            f"Connector did not return a spec. Last logs: {self._last_log_messages}",
+        raise exceptions.AirbyteConnectorMissingSpecError(
+            log_text=self._last_log_messages,
         )
 
     @property
@@ -223,11 +225,13 @@ class Source:
                     if msg.connectionStatus.status != Status.FAILED:
                         return  # Success!
 
-                    raise Exception(
-                        f"Connector returned failed status: {msg.connectionStatus.message}",
+                    raise exceptions.AirbyteConnectorCheckFailedError(
+                        more_context={
+                            "message": msg.connectionStatus.message,
+                        }
                     )
-            raise Exception(
-                f"Connector did not return check status. Last logs: {self._last_log_messages}",
+            raise exceptions.AirbyteConnectorCheckFailedError(
+                log_text=self._last_log_messages
             )
 
     def install(self) -> None:
@@ -330,7 +334,9 @@ class Source:
                 except Exception:
                     self._add_to_logs(line)
         except Exception as e:
-            raise Exception(f"Execution failed. Last logs: {self._last_log_messages}") from e
+            raise exceptions.AirbyteConnectorReadError(
+                log_text=self._last_log_messages,
+            ) from e
 
     def _tally_records(
         self,

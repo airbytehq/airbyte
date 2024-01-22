@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, NoReturn
 
+from airbyte_lib import exceptions
 from airbyte_lib.telemetry import SourceTelemetryInfo, SourceType
 
 
@@ -71,7 +72,7 @@ def _stream_from_subprocess(args: list[str]) -> Generator[Iterable[str], None, N
             yield line
 
     if process.stdout is None:
-        raise Exception("Failed to start subprocess")
+        raise exceptions.AirbyteConnectorError("Failed to start subprocess")
     try:
         yield _stream_from_file(process.stdout)
     finally:
@@ -94,7 +95,7 @@ def _stream_from_subprocess(args: list[str]) -> Generator[Iterable[str], None, N
 
         # If the exit code is not 0 or -15 (SIGTERM), raise an exception
         if exit_code not in (0, -15):
-            raise Exception(f"Process exited with code {exit_code}")
+            raise exceptions.AirbyteSubprocessFailedError(exit_code)
 
 
 class VenvExecutor(Executor):
@@ -123,7 +124,9 @@ class VenvExecutor(Executor):
     def _run_subprocess_and_raise_on_failure(self, args: list[str]) -> None:
         result = subprocess.run(args, check=False)
         if result.returncode != 0:
-            raise Exception(f"Install process exited with code {result.returncode}")
+            raise exceptions.AirbyteConnectorInstallationError(
+                f"Install process exited with code {result.returncode}"
+            )
 
     def uninstall(self) -> None:
         venv_name = self._get_venv_name()
@@ -171,7 +174,7 @@ class VenvExecutor(Executor):
         venv_path = Path(venv_name)
         if not venv_path.exists():
             if not self.install_if_missing:
-                raise Exception(
+                raise exceptions.AirbyteConnectorNotFoundError(
                     f"Connector {self.metadata.name} is not available - "
                     f"venv {venv_name} does not exist"
                 )
@@ -193,7 +196,7 @@ class VenvExecutor(Executor):
                 # Check the version again
                 version_after_install = self._get_installed_version()
                 if version_after_install != self.target_version:
-                    raise Exception(
+                    raise exceptions.AirbyteConnectorInstallationError(
                         f"Failed to install connector {self.metadata.name} version "
                         f"{self.target_version}. Installed version is {version_after_install}",
                     )
@@ -213,15 +216,17 @@ class PathExecutor(Executor):
         try:
             self.execute(["spec"])
         except Exception as e:
-            raise Exception(
+            raise exceptions.AirbyteConnectorNotFoundError(
                 f"Connector {self.metadata.name} is not available - executing it failed"
             ) from e
 
     def install(self) -> NoReturn:
-        raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")
+        raise exceptions.AirbyteConnectorInstallationError(
+            f"Connector {self.metadata.name} is not available - cannot install it"
+        )
 
     def uninstall(self) -> NoReturn:
-        raise Exception(
+        raise exceptions.AirbyteError(
             f"Connector {self.metadata.name} is installed manually and not managed by airbyte-lib -"
             " please remove it manually"
         )
