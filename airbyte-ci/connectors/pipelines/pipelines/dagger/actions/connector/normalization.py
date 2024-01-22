@@ -2,10 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict
-
 from dagger import Container, Platform
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from typing import Any, Dict
 
 BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
     "destination-clickhouse": {
@@ -25,6 +24,14 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "yum_packages": [],
     },
     "destination-mysql": {
+        "dockerfile": "mysql.Dockerfile",
+        "dbt_adapter": "dbt-mysql==1.0.0",
+        "integration_name": "mysql",
+        "normalization_image": "airbyte/normalization-mysql:0.4.3",
+        "supports_in_connector_normalization": False,
+        "yum_packages": [],
+    },
+    "destination-adb": {
         "dockerfile": "mysql.Dockerfile",
         "dbt_adapter": "dbt-mysql==1.0.0",
         "integration_name": "mysql",

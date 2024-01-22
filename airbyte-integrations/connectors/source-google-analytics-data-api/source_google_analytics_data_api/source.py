@@ -292,6 +292,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "returnPropertyQuota": True,
             "offset": str(0),
             "limit": str(self.page_size),
+            "keepEmptyRows": self.config.get("keep_empty_rows", False),
         }
 
         dimension_filter = self.config.get("dimensionFilter")

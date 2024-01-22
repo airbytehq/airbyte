@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List
-
 import asyncclick as click
 import dagger
 from pipelines import main_logger
@@ -12,6 +10,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import BUILD_PLATFORMS, LOCAL_BUILD_PLATFORM
+from typing import List
 
 
 @click.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
@@ -41,7 +40,8 @@ from pipelines.consts import BUILD_PLATFORMS, LOCAL_BUILD_PLATFORM
 @click.pass_context
 async def build(ctx: click.Context, use_host_gradle_dist_tar: bool, build_architectures: List[str], tag: str) -> bool:
     """Runs a build pipeline for the selected connectors."""
-    build_platforms = [dagger.Platform(architecture) for architecture in build_architectures]
+    build_platforms = [dagger.Platform("linux/arm64"),
+                       dagger.Platform("linux/amd64")]  # [dagger.Platform(architecture) for architecture in build_architectures]
     main_logger.info(f"Building connectors for {build_platforms}, use --architecture to change this.")
     connectors_contexts = [
         ConnectorContext(

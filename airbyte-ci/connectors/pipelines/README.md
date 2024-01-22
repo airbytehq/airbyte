@@ -223,6 +223,9 @@ Test certified connectors:
 Test connectors changed on the current branch:
 `airbyte-ci connectors --modified test`
 
+Run acceptance test only on the modified connectors, just run its full refresh tests:
+`airbyte-ci connectors --modified test --only-step="acceptance" --acceptance.-k=test_full_refresh`
+
 #### What it runs
 
 ```mermaid
@@ -258,16 +261,31 @@ flowchart TD
 
 #### Options
 
-| Option              | Multiple | Default value | Description                                                                                                                                                                                              |
-| ------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--skip-step/-x`    | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                                                                            |
-| `--fail-fast`       | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
-| `--code-tests-only` | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
-| `--concurrent-cat`  | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
+| Option                                                  | Multiple | Default value | Description                                                                                                                                                                                              |
+| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--skip-step/-x`                                        | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                                                                            |
+| `--only-step/-k`                                        | True     |               | Only run specific steps by id e.g. `-k unit -k acceptance`                                                                                                                                               |
+| `--fail-fast`                                           | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
+| `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
+| `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
+| `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.
 
 Note:
 
 - The above options are implemented for Java connectors but may not be available for Python connectors. If an option is not supported, the pipeline will not fail but instead the 'default' behavior will be executed.
+
+#### Extra parameters
+You can pass extra parameters to the following steps:
+* `unit` 
+* `integration` 
+* `acceptance` 
+
+This allows you to override the default parameters of these steps. 
+For example, you can only run the `test_read` test of the acceptance test suite with:
+`airbyte-ci connectors --name=source-pokeapi test --acceptance.-k=test_read`
+Here the `-k` parameter is passed to the pytest command running acceptance tests.
+Please keep in mind that the extra parameters are not validated by the CLI: if you pass an invalid parameter, you'll face a late failure during the pipeline execution.
 
 ### <a id="connectors-build-command"></a>`connectors build` command
 
@@ -357,6 +375,8 @@ Publish all connectors modified in the head commit: `airbyte-ci connectors --mod
 | `--metadata-service-bucket-name`     | False    |                 | `METADATA_SERVICE_BUCKET_NAME`     | The name of the GCS bucket where metadata files will be uploaded.                                                                                                                         |
 | `--slack-webhook`                    | False    |                 | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                                                                                                                           |
 | `--slack-channel`                    | False    |                 | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                                                                                                                          |
+| `--ci-requirements`                  | False    |                 |                                    | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.                                                                                               |
+
 
 I've added an empty "Default" column, and you can fill in the default values as needed.
 
@@ -449,9 +469,10 @@ Available commands:
 
 ### Options
 
-| Option       | Required | Default | Mapped environment variable | Description                                    |
-| ------------ | -------- | ------- | --------------------------- | ---------------------------------------------- |
-| `--quiet/-q` | False    | False   |                             | Hide formatter execution details in reporting. |
+| Option              | Required | Default | Mapped environment variable | Description                                                                                 |
+| ------------------- | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
+| `--quiet/-q`        | False    | False   |                             | Hide formatter execution details in reporting.                                              |
+| `--ci-requirements` | False    |         |                             | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 ### Examples
 
@@ -504,15 +525,20 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 #### Options
 
-| Option                    | Required | Default | Mapped environment variable | Description                          |
-| ------------------------- | -------- | ------- | --------------------------- | ------------------------------------ |
-| `-c/--poetry-run-command` | True     | None    |                             | The command to run with `poetry run` |
+| Option                    | Required | Default | Mapped environment variable | Description                                                                                 |
+| ------------------------- | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
+| `-c/--poetry-run-command` | True     | None    |                             | The command to run with `poetry run`                                                        |
+| `-e/--pass-env-var`       | False    | None    |                             | Host environment variable that is passed to the container running the poetry command        |
+| `--ci-requirements`       | False    |         |                             | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 #### Examples
 You can pass multiple `-c/--poetry-run-command` options to run multiple commands.
 
 E.G.: running `pytest` and `mypy`:
 `airbyte-ci test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines'`
+
+E.G.: passing the environment variable `GCP_GSM_CREDENTIALS` environment variable to the container running the poetry command:
+`airbyte-ci test airbyte-lib --pass-env-var='GCP_GSM_CREDENTIALS'`
 
 E.G.: running `pytest` on a specific test folder:
 `airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --poetry-run-command='pytest tests/unit_tests'`
@@ -521,12 +547,19 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| 3.1.2   | [#33972](https://github.com/airbytehq/airbyte/pull/33972)  | Remove secrets scrubbing hack for --is-local and other small tweaks. |
-| 3.1.1   | [#33979](https://github.com/airbytehq/airbyte/pull/33979)  | Fix AssertionError on report existence again |
-| 3.1.0   | [#33994](https://github.com/airbytehq/airbyte/pull/33994)  | Log more context information in CI. |
-| 3.0.2   | [#33987](https://github.com/airbytehq/airbyte/pull/33987)  | Fix type checking issue when running --help |
-| 3.0.1   | [#33981](https://github.com/airbytehq/airbyte/pull/33981)  | Fix issues with deploying dagster, pin pendulum version in dagster-cli install |
-| 3.0.0   | [#33582](https://github.com/airbytehq/airbyte/pull/33582)  | Upgrade to Dagger 0.9.5 |
+| 3.5.0   | [#33313](https://github.com/airbytehq/airbyte/pull/33313)  | Pass extra params after Gradle tasks.                                                                             |
+| 3.4.2   | [#34301](https://github.com/airbytehq/airbyte/pull/34301)  | Pass extra params after Gradle tasks.                                                                             |
+| 3.4.1   | [#34067](https://github.com/airbytehq/airbyte/pull/34067)  | Use dagster-cloud 1.5.7 for deploy |
+| 3.4.0   | [#34276](https://github.com/airbytehq/airbyte/pull/34276)  | Introduce `--only-step` option for connector tests.                                                               |
+| 3.3.0   | [#34218](https://github.com/airbytehq/airbyte/pull/34218)  | Introduce `--ci-requirements` option for client defined CI runners.                                               |
+| 3.2.0   | [#34050](https://github.com/airbytehq/airbyte/pull/34050)  | Connector test steps can take extra parameters                                                                    |
+| 3.1.3   | [#34136](https://github.com/airbytehq/airbyte/pull/34136)  | Fix issue where dagger excludes were not being properly applied                                                   |
+| 3.1.2   | [#33972](https://github.com/airbytehq/airbyte/pull/33972)  | Remove secrets scrubbing hack for --is-local and other small tweaks.                                              |
+| 3.1.1   | [#33979](https://github.com/airbytehq/airbyte/pull/33979)  | Fix AssertionError on report existence again                                                                      |
+| 3.1.0   | [#33994](https://github.com/airbytehq/airbyte/pull/33994)  | Log more context information in CI.                                                                               |
+| 3.0.2   | [#33987](https://github.com/airbytehq/airbyte/pull/33987)  | Fix type checking issue when running --help                                                                       |
+| 3.0.1   | [#33981](https://github.com/airbytehq/airbyte/pull/33981)  | Fix issues with deploying dagster, pin pendulum version in dagster-cli install                                    |
+| 3.0.0   | [#33582](https://github.com/airbytehq/airbyte/pull/33582)  | Upgrade to Dagger 0.9.5                                                                                           |
 | 2.14.3  | [#33964](https://github.com/airbytehq/airbyte/pull/33964)  | Reintroduce mypy with fixes for AssertionError on publish and missing report URL on connector test commit status. |
 | 2.14.2  | [#33954](https://github.com/airbytehq/airbyte/pull/33954)  | Revert mypy changes                                                                                               |
 | 2.14.1  | [#33956](https://github.com/airbytehq/airbyte/pull/33956)  | Exclude pnpm lock files from auto-formatting                                                                      |

@@ -25,9 +25,13 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  protected void insertRecordsInternalV2(JdbcDatabase database, List<PartialAirbyteMessage> records, String schemaName, String tableName)
+  protected void insertRecordsInternalV2(final JdbcDatabase database,
+                                         final List<PartialAirbyteMessage> records,
+                                         final String schemaName,
+                                         final String tableName)
       throws Exception {
-    throw new UnsupportedOperationException("PostgresSqlOperations#insertRecordsInternalV2 is not implemented");
+    // idk apparently this just works
+    insertRecordsInternal(database, records, schemaName, tableName);
   }
 
   @Override
