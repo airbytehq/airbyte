@@ -113,6 +113,18 @@ public class Jsons {
     }
   }
 
+  /**
+   * DANGER! Jackson will log the input string if it fails to parse. This method MUST NOT be used on
+   * sensitive inputs.
+   */
+  public static <T> T deserializeExact(final String jsonString, final Class<T> klass) {
+    try {
+      return OBJECT_MAPPER_EXACT.readValue(jsonString, klass);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
     try {
       return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
