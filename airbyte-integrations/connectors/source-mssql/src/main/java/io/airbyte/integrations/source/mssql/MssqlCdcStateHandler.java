@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcStateConstants.COMPRESSION_ENABLED;
 import static io.airbyte.integrations.source.mssql.MssqlSource.IS_COMPRESSED;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
@@ -72,7 +71,7 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
 
   @Override
   public boolean compressSchemaHistoryForState() {
-    return COMPRESSION_ENABLED;
+    return true;
   }
 
 }
