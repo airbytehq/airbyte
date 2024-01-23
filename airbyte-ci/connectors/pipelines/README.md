@@ -547,6 +547,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.5.3   | [#34339](https://github.com/airbytehq/airbyte/pull/34339)  | only do minimal changes on a connector version_bump                                                           |
 | 3.5.2   | [#34381](https://github.com/airbytehq/airbyte/pull/34381)  | Bind a sidecar docker host for `airbyte-ci test`                                                                  |
 | 3.5.1   | [#34321](https://github.com/airbytehq/airbyte/pull/34321)  | Upgrade to Dagger 0.9.6 .                                                                                         |
 | 3.5.0   | [#33313](https://github.com/airbytehq/airbyte/pull/33313)  | Pass extra params after Gradle tasks.                                                                             |
