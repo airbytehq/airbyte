@@ -8,4 +8,19 @@ const fetchCatalog = async () => {
   return json;
 };
 
-module.exports = fetchCatalog();
+module.exports = {
+  catalog: fetchCatalog(),
+  isPypiConnector: (connector) => {
+    // TODO: Look for remoteRegistries here instead of hardcoded list
+    return [
+      "airbyte/source-google-sheets",
+      "airbyte/source-facebook-marketing",
+      "airbyte/source-salesforce",
+      "airbyte/source-shopify",
+      "airbyte/source-s3",
+      "airbyte/source-stripe",
+      "airbyte/source-google-ads",
+    ].includes(connector.dockerRepository_oss)
+    // return Boolean(connector.remoteRegistries?.pypi?.enabled);
+  }
+}

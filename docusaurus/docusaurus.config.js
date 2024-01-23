@@ -95,7 +95,8 @@ const config = {
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
           exclude: ["**/*.inapp.md"],
-          remarkPlugins: [docsHeaderDecoration, productInformation, specDecoration, connectorList],
+          beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
+          remarkPlugins: [docsHeaderDecoration, productInformation],
         },
         blog: false,
         theme: {

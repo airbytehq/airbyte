@@ -2,7 +2,8 @@ import AirbyteLibConnectors from '@site/src/components/AirbyteLibConnectors';
 
 # airbyte-lib
 
-airbyte-lib is a library that provides a set of utilities to use Airbyte connectors in Python.
+airbyte-lib is a library that provides a set of utilities to use Airbyte connectors in Python. It is meant to be used in situations where setting up an Airbyte server or cloud account is not possible or desirable,
+for example in a Jupyter notebook or when iterating on early prototypes in a basic local Python script.
 
 ## Installation
 
@@ -38,7 +39,18 @@ for name, records in result.cache.streams.items():
 
 For all the details, please refer to the [API reference](./reference).
 
-# Available connectors
+## Architecture
+
+[comment]: <> (Edit under https://docs.google.com/drawings/d/1M7ti2D4ha6cEtPnk04RLp1SSh3au4dRJsLupnGPigHQ/edit?usp=sharing)
+
+![Architecture](../../assets/docs/airbyte-lib-high-level-architecture.svg)
+
+airbyte-lib is a python library that can be run in any context that supports Python >=3.10. It contains the following main components:
+* **Source**: A source object is using a Python connector and includes a configuration object. The configuration object is a dictionary that contains the configuration of the connector, like authentication or connection modalities. The source object is used to read data from the connector.
+* **Cache**: Data can be read directly from the source object. However, it is recommended to use a cache object to store the data. The cache object allows to temporarily store records from the source in a SQL database like a local DuckDB file or a Postgres or Snowflake instance.
+* **Result**: An object holding the records from a read operation on a source. It allows quick access to the records of each synced stream via the used cache object. Data can be accessed as a list of records, a Pandas DataFrame or via SQLAlchemy queries.
+
+## Available connectors
 
 The following connectors are available:
 

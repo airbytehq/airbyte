@@ -1,5 +1,5 @@
 const visit = require("unist-util-visit").visit;
-const catalog = require("../connector_registry");
+const { catalog, isPypiConnector } = require("../connector_registry");
 
 const plugin = () => {
   const transformer = async (ast, vfile) => {
@@ -10,7 +10,7 @@ const plugin = () => {
       if (node.name !== "AirbyteLibConnectors") return;
 
         // TODO: Look for remoteRegistries here instead of lowcode tag
-        const connectors = registry.filter( (c) => (c.tags_oss || []).includes("language:lowcode"));
+        const connectors = registry.filter(isPypiConnector);
 
       node.attributes.push({
         type: "mdxJsxAttribute",
