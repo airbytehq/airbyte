@@ -192,7 +192,9 @@ def test_sync_with_merge_to_duckdb(expected_test_stream_data: dict[str, list[dic
         )
 
 
-def test_cached_dataset():
+def test_cached_dataset(
+    expected_test_stream_data: dict[str, list[dict[str, str | int]]],
+) -> None:
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     result: ReadResult = source.read(ab.new_local_cache())
 
@@ -237,6 +239,22 @@ def test_cached_dataset():
     with pytest.raises(KeyError):
         result.cache.streams[not_a_stream_name]
 
+    # Make sure we can use "result.streams.items()"
+    for stream_name, cached_dataset in result.streams.items():
+        assert isinstance(cached_dataset, CachedDataset)
+        assert isinstance(stream_name, str)
+
+        list_data = list(cached_dataset)
+        assert list_data == expected_test_stream_data[stream_name]
+
+    # Make sure we can use "result.cache.streams.items()"
+    for stream_name, cached_dataset in result.cache.streams.items():
+        assert isinstance(cached_dataset, CachedDataset)
+        assert isinstance(stream_name, str)
+
+        list_data = list(cached_dataset)
+        assert list_data == expected_test_stream_data[stream_name]
+
 
 def test_cached_dataset_filter():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
@@ -279,7 +297,9 @@ def test_cached_dataset_filter():
             f"Case '{case}' had incorrect number of records after chaining filters."
 
 
-def test_lazy_dataset_from_source():
+def test_lazy_dataset_from_source(
+    expected_test_stream_data: dict[str, list[dict[str, str | int]]],
+) -> None:
     source = ab.get_connector("source-test", config={"apiKey": "test"})
 
     stream_name = "stream1"
@@ -300,6 +320,16 @@ def test_lazy_dataset_from_source():
     # Make sure that we get a key error if we try to access a stream that doesn't exist
     with pytest.raises(KeyError):
         source.get_records(not_a_stream_name)
+
+    # Make sure we can iterate on all available streams
+    for stream_name in source.get_available_streams():
+        assert isinstance(stream_name, str)
+
+        lazy_dataset: LazyDataset = source.get_records(stream_name)
+        assert isinstance(lazy_dataset, LazyDataset)
+
+        list_data = list(lazy_dataset)
+        assert list_data == expected_test_stream_data[stream_name]
 
 
 @pytest.mark.parametrize(
