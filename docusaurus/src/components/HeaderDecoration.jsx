@@ -27,6 +27,7 @@ const CROSS_ICON = (
 export const HeaderDecoration = ({
   isOss: isOssString,
   isCloud: isCloudString,
+  isPypiPublished: isPypiPublishedString,
   dockerImageTag,
   supportLevel,
   iconUrl,
@@ -36,6 +37,7 @@ export const HeaderDecoration = ({
 }) => {
   const isOss = isOssString.toUpperCase() === "TRUE";
   const isCloud = isCloudString.toUpperCase() === "TRUE";
+  const isPypiPublished = isPypiPublishedString.toUpperCase() === "TRUE";
 
   return (
     <>
@@ -49,6 +51,7 @@ export const HeaderDecoration = ({
             <span className={isOss ? styles.available : styles.unavailable}>
               {isOss ? CHECK_ICON : CROSS_ICON} Airbyte OSS
             </span>
+            {isPypiPublished && <a href="#usage-with-airbyte-lib" className={styles.available}>{CHECK_ICON} airbyte_lib</a>}
           </dd>
         </div>
         <div>
