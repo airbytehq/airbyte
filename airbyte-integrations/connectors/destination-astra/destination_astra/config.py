@@ -21,16 +21,8 @@ class AstraIndexingModel(BaseModel):
         pattern="^https:\\/\\/([a-z]|[0-9]){8}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){12}-[^\\.]*?\\.apps\\.astra\\.datastax\\.com",
         examples=["https://8292d414-dd1b-4c33-8431-e838bedc04f7-us-east1.apps.astra.datastax.com"],
     )
-    astra_db_keyspace: str = Field(
-        ..., 
-        title="AstraDB Keyspace", 
-        description="Astra DB Keyspace"
-        )
-    collection: str = Field(
-        ...,
-        title="AstraDB collection",
-        description="AstraDB collection"
-    )
+    astra_db_keyspace: str = Field(..., title="AstraDB Keyspace", description="Astra DB Keyspace")
+    collection: str = Field(..., title="AstraDB collection", description="AstraDB collection")
 
     class Config:
         title = "Indexing"

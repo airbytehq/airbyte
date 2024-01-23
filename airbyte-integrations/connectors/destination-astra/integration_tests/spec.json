@@ -1,46 +1,10 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/astra",
-  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
-  "supportsIncremental": true,
   "connectionSpecification": {
     "title": "Destination Config",
     "description": "The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,\nas well as to provide type safety for the configuration passed to the destination.\n\nThe configuration model is composed of four parts:\n* Processing configuration\n* Embedding configuration\n* Indexing configuration\n* Advanced configuration\n\nProcessing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.",
     "type": "object",
-    "required": ["embedding", "processing", "indexing"],
     "properties": {
-      "indexing": {
-        "title": "Indexing",
-        "type": "object",
-        "properties": {
-          "astra_db_app_token": {
-            "title": "AstraDB Application Token",
-            "description": "AstraDB Application Token",
-            "airbyte_secret": true,
-            "type": "string"
-          },
-          "astra_db_endpoint": {
-            "title": "AstraDB Endpoint",
-            "description": "AstraDB Endpoint",
-            "pattern": "^https:\\/\\/([a-z]|[0-9]){8}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){12}-[^\\.]*?\\.apps\\.astra\\.datastax\\.com",
-            "airbyte_secret": true,
-            "type": "string",
-            "examples": ["https://8292d414-dd1b-4c33-8431-e838bedc04f7-us-east1.apps.astra.datastax.com"]
-          },
-          "astra_db_keyspace": {
-            "title": "AstraDB Keyspace",
-            "description": "Astra DB Keyspace",
-            "type": "string"
-          },
-          "collection": {
-            "title": "AstraDB collection",
-            "description": "AstraDB collection",
-            "type": "string"
-          }
-        },
-        "required": ["astra_db_app_token", "astra_db_endpoint", "astra_db_keyspace", "collection"],
-        "description": "Astra DB gives developers the APIs, real-time data and ecosystem integrations to put accurate RAG and Gen AI apps with fewer hallucinations in production.",
-        "group": "indexing"
-      },
       "embedding": {
         "title": "Embedding",
         "description": "Embedding configuration",
@@ -99,8 +63,8 @@
                 "type": "string"
               }
             },
-            "required": ["mode"],
-            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs.",
+            "required": ["mode"]
           },
           {
             "title": "Azure OpenAI",
@@ -184,8 +148,8 @@
           "chunk_size": {
             "title": "Chunk size",
             "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
-            "minimum": 1,
             "maximum": 8191,
+            "minimum": 1,
             "type": "integer"
           },
           "chunk_overlap": {
@@ -201,7 +165,9 @@
             "always_show": true,
             "examples": ["text", "user.name", "users.*.name"],
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "metadata_fields": {
             "title": "Fields to store as metadata",
@@ -210,29 +176,8 @@
             "always_show": true,
             "examples": ["age", "user", "user.name"],
             "type": "array",
-            "items": { "type": "string" }
-          },
-          "field_name_mappings": {
-            "title": "Field name mappings",
-            "description": "List of fields to rename. Not applicable for nested fields, but can be used to rename fields already flattened via dot notation.",
-            "default": [],
-            "type": "array",
             "items": {
-              "title": "FieldNameMappingConfigModel",
-              "type": "object",
-              "properties": {
-                "from_field": {
-                  "title": "From field name",
-                  "description": "The field name in the source",
-                  "type": "string"
-                },
-                "to_field": {
-                  "title": "To field name",
-                  "description": "The field name to use in the destination",
-                  "type": "string"
-                }
-              },
-              "required": ["from_field", "to_field"]
+              "type": "string"
             }
           },
           "text_splitter": {
@@ -256,7 +201,9 @@
                     "description": "List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use \".\". To split by a newline, use \"\\n\".",
                     "default": ["\"\\n\\n\"", "\"\\n\"", "\" \"", "\"\""],
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                      "type": "string"
+                    }
                   },
                   "keep_separator": {
                     "title": "Keep separator",
@@ -265,8 +212,8 @@
                     "type": "boolean"
                   }
                 },
-                "required": ["mode"],
-                "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc."
+                "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc.",
+                "required": ["mode"]
               },
               {
                 "title": "By Markdown header",
@@ -288,8 +235,8 @@
                     "type": "integer"
                   }
                 },
-                "required": ["mode"],
-                "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
+                "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk.",
+                "required": ["mode"]
               },
               {
                 "title": "By Programming Language",
@@ -330,6 +277,29 @@
                 "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
               }
             ]
+          },
+          "field_name_mappings": {
+            "title": "Field name mappings",
+            "description": "List of fields to rename. Not applicable for nested fields, but can be used to rename fields already flattened via dot notation.",
+            "default": [],
+            "type": "array",
+            "items": {
+              "title": "FieldNameMappingConfigModel",
+              "type": "object",
+              "properties": {
+                "from_field": {
+                  "title": "From field name",
+                  "description": "The field name in the source",
+                  "type": "string"
+                },
+                "to_field": {
+                  "title": "To field name",
+                  "description": "The field name to use in the destination",
+                  "type": "string"
+                }
+              },
+              "required": ["from_field", "to_field"]
+            }
           }
         },
         "required": ["chunk_size"],
@@ -341,13 +311,68 @@
         "default": false,
         "group": "advanced",
         "type": "boolean"
+      },
+      "indexing": {
+        "title": "Indexing",
+        "type": "object",
+        "properties": {
+          "astra_db_app_token": {
+            "title": "AstraDB Application Token",
+            "description": "AstraDB Application Token",
+            "airbyte_secret": true,
+            "type": "string"
+          },
+          "astra_db_endpoint": {
+            "title": "AstraDB Endpoint",
+            "description": "AstraDB Endpoint",
+            "airbyte_secret": true,
+            "pattern": "^https:\\/\\/([a-z]|[0-9]){8}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){12}-[^\\.]*?\\.apps\\.astra\\.datastax\\.com",
+            "examples": [
+              "https://8292d414-dd1b-4c33-8431-e838bedc04f7-us-east1.apps.astra.datastax.com"
+            ],
+            "type": "string"
+          },
+          "astra_db_keyspace": {
+            "title": "AstraDB Keyspace",
+            "description": "Astra DB Keyspace",
+            "type": "string"
+          },
+          "collection": {
+            "title": "AstraDB collection",
+            "description": "AstraDB collection",
+            "type": "string"
+          }
+        },
+        "required": [
+          "astra_db_app_token",
+          "astra_db_endpoint",
+          "astra_db_keyspace",
+          "collection"
+        ],
+        "description": "Astra DB gives developers the APIs, real-time data and ecosystem integrations to put accurate RAG and Gen AI apps with fewer hallucinations in production.",
+        "group": "indexing"
       }
     },
+    "required": ["embedding", "processing", "indexing"],
     "groups": [
-      { "id": "processing", "title": "Processing" },
-      { "id": "embedding", "title": "Embedding" },
-      { "id": "indexing", "title": "Indexing" },
-      { "id": "advanced", "title": "Advanced" }
+      {
+        "id": "processing",
+        "title": "Processing"
+      },
+      {
+        "id": "embedding",
+        "title": "Embedding"
+      },
+      {
+        "id": "indexing",
+        "title": "Indexing"
+      },
+      {
+        "id": "advanced",
+        "title": "Advanced"
+      }
     ]
-  }
+  },
+  "supportsIncremental": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
 }

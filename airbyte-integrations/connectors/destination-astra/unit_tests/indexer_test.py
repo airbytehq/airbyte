@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from unittest.mock import ANY, MagicMock, Mock, patch
+
 import pytest
 import urllib3
 from airbyte_cdk.models import ConfiguredAirbyteCatalog

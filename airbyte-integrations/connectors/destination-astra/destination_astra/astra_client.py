@@ -1,6 +1,9 @@
-import requests
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import json
 from typing import Dict, List, Optional
+
+import requests
 
 
 class AstraClient:
