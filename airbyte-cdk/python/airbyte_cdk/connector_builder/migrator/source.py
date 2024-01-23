@@ -87,7 +87,7 @@ class SourceRepository:
     def fetch_no_code_sources(self) -> List[str]:
         no_code_sources = []
 
-        connectors_folder_path = os.path.join("airbyte-integrations", "connectors")
+        connectors_folder_path = os.path.join(self._base_path, "airbyte-integrations", "connectors")
         for directory in os.listdir(connectors_folder_path):
             python_package_path = os.path.join(connectors_folder_path, directory, directory.replace("-", "_"))
             if self._is_no_code_connector(python_package_path):
