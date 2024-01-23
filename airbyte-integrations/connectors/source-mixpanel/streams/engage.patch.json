@@ -1,0 +1,12 @@
+{
+    "properties": {
+        "Company": {
+            "items": {},
+            "required": null,
+            "type": [
+              "null",
+              "array"
+            ]
+          }
+        }
+}
