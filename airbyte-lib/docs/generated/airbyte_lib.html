@@ -498,6 +498,8 @@ are sometimes disabled by default within the connector.)</p>
     <a class="headerlink" href="#Source.discovered_catalog"></a>
     
             <div class="docstring"><p>Get the raw catalog for the given streams.</p>
+
+<p>If the catalog is not yet known, we call discover to get it.</p>
 </div>
 
 
@@ -511,6 +513,10 @@ are sometimes disabled by default within the connector.)</p>
     <a class="headerlink" href="#Source.configured_catalog"></a>
     
             <div class="docstring"><p>Get the configured catalog for the given streams.</p>
+
+<p>If the raw catalog is not yet known, we call discover to get it.</p>
+
+<p>If no specific streams are selected, we return a catalog that syncs all available streams.</p>
 
 <p>TODO: We should consider disabling by default the streams that the connector would
 disable by default. (For instance, streams that require a premium license are sometimes
