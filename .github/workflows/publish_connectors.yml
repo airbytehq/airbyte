@@ -85,6 +85,9 @@ jobs:
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
           pypi_token: ${{ secrets.PYPI_TOKEN }}
+          # TO REVERT
+          # PINNING TO THE AIRBYTE_CI BINARY BUILD ON 671c317
+          airbyte_ci_binary_url: "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/671c317/airbyte-ci"
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
