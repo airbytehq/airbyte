@@ -3,19 +3,22 @@
 #
 
 import logging
+import os
 
 import click
 from airbyte_cdk.connector_builder.migrator.source import SourceRepository
 
 logger = logging.getLogger("migrator.main")
 
+current_repository = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../../.."))
+
 
 @click.command()
-@click.option("--repository", type=str, required=True, help="Path of the airbytehq/airbyte")
+@click.option("--repository", type=str, required=True, help="Path of the airbytehq/airbyte git repository's root directory", default=current_repository)
 def main(repository: str) -> None:
     logging.basicConfig(level=logging.DEBUG, force=True)
 
-    logger.info("Starting the migration...")
+    logger.info(f"Starting to migrate connectors in {repository}...")
     repo = SourceRepository(repository)
     for source_name in repo.fetch_no_code_sources():
         logger.debug(f"Trying to migrate {source_name}...")

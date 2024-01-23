@@ -78,7 +78,7 @@ class SourceRepository:
     def fetch_no_code_sources(self) -> List[str]:
         no_code_sources = []
 
-        connectors_folder_path = os.path.join("airbyte-integrations", "connectors")
+        connectors_folder_path = os.path.join(self._base_path, "airbyte-integrations", "connectors")
         for directory in os.listdir(connectors_folder_path):
             manifest_file_path = os.path.join(connectors_folder_path, directory, directory.replace("-", "_"), "manifest.yaml")
             if self._is_no_code_connector(manifest_file_path):
