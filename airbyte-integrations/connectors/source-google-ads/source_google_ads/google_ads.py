@@ -215,27 +215,14 @@ class GoogleAds:
     
     @staticmethod
     def convert_array(field_value: List[str]) -> List[Dict[str, any]]:
-        output_list = []
         for value in field_value:
-            value = value.replace('"', '').split('\n')
-            item_dict = {}
-            for val in value:
-                if ':' in val:
-                    key, value = map(str.strip, val.split(':', 1))
-                    item_dict[key] = value
-            output_list.append(item_dict) 
-        return output_list
-
+            item_dict = {key.strip(): val.strip() for key, val in (pair.split(':', 1) for pair in value.replace('"', '').split('\n') if ':' in pair)}
+            yield item_dict
 
     @staticmethod
     def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):
         props = schema.get("properties")
         fields = GoogleAds.get_fields_from_schema(schema)
         response_record = {field: GoogleAds.get_field_value(result, field, props.get(field)) for field in fields}
-        single_record = {}
-        for key, value in response_record.items():
-            if isinstance(value, list):
-                single_record[key] = GoogleAds.convert_array(value)
-            else:
-                single_record[key] = value
+        single_record = {key: GoogleAds.convert_array(value) if isinstance(value, list) else value for key, value in response_record.items()}
         return single_record
