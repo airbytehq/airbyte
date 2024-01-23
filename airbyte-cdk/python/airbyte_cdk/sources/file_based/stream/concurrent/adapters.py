@@ -6,10 +6,10 @@ import copy
 import json
 import logging
 from functools import cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream, Level, SyncMode, Type
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
@@ -101,6 +101,10 @@ class FileBasedStreamFacade(Stream):
         self._logger = logger
 
     @property
+    def name(self) -> str:
+        return self._abstract_stream.name
+
+    @property
     def state(self) -> MutableMapping[str, Any]:
         raise NotImplementedError("This should not be called as part of the Concurrent CDK code. Please report the problem to Airbyte")
 
@@ -112,6 +116,9 @@ class FileBasedStreamFacade(Stream):
     @property
     def availability_strategy(self) -> AbstractFileBasedAvailabilityStrategy:
         return self._legacy_stream.availability_strategy
+
+    def check_availability(self, logger: logging.Logger, source: Optional[Source] = None) -> Tuple[bool, Optional[str]]:
+        return self.availability_strategy.check_availability(self._legacy_stream, self._logger, None)
 
     def get_parser(self) -> FileTypeParser:
         return self._legacy_stream.get_parser()
@@ -138,10 +145,6 @@ class FileBasedStreamFacade(Stream):
     @property
     def supports_incremental(self) -> bool:
         return self._legacy_stream.supports_incremental
-
-    @property
-    def name(self) -> str:
-        return self._abstract_stream.name
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -265,7 +268,9 @@ class FileBasedStreamPartition(Partition):
         if self._slice:
             # Convert the slice to a string so that it can be hashed
             if len(self._slice["files"]) != 1:
-                raise ValueError(f"Slices for file-based streams should be of length 1, but got {len(self._slice['files'])}. This is unexpected. Please contact Support.")
+                raise ValueError(
+                    f"Slices for file-based streams should be of length 1, but got {len(self._slice['files'])}. This is unexpected. Please contact Support."
+                )
             else:
                 s = json.dumps(f"{self._slice['files'][0].last_modified}_{self._slice['files'][0].uri}")
             return hash((self._stream.name, s))
