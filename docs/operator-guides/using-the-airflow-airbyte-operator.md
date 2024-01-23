@@ -138,11 +138,12 @@ Don't be fooled by our simple example of only one Airflow task. Airbyte is a pow
 
 We love to hear any questions or feedback on our [Slack](https://slack.airbyte.io/). We're still in alpha, so if you see any rough edges or want to request a connector, feel free to create an issue on our [Github](https://github.com/airbytehq/airbyte) or thumbs up an existing issue.
 
-## Related articles
+## Related articles and guides
 For additional information about using the Airflow and Airbyte together, see the following:
 
 - [Using the new Airbyte API to orchestrate Airbyte Cloud with Airflow](https://airbyte.com/blog/orchestrating-airbyte-api-airbyte-cloud-airflow)
 - [A step-by-step guide to setting up and configuring Airbyte and Airflow to work together](https://airbyte.com/tutorials/how-to-use-airflow-and-airbyte-together)
+- [Build an e-commerce Analytics Stack with Airbyte, dbt, Airflow (ADA) and BigQuery](https://github.com/airbytehq/quickstarts/tree/main/airbyte_dbt_airflow_bigquery)
 - [The difference between Airbyte and Airflow](https://airbyte.com/blog/airbyte-vs-airflow)
 - [ETL Pipelines with Airflow: the Good, the Bad and the Ugly](https://airbyte.com/blog/airflow-etl-pipelines)
 - [Automate your Data Scraping with Apache Airflow and Beautiful Soup](https://airbyte.com/tutorials/data-scraping-with-airflow-and-beautiful-soup)
