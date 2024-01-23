@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 
 
 class PendoPythonStream(HttpStream, ABC):
@@ -185,8 +185,34 @@ class Page(PendoPythonStream):
 class Report(PendoPythonStream):
     name = "report"
 
+    @property
+    def use_cache(self) -> bool:
+        return True
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "report"
+
+
+class ReportResult(HttpSubStream, PendoPythonStream):
+    name = "report_result"
+    primary_key = "reportId"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"report/{stream_slice['parent']['id']}/results.json"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        for record in response.json():  # GitHub puts records in an array.
+            yield self.transform(record=record, stream_slice=stream_slice)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record["reportId"] = stream_slice['parent']['id']
+        return record
 
 
 class VisitorMetadata(PendoPythonStream):

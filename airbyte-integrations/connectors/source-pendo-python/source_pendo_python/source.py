@@ -15,6 +15,7 @@ from .streams import (
     Guide,
     Page,
     Report,
+    ReportResult,
     VisitorMetadata,
     AccountMetadata,
     Visitor,
@@ -51,11 +52,14 @@ class SourcePendoPython(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
+
+        reports_stream = Report(authenticator=auth)
         return [
             Feature(authenticator=auth),
             Guide(authenticator=auth),
             Page(authenticator=auth),
-            Report(authenticator=auth),
+            reports_stream,
+            ReportResult(authenticator=auth, parent=reports_stream),
             VisitorMetadata(authenticator=auth),
             AccountMetadata(authenticator=auth),
             Visitor(authenticator=auth),
