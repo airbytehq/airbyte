@@ -209,6 +209,7 @@
       "type": ["null", "string"]
     },
     "edited": {
+      "additionalProperties": true,
       "properties": {
         "ts": {
           "type": ["null", "string"]

@@ -75,6 +75,7 @@
       "type": ["null", "boolean"]
     },
     "edited": {
+      "additionalProperties": true,
       "properties": {
         "ts": {
           "type": ["null", "string"]
