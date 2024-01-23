@@ -16,6 +16,8 @@ are raised.
 In addition, the following principles are applied for exception class design:
 - All exceptions inherit from a common base class.
 - All exceptions have a message attribute.
+- The first line of the docstring is used as the default message.
+- The default message can be overridden by explicitly setting the message attribute.
 - Exceptions may optionally have a guidance attribute.
 - Exceptions may optionally have a help_url attribute.
 - Rendering is automatically handled by the base class.
@@ -32,11 +34,18 @@ from typing import Any
 class AirbyteError(Exception, ABC):
     """Base class for exceptions in Airbyte."""
 
-    message: str
     guidance: str | None = None
     help_url: str | None = None
     log_text: str | None = None
     more_context: dict[str, Any] | None = None
+
+    @property
+    def message(self) -> str:
+        """By default we use the first line of the class's docstring as the message.
+
+        Subclasses can override this property to provide a custom message.
+        """
+        return self.__doc__.split("\n")[0] if self.__doc__ else ""
 
     def __str__(self) -> str:
         special_properties = ["message", "guidance", "help_url", "log_text"]
@@ -66,42 +75,33 @@ class AirbyteError(Exception, ABC):
 
 
 class AirbyteConnectorConfigurationMissingError(AirbyteError):
-    """Exception raised for a specific error condition."""
+    """Connector is missing configuration."""
 
-    message = "Connector configuration missing."
     connector_name: str
 
 
 class AirbyteSubprocessError(AirbyteError):
-    """Exception raised for a specific error condition."""
+    """Error when running subprocess."""
 
     args: list[str]
-    message = "Error when running subprocess."
 
 
 class AirbyteSubprocessFailedError(AirbyteSubprocessError):
-    """Exception raised for a specific error condition."""
+    """Subprocess failed."""
 
-    message = "Subprocess failed."
     exit_code: int
 
 
 class AirbyteConnectorRegistryError(AirbyteError):
-    """Exception raised for a specific error condition."""
-
-    message = "Error when accessing the connector registry."
+    """Error when accessing the connector registry."""
 
 
 class AirbyteConnectorNotFoundError(AirbyteError):
-    """Exception raised for a specific error condition."""
-
-    message = "Connector not found."
+    """"Connector not found."""
 
 
 class AirbyteConnectorInstallationError(AirbyteError):
-    """Exception raised for a specific error condition."""
-
-    message = "Error when installing the connector."
+    """Error when installing the connector."""
 
 
 class AirbyteConnectorError(AirbyteError):
@@ -111,46 +111,34 @@ class AirbyteConnectorError(AirbyteError):
 
 
 class AirbyteConnectorReadError(AirbyteError):
-    """Exception raised for a specific error condition."""
-
-    message = "Error when reading from the connector."
+    """Error when reading from the connector."""
 
 
 class AirbyteNoDataFromConnectorError(AirbyteError):
-    """Exception raised for a specific error condition."""
-
-    message = "No data was provided from the connector."
+    """No data was provided from the connector."""
 
 
 class AirbyteConnectorMissingCatalogError(AirbyteConnectorError):
-    """Exception raised for a specific error condition."""
-
-    message = "Connector did not return a catalog."
+    """Connector did not return a catalog."""
 
 
 class AirbyteConnectorMissingSpecError(AirbyteConnectorError):
-    """Exception raised for a specific error condition."""
-
-    message = "Connector did not return a spec."
+    """Connector did not return a spec."""
 
 
 class AirbyteConnectorCheckFailedError(AirbyteConnectorError):
-    """Exception raised for a specific error condition."""
-
-    message = "Connector did not return a spec."
+    """Connector did not return a spec."""
 
 
 class AirbyteConnectorFailedError(AirbyteConnectorError):
-    """Exception raised for a specific error condition."""
+    """Connector failed."""
 
-    message = "Connector failed."
     exit_code: int
 
 
 class AirbyteStreamNotFoundError(AirbyteError):
-    """Exception raised for a specific error condition."""
+    """Connector stream not found."""
 
-    message = "Stream not found."
     stream_name: str
     connector_name: str
     available_streams: list[str]
