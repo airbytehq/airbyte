@@ -83,7 +83,7 @@ jobs:
               - '!**/*.md'
 
       - name: Run airbyte-ci/connectors/connector_ops tests
-        #if: steps.changes.outputs.ops_any_changed == 'true'
+        if: steps.changes.outputs.ops_any_changed == 'true'
         id: run-airbyte-ci-connectors-connector-ops-tests
         uses: ./.github/actions/run-dagger-pipeline
         with:
@@ -99,7 +99,7 @@ jobs:
 
       - name: Run airbyte-ci/connectors/pipelines tests
         id: run-airbyte-ci-connectors-pipelines-tests
-        #if: steps.changes.outputs.pipelines_any_changed == 'true'
+        if: steps.changes.outputs.pipelines_any_changed == 'true'
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "pull_request"
@@ -114,7 +114,7 @@ jobs:
 
       - name: Run airbyte-ci/connectors/base_images tests
         id: run-airbyte-ci-connectors-base-images-tests
-        #if: steps.changes.outputs.base_images_any_changed == 'true'
+        if: steps.changes.outputs.base_images_any_changed == 'true'
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "pull_request"
@@ -129,7 +129,7 @@ jobs:
 
       - name: Run test pipeline for the metadata lib
         id: metadata_lib-test-pipeline
-        #if: steps.changes.outputs.metadata_lib_any_changed == 'true'
+        if: steps.changes.outputs.metadata_lib_any_changed == 'true'
         uses: ./.github/actions/run-dagger-pipeline
         with:
           subcommand: "test airbyte-ci/connectors/metadata_service/lib/ --poetry-run-command='pytest tests'"
@@ -142,7 +142,7 @@ jobs:
 
       - name: Run test for the metadata orchestrator
         id: metadata_orchestrator-test-pipeline
-        #if: steps.changes.outputs.metadata_orchestrator_any_changed == 'true'
+        if: steps.changes.outputs.metadata_orchestrator_any_changed == 'true'
         uses: ./.github/actions/run-dagger-pipeline
         with:
           subcommand: "test airbyte-ci/connectors/metadata_service/orchestrator/ --poetry-run-command='pytest tests'"
@@ -154,7 +154,7 @@ jobs:
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run airbyte-lib tests
-        #if: steps.changes.outputs.airbyte_lib_any_changed == 'true'
+        if: steps.changes.outputs.airbyte_lib_any_changed == 'true'
         id: run-airbyte-lib-tests
         uses: ./.github/actions/run-dagger-pipeline
         with:
