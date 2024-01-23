@@ -99,6 +99,11 @@ class RecordProcessor(abc.ABC):
         _ = source_name
         self.source_catalog = source_catalog
 
+    @property
+    def _streams_with_data(self) -> set[str]:
+        """Return a list of known streams."""
+        return self._pending_batches.keys() | self._finalized_batches.keys()
+
     @final
     def process_stdin(
         self,
