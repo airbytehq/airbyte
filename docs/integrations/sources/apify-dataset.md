@@ -65,16 +65,6 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 - Limitations:
     - The stream uses a static schema which corresponds to the datasets produced by [Website Content Crawler](https://apify.com/apify/website-content-crawler) Actor. So only datasets produced by this Actor are supported.
 
-<HideInUI>
-
-## Usage with airbyte-lib
-
-<AirbyteLibExample connector="source-apify-dataset" />
-
-<SpecSchema connector="source-apify-dataset" />
-
-</HideInUI>
-
 ## Changelog
 
 | Version | Date       | Pull Request                                                 | Subject                                                                     |
