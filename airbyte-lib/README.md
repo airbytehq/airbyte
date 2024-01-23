@@ -13,9 +13,6 @@ airbyte-lib is a library that allows to run Airbyte syncs embedded into any Pyth
 
 Regular documentation lives in the `/docs` folder. Based on the doc strings of public methods, we generate API documentation using [pdoc](https://pdoc.dev). To generate the documentation, run `poetry run generate-docs`. The documentation will be generated in the `docs/generate` folder. This needs to be done manually when changing the public interface of the library.
 
-<<<<<<< HEAD
-A unit test validates the documentation is up to date. 
-=======
 A unit test validates the documentation is up to date. 
 
 ## Validating source connectors
@@ -27,4 +24,3 @@ airbyte-lib-validate-source —connector-dir . -—sample-config secrets/config.
 ```
 
 The script will install the python package in the provided directory, and run the connector against the provided config. The config should be a valid JSON file, with the same structure as the one that would be provided to the connector in Airbyte. The script will exit with a non-zero exit code if the connector fails to run.
->>>>>>> origin/master

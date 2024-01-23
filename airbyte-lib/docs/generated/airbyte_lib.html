@@ -4,11 +4,7 @@
                     <div class="attr function">
             
         <span class="def">def</span>
-<<<<<<< HEAD
-        <span class="name">get_connector</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;latest&#39;</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">use_local_install</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">install_if_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></span><span class="return-annotation">):</span></span>
-=======
         <span class="name">get_connector</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">pip_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">use_local_install</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">install_if_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="n"><a href="#Source">Source</a></span>:</span></span>
->>>>>>> origin/master
 
         
     </div>
@@ -16,17 +12,6 @@
     
             <div class="docstring"><p>Get a connector by name and version.</p>
 
-<<<<<<< HEAD
-<h6 id="parameters">Parameters</h6>
-
-<ul>
-<li><strong>name</strong>:  connector name</li>
-<li><strong>version</strong>:  connector version - if not provided, the most recent version will be used</li>
-<li><strong>config</strong>:  connector config - if not provided, you need to set it later via the set_config method</li>
-<li><strong>use_local_install</strong>:  whether to use a virtual environment to run the connector. If True, the connector is expected to be available on the path (e.g. installed via pip). If False, the connector will be installed automatically in a virtual environment.</li>
-<li><strong>install_if_missing</strong>:  whether to install the connector if it is not available locally. This parameter is ignored if use_local_install is True.</li>
-</ul>
-=======
 <p>Args:
     name: connector name
     version: connector version - if not provided, the currently installed version will be used.
@@ -41,46 +26,10 @@
         the connector will be installed automatically in a virtual environment.
     install_if_missing: whether to install the connector if it is not available locally. This
         parameter is ignored if use_local_install is True.</p>
->>>>>>> origin/master
 </div>
 
 
                 </section>
-<<<<<<< HEAD
-                <section id="get_in_memory_cache">
-                    <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">get_in_memory_cache</span><span class="signature pdoc-code condensed">(<span class="return-annotation">):</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#get_in_memory_cache"></a>
-    
-    
-
-                </section>
-                <section id="Dataset">
-                    <div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">Dataset</span>:
-
-        
-    </div>
-    <a class="headerlink" href="#Dataset"></a>
-    
-    
-
-                            <div id="Dataset.__init__" class="classattr">
-                                <div class="attr function">
-            
-        <span class="name">Dataset</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">Cache</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
-
-        
-    </div>
-    <a class="headerlink" href="#Dataset.__init__"></a>
-=======
                 <section id="get_default_cache">
                     <div class="attr function">
             
@@ -144,35 +93,10 @@ working directory.</p>
         
     </div>
     <a class="headerlink" href="#CachedDataset.__init__"></a>
->>>>>>> origin/master
     
     
 
                             </div>
-<<<<<<< HEAD
-                            <div id="Dataset.to_pandas" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">to_pandas</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#Dataset.to_pandas"></a>
-    
-    
-
-                            </div>
-                            <div id="Dataset.to_sql_table" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">to_sql_table</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#Dataset.to_sql_table"></a>
-=======
                             <div id="CachedDataset.to_pandas" class="classattr">
                                 <div class="attr function">
             
@@ -197,34 +121,11 @@ working directory.</p>
         
     </div>
     <a class="headerlink" href="#CachedDataset.to_sql_table"></a>
->>>>>>> origin/master
     
     
 
                             </div>
                 </section>
-<<<<<<< HEAD
-                <section id="SyncResult">
-                    <div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">SyncResult</span>:
-
-        
-    </div>
-    <a class="headerlink" href="#SyncResult"></a>
-    
-    
-
-                            <div id="SyncResult.__init__" class="classattr">
-                                <div class="attr function">
-            
-        <span class="name">SyncResult</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">processed_records</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">Cache</span></span>)</span>
-
-        
-    </div>
-    <a class="headerlink" href="#SyncResult.__init__"></a>
-=======
                 <section id="ReadResult">
                     <div class="attr class">
             
@@ -245,41 +146,21 @@ working directory.</p>
         
     </div>
     <a class="headerlink" href="#ReadResult.__init__"></a>
->>>>>>> origin/master
     
     
 
                             </div>
-<<<<<<< HEAD
-                            <div id="SyncResult.processed_records" class="classattr">
-=======
                             <div id="ReadResult.processed_records" class="classattr">
->>>>>>> origin/master
                                 <div class="attr variable">
             <span class="name">processed_records</span>
 
         
     </div>
-<<<<<<< HEAD
-    <a class="headerlink" href="#SyncResult.processed_records"></a>
-=======
     <a class="headerlink" href="#ReadResult.processed_records"></a>
->>>>>>> origin/master
     
     
 
                             </div>
-<<<<<<< HEAD
-                            <div id="SyncResult.get_sql_engine" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">get_sql_engine</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">Any</span>:</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#SyncResult.get_sql_engine"></a>
-=======
                             <div id="ReadResult.get_sql_engine" class="classattr">
                                 <div class="attr function">
             
@@ -300,7 +181,6 @@ working directory.</p>
         
     </div>
     <a class="headerlink" href="#ReadResult.cache"></a>
->>>>>>> origin/master
     
     
 
@@ -316,22 +196,14 @@ working directory.</p>
     </div>
     <a class="headerlink" href="#Source"></a>
     
-<<<<<<< HEAD
-            <div class="docstring"><p>This class is representing a source that can be called</p>
-=======
             <div class="docstring"><p>A class representing a source that can be called.</p>
->>>>>>> origin/master
 </div>
 
 
                             <div id="Source.__init__" class="classattr">
                                 <div class="attr function">
             
-<<<<<<< HEAD
-        <span class="name">Source</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">executor</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">Executor</span>,</span><span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">streams</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
-=======
         <span class="name">Source</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">executor</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">Executor</span>,</span><span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">streams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
->>>>>>> origin/master
 
         
     </div>
@@ -364,11 +236,7 @@ working directory.</p>
                             </div>
                             <div id="Source.streams" class="classattr">
                                 <div class="attr variable">
-<<<<<<< HEAD
-            <span class="name">streams</span><span class="annotation">: Optional[List[str]]</span>
-=======
             <span class="name">streams</span><span class="annotation">: list[str] | None</span>
->>>>>>> origin/master
 
         
     </div>
@@ -377,29 +245,11 @@ working directory.</p>
     
 
                             </div>
-<<<<<<< HEAD
-                            <div id="Source.config" class="classattr">
-                                <div class="attr variable">
-            <span class="name">config</span><span class="annotation">: Optional[Dict[str, Any]]</span>
-
-        
-    </div>
-    <a class="headerlink" href="#Source.config"></a>
-    
-    
-
-                            </div>
-=======
->>>>>>> origin/master
                             <div id="Source.set_streams" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
-<<<<<<< HEAD
-        <span class="name">set_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">streams</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">):</span></span>
-=======
         <span class="name">set_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">streams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
->>>>>>> origin/master
 
         
     </div>
@@ -412,11 +262,7 @@ working directory.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-<<<<<<< HEAD
-        <span class="name">set_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></span><span class="return-annotation">):</span></span>
-=======
         <span class="name">set_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
->>>>>>> origin/master
 
         
     </div>
@@ -429,11 +275,7 @@ working directory.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-<<<<<<< HEAD
-        <span class="name">get_available_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
-=======
         <span class="name">get_available_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
->>>>>>> origin/master
 
         
     </div>
@@ -444,17 +286,6 @@ working directory.</p>
 
 
                             </div>
-<<<<<<< HEAD
-                            <div id="Source.read_stream" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">read_stream</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">Iterable</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>:</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#Source.read_stream"></a>
-=======
                             <div id="Source.raw_catalog" class="classattr">
                                 <div class="attr variable">
             <span class="name">raw_catalog</span><span class="annotation">: airbyte_protocol.models.airbyte_protocol.AirbyteCatalog</span>
@@ -490,7 +321,6 @@ working directory.</p>
         
     </div>
     <a class="headerlink" href="#Source.get_records"></a>
->>>>>>> origin/master
     
             <div class="docstring"><p>Read a stream from the connector.</p>
 
@@ -512,11 +342,7 @@ working directory.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-<<<<<<< HEAD
-        <span class="name">check</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
-=======
         <span class="name">check</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
->>>>>>> origin/master
 
         
     </div>
@@ -540,30 +366,12 @@ working directory.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-<<<<<<< HEAD
-        <span class="name">install</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
-=======
         <span class="name">install</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
->>>>>>> origin/master
 
         
     </div>
     <a class="headerlink" href="#Source.install"></a>
     
-<<<<<<< HEAD
-    
-
-                            </div>
-                            <div id="Source.read_all" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">read_all</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">airbyte_lib</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">Cache</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#SyncResult">SyncResult</a></span>:</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#Source.read_all"></a>
-=======
             <div class="docstring"><p>Install the connector if it is not yet installed.</p>
 </div>
 
@@ -596,7 +404,6 @@ airbyte-lib.</p>
         
     </div>
     <a class="headerlink" href="#Source.read"></a>
->>>>>>> origin/master
     
     
 

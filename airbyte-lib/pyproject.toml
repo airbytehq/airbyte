@@ -37,27 +37,17 @@ pyarrow-stubs = "^10.0.1.7"
 pytest = "^7.4.3"
 pytest-docker = "^2.0.1"
 pytest-mypy = "^0.10.3"
-<<<<<<< HEAD
-pdoc = "^14.3.0"
-=======
 pytest-postgresql = "^5.0.0"
 ruff = "^0.1.11"
 types-jsonschema = "^4.20.0.0"
 google-cloud-secret-manager = "^2.17.0"
 types-requests = "2.31.0.4"
->>>>>>> origin/master
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-<<<<<<< HEAD
-addopts = "--mypy"
-
-[tool.poetry.scripts]
-generate-docs = "docs:run"
-=======
 # addopts = "--mypy"  # FIXME: This sometimes blocks test discovery and execution
 
 [tool.ruff.pylint]
@@ -245,4 +235,3 @@ ignore_missing_imports = true  # No stubs yet (😢)
 [tool.poetry.scripts]
 generate-docs = "docs:run"
 airbyte-lib-validate-source = "airbyte_lib.validate:run"
->>>>>>> origin/master
