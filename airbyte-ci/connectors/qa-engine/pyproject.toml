@@ -29,12 +29,10 @@ ruamel-yaml = "^0.17.30"
 connector-ops = {path = "../connector_ops"}
 
 [tool.poetry.group.dev.dependencies]
-pyinstrument = "*"
-
-[tool.poetry.group.test.dependencies]
 pytest = "~6.2.5"
 pytest-mock = "~3.10.0"
 freezegun = "*"
+pyinstrument = "*"
 
 [tool.poetry.scripts]
 run-qa-engine = "qa_engine.main:main"
