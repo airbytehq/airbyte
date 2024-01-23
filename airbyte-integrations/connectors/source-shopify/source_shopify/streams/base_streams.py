@@ -580,7 +580,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         # define BULK Manager instance
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(self._session, f"{self.url_base}/{self.path()}")
         # define Record Producer instance
-        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query, self.logger)
+        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
 
     @property
     def slice_interval_in_days(self) -> int:

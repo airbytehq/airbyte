@@ -4,10 +4,12 @@
 
 
 from abc import abstractmethod
+from dataclasses import dataclass
 from enum import Enum
 from string import Template
 from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
+from attr import dataclass
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
 
 from .tools import BULK_PARENT_KEY, BulkTools
@@ -55,19 +57,13 @@ class ShopifyBulkTemplates:
         return bulk_template.substitute(query=query)
 
 
+@dataclass
 class ShopifyBulkQuery:
-    tools: BulkTools = BulkTools()
+    shop_id: int
 
-    def __init__(self, shop_id: int) -> None:
-        self.shop_id = shop_id
-
-    def get(self, filter_field: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> str:
-        # define filter query string, if passed
-        filter_query = f"{filter_field}:>='{start}' AND {filter_field}:<='{end}'" if filter_field else None
-        # building query
-        self.constructed_query: Query = self.query(filter_query)
-        # resolving
-        return self.resolve(self.constructed_query)
+    @property
+    def tools(self) -> BulkTools:
+        return BulkTools()
 
     @property
     @abstractmethod
@@ -104,6 +100,14 @@ class ShopifyBulkQuery:
         """
         return ["__typename", "id"]
 
+    def get(self, filter_field: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> str:
+        # define filter query string, if passed
+        filter_query = f"{filter_field}:>='{start}' AND {filter_field}:<='{end}'" if filter_field else None
+        # building query
+        query: Query = self.query(filter_query)
+        # resolving
+        return self.resolve(query)
+
     def query(self, filter_query: Optional[str] = None) -> Query:
         """
         Overide this method, if you need to customize query build logic.
@@ -131,21 +135,21 @@ class ShopifyBulkQuery:
         """
         Defines the root of the graph with edges.
         """
-        args: List[Argument] = []
+        query_args: List[Argument] = []
         # constructing arguments
         if filter_query:
-            args.append(Argument(name="query", value=f'"{filter_query}"'))
+            query_args.append(Argument(name="query", value=f'"{filter_query}"'))
         if self.sort_key:
-            args.append(Argument(name="sortKey", value=self.sort_key))
+            query_args.append(Argument(name="sortKey", value=self.sort_key))
         if additional_query_args:
             for k, v in additional_query_args.items():
-                args.append(Argument(name=k, value=v))
+                query_args.append(Argument(name=k, value=v))
         # constructing edges
-        fields = [
+        query_fields = [
             Field(name="edges", fields=[Field(name="node", fields=edges if edges else ["id"])]),
         ]
         # return constucted query
-        return Query(name=name, arguments=args, fields=fields)
+        return Query(name=name, arguments=query_args, fields=query_fields)
 
     def resolve(self, query: Query) -> str:
         """

@@ -3,10 +3,12 @@
 #
 
 
+import logging
+from dataclasses import dataclass, field
 from io import TextIOWrapper
 from json import loads
 from os import remove
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk import AirbyteLogger
 
@@ -15,14 +17,24 @@ from .query import ShopifyBulkQuery
 from .tools import END_OF_FILE, BulkTools
 
 
+@dataclass
 class ShopifyBulkRecord:
-    def __init__(self, query: ShopifyBulkQuery, logger: AirbyteLogger) -> None:
-        self.composition = query.record_composition
-        self.record_process_components = query.record_process_components
+    query: ShopifyBulkQuery
+
+    # default buffer
+    buffer: List[MutableMapping[str, Any]] = field(init=False, default_factory=list)
+
+    # default logger
+    logger: AirbyteLogger = field(init=False, default=logging.getLogger("airbyte"))
+
+    def __post_init__(self) -> None:
+        self.composition: Optional[Mapping[str, Any]] = self.query.record_composition
+        self.record_process_components: Optional[Callable[[MutableMapping], MutableMapping]] = self.query.record_process_components
         self.components: List[str] = self.composition.get("record_components", []) if self.composition else []
-        self.buffer: List[MutableMapping[str, Any]] = []
-        self.tools: BulkTools = BulkTools()
-        self.logger = logger
+
+    @property
+    def tools(self) -> BulkTools:
+        return BulkTools()
 
     @staticmethod
     def check_type(record: Mapping[str, Any], types: Union[List[str], str]) -> bool:
@@ -66,7 +78,6 @@ class ShopifyBulkRecord:
         Step 2: check for `components` by their `__typename` and add to the placeholder
         Step 3: repeat until the `<END_OF_FILE>`.
         """
-
         if self.check_type(record, self.composition.get("new_record")):
             # emit from previous iteration, if present
             yield from self.buffer_flush()

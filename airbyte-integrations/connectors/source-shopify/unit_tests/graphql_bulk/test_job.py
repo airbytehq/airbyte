@@ -198,7 +198,7 @@ def test_job_check_with_running_scenario(request, requests_mock, job_response, a
     requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
     
     # calling the sceario processing
-    stream.job_manager.job_process_scenario()
+    stream.job_manager.job_track_running()
     assert stream.job_manager.job_state == expected
 
 
@@ -207,7 +207,6 @@ def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
     stream = MetafieldOrders(auth_config)
     expected = "An error occured while producing records from BULK Job result"
     # patching the method to get the filename
-    # mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.retrieve_result", value="test.jsonl")
     mocker.patch("source_shopify.shopify_graphql.bulk.record.ShopifyBulkRecord.produce_records", side_effect=Exception)
     with pytest.raises(ShopifyBulkExceptions.BulkRecordProduceError) as error:
         list(stream.record_producer.read_file("test.jsonl"))
@@ -237,7 +236,6 @@ def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
     ],
 )
 def test_bulk_stream_parse_response(
-    # mocker,
     request,
     requests_mock,
     bulk_job_completed_response,

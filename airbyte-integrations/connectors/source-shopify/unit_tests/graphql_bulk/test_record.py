@@ -16,9 +16,9 @@ from source_shopify.shopify_graphql.bulk.record import ShopifyBulkRecord
         ({"id": 123}, {"id": 123}),
     ],
 )
-def test_record_resolve_id(record, expected, logger) -> None:
+def test_record_resolve_id(record, expected) -> None:
     bulk_query = ShopifyBulkQuery(shop_id=0)
-    assert ShopifyBulkRecord(bulk_query, logger).record_resolve_id(record) == expected
+    assert ShopifyBulkRecord(bulk_query).record_resolve_id(record) == expected
 
 
 @pytest.mark.parametrize(
@@ -29,9 +29,9 @@ def test_record_resolve_id(record, expected, logger) -> None:
         ({}, "Other", False),
     ],
 )
-def test_check_type(record, types, expected, logger) -> None:
+def test_check_type(record, types, expected) -> None:
     query = ShopifyBulkQuery(shop_id=0)
-    assert ShopifyBulkRecord(query, logger).check_type(record, types) == expected
+    assert ShopifyBulkRecord(query).check_type(record, types) == expected
 
 
 @pytest.mark.parametrize(
@@ -50,9 +50,9 @@ def test_check_type(record, types, expected, logger) -> None:
         )
     ],
 )
-def test_record_resolver(record, expected, logger) -> None:
+def test_record_resolver(record, expected) -> None:
     query = ShopifyBulkQuery(shop_id=0)
-    record_instance = ShopifyBulkRecord(query, logger)
+    record_instance = ShopifyBulkRecord(query)
     assert record_instance.record_resolve_id(record) == expected
 
 
@@ -65,9 +65,9 @@ def test_record_resolver(record, expected, logger) -> None:
         ),
     ],
 )
-def test_record_new(record, expected, logger) -> None:
+def test_record_new(record, expected) -> None:
     query = ShopifyBulkQuery(shop_id=0)
-    record_instance = ShopifyBulkRecord(query, logger)
+    record_instance = ShopifyBulkRecord(query)
     record_instance.record_new(record)
     assert record_instance.buffer == [expected]
 
@@ -99,9 +99,9 @@ def test_record_new(record, expected, logger) -> None:
     ],
     ids=["add_component"],
 )
-def test_record_new_component(records_from_jsonl, record_components, expected, logger) -> None:
+def test_record_new_component(records_from_jsonl, record_components, expected) -> None:
     query = ShopifyBulkQuery(shop_id=0)
-    record_instance = ShopifyBulkRecord(query, logger)
+    record_instance = ShopifyBulkRecord(query)
     record_instance.components = record_components.get("record_components")
     # register new record first
     record_instance.record_new(records_from_jsonl[0])
@@ -150,9 +150,9 @@ def test_record_new_component(records_from_jsonl, record_components, expected, l
         ),
     ],
 )
-def test_buffer_flush(buffered_record, expected, logger) -> None:
+def test_buffer_flush(buffered_record, expected) -> None:
     query = ShopifyBulkQuery(shop_id=0)
-    record_instance = ShopifyBulkRecord(query, logger)
+    record_instance = ShopifyBulkRecord(query)
     # populate the buffer with record
     record_instance.buffer.append(buffered_record)
     assert list(record_instance.buffer_flush()) == expected
@@ -185,10 +185,10 @@ def test_buffer_flush(buffered_record, expected, logger) -> None:
     ],
     ids=["test_compose"],
 )
-def test_record_compose(records_from_jsonl, record_composition, expected, logger) -> None:
+def test_record_compose(records_from_jsonl, record_composition, expected) -> None:
     query = ShopifyBulkQuery(shop_id=0)
     # query.record_composition = record_composition
-    record_instance = ShopifyBulkRecord(query, logger)
+    record_instance = ShopifyBulkRecord(query)
     record_instance.composition = record_composition
     record_instance.components = record_composition.get("record_components")
     # process read jsonl records

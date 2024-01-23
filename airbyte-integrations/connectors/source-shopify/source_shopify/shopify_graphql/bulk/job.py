@@ -49,12 +49,14 @@ class ShopifyBulkManager:
 
     # default logger
     logger: AirbyteLogger = field(init=False, default=logging.getLogger("airbyte"))
-    # handy tools
-    tools: BulkTools = field(init=False, default_factory=BulkTools)
 
     # currents: job_id, job_state
     job_id: Optional[str] = field(init=False, default=None)
     job_state: ShopifyBulkStatus = field(init=False, default=None)
+
+    @property
+    def tools(self) -> BulkTools:
+        return BulkTools()
 
     @property
     def job_state_to_fn_map(self) -> Mapping[str, Any]:
@@ -68,7 +70,7 @@ class ShopifyBulkManager:
         }
 
     def __reset_state(self) -> None:
-        # set current job status and id to default value
+        # set current job state to default value
         self.job_state, self.job_id = None, None
 
     def job_completed(self) -> bool:
@@ -86,7 +88,6 @@ class ShopifyBulkManager:
         }
 
     def job_get_result(self, response: Optional[requests.Response] = None) -> Optional[str]:
-        self.__reset_state()
         job_result_url = response.json().get("data", {}).get("node", {}).get("url") if response else None
         if job_result_url:
             # save to local file using chunks to avoid OOM
@@ -141,7 +142,7 @@ class ShopifyBulkManager:
                 f"Couldn't check the `response` for `errors`, response: `{response.text}`. Trace: {repr(e)}."
             )
 
-    def job_process_scenario(self) -> Union[AirbyteTracedException, requests.Response]:
+    def job_track_running(self) -> Union[AirbyteTracedException, requests.Response]:
         # format Job state check args
         status_args = self.job_get_state_args()
         # re-use of `self._session(*, **)` to make BULK Job status checks
@@ -158,7 +159,7 @@ class ShopifyBulkManager:
 
     def job_check_state(self) -> Optional[str]:
         while not self.job_completed():
-            response = self.job_process_scenario()
+            response = self.job_track_running()
         # return `job_result_url` when status is `COMPLETED`
         return self.job_get_result(response)
 
@@ -252,3 +253,5 @@ class ShopifyBulkManager:
         finally:
             time_elapsed = round((time() - job_started), 3)
             self.logger.info(f"The BULK Job: `{self.job_id}` time elapsed: {time_elapsed} sec.")
+            # reset the state for COMPLETED job
+            self.__reset_state()
