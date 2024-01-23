@@ -4,11 +4,16 @@
 
 from functools import lru_cache
 from logging import Logger
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
+    AbstractAvailabilityStrategy,
+    StreamAvailability,
+    StreamAvailable,
+    StreamUnavailable,
+)
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 
@@ -84,3 +89,21 @@ class FileBasedDefaultStream(DefaultStream):
         self._legacy_stream = legacy_stream
         self.availability_strategy = legacy_stream.availability_strategy
         super().__init__(availability_strategy=self.availability_strategy, *args, **kwargs)
+
+    def check_availability(self) -> StreamAvailability:
+        is_available, reason = self.availability_strategy.check_availability(self._legacy_stream, self._logger, None)
+        if is_available:
+            return StreamAvailable()
+        else:
+            return StreamUnavailable(reason)
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        raise NotImplementedError("This should not be called as part of the Concurrent CDK code. Please report the problem to Airbyte")
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]) -> None:
+        raise NotImplementedError("setting state from FileBasedDefaultStream")
+        if "state" in dir(self._legacy_stream):
+            self._legacy_stream.state = value  # type: ignore  # validating `state` is attribute of stream using `if` above
+        self._cursor.set_initial_state(value)
