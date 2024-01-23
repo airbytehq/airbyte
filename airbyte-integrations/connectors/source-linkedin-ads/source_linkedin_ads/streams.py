@@ -7,6 +7,8 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import urlencode
+from datetime import datetime
+
 
 import pendulum
 import requests
@@ -380,6 +382,38 @@ class Conversions(LinkedInAdsStreamSlicing):
         params["q"] = self.search_param
         params["account"] = f"urn%3Ali%3AsponsoredAccount%3A{stream_slice.get('account_id')}"
 
+        return urlencode(params, safe="():,%")
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = (
+            {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
+            if not current_stream_state
+            else current_stream_state
+        )
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
+
+
+class Leads(LinkedInAdsStreamSlicing):
+    endpoint = "leadFormResponses"
+    cursor_field = "submittedAt"
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        headers = super().request_headers(stream_state, stream_slice, next_page_token)
+        headers.update({"X-Restli-Protocol-Version": "2.0.0", "Linkedin-version": "202401"})
+        return headers
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["q"] = "owner"
+        params["owner"] = f"(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{stream_slice.get('account_id')})"
+        params["leadType"] = "(leadType:SPONSORED)"
         return urlencode(params, safe="():,%")
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
