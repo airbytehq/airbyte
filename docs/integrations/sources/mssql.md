@@ -109,7 +109,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
   @source_schema = N'{schema name}',
   @source_name   = N'{table name}',
   @role_name     = N'{role name}',  [1]
-  @filegroup_name = N'{fiilegroup name}', [2]
+  @filegroup_name = N'{filegroup name}', [2]
   @supports_net_changes = 0 [3]
   GO
   ```
