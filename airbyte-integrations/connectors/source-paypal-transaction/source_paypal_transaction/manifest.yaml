@@ -16,7 +16,7 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/v1/reporting/'
+    url_base: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/'
     path: "{{ parameters.path }}"
     http_method: GET
     request_headers:
@@ -106,7 +106,7 @@ definitions:
       step: "P{{ config.get('time_window', 7) }}D"
       cursor_granularity: PT1S
     $parameters:
-      path: "transactions"
+      path: "v1/reporting/transactions"
       field_path: transaction_details
 
   balances_stream:
@@ -150,7 +150,100 @@ definitions:
         field_name: as_of_time
         inject_into: request_parameter
     $parameters:
-      path: "balances"
+      path: "v1/reporting/balances"
+
+  search_invoices_stream:
+    type: DeclarativeStream
+    primary_key: id
+    name: "search_invoices"
+    #json_schema: "./schemas/search_invoices.json"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          inject_into: request_parameter
+          field_name: page_size
+          type: RequestOption
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 100
+      requester:
+        $ref: "#/definitions/requester"
+        http_method: POST
+        #path: "search-invoices"
+        request_parameters:
+          fields: all
+        request_body_json:
+          # payment_date_range:
+          #   start: "{{ config['payment_start_date'] }}"
+          #   end: "{{ config['payment_end_date'] }}"
+          # invoice_date_range:
+          #   start: "{{ config['invoice_start_date'] }}"
+          #   end: "{{ config['invoice_end_date'] }}"
+          # due_date_range:
+          #   start: "{{ config['due_start_date'] }}"
+          #   end: "{{ config['due_end_date'] }}"
+          creation_date_range:
+            start: "{{ config['creation_start_date'] }}"
+            end: "{{ config['creation_end_date'] }}"
+    transformations:
+    # - type: AddFields
+    #     fields:
+    #       - path:
+    #           - invoice_created_by
+    #         value: >-
+    #           {{ format_datetime(record['detail']['metadata']['created_by'], '%Y-%m-%dT%H:%M:%SZ') }}
+    # - type: AddFields
+    #     fields:
+    #       - path:
+    #           - invoice_updated_by
+    #         value: >-
+    #           {{ format_datetime(record['detail']['metadata']['last_updated_by'], '%Y-%m-%dT%H:%M:%SZ') }}
+      - type: AddFields
+        fields:
+          - path:
+              - invoice_updated_date
+            value: >-
+              {{ format_datetime(record['detail']['metadata']['last_updated_time'], '%Y-%m-%dT%H:%M:%SZ') }}    
+    $parameters:
+      path: "v2/invoicing/search-invoices"
+  incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: invoice_updated_date
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ max( format_datetime(config['start'], '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: start
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: end
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      step: "P{{ config.get('time_window', 7) }}D"
+      cursor_granularity: PT1S
+  #incremental_sync: null
+  $parameters:
+    field_path: items
+    path: "v2/invoicing/invoices"
 
 streams:
   - "#/definitions/transactions_stream"
