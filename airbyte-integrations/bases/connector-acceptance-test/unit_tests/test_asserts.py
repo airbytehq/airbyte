@@ -11,7 +11,7 @@ from airbyte_protocol.models import (
     DestinationSyncMode,
     SyncMode,
 )
-from connector_acceptance_test.utils.asserts import verify_records_schema, _enforce_false_additional_properties
+from connector_acceptance_test.utils.asserts import _enforce_false_additional_properties, verify_records_schema
 
 
 @pytest.fixture(name="record_schema")
@@ -124,14 +124,77 @@ def test_validate_records_format(record, configured_catalog, valid):
 @pytest.mark.parametrize(
     "original_schema, expected_schema",
     [
-        ({"type": "object", "properties": {"a": {"type": "string"}}}, {"type": "object", "additionalProperties": False, "properties": {"a": {"type": "string"}}}),
-        ({"type": "object", "properties": {"a": {"type": "string"}, "some_obj": {"type": ["null", "object"]}}}, {"type": "object", "additionalProperties": False, "properties": {"a": {"type": "string"}, "some_obj": {"type": ["null", "object"]}}}),
-        ({"type": "object", "properties": {"a": {"type": "string"}, "some_obj": {"type": ["null", "object"], "properties": {"a": {"type": "string"}}}}}, {"type": "object", "additionalProperties": False, "properties": {"a": {"type": "string"}, "some_obj": {"additionalProperties": False, "properties": {"a": {"type": "string"}}, "type": ["null", "object"]}}}),
-        ({"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "string"}}}}, {"type": "object", "additionalProperties": False, "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "string"}}}}),
-        ({"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "object"}}}}, {"type": "object", "additionalProperties": False, "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "object"}}}}),
-        ({"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "object", "properties": {"a": {"type": "string"}}}}}}, {"type": "object", "additionalProperties": False, "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "object", "additionalProperties": False, "properties": {"a": {"type": "string"}}}}}}),
+        (
+            {"type": "object", "properties": {"a": {"type": "string"}}},
+            {"type": "object", "additionalProperties": False, "properties": {"a": {"type": "string"}}},
+        ),
+        (
+            {"type": "object", "properties": {"a": {"type": "string"}, "some_obj": {"type": ["null", "object"]}}},
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {"a": {"type": "string"}, "some_obj": {"type": ["null", "object"]}},
+            },
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {"a": {"type": "string"}, "some_obj": {"type": ["null", "object"], "properties": {"a": {"type": "string"}}}},
+            },
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "a": {"type": "string"},
+                    "some_obj": {"additionalProperties": False, "properties": {"a": {"type": "string"}}, "type": ["null", "object"]},
+                },
+            },
+        ),
+        (
+            {"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "string"}}}},
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "string"}}},
+            },
+        ),
+        (
+            {"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "object"}}}},
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "object"}}},
+            },
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "a": {"type": "string"},
+                    "b": {"type": "array", "items": {"type": "object", "properties": {"a": {"type": "string"}}}},
+                },
+            },
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "a": {"type": "string"},
+                    "b": {
+                        "type": "array",
+                        "items": {"type": "object", "additionalProperties": False, "properties": {"a": {"type": "string"}}},
+                    },
+                },
+            },
+        ),
     ],
-    ids=["simple_schema", "schema_with_object_without_properties", "schema_with_object_with_properties", "schema_with_array_of_strings", "schema_with_array_of_objects", "schema_with_array_of_objects_with_properties"]
+    ids=[
+        "simple_schema",
+        "schema_with_object_without_properties",
+        "schema_with_object_with_properties",
+        "schema_with_array_of_strings",
+        "schema_with_array_of_objects",
+        "schema_with_array_of_objects_with_properties",
+    ],
 )
 def test_validate_additional_properties(original_schema, expected_schema):
     assert _enforce_false_additional_properties(original_schema) == expected_schema
