@@ -2,9 +2,7 @@
     "properties": {
         "Company": {
             "items": {},
-            "required": [
-              "false"
-            ],
+            "required": null,
             "type": [
               "null",
               "array"
