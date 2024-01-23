@@ -55,7 +55,11 @@ def _add_additional_properties(json_schema: Dict[str, Any]) -> Dict[str, Any]:
                 prop_value["additionalProperties"] = False
                 add_properties(prop_value.get("properties", {}))
             elif "type" in prop_value and "array" in prop_value["type"]:
-                if prop_value.get("items") and "object" in prop_value.get("items", {}).get("type") and len(prop_value.get("items", {}).get("properties", [])):
+                if (
+                    prop_value.get("items")
+                    and "object" in prop_value.get("items", {}).get("type")
+                    and len(prop_value.get("items", {}).get("properties", []))
+                ):
                     prop_value["items"]["additionalProperties"] = False
                 if prop_value.get("items", {}).get("properties"):
                     add_properties(prop_value["items"]["properties"])
