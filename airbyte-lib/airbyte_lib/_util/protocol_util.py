@@ -66,6 +66,6 @@ def get_primary_keys_from_stream(
         None,
     )
     if stream is None:
-        raise ValueError(f"Stream {stream_name} not found in catalog.")
+        raise KeyError(f"Stream {stream_name} not found in catalog.")
 
     return set(stream.stream.source_defined_primary_key or [])
