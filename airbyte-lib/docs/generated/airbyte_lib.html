@@ -440,17 +440,6 @@ working directory.</p>
     
 
                             </div>
-                            <div id="Source.streams" class="classattr">
-                                <div class="attr variable">
-            <span class="name">streams</span><span class="annotation">: list[str] | None</span>
-
-        
-    </div>
-    <a class="headerlink" href="#Source.streams"></a>
-    
-    
-
-                            </div>
                             <div id="Source.set_streams" class="classattr">
                                 <div class="attr function">
             
@@ -461,7 +450,15 @@ working directory.</p>
     </div>
     <a class="headerlink" href="#Source.set_streams"></a>
     
-    
+            <div class="docstring"><p>Optionally, select the stream names that should be read from the connector.</p>
+
+<p>Currently, if this is not set, all streams will be read.</p>
+
+<p>TODO: In the future if not set, the default behavior may exclude streams which the connector
+would default to disabled. (For instance, streams that require a premium license
+are sometimes disabled by default within the connector.)</p>
+</div>
+
 
                             </div>
                             <div id="Source.set_config" class="classattr">
@@ -492,13 +489,13 @@ working directory.</p>
 
 
                             </div>
-                            <div id="Source.raw_catalog" class="classattr">
+                            <div id="Source.discovered_catalog" class="classattr">
                                 <div class="attr variable">
-            <span class="name">raw_catalog</span><span class="annotation">: airbyte_protocol.models.airbyte_protocol.AirbyteCatalog</span>
+            <span class="name">discovered_catalog</span><span class="annotation">: airbyte_protocol.models.airbyte_protocol.AirbyteCatalog</span>
 
         
     </div>
-    <a class="headerlink" href="#Source.raw_catalog"></a>
+    <a class="headerlink" href="#Source.discovered_catalog"></a>
     
             <div class="docstring"><p>Get the raw catalog for the given streams.</p>
 </div>
@@ -514,6 +511,10 @@ working directory.</p>
     <a class="headerlink" href="#Source.configured_catalog"></a>
     
             <div class="docstring"><p>Get the configured catalog for the given streams.</p>
+
+<p>TODO: We should consider disabling by default the streams that the connector would
+disable by default. (For instance, streams that require a premium license are sometimes
+disabled by default within the connector.)</p>
 </div>
 
 
