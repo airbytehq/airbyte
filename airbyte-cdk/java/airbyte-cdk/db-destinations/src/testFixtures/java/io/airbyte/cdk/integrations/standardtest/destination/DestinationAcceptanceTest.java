@@ -152,7 +152,6 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-
   protected String getNormalizationImageName() {
     var metadata = readMetadata().get("data");
     if (metadata == null) {

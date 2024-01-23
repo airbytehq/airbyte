@@ -32,12 +32,6 @@ project.configurations {
     testFixturesRuntimeOnly.extendsFrom runtimeOnly
 }
 
-configurations.all {
-    // From airbyte-test-utils
-    exclude group: 'io.micronaut.jaxrs'
-    exclude group: 'io.micronaut.sql'
-}
-
 // Convert yaml to java: relationaldb.models
 jsonSchema2Pojo {
     sourceType = SourceType.YAMLSCHEMA
