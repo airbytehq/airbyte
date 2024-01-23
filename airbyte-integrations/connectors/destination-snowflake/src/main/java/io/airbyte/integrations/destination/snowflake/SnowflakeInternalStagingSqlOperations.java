@@ -50,7 +50,6 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
     this.nameTransformer = nameTransformer;
   }
 
-  @Override
   public String getStageName(final String namespace, final String streamName) {
     return String.join(".",
         '"' + nameTransformer.convertStreamName(namespace) + '"',
@@ -220,17 +219,6 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
    */
   protected String getDropQuery(final String stageName) {
     return String.format(DROP_STAGE_QUERY, stageName);
-  }
-
-  @Override
-  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
-    try {
-      final String query = getRemoveQuery(stageName);
-      LOGGER.debug("Executing query: {}", query);
-      database.execute(query);
-    } catch (final SQLException e) {
-      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
-    }
   }
 
   /**
