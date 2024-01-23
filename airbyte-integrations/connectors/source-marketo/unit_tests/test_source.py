@@ -6,12 +6,24 @@ import logging
 import os
 import tracemalloc
 from functools import partial
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pendulum
 import pytest
+import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from source_marketo.source import Activities, Campaigns, IncrementalMarketoStream, Leads, MarketoStream, Programs, SourceMarketo
+from airbyte_cdk.utils import AirbyteTracedException
+from source_marketo.source import (
+    Activities,
+    Campaigns,
+    IncrementalMarketoStream,
+    Leads,
+    MarketoExportCreate,
+    MarketoStream,
+    Programs,
+    Segmentations,
+    SourceMarketo,
+)
 
 
 def test_create_export_job(mocker, send_email_stream, caplog):
@@ -24,6 +36,28 @@ def test_create_export_job(mocker, send_email_stream, caplog):
         {"endAt": ANY, "id": "232aafb4", "startAt": ANY},
     ]
     assert "Failed to create export job! Status is failed!" in caplog.records[-1].message
+
+
+def test_should_retry_quota_exceeded(config, requests_mock):
+    create_job_url = "https://602-euo-598.mktorest.com/rest/v1/leads/export/create.json?batchSize=300"
+    response_json = {
+        "requestId": "d2ca#18c0b9833bf",
+        "success": False,
+        "errors": [
+            {
+                "code": "1029",
+                "message": "Export daily quota 500MB exceeded."
+            }
+        ]
+    }
+    requests_mock.register_uri("GET", create_job_url, status_code=200, json=response_json)
+
+    response = requests.get(create_job_url)
+    with pytest.raises(AirbyteTracedException) as e:
+        MarketoExportCreate(config).should_retry(response)
+
+    assert e.value.message == "Daily limit for job extractions has been reached (resets daily at 12:00AM CST)."
+
 
 
 @pytest.mark.parametrize(
@@ -284,10 +318,40 @@ def test_check_connection(config, requests_mock, status_code, response, is_conne
         ("2020-08-01", "%Y-%m-%dT%H:%M:%SZ%z", "2020-08-01"),
     ),
 )
-def test_normalize_datetime(config, input, format, expected_result):
+def test_programs_normalize_datetime(config, input, format, expected_result):
     stream = Programs(config)
     assert stream.normalize_datetime(input, format) == expected_result
 
+def test_programs_next_page_token(config):
+    mock_json = MagicMock()
+    mock_json.return_value = {"result": [{"test": 'testValue'}]}
+    mocked_response = MagicMock()
+    mocked_response.json = mock_json
+    stream = Programs(config)
+    result = stream.next_page_token(mocked_response)
+    assert result == {"offset": 201}
+
+@pytest.mark.parametrize("input, stream_state, expected_result",[(
+      {"result": [{"id": "1", "createdAt": "2020-07-01T00:00:00Z+0000", "updatedAt": "2020-07-01T00:00:00Z+0000"}]},
+      {"updatedAt": "2020-06-01T00:00:00Z"},
+      [{"id": "1", "createdAt": "2020-07-01T00:00:00Z", "updatedAt": "2020-07-01T00:00:00Z"}],
+    )],
+)
+def test_programs_parse_response(mocker, config, input, stream_state, expected_result):
+    response = requests.Response()
+    mocker.patch.object(response, "json", return_value=input)
+    stream = Programs(config)
+    result = stream.parse_response(response, stream_state)
+    assert list(result) == expected_result
+
+def test_segmentations_next_page_token(config):
+    mock_json = MagicMock()
+    mock_json.return_value = {"result": [{"test": 'testValue'}]}
+    mocked_response = MagicMock()
+    mocked_response.json = mock_json
+    stream = Segmentations(config)
+    result = stream.next_page_token(mocked_response)
+    assert result == {"offset": 201}
 
 today = pendulum.now()
 yesterday = pendulum.now().subtract(days=1).strftime("%Y-%m-%dT%H:%M:%SZ")

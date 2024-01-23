@@ -16,6 +16,7 @@ from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionE
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.concurrent.partitions.throttled_queue import ThrottledQueue
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 
@@ -82,7 +83,7 @@ class ConcurrentSource:
         if not stream_instances_to_read_from:
             return
 
-        queue: Queue[QueueItem] = Queue()
+        queue: ThrottledQueue = ThrottledQueue(Queue(), self._threadpool.get_throttler(), self._timeout_seconds)
         concurrent_stream_processor = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             PartitionEnqueuer(queue),
@@ -112,10 +113,10 @@ class ConcurrentSource:
 
     def _consume_from_queue(
         self,
-        queue: Queue[QueueItem],
+        queue: ThrottledQueue,
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
-        while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
+        while airbyte_message_or_record_or_exception := queue.get():
             yield from self._handle_item(
                 airbyte_message_or_record_or_exception,
                 concurrent_stream_processor,

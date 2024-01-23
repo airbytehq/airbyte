@@ -97,9 +97,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         .withConnectionProperty("encrypt", "false")
         .withConnectionProperty("databaseName", testdb.getDatabaseName())
         .initialized()
-        .withSnapshotIsolation()
-        .withCdc()
-        .withWaitUntilAgentRunning();
+        .withWaitUntilAgentRunning()
+        .withCdc();
   }
 
   @Override
@@ -134,7 +133,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
                                 \t@supports_net_changes = 0""";
     testdb
         .with(enableCdcSqlFmt, modelsSchema(), MODELS_STREAM_NAME, CDC_ROLE_NAME)
-        .with(enableCdcSqlFmt, randomSchema(), RANDOM_TABLE_NAME, CDC_ROLE_NAME);
+        .with(enableCdcSqlFmt, randomSchema(), RANDOM_TABLE_NAME, CDC_ROLE_NAME)
+        .withShortenedCapturePollingInterval();
 
     // Create a test user to be used by the source, with proper permissions.
     testdb
@@ -168,7 +168,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   protected void tearDown() {
     try {
       DataSourceFactory.close(testDataSource);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
     super.tearDown();
@@ -234,30 +234,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     assertDoesNotThrow(() -> source().assertSqlServerAgentRunning(testDatabase()));
   }
 
-  @Test
-  void testAssertSnapshotIsolationAllowed() {
-    // snapshot isolation enabled by setup so assert check passes
-    assertDoesNotThrow(() -> source().assertSnapshotIsolationAllowed(config(), testDatabase()));
-    // now disable snapshot isolation and assert that check fails
-    testdb.withoutSnapshotIsolation();
-    assertThrows(RuntimeException.class, () -> source().assertSnapshotIsolationAllowed(config(), testDatabase()));
-  }
-
-  @Test
-  void testAssertSnapshotIsolationDisabled() {
-    final JsonNode replicationConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "CDC")
-        .put("data_to_sync", "New Changes Only")
-        // set snapshot_isolation level to "Read Committed" to disable snapshot
-        .put("snapshot_isolation", "Read Committed")
-        .build());
-    final var config = config();
-    Jsons.replaceNestedValue(config, List.of("replication_method"), replicationConfig);
-    assertDoesNotThrow(() -> source().assertSnapshotIsolationAllowed(config, testDatabase()));
-    testdb.withoutSnapshotIsolation();
-    assertDoesNotThrow(() -> source().assertSnapshotIsolationAllowed(config, testDatabase()));
-  }
-
   // Ensure the CDC check operations are included when CDC is enabled
   // todo: make this better by checking the returned checkOperations from source.getCheckOperations
   @Test
@@ -279,8 +255,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     status = source().check(config());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
     testdb.withAgentStarted().withWaitUntilAgentRunning();
-    // assertSnapshotIsolationAllowed
-    testdb.withoutSnapshotIsolation();
     status = source().check(config());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }

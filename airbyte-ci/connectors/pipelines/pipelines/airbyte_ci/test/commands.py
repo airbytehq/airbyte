@@ -4,12 +4,13 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import asyncclick as click
 import asyncer
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.click_decorators import click_ci_requirements_option, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.consts import DOCKER_VERSION
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
@@ -34,14 +35,31 @@ async def run_poetry_command(container: dagger.Container, command: str) -> Tuple
     return await container.stdout(), await container.stderr()
 
 
+def validate_env_vars_exist(_ctx: dict, _param: dict, value: List[str]) -> List[str]:
+    for var in value:
+        if var not in os.environ:
+            raise click.BadParameter(f"Environment variable {var} does not exist.")
+    return value
+
+
 @click.command()
 @click.argument("poetry_package_path")
+@click_ci_requirements_option()
 @click.option(
     "-c",
     "--poetry-run-command",
     multiple=True,
     help="The poetry run command to run.",
     required=True,
+)
+@click.option(
+    "--pass-env-var",
+    "-e",
+    "passed_env_vars",
+    multiple=True,
+    help="The environment variables to pass to the container.",
+    required=False,
+    callback=validate_env_vars_exist,
 )
 @click_merge_args_into_context_obj
 @pass_pipeline_context
@@ -110,6 +128,11 @@ async def test(pipeline_context: ClickPipelineContext) -> None:
         .with_env_variable("CI", str(pipeline_context.params["is_ci"]))
         .with_workdir(f"/airbyte/{poetry_package_path}")
     )
+
+    # register passed env vars as secrets and add them to the container
+    for var in pipeline_context.params["passed_env_vars"]:
+        secret = dagger_client.set_secret(var, os.environ[var])
+        test_container = test_container.with_secret_variable(var, secret)
 
     soon_command_executions_results = []
     async with asyncer.create_task_group() as poetry_commands_task_group:

@@ -91,7 +91,7 @@ ssh -i $SSH_KEY -L 8000:localhost:8000 -N -f ec2-user@$INSTANCE_IP
 
 ## Get Airbyte logs in CloudWatch
 
-Follow this [guide](https://aws.amazon.com/pt/premiumsupport/knowledge-center/cloudwatch-docker-container-logs-proxy/) to get your logs from your Airbyte Docker containers in CloudWatch.
+Follow this [guide](https://aws.amazon.com/en/premiumsupport/knowledge-center/cloudwatch-docker-container-logs-proxy/) to get your logs from your Airbyte Docker containers in CloudWatch.
 
 ## Troubleshooting
 
