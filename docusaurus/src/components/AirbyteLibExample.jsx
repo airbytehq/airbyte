@@ -7,12 +7,10 @@ import Heading from '@theme/Heading';
 export const AirbyteLibExample = ({
   specJSON,
   connector,
-  withHeading,
 }) => {
   const spec = JSON.parse(specJSON);
   const fakeConfig = JSONSchemaFaker.generate(spec);
   return <>
-    {withHeading && <Heading as="h2" id="usage-with-airbyte-lib">Usage with airbyte-lib</Heading>}
     <p>
       Install the Python library via:
     </p>

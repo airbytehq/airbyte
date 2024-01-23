@@ -34,7 +34,7 @@ async function injectDefaultAirbyteLibSection(vfile, ast) {
 
   let added = false;
   visit(ast, "heading", (node, index, parent) => {
-    if (!added && node.depth === 2 && node.children.length === 1 && node.children[0].value === "Changelog") {
+    if (!added && isChangelogHeading(node)) {
       added = true;
       parent.children.splice(index, 0, {
         type: "heading",
@@ -63,6 +63,10 @@ async function injectDefaultAirbyteLibSection(vfile, ast) {
       });
     }
   });
+}
+
+function isChangelogHeading(node) {
+  return node.depth === 2 && node.children.length === 1 && node.children[0].value === "Changelog";
 }
 
 
