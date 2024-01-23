@@ -20,18 +20,6 @@ This page contains the setup guide and reference information for the destination
 - Click Create Database.
 -- You are redirected to your new database’s Overview screen. Your database starts in Pending status before transitioning to Initializing. You’ll receive a notification once your database is initialized.
 
-#### Setting up a Vector Collection
-
-- From the database Overview screen, click on the Data Explorer tab
-- Either enter default_namespace into the Airbyte UI under astra_db_keyspace or open the namespace dropdown, create a new namespace, and enter that instead
-- Click Create Collection
-- Enter a name for the collection
--- Also enter this name into the Airbyte UI as collection
-- Enter a vector length under Dimensions
--- This should match with the embedding model you plan to use. The default model for openai is text-embedding-ada-002 which produced vectors of length 1536.
-- Select a similarity metric
--- Default is cosine
-
 #### Gathering other credentials
 
 - Go back to the Overview tab on the Astra UI
@@ -40,7 +28,11 @@ This page contains the setup guide and reference information for the destination
 
 ## Supported Sync Modes
 
-Full Refresh Sync
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | Yes                  |       |
 
 ## Changelog
 | Version | Date       | Pull Request                                             | Subject                     |

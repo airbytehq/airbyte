@@ -33,8 +33,7 @@ class AstraIntegrationTest(BaseIntegrationTest):
         embedder = create_from_config(db_config.embedding, db_config.processing)
         db_creds = db_config.indexing
         astra_client = AstraClient(
-            db_creds.astra_db_id, 
-            db_creds.astra_db_region, 
+            db_creds.astra_db_endpoint, 
             db_creds.astra_db_app_token, 
             db_creds.astra_db_keyspace, 
             embedder.embedding_dimensions, 
