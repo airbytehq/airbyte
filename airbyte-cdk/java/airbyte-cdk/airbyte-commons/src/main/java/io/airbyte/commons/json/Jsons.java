@@ -36,9 +36,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"PMD.AvoidReassigningParameters", "PMD.AvoidCatchingThrowable"})
 public class Jsons {
+  private static final Logger LOGGER = LoggerFactory.getLogger(Jsons.class);
 
   // Object Mapper is thread-safe
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
@@ -113,23 +116,11 @@ public class Jsons {
     }
   }
 
-  /**
-   * DANGER! Jackson will log the input string if it fails to parse. This method MUST NOT be used on
-   * sensitive inputs.
-   */
-  public static <T> T deserializeExact(final String jsonString, final Class<T> klass) {
-    try {
-      return OBJECT_MAPPER_EXACT.readValue(jsonString, klass);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
     try {
       return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
     } catch (final Throwable e) {
-      return Optional.empty();
+      return handleDeserThrowable(e);
     }
   }
 
@@ -137,7 +128,7 @@ public class Jsons {
     try {
       return Optional.of(OBJECT_MAPPER_EXACT.readValue(jsonString, klass));
     } catch (final Throwable e) {
-      return Optional.empty();
+      return handleDeserThrowable(e);
     }
   }
 
@@ -145,7 +136,7 @@ public class Jsons {
     try {
       return Optional.of(OBJECT_MAPPER.readTree(jsonString));
     } catch (final Throwable e) {
-      return Optional.empty();
+      return handleDeserThrowable(e);
     }
   }
 
@@ -387,6 +378,36 @@ public class Jsons {
       return this;
     }
 
+  }
+
+  /**
+   * Simple utility method to log a semi-useful message when deserialization fails.
+   * Intentionally don't log the actual exception object, because it probably contains some/all
+   * of the inputString (e.g. `<snip...>[Source: (String)"{"foo": "bar"; line: 1, column: 13]`).
+   * Logging the class name can at least help narrow down the problem, without leaking
+   * potentially-sensitive information.
+   */
+  private static <T> Optional<T> handleDeserThrowable(Throwable t) {
+    // Manually build the stacktrace, excluding the top-level exception object
+    // so that we don't accidentally include the exception message.
+    // Otherwise we could just do ExceptionUtils.getStackTrace(t).
+    final StringBuilder sb = new StringBuilder();
+    sb.append(t.getClass());
+    for (final StackTraceElement traceElement : t.getStackTrace()) {
+      sb.append("\n\tat ");
+      sb.append(traceElement.toString());
+    }
+    while (t.getCause() != null) {
+      t = t.getCause();
+      sb.append("\nCaused by ");
+      sb.append(t.getClass());
+      for (final StackTraceElement traceElement : t.getStackTrace()) {
+        sb.append("\n\tat ");
+        sb.append(traceElement.toString());
+      }
+    }
+    LOGGER.warn("Failed to deserialize json due to {}", sb);
+    return Optional.empty();
   }
 
 }
