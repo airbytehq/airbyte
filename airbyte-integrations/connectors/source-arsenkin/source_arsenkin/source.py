@@ -15,7 +15,8 @@ from airbyte_protocol.models import SyncMode
 
 class ArsenkinStream(HttpStream, ABC):
     """Base stream for Arsenkin"""
-    url_base = "https://arsenkin.ru/tools/api/task/"
+    url_base: str = "https://arsenkin.ru/tools/api/task/"
+    task_done: str = "Done"
 
     def __init__(
             self,
@@ -25,8 +26,18 @@ class ArsenkinStream(HttpStream, ABC):
         super().__init__(authenticator=authenticator)
         self.config = config
 
+    @property
+    def token(self) -> str:
+        return self.config["token"]
+
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        return {"token": self.config["token"]}
+        raise NotImplementedError()
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        raise NotImplementedError()
 
     def _set_task_request(self) -> requests.Response:
         """Set task"""
@@ -52,16 +63,16 @@ class ArsenkinStream(HttpStream, ABC):
         if set_task_resp.status_code != 200:
             raise ValueError  # TODO: another error
 
+        print(set_task_resp.json())
         task_id: int = set_task_resp.json()["task_id"]
         while True:
             get_task_resp: requests.Response = self._get_task_request(task_id=task_id)
             if get_task_resp.status_code != 200:
                 raise ValueError  # TODO: another error
             status_json: dict[str, any] = get_task_resp.json()
-            task_status: str = status_json["status"]
-            tak_progress: int = status_json["progress"]  # TODO: smart wait based on progress
 
-            if task_status == "Done":
+            task_status: str = status_json["status"]
+            if task_status == self.task_done:
                 get_results_resp: requests.Response = self._get_results_request(task_id=task_id)
                 for record in self.parse_response(response=get_results_resp):
                     yield record
@@ -73,6 +84,12 @@ class ArsenkinStream(HttpStream, ABC):
 class ParserADS(ArsenkinStream):
     """Ads parser for Arsenkin"""
 
+    def path(
+            self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> str:
+        return ""  # stream type for Arsenkin is a query param, not defined by path
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pass
 
@@ -80,22 +97,16 @@ class ParserADS(ArsenkinStream):
     # TODO: check if this is correct
     primary_key = "task_id"
 
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "set"
-
     def request_params(
             self, **kwargs
     ) -> MutableMapping[str, Any]:
-        base_params = super().request_params(**kwargs).copy()
-        base_params.update({
+        return {
+            "token": self.token,
             "tools_name": "parser-ads",
             "keywords": json.dumps(self.config["keywords"]),
             "region_yandex": self.config["region_yandex"],
             "device": self.config["device"]
-        })
-        return base_params
+        }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -134,11 +145,11 @@ class ParserADS(ArsenkinStream):
 
     def _get_task_request(self, task_id) -> requests.Response:
         """Get task status response"""
-        return requests.get(self.url_base + "check", params={"token": self.config["token"], "task_id": task_id})
+        return requests.get(self.url_base + "check", params={"token": self.token, "task_id": task_id})
 
     def _get_results_request(self, task_id) -> requests.Response:
         """Get results of complete task"""
-        return requests.get(self.url_base + "result", params={"token": self.config["token"], "task_id": task_id})
+        return requests.get(self.url_base + "result", params={"token": self.token, "task_id": task_id})
 
 
 class SourceArsenkin(AbstractSource):
