@@ -46,14 +46,33 @@ class CustomFormatChecker(FormatChecker):
             return super().check(instance, format)
 
 
-def _enforce_no_additional_top_level_properties(json_schema: Dict[str, Any]):
-    """Create a copy of the schema in which `additionalProperties` is set to False for the dict of top-level properties.
+def _add_additional_properties(json_schema: Dict[str, Any]) -> Dict[str, Any]:
+    new_schema = copy.deepcopy(json_schema)
+
+    def add_properties(properties):
+        for prop_name, prop_value in properties.items():
+            if "type" in prop_value and "object" in prop_value["type"] and len(prop_value.get("properties", [])):
+                prop_value["additionalProperties"] = False
+                add_properties(prop_value.get("properties", {}))
+            elif "type" in prop_value and "array" in prop_value["type"]:
+                if prop_value.get("items") and "object" in prop_value.get("items", {}).get("type") and len(prop_value.get("items", {}).get("properties", [])):
+                    prop_value["items"]["additionalProperties"] = False
+                if prop_value.get("items", {}).get("properties"):
+                    add_properties(prop_value["items"]["properties"])
+
+    add_properties(new_schema.get("properties", {}))
+    return new_schema
+
+
+def _enforce_false_additional_properties(json_schema: Dict[str, Any]) -> Dict[str, Any]:
+    """Create a copy of the schema in which `additionalProperties` is set to False for all non-null object properties.
 
     This method will override the value of `additionalProperties` if it is set,
     or will create the property and set it to False if it does not exist.
     """
     enforced_schema = copy.deepcopy(json_schema)
     dpath.util.new(enforced_schema, "additionalProperties", False)
+    enforced_schema = _add_additional_properties(enforced_schema)
     return enforced_schema
 
 
@@ -67,7 +86,7 @@ def verify_records_schema(
     for stream in catalog.streams:
         schema_to_validate_against = stream.stream.json_schema
         if fail_on_extra_columns:
-            schema_to_validate_against = _enforce_no_additional_top_level_properties(schema_to_validate_against)
+            schema_to_validate_against = _enforce_false_additional_properties(schema_to_validate_against)
         stream_validators[stream.stream.name] = Draft7ValidatorWithStrictInteger(
             schema_to_validate_against, format_checker=CustomFormatChecker()
         )
