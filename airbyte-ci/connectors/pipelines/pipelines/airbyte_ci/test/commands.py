@@ -11,7 +11,8 @@ from typing import TYPE_CHECKING
 import asyncclick as click
 import asyncer
 from pipelines.cli.click_decorators import click_ci_requirements_option, click_ignore_unused_kwargs, click_merge_args_into_context_obj
-from pipelines.consts import DOCKER_VERSION
+from pipelines.consts import DOCKER_HOST_NAME, DOCKER_HOST_PORT, DOCKER_VERSION
+from pipelines.dagger.actions.system import docker
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 
@@ -61,6 +62,9 @@ def validate_env_vars_exist(_ctx: dict, _param: dict, value: List[str]) -> List[
     required=False,
     callback=validate_env_vars_exist,
 )
+@click.option(
+    "--side-car-docker-engine", help="Run a docker engine side car bound to poetry container.", default=False, type=bool, is_flag=True
+)
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
@@ -96,7 +100,15 @@ async def test(pipeline_context: ClickPipelineContext) -> None:
     directories_to_mount = list(set([poetry_package_path, *directories_to_always_mount]))
 
     pipeline_name = f"Unit tests for {poetry_package_path}"
+
     dagger_client = await pipeline_context.get_dagger_client(pipeline_name=pipeline_name)
+
+    dockerd_service = None
+    if pipeline_context.params["side_car_docker_engine"]:
+        dockerd_service = docker.with_global_dockerd_service(dagger_client)
+
+        await dockerd_service.start()
+
     test_container = await (
         dagger_client.container()
         .from_("python:3.10.12")
@@ -124,10 +136,18 @@ async def test(pipeline_context: ClickPipelineContext) -> None:
         )
         .with_workdir(f"/airbyte/{poetry_package_path}")
         .with_exec(["poetry", "install", "--with=dev"])
-        .with_unix_socket("/var/run/docker.sock", dagger_client.host().unix_socket("/var/run/docker.sock"))
         .with_env_variable("CI", str(pipeline_context.params["is_ci"]))
         .with_workdir(f"/airbyte/{poetry_package_path}")
     )
+
+    if dockerd_service:
+        test_container = (
+            test_container.with_env_variable("DOCKER_HOST", f"tcp://{DOCKER_HOST_NAME}:{DOCKER_HOST_PORT}")
+            .with_env_variable("DOCKER_HOST_NAME", DOCKER_HOST_NAME)
+            .with_service_binding(DOCKER_HOST_NAME, dockerd_service)
+        )
+    else:
+        test_container = test_container.with_unix_socket("/var/run/docker.sock", dagger_client.host().unix_socket("/var/run/docker.sock"))
 
     # register passed env vars as secrets and add them to the container
     for var in pipeline_context.params["passed_env_vars"]:
@@ -141,6 +161,8 @@ async def test(pipeline_context: ClickPipelineContext) -> None:
             soon_command_execution_result = poetry_commands_task_group.soonify(run_poetry_command)(test_container, command)
             soon_command_executions_results.append(soon_command_execution_result)
 
+    if dockerd_service:
+        await dockerd_service.stop()
     for result in soon_command_executions_results:
         stdout, stderr = result.value
         logger.info(stdout)
