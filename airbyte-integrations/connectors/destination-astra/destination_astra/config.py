@@ -16,7 +16,6 @@ class AstraIndexingModel(BaseModel):
     astra_db_endpoint: str = Field(
         ...,
         title="AstraDB Endpoint",
-        airbyte_secret=True,
         description="AstraDB Endpoint",
         pattern="^https:\\/\\/([a-z]|[0-9]){8}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){12}-[^\\.]*?\\.apps\\.astra\\.datastax\\.com",
         examples=["https://8292d414-dd1b-4c33-8431-e838bedc04f7-us-east1.apps.astra.datastax.com"],
