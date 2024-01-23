@@ -9,6 +9,9 @@
     "id": {
       "type": ["string", "null"]
     },
+    "quote_id": {
+      "type": ["string", "null"]
+    },
     "sub_total": {
       "type": ["integer", "null"]
     },

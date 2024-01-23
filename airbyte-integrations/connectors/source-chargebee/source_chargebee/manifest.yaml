@@ -148,6 +148,13 @@ definitions:
               backoff_strategies:
                 - type: WaitTimeFromHeader
                   header: "Retry-After"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["customer_id"]
+            value: "{{ stream_slice.id }}"
+      - type: CustomTransformation
+        class_name: source_chargebee.components.CustomFieldTransformation
     $parameters:
       name: "contact"
       primary_key: "id"
@@ -330,6 +337,13 @@ definitions:
                 - http_codes: [404]
                   action: IGNORE
                   error_message: "Entity unavailable. Quote may have been deleted."
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["quote_id"]
+            value: "{{ stream_slice.id }}"
+      - type: CustomTransformation
+        class_name: source_chargebee.components.CustomFieldTransformation
     $parameters:
       name: "quote_line_group"
       primary_key: "id"
