@@ -73,7 +73,6 @@ QUERY_RESTRICTED_SALESFORCE_OBJECTS = [
     "UserEntityAccess",
     "UserFieldAccess",
     "Vote",
-    "FlowTestView",
 ]
 
 # The following objects are not supported by the query method being used.
@@ -201,8 +200,6 @@ UNSUPPORTED_FILTERING_STREAMS = [
     "ReportEvent",
     "TabDefinition",
     "UriEvent",
-    "PermissionSetEventStore",
-    "ActivityFieldHistory",
 ]
 
 RESOURCE_PRIMARY_KEY_MAP = {
@@ -214,7 +211,7 @@ RESOURCE_PRIMARY_KEY_MAP = {
     "Publisher": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_publisher.htm
     "ApexPageInfo": "DurableId" # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_apexpageinfo.htm
 }
-UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup", "PromotionTarget", "PromotionQualifier"]
+UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
 
 
 class Salesforce:
