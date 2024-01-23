@@ -15,3 +15,8 @@ class PartitionGenerationCompletedSentinel:
         :param stream: The stream that was processed
         """
         self.stream = stream
+
+    def __eq__(self, other):
+        if isinstance(other, PartitionGenerationCompletedSentinel):
+            return self.stream == other.stream
+        return False
