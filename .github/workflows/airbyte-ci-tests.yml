@@ -165,5 +165,5 @@ jobs:
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "test airbyte-lib --pass-env-var=GCP_GSM_CREDENTIALS --poetry-run-command='pytest'"
+          subcommand: "test airbyte-lib --side-car-docker-engine --pass-env-var=GCP_GSM_CREDENTIALS --poetry-run-command='pytest'"
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
