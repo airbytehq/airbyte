@@ -7,25 +7,29 @@
                     "type": [
                       "null",
                       "number"
-                    ]
+                    ],
+                     "multipleOf": "null"
                   },
                   "step_conv_ratio": {
                     "type": [
                       "null",
                       "number"
-                    ]
+                    ],
+                    "multipleOf": "null"
                   },
                   "avg_time": {
                     "type": [
                       "null",
                       "number"
-                    ]
+                    ],
+                    "multipleOf": "null"
                   },
                   "avg_time_from_start": {
                     "type": [
                       "null",
                       "number"
-                    ]
+                    ],
+                    "multipleOf": "null"
                   }
               }
             }
