@@ -12,6 +12,7 @@ const darkCodeTheme = themes.dracula;
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
 const productInformation = require("./src/remark/productInformation");
 const connectorList = require("./src/remark/connectorList");
+const specDecoration = require("./src/remark/specDecoration");
 
 const redirects = yaml.load(
   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
@@ -94,7 +95,7 @@ const config = {
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
           exclude: ["**/*.inapp.md"],
-          remarkPlugins: [docsHeaderDecoration, productInformation, connectorList],
+          remarkPlugins: [docsHeaderDecoration, productInformation, specDecoration, connectorList],
         },
         blog: false,
         theme: {
