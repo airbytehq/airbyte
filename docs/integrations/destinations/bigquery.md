@@ -210,6 +210,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.31  | 2024-01-22 | [34023](https://github.com/airbytehq/airbyte/pull/34023)   | Combine DDL operations into a single execution                                                                                                                  |
 | 2.3.30  | 2024-01-12 | [34226](https://github.com/airbytehq/airbyte/pull/34226)   | Upgrade CDK to 0.12.0; Cleanup dependencies                                                                                                                     |
 | 2.3.29  | 2024-01-09 | [34003](https://github.com/airbytehq/airbyte/pull/34003)   | Fix loading credentials from GCP Env                                                                                                                            |
 | 2.3.28  | 2024-01-08 | [34021](https://github.com/airbytehq/airbyte/pull/34021)   | Add idempotency ids in dummy insert for check call                                                                                                              |

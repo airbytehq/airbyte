@@ -114,8 +114,7 @@ class Helpers(object):
 
         first_row_data = all_row_data[0]
 
-        # When a column is deleted by backspace, a cell with None value is returned, so should be filtered here
-        return [header_cell for header_cell in Helpers.get_formatted_row_values(first_row_data) if header_cell is not None]
+        return Helpers.get_formatted_row_values(first_row_data)
 
     @staticmethod
     def parse_sheet_and_column_names_from_catalog(catalog: ConfiguredAirbyteCatalog) -> Dict[str, FrozenSet[str]]:
@@ -154,7 +153,7 @@ class Helpers(object):
                     first_row = [safe_name_conversion(h) for h in first_row]
                     # When performing names conversion, they won't match what is listed in catalog for the majority of cases,
                     # so they should be cast here in order to have them in records
-                    columns = {safe_name_conversion(c) for c in columns if c is not None}
+                    columns = {safe_name_conversion(c) for c in columns}
                 # Find the column index of each header value
                 idx = 0
                 for cell_value in first_row:

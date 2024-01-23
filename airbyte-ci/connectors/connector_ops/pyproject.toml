@@ -23,7 +23,7 @@ ci-credentials = {path = "../ci_credentials"}
 pandas = "^2.0.3"
 simpleeval = "^0.9.13"
 
-[tool.poetry.group.test.dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
 pytest-mock = "^3.10.0"
 freezegun = "^1.1.0"
