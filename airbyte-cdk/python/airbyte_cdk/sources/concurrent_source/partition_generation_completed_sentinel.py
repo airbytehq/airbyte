@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from typing import Any
+
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 
 
@@ -16,7 +18,7 @@ class PartitionGenerationCompletedSentinel:
         """
         self.stream = stream
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, PartitionGenerationCompletedSentinel):
             return self.stream == other.stream
         return False

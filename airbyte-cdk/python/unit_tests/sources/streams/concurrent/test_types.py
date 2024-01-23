@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import Mock
 from typing import Union
 
+import pytest
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
@@ -14,6 +15,10 @@ class QueueItemObjectTest(unittest.TestCase):
     def test_queue_item(self) -> None:
         # This test is a reminder for the devs that if QueueItem changes, `QueueItemObject.__lt__` needs to be updated
         assert QueueItem == Union[Record, Partition, PartitionCompleteSentinel, PartitionGenerationCompletedSentinel]
+
+    def test_wrong_item_type_then_raise_exception(self):
+        with pytest.raises(ValueError):
+            QueueItemObject(1)
 
     def test_order(self) -> None:
         inspect.signature(Record.__init__)
