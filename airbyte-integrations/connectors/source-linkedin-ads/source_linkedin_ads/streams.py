@@ -203,7 +203,7 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream, ABC):
         """For the streams that provide the cursor_field `lastModified`, we filter out the old records."""
         if stream_state:
             for record in records_slice:
-                if record[self.cursor_field] >= stream_state.get(self.cursor_field):
+                if record[self.cursor_field] > stream_state.get(self.cursor_field):
                     yield record
         else:
             yield from records_slice
