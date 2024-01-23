@@ -3,7 +3,8 @@
 #
 import functools
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping, Optional, Protocol, Tuple
+from datetime import datetime
+from typing import Any, List, Mapping, MutableMapping, Optional, Protocol, Tuple
 
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
@@ -36,6 +37,11 @@ class CursorField:
 
 
 class Cursor(ABC):
+    @property
+    @abstractmethod
+    def state(self) -> MutableMapping[str, Any]:
+        ...
+
     @abstractmethod
     def observe(self, record: Record) -> None:
         """
@@ -52,6 +58,10 @@ class Cursor(ABC):
 
 
 class NoopCursor(Cursor):
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return {}
+
     def observe(self, record: Record) -> None:
         pass
 
@@ -73,6 +83,7 @@ class ConcurrentCursor(Cursor):
         connector_state_converter: AbstractStreamStateConverter,
         cursor_field: CursorField,
         slice_boundary_fields: Optional[Tuple[str, str]],
+        start: Optional[Any],
     ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
@@ -82,9 +93,19 @@ class ConcurrentCursor(Cursor):
         self._cursor_field = cursor_field
         # To see some example where the slice boundaries might not be defined, check https://github.com/airbytehq/airbyte/blob/1ce84d6396e446e1ac2377362446e3fb94509461/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L363-L379
         self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
+        self._start = start
         self._most_recent_record: Optional[Record] = None
         self._has_closed_at_least_one_slice = False
-        self.state = stream_state
+        self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._concurrent_state
+
+    def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[datetime, MutableMapping[str, Any]]:
+        if self._connector_state_converter.is_state_message_compatible(state):
+            return self._start or self._connector_state_converter.zero_value, self._connector_state_converter.deserialize(state)
+        return self._connector_state_converter.convert_from_sequential_state(self._cursor_field, state, self._start)
 
     def observe(self, record: Record) -> None:
         if self._slice_boundary_fields:
@@ -102,7 +123,7 @@ class ConcurrentCursor(Cursor):
     def close_partition(self, partition: Partition) -> None:
         slice_count_before = len(self.state.get("slices", []))
         self._add_slice_to_state(partition)
-        if slice_count_before < len(self.state["slices"]):
+        if slice_count_before < len(self.state["slices"]):  # only emit if at least one slice has been processed
             self._merge_partitions()
             self._emit_state_message()
         self._has_closed_at_least_one_slice = True
@@ -110,7 +131,9 @@ class ConcurrentCursor(Cursor):
     def _add_slice_to_state(self, partition: Partition) -> None:
         if self._slice_boundary_fields:
             if "slices" not in self.state:
-                self.state["slices"] = []
+                raise RuntimeError(
+                    f"The state for stream {self._stream_name} should have at least one slice to delineate the sync start time, but no slices are present. This is unexpected. Please contact Support."
+                )
             self.state["slices"].append(
                 {
                     "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
@@ -126,10 +149,8 @@ class ConcurrentCursor(Cursor):
 
             self.state["slices"].append(
                 {
-                    # TODO: if we migrate stored state to the concurrent state format, we may want this to be the config start date
-                    #  instead of zero_value.
-                    "start": self._connector_state_converter.zero_value,
-                    "end": self._extract_cursor_value(self._most_recent_record),
+                    self._connector_state_converter.START_KEY: self.start,
+                    self._connector_state_converter.END_KEY: self._extract_cursor_value(self._most_recent_record),
                 }
             )
 
