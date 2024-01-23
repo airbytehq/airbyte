@@ -215,9 +215,13 @@ class GoogleAds:
     
     @staticmethod
     def convert_array(field_value: List[str]) -> List[Dict[str, any]]:
+        output_list = []
         for value in field_value:
-            item_dict = {key.strip(): val.strip() for key, val in (pair.split(':', 1) for pair in value.replace('"', '').split('\n') if ':' in pair)}
-            yield item_dict
+            value = value.replace('"', '').split('\n')
+            item_dict = {k.strip(): v.strip() for k, v in (val.split(':', 1) for val in value if ':' in val)}
+            output_list.append(item_dict)
+        return output_list
+
 
     @staticmethod
     def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):

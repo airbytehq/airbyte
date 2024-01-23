@@ -332,12 +332,6 @@
         "integer"
       ]
     },
-    "campaign.shopping_setting.sales_country": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
     "campaign.start_date": {
       "type": [
         "null",
