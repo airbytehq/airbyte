@@ -165,7 +165,7 @@ public interface Destination extends Integration {
   /**
    * Denotes if the destination fully supports Destinations V2.
    */
-  default Boolean isV2Destination() {
+  default boolean isV2Destination() {
     return false;
   }
 

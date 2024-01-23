@@ -70,7 +70,7 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   }
 
   @Override
-  public Boolean isV2Destination() {
+  public boolean isV2Destination() {
     return true;
   }
 

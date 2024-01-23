@@ -21,7 +21,7 @@ public class DestinationConfig {
   private static DestinationConfig config;
 
   // whether the destination fully supports Destinations V2
-  private Boolean isV2Destination;
+  private boolean isV2Destination;
 
   @VisibleForTesting
   protected JsonNode root;
@@ -33,7 +33,7 @@ public class DestinationConfig {
     initialize(root, false);
   }
 
-  public static void initialize(final JsonNode root, final Boolean isV2Destination) {
+  public static void initialize(final JsonNode root, final boolean isV2Destination) {
     if (config == null) {
       if (root == null) {
         throw new IllegalArgumentException("Cannot create DestinationConfig from null.");
@@ -77,7 +77,7 @@ public class DestinationConfig {
   }
 
   // boolean value, otherwise false
-  public Boolean getBooleanValue(final String key) {
+  public boolean getBooleanValue(final String key) {
     final JsonNode node = getNodeValue(key);
     if (node == null || !node.isBoolean()) {
       LOGGER.debug("Cannot retrieve boolean value for node with key {}", key);
@@ -86,7 +86,7 @@ public class DestinationConfig {
     return node.asBoolean();
   }
 
-  public Boolean getIsV2Destination() {
+  public boolean getIsV2Destination() {
     return isV2Destination;
   }
 
