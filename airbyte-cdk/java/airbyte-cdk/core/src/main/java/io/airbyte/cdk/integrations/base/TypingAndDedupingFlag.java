@@ -9,12 +9,12 @@ import java.util.Optional;
 public class TypingAndDedupingFlag {
 
   public static boolean isDestinationV2() {
-    return DestinationConfig.getInstance().getBooleanValue("is_v2_destination")
+    return DestinationConfig.getInstance().getIsV2Destination()
         || DestinationConfig.getInstance().getBooleanValue("use_1s1t_format");
   }
 
-  public static Optional<String> getRawNamespaceOverride(String option) {
-    String rawOverride = DestinationConfig.getInstance().getTextValue(option);
+  public static Optional<String> getRawNamespaceOverride(final String option) {
+    final String rawOverride = DestinationConfig.getInstance().getTextValue(option);
     if (rawOverride == null || rawOverride.isEmpty()) {
       return Optional.empty();
     } else {

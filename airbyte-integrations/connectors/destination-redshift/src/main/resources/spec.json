@@ -249,14 +249,6 @@
           }
         ]
       },
-      "is_v2_destination": {
-        "type": "boolean",
-        "description": "(For internal use.) Declares this is a V2 destination.",
-        "title": "(Internal) Is V2 Destination",
-        "group": "connection",
-        "airbyte_hidden": true,
-        "default": true
-      },
       "raw_data_schema": {
         "type": "string",
         "description": "The schema to write raw tables into",

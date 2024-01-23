@@ -40,4 +40,9 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     return new SnowflakeInternalStagingDestination(airbyteEnvironment).getSerializedMessageConsumer(config, catalog, outputRecordCollector);
   }
 
+  @Override
+  public Boolean isV2Destination() {
+    return true;
+  }
+
 }
