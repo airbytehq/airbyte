@@ -82,7 +82,7 @@ def pg_dsn():
         image=PYTEST_POSTGRES_IMAGE,
         name=PYTEST_POSTGRES_CONTAINER,
         environment={"POSTGRES_USER": "postgres", "POSTGRES_PASSWORD": "postgres", "POSTGRES_DB": "postgres"},
-        network_mode="host",
+        ports={"5432/tcp": PYTEST_POSTGRES_PORT},
         detach=True,
     )
 
