@@ -394,6 +394,10 @@ class Conversions(LinkedInAdsStreamSlicing):
 
 
 class Leads(LinkedInAdsStreamSlicing):
+    """
+        Get Leads data using `account_id` slicing.
+    https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2023-11&tabs=http"""
+
     endpoint = "leadFormResponses"
     cursor_field = "submittedAt"
 
