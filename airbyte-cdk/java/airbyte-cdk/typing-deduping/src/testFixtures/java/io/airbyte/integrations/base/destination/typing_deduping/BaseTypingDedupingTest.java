@@ -855,6 +855,9 @@ public abstract class BaseTypingDedupingTest {
 
   protected static void endSync(final AirbyteDestination destination) throws Exception {
     destination.notifyEndOfInput();
+    while (!destination.isFinished()) {
+      Thread.sleep(1000);
+    }
     destination.close();
   }
 
