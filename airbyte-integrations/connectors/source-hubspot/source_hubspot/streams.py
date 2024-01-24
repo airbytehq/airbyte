@@ -88,7 +88,7 @@ def retry_connection_handler(**kwargs):
 
     return backoff.on_exception(
         backoff.expo,
-        (requests.exceptions.RequestException, JSONDecodeError),
+        (requests.exceptions.RequestException, JSONDecodeError, HubspotInvalidAuth),
         jitter=None,
         on_backoff=log_retry_attempt,
         giveup=giveup_handler,
@@ -351,6 +351,12 @@ class Stream(HttpStream, ABC):
         if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == HTTPStatus.UNAUTHORIZED:
+            message = response.json().get("message")
+            raise HubspotInvalidAuth(message, response=response)
+        return super().should_retry(response)
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == codes.too_many_requests:
             return float(response.headers.get("Retry-After", 3))
@@ -369,7 +375,7 @@ class Stream(HttpStream, ABC):
             json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
         return json_schema
 
-    @retry_connection_handler(max_tries=2)
+    @retry_connection_handler(max_tries=5)
     def handle_request(
         self,
         stream_slice: Mapping[str, Any] = None,
