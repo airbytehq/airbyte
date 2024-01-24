@@ -16,10 +16,7 @@ class ReadResult:
 
     def __getitem__(self, stream: str) -> CachedDataset:
         if stream not in self._cache:
-            raise AirbyteLibInputError(
-                message="Stream does not exist.",
-                input_value=stream,
-            )
+            raise KeyError(stream)
 
         return CachedDataset(self._cache, stream)
 

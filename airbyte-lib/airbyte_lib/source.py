@@ -231,7 +231,7 @@ class Source:
                     "available_streams": self.get_available_streams(),
                     "connector_name": self.name,
                 },
-            )
+            ) from KeyError(stream)
 
         iterator: Iterator[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
             self._read_with_catalog(streaming_cache_info, configured_catalog),
