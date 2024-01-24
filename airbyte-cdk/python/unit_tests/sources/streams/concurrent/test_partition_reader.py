@@ -10,7 +10,7 @@ import pytest
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItemObject
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 
 _RECORDS = [
     Record({"id": 1, "name": "Jack"}, "stream"),
@@ -20,14 +20,13 @@ _RECORDS = [
 
 class PartitionReaderTest(unittest.TestCase):
     def setUp(self) -> None:
-        self._queue: Queue[QueueItemObject] = Queue()
+        self._queue: Queue[QueueItem] = Queue()
         self._partition_reader = PartitionReader(self._queue)
 
     def test_given_no_records_when_process_partition_then_only_emit_sentinel(self):
         self._partition_reader.process_partition(self._a_partition([]))
 
-        while queue_item_object := self._queue.get():
-            queue_item = queue_item_object.value
+        while queue_item := self._queue.get():
             if not isinstance(queue_item, PartitionCompleteSentinel):
                 pytest.fail("Only one PartitionCompleteSentinel is expected")
             break
@@ -36,8 +35,7 @@ class PartitionReaderTest(unittest.TestCase):
         self._partition_reader.process_partition(self._a_partition(_RECORDS))
 
         actual_records = []
-        while queue_item_object := self._queue.get():
-            queue_item = queue_item_object.value
+        while queue_item := self._queue.get():
             if isinstance(queue_item, PartitionCompleteSentinel):
                 break
             actual_records.append(queue_item)
@@ -49,11 +47,11 @@ class PartitionReaderTest(unittest.TestCase):
         exception = ValueError()
         partition.read.side_effect = self._read_with_exception(_RECORDS, exception)
 
-        with pytest.raises(ValueError):
-            self._partition_reader.process_partition(partition)
+        self._partition_reader.process_partition(partition)
 
         for i in range(len(_RECORDS)):
-            assert self._queue.get().value == _RECORDS[i]
+            assert self._queue.get() == _RECORDS[i]
+        assert self._queue.get() == exception
 
     def _a_partition(self, records: List[Record]) -> Partition:
         partition = Mock(spec=Partition)
