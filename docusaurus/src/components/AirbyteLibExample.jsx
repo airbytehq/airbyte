@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { JSONSchemaFaker } from "json-schema-faker";
 import CodeBlock from '@theme/CodeBlock';
 import Heading from '@theme/Heading';
@@ -8,8 +8,8 @@ export const AirbyteLibExample = ({
   specJSON,
   connector,
 }) => {
-  const spec = JSON.parse(specJSON);
-  const fakeConfig = JSONSchemaFaker.generate(spec);
+  const spec = useMemo(() => JSON.parse(specJSON), [specJSON]);
+  const fakeConfig = useMemo(() => JSONSchemaFaker.generate(spec), [spec]);
   return <>
     <p>
       Install the Python library via:
