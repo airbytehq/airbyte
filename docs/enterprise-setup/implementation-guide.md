@@ -13,33 +13,50 @@ Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to en
 
 ## Prerequisites
 
-There are three prerequisites to deploying: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
+For a production-ready deployment of Self-Managed Enterprise, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
-For production, we recommend deploying to EKS, GKE or AKS. If you are doing some local testing, follow the cluster setup instructions outlined [here](/deploying-airbyte/on-kubernetes-via-helm.md#cluster-setup).
+![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
 
-To install `kubectl`, please follow [these instructions](https://kubernetes.io/docs/tasks/tools/). To configure `kubectl` to connect to your cluster by using `kubectl use-context my-cluster-name`, see the following:
+Prior to deploying Self-Managed Enterprise, we recommend having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
+
+| Component                | Recommendation                                                            |
+|--------------------------|-----------------------------------------------------------------------------|
+| Kubernetes Cluster       | Amazon EKS cluster running in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) on a minimum of 6 nodes. |
+| Ingress                  | [Amazon ALB](#configuring-ingress) and a URL for users to access the Airbyte UI or make API requests.                                                  |
+| Object Storage           | [Amazon S3 bucket](#configuring-external-logging) with two directories for log and state storage.         |
+| Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                               |
+| External Secrets Manager | [Amazon Secrets Manager](/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                               |
+
+
+We also require you to install and configure the following Kubernetes tooling:
+1. Install `helm` by following [these instructions](https://helm.sh/docs/intro/install/)
+2. Install `kubectl` by following [these instructions](https://kubernetes.io/docs/tasks/tools/).
+3. Configure `kubectl` to connect to your cluster by using `kubectl use-context my-cluster-name`:
 
 <details>
-    <summary>Configure kubectl to connect to your cluster</summary>
-    <Tabs>
-        <TabItem value="GKE" label="GKE" default> 
-            <ol>
-                <li>Configure <code>gcloud</code> with <code>gcloud auth login</code>.</li>
-                <li>On the Google Cloud Console, the cluster page will have a "Connect" button, with a command to run locally: <code>gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME</code></li>
-                <li>Use <code>kubectl config get-contexts</code> to show the contexts available.</li>
-                <li>Run <code>kubectl config use-context $GKE_CONTEXT</code> to access the cluster from kubectl.</li>
-            </ol>
-        </TabItem>
-        <TabItem value="EKS" label="EKS">
-            <ol>
-                <li><a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html">Configure your AWS CLI</a> to connect to your project.</li>
-                <li>Install <a href="https://eksctl.io/introduction/">eksctl</a>.</li>
-                <li>Run <code>eksctl utils write-kubeconfig --cluster=$CLUSTER_NAME</code> to make the context available to kubectl.</li>
-                <li>Use <code>kubectl config get-contexts</code> to show the contexts available.</li>
-                <li>Run <code>kubectl config use-context $EKS_CONTEXT</code> to access the cluster with kubectl.</li>
-            </ol>
-        </TabItem>
-    </Tabs>
+<summary>Configure kubectl to connect to your cluster</summary>
+
+<Tabs>
+<TabItem value="Amazon EKS" label="Amazon EKS" default>
+
+1. Configure your [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
+2. Install [eksctl](https://eksctl.io/introduction/).
+3. Run `eksctl utils write-kubeconfig --cluster=$CLUSTER_NAME` to make the context available to kubectl.
+4. Use `kubectl config get-contexts` to show the available contexts.
+5. Run `kubectl config use-context $EKS_CONTEXT` to access the cluster with kubectl.
+
+</TabItem>
+
+<TabItem value="GKE" label="GKE"> 
+
+1. Configure `gcloud` with `gcloud auth login`.
+2. On the Google Cloud Console, the cluster page will have a "Connect" button, with a command to run locally: `gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME`.
+3. Use `kubectl config get-contexts` to show the available contexts.
+4. Run `kubectl config use-context $EKS_CONTEXT` to access the cluster with kubectl.
+
+</TabItem>
+</Tabs>
+
 </details>
 
 ## Deploy Airbyte Enterprise
