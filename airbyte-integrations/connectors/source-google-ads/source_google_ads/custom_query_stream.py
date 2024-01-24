@@ -24,8 +24,8 @@ class CustomQueryMixin:
         It will be ignored if provided.
         If you need to enable it, uncomment the next line instead of `return None` and modify your config
         """
-        # return self.config.get("primary_key") or None
-        return None
+        return self.config.get("primary_key") or None
+        # return None
 
     @property
     def name(self):

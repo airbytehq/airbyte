@@ -118,6 +118,14 @@
               "type": "string",
               "title": "Destination Table Name",
               "description": "The table name in your destination database for the chosen query."
+            },
+            "primary_key": {
+              "type": "array",
+              "title": "Primary key",
+              "description": "The primary key for your query.",
+              "items": {
+                "type": "string"
+              }
             }
           }
         }
