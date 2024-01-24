@@ -3,8 +3,8 @@
 #
 import unittest
 from queue import Queue
-from unittest.mock import Mock, patch
 from typing import List
+from unittest.mock import Mock, patch
 
 import pytest
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
@@ -38,7 +38,6 @@ class PartitionEnqueuerTest(unittest.TestCase):
         self._partition_generator.generate_partitions(stream)
 
         assert self._consume_queue() == [PartitionGenerationCompletedSentinel(stream)]
-
 
     def test_given_partitions_when_generate_partitions_then_return_partitions_before_sentinel(self):
         self._thread_pool_manager.prune_to_validate_has_reached_futures_limit.return_value = False

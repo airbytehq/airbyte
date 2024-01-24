@@ -3,7 +3,6 @@
 #
 import logging
 import threading
-
 from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Any, Callable, List, Optional
 

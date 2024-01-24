@@ -1,7 +1,9 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import inspect
 import unittest
-from unittest.mock import Mock
 from typing import Union
+from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel

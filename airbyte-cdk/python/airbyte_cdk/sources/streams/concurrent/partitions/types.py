@@ -29,7 +29,6 @@ QueueItem = Union[Record, Partition, PartitionCompleteSentinel, PartitionGenerat
 
 
 class QueueItemObject:
-
     def __init__(self, item: QueueItem):
         self.value = item
         self._priority = self._get_priority(self.value)

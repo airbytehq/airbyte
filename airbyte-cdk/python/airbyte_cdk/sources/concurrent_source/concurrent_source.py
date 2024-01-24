@@ -39,7 +39,9 @@ class ConcurrentSource:
         message_repository: MessageRepository,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     ) -> "ConcurrentSource":
-        assert initial_number_of_partitions_to_generate < num_workers, "It is required to have more workeds than threads generating partitions"
+        assert (
+            initial_number_of_partitions_to_generate < num_workers
+        ), "It is required to have more workeds than threads generating partitions"
         threadpool = ThreadPoolManager(
             concurrent.futures.ThreadPoolExecutor(max_workers=num_workers, thread_name_prefix="workerpool"),
             logger,
