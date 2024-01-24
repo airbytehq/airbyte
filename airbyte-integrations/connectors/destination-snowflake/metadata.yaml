@@ -14,8 +14,10 @@ data:
   name: Snowflake
   registries:
     cloud:
+      dockerImageTag: 3.4.22
       enabled: true
     oss:
+      dockerImageTag: 3.4.22
       enabled: true
   releaseStage: generally_available
   releases:
