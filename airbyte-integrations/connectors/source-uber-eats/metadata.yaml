@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 556c5f38-c2fc-4f15-9ef2-e9755f82dad8
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-uber-eats
+  githubIssueLabel: source-uber-eats
+  icon: uber-eats.svg
+  license: MIT
+  name: Uber Eats
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/uber-eats
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

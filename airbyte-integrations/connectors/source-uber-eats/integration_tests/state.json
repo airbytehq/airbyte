@@ -1,0 +1,12 @@
+{
+    "order_details": {
+      "ACTIVE_DATE": "2023-06-01"
+    },
+    "transaction_details": {
+      "TIMESTAMP_LOCAL_DATE": "2023-06-01"
+    },
+    "temporary_deactivations": {
+      "CREATED_AT_TIME": "2023-06-01"
+    }      
+}
+  
