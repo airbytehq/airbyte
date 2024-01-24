@@ -143,7 +143,7 @@ could be subject to change in future versions.
   misformatted or unexpected data. The column type in BigQuery is `JSON`. ... and a column of the
   proper data type for each of the top-level properties from your source's schema. Arrays and
   Objects will remain as JSON columns in BigQuery. Learn more about Typing and Deduping
-  [here](/understanding-airbyte/typing-deduping)
+  [here](/using-airbyte/core-concepts/typing-deduping)
 
 The output tables in BigQuery are partitioned by the Time-unit column `airbyte_extracted_at` at a
 daily granularity and clustered by `airbyte_extracted_at` and the table Primary Keys. Partitions
