@@ -182,6 +182,10 @@ class VenvExecutor(Executor):
             if not self.install_if_missing:
                 raise exc.AirbyteConnectorNotFoundError(
                     message="Connector not available and venv does not exist.",
+                    guidance=(
+                        "Please ensure the connector is pre-installed or consider enabling "
+                        "`install_if_missing=True`."
+                    ),
                     context={
                         "connector_name": self.metadata.name,
                         "venv_name": venv_name,
