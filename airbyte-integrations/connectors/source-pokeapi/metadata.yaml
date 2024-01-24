@@ -22,8 +22,4 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
   tags:
     - language:low-code
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: "airbyte-source-pokeapi"
 metadataSpecVersion: "1.0"
