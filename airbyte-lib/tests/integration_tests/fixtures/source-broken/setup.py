@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="source_test",
+    name="source_broken",
     version="0.0.1",
     description="Test Soutce",
     author="Airbyte",
@@ -14,7 +14,7 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "source-test=source_test.run:run",
+            "source-broken=source_broken.run:run",
         ],
     },
 )

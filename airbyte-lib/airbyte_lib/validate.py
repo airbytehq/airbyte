@@ -126,13 +126,13 @@ def validate(connector_dir: str, sample_config: str, *, validate_install_only: b
         ],
     }
 
-    if validate_install_only:
-        install_only_test(connector_name)
-    else:
-        if not sample_config:
-            raise Exception("sample_config is required when -validate-install-only is not set")
-        with tempfile.NamedTemporaryFile(mode="w+t", delete=True) as temp_file:
-            temp_file.write(json.dumps(registry))
-            temp_file.seek(0)
-            os.environ["AIRBYTE_LOCAL_REGISTRY"] = str(temp_file.name)
+    with tempfile.NamedTemporaryFile(mode="w+t", delete=True) as temp_file:
+        temp_file.write(json.dumps(registry))
+        temp_file.seek(0)
+        os.environ["AIRBYTE_LOCAL_REGISTRY"] = str(temp_file.name)
+        if validate_install_only:
+            install_only_test(connector_name)
+        else:
+            if not sample_config:
+                raise Exception("sample_config is required when -validate-install-only is not set")
             full_tests(connector_name, sample_config)
