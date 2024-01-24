@@ -24,7 +24,9 @@ def run() -> None:
     for d in os.listdir("airbyte_lib"):
         dir_path = pathlib.Path(f"airbyte_lib/{d}")
         if dir_path.is_dir() and not d.startswith("_"):
-            public_modules.append(dir_path)
+            # check whether the directory contains a __init__.py file
+            if (dir_path / "__init__.py").exists():
+                public_modules.append(dir_path)
 
     pdoc.render.configure(template_directory="docs", show_source=False, search=False)
     pdoc.pdoc(*public_modules, output_directory=pathlib.Path("docs/generated"))
