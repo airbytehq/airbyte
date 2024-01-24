@@ -34,13 +34,9 @@ pendulum = "<3.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
+pytest = "^7.2.2"
 ptpython = "^3.0.23"
 pdbpp = "^0.10.3"
-
-
-[tool.poetry.group.test.dependencies]
-pytest = "^7.2.2"
-
 
 [build-system]
 requires = ["poetry-core"]
