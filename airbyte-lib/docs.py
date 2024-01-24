@@ -23,10 +23,8 @@ def run() -> None:
     # All folders in `airbyte_lib` that don't start with "_" are treated as public modules.
     for d in os.listdir("airbyte_lib"):
         dir_path = pathlib.Path(f"airbyte_lib/{d}")
-        if dir_path.is_dir() and not d.startswith("_"):
-            # check whether the directory contains a __init__.py file
-            if (dir_path / "__init__.py").exists():
-                public_modules.append(dir_path)
+        if dir_path.is_dir() and not d.startswith("_") and (dir_path / "__init__.py").exists():
+            public_modules.append(dir_path)
 
     pdoc.render.configure(template_directory="docs", show_source=False, search=False)
     pdoc.pdoc(*public_modules, output_directory=pathlib.Path("docs/generated"))
