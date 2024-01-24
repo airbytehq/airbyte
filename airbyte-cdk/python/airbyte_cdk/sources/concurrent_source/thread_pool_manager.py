@@ -32,8 +32,12 @@ class ThreadPoolManager:
         self._lock = threading.Lock()
         self._most_recently_seen_exception: Optional[Exception] = None
 
+        self._logging_threshold = max_concurrent_tasks * 2
+
     def prune_to_validate_has_reached_futures_limit(self) -> bool:
         self._prune_futures(self._futures)
+        if len(self._futures) > self._logging_threshold:
+            self._logger.warning(f"ThreadPoolManager: The list of futures is getting bigger than expected ({len(self._futures)})")
         return len(self._futures) >= self._max_concurrent_tasks
 
     def submit(self, function: Callable[..., Any], *args: Any) -> None:
