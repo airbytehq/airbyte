@@ -43,7 +43,8 @@ dependencies {
     integrationTestJavaImplementation libs.apache.commons.lang
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
 
-    dataGeneratorImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    dataGeneratorImplementation platform(libs.fasterxml)
+    dataGeneratorImplementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
 
     dataGeneratorImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
     dataGeneratorImplementation libs.mongo.driver.sync
