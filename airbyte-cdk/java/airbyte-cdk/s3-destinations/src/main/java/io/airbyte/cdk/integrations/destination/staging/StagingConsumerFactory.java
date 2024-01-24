@@ -67,7 +67,21 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
   private final Optional<Long> bufferMemoryLimit;
   private final long optimalBatchSizeBytes;
 
-  private StagingConsumerFactory(final Consumer<AirbyteMessage> outputRecordCollector, final JdbcDatabase database, final StagingOperations stagingOperations, final NamingConventionTransformer namingResolver, final JsonNode config, final ConfiguredAirbyteCatalog catalog, final boolean purgeStagingData, final TypeAndDedupeOperationValve typerDeduperValve, final TyperDeduper typerDeduper, final ParsedCatalog parsedCatalog, final String defaultNamespace, final boolean useDestinationsV2Columns, final Optional<Long> bufferMemoryLimit, final long optimalBatchSizeBytes) {
+  private StagingConsumerFactory(
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final JdbcDatabase database,
+      final StagingOperations stagingOperations,
+      final NamingConventionTransformer namingResolver,
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final boolean purgeStagingData,
+      final TypeAndDedupeOperationValve typerDeduperValve,
+      final TyperDeduper typerDeduper,
+      final ParsedCatalog parsedCatalog,
+      final String defaultNamespace,
+      final boolean useDestinationsV2Columns,
+      final Optional<Long> bufferMemoryLimit,
+      final long optimalBatchSizeBytes) {
     this.outputRecordCollector = outputRecordCollector;
     this.database = database;
     this.stagingOperations = stagingOperations;
