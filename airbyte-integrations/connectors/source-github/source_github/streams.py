@@ -126,16 +126,27 @@ class GithubStreamABC(HttpStream, ABC):
         # we again could have 5000 per another hour.
 
         min_backoff_time = 60.0
-
         retry_after = response.headers.get("Retry-After")
+        # TODO: refactor
         if retry_after is not None:
-            return max(float(retry_after), min_backoff_time)
+            backoff_time_in_seconds = max(float(retry_after), min_backoff_time)
+            if backoff_time_in_seconds < self.max_time:
+                return backoff_time_in_seconds
+            else:
+                self._session.auth.update_token()  # New token will be used in next request
+                return 1
 
         reset_time = response.headers.get("X-RateLimit-Reset")
         if reset_time:
-            return max(float(reset_time) - time.time(), min_backoff_time)
+            backoff_time_in_seconds = max(float(reset_time) - time.time(), min_backoff_time)
+            if backoff_time_in_seconds < self.max_time:
+                return backoff_time_in_seconds
+            else:
+                self._session.auth.update_token()  # New token will be used in next request
+                return 1
 
-    def check_graphql_rate_limited(self, response_json) -> bool:
+    @staticmethod
+    def check_graphql_rate_limited(response_json: dict) -> bool:
         errors = response_json.get("errors")
         if errors:
             for error in errors:
