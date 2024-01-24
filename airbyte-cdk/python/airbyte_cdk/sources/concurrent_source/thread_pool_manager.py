@@ -69,7 +69,10 @@ class ThreadPoolManager:
     def is_done(self) -> bool:
         return all([f.done() for f in self._futures])
 
-    def raise_if_exception(self) -> None:
+    def shutdown_if_exception(self) -> None:
+        """
+        This method will raise if there is an exception so that the caller can use it.
+        """
         if self._most_recently_seen_exception:
             self._stop_and_raise_exception(self._most_recently_seen_exception)
 
@@ -79,7 +82,7 @@ class ThreadPoolManager:
         If the futures are not done, raise an exception.
         :return:
         """
-        self.raise_if_exception()
+        self.shutdown_if_exception()
 
         exceptions_from_futures = [f for f in [future.exception() for future in self._futures] if f is not None]
         if exceptions_from_futures:

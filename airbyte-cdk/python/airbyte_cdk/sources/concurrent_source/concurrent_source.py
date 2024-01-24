@@ -39,9 +39,8 @@ class ConcurrentSource:
         message_repository: MessageRepository,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     ) -> "ConcurrentSource":
-        assert (
-            initial_number_of_partitions_to_generate < num_workers
-        ), "It is required to have more workeds than threads generating partitions"
+        too_many_generator = initial_number_of_partitions_to_generate < num_workers
+        assert too_many_generator, "It is required to have more workers than threads generating partitions"
         threadpool = ThreadPoolManager(
             concurrent.futures.ThreadPoolExecutor(max_workers=num_workers, thread_name_prefix="workerpool"),
             logger,
@@ -124,7 +123,7 @@ class ConcurrentSource:
     ) -> Iterable[AirbyteMessage]:
         while airbyte_message_or_record_or_exception := queue.get():
             try:
-                self._threadpool.raise_if_exception()
+                self._threadpool.shutdown_if_exception()
             except Exception as exception:
                 concurrent_stream_processor.on_exception(exception)
 
