@@ -13,8 +13,8 @@ def test_exceptions():
     assert "NotAnError" not in [name for name, _ in exception_classes]
     for name, obj in exception_classes:
         instance = obj()
-        message = instance.message
-        assert isinstance(message, str)
+        message = instance.get_message()
+        assert isinstance(message, str), "No message for class: " + name
         assert message.count("\n") == 0
         assert message != ""
         assert message.strip() == message
