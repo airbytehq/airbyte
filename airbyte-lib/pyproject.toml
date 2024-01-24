@@ -156,6 +156,7 @@ force-sort-within-sections = false
 lines-after-imports = 2
 known-first-party = ["airbyte_cdk", "airbyte_protocol"]
 known-local-folder = ["airbyte_lib"]
+required-imports = ["from __future__ import annotations"]
 known-third-party = []
 section-order = [
     "future",

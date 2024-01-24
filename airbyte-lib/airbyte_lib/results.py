@@ -1,11 +1,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
-from collections.abc import Iterator, Mapping
+from typing import TYPE_CHECKING
 
-from sqlalchemy.engine import Engine
-
-from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.datasets import CachedDataset
+
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator, Mapping
+
+    from sqlalchemy.engine import Engine
+
+    from airbyte_lib.caches import SQLCacheBase
 
 
 class ReadResult:

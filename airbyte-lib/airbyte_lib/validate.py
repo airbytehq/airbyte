@@ -3,6 +3,7 @@
 
 This tool checks if connectors are compatible with airbyte-lib.
 """
+from __future__ import annotations
 
 import argparse
 import json
