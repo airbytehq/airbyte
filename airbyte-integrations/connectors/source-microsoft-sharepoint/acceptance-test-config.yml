@@ -19,6 +19,9 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         expect_trace_message_on_failure: false
+        expect_records:
+          path: integration_tests/expected_records.jsonl
+          exact_order: true
   incremental:
     tests:
       - config_path: "secrets/config.json"
