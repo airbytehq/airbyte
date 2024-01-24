@@ -9,6 +9,7 @@ from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkStatus
 from source_shopify.streams.streams import (
     Collections,
+    CustomerAddress,
     DiscountCodes,
     FulfillmentOrders,
     InventoryItems,
@@ -217,6 +218,7 @@ def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
 @pytest.mark.parametrize(
     "stream, json_content_example, expected",
     [
+        (CustomerAddress, "customer_address_jsonl_content_example", "customer_address_parse_response_expected_result"),
         (MetafieldOrders, "metafield_jsonl_content_example", "metafield_parse_response_expected_result"),
         (FulfillmentOrders, "filfillment_order_jsonl_content_example", "fulfillment_orders_response_expected_result"),
         (DiscountCodes, "discount_codes_jsonl_content_example", "discount_codes_response_expected_result"),
@@ -226,6 +228,7 @@ def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
         (InventoryLevels, "inventory_levels_jsonl_content_example", "inventory_levels_response_expected_result"),
     ],
     ids=[
+        "CustomerAddress",
         "MetafieldOrders",
         "FulfillmentOrders",
         "DiscountCodes",

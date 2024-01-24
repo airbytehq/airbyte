@@ -2,6 +2,12 @@
 
 ## Upgrading to 1.2.0
 This version implements `Shopify GraphQL BULK Operations` to speed up the following streams:
+ - `Collections`
+ - `Customer Address`
+ - `Discount Codes`
+ - `Fulfillment Orders`
+ - `Inventory Items`
+ - `Inventory Levels`
  - `Metafield Collections`
  - `Metafield Customers `
  - `Metafield Draft_orders`
@@ -9,20 +15,15 @@ This version implements `Shopify GraphQL BULK Operations` to speed up the follow
  - `Metafield Orders`
  - `Metafield Product Images`
  - `Metafield Product Variants`
- - `Collections`
- - `Discount Codes`
- - `Fulfillment Orders`
- - `Inventory Items`
- - `Inventory Levels`
  - `Transactions Graphql` (duplicated `Transactions` stream to provide faster fetch)
 
-Increased the performance for the following streams:
- - `Product Images`
- - `Product Variants`
- - `Order Refunds`
- - `Fulfillments`
- - `Customer Address`
 
+Increased the performance for the following streams:
+- `Fulfillments`
+- `Order Refunds`
+- `Product Images`
+- `Product Variants`
+ 
 Other bug fixes and improvements, more info: `https://github.com/airbytehq/airbyte/pull/32345`
 
 ### Action items required for 1.2.0

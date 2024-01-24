@@ -749,6 +749,101 @@ class Collection(ShopifyBulkQuery):
         yield record
 
 
+class CustomerAddresses(ShopifyBulkQuery):
+    """
+    {
+        customers(query: "updated_at:>='2024-01-20T00:00:00+00:00' AND updated_at:<'2024-01-24T00:00:00+00:00'", sortKey:UPDATED_AT) {
+            edges {
+                node {
+                    __typename
+                    customerId: id
+                    defaultAddress {
+                        id
+                    }
+                    addresses {
+                        address1
+                        address2
+                        city
+                        country
+                        countryCode
+                        company
+                        firstName
+                        id
+                        lastName
+                        name
+                        phone
+                        province
+                        provinceCode
+                        zip
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    query_name = "customers"
+    sort_key = "UPDATED_AT"
+
+    addresses_fields: List[str] = [
+        "address1",
+        "address2",
+        "city",
+        "country",
+        "countryCode",
+        "company",
+        "firstName",
+        "id",
+        "lastName",
+        "name",
+        "phone",
+        "province",
+        "provinceCode",
+        "zip",
+    ]
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        Field(name="defaultAddress", fields=["id"]),
+        Field(name="addresses", fields=addresses_fields),
+        # add `Customer.updated_at` field to provide the parent state
+        "updatedAt",
+    ]
+
+    record_composition = {
+        "new_record": "Customer",
+    }
+
+    def set_default_address(self, record: MutableMapping[str, Any], address_record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        if address_record.get("id") == record.get("defaultAddress", {}).get("id"):
+            address_record["default"] = True
+        return address_record
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[MutableMapping[str, Any]]:
+        """
+        Defines how to process collected components.
+        """
+        if "addresses" in record.keys():
+            addresses = record.get("addresses")
+            if len(addresses) > 0:
+                for customer_address in addresses:
+                    # add `customer_id` to each address entry
+                    customer_address["customer_id"] = record.get("id")
+                    # add `country_name` from `country`
+                    customer_address["country_name"] = customer_address.get("country")
+                    # default address check
+                    customer_address = self.set_default_address(record, customer_address)
+                    # resolve address id
+                    customer_address["id"] = self.tools.resolve_str_id(customer_address.get("id"))
+                    # add PARENT stream cursor_field to the root level of the record
+                    # providing the ability to track the PARENT state as well
+                    # convert dates from ISO-8601 to RFC-3339
+                    customer_address["updated_at"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+                    # names to snake
+                    customer_address = self.tools.fields_names_to_snake_case(customer_address)
+                    yield customer_address
+
+
 class InventoryItem(ShopifyBulkQuery):
     """
     {
@@ -1371,7 +1466,7 @@ class Transaction(ShopifyBulkQuery):
         record = self.tools.fields_names_to_snake_case(record)
         return record
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
         """

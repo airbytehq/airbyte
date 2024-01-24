@@ -573,6 +573,8 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     data_field = "graphql"
     http_method = "POST"
 
+    parent_stream_class: Optional[Union[ShopifyStream, IncrementalShopifyStream]] = None
+
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
         # init BULK Query instance, pass `shop_id` from config
@@ -581,6 +583,13 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(self._session, f"{self.url_base}/{self.path()}")
         # define Record Producer instance
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
+
+    @cached_property
+    def parent_stream(self) -> object:
+        """
+        Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
+        """
+        return self.parent_stream_class(self.config) if self.parent_stream_class else None
 
     @property
     def slice_interval_in_days(self) -> int:
@@ -604,6 +613,12 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             if record:
                 record["shop_url"] = self.config["shop"]
                 yield record
+
+    @property
+    def default_state_comparison_value(self) -> Union[int, str]:
+        # certain streams are using `id` field as `cursor_field`, which requires to use `int` type,
+        # but many other use `str` values for this, we determine what to use based on `cursor_field` value
+        return 0 if self.cursor_field == "id" else self.config.get("start_date")
 
     # CDK OVERIDES
     @property
@@ -632,10 +647,47 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         """
         return {"query": ShopifyBulkTemplates.prepare(stream_slice.get("query"))}
 
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
+        """UPDATING THE STATE OBJECT:
+        Stream: CustomerAddress
+        Parent Stream: Customers
+        Returns:
+            {
+                "customer_address": {
+                    "id": 12345,
+                    "customers": {
+                        "updated_at": "2022-03-03T03:47:46-08:00"
+                    }
+                }
+            }
+        """
+        updated_state = super().get_updated_state(current_stream_state, latest_record)
+        if self.parent_stream_class:
+            # add parent_stream_state to `updated_state`
+            updated_state[self.parent_stream.name] = {self.parent_stream.cursor_field: latest_record.get(self.parent_stream.cursor_field)}
+        return updated_state
+
+    def get_state_value(self, stream_state: Mapping[str, Any] = None) -> Optional[Union[str, int]]:
+        if stream_state:
+            if self.parent_stream_class:
+                # get parent stream state from the stream_state object.
+                parent_state = stream_state.get(self.parent_stream.name, {})
+                if parent_state:
+                    return parent_state.get(self.parent_stream.cursor_field, self.default_state_comparison_value)
+            else:
+                # get the stream state, if no `parent_stream_class` was assigned.
+                return stream_state.get(self.cursor_field, self.default_state_comparison_value)
+        else:
+            # for majority of cases we fallback to start_date, otherwise.
+            return self.config.get("start_date")
+
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.filter_field:
-            start = pdm.parse(stream_state.get(self.cursor_field) if stream_state else self.config.get("start_date"))
+            state = self.get_state_value(stream_state)
+            start = pdm.parse(state)
             end = pdm.now()
             while start < end:
                 slice_end = start.add(days=self.slice_interval_in_days)
@@ -664,5 +716,5 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs
-        stream_state = stream_state_cache.cached_state.get(self.name, {self.cursor_field: self.config["start_date"]})
+        stream_state = stream_state_cache.cached_state.get(self.name, {self.cursor_field: self.default_state_comparison_value})
         yield from self.process_bulk_results(response, stream_state)

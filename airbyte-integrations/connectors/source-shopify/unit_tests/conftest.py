@@ -508,6 +508,12 @@ def inventory_items_jsonl_content_example():
 
 
 @pytest.fixture
+def customer_address_jsonl_content_example():
+    return """{"__typename":"Customer","id":"gid:\/\/shopify\/Customer\/123","defaultAddress":{"id":"gid:\/\/shopify\/MailingAddress\/123?model_name=CustomerAddress"},"addresses":[{"address1":"My Best Accent","address2":"","city":"Fair Lawn","country":"United States","countryCode":"US","company":"Test Company","firstName":"New Test","id":"gid:\/\/shopify\/MailingAddress\/123?model_name=CustomerAddress","lastName":"Customer","name":"New Test Customer","phone":"","province":"New Jersey","provinceCode":"NJ","zip":"07410"}],"updatedAt":"2023-04-24T13:53:48Z"}
+{"__typename":"Customer","id":"gid:\/\/shopify\/Customer\/456","defaultAddress":{"id":"gid:\/\/shopify\/MailingAddress\/456?model_name=CustomerAddress"},"addresses":[{"address1":null,"address2":null,"city":null,"country":null,"countryCode":null,"company":null,"firstName":"MArcos","id":"gid:\/\/shopify\/MailingAddress\/456?model_name=CustomerAddress","lastName":"Millnitz","name":"MArcos Millnitz","phone":null,"province":null,"provinceCode":null,"zip":null}],"updatedAt":"2023-07-11T20:07:45Z"}\n"""
+
+
+@pytest.fixture
 def inventory_levels_jsonl_content_example():
     return """{"__typename":"Location","id":"gid:\/\/shopify\/Location\/63590301885"}
 {"__typename":"InventoryLevel","id":"gid:\/\/shopify\/InventoryLevel\/97912455357?inventory_item_id=42185200631997","available":15,"item":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42185200631997"},"updatedAt":"2023-04-13T12:00:55Z","__parentId":"gid:\/\/shopify\/Location\/63590301885"}
@@ -680,6 +686,54 @@ def inventory_items_response_expected_result():
             "shop_url": "test_shop",
         },
     ]
+
+
+@pytest.fixture
+def customer_address_parse_response_expected_result():
+    return [
+    {
+        "address1": "My Best Accent",
+        "address2": "",
+        "city": "Fair Lawn",
+        "country": "United States",
+        "country_code": "US",
+        "company": "Test Company",
+        "first_name": "New Test",
+        "id": 123,
+        "last_name": "Customer",
+        "name": "New Test Customer",
+        "phone": "",
+        "province": "New Jersey",
+        "province_code": "NJ",
+        "zip": "07410",
+        "customer_id": 123,
+        "country_name": "United States",
+        "default": True,
+        "updated_at": "2023-04-24T13:53:48+00:00",
+        "shop_url": "test_shop"
+    },
+    {
+        "address1": None,
+        "address2": None,
+        "city": None,
+        "country": None,
+        "country_code": None,
+        "company": None,
+        "first_name": "MArcos",
+        "id": 456,
+        "last_name": "Millnitz",
+        "name": "MArcos Millnitz",
+        "phone": None,
+        "province": None,
+        "province_code": None,
+        "zip": None,
+        "customer_id": 456,
+        "country_name": None,
+        "default": True,
+        "updated_at": "2023-07-11T20:07:45+00:00",
+        "shop_url": "test_shop"
+    }
+]
 
 
 @pytest.fixture

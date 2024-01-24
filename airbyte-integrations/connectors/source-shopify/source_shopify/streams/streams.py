@@ -11,6 +11,7 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
+    CustomerAddresses,
     DiscountCode,
     FulfillmentOrder,
     InventoryItem,
@@ -372,14 +373,10 @@ class CustomerSavedSearch(IncrementalShopifyStream):
     filter_field = "since_id"
 
 
-class CustomerAddress(IncrementalShopifyNestedStream):
-    """
-    https://shopify.dev/docs/api/admin-rest/2023-10/resources/customer#resource-object
-    """
-
+class CustomerAddress(IncrementalShopifyGraphQlBulkStream):
     parent_stream_class = Customers
+    bulk_query: CustomerAddresses = CustomerAddresses
     cursor_field = "id"
-    nested_entity = "addresses"
 
 
 class Countries(ShopifyStream):
