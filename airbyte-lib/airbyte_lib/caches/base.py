@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import abc
 import enum
-from collections.abc import Generator, Iterator, Mapping
 from contextlib import contextmanager
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, cast, final
@@ -19,13 +18,16 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql.elements import TextClause
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
+from airbyte_lib.datasets._sql import CachedDataset
 from airbyte_lib.types import SQLTypeConverter
 
 
 if TYPE_CHECKING:
+    from collections.abc import Generator, Iterator
     from pathlib import Path
 
     from sqlalchemy.engine import Connection, Engine
@@ -117,6 +119,15 @@ class SQLCacheBase(RecordProcessor):
 
         self.file_writer = file_writer or self.file_writer_class(config)
         self.type_converter = self.type_converter_class()
+
+    def __getitem__(self, stream: str) -> DatasetBase:
+        return self.streams[stream]
+
+    def __contains__(self, stream: str) -> bool:
+        return stream in self._streams_with_data
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._streams_with_data)
 
     # Public interface:
 
@@ -211,28 +222,22 @@ class SQLCacheBase(RecordProcessor):
     @property
     def streams(
         self,
-    ) -> dict[str, DatasetBase]:
+    ) -> dict[str, CachedDataset]:
         """Return a temporary table name."""
-        # TODO: Add support for streams map, based on the cached catalog.
-        raise NotImplementedError("Streams map is not yet supported.")
+        result = {}
+        for stream_name in self._streams_with_data:
+            result[stream_name] = CachedDataset(self, stream_name)
+
+        return result
 
     # Read methods:
 
     def get_records(
         self,
         stream_name: str,
-    ) -> Iterator[Mapping[str, Any]]:
-        """Uses SQLAlchemy to select all rows from the table.
-
-        # TODO: Refactor to return a LazyDataset here.
-        """
-        table_ref = self.get_sql_table(stream_name)
-        stmt = table_ref.select()
-        with self.get_sql_connection() as conn:
-            for row in conn.execute(stmt):
-                # Access to private member required because SQLAlchemy doesn't expose a public API.
-                # https://pydoc.dev/sqlalchemy/latest/sqlalchemy.engine.row.RowMapping.html
-                yield cast(Mapping[str, Any], row._mapping)  # noqa: SLF001
+    ) -> CachedDataset:
+        """Uses SQLAlchemy to select all rows from the table."""
+        return CachedDataset(self, stream_name)
 
     def get_pandas_dataframe(
         self,
@@ -370,8 +375,11 @@ class SQLCacheBase(RecordProcessor):
         missing_columns: set[str] = set(stream_column_names) - set(table_column_names)
         if missing_columns:
             if raise_on_error:
-                raise RuntimeError(
-                    f"Table {table_name} is missing columns: {missing_columns}",
+                raise exc.AirbyteLibCacheTableValidationError(
+                    violation="Cache table is missing expected columns.",
+                    context={
+                        "missing_columns": missing_columns,
+                    },
                 )
             return False  # Some columns are missing.
 
@@ -436,16 +444,25 @@ class SQLCacheBase(RecordProcessor):
     ) -> ConfiguredAirbyteStream:
         """Return the column definitions for the given stream."""
         if not self.source_catalog:
-            raise RuntimeError("Cannot get stream JSON schema without a catalog.")
+            raise exc.AirbyteLibInternalError(
+                message="Cannot get stream JSON schema without a catalog.",
+            )
 
         matching_streams: list[ConfiguredAirbyteStream] = [
             stream for stream in self.source_catalog.streams if stream.stream.name == stream_name
         ]
         if not matching_streams:
-            raise RuntimeError(f"Stream '{stream_name}' not found in catalog.")
+            raise exc.AirbyteStreamNotFoundError(
+                stream_name=stream_name,
+            )
 
         if len(matching_streams) > 1:
-            raise RuntimeError(f"Multiple streams found with name '{stream_name}'.")
+            raise exc.AirbyteLibInternalError(
+                message="Multiple streams found with same name.",
+                context={
+                    "stream_name": stream_name,
+                },
+            )
 
         return matching_streams[0]
 
@@ -521,12 +538,12 @@ class SQLCacheBase(RecordProcessor):
                 raise_on_error=True,
             )
 
+            temp_table_name = self._write_files_to_new_table(
+                files,
+                stream_name,
+                max_batch_id,
+            )
             try:
-                temp_table_name = self._write_files_to_new_table(
-                    files,
-                    stream_name,
-                    max_batch_id,
-                )
                 self._write_temp_table_to_final_table(
                     stream_name,
                     temp_table_name,
@@ -588,7 +605,12 @@ class SQLCacheBase(RecordProcessor):
 
                 # Pandas will auto-create the table if it doesn't exist, which we don't want.
                 if not self._table_exists(temp_table_name):
-                    raise RuntimeError(f"Table {temp_table_name} does not exist after creation.")
+                    raise exc.AirbyteLibInternalError(
+                        message="Table does not exist after creation.",
+                        context={
+                            "temp_table_name": temp_table_name,
+                        },
+                    )
 
                 dataframe.to_sql(
                     temp_table_name,
@@ -681,9 +703,9 @@ class SQLCacheBase(RecordProcessor):
         Databases that do not support this syntax can override this method.
         """
         if final_table_name is None:
-            raise ValueError("Arg 'final_table_name' cannot be None.")
+            raise exc.AirbyteLibInternalError(message="Arg 'final_table_name' cannot be None.")
         if temp_table_name is None:
-            raise ValueError("Arg 'temp_table_name' cannot be None.")
+            raise exc.AirbyteLibInternalError(message="Arg 'temp_table_name' cannot be None.")
 
         _ = stream_name
         deletion_name = f"{final_table_name}_deleteme"

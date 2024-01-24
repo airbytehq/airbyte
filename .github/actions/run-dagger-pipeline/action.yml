@@ -83,6 +83,9 @@ inputs:
     description: "URL to airbyte-ci binary"
     required: false
     default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
+  python_registry_token:
+    description: "Python registry API token to publish python package"
+    required: false
 
 runs:
   using: "composite"
@@ -182,3 +185,4 @@ runs:
         CI: "True"
         TAILSCALE_AUTH_KEY: ${{ inputs.tailscale_auth_key }}
         DOCKER_REGISTRY_MIRROR_URL: ${{ inputs.docker_registry_mirror_url }}
+        PYTHON_REGISTRY_TOKEN: ${{ inputs.python_registry_token }}

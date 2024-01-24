@@ -30,6 +30,7 @@ from airbyte_protocol.models import (
     Type,
 )
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib._util import protocol_util  # Internal utility functions
 
 
@@ -99,6 +100,11 @@ class RecordProcessor(abc.ABC):
         _ = source_name
         self.source_catalog = source_catalog
 
+    @property
+    def _streams_with_data(self) -> set[str]:
+        """Return a list of known streams."""
+        return self._pending_batches.keys() | self._finalized_batches.keys()
+
     @final
     def process_stdin(
         self,
@@ -166,7 +172,12 @@ class RecordProcessor(abc.ABC):
                 pass
 
             else:
-                raise ValueError(f"Unexpected message type: {message.type}")
+                raise exc.AirbyteConnectorError(
+                    message="Unexpected message type.",
+                    context={
+                        "message_type": message.type,
+                    },
+                )
 
         # We are at the end of the stream. Process whatever else is queued.
         for stream_name, batch in stream_batches.items():

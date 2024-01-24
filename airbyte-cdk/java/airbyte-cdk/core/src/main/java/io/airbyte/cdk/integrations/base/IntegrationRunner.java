@@ -140,7 +140,7 @@ public class IntegrationRunner {
         case CHECK -> {
           final JsonNode config = parseConfig(parsed.getConfigPath());
           if (integration instanceof Destination) {
-            DestinationConfig.initialize(config);
+            DestinationConfig.initialize(config, ((Destination) integration).isV2Destination());
           }
           try {
             validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
@@ -183,7 +183,7 @@ public class IntegrationRunner {
           final JsonNode config = parseConfig(parsed.getConfigPath());
           validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
           // save config to singleton
-          DestinationConfig.initialize(config);
+          DestinationConfig.initialize(config, ((Destination) integration).isV2Destination());
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
 
           try (final SerializedAirbyteMessageConsumer consumer = destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)) {
