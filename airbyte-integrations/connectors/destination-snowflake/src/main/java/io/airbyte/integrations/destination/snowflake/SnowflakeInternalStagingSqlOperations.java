@@ -50,6 +50,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
     this.nameTransformer = nameTransformer;
   }
 
+  @Override
   public String getStageName(final String namespace, final String streamName) {
     return String.join(".",
         '"' + nameTransformer.convertStreamName(namespace) + '"',
