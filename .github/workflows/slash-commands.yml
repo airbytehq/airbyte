@@ -27,6 +27,7 @@ jobs:
             test-performance
             publish
             publish-java-cdk
+            publish-java-cdk-and-merge
             legacy-publish
             connector-performance
           static-args: |
