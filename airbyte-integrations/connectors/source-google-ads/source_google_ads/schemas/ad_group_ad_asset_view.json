@@ -3,67 +3,68 @@
   "type": "object",
   "properties": {
     "metrics.all_conversions": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.all_conversions_value": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.all_conversions_value_per_cost": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.average_cpc": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.biddable_app_install_conversions": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.biddable_app_post_install_conversions": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.clicks": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.conversions": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.conversions_value": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.conversions_value_per_cost": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.cost_micros": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.cost_per_all_conversions": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.cost_per_conversion": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.ctr": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.impressions": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.value_per_all_conversions": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.value_per_conversion": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "metrics.view_through_conversions": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "segments.ad_network_type": {
       "type": ["null", "string"]
     },
     "segments.date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "ad_group_ad_asset_view.enabled": {
-      "type": ["null", "string"]
+      "type": ["null", "boolean"]
     },
     "ad_group_ad_asset_view.field_type": {
       "type": ["null", "string"]
@@ -81,19 +82,19 @@
       "type": ["null", "string"]
     },
     "ad_group.id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "ad_group_ad.ad.id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "campaign.id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "customer.id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "asset.id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "asset.name": {
       "type": ["null", "string"]
@@ -108,8 +109,10 @@
       "type": ["null", "string"]
     },
     "asset.final_urls": {
-      "type": ["null", "string"]
-    },
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }    },
     "asset.youtube_video_asset.youtube_video_id": {
       "type": ["null", "string"]
     },
@@ -120,10 +123,12 @@
       "type": ["null", "string"]
     },
     "asset.field_type_policy_summaries": {
-      "type": ["null", "string"]
-    },
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }    },
     "asset.image_asset.file_size": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "asset.image_asset.full_size.url": {
       "type": ["null", "string"]
