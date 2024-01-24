@@ -11,10 +11,10 @@ from typing import Dict, Optional
 import tomli
 import tomli_w
 from dagger import Container, Directory
-from pipelines.airbyte_ci.steps.python_registry.context import PythonPackageMetadata, PythonRegistryPublishContext
 from pipelines.consts import PYPROJECT_TOML_FILE_PATH, SETUP_PY_FILE_PATH
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import sh_dash_c
+from pipelines.models.contexts.python_registry_publish import PythonPackageMetadata, PythonRegistryPublishContext
 from pipelines.models.steps import Step, StepResult
 
 
@@ -25,7 +25,7 @@ class PackageType(Enum):
 
 class PublishToPythonRegistry(Step):
     context: PythonRegistryPublishContext
-    title = "Publish package to PyPI"
+    title = "Publish package to python registry"
 
     def _get_base_container(self) -> Container:
         return with_poetry(self.context)
@@ -101,7 +101,7 @@ class PublishToPythonRegistry(Step):
             return await self._poetry_publish(package_dir_to_publish)
 
     async def _poetry_publish(self, package_dir_to_publish: Directory) -> StepResult:
-        pypi_token = self.context.dagger_client.set_secret("pypi_token", f"pypi-{self.context.pypi_token}")
+        python_registry_token = self.context.dagger_client.set_secret("python_registry_token", self.context.python_registry_token)
         pyproject_toml = package_dir_to_publish.file(PYPROJECT_TOML_FILE_PATH)
         pyproject_toml_content = await pyproject_toml.contents()
         contents = tomli.loads(pyproject_toml_content)
@@ -112,12 +112,12 @@ class PublishToPythonRegistry(Step):
         contents["tool"]["poetry"]["authors"] = ["Airbyte <contact@airbyte.io>"]
         poetry_publish = (
             self._get_base_container()
-            .with_secret_variable("PYPI_TOKEN", pypi_token)
+            .with_secret_variable("PYTHON_REGISTRY_TOKEN", python_registry_token)
             .with_directory("package", package_dir_to_publish)
             .with_workdir("package")
             .with_new_file(PYPROJECT_TOML_FILE_PATH, contents=tomli_w.dumps(contents))
             .with_exec(["poetry", "config", "repositories.mypypi", self.context.registry])
-            .with_exec(sh_dash_c(["poetry config pypi-token.mypypi $PYPI_TOKEN"]))
+            .with_exec(sh_dash_c(["poetry config pypi-token.mypypi $PYTHON_REGISTRY_TOKEN"]))
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_exec(sh_dash_c(["poetry publish --build --repository mypypi -vvv --no-interaction"]))
         )
@@ -127,7 +127,7 @@ class PublishToPythonRegistry(Step):
     async def _pip_publish(self, package_dir_to_publish: Directory) -> StepResult:
         files = await package_dir_to_publish.entries()
         pypi_username = self.context.dagger_client.set_secret("pypi_username", "__token__")
-        pypi_password = self.context.dagger_client.set_secret("pypi_password", f"pypi-{self.context.pypi_token}")
+        pypi_password = self.context.dagger_client.set_secret("pypi_password", self.context.python_registry_token)
         metadata: Dict[str, str] = {
             "name": str(self.context.package_metadata.name),
             "version": str(self.context.package_metadata.version),

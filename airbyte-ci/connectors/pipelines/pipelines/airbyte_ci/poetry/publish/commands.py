@@ -11,12 +11,12 @@ from typing import Optional
 
 import asyncclick as click
 from packaging import version
-from pipelines.airbyte_ci.steps.python_registry.context import PythonRegistryPublishContext
-from pipelines.airbyte_ci.steps.python_registry.pipeline import PublishToPythonRegistry
+from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_URL
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
+from pipelines.models.contexts.python_registry_publish import PythonRegistryPublishContext
 from pipelines.models.steps import StepStatus
 
 
@@ -40,11 +40,11 @@ def _validate_python_version(_ctx: dict, _param: dict, value: Optional[str]) -> 
 
 @click.command(cls=DaggerPipelineCommand, name="publish", help="Publish a Python package to a registry.")
 @click.option(
-    "--pypi-token",
+    "--python-registry-token",
     help="Access token",
     type=click.STRING,
     required=True,
-    envvar="PYPI_TOKEN",
+    envvar="PYTHON_REGISTRY_TOKEN",
 )
 @click.option(
     "--registry-url",
@@ -68,7 +68,7 @@ def _validate_python_version(_ctx: dict, _param: dict, value: Optional[str]) -> 
 async def publish(
     ctx: click.Context,
     click_pipeline_context: ClickPipelineContext,
-    pypi_token: str,
+    python_registry_token: str,
     registry_url: str,
     publish_name: Optional[str],
     publish_version: Optional[str],
@@ -84,14 +84,14 @@ async def publish(
         pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
         ci_context=ctx.obj.get("ci_context"),
         ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
-        pypi_token=pypi_token,
+        python_registry_token=python_registry_token,
         registry=registry_url,
         package_path=ctx.obj["package_path"],
         package_name=publish_name,
         version=publish_version,
     )
 
-    dagger_client = await click_pipeline_context.get_dagger_client(pipeline_name=f"Publish {ctx.obj['package_path']} to PyPI")
+    dagger_client = await click_pipeline_context.get_dagger_client(pipeline_name=f"Publish {ctx.obj['package_path']} to python registry")
     context.dagger_client = dagger_client
 
     if await _has_metadata_yaml(context):

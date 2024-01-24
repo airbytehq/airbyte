@@ -185,4 +185,4 @@ runs:
         CI: "True"
         TAILSCALE_AUTH_KEY: ${{ inputs.tailscale_auth_key }}
         DOCKER_REGISTRY_MIRROR_URL: ${{ inputs.docker_registry_mirror_url }}
-        PYPI_TOKEN: ${{ inputs.pypi_token }}
+        PYTHON_REGISTRY_TOKEN: ${{ inputs.python_registry_token }}

@@ -8,8 +8,8 @@ import pytest
 import requests
 from dagger import Client, Platform
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
-from pipelines.airbyte_ci.steps.python_registry.context import PythonPackageMetadata, PythonRegistryPublishContext
 from pipelines.dagger.actions.python.poetry import with_poetry
+from pipelines.models.contexts.python_registry_publish import PythonPackageMetadata, PythonRegistryPublishContext
 from pipelines.models.steps import StepStatus
 
 pytestmark = [
@@ -22,7 +22,7 @@ def context(dagger_client: Client):
     context = PythonRegistryPublishContext(
         package_path="test",
         version="0.2.0",
-        pypi_token="test",
+        python_registry_token="test",
         package_name="test",
         registry="http://local_registry:8080/",
         is_local=True,

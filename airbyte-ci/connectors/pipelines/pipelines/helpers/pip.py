@@ -1,12 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from typing import Optional
 from urllib.parse import urlparse
 
 import requests
-from pipelines.airbyte_ci.steps.python_registry.context import PythonPackageMetadata
 
 
-def is_package_published(package_metadata: PythonPackageMetadata, registry_url: str) -> bool:
+def is_package_published(package_name: Optional[str], version: Optional[str], registry_url: str) -> bool:
     """
     Check if a package with a specific version is published on PyPI or Test PyPI.
 
@@ -15,8 +15,6 @@ def is_package_published(package_metadata: PythonPackageMetadata, registry_url: 
     :param test_pypi: Set to True to check on Test PyPI, False for regular PyPI.
     :return: True if the package is found with the specified version, False otherwise.
     """
-    package_name = package_metadata.name
-    version = package_metadata.version
     if not package_name or not version:
         return False
 

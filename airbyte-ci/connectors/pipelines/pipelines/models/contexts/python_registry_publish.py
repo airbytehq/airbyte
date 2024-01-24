@@ -21,7 +21,7 @@ class PythonPackageMetadata:
 class PythonRegistryPublishContext(PipelineContext):
     def __init__(
         self,
-        pypi_token: str,
+        python_registry_token: str,
         package_path: str,
         report_output_prefix: str,
         is_local: bool,
@@ -37,7 +37,7 @@ class PythonRegistryPublishContext(PipelineContext):
         package_name: Optional[str] = None,
         version: Optional[str] = None,
     ) -> None:
-        self.pypi_token = pypi_token
+        self.python_registry_token = python_registry_token
         self.registry = registry
         self.package_path = package_path
         self.package_metadata = PythonPackageMetadata(package_name, version)
@@ -81,11 +81,12 @@ class PythonRegistryPublishContext(PipelineContext):
         version = current_metadata["dockerImageTag"]
         if connector_context.pre_release:
             # use current date as pre-release version
+            # we can't use the git revision because not all python registries allow local version identifiers. Public version identifiers must conform to PEP 440 and only allow digits.
             release_candidate_tag = datetime.now().strftime("%Y%m%d%H%M")
             version = f"{version}.dev{release_candidate_tag}"
 
         pypi_context = cls(
-            pypi_token=os.environ["PYPI_TOKEN"],
+            python_registry_token=os.environ["PYTHON_REGISTRY_TOKEN"],
             registry="https://test.pypi.org/legacy/",  # TODO: go live
             package_path=str(connector_context.connector.code_directory),
             package_name=current_metadata["remoteRegistries"]["pypi"]["packageName"],
