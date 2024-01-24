@@ -281,6 +281,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 return create_connector_report(results)
 
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
+
             results.append(check_connector_image_results)
 
             python_registry_steps, terminate_early = await _run_python_registry_publish_pipeline(context)
