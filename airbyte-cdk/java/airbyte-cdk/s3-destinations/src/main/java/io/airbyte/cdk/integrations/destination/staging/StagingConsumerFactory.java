@@ -68,20 +68,20 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
   private final long optimalBatchSizeBytes;
 
   private StagingConsumerFactory(
-      final Consumer<AirbyteMessage> outputRecordCollector,
-      final JdbcDatabase database,
-      final StagingOperations stagingOperations,
-      final NamingConventionTransformer namingResolver,
-      final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final boolean purgeStagingData,
-      final TypeAndDedupeOperationValve typerDeduperValve,
-      final TyperDeduper typerDeduper,
-      final ParsedCatalog parsedCatalog,
-      final String defaultNamespace,
-      final boolean useDestinationsV2Columns,
-      final Optional<Long> bufferMemoryLimit,
-      final long optimalBatchSizeBytes) {
+                                 final Consumer<AirbyteMessage> outputRecordCollector,
+                                 final JdbcDatabase database,
+                                 final StagingOperations stagingOperations,
+                                 final NamingConventionTransformer namingResolver,
+                                 final JsonNode config,
+                                 final ConfiguredAirbyteCatalog catalog,
+                                 final boolean purgeStagingData,
+                                 final TypeAndDedupeOperationValve typerDeduperValve,
+                                 final TyperDeduper typerDeduper,
+                                 final ParsedCatalog parsedCatalog,
+                                 final String defaultNamespace,
+                                 final boolean useDestinationsV2Columns,
+                                 final Optional<Long> bufferMemoryLimit,
+                                 final long optimalBatchSizeBytes) {
     this.outputRecordCollector = outputRecordCollector;
     this.database = database;
     this.stagingOperations = stagingOperations;
@@ -99,8 +99,10 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
   }
 
   public static class Builder {
+
     // Required (?) fields
-    // (TODO which of these are _actually_ required, and which have we just coincidentally always provided?)
+    // (TODO which of these are _actually_ required, and which have we just coincidentally always
+    // provided?)
     private final Consumer<AirbyteMessage> outputRecordCollector;
     private final JdbcDatabase database;
     private final StagingOperations stagingOperations;
@@ -119,18 +121,18 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
     private long optimalBatchSizeBytes = 50 * 1024 * 1024;
 
     public Builder(
-        final Consumer<AirbyteMessage> outputRecordCollector,
-        final JdbcDatabase database,
-        final StagingOperations stagingOperations,
-        final NamingConventionTransformer namingResolver,
-        final JsonNode config,
-        final ConfiguredAirbyteCatalog catalog,
-        final boolean purgeStagingData,
-        final TypeAndDedupeOperationValve typerDeduperValve,
-        final TyperDeduper typerDeduper,
-        final ParsedCatalog parsedCatalog,
-        final String defaultNamespace,
-        final boolean useDestinationsV2Columns) {
+                   final Consumer<AirbyteMessage> outputRecordCollector,
+                   final JdbcDatabase database,
+                   final StagingOperations stagingOperations,
+                   final NamingConventionTransformer namingResolver,
+                   final JsonNode config,
+                   final ConfiguredAirbyteCatalog catalog,
+                   final boolean purgeStagingData,
+                   final TypeAndDedupeOperationValve typerDeduperValve,
+                   final TyperDeduper typerDeduper,
+                   final ParsedCatalog parsedCatalog,
+                   final String defaultNamespace,
+                   final boolean useDestinationsV2Columns) {
       this.outputRecordCollector = outputRecordCollector;
       this.database = database;
       this.stagingOperations = stagingOperations;
@@ -172,6 +174,7 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
           bufferMemoryLimit,
           optimalBatchSizeBytes);
     }
+
   }
 
   public SerializedAirbyteMessageConsumer createAsync() {
