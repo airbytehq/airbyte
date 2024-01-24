@@ -14,8 +14,12 @@ data:
   name: Snowflake
   registries:
     cloud:
+      # 3.5.2 is broken; pinning back to the last known-good version
+      dockerImageTag: 3.4.22
       enabled: true
     oss:
+      # 3.5.2 is broken; pinning back to the last known-good version
+      dockerImageTag: 3.4.22
       enabled: true
   releaseStage: generally_available
   releases:
