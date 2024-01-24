@@ -49,6 +49,16 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler {
     }
   }
 
+  /**
+   * Issuing a select 1 limit 1 query can be expensive, so relying on SVV_TABLE_INFO system table.
+   * EXPLAIN of the select 1 from table limit 1 query: (seq scan and then limit is applied, read from
+   * bottom to top) XN Lim it (co st=0. 0 .0.01 rows=1 width=0) -> XN Seq Scan on _airbyte_raw_ users
+   * (cost=0.00..1000.00 rows=100000 width=0)
+   *
+   * @param id
+   * @return
+   * @throws Exception
+   */
   @Override
   public boolean isFinalTableEmpty(final StreamId id) throws Exception {
     // Redshift doesn't have an information_schema.tables table, so we have to use SVV_TABLE_INFO.
