@@ -73,13 +73,13 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
         .findFirst();
     final boolean messageWasMangled;
     if (deinterpolatableException.isPresent()) {
-      final String lowercasedMessage = deinterpolatableException.get().getMessage().toLowerCase();
+      final String originalMessage = deinterpolatableException.get().getMessage();
       mangledMessage = STRINGS_TO_DEINTERPOLATE.stream()
           // Sort the strings longest to shortest, in case any target string is a substring of another
           // e.g. "airbyte_internal" should be swapped out before "airbyte"
           .sorted(Comparator.comparing(String::length).reversed())
-          .reduce(lowercasedMessage, AirbyteExceptionHandler::deinterpolate);
-      messageWasMangled = !mangledMessage.equals(lowercasedMessage);
+          .reduce(originalMessage, AirbyteExceptionHandler::deinterpolate);
+      messageWasMangled = !mangledMessage.equals(originalMessage);
     } else {
       mangledMessage = throwable.getMessage();
       messageWasMangled = false;
@@ -99,7 +99,8 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
 
   @NotNull
   private static String deinterpolate(final String message, final String targetString) {
-    final String quotedTarget = '(' + Pattern.quote(targetString) + ')';
+    // (?i) makes the pattern case-insensitive
+    final String quotedTarget = '(' + "(?i)" + Pattern.quote(targetString) + ')';
     final String targetRegex = REGEX_PREFIX + quotedTarget + REGEX_SUFFIX;
     final Pattern pattern = Pattern.compile(targetRegex);
     final Matcher matcher = pattern.matcher(message);
