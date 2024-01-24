@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"PMD.AvoidReassigningParameters", "PMD.AvoidCatchingThrowable"})
 public class Jsons {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(Jsons.class);
 
   // Object Mapper is thread-safe
@@ -381,11 +382,10 @@ public class Jsons {
   }
 
   /**
-   * Simple utility method to log a semi-useful message when deserialization fails.
-   * Intentionally don't log the actual exception object, because it probably contains some/all
-   * of the inputString (e.g. `<snip...>[Source: (String)"{"foo": "bar"; line: 1, column: 13]`).
-   * Logging the class name can at least help narrow down the problem, without leaking
-   * potentially-sensitive information.
+   * Simple utility method to log a semi-useful message when deserialization fails. Intentionally
+   * don't log the actual exception object, because it probably contains some/all of the inputString
+   * (e.g. `<snip...>[Source: (String)"{"foo": "bar"; line: 1, column: 13]`). Logging the class name
+   * can at least help narrow down the problem, without leaking potentially-sensitive information.
    */
   private static <T> Optional<T> handleDeserThrowable(Throwable t) {
     // Manually build the stacktrace, excluding the top-level exception object
