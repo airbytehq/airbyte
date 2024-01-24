@@ -1,0 +1,231 @@
+{
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "ticket_id": {
+      "type": ["null", "string"]
+    },
+    "category": {
+      "type": ["null", "string"]
+    },
+    "ticket_attributes": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "question": {
+          "type": ["null", "string"]
+        },
+        "Title": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "ticket_state": {
+      "type": ["null", "string"]
+    },
+    "ticket_type": {
+      "type": ["null", "object"],
+      "additional_properties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "category": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "icon": {
+          "type": ["null", "string"]
+        },
+        "workspace_id": {
+          "type": ["null", "string"]
+        },
+        "archived": {
+          "type": ["null", "boolean"]
+        },
+        "created_at": {
+          "type": ["null", "integer"]
+        },
+        "updated_at": {
+          "type": ["null", "integer"]
+        },
+        "is_internal": {
+          "type": ["null", "boolean"]
+        },
+        "ticket_type_attributes": {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "type": ["null", "string"]
+            },
+            "ticket_type_attributes": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["object", "null"],
+                "properties": {
+                  "type": { "type": ["string", "null"] },
+                  "id": { "type": ["string", "null"] },
+                  "workspace_id": { "type": ["string", "null"] },
+                  "name": { "type": ["string", "null"] },
+                  "description": { "type": ["string", "null"] },
+                  "data_type": { "type": ["string", "null"] },
+                  "input_options": { "type": ["string", "null"] },
+                  "order": { "type": ["integer", "null"] },
+                  "required_to_create": { "type": ["boolean", "null"] },
+                  "required_to_create_for_contacts": { "type": ["boolean", "null"] },
+                  "visible_on_create": { "type": ["boolean", "null"] },
+                  "visible_to_contacts": { "type": ["boolean", "null"] },
+                  "default": { "type": ["boolean", "null"] },
+                  "ticket_type_id": { "type": ["integer", "null"] },
+                  "archived": { "type": ["boolean", "null"] },
+                  "created_at": { "type": ["integer", "null"] },
+                  "updated_at": { "type": ["integer", "null"] }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "contacts": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "contacts": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["object", "null"],
+            "properties": {
+              "type": { "type": ["string", "null"] },
+              "id": { "type": ["string", "null"] },
+              "external_id": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "admin_assignee_id": {
+      "type": ["null", "string"]
+    },
+    "team_assignee_id": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "type": ["null", "integer"]
+    },
+    "open": {
+      "type": ["null", "boolean"]
+    },
+    "snoozed_until": {
+      "type": ["null", "integer"]
+    },
+    "linked_objects": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "total_count": {
+          "type": ["null", "number"]
+        },
+        "has_more": {
+          "type": ["null", "boolean"]
+        },
+        "data": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["object", "null"],
+            "properties": {
+              "type": { "type": ["string", "null"] },
+              "id": { "type": ["string", "null"] },
+              "category": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "ticket_parts": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "total_count": {
+          "type": ["null", "number"]
+        },
+        "ticket_parts": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["object", "null"],
+            "properties": {
+              "type": { "type": ["string", "null"] },
+              "id": { "type": ["string", "null"] },
+              "body": { "type": ["string", "null"] },
+              "previous_ticket_state": { "type": ["string", "null"] },
+              "ticket_state": { "type": ["string", "null"] },
+              "created_at": { "type": ["integer", "null"] },
+              "updated_at": { "type": ["integer", "null"] },
+              "assigned_to": { 
+                "type": ["object", "null"],
+                "properties": {
+                  "type": { "type": ["string", "null"] },
+                  "id": { "type": ["string", "null"] }
+                }
+              },
+              "author": { 
+                "type": ["object", "null"],
+                "properties": {
+                  "type": { "type": ["string", "null"] },
+                  "id": { "type": ["string", "null"] },
+                  "name": { "type": ["string", "null"] },
+                  "email": { "type": ["string", "null"] }
+                }
+              },
+              "attachments": { 
+                "type": ["array", "null"],
+                "items": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "type": { "type": ["string", "null"] },
+                    "name": { "type": ["string", "null"] },
+                    "url": { "type": ["string", "null"] },
+                    "content_type": { "type": ["string", "null"] },
+                    "filesize": { "type": ["integer", "null"] },
+                    "width": { "type": ["integer", "null"] },
+                    "height": { "type": ["integer", "null"] }
+                  }
+                }
+              },
+              "external_id": { "type": ["string", "null"] },
+              "redacted": { "type": ["boolean", "null"] },
+              "part_type": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "is_shared": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

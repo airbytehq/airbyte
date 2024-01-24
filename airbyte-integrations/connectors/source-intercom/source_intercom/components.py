@@ -24,6 +24,9 @@ from airbyte_cdk.sources.streams.core import Stream
 
 RequestInput = Union[str, Mapping[str, str]]
 
+HEADER_OVERRIDES = {
+    "Intercom-Version": "2.10"
+}
 
 @dataclass
 class IncrementalSingleSliceCursor(Cursor):
@@ -371,7 +374,12 @@ class HttpRequesterWithRateLimiter(HttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._headers_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        headers = self._headers_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        # This was needed due to an Airbyte issue where the api version 2.10 was getting truncated to 2.1 when parsed
+        # from the YAML file. The overrides can be removed once that issue is resolved.
+        for key in HEADER_OVERRIDES:
+            headers[key] = HEADER_OVERRIDES[key]
+        return headers
 
     def get_request_body_json(
         self,

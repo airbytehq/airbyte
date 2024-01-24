@@ -20,7 +20,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
     request_headers:
-      Intercom-Version: "2.5" # ATTENTION: API version change is possible here
+      Intercom-Version: "2.10" # ATTENTION: API version change is possible here
       Accept: "application/json"
     error_handler:
       type: "DefaultErrorHandler"
@@ -357,6 +357,13 @@ definitions:
       path: "conversations/search"
       data_field: "conversations"
       page_size: 150
+  tickets:
+    $ref: "#/definitions/stream_incremental_search"
+    $parameters:
+      name: "tickets"
+      path: "tickets/search"
+      data_field: "tickets"
+      page_size: 150
 
 streams:
   - "#/definitions/admins"
@@ -373,6 +380,7 @@ streams:
   - "#/definitions/conversation_parts"
   - "#/definitions/conversation_contacts"
   - "#/definitions/company_segments"
+  - "#/definitions/tickets"
 
 check:
   stream_names:
