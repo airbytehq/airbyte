@@ -21,7 +21,7 @@ from airbyte_protocol.models import (
     Type,
 )
 
-from airbyte_lib import exceptions
+from airbyte_lib import exceptions as exc
 from airbyte_lib._factories.cache_factories import get_default_cache
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.datasets._lazy import LazyDataset
@@ -95,7 +95,7 @@ class Source:
         available_streams = self.get_available_streams()
         for stream in streams:
             if stream not in available_streams:
-                raise exceptions.AirbyteStreamNotFoundError(
+                raise exc.AirbyteStreamNotFoundError(
                     stream_name=stream,
                     connector_name=self.name,
                     available_streams=available_streams,
@@ -109,7 +109,7 @@ class Source:
     @property
     def _config(self) -> dict[str, Any]:
         if self._config_dict is None:
-            raise exceptions.AirbyteConnectorConfigurationMissingError(
+            raise exc.AirbyteConnectorConfigurationMissingError(
                 guidance="Provide via get_connector() or set_config()"
             )
         return self._config_dict
@@ -127,7 +127,7 @@ class Source:
             for msg in self._execute(["discover", "--config", config_file]):
                 if msg.type == Type.CATALOG and msg.catalog:
                     return msg.catalog
-            raise exceptions.AirbyteConnectorMissingCatalogError(
+            raise exc.AirbyteConnectorMissingCatalogError(
                 log_text=self._last_log_messages,
             )
 
@@ -157,7 +157,7 @@ class Source:
         if self._spec:
             return self._spec
 
-        raise exceptions.AirbyteConnectorMissingSpecError(
+        raise exc.AirbyteConnectorMissingSpecError(
             log_text=self._last_log_messages,
         )
 
@@ -224,9 +224,13 @@ class Source:
             ],
         )
         if len(configured_catalog.streams) == 0:
-            raise KeyError(
-                f"Stream {stream} is not available for connector {self.name}, "
-                f"choose from {self.get_available_streams()}",
+            raise exc.AirbyteLibInputError(
+                message="Requested stream does not exist.",
+                context={
+                    "stream": stream,
+                    "available_streams": self.get_available_streams(),
+                    "connector_name": self.name,
+                },
             )
 
         iterator: Iterator[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
@@ -249,14 +253,12 @@ class Source:
                     if msg.connectionStatus.status != Status.FAILED:
                         return  # Success!
 
-                    raise exceptions.AirbyteConnectorCheckFailedError(
-                        more_context={
+                    raise exc.AirbyteConnectorCheckFailedError(
+                        context={
                             "message": msg.connectionStatus.message,
                         }
                     )
-            raise exceptions.AirbyteConnectorCheckFailedError(
-                log_text=self._last_log_messages
-            )
+            raise exc.AirbyteConnectorCheckFailedError(log_text=self._last_log_messages)
 
     def install(self) -> None:
         """Install the connector if it is not yet installed."""
@@ -349,7 +351,7 @@ class Source:
                 except Exception:
                     self._add_to_logs(line)
         except Exception as e:
-            raise exceptions.AirbyteConnectorReadError(
+            raise exc.AirbyteConnectorReadError(
                 log_text=self._last_log_messages,
             ) from e
 

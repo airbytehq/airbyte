@@ -8,7 +8,7 @@ from pathlib import Path
 
 import requests
 
-from airbyte_lib import exceptions
+from airbyte_lib import exceptions as exc
 from airbyte_lib.version import get_version
 
 
@@ -48,5 +48,7 @@ def get_connector_metadata(name: str) -> ConnectorMetadata:
     if not _cache:
         _update_cache()
     if not _cache or name not in _cache:
-        raise exceptions.AirbyteConnectorNotFoundError(f"Connector {name} not found")
+        raise exc.AirbyteConnectorNotFoundError(
+            connector_name=name,
+        )
     return _cache[name]

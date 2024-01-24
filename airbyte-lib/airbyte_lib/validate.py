@@ -15,7 +15,7 @@ from pathlib import Path
 import yaml
 
 import airbyte_lib as ab
-from airbyte_lib import exceptions
+from airbyte_lib import exceptions as exc
 
 
 def _parse_args() -> argparse.Namespace:
@@ -38,9 +38,9 @@ def _parse_args() -> argparse.Namespace:
 def _run_subprocess_and_raise_on_failure(args: list[str]) -> None:
     result = subprocess.run(args, check=False)
     if result.returncode != 0:
-        raise exceptions.AirbyteSubprocessFailedError(
-            args=args,
-            return_code=result.returncode,
+        raise exc.AirbyteSubprocessFailedError(
+            run_args=args,
+            exit_code=result.returncode,
         )
 
 
@@ -65,13 +65,13 @@ def tests(connector_name: str, sample_config: str) -> None:
             record = next(source.get_records(stream))
             assert record, "No record returned"
             break
-        except exceptions.AirbyteError as e:
+        except exc.AirbyteError as e:
             print(f"Could not read from stream {stream}: {e}")
         except Exception as e:
             print(f"Unhandled error occurred when trying to read from {stream}: {e}")
     else:
-        raise exceptions.AirbyteNoDataFromConnectorError(
-            more_context={"selected_streams": streams},
+        raise exc.AirbyteNoDataFromConnectorError(
+            context={"selected_streams": streams},
         )
 
 

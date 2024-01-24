@@ -11,9 +11,12 @@ We do this:
 
 The benefit of this approach is that we can easily support structured logging, and we can
 easily add new properties to exceptions without having to update all the places where they
-are raised.
+are raised. We can also support any arbitrary number of properties in exceptions, without spending
+time on building sentence-like string constructions with optional inputs.
+
 
 In addition, the following principles are applied for exception class design:
+
 - All exceptions inherit from a common base class.
 - All exceptions have a message attribute.
 - The first line of the docstring is used as the default message.
@@ -21,46 +24,68 @@ In addition, the following principles are applied for exception class design:
 - Exceptions may optionally have a guidance attribute.
 - Exceptions may optionally have a help_url attribute.
 - Rendering is automatically handled by the base class.
+- Any helpful context not defined by the exception class can be passed in the `context` dict arg.
+- Within reason, avoid sending PII to the exception constructor.
 - Exceptions are dataclasses, so they can be instantiated with keyword arguments.
+- Use the 'from' syntax to chain exceptions when it is helpful to do so.
+  E.g. `raise AirbyteConnectorNotFoundError(...) from FileNotFoundError(connector_path)`
+- Any exception that adds a new property should also be decorated as `@dataclass`.
 """
 from __future__ import annotations
 
-from abc import ABC
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any
 
 
+NEW_ISSUE_URL = "https://github.com/airbytehq/airbyte/issues/new/choose"
+DOCS_URL = "https://docs.airbyte.io/"
+
+
+# Base error class
+
+
 @dataclass
-class AirbyteError(Exception, ABC):
+class AirbyteError(Exception):
     """Base class for exceptions in Airbyte."""
 
     guidance: str | None = None
     help_url: str | None = None
-    log_text: str | None = None
-    more_context: dict[str, Any] | None = None
+    log_text: str | list[str] | None = None
+    context: dict[str, Any] | None = None
+    message: str | None = None
 
-    @property
-    def message(self) -> str:
-        """By default we use the first line of the class's docstring as the message.
+    def get_message(self) -> str:
+        """Return the best description for the exception.
 
-        Subclasses can override this property to provide a custom message.
+        We resolve the following in order:
+        1. The message sent to the exception constructor (if provided).
+        2. The first line of the class's docstring.
         """
+        if self.message:
+            return self.message
+
         return self.__doc__.split("\n")[0] if self.__doc__ else ""
 
     def __str__(self) -> str:
         special_properties = ["message", "guidance", "help_url", "log_text"]
         properties_str = ", ".join(
             f"{k}={v!r}"
-            for k, v in asdict(self).items()
+            for k, v in self.__dict__.items()
             if k not in special_properties and not k.startswith("_") and v is not None
         )
-        exception_str = f"{self.message}."
+        exception_str = f"{self.__class__.__name__}: {self.get_message()}."
         if properties_str:
             exception_str += f" ({properties_str})"
+
         if self.log_text:
+            if isinstance(self.log_text, list):
+                self.log_text = "\n".join(self.log_text)
+
             exception_str += f"\n\n Log output: {self.log_text}"
+
         if self.guidance:
             exception_str += f"\n\n Suggestion: {self.guidance}"
+
         if self.help_url:
             exception_str += f"\n\n More info: {self.help_url}"
 
@@ -69,52 +94,107 @@ class AirbyteError(Exception, ABC):
     def __repr__(self) -> str:
         class_name = self.__class__.__name__
         properties_str = ", ".join(
-            f"{k}={v!r}" for k, v in asdict(self).items() if not k.startswith("_")
+            f"{k}={v!r}" for k, v in self.__dict__.items() if not k.startswith("_")
         )
         return f"{class_name}({properties_str})"
 
 
-class AirbyteConnectorConfigurationMissingError(AirbyteError):
+# AirbyteLib Internal Errors (these are probably bugs)
+
+
+@dataclass
+class AirbyteLibInternalError(AirbyteError):
+    """An internal error occurred in Airbyte Lib."""
+
+    guidance = "Please consider reporting this error to the Airbyte team."
+    help_url = NEW_ISSUE_URL
+
+
+# AirbyteLib Input Errors (replaces ValueError for user input)
+
+
+@dataclass
+class AirbyteLibInputError(AirbyteError, ValueError):
+    """The input provided to AirbyteLib did not match expected validation rules.
+
+    This inherits from ValueError so that it can be used as a drop-in replacement for
+    ValueError in the Airbyte Lib API.
+    """
+
+    # TODO: Consider adding a help_url that links to the auto-generated API reference.
+
+    guidance = "Please check the provided value and try again."
+    input_value: str | None = None
+
+
+# AirbyteLib Cache Errors
+
+
+class AirbyteLibCacheError(AirbyteError):
+    """Error occurred while accessing the cache."""
+
+
+@dataclass
+class AirbyteLibCacheTableValidationError(AirbyteLibCacheError):
+    """Cache table validation failed."""
+
+    violation: str | None = None
+
+
+@dataclass
+class AirbyteConnectorConfigurationMissingError(AirbyteLibCacheError):
     """Connector is missing configuration."""
 
-    connector_name: str
+    connector_name: str | None = None
 
 
+# Subprocess Errors
+
+
+@dataclass
 class AirbyteSubprocessError(AirbyteError):
     """Error when running subprocess."""
 
-    args: list[str]
+    run_args: list[str] | None = None
 
 
+@dataclass
 class AirbyteSubprocessFailedError(AirbyteSubprocessError):
     """Subprocess failed."""
 
-    exit_code: int
+    exit_code: int | None = None
+
+
+# Connector Registry Errors
 
 
 class AirbyteConnectorRegistryError(AirbyteError):
     """Error when accessing the connector registry."""
 
 
-class AirbyteConnectorNotFoundError(AirbyteError):
-    """"Connector not found."""
+# Connector Errors
 
 
-class AirbyteConnectorInstallationError(AirbyteError):
+@dataclass
+class AirbyteConnectorError(AirbyteError):
+    """Error when running the connector."""
+
+    connector_name: str | None = None
+
+
+class AirbyteConnectorNotFoundError(AirbyteConnectorError):
+    """Connector not found."""
+
+
+class AirbyteConnectorInstallationError(AirbyteConnectorError):
     """Error when installing the connector."""
 
 
-class AirbyteConnectorError(AirbyteError):
-    """Exception raised for a specific error condition."""
-
-    message = "Error when running the connector."
-
-
-class AirbyteConnectorReadError(AirbyteError):
+class AirbyteConnectorReadError(AirbyteConnectorError):
     """Error when reading from the connector."""
 
 
-class AirbyteNoDataFromConnectorError(AirbyteError):
+class AirbyteNoDataFromConnectorError(AirbyteConnectorError):
     """No data was provided from the connector."""
 
 
@@ -130,15 +210,16 @@ class AirbyteConnectorCheckFailedError(AirbyteConnectorError):
     """Connector did not return a spec."""
 
 
+@dataclass
 class AirbyteConnectorFailedError(AirbyteConnectorError):
     """Connector failed."""
 
-    exit_code: int
+    exit_code: int | None = None
 
 
-class AirbyteStreamNotFoundError(AirbyteError):
+@dataclass
+class AirbyteStreamNotFoundError(AirbyteConnectorError):
     """Connector stream not found."""
 
-    stream_name: str
-    connector_name: str
-    available_streams: list[str]
+    stream_name: str | None = None
+    available_streams: list[str] | None = None
