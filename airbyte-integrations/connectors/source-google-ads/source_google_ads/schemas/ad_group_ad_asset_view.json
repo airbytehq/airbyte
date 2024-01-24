@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "metrics.all_conversions": {
+      "type": ["null", "string"]
+    },
+    "metrics.all_conversions_value": {
+      "type": ["null", "string"]
+    },
+    "metrics.all_conversions_value_per_cost": {
+      "type": ["null", "string"]
+    },
+    "metrics.average_cpc": {
+      "type": ["null", "string"]
+    },
+    "metrics.biddable_app_install_conversions": {
+      "type": ["null", "string"]
+    },
+    "metrics.biddable_app_post_install_conversions": {
+      "type": ["null", "string"]
+    },
+    "metrics.clicks": {
+      "type": ["null", "string"]
+    },
+    "metrics.conversions": {
+      "type": ["null", "string"]
+    },
+    "metrics.conversions_value": {
+      "type": ["null", "string"]
+    },
+    "metrics.conversions_value_per_cost": {
+      "type": ["null", "string"]
+    },
+    "metrics.cost_micros": {
+      "type": ["null", "string"]
+    },
+    "metrics.cost_per_all_conversions": {
+      "type": ["null", "string"]
+    },
+    "metrics.cost_per_conversion": {
+      "type": ["null", "string"]
+    },
+    "metrics.ctr": {
+      "type": ["null", "string"]
+    },
+    "metrics.impressions": {
+      "type": ["null", "string"]
+    },
+    "metrics.value_per_all_conversions": {
+      "type": ["null", "string"]
+    },
+    "metrics.value_per_conversion": {
+      "type": ["null", "string"]
+    },
+    "metrics.view_through_conversions": {
+      "type": ["null", "string"]
+    },
+    "segments.ad_network_type": {
+      "type": ["null", "string"]
+    },
+    "segments.date": {
+      "type": ["null", "string"]
+    },
+    "ad_group_ad_asset_view.enabled": {
+      "type": ["null", "string"]
+    },
+    "ad_group_ad_asset_view.field_type": {
+      "type": ["null", "string"]
+    },
+    "ad_group_ad_asset_view.performance_label": {
+      "type": ["null", "string"]
+    },
+    "ad_group_ad_asset_view.pinned_field": {
+      "type": ["null", "string"]
+    },
+    "ad_group_ad_asset_view.policy_summary": {
+      "type": ["null", "string"]
+    },
+    "ad_group_ad_asset_view.resource_name": {
+      "type": ["null", "string"]
+    },
+    "ad_group.id": {
+      "type": ["null", "string"]
+    },
+    "ad_group_ad.ad.id": {
+      "type": ["null", "string"]
+    },
+    "campaign.id": {
+      "type": ["null", "string"]
+    },
+    "customer.id": {
+      "type": ["null", "string"]
+    },
+    "asset.id": {
+      "type": ["null", "string"]
+    },
+    "asset.name": {
+      "type": ["null", "string"]
+    },
+    "asset.source": {
+      "type": ["null", "string"]
+    },
+    "asset.resource_name": {
+      "type": ["null", "string"]
+    },
+    "asset.type": {
+      "type": ["null", "string"]
+    },
+    "asset.final_urls": {
+      "type": ["null", "string"]
+    },
+    "asset.youtube_video_asset.youtube_video_id": {
+      "type": ["null", "string"]
+    },
+    "asset.youtube_video_asset.youtube_video_title": {
+      "type": ["null", "string"]
+    },
+    "asset.call_asset.country_code": {
+      "type": ["null", "string"]
+    },
+    "asset.field_type_policy_summaries": {
+      "type": ["null", "string"]
+    },
+    "asset.image_asset.file_size": {
+      "type": ["null", "string"]
+    },
+    "asset.image_asset.full_size.url": {
+      "type": ["null", "string"]
+    },
+    "asset.image_asset.mime_type": {
+      "type": ["null", "string"]
+    },
+    "asset.text_asset.text": {
+      "type": ["null", "string"]
+    }
+  }
+}
