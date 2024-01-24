@@ -200,6 +200,8 @@ UNSUPPORTED_FILTERING_STREAMS = [
     "ReportEvent",
     "TabDefinition",
     "UriEvent",
+    "ActivityFieldHistory",
+    "PermissionSetEventStore",
 ]
 
 RESOURCE_PRIMARY_KEY_MAP = {
