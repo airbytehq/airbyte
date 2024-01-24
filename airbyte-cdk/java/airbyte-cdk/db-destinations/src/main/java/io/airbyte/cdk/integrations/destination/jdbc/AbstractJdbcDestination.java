@@ -288,6 +288,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
         }
       }
       final JdbcSqlGenerator sqlGenerator = getSqlGenerator();
+      // SqlGenerator should be ok here because the catalog parser just uses "buildStreamid"
       final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
           .map(override -> new CatalogParser(sqlGenerator, override))
           .orElse(new CatalogParser(sqlGenerator))
@@ -296,7 +297,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
       final var migrator = new JdbcV1V2Migrator(namingResolver, database, databaseName);
       final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
       final DestinationHandler<TableDefinition> destinationHandler = getDestinationHandler(databaseName, database);
-      final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
+      final boolean disableTypeDedupe = !config.has(DISABLE_TYPE_DEDUPE) || config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
       final TyperDeduper typerDeduper;
       if (disableTypeDedupe) {
         typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator,

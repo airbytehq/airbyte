@@ -10,7 +10,7 @@ import com.clickhouse.jdbc.ClickHouseStatement;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -60,7 +60,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
+                                    final List<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tmpTableName)
       throws SQLException {
@@ -102,4 +102,10 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
     });
   }
 
+  @Override
+  protected void insertRecordsInternalV2(final JdbcDatabase database, final List<PartialAirbyteMessage> records, final String schemaName,
+                                         final String tableName)
+      throws Exception {
+
+  }
 }
