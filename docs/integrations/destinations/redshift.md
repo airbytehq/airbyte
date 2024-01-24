@@ -9,7 +9,7 @@ The Airbyte Redshift destination allows you to sync data to Redshift.
 This Redshift destination connector has two replication strategies:
 
 1. INSERT: Replicates data via SQL INSERT queries. This is built on top of the destination-jdbc code
-   base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Mulesoft
+   base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Maven Central
    [here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in
    Redshift documentation
    [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html). **Not recommended
@@ -28,8 +28,8 @@ For INSERT strategy:
 
 2. COPY: Replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is
    the recommended loading approach described by Redshift
-   [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html).
-   Requires an S3 bucket and credentials.
+   [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html).
+   Requires an S3 bucket and credentials. Data is copied into S3 as multiple files with a manifest file. 
 
 Airbyte automatically picks an approach depending on the given configuration - if S3 configuration
 is present, Airbyte will use the COPY strategy and vice versa.
@@ -76,8 +76,9 @@ Optional parameters:
     (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command
     completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
 
-NOTE: S3 staging does not use the SSH Tunnel option, if configured. SSH Tunnel supports the SQL
-connection only. S3 is secured through public HTTPS access only.
+NOTE: S3 staging does not use the SSH Tunnel option for copying data, if configured. SSH Tunnel supports the SQL
+connection only. S3 is secured through public HTTPS access only. Subsequent typing and deduping queries on final table 
+are executed over using provided SSH Tunnel configuration. 
 
 ## Step 1: Set up Redshift
 
@@ -204,32 +205,40 @@ All Redshift connections are encrypted using SSL.
 
 Each stream will be output into its own raw table in Redshift. Each table will contain 3 columns:
 
-- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
+- `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
   Redshift is `VARCHAR`.
-- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
+- `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source.
   The column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
+- `_airbyte_loaded_at`: a timestamp representing when the row was processed into final table.
+    The column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Redshift is
   `SUPER`.
 
-## Data type mapping
+## Data type map
 
-| Redshift Type         | Airbyte Type              | Notes |
-| :-------------------- | :------------------------ | :---- |
-| `boolean`             | `boolean`                 |       |
-| `int`                 | `integer`                 |       |
-| `float`               | `number`                  |       |
-| `varchar`             | `string`                  |       |
-| `date/varchar`        | `date`                    |       |
-| `time/varchar`        | `time`                    |       |
-| `timestamptz/varchar` | `timestamp_with_timezone` |       |
-| `varchar`             | `array`                   |       |
-| `varchar`             | `object`                  |       |
+| Airbyte type                        | Redshift type                          |
+|:------------------------------------|:---------------------------------------|
+| STRING                              | VARCHAR                                |
+| STRING (BASE64)                     | VARCHAR                                |
+| STRING (BIG_NUMBER)                 | VARCHAR                                |
+| STRING (BIG_INTEGER)                | VARCHAR                                |
+| NUMBER                              | DECIMAL / NUMERIC                      |
+| INTEGER                             | BIGINT / INT8                          |
+| BOOLEAN                             | BOOLEAN / BOOL                         |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMPTZ / TIMESTAMP WITH TIME ZONE |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP                              |
+| STRING (TIME_WITH_TIMEZONE)         | TIMETZ / TIME WITH TIME ZONE           |
+| STRING (TIME_WITHOUT_TIMEZONE)      | TIME                                   |
+| DATE                                | DATE                                   |
+| OBJECT                              | SUPER                                  |
+| ARRAY                               | SUPER                                  |
 
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.8.0   | 2024-01-18 | [34236](https://github.com/airbytehq/airbyte/pull/34236)   | Upgrade CDK to 0.13.0                                                                                                                                                                                            |
+| 2.0.0   | 2024-01-23 | [\#34077](https://github.com/airbytehq/airbyte/pull/34077) | Destinations V2                                                                                                                                                                                                  |
+| 0.8.0   | 2024-01-18 | [\#34236](https://github.com/airbytehq/airbyte/pull/34236) | Upgrade CDK to 0.13.0                                                                                                                                                                                            |
 | 0.7.15  | 2024-01-11 | [\#34186](https://github.com/airbytehq/airbyte/pull/34186) | Update check method with svv_table_info permission check, fix bug where s3 staging files were not being deleted.                                                                                                 |
 | 0.7.14  | 2024-01-08 | [\#34014](https://github.com/airbytehq/airbyte/pull/34014) | Update order of options in spec                                                                                                                                                                                  |
 | 0.7.13  | 2024-01-05 | [\#33948](https://github.com/airbytehq/airbyte/pull/33948) | Fix NPE when prepare tables fail; Add case sensitive session for super; Bastion heartbeats added                                                                                                                 |

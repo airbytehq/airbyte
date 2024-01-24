@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import abc
 import enum
-from collections.abc import Generator, Iterator, Mapping
 from contextlib import contextmanager
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, cast, final
@@ -22,10 +21,12 @@ from sqlalchemy.sql.elements import TextClause
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
+from airbyte_lib.datasets._sql import CachedDataset
 from airbyte_lib.types import SQLTypeConverter
 
 
 if TYPE_CHECKING:
+    from collections.abc import Generator, Iterator
     from pathlib import Path
 
     from sqlalchemy.engine import Connection, Engine
@@ -117,6 +118,15 @@ class SQLCacheBase(RecordProcessor):
 
         self.file_writer = file_writer or self.file_writer_class(config)
         self.type_converter = self.type_converter_class()
+
+    def __getitem__(self, stream: str) -> DatasetBase:
+        return self.streams[stream]
+
+    def __contains__(self, stream: str) -> bool:
+        return stream in self._streams_with_data
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._streams_with_data)
 
     # Public interface:
 
@@ -211,28 +221,22 @@ class SQLCacheBase(RecordProcessor):
     @property
     def streams(
         self,
-    ) -> dict[str, DatasetBase]:
+    ) -> dict[str, CachedDataset]:
         """Return a temporary table name."""
-        # TODO: Add support for streams map, based on the cached catalog.
-        raise NotImplementedError("Streams map is not yet supported.")
+        result = {}
+        for stream_name in self._streams_with_data:
+            result[stream_name] = CachedDataset(self, stream_name)
+
+        return result
 
     # Read methods:
 
     def get_records(
         self,
         stream_name: str,
-    ) -> Iterator[Mapping[str, Any]]:
-        """Uses SQLAlchemy to select all rows from the table.
-
-        # TODO: Refactor to return a LazyDataset here.
-        """
-        table_ref = self.get_sql_table(stream_name)
-        stmt = table_ref.select()
-        with self.get_sql_connection() as conn:
-            for row in conn.execute(stmt):
-                # Access to private member required because SQLAlchemy doesn't expose a public API.
-                # https://pydoc.dev/sqlalchemy/latest/sqlalchemy.engine.row.RowMapping.html
-                yield cast(Mapping[str, Any], row._mapping)  # noqa: SLF001
+    ) -> CachedDataset:
+        """Uses SQLAlchemy to select all rows from the table."""
+        return CachedDataset(self, stream_name)
 
     def get_pandas_dataframe(
         self,
