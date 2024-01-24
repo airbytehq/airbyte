@@ -264,7 +264,7 @@
             "deleted_at": "2027-07-11T13:07:45-07:00"
           }
         },
-        "id": 99999999999999
+        "updated_at": "2027-07-11T13:07:45-07:00"
       },
       "stream_descriptor": {
         "name": "fulfillment_orders"
