@@ -1,5 +1,13 @@
 # HubSpot Migration Guide
 
+## Upgrading to 3.0.0
+
+:::note
+This change is only breaking if you are syncing the Marketing Emails stream.
+:::
+
+This update brings extended schema with data types changes for the Marketing Emails stream.
+
 ## Upgrading to 2.0.0
 
 :::note
