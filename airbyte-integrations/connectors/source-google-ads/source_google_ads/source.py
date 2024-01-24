@@ -44,6 +44,7 @@ from .streams import (
     TopicView,
     UserInterest,
     UserLocationView,
+    AdGroupAdAssetView
 )
 from .utils import GAQL
 
@@ -158,6 +159,7 @@ class SourceGoogleAds(AbstractSource):
         streams = [
             AdGroup(**incremental_config),
             AdGroupAd(**incremental_config),
+            AdGroupAdAssetView(**incremental_config),
             AdGroupAdLabel(**default_config),
             AdGroupBiddingStrategy(**incremental_config),
             AdGroupCriterion(**default_config),

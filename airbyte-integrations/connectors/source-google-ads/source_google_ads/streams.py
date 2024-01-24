@@ -40,6 +40,10 @@ class GoogleAdsStream(Stream, ABC):
         if self.primary_key:
             latest_records = {}
             for result in response:
+                if self.name == 'ad_group_ad_asset_view':
+                    yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+                    continue
+
                 record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
                 record_id = tuple(record.get(key) for key in self.primary_key)
 
@@ -51,8 +55,9 @@ class GoogleAdsStream(Stream, ABC):
                         or (latest_record_date and pendulum.parse(latest_record_date) < pendulum.parse(current_record_date))):
                     latest_records[record_id] = record
 
-            for value in latest_records.values():
-                yield value
+            if latest_records:
+                for value in latest_records.values():
+                    yield value
 
         else:
             for result in response:
@@ -345,6 +350,13 @@ class AdGroupAd(IncrementalGoogleAdsStream):
 
     primary_key = ["ad_group.id", "ad_group_ad.ad.id"]
 
+
+class AdGroupAdAssetView(IncrementalGoogleAdsStream):
+    """
+    Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad
+    """
+
+    primary_key = ["asset.id"]
 
 class AdGroupAdLabel(GoogleAdsStream):
     """
