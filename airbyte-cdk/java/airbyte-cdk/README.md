@@ -166,6 +166,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.14.3  | 2024-01-24 | [\#34451](https://github.com/airbytehq/airbyte/pull/34451) | Async destinations: Better logging when we fail to parse an AirbyteMessage                                                                                     |
 | 0.14.2  | 2024-01-24 | [\#34458](https://github.com/airbytehq/airbyte/pull/34458) | Handle case-sensitivity in sentry error grouping                                                                                                               |
 | 0.14.1  | 2024-01-24 | [\#34468](https://github.com/airbytehq/airbyte/pull/34468) | Add wait for process to be done before ending sync in destination BaseTDTest                                                                                   |
 | 0.14.0  | 2024-01-23 | [\#34461](https://github.com/airbytehq/airbyte/pull/34461) | Revert non backward compatible signature changes from 0.13.1                                                                                                   |

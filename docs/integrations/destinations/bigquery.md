@@ -210,6 +210,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.2   | 2024-01-24 | [34451](https://github.com/airbytehq/airbyte/pull/34451)   | Improve logging for unparseable input                                                                                                                           |
 | 2.4.1   | 2024-01-24 | [34458](https://github.com/airbytehq/airbyte/pull/34458)   | Improve error reporting                                                                                                                                         |
 | 2.4.0   | 2024-01-24 | [34468](https://github.com/airbytehq/airbyte/pull/34468)   | Upgrade CDK to 0.14.0                                                                                                                                           |
 | 2.3.31  | 2024-01-22 | [\#34023](https://github.com/airbytehq/airbyte/pull/34023) | Combine DDL operations into a single execution                                                                                                                  |
