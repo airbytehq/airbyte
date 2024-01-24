@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """All exceptions used in the Airbyte Lib.
 
 This design is modeled after structlog's exceptions, in that we bias towards auto-generated
