@@ -48,7 +48,11 @@ def get_connector_metadata(name: str) -> ConnectorMetadata:
     if not _cache:
         _update_cache()
     if not _cache or name not in _cache:
-        raise exc.AirbyteConnectorNotFoundError(
-            connector_name=name,
+        raise exc.AirbyteLibInputError(
+            message="Connector name not found in registry.",
+            guidance="Please double check the connector name.",
+            context={
+                "connector_name": name,
+            },
         )
     return _cache[name]
