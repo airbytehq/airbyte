@@ -71,6 +71,7 @@ class AstraIndexer(Indexer):
 
     def check(self) -> Optional[str]:
         try:
+            self._create_collection()
             collections = self.client.find_collections()
             collection = next(filter(lambda f: f["name"] == self.config.collection, collections), None)
             if collection is None:
@@ -83,6 +84,8 @@ class AstraIndexer(Indexer):
             if isinstance(e, urllib3.exceptions.MaxRetryError):
                 if "Failed to resolve 'apps.astra.datastax.com'" in str(e.reason):
                     return "Failed to resolve environment, please check whether the credential is correct."
+            if isinstance(e, urllib3.exceptions.HTTPError):
+                return str(e)
 
             formatted_exception = format_exception(e)
             return formatted_exception

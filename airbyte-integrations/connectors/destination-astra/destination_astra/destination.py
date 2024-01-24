@@ -40,7 +40,6 @@ class DestinationAstra(Destination):
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         parsed_config = ConfigModel.parse_obj(config)
         self._init_indexer(parsed_config)
-        self.indexer._create_collection()
         checks = [self.embedder.check(), self.indexer.check(), DocumentProcessor.check_config(parsed_config.processing)]
         errors = [error for error in checks if error is not None]
         if len(errors) > 0:
