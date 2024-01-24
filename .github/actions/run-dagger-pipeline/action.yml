@@ -83,8 +83,8 @@ inputs:
     description: "URL to airbyte-ci binary"
     required: false
     default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
-  pypi_token:
-    description: "PyPI API token to publish to PyPI"
+  python_registry_token:
+    description: "Python registry API token to publish python package"
     required: false
 
 runs:
