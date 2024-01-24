@@ -6,7 +6,6 @@ from sqlalchemy.engine import Engine
 
 from airbyte_lib.caches import SQLCacheBase
 from airbyte_lib.datasets import CachedDataset
-from airbyte_lib.exceptions import AirbyteLibInputError
 
 
 class ReadResult:
