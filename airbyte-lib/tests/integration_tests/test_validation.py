@@ -19,4 +19,4 @@ def test_validate_success_install_only():
 
 def test_validate_config_failure():
     with pytest.raises(Exception):
-        validate("./tests/integration_tests/fixtures/source-test", "./tests/integration_tests/fixtures/malformed_config.json", validate_install_only=True)
+        validate("./tests/integration_tests/fixtures/source-broken", "./tests/integration_tests/fixtures/valid_config.json", validate_install_only=True)
