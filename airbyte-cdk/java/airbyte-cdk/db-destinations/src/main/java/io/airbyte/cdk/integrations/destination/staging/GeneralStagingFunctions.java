@@ -142,7 +142,8 @@ public class GeneralStagingFunctions {
               writeConfig.getWriteDatetime());
           log.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
               stagePath);
-          //TODO: This is another weird manifestation of Redshift vs Snowflake using either or variables from stageName/StagingPath.
+          // TODO: This is another weird manifestation of Redshift vs Snowflake using either or variables from
+          // stageName/StagingPath.
           stagingOperations.dropStageIfExists(database, stageName, stagePath);
         }
       }
