@@ -99,7 +99,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
       sqlOperations.attemptWriteToStage(outputSchema, stageName, database);
     } finally {
       // drop created tmp stage
-      sqlOperations.dropStageIfExists(database, stageName);
+      sqlOperations.dropStageIfExists(database, stageName, null);
     }
   }
 

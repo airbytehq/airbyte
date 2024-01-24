@@ -5,23 +5,21 @@ from collections.abc import Iterator, Mapping
 from typing import Any, cast
 
 from pandas import DataFrame
-from typing_extensions import Self
 
 
-class DatasetBase(ABC, Iterator[Mapping[str, Any]]):
+class DatasetBase(ABC):
     """Base implementation for all datasets."""
 
-    def __iter__(self) -> Self:
-        """Return the iterator object (usually self)."""
-        return self
-
     @abstractmethod
-    def __next__(self) -> Mapping[str, Any]:
-        """Return the next value from the iterator."""
+    def __iter__(self) -> Iterator[Mapping[str, Any]]:
+        """Return the iterator of records."""
         raise NotImplementedError
 
     def to_pandas(self) -> DataFrame:
-        """Return a pandas DataFrame representation of the dataset."""
+        """Return a pandas DataFrame representation of the dataset.
+
+        The base implementation simply passes the record iterator to Panda's DataFrame constructor.
+        """
         # Technically, we return an iterator of Mapping objects. However, pandas
         # expects an iterator of dict objects. This cast is safe because we know
         # duck typing is correct for this use case.
