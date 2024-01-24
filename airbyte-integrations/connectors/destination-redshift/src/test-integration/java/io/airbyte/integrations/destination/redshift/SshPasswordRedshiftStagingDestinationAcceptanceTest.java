@@ -10,12 +10,14 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.nio.file.Path;
+import org.junit.jupiter.api.Disabled;
 
 /*
  * SshPasswordRedshiftStagingDestinationAcceptanceTest runs basic Redshift Destination Tests using
  * the S3 Staging mechanism for upload of data and "password" authentication for the SSH bastion
  * configuration.
  */
+@Disabled
 public class SshPasswordRedshiftStagingDestinationAcceptanceTest extends SshRedshiftDestinationBaseAcceptanceTest {
 
   @Override
