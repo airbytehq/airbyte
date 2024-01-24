@@ -201,7 +201,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   }
 
   @Override
-  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
+  public void dropStageIfExists(final JdbcDatabase database, final String stageName, final String stagingPath) throws Exception {
     try {
       final String query = getDropQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
