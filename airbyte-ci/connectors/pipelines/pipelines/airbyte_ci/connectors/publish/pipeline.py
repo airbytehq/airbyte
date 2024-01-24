@@ -288,7 +288,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             if terminate_early:
                 return create_connector_report(results)
 
-
             # If the connector image already exists, we don't need to build it, but we still need to upload the metadata file.
             # We also need to upload the spec to the spec cache bucket.
             if check_connector_image_results.status is StepStatus.SKIPPED:
