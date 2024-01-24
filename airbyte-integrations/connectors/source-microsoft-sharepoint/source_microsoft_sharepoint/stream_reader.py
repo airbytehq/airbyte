@@ -170,7 +170,14 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         )
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+        # choose correct compression mode because the url is random and doesn't end with filename extension
+        file_extension = file.uri.split(".")[-1]
+        if file_extension in ["gz", "bz2"]:
+            compression = "." + file_extension
+        else:
+            compression = "disable"
+
         try:
-            return smart_open.open(file.download_url, mode=mode.value, encoding=encoding)
+            return smart_open.open(file.download_url, mode=mode.value, compression=compression, encoding=encoding)
         except Exception as e:
             logger.exception(f"Error opening file {file.uri}: {e}")
