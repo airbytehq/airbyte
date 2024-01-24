@@ -42,6 +42,7 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
     @backoff.on_exception(
         backoff.expo,
         DefaultBackoffException,
+        max_tries=2,
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),
@@ -49,8 +50,17 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
     )
     def _get_refresh_access_token_response(self):
         try:
+            request_url = self.get_token_refresh_endpoint()
+            request_headers = self.get_headers()
+            request_body = self.build_refresh_request_body()
+
+            logger.info(f"Sending request to URL: {request_url}")
+            
             response = requests.request(
-                method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body(), headers=self.get_headers()
+                method="POST"
+                , url=request_url
+                , data=request_body
+                , headers=request_headers
             )
             self._log_response(response)
             response.raise_for_status()
@@ -61,3 +71,5 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
             raise
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
+
+

@@ -1,0 +1,306 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "id": { "type": "string" },
+        "status": { "type": "string" },
+        "primary_recipients": {
+            "type": "object",
+            "properties": {
+                "billing_info": {
+                    "type": "object",
+                    "properties": {
+                        "business_name": {"type": "string"},
+                        "name": {"type": "string"},
+                        "address": {"type": "string"},
+                        "phones": {"type": "array"},
+                        "additiona_info": {"type": "string"},
+                        "email_address": {"type": "string"},
+                        "language": {"type": "string"}
+                    },
+                "shipping_info": {
+                    "type": "object",
+                    "properties": {
+                        "business_name": {"type": "string"},
+                        "name": {
+                            "type": "object",
+                            "properties": {
+                                "prefix": {"type": "string"},
+                                "given_name": {"type": "string"},
+                                "surname": {"type": "string"},
+                                "middle_name": {"type": "string"},
+                                "suffix": {"type": "string"},
+                                "alternate_full_name": {"type": "string"},
+                                "full_name": {"type": "string"}
+                                }
+                        },
+                        "address": {
+                            "type": "object",
+                            "properties": {
+                                "address_line_1": {"type": "string"},
+                                "address_line_2": {"type": "string"},
+                                "address_line_3": {"type": "string"},
+                                "admin_area_1": {"type": "string"},
+                                "admin_area_2": {"type": "string"},
+                                "admin_area_3": {"type": "string"},
+                                "postal_code": {"type": "string"},
+                                "country_code": {"type": "string"},
+                                "address_details": {"type": "object"}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        },
+        "additional_recipients": { "type": "array"},
+        "detail": {
+            "type": "object",
+            "properties": {
+                "reference": { "type": "string" },
+                "note": { "type": "string" },
+                "terms_and_conditions": { "type": "string" },
+                "memo": { "type": "string" },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "reference_url": { "type": "string" },
+                            "content_type": { "type": "string" },
+                            "size": { "type": "string" },
+                            "create_time": { "type": "string" }
+                        }
+                    }
+                },
+                "currency_code": { "type": "string" },
+                "invoice_number": { "type": "string" },
+                "invoice_date": { "type": "string", "format": "date-time" },            
+                "payment_term": {
+                    "type": "object",
+                    "properties": {
+                        "term_type": { "type": "string"},
+                        "due_date": { "type": "string", "format": "date-time" }
+                    }
+                },
+                "metadata": {
+                    "type": "object",
+                    "properties": {
+                        "created_by": { "type": "string"},
+                        "last_updated_by": { "type": "string"},
+                        "create_time": { "type": "string", "format": "date-time" },
+                        "last_update_time": { "type": "string", "format": "date-time" },
+                        "cancelled_by": { "type": "string"},
+                        "last_seen_by": { "type": "string"},
+                        "recipient_view_url": { "type": "string"},
+                        "invoicer_view_url": { "type": "string"},
+                        "cancel_time": { "type": "string", "format": "date-time" },
+                        "first_sent_time": { "type": "string", "format": "date-time" },
+                        "last_sent_time": { "type": "string", "format": "date-time" },
+                        "created_by_flow": { "type": "string"}
+                    }   
+                } 
+              }
+        },
+        "invoicer": {
+            "type": "object",
+            "properties": {
+                "business_name": { "type": "string"},
+                "name": {
+                    "type": "object",
+                    "properties": {
+                        "prefix": {"type": "string"},
+                        "given_name": {"type": "string"},
+                        "surname": {"type": "string"},
+                        "middle_name": {"type": "string"},
+                        "suffix": {"type": "string"},
+                        "alternate_full_name": {"type": "string"},
+                        "full_name": {"type": "string"}
+                        },
+                "address": {
+                    "type": "object",
+                    "properties": {
+                        "address_line_1": {"type": "string"},
+                        "address_line_2": {"type": "string"},
+                        "address_line_3": {"type": "string"},
+                        "admin_area_1": {"type": "string"},
+                        "admin_area_2": {"type": "string"},
+                        "admin_area_3": {"type": "string"},
+                        "postal_code": {"type": "string"},
+                        "country_code": {"type": "string"},
+                        "address_details": {"type": "object"}
+                    },
+                "phones": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "country_code": {"type": "string"},
+                            "national_number": {"type": "string"},
+                            "extension_number": {"type": "string"},
+                            "phone_type": {"type": "string"}
+                        }
+                    }
+                },
+                "website": {"type": "string"},
+                "tax_id": {"type": "string"},
+                "additional_notes": {"type": "string"},
+                "email_address": { "type": "string"}
+            }
+        }
+
+
+          }
+        },
+        "configuration": {
+            "type": "object",
+            "properties": {
+                "tax_calculated_after_discount": {"type": "string"},
+                "tax_inclusive": {"type": "string"},
+                "allow_tip": {"type": "string"},
+                "partial_payment": {
+                    "type": "object",
+                    "properties": {
+                        "allow_partial_payment": {"type": "string"},
+                        "minimum_amount_due": {"type": "object"} 
+                    }
+                },
+                "template_id": {"type": "string"}
+            }
+        },
+        "amount": {
+            "type": "object",
+            "properties": {
+                "currency_code": {"type": "string"},
+                "value": {"type": "string"},
+                "breakdown": {
+                    "type": "object",
+                    "properties": {
+                        "item_total": {"type": "object"},
+                        "discount": {"type": "object"},
+                        "tax_total": {"type": "object"},
+                        "shipping": {"type": "object"},
+                        "custom": {"type": "object"}
+                    }
+                }
+            }
+        },
+        "due_amount": {
+            "type": "object",
+            "properties": {
+                "currency_code": {"type": "string"},
+                "value": {"type": "string"}
+            }
+        },
+        "gratuity": {
+            "type": "object",
+            "properties": {
+                "currency_code": {"type": "string"},
+                "value": {"type": "string"}
+            }
+        },
+        "payments": {
+            "transactions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "payment_id": { "type": "string" },
+                        "note": { "type": "string" },
+                        "type": { "type": "string" },
+                        "payment_date":{ "type": "string", "format": "date-time" },
+                        "method": { "type": "string" },
+                        "amount": {
+                            "type": "object",
+                            "properties": {
+                                    "currency_code": {"type": "string"},
+                                    "value": {"type": "string"}
+                            }
+                        },
+                        "shipping_info": {
+                            "type": "object",
+                            "properties": {
+                                "business_name": {"type": "string"},
+                                "name": {
+                                    "type": "object",
+                                    "properties": {
+                                        "prefix": {"type": "string"},
+                                        "given_name": {"type": "string"},
+                                        "surname": {"type": "string"},
+                                        "middle_name": {"type": "string"},
+                                        "suffix": {"type": "string"},
+                                        "alternate_full_name": {"type": "string"},
+                                        "full_name": {"type": "string"}
+                                        }
+                                },
+                                "address": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address_line_1": {"type": "string"},
+                                        "address_line_2": {"type": "string"},
+                                        "address_line_3": {"type": "string"},
+                                        "admin_area_1": {"type": "string"},
+                                        "admin_area_2": {"type": "string"},
+                                        "admin_area_3": {"type": "string"},
+                                        "postal_code": {"type": "string"},
+                                        "country_code": {"type": "string"},
+                                        "address_details": {"type": "object"}
+        
+                                    }
+                                }
+                            }
+                        }
+                }
+            }
+            },
+            "paid_amount": {
+                "type": "object",
+                "properties": {
+                    "currency_code": {"type": "string"},
+                    "value": {"type": "string"} 
+                }
+            }
+        },
+        "refunds": {
+            "transactions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "refund_id": { "type": "string" },
+                        "type": { "type": "string" },
+                        "refund_date":{ "type": "string", "format": "date-time" },
+                        "method": { "type": "string" },
+                        "amount": {
+                            "type": "object",
+                            "properties": {
+                                    "currency_code": {"type": "string"},
+                                    "value": {"type": "string"}
+                            }
+                        }
+                }
+            }
+            },
+            "refund_amount": {
+                "type": "object",
+                "properties": {
+                    "currency_code": {"type": "string"},
+                    "value": {"type": "string"} 
+                }
+            }
+        },
+        "links": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "href": { "type": "string", "format": "uri" },
+                    "rel": { "type": "string" },
+                    "method": { "type": "string" }
+                }
+            }
+        }
+    }
+  }
