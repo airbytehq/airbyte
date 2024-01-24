@@ -21,6 +21,7 @@ from airbyte_protocol.models import (
     Type,
 )
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib._factories.cache_factories import get_default_cache
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.datasets._lazy import LazyDataset
@@ -94,9 +95,10 @@ class Source:
         available_streams = self.get_available_streams()
         for stream in streams:
             if stream not in available_streams:
-                raise Exception(
-                    f"Stream {stream} is not available for connector {self.name}. "
-                    f"Choose from: {available_streams}",
+                raise exc.AirbyteStreamNotFoundError(
+                    stream_name=stream,
+                    connector_name=self.name,
+                    available_streams=available_streams,
                 )
         self._selected_stream_names = streams
 
@@ -107,8 +109,8 @@ class Source:
     @property
     def _config(self) -> dict[str, Any]:
         if self._config_dict is None:
-            raise Exception(
-                "Config is not set, either set in get_connector or via source.set_config",
+            raise exc.AirbyteConnectorConfigurationMissingError(
+                guidance="Provide via get_connector() or set_config()"
             )
         return self._config_dict
 
@@ -125,8 +127,8 @@ class Source:
             for msg in self._execute(["discover", "--config", config_file]):
                 if msg.type == Type.CATALOG and msg.catalog:
                     return msg.catalog
-            raise Exception(
-                f"Connector did not return a catalog. Last logs: {self._last_log_messages}",
+            raise exc.AirbyteConnectorMissingCatalogError(
+                log_text=self._last_log_messages,
             )
 
     def _validate_config(self, config: dict[str, Any]) -> None:
@@ -155,8 +157,8 @@ class Source:
         if self._spec:
             return self._spec
 
-        raise Exception(
-            f"Connector did not return a spec. Last logs: {self._last_log_messages}",
+        raise exc.AirbyteConnectorMissingSpecError(
+            log_text=self._last_log_messages,
         )
 
     @property
@@ -222,10 +224,14 @@ class Source:
             ],
         )
         if len(configured_catalog.streams) == 0:
-            raise KeyError(
-                f"Stream {stream} is not available for connector {self.name}, "
-                f"choose from {self.get_available_streams()}",
-            )
+            raise exc.AirbyteLibInputError(
+                message="Requested stream does not exist.",
+                context={
+                    "stream": stream,
+                    "available_streams": self.get_available_streams(),
+                    "connector_name": self.name,
+                },
+            ) from KeyError(stream)
 
         iterator: Iterator[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
             self._read_with_catalog(streaming_cache_info, configured_catalog),
@@ -247,12 +253,12 @@ class Source:
                     if msg.connectionStatus.status != Status.FAILED:
                         return  # Success!
 
-                    raise Exception(
-                        f"Connector returned failed status: {msg.connectionStatus.message}",
+                    raise exc.AirbyteConnectorCheckFailedError(
+                        context={
+                            "message": msg.connectionStatus.message,
+                        }
                     )
-            raise Exception(
-                f"Connector did not return check status. Last logs: {self._last_log_messages}",
-            )
+            raise exc.AirbyteConnectorCheckFailedError(log_text=self._last_log_messages)
 
     def install(self) -> None:
         """Install the connector if it is not yet installed."""
@@ -345,7 +351,9 @@ class Source:
                 except Exception:
                     self._add_to_logs(line)
         except Exception as e:
-            raise Exception(f"Execution failed. Last logs: {self._last_log_messages}") from e
+            raise exc.AirbyteConnectorReadError(
+                log_text=self._last_log_messages,
+            ) from e
 
     def _tally_records(
         self,
