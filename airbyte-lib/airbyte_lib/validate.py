@@ -26,6 +26,13 @@ def _parse_args() -> argparse.Namespace:
         help="Path to the connector directory",
     )
     parser.add_argument(
+        "--validate-install-only",
+        type=bool,
+        required=False,
+        default=False,
+        help="Only validate that the connector can be installed and config can be validated.",
+    )
+    parser.add_argument(
         "--sample-config",
         type=str,
         required=True,
@@ -40,13 +47,17 @@ def _run_subprocess_and_raise_on_failure(args: list[str]) -> None:
         raise Exception(f"{args} exited with code {result.returncode}")
 
 
-def tests(connector_name: str, sample_config: str) -> None:
+def tests(connector_name: str, sample_config: str, *, validate_install_only: bool) -> None:
     print("Creating source and validating spec and version...")
     source = ab.get_connector(
         # TODO: FIXME: noqa: SIM115, PTH123
         connector_name,
         config=json.load(open(sample_config)),  # noqa: SIM115, PTH123
     )
+
+    if validate_install_only:
+        print("Skipping check and record fetching")
+        return
 
     print("Running check...")
     source.check()
@@ -82,10 +93,11 @@ def run() -> None:
     args = _parse_args()
     connector_dir = args.connector_dir
     sample_config = args.sample_config
-    validate(connector_dir, sample_config)
+    validate_install_only = args.validate_install_only
+    validate(connector_dir, sample_config, validate_install_only=validate_install_only)
 
 
-def validate(connector_dir: str, sample_config: str) -> None:
+def validate(connector_dir: str, sample_config: str, *, validate_install_only: bool) -> None:
     # read metadata.yaml
     metadata_path = Path(connector_dir) / "metadata.yaml"
     with Path(metadata_path).open() as stream:
@@ -118,4 +130,4 @@ def validate(connector_dir: str, sample_config: str) -> None:
         temp_file.write(json.dumps(registry))
         temp_file.seek(0)
         os.environ["AIRBYTE_LOCAL_REGISTRY"] = str(temp_file.name)
-        tests(connector_name, sample_config)
+        tests(connector_name, sample_config, validate_install_only=validate_install_only)
