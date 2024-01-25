@@ -499,9 +499,9 @@ Available commands:
 
 ### Options
 
-| Option              | Required | Default | Mapped environment variable | Description                                                                                 |
-| ------------------- | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
-| `--package-path`    | True     |         |                             | The path to the python package to execute a poetry command on.                              |
+| Option           | Required | Default | Mapped environment variable | Description                                                    |
+| ---------------- | -------- | ------- | --------------------------- | -------------------------------------------------------------- |
+| `--package-path` | True     |         |                             | The path to the python package to execute a poetry command on. |
 
 ### Examples
 
@@ -515,12 +515,12 @@ For poetry packages, the package name and version can be taken from the `pyproje
 
 #### Options
 
-| Option                    | Required | Default                 | Mapped environment variable | Description                                                                                                     |
-| ------------------------- | -------- | ----------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `--publish-name`          | False    |                         |                             | The name of the package. Not required for poetry packages that define it in the `pyproject.toml` file           |
-| `--publish-version`       | False    |                         |                             | The version of the package. Not required for poetry packages that define it in the `pyproject.toml` file        |
-| `--python-registry-token` | True     |                         | PYTHON_REGISTRY_TOKEN       | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified             |
-| `--registry-url`          | False    | https://pypi.org/simple |                             | The python registry to publish to. Defaults to main pypi |
+| Option                    | Required | Default                 | Mapped environment variable | Description                                                                                              |
+| ------------------------- | -------- | ----------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `--publish-name`          | False    |                         |                             | The name of the package. Not required for poetry packages that define it in the `pyproject.toml` file    |
+| `--publish-version`       | False    |                         |                             | The version of the package. Not required for poetry packages that define it in the `pyproject.toml` file |
+| `--python-registry-token` | True     |                         | PYTHON_REGISTRY_TOKEN       | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified      |
+| `--registry-url`          | False    | https://pypi.org/simple |                             | The python registry to publish to. Defaults to main pypi                                                 |
 
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 
@@ -578,6 +578,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.6.1   | [#34490](https://github.com/airbytehq/airbyte/pull/34490)  | Fix inconsistent dagger log path typing                                                                           |
 | 3.6.0   | [#34111](https://github.com/airbytehq/airbyte/pull/34111)  | Add python registry publishing                                                                                    |
 | 3.5.3   | [#34339](https://github.com/airbytehq/airbyte/pull/34339)  | only do minimal changes on a connector version_bump                                                               |
 | 3.5.2   | [#34381](https://github.com/airbytehq/airbyte/pull/34381)  | Bind a sidecar docker host for `airbyte-ci test`                                                                  |
