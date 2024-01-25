@@ -133,7 +133,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
           for (final PartialAirbyteMessage record : batch) {
             insert = insert.values(
                 val(UUID.randomUUID().toString()),
-                function("JSON_PARSE", String.class, val(record.getSerialized())),
+                function("JSON_PARSE", String.class, val(escapeStringLiteral(record.getSerialized()))),
                 val(Instant.ofEpochMilli(record.getRecord().getEmittedAt()).atOffset(ZoneOffset.UTC)),
                 val((OffsetDateTime) null));
           }
@@ -144,6 +144,16 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
     } catch (final Exception e) {
       LOGGER.error("Error while inserting records", e);
       throw new RuntimeException(e);
+    }
+  }
+
+  public static String escapeStringLiteral(final String str) {
+    if (str == null) {
+      return null;
+    } else {
+      // jooq handles most things
+      // but we need to manually escape backslashes for some reason
+      return str.replace("\\", "\\\\");
     }
   }
 
