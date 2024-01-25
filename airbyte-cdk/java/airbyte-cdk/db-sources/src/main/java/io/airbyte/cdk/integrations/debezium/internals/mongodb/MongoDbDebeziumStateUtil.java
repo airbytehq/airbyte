@@ -56,7 +56,8 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
    */
   public JsonNode constructInitialDebeziumState(final BsonDocument resumeToken, final MongoClient mongoClient, final String serverId) {
     final String replicaSet = getReplicaSetName(mongoClient);
-    LOGGER.info("Initial resume token '{}' constructed", ResumeTokens.getData(resumeToken).asString().getValue());
+    LOGGER.info("Initial resume token '{}' constructed, corresponding to timestamp (seconds after epoch) {}",
+        ResumeTokens.getData(resumeToken).asString().getValue(), ResumeTokens.getTimestamp(resumeToken).getTime());
     final JsonNode state = formatState(serverId, replicaSet, ((BsonString) ResumeTokens.getData(resumeToken)).getValue());
     LOGGER.info("Initial Debezium state constructed: {}", state);
     return state;
@@ -113,12 +114,14 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     final ChangeStreamIterable<BsonDocument> stream = mongoClient.watch(BsonDocument.class);
     stream.resumeAfter(savedOffset);
     try (final var ignored = stream.cursor()) {
-      LOGGER.info("Valid resume token '{}' present.  Incremental sync will be performed for up-to-date streams.",
-          ResumeTokens.getData(savedOffset).asString().getValue());
+      LOGGER.info("Valid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}.  Incremental sync will be performed for "
+          + "up-to-date streams.",
+          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
       return true;
     } catch (final MongoCommandException | MongoChangeStreamException e) {
-      LOGGER.info("Invalid resume token '{}' present.  Initial snapshot will be performed for all streams.",
-          ResumeTokens.getData(savedOffset).asString().getValue());
+      LOGGER.info("Invalid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}.  Initial snapshot will be performed for "
+          + "all streams.",
+          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
       return false;
     }
   }

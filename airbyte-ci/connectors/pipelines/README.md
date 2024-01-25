@@ -491,6 +491,37 @@ This command runs formatting checks and reformats any code that would be reforma
 
 Running `airbyte-ci format fix all` will format all of the different types of code. Run `airbyte-ci format fix --help` for subcommands to format only certain types of files.
 
+### <a id="poetry-subgroup"></a>`poetry` command subgroup
+
+Available commands:
+
+- `airbyte-ci poetry publish`
+
+### Options
+
+| Option           | Required | Default | Mapped environment variable | Description                                                    |
+| ---------------- | -------- | ------- | --------------------------- | -------------------------------------------------------------- |
+| `--package-path` | True     |         |                             | The path to the python package to execute a poetry command on. |
+
+### Examples
+
+- Publish a python package: `airbyte-ci poetry --package-path=path/to/package publish --publish-name=my-package --publish-version="1.2.3" --python-registry-token="..." --registry-url="http://host.docker.internal:8012/"`
+
+### <a id="format-check-command"></a>`publish` command
+
+This command publishes poetry packages (using `pyproject.toml`) or python packages (using `setup.py`) to a python registry.
+
+For poetry packages, the package name and version can be taken from the `pyproject.toml` file or be specified as options.
+
+#### Options
+
+| Option                    | Required | Default                 | Mapped environment variable | Description                                                                                              |
+| ------------------------- | -------- | ----------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `--publish-name`          | False    |                         |                             | The name of the package. Not required for poetry packages that define it in the `pyproject.toml` file    |
+| `--publish-version`       | False    |                         |                             | The version of the package. Not required for poetry packages that define it in the `pyproject.toml` file |
+| `--python-registry-token` | True     |                         | PYTHON_REGISTRY_TOKEN       | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified      |
+| `--registry-url`          | False    | https://pypi.org/simple |                             | The python registry to publish to. Defaults to main pypi                                                 |
+
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 
 Available commands:
@@ -528,6 +559,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 | Option                    | Required | Default | Mapped environment variable | Description                                                                                 |
 | ------------------------- | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
 | `-c/--poetry-run-command` | True     | None    |                             | The command to run with `poetry run`                                                        |
+| `-e/--pass-env-var`       | False    | None    |                             | Host environment variable that is passed to the container running the poetry command        |
 | `--ci-requirements`       | False    |         |                             | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 #### Examples
@@ -536,6 +568,9 @@ You can pass multiple `-c/--poetry-run-command` options to run multiple commands
 E.G.: running `pytest` and `mypy`:
 `airbyte-ci test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines'`
 
+E.G.: passing the environment variable `GCP_GSM_CREDENTIALS` environment variable to the container running the poetry command:
+`airbyte-ci test airbyte-lib --pass-env-var='GCP_GSM_CREDENTIALS'`
+
 E.G.: running `pytest` on a specific test folder:
 `airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --poetry-run-command='pytest tests/unit_tests'`
 
@@ -543,8 +578,14 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.6.1   | [#34490](https://github.com/airbytehq/airbyte/pull/34490)  | Fix inconsistent dagger log path typing                                                                           |
+| 3.6.0   | [#34111](https://github.com/airbytehq/airbyte/pull/34111)  | Add python registry publishing                                                                                    |
+| 3.5.3   | [#34339](https://github.com/airbytehq/airbyte/pull/34339)  | only do minimal changes on a connector version_bump                                                               |
+| 3.5.2   | [#34381](https://github.com/airbytehq/airbyte/pull/34381)  | Bind a sidecar docker host for `airbyte-ci test`                                                                  |
+| 3.5.1   | [#34321](https://github.com/airbytehq/airbyte/pull/34321)  | Upgrade to Dagger 0.9.6 .                                                                                         |
+| 3.5.0   | [#33313](https://github.com/airbytehq/airbyte/pull/33313)  | Pass extra params after Gradle tasks.                                                                             |
 | 3.4.2   | [#34301](https://github.com/airbytehq/airbyte/pull/34301)  | Pass extra params after Gradle tasks.                                                                             |
-| 3.4.1   | [#34067](https://github.com/airbytehq/airbyte/pull/34067)  | Use dagster-cloud 1.5.7 for deploy |
+| 3.4.1   | [#34067](https://github.com/airbytehq/airbyte/pull/34067)  | Use dagster-cloud 1.5.7 for deploy                                                                                |
 | 3.4.0   | [#34276](https://github.com/airbytehq/airbyte/pull/34276)  | Introduce `--only-step` option for connector tests.                                                               |
 | 3.3.0   | [#34218](https://github.com/airbytehq/airbyte/pull/34218)  | Introduce `--ci-requirements` option for client defined CI runners.                                               |
 | 3.2.0   | [#34050](https://github.com/airbytehq/airbyte/pull/34050)  | Connector test steps can take extra parameters                                                                    |

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.59.1
+Fix concurrent CDK deadlock
+
+## 0.59.0
+Fix state message handling when running concurrent syncs
+
 ## 0.58.9
 concurrent-cdk: improve resource usage when reading from substreams
 

@@ -45,6 +45,7 @@ public class GeneralStagingFunctions {
         final String schema = writeConfig.getOutputSchemaName();
         final String stream = writeConfig.getStreamName();
         final String dstTableName = writeConfig.getOutputTableName();
+        final String stageName = stagingOperations.getStageName(schema, dstTableName);
         final String stagingPath =
             stagingOperations.getStagingPath(SerialStagingConsumerFactory.RANDOM_CONNECTION_ID, schema, stream, writeConfig.getOutputTableName(),
                 writeConfig.getWriteDatetime());
@@ -54,7 +55,7 @@ public class GeneralStagingFunctions {
 
         stagingOperations.createSchemaIfNotExists(database, schema);
         stagingOperations.createTableIfNotExists(database, schema, dstTableName);
-        stagingOperations.createStageIfNotExists();
+        stagingOperations.createStageIfNotExists(database, stageName);
 
         /*
          * When we're in OVERWRITE, clear out the table at the start of a sync, this is an expected side
@@ -78,6 +79,7 @@ public class GeneralStagingFunctions {
    * upload was unsuccessful
    */
   public static void copyIntoTableFromStage(final JdbcDatabase database,
+                                            final String stageName,
                                             final String stagingPath,
                                             final List<String> stagedFiles,
                                             final String tableName,
@@ -92,7 +94,7 @@ public class GeneralStagingFunctions {
       final Lock rawTableInsertLock = typerDeduper.getRawTableInsertLock(streamNamespace, streamName);
       rawTableInsertLock.lock();
       try {
-        stagingOperations.copyIntoTableFromStage(database, stagingPath, stagedFiles,
+        stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
             tableName, schemaName);
       } finally {
         rawTableInsertLock.unlock();
@@ -131,6 +133,7 @@ public class GeneralStagingFunctions {
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {
+          final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
           final String stagePath = stagingOperations.getStagingPath(
               RANDOM_CONNECTION_ID,
               schemaName,
@@ -139,7 +142,9 @@ public class GeneralStagingFunctions {
               writeConfig.getWriteDatetime());
           log.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
               stagePath);
-          stagingOperations.dropStageIfExists(database, stagePath);
+          // TODO: This is another weird manifestation of Redshift vs Snowflake using either or variables from
+          // stageName/StagingPath.
+          stagingOperations.dropStageIfExists(database, stageName, stagePath);
         }
       }
       typerDeduper.commitFinalTables();

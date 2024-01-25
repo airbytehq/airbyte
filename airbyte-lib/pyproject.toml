@@ -11,18 +11,24 @@ python = "^3.9"
 
 airbyte-cdk = "^0.58.3"
 # airbyte-protocol-models = "^1.0.1"  # Conflicts with airbyte-cdk # TODO: delete or resolve
-duckdb-engine = "^0.9.5"
 jsonschema = "3.2.0"
 orjson = "^3.9.10"
 overrides = "^7.4.0"
-pandas = "^2.1.4"
-psycopg = {extras = ["binary", "pool"], version = "^3.1.16"}
-pyarrow = "^14.0.1"
+pandas = "2.1.4" # 2.2.0 breaks sqlalchemy interop - TODO: optionally retest higher versions
+psycopg2-binary = "^2.9.9"
 python-ulid = "^2.2.0"
-requests = "^2.31.0"
-SQLAlchemy = "^2.0.23"
 types-pyyaml = "^6.0.12.12"
 ulid = "^1.1"
+sqlalchemy = "1.4.51"
+snowflake-connector-python = "3.6.0"
+snowflake-sqlalchemy = "^1.5.1"
+duckdb-engine = "^0.10.0"
+requests = "^2.31.0"
+pyarrow = "^14.0.2"
+
+# Psycopg3 is not supported in SQLAlchemy 1.x:
+# psycopg = {extras = ["binary", "pool"], version = "^3.1.16"}
+
 
 [tool.poetry.group.dev.dependencies]
 docker = "^7.0.0"
@@ -34,10 +40,10 @@ pyarrow-stubs = "^10.0.1.7"
 pytest = "^7.4.3"
 pytest-docker = "^2.0.1"
 pytest-mypy = "^0.10.3"
-pytest-postgresql = "^5.0.0"
 ruff = "^0.1.11"
 types-jsonschema = "^4.20.0.0"
-types-requests = "^2.31.0.10"
+google-cloud-secret-manager = "^2.17.0"
+types-requests = "2.31.0.4"
 
 [build-system]
 requires = ["poetry-core"]
@@ -103,9 +109,11 @@ select = [
     "TD", # flake8-todos
     "TID", # flake8-tidy-imports
     "TRY", # tryceratops
+    "TRY002", # Disallow raising vanilla Exception. Create or use a custom exception instead.
+    "TRY003", # Disallow vanilla string passing. Prefer kwargs to the exception constructur.
     "UP", # pyupgrade
     "W", # pycodestyle (warnings)
-    "YTT" # flake8-2020
+    "YTT", # flake8-2020
 ]
 ignore = [
     # For rules reference, see https://docs.astral.sh/ruff/rules/
@@ -124,7 +132,6 @@ ignore = [
     "S", # flake8-bandit (noisy, security related)
     "TD002", # Require author for TODOs
     "TRIO", # flake8-trio (opinionated, noisy)
-    "TRY003",  # Exceptions with too-long string descriptions  # TODO: re-evaluate once we have our own exception classes
     "INP001", # Dir 'examples' is part of an implicit namespace package. Add an __init__.py.
 
     # TODO: Consider re-enabling these before release:
@@ -134,7 +141,6 @@ ignore = [
     "FIX002", # Allow "TODO:" until release (then switch to requiring links via TDO003)
     "PLW0603", # Using the global statement to update _cache is discouraged
     "TD003", # Require links for TODOs # TODO: Re-enable when we disable FIX002
-    "TRY002", # TODO: When we have time to tackle exception management ("Create your own exception")
 ]
 fixable = ["ALL"]
 unfixable = [
@@ -150,6 +156,7 @@ force-sort-within-sections = false
 lines-after-imports = 2
 known-first-party = ["airbyte_cdk", "airbyte_protocol"]
 known-local-folder = ["airbyte_lib"]
+required-imports = ["from __future__ import annotations"]
 known-third-party = []
 section-order = [
     "future",
