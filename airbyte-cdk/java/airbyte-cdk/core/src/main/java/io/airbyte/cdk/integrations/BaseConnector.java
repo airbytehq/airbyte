@@ -23,6 +23,7 @@ public abstract class BaseConnector implements Integration {
     // return a JsonSchema representation of the spec for the integration.
     final String resourceString = MoreResources.readResource("spec.json");
     // noise
+    // noise
     return Jsons.deserialize(resourceString, ConnectorSpecification.class);
   }
 
