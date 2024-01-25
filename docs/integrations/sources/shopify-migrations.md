@@ -9,14 +9,13 @@ This version implements `Shopify GraphQL BULK Operations` to speed up the follow
  - `Inventory Items`
  - `Inventory Levels`
  - `Metafield Collections`
- - `Metafield Customers `
+ - `Metafield Customers`
  - `Metafield Draft_orders`
  - `Metafield Locations`
  - `Metafield Orders`
  - `Metafield Product Images`
  - `Metafield Product Variants`
  - `Transactions Graphql` (duplicated `Transactions` stream to provide faster fetch)
-
 
 Increased the performance for the following streams:
 - `Fulfillments`
@@ -30,6 +29,7 @@ Other bug fixes and improvements, more info: `https://github.com/airbytehq/airby
 * The `Fulfillments` stream now has the cursor field `updated_at`, instead of the `id`.
 * The `Order Refunds` stream, now has the schema `refund_line_items.line_item.properties` to array of `strings`, instead of `object` with properties.
 * The `Fulfillment Orders` stream now has the `supported_actions` schema as `array of objects` instead of `array of strings`.
+* The `Collections` stream now requires additional api scope `read_publications` to fetch the `published_at` field with `GraphQL BULK Operations`.
 
    - if `API_PASSWORD` is used for authentication:
       - BEFORE UPDATING to the `1.2.0`: update your `Private Developer Application` scopes with `read_publications` and save the changes, in your Shopify Account.
