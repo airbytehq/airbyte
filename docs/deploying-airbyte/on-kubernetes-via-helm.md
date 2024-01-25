@@ -4,11 +4,6 @@
 
 Airbyte allows scaling sync workloads horizontally using Kubernetes. The core components \(api server, worker, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
 
-::: note
-Airbyte Kubernetes Community Edition does not support basic auth by default.
-To enable basic auth, consider adding a reverse proxy in front of Airbyte.
-:::
-
 ## Quickstart
 
 If you don't want to configure your own Kubernetes cluster and Airbyte instance, you can use the free, open-source project [Plural](https://www.plural.sh/) to bring up a Kubernetes cluster and Airbyte for you. Use [this guide](on-plural.md) to get started.
@@ -17,6 +12,11 @@ Alternatively, you can deploy Airbyte on [Restack](https://www.restack.io) to pr
 
 :::note
 Airbyte running on Self-Hosted Kubernetes doesn't support DBT Transformations. Please refer to [#5901](https://github.com/airbytehq/airbyte/issues/5091)
+:::
+
+::: note
+Airbyte Kubernetes Community Edition does not support basic auth by default.
+To enable basic auth, consider adding a reverse proxy in front of Airbyte.
 :::
 
 ## Getting Started
