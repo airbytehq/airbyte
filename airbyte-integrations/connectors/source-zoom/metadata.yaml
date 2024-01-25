@@ -10,7 +10,7 @@ data:
   name: Zoom
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
       enabled: true
   releaseStage: alpha
