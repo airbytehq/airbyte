@@ -52,19 +52,6 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
     }
   }
 
-  /**
-   * I suspect this value is ignored. The stage name is eventually passed into
-   * {@link io.airbyte.cdk.integrations.destination.s3.S3StorageOperations#uploadRecordsToBucket(SerializableBuffer, String, String, String)}
-   * as the streamName parameter... which is completely ignored.
-   *
-   */
-  @Override
-  public String getStageName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
-        nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)));
-  }
-
   @Override
   public String getStagingPath(final UUID connectionId,
                                final String namespace,
@@ -84,9 +71,12 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
+  public String getStageName(String namespace, String streamName) {
+    return "garbage-unused";
+  }
+
+  @Override
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     s3StorageOperations.createBucketIfNotExists();
   }
 
@@ -97,7 +87,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
                                      final String stageName,
                                      final String stagingPath)
       throws Exception {
-    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath);
+    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stagingPath);
   }
 
   private String putManifest(final String manifestContents, final String stagingPath) {
@@ -177,17 +167,9 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    s3StorageOperations.cleanUpBucketObject(prefix + stageName, stagedFiles);
-  }
-
-  @Override
-  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    s3StorageOperations.dropBucketObject(prefix + stageName);
+  public void dropStageIfExists(final JdbcDatabase database, final String stageName, final String stagingPath) throws Exception {
+    // stageName is unused here but used in Snowflake. This interface needs to be fixed.
+    s3StorageOperations.dropBucketObject(stagingPath);
   }
 
 }

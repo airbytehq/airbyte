@@ -3,7 +3,7 @@
 #
 
 from abc import ABC
-from typing import Any, ClassVar, List
+from typing import Any, ClassVar, List, Optional, Tuple
 
 import pipelines.dagger.actions.system.docker
 from dagger import CacheSharingMode, CacheVolume
@@ -11,7 +11,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.models.steps import STEP_PARAMS, Step, StepResult
+from pipelines.models.steps import Step, StepResult
 
 
 class GradleTask(Step, ABC):
@@ -30,20 +30,15 @@ class GradleTask(Step, ABC):
     LOCAL_MAVEN_REPOSITORY_PATH = "/root/.m2"
     GRADLE_DEP_CACHE_PATH = "/root/gradle-cache"
     GRADLE_HOME_PATH = "/root/.gradle"
-    STATIC_GRADLE_TASK_OPTIONS = ("--no-daemon", "--no-watch-fs")
+    STATIC_GRADLE_OPTIONS = ("--no-daemon", "--no-watch-fs", "--build-cache", "--scan", "--console=plain")
     gradle_task_name: ClassVar[str]
     bind_to_docker_host: ClassVar[bool] = False
     mount_connector_secrets: ClassVar[bool] = False
     accept_extra_params = True
 
     @property
-    def default_params(self) -> STEP_PARAMS:
-        return super().default_params | {
-            "-Ds3BuildCachePrefix": [self.context.connector.technical_name],  # Set the S3 build cache prefix.
-            "--build-cache": [],  # Enable the gradle build cache.
-            "--scan": [],  # Enable the gradle build scan.
-            "--console": ["plain"],  # Disable the gradle rich console.
-        }
+    def gradle_task_options(self) -> Tuple[str, ...]:
+        return self.STATIC_GRADLE_OPTIONS + (f"-Ds3BuildCachePrefix={self.context.connector.technical_name}",)
 
     @property
     def dependency_cache_volume(self) -> CacheVolume:
@@ -64,8 +59,9 @@ class GradleTask(Step, ABC):
             for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
 
-    def _get_gradle_command(self, task: str, *args: Any) -> str:
-        return f"./gradlew {' '.join(self.STATIC_GRADLE_TASK_OPTIONS + args)} {task}"
+    def _get_gradle_command(self, task: str, *args: Any, task_options: Optional[List[str]] = None) -> str:
+        task_options = task_options or []
+        return f"./gradlew {' '.join(self.gradle_task_options + args)} {task} {' '.join(task_options)}"
 
     async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
         include = [
@@ -200,7 +196,7 @@ class GradleTask(Step, ABC):
                     # Warm the gradle cache.
                     f"(rsync -a --stats --mkpath {self.GRADLE_DEP_CACHE_PATH}/ {self.GRADLE_HOME_PATH} || true)",
                     # Run the gradle task.
-                    self._get_gradle_command(connector_task, *self.params_as_cli_options),
+                    self._get_gradle_command(connector_task, task_options=self.params_as_cli_options),
                 ]
             )
         )

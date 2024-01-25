@@ -37,6 +37,7 @@ jobs:
   test_connectors:
     name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }}"
     timeout-minutes: 720 # 12 hours
+    needs: get_ci_runner
     runs-on: ${{ needs.get_ci_runner.outputs.runner_name }}
     steps:
       - name: Checkout Airbyte
