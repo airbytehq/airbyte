@@ -144,12 +144,15 @@ Additional tests are validating the backward compatibility of the current specif
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
 One more test validates the specification against containing exposed secrets. This means fields that potentially could hold a secret value should be explicitly marked with `"airbyte_secret": true`. If an input field like `api_key` / `password` / `client_secret` / etc. is exposed, the test will fail.
 
-| Input                                                            | Type   | Default             | Note                                                                                                                  |
-| :--------------------------------------------------------------- | :----- | :------------------ | :-------------------------------------------------------------------------------------------------------------------- |
-| `spec_path`                                                      | string | `secrets/spec.json` | Path to a YAML or JSON file representing the spec expected to be output by this connector                             |
-| `backward_compatibility_tests_config.previous_connector_version` | string | `latest`            | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
-| `backward_compatibility_tests_config.disable_for_version`        | string | None                | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
-| `timeout_seconds`                                                | int    | 10                  | Test execution timeout in seconds                                                                                     |
+| Input                                                            | Type    | Default             | Note                                                                                                                  |
+|:-----------------------------------------------------------------|:--------|:--------------------|:----------------------------------------------------------------------------------------------------------------------|
+| `spec_path`                                                      | string  | `secrets/spec.json` | Path to a YAML or JSON file representing the spec expected to be output by this connector                             |
+| `backward_compatibility_tests_config.previous_connector_version` | string  | `latest`            | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
+| `backward_compatibility_tests_config.disable_for_version`        | string  | None                | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
+| `timeout_seconds`                                                | int     | 10                  | Test execution timeout in seconds                                                                                     |
+| `auth_default_method`                                            | object  | None                | Ensure that OAuth is default method, if OAuth uses by source                                                          |
+| `auth_default_method.oauth`                                      | boolean | True                | Validate that OAuth is default method if set to True                                                                  |
+| `auth_default_method.bypass_reason`                              | string  |                     | Reason why OAuth is not default method                                                                                |
 
 ## Test Connection
 

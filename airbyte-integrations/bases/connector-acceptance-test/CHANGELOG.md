@@ -1,7 +1,10 @@
 # Changelog
 
-## 3.1.0
+## 3.2.0
 Add `test_certified_connector_has_allowed_hosts` and `test_certified_connector_has_suggested_streams` tests to the `connector_attribute` test suite
+
+## 3.1.0
+Add TestSpec.test_oauth_is_default_method test with OAuth is default option validation.
 
 ## 3.0.1
 Upgrade to Dagger 0.9.6

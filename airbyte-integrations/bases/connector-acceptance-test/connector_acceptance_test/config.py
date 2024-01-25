@@ -42,6 +42,17 @@ class BackwardCompatibilityTestsConfig(BaseConfig):
     )
 
 
+class OAuthTestConfig(BaseConfig):
+    oauth = Field(True, description="Allow source to have another default method that OAuth.")
+    bypass_reason: Optional[str] = Field(description="Reason why OAuth is not default method.")
+
+    @validator("oauth", always=True)
+    def validate_oauth(cls, oauth, values):
+        if oauth is False and not values.get("bypass_reason"):
+            raise ValueError("Please provide a bypass reason for Auth default method")
+        return oauth
+
+
 class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
     config_path: str = config_path
@@ -50,6 +61,7 @@ class SpecTestConfig(BaseConfig):
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
         description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
     )
+    auth_default_method: Optional[OAuthTestConfig] = Field(description="Auth default method details.")
 
 
 class ConnectionTestConfig(BaseConfig):
