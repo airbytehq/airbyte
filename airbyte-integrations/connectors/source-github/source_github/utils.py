@@ -5,7 +5,7 @@
 import time
 from dataclasses import dataclass
 from itertools import cycle
-from typing import List
+from typing import Any, List, Mapping
 
 import pendulum
 import requests
@@ -39,9 +39,11 @@ def read_full_refresh(stream_instance: Stream):
 
 @dataclass
 class Token:
-    count: int
+    count_rest: int
+    count_graphql: int
     update_at: pendulum.DateTime
-    reset_at: pendulum.DateTime
+    reset_at_rest: pendulum.DateTime
+    reset_at_graphql: pendulum.DateTime
 
 
 class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
@@ -58,14 +60,67 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         self._auth_method = auth_method
         self._auth_header = auth_header
         now = pendulum.now()
-        self._tokens = {t: Token(count=5000, update_at=now, reset_at=now) for t in tokens}
-        [self._check_token(t) for t in self._tokens]
+        self._tokens = {
+            t: Token(count_rest=5000, count_graphql=5000, update_at=now, reset_at_rest=now, reset_at_graphql=now) for t in tokens
+        }
+        self.check_all_tokens()
         self._tokens_iter = cycle(self._tokens)
         self._active_token = next(self._tokens_iter)
 
     @property
     def auth_header(self) -> str:
         return self._auth_header
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        """The header to set on outgoing HTTP requests"""
+        if self.auth_header:
+            return {self.auth_header: self.token}
+        return {}
+
+    def __call__(self, request):
+        """Attach the HTTP headers required to authenticate on the HTTP request"""
+        current_token = self._tokens[self.current_active_token]
+        while True:
+            if "graphql" in request.path_url:
+                if current_token.count_graphql > 0:
+                    current_token.count_graphql -= 1
+                    break
+                else:
+                    if all([x.count_graphql == 0 for x in self._tokens.values()]):
+                        min_time_to_wait_till_next_token_available = min(
+                            (x.reset_at_graphql - pendulum.now()).in_seconds() for x in self._tokens.values()
+                        )
+                        if min_time_to_wait_till_next_token_available < HttpStream.max_time:
+                            time.sleep(min_time_to_wait_till_next_token_available)
+                            self.check_all_tokens()
+                        else:
+                            raise AirbyteTracedException(
+                                failure_type=FailureType.config_error, message="rate limits for all token were reached"
+                            )
+                    else:
+                        self.update_token()
+            else:
+                if current_token.count_rest > 0:
+                    current_token.count_rest -= 1
+                    break
+                else:
+                    if all([x.count_rest == 0 for x in self._tokens.values()]):
+                        min_time_to_wait_till_next_token_available = min(
+                            (x.reset_at_rest - pendulum.now()).in_seconds() for x in self._tokens.values()
+                        )
+                        if min_time_to_wait_till_next_token_available < HttpStream.max_time:
+                            time.sleep(min_time_to_wait_till_next_token_available)
+                            self.check_all_tokens()
+                        else:
+                            raise AirbyteTracedException(
+                                failure_type=FailureType.config_error, message="rate limits for all token were reached"
+                            )
+                    else:
+                        self.update_token()
+
+        request.headers.update(self.get_auth_header())
+
+        return request
 
     @property
     def current_active_token(self) -> str:
@@ -76,35 +131,49 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
 
     @property
     def token(self) -> str:
-        while True:
-            token = self.current_active_token
-            if self._tokens[token].count > 0 and pendulum.now() - self._tokens[token].update_at <= self.DURATION:
-                self._tokens[token].count -= 1
-                return f"{self._auth_method} {token}"
-            # self._check_token(token)
-            self._active_token = next(self._tokens_iter)
 
-            if all([x.count == 0 for x in self._tokens.values()]):
-                min_time_to_wait_till_next_token_available = min((x.reset_at - pendulum.now()).in_seconds() for x in self._tokens.values())
-                if min_time_to_wait_till_next_token_available > HttpStream.max_time:
-                    time.sleep(min_time_to_wait_till_next_token_available)
-                    [self._check_token(t) for t in self._tokens]
-                else:
-                    raise AirbyteTracedException(failure_type=FailureType.config_error, message="rate limits for all token were reached")
+        token = self.current_active_token
+        return f"{self._auth_method} {token}"
 
-    def _check_token(self, token: str):
+    def _check_token_limits(self, token: str):
         """check that token is not limited"""
         headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
-        remaining_info = (
+        rate_limit_info = (
             requests.get(
                 "https://api.github.com/rate_limit", headers=headers, auth=TokenAuthenticator(token, auth_method=self._auth_method)
             )
             .json()
             .get("resources")
-            .get("core")
         )
-        remaining_calls, reset_at = remaining_info.get("remaining"), pendulum.from_timestamp(remaining_info.get("reset"))
         token_info = self._tokens[token]
-        token_info.reset_at = reset_at
         token_info.update_at = pendulum.now()
-        token_info.count = remaining_calls
+        remaining_info_core = rate_limit_info.get("core")
+        token_info.count_rest, token_info.reset_at_rest = remaining_info_core.get("remaining"), pendulum.from_timestamp(
+            remaining_info_core.get("reset")
+        )
+
+        remaining_info_graphql = rate_limit_info.get("graphql")
+        token_info.count_graphql, token_info.reset_at_graphql = remaining_info_graphql.get("remaining"), pendulum.from_timestamp(
+            remaining_info_graphql.get("reset")
+        )
+
+    def check_all_tokens(self):
+        for token in self._tokens:
+            self._check_token_limits(token)
+
+    def process_token(self, current_token, count_attr, reset_attr):
+        if getattr(current_token, count_attr) > 0:
+            setattr(current_token, count_attr, getattr(current_token, count_attr) - 1)
+            return True
+        elif all(getattr(x, count_attr) == 0 for x in self._tokens.values()):
+            min_time_to_wait = min((getattr(x, reset_attr) - pendulum.now()).in_seconds() for x in self._tokens.values())
+            if min_time_to_wait < HttpStream.max_time:
+                time.sleep(min_time_to_wait)
+                self.check_all_tokens()
+            else:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error, message=f"Rate limits for all tokens ({count_attr}) were reached"
+                )
+        else:
+            self.update_token()
+        return False
