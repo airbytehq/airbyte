@@ -1,5 +1,5 @@
 [versions]
-airbyte-protocol = "0.3.6"
+airbyte-protocol = "0.5.0"
 commons_io = "2.7"
 testcontainers = "1.19.0"
 datadog-version = "0.111.0"
@@ -50,6 +50,7 @@ testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.
 testcontainers-pulsar = { module = "org.testcontainers:pulsar", version.ref = "testcontainers" }
 testcontainers-scylla = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 testcontainers-tidb = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-tidb-source = { module = "org.testcontainers:tidb", version.ref = "testcontainers" }
 datadog-trace-api = { module = "com.datadoghq:dd-trace-api", version.ref = "datadog-version" }
 datadog-trace-ot = { module = "com.datadoghq:dd-trace-ot", version.ref = "datadog-version" }
 fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "fasterxml_version" }
@@ -160,4 +161,3 @@ temporal = ["temporal-sdk", "temporal-serviceclient"]
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }

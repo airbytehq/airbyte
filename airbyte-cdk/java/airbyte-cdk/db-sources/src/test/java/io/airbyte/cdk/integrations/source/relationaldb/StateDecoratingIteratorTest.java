@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -69,7 +70,8 @@ class StateDecoratingIteratorTest {
     return new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(ImmutableMap.of("cursor", recordValue))));
+            .withData(Jsons.jsonNode(ImmutableMap.of("cursor", recordValue)))
+            .withSourceStats(new AirbyteStateStats().withRecordCount(1.0)));
   }
 
   private Iterator<AirbyteMessage> createExceptionIterator() {

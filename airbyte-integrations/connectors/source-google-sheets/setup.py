@@ -33,4 +33,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        "console_scripts": [
+            "source-google-sheets=source_google_sheets.run:run",
+        ],
+    },
 )

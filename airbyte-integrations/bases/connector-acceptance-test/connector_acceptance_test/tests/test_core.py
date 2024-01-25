@@ -32,10 +32,12 @@ from connector_acceptance_test.config import (
     BasicReadTestConfig,
     Config,
     ConnectionTestConfig,
+    ConnectorAttributesConfig,
     DiscoveryTestConfig,
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
     IgnoredFieldsConfiguration,
+    NoPrimaryKeyConfiguration,
     SpecTestConfig,
 )
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
@@ -116,6 +118,12 @@ class TestSpec(BaseTest):
 
         if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
+        return False
+
+    @pytest.fixture(name="skip_oauth_default_method_test")
+    def skip_oauth_default_method_test_fixture(self, inputs: SpecTestConfig):
+        if inputs.auth_default_method and not inputs.auth_default_method.oauth:
+            pytest.skip(f"Skipping OAuth is default method test: {inputs.auth_default_method.bypass_reason}")
         return False
 
     def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
@@ -518,6 +526,29 @@ class TestSpec(BaseTest):
 
         diff = paths_to_validate - set(get_expected_schema_structure(spec_schema))
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
+
+    def test_oauth_is_default_method(self, skip_oauth_default_method_test: bool, actual_connector_spec: ConnectorSpecification):
+        """
+        OAuth is default check.
+        If credentials do have oneOf: we check that the OAuth is listed at first.
+        If there is no oneOf and Oauth: OAuth is only option to authenticate the source and no check is needed.
+        """
+        advanced_auth = actual_connector_spec.advanced_auth
+        if not advanced_auth:
+            pytest.skip("Source does not have OAuth method.")
+
+        spec_schema = actual_connector_spec.connectionSpecification
+        credentials = advanced_auth.predicate_key[0]
+        try:
+            one_of_default_method = dpath.util.get(spec_schema, f"/**/{credentials}/oneOf/0")
+        except KeyError as e:  # Key Error when oneOf is not in credentials object
+            pytest.skip("Credentials object does not have oneOf option.")
+
+        path_in_credentials = "/".join(advanced_auth.predicate_key[1:])
+        auth_method_predicate_const = dpath.util.get(one_of_default_method, f"/**/{path_in_credentials}/const")
+        assert (
+            auth_method_predicate_const == advanced_auth.predicate_value
+        ), f"Oauth method should be a default option. Current default method is {auth_method_predicate_const}."
 
     @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility
@@ -1141,3 +1172,35 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
+
+
+@pytest.mark.default_timeout(TEN_MINUTES)
+class TestConnectorAttributes(BaseTest):
+    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []  # Used so that this is not part of the mandatory high strictness test suite yet
+
+    @pytest.fixture(name="operational_certification_test")
+    async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
+        """
+        Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
+        against operational certification criteria
+        """
+
+        if connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
+            pytest.skip("Skipping operational connector certification test for uncertified connector")
+        return True
+
+    @pytest.fixture(name="streams_without_primary_key")
+    def streams_without_primary_key_fixture(self, inputs: ConnectorAttributesConfig) -> List[NoPrimaryKeyConfiguration]:
+        return inputs.streams_without_primary_key or []
+
+    async def test_streams_define_primary_key(
+        self, operational_certification_test, streams_without_primary_key, connector_config, docker_runner: ConnectorRunner
+    ):
+        output = await docker_runner.call_discover(config=connector_config)
+        catalog_messages = filter_output(output, Type.CATALOG)
+        streams = catalog_messages[0].catalog.streams
+        discovered_streams_without_primary_key = {stream.name for stream in streams if not stream.source_defined_primary_key}
+        missing_primary_keys = discovered_streams_without_primary_key - {stream.name for stream in streams_without_primary_key}
+
+        quoted_missing_primary_keys = {f"'{primary_key}'" for primary_key in missing_primary_keys}
+        assert not missing_primary_keys, f"The following streams {', '.join(quoted_missing_primary_keys)} do not define a primary_key"

@@ -1,8 +1,10 @@
+---
+products: cloud, oss-enterprise
+---
+
 # Manage your workspace
 
 A workspace in Airbyte allows you to collaborate with other users and manage connections together. On Airbyte Cloud it will allow you to share billing details for a workspace.
-
-<AppliesTo cloud selfManagedEnterprise />
 
 :::info
 Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and cannot be transferred between workspaces.

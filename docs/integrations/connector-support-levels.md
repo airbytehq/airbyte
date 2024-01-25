@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Connector Support Levels
 
 The following table describes the support levels of Airbyte connectors.

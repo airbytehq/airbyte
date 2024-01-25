@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mongodb.cdc;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
@@ -32,6 +33,7 @@ import java.util.Properties;
 import java.util.function.Supplier;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,9 +91,10 @@ public class MongoDbCdcInitializer {
     final String databaseName = config.getDatabaseName();
     final boolean isEnforceSchema = config.getEnforceSchema();
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
+    logOplogInfo(mongoClient);
+    final BsonDocument initialResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
     final JsonNode initialDebeziumState =
-        mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeToken, mongoClient, databaseName);
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, mongoClient, databaseName);
     final MongoDbCdcState cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null)
         ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
         : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
@@ -134,7 +137,7 @@ public class MongoDbCdcInitializer {
             emittedAt, config.getCheckpointInterval(), isEnforceSchema);
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
-        new MongoDbCdcTargetPosition(resumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
+        new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
 
@@ -153,6 +156,20 @@ public class MongoDbCdcInitializer {
         AutoCloseableIterators.concatWithEagerClose(initialSnapshotIterators), mongoClient::close);
 
     return List.of(initialSnapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null));
+  }
+
+  private void logOplogInfo(final MongoClient mongoClient) {
+    try {
+      final MongoDatabase localDatabase = mongoClient.getDatabase("local");
+      final Document command = new Document("collStats", "oplog.rs");
+      final Document result = localDatabase.runCommand(command);
+      if (result != null) {
+        LOGGER.info("Max oplog size is {} bytes", result.getLong("maxSize"));
+        LOGGER.info("Free space in oplog is {} bytes", result.getLong("freeStorageSize"));
+      }
+    } catch (final Exception e) {
+      LOGGER.warn("Unable to query for op log stats, exception: {}" + e.getMessage());
+    }
   }
 
 }

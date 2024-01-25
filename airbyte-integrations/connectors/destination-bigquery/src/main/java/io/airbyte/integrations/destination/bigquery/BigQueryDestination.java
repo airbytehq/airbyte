@@ -67,7 +67,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
@@ -87,7 +86,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       "storage.objects.delete",
       "storage.objects.get",
       "storage.objects.list");
-  private static final ConcurrentMap<AirbyteStreamNameNamespacePair, String> randomSuffixMap = new ConcurrentHashMap<>();
   protected final BigQuerySQLNameTransformer namingResolver;
 
   public BigQueryDestination() {
@@ -192,16 +190,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
-    if (!BigQueryUtils.isUsingJsonCredentials(config)) {
+    final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
+    // Follows this order of resolution:
+    // https://cloud.google.com/java/docs/reference/google-auth-library/latest/com.google.auth.oauth2.GoogleCredentials#com_google_auth_oauth2_GoogleCredentials_getApplicationDefault
+    if (serviceAccountKey == null) {
       LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
       LOGGER.info("Using the default service account credential from environment.");
       return GoogleCredentials.getApplicationDefault();
     }
 
     // The JSON credential can either be a raw JSON object, or a serialized JSON object.
-    final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
-        ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
-        : config.get(BigQueryConsts.CONFIG_CREDS).asText();
+    final String credentialsString = serviceAccountKey.isObject()
+        ? Jsons.serialize(serviceAccountKey)
+        : serviceAccountKey.asText();
     return GoogleCredentials.fromStream(
         new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
   }
@@ -238,15 +239,20 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
     final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
-    if (serviceAccountKey.isTextual()) {
-      // There are cases where we fail to deserialize the service account key. In these cases, we
-      // shouldn't do anything.
-      // Google's creds library is more lenient with JSON-parsing than Jackson, and I'd rather just let it
-      // go.
-      Jsons.tryDeserialize(serviceAccountKey.asText())
-          .ifPresent(AirbyteExceptionHandler::addAllStringsInConfigForDeinterpolation);
-    } else {
-      AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(serviceAccountKey);
+    if (serviceAccountKey != null) {
+      // If the service account key is a non-null string, we will try to
+      // deserialize it. Otherwise, we will let the Google library find it in
+      // the environment during the client initialization.
+      if (serviceAccountKey.isTextual()) {
+        // There are cases where we fail to deserialize the service account key. In these cases, we
+        // shouldn't do anything.
+        // Google's creds library is more lenient with JSON-parsing than Jackson, and I'd rather just let it
+        // go.
+        Jsons.tryDeserialize(serviceAccountKey.asText())
+            .ifPresent(AirbyteExceptionHandler::addAllStringsInConfigForDeinterpolation);
+      } else {
+        AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(serviceAccountKey);
+      }
     }
 
     if (uploadingMethod == UploadingMethod.STANDARD) {
@@ -294,10 +300,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         final AirbyteStream stream = configStream.getStream();
         final StreamConfig parsedStream;
 
-        randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
-
-        final String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
-        final String streamName = stream.getName();
         final String targetTableName;
 
         parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
@@ -310,7 +312,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             .parsedStream(parsedStream)
             .config(config)
             .formatterMap(getFormatterMap(stream.getJsonSchema()))
-            .tmpTableName(namingResolver.getTmpTableName(streamName, randomSuffix))
             .targetTableName(targetTableName)
             // This refers to whether this is BQ denormalized or not
             .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
@@ -454,6 +455,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         v2RawTableMigrator,
         8);
 
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
   }
 
   public static void main(final String[] args) throws Exception {

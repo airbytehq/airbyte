@@ -150,7 +150,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     final AirbyteStateType supportedStateType = getSupportedStateType(config);
     final StateManager stateManager =
         StateManagerFactory.createStateManager(supportedStateType,
-            StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType), catalog);
+            StateGeneratorUtils.deserializeInitialState(state, supportedStateType), catalog);
     final Instant emittedAt = Instant.now();
 
     final Database database = createDatabase(config);
@@ -689,7 +689,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return A {@link AirbyteStateType} representing the state supported by this connector.
    */
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    return AirbyteStateType.LEGACY;
+    return AirbyteStateType.STREAM;
   }
 
 }

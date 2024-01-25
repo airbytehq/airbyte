@@ -167,10 +167,13 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     return new Database(getDslContext());
   }
 
-  protected void execSQL(Stream<String> sql) {
+  protected void execSQL(final Stream<String> sql) {
     try {
       getDatabase().query(ctx -> {
-        sql.forEach(ctx::execute);
+        sql.forEach(statement -> {
+          LOGGER.debug("{}", statement);
+          ctx.execute(statement);
+        });
         return null;
       });
     } catch (SQLException e) {

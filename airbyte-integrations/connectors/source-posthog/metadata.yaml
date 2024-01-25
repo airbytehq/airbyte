@@ -29,7 +29,7 @@ data:
         message:
           The `event` field in the `events` stream has been corrected to the proper data type.
           To apply this change, refresh the schema for the `events` stream and reset your data. For more information [visit](https://docs.airbyte.com/integrations/sources/posthog-migrations)
-        upgradeDeadline: "2023-12-20"
+        upgradeDeadline: "2024-01-15"
   tags:
     - language:low-code
     - language:python

@@ -29,6 +29,9 @@
     "content": {
       "type": ["object", "null"]
     },
+    "object": {
+      "type": ["string", "null"]
+    },
     "webhooks": {
       "type": ["array", "null"],
       "items": {

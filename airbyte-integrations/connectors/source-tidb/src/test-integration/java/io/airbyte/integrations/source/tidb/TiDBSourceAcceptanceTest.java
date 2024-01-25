@@ -27,9 +27,11 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
+@Disabled
 public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";

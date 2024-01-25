@@ -36,7 +36,7 @@ setup(
     name="airbyte-cdk",
     # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
     # updated if our semver format changes such as using release candidate versions.
-    version="0.57.7",
+    version="0.59.1",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -71,7 +71,7 @@ setup(
         "isodate~=0.6.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
-        "pendulum",
+        "pendulum<3.0.0",
         "genson==1.2.2",
         "pydantic>=1.10.8,<2.0.0",
         "pyrate-limiter~=3.1.0",

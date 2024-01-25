@@ -3,10 +3,7 @@
 #
 
 import functools
-import os
-import re
-from pathlib import Path
-from typing import List, Set
+from typing import Set
 
 import git
 from dagger import Connection
@@ -85,4 +82,4 @@ def get_git_repo() -> git.Repo:
 @functools.cache
 def get_git_repo_path() -> str:
     """Retrieve the git repo path."""
-    return get_git_repo().working_tree_dir
+    return str(get_git_repo().working_tree_dir)

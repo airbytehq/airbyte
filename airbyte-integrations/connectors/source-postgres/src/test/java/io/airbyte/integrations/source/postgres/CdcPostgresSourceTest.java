@@ -37,8 +37,6 @@ import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresCdcTarget
 import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -82,9 +80,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   @Override
   protected PostgresSource source() {
-    final var source = new PostgresSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new PostgresSource();
   }
 
   @Override

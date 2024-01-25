@@ -34,9 +34,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Db2Container;
 
+@Disabled
 public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST";

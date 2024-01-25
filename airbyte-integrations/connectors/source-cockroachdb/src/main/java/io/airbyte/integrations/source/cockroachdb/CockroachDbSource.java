@@ -27,6 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -105,14 +106,15 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   @Override
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
-
+    final Map<String, String> connectionProperties = JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY);
     // Create the JDBC data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClass,
+        driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY));
+        connectionProperties,
+        getConnectionTimeout(connectionProperties, driverClassName));
     dataSources.add(dataSource);
 
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);

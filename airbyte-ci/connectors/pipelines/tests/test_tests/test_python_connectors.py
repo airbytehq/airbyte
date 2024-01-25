@@ -28,7 +28,7 @@ class TestUnitTests:
         pytest.skip("No certified connector with setup.py found.")
 
     @pytest.fixture
-    def context_for_certified_connector_with_setup(self, certified_connector_with_setup, dagger_client, current_platform):
+    def context_for_certified_connector_with_setup(self, mocker, certified_connector_with_setup, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test unit tests",
             connector=certified_connector_with_setup,
@@ -40,7 +40,7 @@ class TestUnitTests:
             targeted_platforms=[current_platform],
         )
         context.dagger_client = dagger_client
-        context.connector_secrets = {}
+        context.get_connector_secrets = mocker.AsyncMock(return_value={})
         return context
 
     @pytest.fixture
@@ -49,7 +49,7 @@ class TestUnitTests:
         return result.output_artifact[current_platform]
 
     @pytest.fixture
-    def context_for_connector_with_poetry(self, connector_with_poetry, dagger_client, current_platform):
+    def context_for_connector_with_poetry(self, mocker, connector_with_poetry, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test unit tests",
             connector=connector_with_poetry,
@@ -61,7 +61,7 @@ class TestUnitTests:
             targeted_platforms=[current_platform],
         )
         context.dagger_client = dagger_client
-        context.connector_secrets = {}
+        context.get_connector_secrets = mocker.AsyncMock(return_value={})
         return context
 
     @pytest.fixture
@@ -97,3 +97,11 @@ class TestUnitTests:
             context_for_connector_with_poetry.connector.technical_name in pip_freeze_output
         ), "The connector should be installed in the test environment."
         assert "pytest" in pip_freeze_output, "The pytest package should be installed in the test environment."
+
+    def test_params(self, context_for_certified_connector_with_setup):
+        step = UnitTests(context_for_certified_connector_with_setup)
+        assert step.params_as_cli_options == [
+            "-s",
+            f"--cov={context_for_certified_connector_with_setup.connector.technical_name.replace('-', '_')}",
+            f"--cov-fail-under={step.MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS}",
+        ]

@@ -17,6 +17,10 @@
     },
     "glanceViews": {
       "type": ["null", "integer"]
+    },
+    "queryEndDate": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }
