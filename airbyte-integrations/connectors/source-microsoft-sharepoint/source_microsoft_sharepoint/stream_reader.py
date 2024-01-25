@@ -16,9 +16,7 @@ from msal.exceptions import MsalServiceError
 from office365.graph_client import GraphClient
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
-
-class MicrosoftSharePointRemoteFile(RemoteFile):
-    download_url: str
+from .utils import MicrosoftSharePointRemoteFile, execute_query_with_retry
 
 
 class SourceMicrosoftSharePointClient:
@@ -97,7 +95,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
     def list_directories_and_files(self, root_folder, path=None):
         """Enumerates folders and files starting from a root folder."""
-        drive_items = root_folder.children.get().execute_query()
+        drive_items = execute_query_with_retry(root_folder.children.get())
         found_items = []
         for item in drive_items:
             item_path = path + "/" + item.name if path else item.name
@@ -115,20 +113,22 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         for drive in drives:
             is_sharepoint = drive.drive_type == "documentLibrary"
             if is_sharepoint:
-                folder = drive.root if folder_path in self.ROOT_PATH else drive.root.get_by_path(folder_path).get().execute_query()
+                folder = (
+                    drive.root if folder_path in self.ROOT_PATH else execute_query_with_retry(drive.root.get_by_path(folder_path).get())
+                )
                 yield from self.list_directories_and_files(folder)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Retrieve all files matching the specified glob patterns in SharePoint.
         """
-        drives = self.one_drive_client.drives.get().execute_query()
+        drives = execute_query_with_retry(self.one_drive_client.drives.get())
 
         if self.config.credentials.auth_type == "Client":
-            my_drive = self.one_drive_client.me.drive.get().execute_query()
+            my_drive = execute_query_with_retry(self.one_drive_client.me.drive.get())
         else:
-            my_drive = (
-                self.one_drive_client.users.get_by_principal_name(self.config.credentials.user_principal_name).drive.get().execute_query()
+            my_drive = execute_query_with_retry(
+                self.one_drive_client.users.get_by_principal_name(self.config.credentials.user_principal_name).drive.get()
             )
 
         drives.add_child(my_drive)
