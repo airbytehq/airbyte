@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 3.5.2
+  dockerImageTag: 3.5.3
   dockerRepository: airbyte/destination-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   githubIssueLabel: destination-snowflake
@@ -14,12 +14,8 @@ data:
   name: Snowflake
   registries:
     cloud:
-      # 3.5.2 is broken; pinning back to the last known-good version
-      dockerImageTag: 3.4.22
       enabled: true
     oss:
-      # 3.5.2 is broken; pinning back to the last known-good version
-      dockerImageTag: 3.4.22
       enabled: true
   releaseStage: generally_available
   releases:
