@@ -694,7 +694,7 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
             docker_runner=docker_runner_mock,
             ignored_fields=ignored_fields,
             detailed_logger=MagicMock(),
-            file_based_connector=False,
+            certified_file_based_connector=False,
         )
 
 
@@ -749,7 +749,7 @@ async def test_fail_on_extra_columns(
                 docker_runner=docker_runner_mock,
                 ignored_fields=None,
                 detailed_logger=MagicMock(),
-                file_based_connector=False,
+                certified_file_based_connector=False,
             )
     else:
         t.test_read(
@@ -764,7 +764,7 @@ async def test_fail_on_extra_columns(
             docker_runner=docker_runner_mock,
             ignored_fields=None,
             detailed_logger=MagicMock(),
-            file_based_connector=False,
+            certified_file_based_connector=False,
         )
 
 
