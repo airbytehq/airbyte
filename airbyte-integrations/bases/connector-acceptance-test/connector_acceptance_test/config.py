@@ -47,7 +47,7 @@ class OAuthTestConfig(BaseConfig):
     bypass_reason: Optional[str] = Field(description="Reason why OAuth is not default method.")
 
     @validator("oauth", always=True)
-    def validate_exact_order(cls, oauth, values):
+    def validate_oauth(cls, oauth, values):
         if oauth is False and not values.get("bypass_reason"):
             raise ValueError("Please provide a bypass reason for Auth default method")
         return oauth
