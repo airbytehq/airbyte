@@ -23,6 +23,6 @@ public interface DestinationHandler<DialectTableDefinition> {
 
   record InitialRawTableState(boolean hasUnprocessedRecords, Optional<Instant> maxProcessedTimestamp) {}
 
-  void execute(final String sql) throws Exception;
+  void execute(final Sql sql) throws Exception;
 
 }

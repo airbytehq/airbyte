@@ -4,7 +4,10 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.CONNECTION_OPTIONS_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
@@ -63,6 +66,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends AbstractPostg
         .with("schema", "public")
         .withoutSsl()
         .build();
+    ((ObjectNode) config).putObject(CONNECTION_OPTIONS_KEY);
     return SshTunnel.sshWrap(
         config,
         JdbcUtils.HOST_LIST_KEY,

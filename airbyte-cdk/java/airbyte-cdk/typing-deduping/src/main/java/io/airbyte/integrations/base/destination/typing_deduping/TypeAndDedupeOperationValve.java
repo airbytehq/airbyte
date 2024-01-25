@@ -4,16 +4,21 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A slightly more complicated way to keep track of when to perform type and dedupe operations per
  * stream
  */
 public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStreamNameNamespacePair, Long> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TypeAndDedupeOperationValve.class);
 
   private static final long NEGATIVE_MILLIS = -1;
   private static final long SIX_HOURS_MILLIS = 1000 * 60 * 60 * 6;
@@ -79,6 +84,10 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
    *         deduping.
    */
   public boolean readyToTypeAndDedupe(final AirbyteStreamNameNamespacePair key) {
+    if (!DestinationConfig.getInstance().getBooleanValue("enable_incremental_final_table_updates")) {
+      LOGGER.info("Skipping Incremental Typing and Deduping");
+      return false;
+    }
     if (!containsKey(key)) {
       return false;
     }

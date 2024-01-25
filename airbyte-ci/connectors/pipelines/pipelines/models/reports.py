@@ -14,7 +14,7 @@ from typing import List
 
 import anyio
 from anyio import Path
-from connector_ops.utils import console
+from connector_ops.utils import console  # type: ignore
 from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT
 from pipelines.dagger.actions import remote_storage
 from pipelines.helpers.utils import format_duration
@@ -26,57 +26,62 @@ from rich.table import Table
 from rich.text import Text
 
 if typing.TYPE_CHECKING:
-    from pipelines.models.steps import PipelineContext
+    from pipelines.models.contexts.pipeline_context import PipelineContext
+    from rich.tree import RenderableType
 
 
 @dataclass(frozen=True)
 class Report:
     """A dataclass to build reports to share pipelines executions results with the user."""
 
-    pipeline_context: "PipelineContext"
+    pipeline_context: PipelineContext
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
     name: str = "REPORT"
     filename: str = "output"
 
     @property
-    def report_output_prefix(self) -> str:  # noqa D102
+    def report_output_prefix(self) -> str:
         return self.pipeline_context.report_output_prefix
 
     @property
-    def json_report_file_name(self) -> str:  # noqa D102
+    def json_report_file_name(self) -> str:
         return self.filename + ".json"
 
     @property
-    def json_report_remote_storage_key(self) -> str:  # noqa D102
+    def json_report_remote_storage_key(self) -> str:
         return f"{self.report_output_prefix}/{self.json_report_file_name}"
 
     @property
-    def failed_steps(self) -> List[StepResult]:  # noqa D102
+    def failed_steps(self) -> List[StepResult]:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.FAILURE]
 
     @property
-    def successful_steps(self) -> List[StepResult]:  # noqa D102
+    def successful_steps(self) -> List[StepResult]:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.SUCCESS]
 
     @property
-    def skipped_steps(self) -> List[StepResult]:  # noqa D102
+    def skipped_steps(self) -> List[StepResult]:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.SKIPPED]
 
     @property
-    def success(self) -> bool:  # noqa D102
+    def success(self) -> bool:
         return len(self.failed_steps) == 0 and (len(self.skipped_steps) > 0 or len(self.successful_steps) > 0)
 
     @property
-    def run_duration(self) -> timedelta:  # noqa D102
+    def run_duration(self) -> timedelta:
+        assert self.pipeline_context.started_at is not None, "The pipeline started_at timestamp must be set to save reports."
+        assert self.pipeline_context.stopped_at is not None, "The pipeline stopped_at timestamp must be set to save reports."
         return self.pipeline_context.stopped_at - self.pipeline_context.started_at
 
     @property
-    def lead_duration(self) -> timedelta:  # noqa D102
+    def lead_duration(self) -> timedelta:
+        assert self.pipeline_context.started_at is not None, "The pipeline started_at timestamp must be set to save reports."
+        assert self.pipeline_context.stopped_at is not None, "The pipeline stopped_at timestamp must be set to save reports."
         return self.pipeline_context.stopped_at - self.pipeline_context.created_at
 
     @property
-    def remote_storage_enabled(self) -> bool:  # noqa D102
+    def remote_storage_enabled(self) -> bool:
         return self.pipeline_context.is_ci
 
     async def save_local(self, filename: str, content: str) -> Path:
@@ -86,7 +91,9 @@ class Report:
         await local_path.write_text(content)
         return local_path
 
-    async def save_remote(self, local_path: Path, remote_key: str, content_type: str = None) -> int:
+    async def save_remote(self, local_path: Path, remote_key: str, content_type: str) -> int:
+        assert self.pipeline_context.ci_report_bucket is not None, "The ci_report_bucket must be set to save reports."
+
         gcs_cp_flags = None if content_type is None else [f"--content-type={content_type}"]
         local_file = self.pipeline_context.dagger_client.host().directory(".", include=[str(local_path)]).file(str(local_path))
         report_upload_exit_code, _, _ = await remote_storage.upload_to_gcs(
@@ -107,6 +114,7 @@ class Report:
 
     async def save(self) -> None:
         """Save the report files."""
+
         local_json_path = await self.save_local(self.json_report_file_name, self.to_json())
         absolute_path = await local_json_path.absolute()
         self.pipeline_context.logger.info(f"Report saved locally at {absolute_path}")
@@ -119,15 +127,18 @@ class Report:
         Returns:
             str: The JSON representation of the report.
         """
+        assert self.pipeline_context.pipeline_start_timestamp is not None, "The pipeline start timestamp must be set to save reports."
+        assert self.pipeline_context.started_at is not None, "The pipeline started_at timestamp must be set to save reports."
+        assert self.pipeline_context.stopped_at is not None, "The pipeline stopped_at timestamp must be set to save reports."
         return json.dumps(
             {
                 "pipeline_name": self.pipeline_context.pipeline_name,
                 "run_timestamp": self.pipeline_context.started_at.isoformat(),
                 "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
-                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
-                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
-                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],
+                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],  # type: ignore
+                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],  # type: ignore
+                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],  # type: ignore
                 "gha_workflow_run_url": self.pipeline_context.gha_workflow_run_url,
                 "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
                 "pipeline_end_timestamp": round(self.pipeline_context.stopped_at.timestamp()),
@@ -140,7 +151,7 @@ class Report:
             }
         )
 
-    def print(self):
+    def print(self) -> None:
         """Print the test report to the console in a nice way."""
         pipeline_name = self.pipeline_context.pipeline_name
         main_panel_title = Text(f"{pipeline_name.upper()} - {self.name}")
@@ -160,14 +171,15 @@ class Report:
             if step_result.status is StepStatus.SKIPPED:
                 step_results_table.add_row(step, result, "N/A")
             else:
+                assert step_result.step.started_at is not None, "The step started_at timestamp must be set to print reports."
                 run_time = format_duration((step_result.created_at - step_result.step.started_at))
                 step_results_table.add_row(step, result, run_time)
 
-        to_render = [step_results_table]
+        to_render: List[RenderableType] = [step_results_table]
         if self.failed_steps:
             sub_panels = []
             for failed_step in self.failed_steps:
-                errors = Text(failed_step.stderr)
+                errors = Text(failed_step.stderr) if failed_step.stderr else Text("")
                 panel_title = Text(f"{pipeline_name} {failed_step.step.title.lower()} failures")
                 panel_title.stylize(Style(color="red", bold=True))
                 sub_panel = Panel(errors, title=panel_title)

@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -94,7 +93,7 @@ def test_simple_retriever_full(mock_http_stream):
 
     assert retriever._last_response is None
     assert retriever._records_from_last_response == []
-    assert retriever._parse_response(response, stream_state={}) == records
+    assert retriever._parse_response(response, stream_state={}, records_schema={}) == records
     assert retriever._last_response == response
     assert retriever._records_from_last_response == records
 
@@ -170,7 +169,7 @@ def test_simple_retriever_with_request_response_log_last_records(mock_http_strea
 
     assert retriever._last_response is None
     assert retriever._records_from_last_response == []
-    assert retriever._parse_response(response, stream_state={}) == request_response_logs
+    assert retriever._parse_response(response, stream_state={}, records_schema={}) == request_response_logs
     assert retriever._last_response == response
     assert retriever._records_from_last_response == request_response_logs
 
@@ -396,13 +395,16 @@ def test_when_read_records_then_cursor_close_slice_with_greater_record(test_name
     )
     stream_slice = {"repository": "airbyte"}
 
+    def retriever_read_pages(_, __, ___):
+        return retriever._parse_records(response=MagicMock(), stream_state={}, stream_slice=stream_slice, records_schema={})
+
     with patch.object(
         SimpleRetriever,
         "_read_pages",
         return_value=iter([first_record, second_record]),
-        side_effect=lambda _, __, ___: retriever._parse_records(response=MagicMock(), stream_state=None, stream_slice=stream_slice),
+        side_effect=retriever_read_pages,
     ):
-        list(retriever.read_records(stream_slice=stream_slice))
+        list(retriever.read_records(stream_slice=stream_slice, records_schema={}))
         cursor.close_slice.assert_called_once_with(stream_slice, first_record if first_greater_than_second else second_record)
 
 
@@ -425,13 +427,16 @@ def test_given_stream_data_is_not_record_when_read_records_then_update_slice_wit
     )
     stream_slice = {"repository": "airbyte"}
 
+    def retriever_read_pages(_, __, ___):
+        return retriever._parse_records(response=MagicMock(), stream_state={}, stream_slice=stream_slice, records_schema={})
+
     with patch.object(
         SimpleRetriever,
         "_read_pages",
         return_value=iter(stream_data),
-        side_effect=lambda _, __, ___: retriever._parse_records(response=MagicMock(), stream_state=None, stream_slice=stream_slice),
+        side_effect=retriever_read_pages,
     ):
-        list(retriever.read_records(stream_slice=stream_slice))
+        list(retriever.read_records(stream_slice=stream_slice, records_schema={}))
         cursor.close_slice.assert_called_once_with(stream_slice, None)
 
 
@@ -440,7 +445,7 @@ def _generate_slices(number_of_slices):
 
 
 @patch.object(SimpleRetriever, "_read_pages", return_value=iter([]))
-def test_given_state_selector_when_read_records_use_stream_state(http_stream_read_pages):
+def test_given_state_selector_when_read_records_use_stream_state(http_stream_read_pages, mocker):
     requester = MagicMock()
     paginator = MagicMock()
     record_selector = MagicMock()
@@ -459,9 +464,10 @@ def test_given_state_selector_when_read_records_use_stream_state(http_stream_rea
         parameters={},
         config={},
     )
-    list(retriever.read_records(stream_slice=A_STREAM_SLICE))
 
-    http_stream_read_pages.assert_called_once_with(retriever._parse_records, A_STREAM_STATE, A_STREAM_SLICE)
+    list(retriever.read_records(stream_slice=A_STREAM_SLICE, records_schema={}))
+
+    http_stream_read_pages.assert_called_once_with(mocker.ANY, A_STREAM_STATE, A_STREAM_SLICE)
 
 
 def test_emit_log_request_response_messages(mocker):

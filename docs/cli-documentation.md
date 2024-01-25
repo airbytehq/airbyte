@@ -1,3 +1,7 @@
+---
+products: oss-community
+---
+
 # CLI documentation
 
 :::caution

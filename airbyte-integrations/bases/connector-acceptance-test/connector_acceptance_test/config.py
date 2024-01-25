@@ -124,6 +124,11 @@ ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field
 )
 
 
+class NoPrimaryKeyConfiguration(BaseConfig):
+    name: str
+    bypass_reason: Optional[str] = Field(default=None, description="Reason why this stream does not support a primary key")
+
+
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     deployment_mode: Optional[str] = deployment_mode
@@ -177,6 +182,23 @@ class IncrementalConfig(BaseConfig):
         smart_union = True
 
 
+class ConnectorAttributesConfig(BaseConfig):
+    """
+    Config that is used to verify that a connector and its streams uphold certain behavior and features that are
+    required to maintain enterprise-level standard of quality.
+
+    Attributes:
+        streams_without_primary_key: A list of streams where a primary key is not available from the API or is not relevant to the record
+    """
+
+    timeout_seconds: int = timeout_seconds
+    config_path: str = config_path
+
+    streams_without_primary_key: Optional[List[NoPrimaryKeyConfiguration]] = Field(
+        description="Streams that do not support a primary key such as reports streams"
+    )
+
+
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
     bypass_reason: Optional[str]
     tests: Optional[List[TestConfigT]]
@@ -195,6 +217,7 @@ class AcceptanceTestConfigurations(BaseConfig):
     basic_read: Optional[GenericTestConfig[BasicReadTestConfig]]
     full_refresh: Optional[GenericTestConfig[FullRefreshConfig]]
     incremental: Optional[GenericTestConfig[IncrementalConfig]]
+    connector_attributes: Optional[GenericTestConfig[ConnectorAttributesConfig]]
 
 
 class Config(BaseConfig):

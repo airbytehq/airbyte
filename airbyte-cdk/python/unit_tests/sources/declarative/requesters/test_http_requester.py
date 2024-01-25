@@ -61,7 +61,7 @@ def http_requester_factory():
 
 
 def test_http_requester():
-    http_method = "GET"
+    http_method = HttpMethod.GET
 
     request_options_provider = MagicMock()
     request_params = {"param": "value"}
@@ -106,7 +106,7 @@ def test_http_requester():
     assert requester.get_url_base() == "https://airbyte.io/"
     assert requester.get_path(stream_state={}, stream_slice=stream_slice, next_page_token={}) == "v1/1234"
     assert requester.get_authenticator() == authenticator
-    assert requester.get_method() == HttpMethod.GET
+    assert requester.get_method() == http_method
     assert requester.get_request_params(stream_state={}, stream_slice=None, next_page_token=None) == request_params
     assert requester.get_request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
     assert requester.get_request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json

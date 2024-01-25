@@ -10,6 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2", "pytest-mock~=3.6.1"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-typeform=source_typeform.run:run",
+        ],
+    },
     name="source_typeform",
     description="Source implementation for Typeform.",
     author="Airbyte",

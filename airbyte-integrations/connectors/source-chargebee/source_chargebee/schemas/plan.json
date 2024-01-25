@@ -154,6 +154,15 @@
       "type": ["string", "null"],
       "maxLength": 2000
     },
+    "channel": {
+      "type": ["string", "null"]
+    },
+    "charge_model": {
+      "type": ["string", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
     "taxable": {
       "type": ["boolean", "null"]
     },

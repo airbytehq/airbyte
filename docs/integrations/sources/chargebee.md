@@ -34,30 +34,34 @@ The Chargebee source connector supports the following [sync modes](https://docs.
 
 Most streams are supported regardless of your Chargebee site's [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html), with a few version-specific exceptions.
 
-| Stream                 | Product Catalog 1.0 | Product Catalog 2.0 |
-|------------------------|---------------------|---------------------|
-| [Addons](https://apidocs.chargebee.com/docs/api/addons?prod_cat_ver=1) | ✔ |   |
-| [Attached Items](https://apidocs.chargebee.com/docs/api/attached_items?prod_cat_ver=2) |   | ✔ |
-| [Contacts](https://apidocs.chargebee.com/docs/api/customers?lang=curl#list_of_contacts_for_a_customer) | ✔ | ✔ |
-| [Coupons](https://apidocs.chargebee.com/docs/api/coupons) | ✔ | ✔ |
-| [Credit Notes](https://apidocs.chargebee.com/docs/api/credit_notes) | ✔ | ✔ |
-| [Customers](https://apidocs.chargebee.com/docs/api/customers) | ✔ | ✔ |
-| [Events](https://apidocs.chargebee.com/docs/api/events) | ✔ | ✔ |
-| [Gifts](https://apidocs.chargebee.com/docs/api/gifts) | ✔ | ✔ |
-| [Hosted Pages](https://apidocs.chargebee.com/docs/api/hosted_pages) | ✔ | ✔ |
-| [Invoices](https://apidocs.chargebee.com/docs/api/invoices) | ✔ | ✔ |
-| [Items](https://apidocs.chargebee.com/docs/api/items?prod_cat_ver=2) |   | ✔ |
-| [Item Prices](https://apidocs.chargebee.com/docs/api/item_prices?prod_cat_ver=2) |   | ✔ |
-| [Orders](https://apidocs.chargebee.com/docs/api/orders) | ✔ | ✔ |
-| [Payment Sources](https://apidocs.chargebee.com/docs/api/payment_sources) | ✔ | ✔ |
-| [Plans](https://apidocs.chargebee.com/docs/api/plans?prod_cat_ver=1) | ✔ |   |
-| [Promotional Credits](https://apidocs.chargebee.com/docs/api/promotional_credits) | ✔ | ✔ |
-| [Quotes](https://apidocs.chargebee.com/docs/api/quotes) | ✔ | ✔ |
-| [Quote Line Groups](https://apidocs.chargebee.com/docs/api/quote_line_groups) | ✔ | ✔ |
-| [Subscriptions](https://apidocs.chargebee.com/docs/api/subscriptions) | ✔ | ✔ |
-| [Transactions](https://apidocs.chargebee.com/docs/api/transactions) | ✔ | ✔ |
-| [Unbilled Charges](https://apidocs.chargebee.com/docs/api/unbilled_charges) | ✔ | ✔ |
-| [Virtual Bank Accounts](https://apidocs.chargebee.com/docs/api/virtual_bank_accounts) | ✔ | ✔ |
+| Stream                                                                                                 | Product Catalog 1.0 | Product Catalog 2.0 |
+| ------------------------------------------------------------------------------------------------------ | ------------------- | ------------------- |
+| [Addons](https://apidocs.chargebee.com/docs/api/addons?prod_cat_ver=1)                                 | ✔                   |                     |
+| [Attached Items](https://apidocs.chargebee.com/docs/api/attached_items?prod_cat_ver=2)                 |                     | ✔                   |
+| [Comments](https://apidocs.chargebee.com/docs/api/comments?prod_cat_ver=2)                             | ✔                   | ✔                   |
+| [Contacts](https://apidocs.chargebee.com/docs/api/customers?lang=curl#list_of_contacts_for_a_customer) | ✔                   | ✔                   |
+| [Coupons](https://apidocs.chargebee.com/docs/api/coupons)                                              | ✔                   | ✔                   |
+| [Credit Notes](https://apidocs.chargebee.com/docs/api/credit_notes)                                    | ✔                   | ✔                   |
+| [Customers](https://apidocs.chargebee.com/docs/api/customers)                                          | ✔                   | ✔                   |
+| [Differential Prices](https://apidocs.chargebee.com/docs/api/differential_prices)                      | ✔                   | ✔                   |
+| [Events](https://apidocs.chargebee.com/docs/api/events)                                                | ✔                   | ✔                   |
+| [Gifts](https://apidocs.chargebee.com/docs/api/gifts)                                                  | ✔                   | ✔                   |
+| [Hosted Pages](https://apidocs.chargebee.com/docs/api/hosted_pages)                                    | ✔                   | ✔                   |
+| [Invoices](https://apidocs.chargebee.com/docs/api/invoices)                                            | ✔                   | ✔                   |
+| [Items](https://apidocs.chargebee.com/docs/api/items?prod_cat_ver=2)                                   |                     | ✔                   |
+| [Item Prices](https://apidocs.chargebee.com/docs/api/item_prices?prod_cat_ver=2)                       |                     | ✔                   |
+| [Item Families](https://apidocs.chargebee.com/docs/api/item_families?prod_cat_ver=2)                   |                     | ✔                   |
+| [Orders](https://apidocs.chargebee.com/docs/api/orders)                                                | ✔                   | ✔                   |
+| [Payment Sources](https://apidocs.chargebee.com/docs/api/payment_sources)                              | ✔                   | ✔                   |
+| [Plans](https://apidocs.chargebee.com/docs/api/plans?prod_cat_ver=1)                                   | ✔                   |                     |
+| [Promotional Credits](https://apidocs.chargebee.com/docs/api/promotional_credits)                      | ✔                   | ✔                   |
+| [Quotes](https://apidocs.chargebee.com/docs/api/quotes)                                                | ✔                   | ✔                   |
+| [Quote Line Groups](https://apidocs.chargebee.com/docs/api/quote_line_groups)                          | ✔                   | ✔                   |
+| [Site Migration Details](https://apidocs.chargebee.com/docs/api/site_migration_details)                | ✔                   | ✔                   |
+| [Subscriptions](https://apidocs.chargebee.com/docs/api/subscriptions)                                  | ✔                   | ✔                   |
+| [Transactions](https://apidocs.chargebee.com/docs/api/transactions)                                    | ✔                   | ✔                   |
+| [Unbilled Charges](https://apidocs.chargebee.com/docs/api/unbilled_charges)                            | ✔                   | ✔                   |
+| [Virtual Bank Accounts](https://apidocs.chargebee.com/docs/api/virtual_bank_accounts)                  | ✔                   | ✔                   |
 
 :::note
 When using incremental sync mode, the `Attached Items` stream behaves differently than the other streams. Whereas other incremental streams read and output _only new_ records, the `Attached Items` stream reads _all_ records but only outputs _new_ records, making it more demanding on your Chargebee API quota. Each sync incurs API calls equal to the total number of attached items in your Chargebee instance divided by 100, regardless of the actual number of `Attached Items` changed or synced.
@@ -70,9 +74,11 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
-| 0.2.5 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.4   | 2023-08-01 | [28905](https://github.com/airbytehq/airbyte/pull/28905) | Updated the connector to use latest CDK version                                                               |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 0.3.0   | 2023-12-26 | [33696](https://github.com/airbytehq/airbyte/pull/33696) | Add new stream, add fields to existing streams                                                                           |
+| 0.2.6   | 2023-12-19 | [32100](https://github.com/airbytehq/airbyte/pull/32100) | Add new fields in streams                                                                           |
+| 0.2.5   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                     |
+| 0.2.4   | 2023-08-01 | [28905](https://github.com/airbytehq/airbyte/pull/28905) | Updated the connector to use latest CDK version                                                     |
 | 0.2.3   | 2023-03-22 | [24370](https://github.com/airbytehq/airbyte/pull/24370) | Ignore 404 errors for `Contact` stream                                                              |
 | 0.2.2   | 2023-02-17 | [21688](https://github.com/airbytehq/airbyte/pull/21688) | Migrate to CDK beta 0.29; fix schemas                                                               |
 | 0.2.1   | 2023-02-17 | [23207](https://github.com/airbytehq/airbyte/pull/23207) | Edited stream schemas to get rid of unnecessary `enum`                                              |

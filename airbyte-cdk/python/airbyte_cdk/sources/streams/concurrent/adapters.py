@@ -8,7 +8,7 @@ import logging
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream, Level, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
@@ -174,7 +174,18 @@ class StreamFacade(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._read_records()
+        try:
+            yield from self._read_records()
+        except Exception as exc:
+            if hasattr(self._cursor, "state"):
+                state = self._cursor.state
+            else:
+                # This shouldn't happen if the ConcurrentCursor was used
+                state = "unknown; no state attribute was available on the cursor"
+            yield AirbyteMessage(
+                type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=f"Cursor State at time of exception: {state}")
+            )
+            raise exc
 
     def _read_records(self) -> Iterable[StreamData]:
         for partition in self._abstract_stream.generate_partitions():

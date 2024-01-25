@@ -280,6 +280,16 @@ This test verifies that sync produces no records when run with the STATE with ab
 | `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                  |     |
 | `bypass_reason`           | string | None                                        | Explain why this test is bypassed                                  |     |
 
+## Test Connector Attributes
+
+Verifies that certain properties of the connector and its streams guarantee a higher level of usability standards for certified connectors.
+Some examples of the types of tests covered are verification that streams define primary keys, correct OAuth spec configuration, or a connector emits the correct stream status during a read.
+
+| Input                                     | Type             | Default               | Note                                                                   |
+|:------------------------------------------|:-----------------|:----------------------|:-----------------------------------------------------------------------|
+| `config_path`                             | string           | `secrets/config.json` | Path to a JSON object representing a valid connector configuration     |
+| `streams_without_primary_key`             | array of objects | None                  | List of streams that do not support a primary key like reports streams |
+
 ## Strictness level
 
 To enforce maximal coverage of acceptances tests we expose a `test_strictness_level` field at the root of the `acceptance-test-config.yml` configuration.

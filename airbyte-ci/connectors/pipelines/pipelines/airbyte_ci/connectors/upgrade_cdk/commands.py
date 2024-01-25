@@ -3,14 +3,14 @@
 #
 
 import asyncclick as click
-import requests
+import requests  # type: ignore
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.upgrade_cdk.pipeline import run_connector_cdk_upgrade_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
-def latest_cdk_version():
+def latest_cdk_version() -> str:
     """
     Get the latest version of airbyte-cdk from pypi
     """

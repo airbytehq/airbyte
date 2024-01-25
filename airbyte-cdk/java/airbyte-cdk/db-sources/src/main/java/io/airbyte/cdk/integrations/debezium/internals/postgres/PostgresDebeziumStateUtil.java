@@ -135,13 +135,6 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
       if (pgConnection.haveMinimumServerVersion(140000)) {
         streamBuilder = streamBuilder.withSlotOption("messages", true);
       }
-    } else if (plugin.equalsIgnoreCase("wal2json")) {
-      streamBuilder = streamBuilder
-          .withSlotOption("pretty-print", 1)
-          .withSlotOption("write-in-chunks", 1)
-          .withSlotOption("include-xids", 1)
-          .withSlotOption("include-timestamp", 1)
-          .withSlotOption("include-not-null", "true");
     } else {
       throw new RuntimeException("Unknown plugin value : " + plugin);
     }

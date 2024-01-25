@@ -15,6 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-freshdesk=source_freshdesk.run:run",
+        ],
+    },
     name="source_freshdesk",
     description="Source implementation for Freshdesk.",
     author="Airbyte",
