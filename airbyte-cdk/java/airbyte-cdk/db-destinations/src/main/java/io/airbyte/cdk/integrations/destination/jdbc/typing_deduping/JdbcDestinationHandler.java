@@ -69,6 +69,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   @Override
   public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
+
     final ResultSet tables = jdbcDatabase.getMetaData().getTables(
         databaseName,
         id.rawNamespace(),
