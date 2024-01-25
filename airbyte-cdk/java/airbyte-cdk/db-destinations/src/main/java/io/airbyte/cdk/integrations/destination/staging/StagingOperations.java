@@ -15,6 +15,10 @@ import org.joda.time.DateTime;
  * Staging operations focuses on the SQL queries that are needed to success move data into a staging
  * environment like GCS or S3. In general, the reference of staging is the usage of an object
  * storage for the purposes of efficiently uploading bulk data to destinations
+ *
+ * TODO: This interface is shared between Snowflake and Redshift connectors where the staging
+ * mechanism is different wire protocol. Make the interface more Generic and have sub interfaces to
+ * support BlobStorageOperations or Jdbc based staging operations.
  */
 public interface StagingOperations extends SqlOperations {
 
@@ -26,9 +30,18 @@ public interface StagingOperations extends SqlOperations {
   String getStagingPath(UUID connectionId, String namespace, String streamName, String outputTableName, DateTime writeDatetime);
 
   /**
+   * Returns the staging environment's name
+   *
+   * @param namespace Name of schema
+   * @param streamName Name of the stream
+   * @return Fully qualified name of the staging environment
+   */
+  String getStageName(String namespace, String streamName);
+
+  /**
    * Create a staging folder where to upload temporary files before loading into the final destination
    */
-  void createStageIfNotExists() throws Exception;
+  void createStageIfNotExists(JdbcDatabase database, String stageName) throws Exception;
 
   /**
    * Upload the data file into the stage area.
@@ -39,7 +52,7 @@ public interface StagingOperations extends SqlOperations {
    * @param stagingPath path of staging folder to data files
    * @return the name of the file that was uploaded.
    */
-  String uploadRecordsToStage(JdbcDatabase database, SerializableBuffer recordsData, String schemaName, String stagingPath)
+  String uploadRecordsToStage(JdbcDatabase database, SerializableBuffer recordsData, String schemaName, String stageName, String stagingPath)
       throws Exception;
 
   /**
@@ -52,6 +65,7 @@ public interface StagingOperations extends SqlOperations {
    * @param schemaName name of schema
    */
   void copyIntoTableFromStage(JdbcDatabase database,
+                              String stageName,
                               String stagingPath,
                               List<String> stagedFiles,
                               String tableName,
@@ -64,6 +78,6 @@ public interface StagingOperations extends SqlOperations {
    * @param database database used for syncing
    * @param stageName Name of the staging area used to store files
    */
-  void dropStageIfExists(JdbcDatabase database, String stageName) throws Exception;
+  void dropStageIfExists(JdbcDatabase database, String stageName, String stagingPath) throws Exception;
 
 }
