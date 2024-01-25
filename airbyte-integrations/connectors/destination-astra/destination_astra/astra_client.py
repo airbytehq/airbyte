@@ -2,6 +2,7 @@
 
 import json
 from typing import Dict, List, Optional
+import urllib3
 
 import requests
 
@@ -37,9 +38,9 @@ class AstraClient:
                 else:
                     return response_dict
             else:
-                raise Exception(f"Astra DB not available. Status code: {response.status_code}, {response.text}")
+                raise urllib3.exceptions.HTTPError(f"Astra DB not available. Status code: {response.status_code}, {response.text}")
         except Exception:
-            raise Exception
+            raise
 
     def find_collections(self, include_detail: bool = True):
         query = {"findCollections": {"options": {"explain": include_detail}}}
