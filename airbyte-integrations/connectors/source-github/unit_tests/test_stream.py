@@ -1368,7 +1368,7 @@ def test_stream_contributor_activity_parse_empty_response(caplog):
 
 
 @responses.activate
-def test_stream_contributor_activity_accepted_response(caplog):
+def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_response):
     responses.add(
         responses.GET,
         "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
