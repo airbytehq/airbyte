@@ -38,8 +38,8 @@ def test_authenticator_counter(monkeypatch, rate_limit_mock_response):
 @responses.activate()
 def test_multiple_token_authenticator_with_rate_limiter(monkeypatch, caplog):
     """
-    This test ensures that the rate limiter:
-     1. iterates over all tokens one-by-one after the previous is fully drained.
+    This test ensures that:
+     1. The rate limiter iterates over all tokens one-by-one after the previous is fully drained.
      2. Counter is set to zero after 15_000 requests were made. (5_000 available requests per key were set as default)
      3. Exception is handled and log warning message could be found in output. Connector does not raise AirbyteTracedException because there might be GraphQL streams with remaining request we still can read.
     """
