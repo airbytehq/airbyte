@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, NoReturn
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib.telemetry import SourceTelemetryInfo, SourceType
 
 
@@ -71,7 +72,13 @@ def _stream_from_subprocess(args: list[str]) -> Generator[Iterable[str], None, N
             yield line
 
     if process.stdout is None:
-        raise Exception("Failed to start subprocess")
+        raise exc.AirbyteSubprocessError(
+            message="Subprocess did not return a stdout stream.",
+            context={
+                "args": args,
+                "returncode": process.returncode,
+            },
+        )
     try:
         yield _stream_from_file(process.stdout)
     finally:
@@ -94,7 +101,7 @@ def _stream_from_subprocess(args: list[str]) -> Generator[Iterable[str], None, N
 
         # If the exit code is not 0 or -15 (SIGTERM), raise an exception
         if exit_code not in (0, -15):
-            raise Exception(f"Process exited with code {exit_code}")
+            raise exc.AirbyteSubprocessFailedError(exit_code=exit_code)
 
 
 class VenvExecutor(Executor):
@@ -123,7 +130,9 @@ class VenvExecutor(Executor):
     def _run_subprocess_and_raise_on_failure(self, args: list[str]) -> None:
         result = subprocess.run(args, check=False)
         if result.returncode != 0:
-            raise Exception(f"Install process exited with code {result.returncode}")
+            raise exc.AirbyteConnectorInstallationError from exc.AirbyteSubprocessFailedError(
+                exit_code=result.returncode
+            )
 
     def uninstall(self) -> None:
         venv_name = self._get_venv_name()
@@ -171,18 +180,27 @@ class VenvExecutor(Executor):
         venv_path = Path(venv_name)
         if not venv_path.exists():
             if not self.install_if_missing:
-                raise Exception(
-                    f"Connector {self.metadata.name} is not available - "
-                    f"venv {venv_name} does not exist"
+                raise exc.AirbyteConnectorNotFoundError(
+                    message="Connector not available and venv does not exist.",
+                    guidance=(
+                        "Please ensure the connector is pre-installed or consider enabling "
+                        "`install_if_missing=True`."
+                    ),
+                    context={
+                        "connector_name": self.metadata.name,
+                        "venv_name": venv_name,
+                    },
                 )
             self.install()
 
         connector_path = self._get_connector_path()
         if not connector_path.exists():
-            raise FileNotFoundError(
-                f"Could not find connector '{self.metadata.name}' in venv '{venv_name}' with "
-                f"connector path '{connector_path}'.",
-            )
+            raise exc.AirbyteConnectorNotFoundError(
+                connector_name=self.metadata.name,
+                context={
+                    "venv_name": venv_name,
+                },
+            ) from FileNotFoundError(connector_path)
 
         if self.enforce_version:
             installed_version = self._get_installed_version()
@@ -193,9 +211,14 @@ class VenvExecutor(Executor):
                 # Check the version again
                 version_after_install = self._get_installed_version()
                 if version_after_install != self.target_version:
-                    raise Exception(
-                        f"Failed to install connector {self.metadata.name} version "
-                        f"{self.target_version}. Installed version is {version_after_install}",
+                    raise exc.AirbyteConnectorInstallationError(
+                        connector_name=self.metadata.name,
+                        context={
+                            "venv_name": venv_name,
+                            "target_version": self.target_version,
+                            "installed_version": installed_version,
+                            "version_after_install": version_after_install,
+                        },
                     )
 
     def execute(self, args: list[str]) -> Iterator[str]:
@@ -213,17 +236,20 @@ class PathExecutor(Executor):
         try:
             self.execute(["spec"])
         except Exception as e:
-            raise Exception(
-                f"Connector {self.metadata.name} is not available - executing it failed"
+            raise exc.AirbyteConnectorNotFoundError(
+                connector_name=self.metadata.name,
             ) from e
 
     def install(self) -> NoReturn:
-        raise Exception(f"Connector {self.metadata.name} is not available - cannot install it")
+        raise exc.AirbyteConnectorInstallationError(
+            message="Connector cannot be installed because it is not managed by airbyte-lib.",
+            connector_name=self.metadata.name,
+        )
 
     def uninstall(self) -> NoReturn:
-        raise Exception(
-            f"Connector {self.metadata.name} is installed manually and not managed by airbyte-lib -"
-            " please remove it manually"
+        raise exc.AirbyteConnectorInstallationError(
+            message="Connector cannot be uninstalled because it is not managed by airbyte-lib.",
+            connector_name=self.metadata.name,
         )
 
     def execute(self, args: list[str]) -> Iterator[str]:
