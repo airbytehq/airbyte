@@ -91,6 +91,12 @@
         "title": "GraphQL BULK Date Range in Days",
         "description": "Defines what would be a date range per single BULK Job",
         "default": 30
+      },
+      "fetch_transactions_user_id": {
+        "type": "boolean",
+        "title": "Add `user_id` to Transactions (slower)",
+        "description": "Defines which API type (REST/BULK) to use to fetch `Transactions` data. If you are a `Shopify Plus` user, leave the default value to speed up the fetch.",
+        "default": false
       }
     }
   },
