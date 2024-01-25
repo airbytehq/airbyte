@@ -50,7 +50,7 @@ class CustomFieldTransformation(RecordTransformation):
                     if isinstance(record[item], list):
                         item_value = record[item][-1].get('value', None)
                         if item_value != None:
-                            pendulum.parse(item_value)
+                            record[item] = pendulum.parse(item_value)
                         else:
                             record[item] = None
                     else:
