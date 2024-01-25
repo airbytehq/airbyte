@@ -167,6 +167,13 @@
     "auto_close_invoices": {
       "type": ["boolean", "null"]
     },
+    "business_entity_id": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "channel": {
+      "type": ["string", "null"]
+    },
     "coupons": {
       "type": ["array", "null"],
       "items": {
@@ -347,7 +354,6 @@
         }
       }
     },
-
     "subscription_items": {
       "type": ["array", "null"],
       "items": {
@@ -466,7 +472,6 @@
         }
       }
     },
-
     "plan_id": {
       "type": ["string", "null"],
       "maxLength": 100

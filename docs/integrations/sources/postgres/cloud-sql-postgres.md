@@ -58,7 +58,7 @@ If you are on Airbyte Cloud, you will always need to modify your database config
 
 ![Add a Network](./assets/airbyte_cloud_sql_postgres_add_network.png)
 
-2. Add a new network, and enter the Airbyte's IPs, which you can find in our [Airbyte Security documentation](../../../operator-guides/security#network-security-1).
+2. Add a new network, and enter the Airbyte's IPs, which you can find in our [Airbyte Security documentation](../../../operating-airbyte/security#network-security-1).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
 

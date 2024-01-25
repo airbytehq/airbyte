@@ -1,6 +1,6 @@
 data:
   ab_internal:
-    ql: 400
+    ql: 200
     sl: 200
   allowedHosts:
     hosts:
@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   dockerRepository: airbyte/source-harvest
   documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
   githubIssueLabel: source-harvest

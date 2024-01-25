@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional
+from typing import Any, Dict, Optional
 
+import dpath.util
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from pydantic import AnyUrl, Field
 
@@ -44,3 +45,16 @@ class Config(AbstractFileBasedSpec):
         examples=["blob.core.windows.net"],
         order=11,
     )
+
+    @classmethod
+    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        """
+        Generates the mapping comprised of the config fields
+        """
+        schema = super().schema(*args, **kwargs)
+
+        # Hide API processing option until https://github.com/airbytehq/airbyte-platform-internal/issues/10354 is fixed
+        processing_options = dpath.util.get(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf")
+        dpath.util.set(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf", processing_options[:1])
+
+        return schema

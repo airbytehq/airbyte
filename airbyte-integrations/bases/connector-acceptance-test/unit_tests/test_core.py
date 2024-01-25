@@ -23,6 +23,7 @@ from airbyte_protocol.models import (
 )
 from connector_acceptance_test.config import BasicReadTestConfig, Config, ExpectedRecordsConfig, IgnoredFieldsConfiguration
 from connector_acceptance_test.tests import test_core
+from jsonschema.exceptions import SchemaError
 
 from .conftest import does_not_raise
 
@@ -73,6 +74,83 @@ def test_discovery_uniquely_named_streams():
     assert t.duplicated_stream_names(streams) == ["test_stream"]
     streams.pop()
     assert len(t.duplicated_stream_names(streams)) == 0
+
+
+@pytest.mark.parametrize(
+    "schema, should_fail",
+    [
+        (
+            {
+                "$schema": "https://json-schema.org/draft-07/schema#",
+                "type": ["null", "object"],
+                "properties": {
+                    "amount": {
+                        "type": ["null", "integer"]
+                    },
+                    "amount_details": {
+                        "type": ["null", "object"],
+                        "properties": {
+                            "atm_fee": ["null", "integer"]
+                        }
+                    }
+                }
+            },
+            True
+        ),
+        (
+            {
+                "$schema": "https://json-schema.org/draft-07/schema#",
+                "type": ["null", "object"],
+                "properties": {
+                    "amount": "integer",
+                    "amount_details": {
+                        "type": ["null", "object"],
+                        "properties": {
+                            "atm_fee": {
+                                "type": ["null", "integer"]
+                            }
+                        }
+                    }
+                }
+            },
+            True
+        ),
+        (
+            {
+                "$schema": "https://json-schema.org/draft-07/schema#",
+                "type": ["null", "object"],
+                "properties": {
+                    "amount": {
+                        "type": ["null", "integer"]
+                    },
+                    "amount_details": {
+                        "type": ["null", "object"],
+                        "properties": {
+                            "atm_fee": {
+                                "type": ["null", "integer"]
+                            }
+                        }
+                    }
+                }
+            },
+            False
+        )
+    ],
+)
+def test_streams_have_valid_json_schemas(schema, should_fail):
+    t = test_core.TestDiscovery()
+    discovered_catalog = {
+        "test_stream": AirbyteStream.parse_obj(
+            {
+                "name": "test_stream",
+                "json_schema": schema,
+                "supported_sync_modes": ["full_refresh", "incremental"],
+            }
+        )
+    }
+    expectation = pytest.raises(SchemaError) if should_fail else does_not_raise()
+    with expectation:
+        t.test_streams_have_valid_json_schemas(discovered_catalog)
 
 
 @pytest.mark.parametrize(

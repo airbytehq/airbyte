@@ -1,3 +1,7 @@
+---
+products: oss-*
+---
+
 # Configuring the Airbyte Database
 
 Airbyte uses different objects to store internal state and metadata. This data is stored and manipulated by the various Airbyte components, but you have the ability to manage the deployment of this database in the following two ways:

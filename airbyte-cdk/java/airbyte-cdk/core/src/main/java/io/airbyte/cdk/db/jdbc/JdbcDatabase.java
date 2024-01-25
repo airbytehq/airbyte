@@ -174,15 +174,17 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   public int queryInt(final String sql, final String... params) throws SQLException {
-    try (final Stream<Integer> stream = unsafeQuery(c -> {
-      PreparedStatement statement = c.prepareStatement(sql);
-      int i = 1;
-      for (String param : params) {
-        statement.setString(i, param);
-        ++i;
-      }
-      return statement;
-    }, rs -> rs.getInt(1))) {
+    try (final Stream<Integer> stream = unsafeQuery(
+        c -> getPreparedStatement(sql, params, c),
+        rs -> rs.getInt(1))) {
+      return stream.findFirst().get();
+    }
+  }
+
+  public boolean queryBoolean(final String sql, final String... params) throws SQLException {
+    try (final Stream<Boolean> stream = unsafeQuery(
+        c -> getPreparedStatement(sql, params, c),
+        rs -> rs.getBoolean(1))) {
       return stream.findFirst().get();
     }
   }
@@ -216,20 +218,23 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   public ResultSetMetaData queryMetadata(final String sql, final String... params) throws SQLException {
-    try (final Stream<ResultSetMetaData> q = unsafeQuery(c -> {
-      PreparedStatement statement = c.prepareStatement(sql);
-      int i = 1;
-      for (String param : params) {
-        statement.setString(i, param);
-        ++i;
-      }
-      return statement;
-    },
+    try (final Stream<ResultSetMetaData> q = unsafeQuery(
+        c -> getPreparedStatement(sql, params, c),
         ResultSet::getMetaData)) {
       return q.findFirst().orElse(null);
     }
   }
 
   public abstract DatabaseMetaData getMetaData() throws SQLException;
+
+  private static PreparedStatement getPreparedStatement(String sql, String[] params, Connection c) throws SQLException {
+    PreparedStatement statement = c.prepareStatement(sql);
+    int i = 1;
+    for (String param : params) {
+      statement.setString(i, param);
+      i++;
+    }
+    return statement;
+  }
 
 }

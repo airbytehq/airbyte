@@ -74,6 +74,9 @@
       "type": ["string", "null"],
       "max-length": 2000
     },
+    "object": {
+      "type": ["string", "null"]
+    },
     "item_constraints": {
       "type": ["array", "null"],
       "items": {

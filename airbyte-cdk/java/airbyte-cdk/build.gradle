@@ -29,12 +29,12 @@ subprojects { subproject ->
             }
         }
         // This repository is only defined and used in the context of an artifact publishing
-        // It's different from the 'airbyte-public-jars' defined in settings.graddle only in its omission 
+        // It's different from the 'airbyte-public-jars' defined in settings.graddle only in its omission
         // of the 'public' directory. Any artifacts publish here will be available in the 'airbyte-public-jars' repo
         repositories {
             maven {
                 name 'airbyte-repo'
-                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars/' 
+                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars/'
                 credentials {
                     username System.getenv('CLOUDREPO_USER')
                     password System.getenv('CLOUDREPO_PASSWORD')
@@ -53,10 +53,10 @@ subprojects { subproject ->
 description = "Airbyte Connector Development Kit (CDK) for Java."
 
 def recursiveTasks = [
-    'assemble', 
-    'build', 
-    'integrationTestJava', 
-    'publish', 
+    'assemble',
+    'build',
+    'integrationTestJava',
+    'publish',
     'publishToMavenLocal',
     'test',
 ]

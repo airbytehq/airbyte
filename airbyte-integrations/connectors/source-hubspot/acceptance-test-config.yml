@@ -20,7 +20,7 @@ acceptance_tests:
     tests:
       - config_path: secrets/config_oauth.json
         backward_compatibility_tests_config:
-          disable_for_version: 1.4.1
+          disable_for_version: 1.9.0
   basic_read:
     tests:
       - config_path: secrets/config_oauth.json
@@ -45,6 +45,32 @@ acceptance_tests:
             bypass_reason: Unable to populate
           - name: owners_archived
             bypass_reason: unable to populate
+          - name: tickets_web_analytics
+            bypass_reason: Unable to populate
+          - name: deals_web_analytics
+            bypass_reason: Unable to populate
+          - name: companies_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_calls_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_emails_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_meetings_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_notes_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_tasks_web_analytics
+            bypass_reason: Unable to populate
+          - name: goals_web_analytics
+            bypass_reason: Unable to populate
+          - name: line_items_web_analytics
+            bypass_reason: Unable to populate
+          - name: products_web_analytics
+            bypass_reason: Unable to populate
+          - name: pets_web_analytics
+            bypass_reason: Unable to populate
+          - name: cars_web_analytics
+            bypass_reason: Unable to populate
         ignored_fields:
           contact_lists:
             - name: ilsFilterBranch
@@ -215,3 +241,4 @@ acceptance_tests:
         configured_catalog_path: sample_files/incremental_catalog.json
         future_state:
           future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 7200

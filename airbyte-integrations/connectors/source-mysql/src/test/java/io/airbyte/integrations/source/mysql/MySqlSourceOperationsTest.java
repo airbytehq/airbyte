@@ -4,17 +4,15 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.mysql.MySqlSource.DRIVER_CLASS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mysql.cj.MysqlType;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,279 +25,106 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MySQLContainer;
 
 public class MySqlSourceOperationsTest {
 
-  private final MySqlSourceOperations sqlSourceOperations = new MySqlSourceOperations();
-  private MySQLContainer<?> container;
-  private Database database;
-
-  @BeforeEach
-  public void init() {
-    container = new MySQLContainer<>("mysql:8.0");
-    container.start();
-    database = new Database(DSLContextFactory.create(
-        "root",
-        "test",
-        DRIVER_CLASS,
-        String.format("jdbc:mysql://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
-        SQLDialect.MYSQL));
-  }
-
-  @AfterEach
-  public void tearDown() {
-    try {
-      container.close();
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   @Test
   public void dateColumnAsCursor() throws SQLException {
-    final String tableName = container.getDatabaseName() + ".table_with_date";
-    final String cursorColumn = "cursor_column";
-    executeQuery("CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " DATE);");
-
-    final List<JsonNode> expectedRecords = new ArrayList<>();
-    for (int i = 1; i <= 4; i++) {
-      final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-      jsonNode.put("id", i);
-      final LocalDate cursorValue = LocalDate.of(2019, 1, i);
-      jsonNode.put("cursor_column", DateTimeConverter.convertToDate(cursorValue));
-      executeQuery("INSERT INTO " + tableName + " VALUES (" + i + ", '" + cursorValue + "');");
-      if (i >= 2) {
-        expectedRecords.add(jsonNode);
-      }
-    }
-
-    final List<JsonNode> actualRecords = new ArrayList<>();
-    try (final Connection connection = container.createConnection("")) {
-      final PreparedStatement preparedStatement = connection.prepareStatement(
-          "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATE, DateTimeConverter.convertToDate(LocalDate.of(2019, 1, 1)));
-
-      try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-        while (resultSet.next()) {
-          final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-          for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
-          }
-          actualRecords.add(jsonNode);
-        }
-      }
-    }
-    assertThat(actualRecords, containsInAnyOrder(expectedRecords.toArray()));
-
-    // Test to check backward compatibility for connectors created before PR
-    // https://github.com/airbytehq/airbyte/pull/15504
-    actualRecords.clear();
-    try (final Connection connection = container.createConnection("")) {
-      final PreparedStatement preparedStatement = connection.prepareStatement(
-          "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATE, "2019-01-01T00:00:00Z");
-
-      try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-        while (resultSet.next()) {
-          final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-          for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
-          }
-          actualRecords.add(jsonNode);
-        }
-      }
-    }
-    assertThat(actualRecords, containsInAnyOrder(expectedRecords.toArray()));
+    testImpl(
+        "DATE",
+        i -> LocalDate.of(2019, 1, i),
+        DateTimeConverter::convertToDate,
+        LocalDate::toString,
+        MysqlType.DATE,
+        DateTimeConverter.convertToDate(LocalDate.of(2019, 1, 1)),
+        "2019-01-01T00:00:00Z");
   }
 
   @Test
   public void timeColumnAsCursor() throws SQLException {
-    final String tableName = container.getDatabaseName() + ".table_with_time";
-    final String cursorColumn = "cursor_column";
-    executeQuery("CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " TIME);");
-
-    final List<JsonNode> expectedRecords = new ArrayList<>();
-    for (int i = 1; i <= 4; i++) {
-      final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-      jsonNode.put("id", i);
-      final LocalTime cursorValue = LocalTime.of(20, i, 0);
-      jsonNode.put("cursor_column", DateTimeConverter.convertToTime(cursorValue));
-      executeQuery("INSERT INTO " + tableName + " VALUES (" + i + ", '" + cursorValue + "');");
-      if (i >= 2) {
-        expectedRecords.add(jsonNode);
-      }
-    }
-
-    final List<JsonNode> actualRecords = new ArrayList<>();
-    try (final Connection connection = container.createConnection("")) {
-      final PreparedStatement preparedStatement = connection.prepareStatement(
-          "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIME, DateTimeConverter.convertToTime(LocalTime.of(20, 1, 0)));
-
-      try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-        while (resultSet.next()) {
-          final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-          for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
-          }
-          actualRecords.add(jsonNode);
-        }
-      }
-    }
-    assertThat(actualRecords, containsInAnyOrder(expectedRecords.toArray()));
-
-    // Test to check backward compatibility for connectors created before PR
-    // https://github.com/airbytehq/airbyte/pull/15504
-    actualRecords.clear();
-    try (final Connection connection = container.createConnection("")) {
-      final PreparedStatement preparedStatement = connection.prepareStatement(
-          "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIME, "1970-01-01T20:01:00Z");
-
-      try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-        while (resultSet.next()) {
-          final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-          for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
-          }
-          actualRecords.add(jsonNode);
-        }
-      }
-    }
+    testImpl(
+        "TIME",
+        i -> LocalTime.of(20, i, 0),
+        DateTimeConverter::convertToTime,
+        LocalTime::toString,
+        MysqlType.TIME,
+        DateTimeConverter.convertToTime(LocalTime.of(20, 1, 0)),
+        "1970-01-01T20:01:00Z");
   }
 
   @Test
   public void dateTimeColumnAsCursor() throws SQLException {
-    final String tableName = container.getDatabaseName() + ".table_with_datetime";
-    final String cursorColumn = "cursor_column";
-    executeQuery("CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " DATETIME);");
-
-    final List<JsonNode> expectedRecords = new ArrayList<>();
-    for (int i = 1; i <= 4; i++) {
-      final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-      jsonNode.put("id", i);
-      final LocalDateTime cursorValue = LocalDateTime.of(2019, i, 20, 3, 0, 0);
-      jsonNode.put("cursor_column", DateTimeConverter.convertToTimestamp(cursorValue));
-      executeQuery("INSERT INTO " + tableName + " VALUES (" + i + ", '" + cursorValue + "');");
-      if (i >= 2) {
-        expectedRecords.add(jsonNode);
-      }
-    }
-
-    final List<JsonNode> actualRecords = new ArrayList<>();
-    try (final Connection connection = container.createConnection("")) {
-      final PreparedStatement preparedStatement = connection.prepareStatement(
-          "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATETIME,
-          DateTimeConverter.convertToTimestamp(LocalDateTime.of(2019, 1, 20, 3, 0, 0)));
-
-      try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-        while (resultSet.next()) {
-          final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-          for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
-          }
-          actualRecords.add(jsonNode);
-        }
-      }
-    }
-    assertThat(actualRecords, containsInAnyOrder(expectedRecords.toArray()));
-
-    // Test to check backward compatibility for connectors created before PR
-    // https://github.com/airbytehq/airbyte/pull/15504
-    actualRecords.clear();
-    try (final Connection connection = container.createConnection("")) {
-      final PreparedStatement preparedStatement = connection.prepareStatement(
-          "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATETIME, "2019-01-20T03:00:00.000000");
-
-      try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-        while (resultSet.next()) {
-          final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-          for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
-          }
-          actualRecords.add(jsonNode);
-        }
-      }
-    }
-    assertThat(actualRecords, containsInAnyOrder(expectedRecords.toArray()));
+    testImpl(
+        "DATETIME",
+        i -> LocalDateTime.of(2019, i, 20, 3, 0, 0),
+        DateTimeConverter::convertToTimestamp,
+        LocalDateTime::toString,
+        MysqlType.DATETIME,
+        DateTimeConverter.convertToTimestamp(LocalDateTime.of(2019, 1, 20, 3, 0, 0)),
+        "2019-01-20T03:00:00.000000");
   }
 
   @Test
   public void timestampColumnAsCursor() throws SQLException {
-    final String tableName = container.getDatabaseName() + ".table_with_timestamp";
-    final String cursorColumn = "cursor_column";
-    executeQuery("CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " timestamp);");
-
-    final List<JsonNode> expectedRecords = new ArrayList<>();
-    for (int i = 1; i <= 4; i++) {
-      final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-      jsonNode.put("id", i);
-      final Instant cursorValue = Instant.ofEpochSecond(1660298508L).plusSeconds(i - 1);
-      jsonNode.put("cursor_column", DateTimeConverter.convertToTimestampWithTimezone(cursorValue));
-      executeQuery("INSERT INTO " + tableName + " VALUES (" + i + ", '" + Timestamp.from(cursorValue) + "');");
-      if (i >= 2) {
-        expectedRecords.add(jsonNode);
-      }
-    }
-
-    final List<JsonNode> actualRecords = new ArrayList<>();
-    try (final Connection connection = container.createConnection("")) {
-      final PreparedStatement preparedStatement = connection.prepareStatement(
-          "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIMESTAMP,
-          DateTimeConverter.convertToTimestampWithTimezone(Instant.ofEpochSecond(1660298508L)));
-
-      try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-        while (resultSet.next()) {
-          final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-          for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
-          }
-          actualRecords.add(jsonNode);
-        }
-      }
-    }
-
-    Assertions.assertEquals(3, actualRecords.size());
-
-    // Test to check backward compatibility for connectors created before PR
-    // https://github.com/airbytehq/airbyte/pull/15504
-    actualRecords.clear();
-    try (final Connection connection = container.createConnection("")) {
-      final PreparedStatement preparedStatement = connection.prepareStatement(
-          "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIMESTAMP, Instant.ofEpochSecond(1660298508L).toString());
-
-      try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-        while (resultSet.next()) {
-          final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-          for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
-          }
-          actualRecords.add(jsonNode);
-        }
-      }
-    }
-    Assertions.assertEquals(3, actualRecords.size());
+    testImpl(
+        "TIMESTAMP",
+        i -> Instant.ofEpochSecond(1660298508L).plusSeconds(i - 1),
+        DateTimeConverter::convertToTimestampWithTimezone,
+        r -> Timestamp.from(r).toString(),
+        MysqlType.TIMESTAMP,
+        DateTimeConverter.convertToTimestampWithTimezone(Instant.ofEpochSecond(1660298508L)),
+        Instant.ofEpochSecond(1660298508L).toString());
   }
 
-  protected void executeQuery(final String query) {
-    try {
-      database.query(
-          ctx -> ctx
-              .execute(query));
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
+  private <T> void testImpl(
+                            final String sqlType,
+                            IntFunction<T> recordBuilder,
+                            Function<T, String> airbyteRecordStringifier,
+                            Function<T, String> sqlRecordStringifier,
+                            MysqlType mysqlType,
+                            String initialCursorFieldValue,
+                            // Test to check backward compatibility for connectors created before PR
+                            // https://github.com/airbytehq/airbyte/pull/15504
+                            String backwardCompatibleInitialCursorFieldValue)
+      throws SQLException {
+    final var sqlSourceOperations = new MySqlSourceOperations();
+    final String cursorColumn = "cursor_column";
+    try (final var testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8)
+        .with("CREATE TABLE cursor_table (id INTEGER PRIMARY KEY, %s %s);", cursorColumn, sqlType)) {
+
+      final List<JsonNode> expectedRecords = new ArrayList<>();
+      for (int i = 1; i <= 4; i++) {
+        final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+        jsonNode.put("id", i);
+        final T cursorValue = recordBuilder.apply(i);
+        jsonNode.put("cursor_column", airbyteRecordStringifier.apply(cursorValue));
+        testdb.with("INSERT INTO cursor_table VALUES (%d, '%s');", i, sqlRecordStringifier.apply(cursorValue));
+        if (i >= 2) {
+          expectedRecords.add(jsonNode);
+        }
+      }
+
+      try (final Connection connection = testdb.getContainer().createConnection("")) {
+        final PreparedStatement preparedStatement = connection.prepareStatement(
+            "SELECT * FROM " + testdb.getDatabaseName() + ".cursor_table WHERE " + cursorColumn + " > ?");
+        for (final var initialValue : List.of(initialCursorFieldValue, backwardCompatibleInitialCursorFieldValue)) {
+          sqlSourceOperations.setCursorField(preparedStatement, 1, mysqlType, initialValue);
+          final List<JsonNode> actualRecords = new ArrayList<>();
+          try (final ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+              final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+              for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
+              }
+              actualRecords.add(jsonNode);
+            }
+          }
+          assertThat(actualRecords, containsInAnyOrder(expectedRecords.toArray()));
+        }
+      }
     }
   }
 

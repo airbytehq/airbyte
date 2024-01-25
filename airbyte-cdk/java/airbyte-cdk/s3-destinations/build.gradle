@@ -25,7 +25,7 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
     testFixturesImplementation 'org.projectlombok:lombok:1.18.20'
-    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20' 
+    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
 
     implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
     implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}

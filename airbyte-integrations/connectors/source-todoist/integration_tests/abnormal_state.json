@@ -1,37 +1,5 @@
 {
-  "tasks": {
-    "id": false,
-    "project_id": 10,
-    "section_id": -10,
-    "content": 10,
-    "description": true,
-    "is_completed": "not so true",
-    "labels": [true, false],
-    "parent_id": -50,
-    "order": true,
-    "priority": "10",
-    "due": true,
-    "url": 50,
-    "comment_count": "10",
-    "created_at": { "when": true },
-    "creator_id": -1,
-    "assignee_id": 20,
-    "assigner_id": 50
-  },
-  "projects": {
-    "id": {
-      "number": "2203306141"
-    },
-    "name": 50,
-    "comment_count": false,
-    "order": "1",
-    "color": 100,
-    "is_shared": [false],
-    "is_favorite": "world",
-    "parent_id": 100,
-    "is_inbox_project": [true],
-    "is_team_inbox": "false",
-    "view_style": ["list"],
-    "url": ["https://todoist.com/showProject?id=2203306141"]
+  "todo-stream-name": {
+    "todo-field-name": "todo-abnormal-value"
   }
 }

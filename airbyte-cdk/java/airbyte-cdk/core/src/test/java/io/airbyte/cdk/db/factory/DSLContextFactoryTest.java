@@ -7,6 +7,7 @@ package io.airbyte.cdk.db.factory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import io.airbyte.cdk.integrations.JdbcConnector;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
@@ -51,7 +52,8 @@ class DSLContextFactoryTest extends CommonFactoryTest {
         container.getDriverClassName(),
         container.getJdbcUrl(),
         dialect,
-        connectionProperties);
+        connectionProperties,
+        JdbcConnector.CONNECT_TIMEOUT_DEFAULT);
     assertNotNull(dslContext);
     assertEquals(dialect, dslContext.configuration().dialect());
   }

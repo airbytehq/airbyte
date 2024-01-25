@@ -4,20 +4,26 @@
 
 package io.airbyte.cdk.integrations.destination.jdbc;
 
-import static io.airbyte.cdk.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
+import static io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination.RAW_SCHEMA_OVERRIDE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
-import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter;
-import io.airbyte.cdk.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
+import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.cdk.integrations.destination_async.OnCloseFunction;
+import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -25,10 +31,12 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,21 +61,24 @@ public class JdbcBufferedConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
-  public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                              final JdbcDatabase database,
-                                              final SqlOperations sqlOperations,
-                                              final NamingConventionTransformer namingResolver,
-                                              final JsonNode config,
-                                              final ConfiguredAirbyteCatalog catalog) {
+  public static SerializedAirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
+                                                             final JdbcDatabase database,
+                                                             final SqlOperations sqlOperations,
+                                                             final NamingConventionTransformer namingResolver,
+                                                             final JsonNode config,
+                                                             final ConfiguredAirbyteCatalog catalog,
+                                                             final String defaultNamespace,
+                                                             final TyperDeduper typerDeduper) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired());
-
-    return new BufferedStreamConsumer(
+    return new AsyncStreamConsumer(
         outputRecordCollector,
-        onStartFunction(database, sqlOperations, writeConfigs),
-        new InMemoryRecordBufferingStrategy(recordWriterFunction(database, sqlOperations, writeConfigs, catalog), DEFAULT_MAX_BATCH_SIZE_BYTES),
-        onCloseFunction(),
+        onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
+        onCloseFunction(typerDeduper),
+        new JdbcInsertFlushFunction(recordWriterFunction(database, sqlOperations, writeConfigs, catalog)),
         catalog,
-        sqlOperations::isValidData);
+        new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.2)),
+        defaultNamespace,
+        Executors.newFixedThreadPool(2));
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
@@ -77,14 +88,12 @@ public class JdbcBufferedConsumerFactory {
     if (schemaRequired) {
       Preconditions.checkState(config.has("schema"), "jdbc destinations must specify a schema.");
     }
-    final Instant now = Instant.now();
-    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config, now, schemaRequired)).collect(Collectors.toList());
+    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config, schemaRequired)).collect(Collectors.toList());
   }
 
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
                                                                               final NamingConventionTransformer namingResolver,
                                                                               final JsonNode config,
-                                                                              final Instant now,
                                                                               final boolean schemaRequired) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
@@ -92,11 +101,21 @@ public class JdbcBufferedConsumerFactory {
 
       final String defaultSchemaName = schemaRequired ? namingResolver.getIdentifier(config.get("schema").asText())
           : namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
+      // Method checks for v2
       final String outputSchema = getOutputSchema(abStream, defaultSchemaName, namingResolver);
-
       final String streamName = abStream.getName();
-      final String tableName = namingResolver.getRawTableName(streamName);
-      final String tmpTableName = namingResolver.getTmpTableName(streamName);
+      final String tableName;
+      final String tmpTableName;
+      // TODO: Should this be injected from outside ?
+      if (TypingAndDedupingFlag.isDestinationV2()) {
+        final var finalSchema = Optional.ofNullable(abStream.getNamespace()).orElse(defaultSchemaName);
+        final var rawName = StreamId.concatenateRawTableName(finalSchema, streamName);
+        tableName = namingResolver.convertStreamName(rawName);
+        tmpTableName = namingResolver.getTmpTableName(rawName);
+      } else {
+        tableName = namingResolver.getRawTableName(streamName);
+        tmpTableName = namingResolver.getTmpTableName(streamName);
+      }
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 
       final WriteConfig writeConfig = new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode);
@@ -116,9 +135,12 @@ public class JdbcBufferedConsumerFactory {
   private static String getOutputSchema(final AirbyteStream stream,
                                         final String defaultDestSchema,
                                         final NamingConventionTransformer namingResolver) {
-    return stream.getNamespace() != null
-        ? namingResolver.getNamespace(stream.getNamespace())
-        : namingResolver.getNamespace(defaultDestSchema);
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      return namingResolver
+          .getNamespace(TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).orElse(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
+    } else {
+      return namingResolver.getNamespace(Optional.ofNullable(stream.getNamespace()).orElse(defaultDestSchema));
+    }
   }
 
   /**
@@ -133,12 +155,13 @@ public class JdbcBufferedConsumerFactory {
    * @param database JDBC database to connect to
    * @param sqlOperations interface for execution SQL queries
    * @param writeConfigs settings for each stream
-   * @return
    */
   private static OnStartFunction onStartFunction(final JdbcDatabase database,
                                                  final SqlOperations sqlOperations,
-                                                 final List<WriteConfig> writeConfigs) {
+                                                 final Collection<WriteConfig> writeConfigs,
+                                                 final TyperDeduper typerDeduper) {
     return () -> {
+      typerDeduper.prepareTables();
       LOGGER.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
       final List<String> queryList = new ArrayList<>();
       for (final WriteConfig writeConfig : writeConfigs) {
@@ -168,12 +191,11 @@ public class JdbcBufferedConsumerFactory {
    * @param sqlOperations interface of SQL queries to execute
    * @param writeConfigs settings for each stream
    * @param catalog catalog of all streams to sync
-   * @return
    */
-  private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final JdbcDatabase database,
-                                                                         final SqlOperations sqlOperations,
-                                                                         final List<WriteConfig> writeConfigs,
-                                                                         final ConfiguredAirbyteCatalog catalog) {
+  private static RecordWriter<PartialAirbyteMessage> recordWriterFunction(final JdbcDatabase database,
+                                                                          final SqlOperations sqlOperations,
+                                                                          final List<WriteConfig> writeConfigs,
+                                                                          final ConfiguredAirbyteCatalog catalog) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = writeConfigs.stream()
         .collect(Collectors.toUnmodifiableMap(JdbcBufferedConsumerFactory::toNameNamespacePair, Function.identity()));
 
@@ -190,11 +212,17 @@ public class JdbcBufferedConsumerFactory {
 
   /**
    * Tear down functionality
-   *
-   * @return
    */
-  private static OnCloseFunction onCloseFunction() {
-    return (hasFailed) -> {};
+  private static OnCloseFunction onCloseFunction(final TyperDeduper typerDeduper) {
+    return (hasFailed, streamSyncSummaries) -> {
+      try {
+        typerDeduper.typeAndDedupe(streamSyncSummaries);
+        typerDeduper.commitFinalTables();
+        typerDeduper.cleanup();
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    };
   }
 
   private static AirbyteStreamNameNamespacePair toNameNamespacePair(final WriteConfig config) {

@@ -4,6 +4,7 @@
 
 import json
 from pathlib import Path
+from typing import Optional
 
 import pytest
 import yaml
@@ -14,15 +15,19 @@ from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import ValidatorOptions
 from pydash.objects import get
 
-# Version exists by default, but "666" is bad! (6.0.0 too since breaking changes regex tho)
-MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["6.6.6", "6.0.0"]
+MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["99.99.99", "0.0.0"]
+MISSING_SHA = "MISSINGSHA"
 DOCS_PATH = "/docs"
-MOCK_DOC_URL_PATH = "integrations/sources/alloydb.md"
+MOCK_DOC_URL_PATH = "integrations/sources/existingsource.md"
 VALID_DOC_FILE_PATH = Path(DOCS_PATH) / MOCK_DOC_URL_PATH
 
 
-def stub_is_image_on_docker_hub(image_name: str, version: str) -> bool:
-    return "exists" in image_name and version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST
+def stub_is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None, retries: int = 0, wait_sec: int = 30) -> bool:
+    image_repo_exists = "exists" in image_name
+    version_exists = version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST
+    sha_is_valid = (digest != MISSING_SHA) if digest is not None else True
+    image_exists = all([image_repo_exists, version_exists, sha_is_valid])
+    return image_exists
 
 
 @pytest.fixture(autouse=True)
@@ -36,6 +41,30 @@ def mock_local_doc_path_exists(monkeypatch):
         return original_exists(self)
 
     monkeypatch.setattr(Path, "exists", fake_exists)
+
+
+def assert_upload_invalid_metadata_fails_correctly(metadata_file_path: Path, expected_error_match: str, validate_success_error_match: str):
+    """
+    When attempting to upload invalid metadata, we expect it to fail in a predictable way, depending on what is exactly invalid
+    about the file. This helper aims to make it easier for a developer who is adding new test cases to figure out that their test
+    is failing because the test data that should be invalid is passing all of the validation steps.
+
+    Because we don't exit the uploading process if validation fails, this case often looks like a weird error message that is hard to
+    grok.
+    """
+    try:
+        with pytest.raises(ValueError, match=expected_error_match) as exc_info:
+            gcs_upload.upload_metadata_to_gcs(
+                "my_bucket",
+                metadata_file_path,
+                validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
+            )
+        print(f"Upload raised {exc_info.value}")
+    except AssertionError as e:
+        if validate_success_error_match in str(e):
+            raise AssertionError(f"Validation succeeded (when it should have failed) for {metadata_file_path}") from e
+        else:
+            raise e
 
 
 def setup_upload_mocks(
@@ -215,6 +244,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
     mocker.spy(gcs_upload, "_doc_upload")
 
     for valid_metadata_upload_file in valid_metadata_upload_files:
+        print(f"\nTesting upload of valid metadata file: " + valid_metadata_upload_file)
         metadata_file_path = Path(valid_metadata_upload_file)
         metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
 
@@ -323,31 +353,44 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
         )
 
 
-def test_upload_invalid_metadata_to_gcs(invalid_metadata_yaml_files):
+def test_upload_invalid_metadata_to_gcs(mocker, invalid_metadata_yaml_files):
+    # Mock dockerhub
+    mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
+
+    # Test that all invalid metadata files throw a ValueError
     for invalid_metadata_file in invalid_metadata_yaml_files:
+        print(f"\nTesting upload of invalid metadata file: " + invalid_metadata_file)
         metadata_file_path = Path(invalid_metadata_file)
-        # If your test fails with 'Please set the DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables.'
-        # then your test data passed validation when it shouldn't have!
-        with pytest.raises(ValueError, match="Validation error"):
-            gcs_upload.upload_metadata_to_gcs(
-                "my_bucket",
-                metadata_file_path,
-                validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
-            )
+
+        error_match_if_validation_fails_as_expected = "Validation error"
+
+        # If validation succeeds, it goes on to upload any new/changed files.
+        # We don't mock the gcs stuff in this test, so it fails trying to
+        # mock compute the md5 hash.
+        error_match_if_validation_succeeds = "Please set the GCS_CREDENTIALS env var."
+
+        assert_upload_invalid_metadata_fails_correctly(
+            metadata_file_path, error_match_if_validation_fails_as_expected, error_match_if_validation_succeeds
+        )
 
 
 def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_upload_files):
     setup_upload_mocks(mocker, None, None, "new_md5_hash", None, None, None, None, None)
 
-    # Test that all invalid metadata files throw a ValueError
+    # Test that valid metadata files that reference invalid docker images throw a ValueError
     for invalid_metadata_file in invalid_metadata_upload_files:
+        print(f"\nTesting upload of valid metadata file with invalid docker image: " + invalid_metadata_file)
         metadata_file_path = Path(invalid_metadata_file)
-        with pytest.raises(ValueError, match="does not exist in DockerHub"):
-            gcs_upload.upload_metadata_to_gcs(
-                "my_bucket",
-                metadata_file_path,
-                validator_opts=ValidatorOptions(doc_paths=DOCS_PATH),
-            )
+
+        error_match_if_validation_fails_as_expected = "does not exist in DockerHub"
+
+        # If validation succeeds, it goes on to upload any new/changed files.
+        # We mock gcs stuff in this test, so it fails trying to compare the md5 hashes.
+        error_match_if_validation_succeeds = "Unexpected path"
+
+        assert_upload_invalid_metadata_fails_correctly(
+            metadata_file_path, error_match_if_validation_fails_as_expected, error_match_if_validation_succeeds
+        )
 
 
 def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_files):
@@ -359,6 +402,7 @@ def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_fi
     doc_upload_spy = mocker.spy(gcs_upload, "_doc_upload")
 
     for valid_metadata_upload_file in valid_metadata_upload_files:
+        print(f"\nTesting prerelease upload of valid metadata file: " + valid_metadata_upload_file)
         # Assuming there is a valid metadata file in the list, if not, you might need to create one
         metadata_file_path = Path(valid_metadata_upload_file)
         prerelease_image_tag = "1.5.6-dev.f80318f754"

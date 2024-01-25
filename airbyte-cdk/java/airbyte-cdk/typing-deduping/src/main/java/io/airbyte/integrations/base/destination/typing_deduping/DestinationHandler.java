@@ -19,8 +19,10 @@ public interface DestinationHandler<DialectTableDefinition> {
    * <p>
    * If the raw table is empty or does not exist, return an empty optional.
    */
-  Optional<Instant> getMinTimestampForSync(StreamId id) throws Exception;
+  InitialRawTableState getInitialRawTableState(StreamId id) throws Exception;
 
-  void execute(final String sql) throws Exception;
+  record InitialRawTableState(boolean hasUnprocessedRecords, Optional<Instant> maxProcessedTimestamp) {}
+
+  void execute(final Sql sql) throws Exception;
 
 }

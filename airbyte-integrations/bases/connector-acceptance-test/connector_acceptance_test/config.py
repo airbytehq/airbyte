@@ -42,6 +42,17 @@ class BackwardCompatibilityTestsConfig(BaseConfig):
     )
 
 
+class OAuthTestConfig(BaseConfig):
+    oauth = Field(True, description="Allow source to have another default method that OAuth.")
+    bypass_reason: Optional[str] = Field(description="Reason why OAuth is not default method.")
+
+    @validator("oauth", always=True)
+    def validate_oauth(cls, oauth, values):
+        if oauth is False and not values.get("bypass_reason"):
+            raise ValueError("Please provide a bypass reason for Auth default method")
+        return oauth
+
+
 class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
     config_path: str = config_path
@@ -50,6 +61,7 @@ class SpecTestConfig(BaseConfig):
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
         description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
     )
+    auth_default_method: Optional[OAuthTestConfig] = Field(description="Auth default method details.")
 
 
 class ConnectionTestConfig(BaseConfig):
@@ -124,6 +136,11 @@ ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field
 )
 
 
+class NoPrimaryKeyConfiguration(BaseConfig):
+    name: str
+    bypass_reason: Optional[str] = Field(default=None, description="Reason why this stream does not support a primary key")
+
+
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     deployment_mode: Optional[str] = deployment_mode
@@ -177,6 +194,23 @@ class IncrementalConfig(BaseConfig):
         smart_union = True
 
 
+class ConnectorAttributesConfig(BaseConfig):
+    """
+    Config that is used to verify that a connector and its streams uphold certain behavior and features that are
+    required to maintain enterprise-level standard of quality.
+
+    Attributes:
+        streams_without_primary_key: A list of streams where a primary key is not available from the API or is not relevant to the record
+    """
+
+    timeout_seconds: int = timeout_seconds
+    config_path: str = config_path
+
+    streams_without_primary_key: Optional[List[NoPrimaryKeyConfiguration]] = Field(
+        description="Streams that do not support a primary key such as reports streams"
+    )
+
+
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
     bypass_reason: Optional[str]
     tests: Optional[List[TestConfigT]]
@@ -195,6 +229,7 @@ class AcceptanceTestConfigurations(BaseConfig):
     basic_read: Optional[GenericTestConfig[BasicReadTestConfig]]
     full_refresh: Optional[GenericTestConfig[FullRefreshConfig]]
     incremental: Optional[GenericTestConfig[IncrementalConfig]]
+    connector_attributes: Optional[GenericTestConfig[ConnectorAttributesConfig]]
 
 
 class Config(BaseConfig):

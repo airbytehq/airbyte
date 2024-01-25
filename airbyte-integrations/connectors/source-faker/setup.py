@@ -24,4 +24,10 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    # register console entry points
+    entry_points={
+        "console_scripts": [
+            "source-faker=source_faker.run:run",
+        ],
+    },
 )

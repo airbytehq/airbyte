@@ -9,7 +9,8 @@ from urllib import parse
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
@@ -737,7 +738,11 @@ class GitHubGraphQLStream(GithubStream, ABC):
         return "graphql"
 
     def should_retry(self, response: requests.Response) -> bool:
-        return True if response.json().get("errors") else super().should_retry(response)
+        if response.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT):
+            self.page_size = int(self.page_size / 2)
+            return True
+        self.page_size = constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM if self.large_stream else constants.DEFAULT_PAGE_SIZE
+        return super().should_retry(response) or response.json().get("errors")
 
     def _get_repository_name(self, repository: Mapping[str, Any]) -> str:
         return repository["owner"]["login"] + "/" + repository["name"]
@@ -1606,8 +1611,13 @@ class ContributorActivity(GithubStream):
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
             if e.response.status_code == requests.codes.ACCEPTED:
-                self.logger.info(f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`.")
-                yield
+                yield AirbyteMessage(
+                    type=MessageType.LOG,
+                    log=AirbyteLogMessage(
+                        level=Level.INFO,
+                        message=f"Syncing `{self.__class__.__name__}` " f"stream isn't available for repository `{repository}`.",
+                    ),
+                )
             else:
                 raise e
 

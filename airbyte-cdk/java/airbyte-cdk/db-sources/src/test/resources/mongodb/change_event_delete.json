@@ -1,5 +1,5 @@
 {
-  "before": "{\"_id\": {\"$oid\": \"64f24244f95155351c4185b1\"},\"name\": \"Document 0\",\"description\": \"This is document #0\",\"doubleField\": 0.0,\"intField\": 0,\"objectField\": {\"key\": \"value\"},\"timestamp\": {\"$timestamp\": {\"t\": 394,\"i\": 1381162128}}}\"",
+  "before": "{\"_id\": {\"$oid\": \"64f24244f95155351c4185b1\"},\"name\": \"Document 0\",\"description\": \"This is document #0\",\"doubleField\": 0.0,\"intField\": 0, \"data\": \"some data\",\"objectField\": {\"key\": \"value\"},\"timestamp\": {\"$timestamp\": {\"t\": 394,\"i\": 1381162128}}}\"",
   "after": null,
   "source": {
     "version": "2.2.0.Final",

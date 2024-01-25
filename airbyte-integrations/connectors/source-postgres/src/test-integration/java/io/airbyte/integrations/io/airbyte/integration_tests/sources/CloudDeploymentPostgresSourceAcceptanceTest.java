@@ -7,16 +7,17 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.PostgresUtils;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -36,39 +37,20 @@ public class CloudDeploymentPostgresSourceAcceptanceTest extends SourceAcceptanc
   private static final String SCHEMA_NAME = "public";
 
   private PostgresTestDatabase testdb;
-  private JsonNode config;
 
   protected static final String PASSWORD = "Passw0rd";
-  protected static PostgresUtils.Certificate certs;
 
   @Override
   protected FeatureFlags featureFlags() {
     return FeatureFlagsWrapper.overridingDeploymentMode(
-        FeatureFlagsWrapper.overridingUseStreamCapableState(
-            super.featureFlags(),
-            true),
+        super.featureFlags(),
         AdaptiveSourceRunner.CLOUD_MODE);
   }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.make("postgres:16-bullseye", "withCert");
-    certs = testdb.getCertificate();
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
-        .build());
-    config = Jsons.jsonNode(testdb.makeConfigBuilder()
-        .put("replication_method", replicationMethod)
-        .put("ssl_mode", ImmutableMap.builder()
-            .put("mode", "verify-ca")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
-            .put("client_key_password", PASSWORD)
-            .build())
-        .build());
-
-    testdb.database.query(ctx -> {
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.CERT);
+    testdb.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
       ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
@@ -96,7 +78,17 @@ public class CloudDeploymentPostgresSourceAcceptanceTest extends SourceAcceptanc
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    final var certs = testdb.getCertificates();
+    return testdb.integrationTestConfigBuilder()
+        .withStandardReplication()
+        .withSsl(ImmutableMap.builder()
+            .put("mode", "verify-ca")
+            .put("ca_certificate", certs.caCertificate())
+            .put("client_certificate", certs.clientCertificate())
+            .put("client_key", certs.clientKey())
+            .put("client_key_password", PASSWORD)
+            .build())
+        .build();
   }
 
   @Override
@@ -127,11 +119,6 @@ public class CloudDeploymentPostgresSourceAcceptanceTest extends SourceAcceptanc
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }

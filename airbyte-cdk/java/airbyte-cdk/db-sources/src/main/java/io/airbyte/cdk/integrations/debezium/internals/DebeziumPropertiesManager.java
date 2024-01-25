@@ -64,6 +64,7 @@ public abstract class DebeziumPropertiesManager {
       // changes. If we don't do this, we can't fetch records for the table.
       props.setProperty("schema.history.internal", "io.debezium.storage.file.history.FileSchemaHistory");
       props.setProperty("schema.history.internal.file.filename", schemaHistoryManager.get().getPath().toString());
+      props.setProperty("schema.history.internal.store.only.captured.databases.ddl", "true");
     }
 
     // https://debezium.io/documentation/reference/2.2/configuration/avro.html
