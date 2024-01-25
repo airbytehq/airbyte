@@ -1,52 +1,52 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
+    "type": ["null", "object"],
     "additionalProperties": true,
     "properties": {
-        "id": { "type": "string" },
-        "status": { "type": "string" },
+        "id": { "type": ["null", "string"] },
+        "status": { "type": ["null", "string"] },
         "primary_recipients": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
                 "billing_info": {
-                    "type": "object",
+                    "type": ["null", "object"],
                     "properties": {
-                        "business_name": {"type": "string"},
-                        "name": {"type": "string"},
-                        "address": {"type": "string"},
-                        "phones": {"type": "array"},
-                        "additiona_info": {"type": "string"},
-                        "email_address": {"type": "string"},
-                        "language": {"type": "string"}
+                        "business_name": {"type": ["null", "string"]},
+                        "name": {"type": ["null", "string"]},
+                        "address": {"type": ["null", "string"]},
+                        "phones": {"type": ["null", "array"]},
+                        "additiona_info": {"type": ["null", "string"]},
+                        "email_address": {"type": ["null", "string"]},
+                        "language": {"type": ["null", "string"]}
                     },
                 "shipping_info": {
-                    "type": "object",
+                    "type": ["null", "object"],
                     "properties": {
-                        "business_name": {"type": "string"},
+                        "business_name": {"type": ["null", "string"]},
                         "name": {
-                            "type": "object",
+                            "type": ["null", "object"],
                             "properties": {
-                                "prefix": {"type": "string"},
-                                "given_name": {"type": "string"},
-                                "surname": {"type": "string"},
-                                "middle_name": {"type": "string"},
-                                "suffix": {"type": "string"},
-                                "alternate_full_name": {"type": "string"},
-                                "full_name": {"type": "string"}
+                                "prefix": {"type": ["null", "string"]},
+                                "given_name": {"type": ["null", "string"]},
+                                "surname": {"type": ["null", "string"]},
+                                "middle_name": {"type": ["null", "string"]},
+                                "suffix": {"type": ["null", "string"]},
+                                "alternate_full_name": {"type": ["null", "string"]},
+                                "full_name": {"type": ["null", "string"]}
                                 }
                         },
                         "address": {
-                            "type": "object",
+                            "type": ["null", "object"],
                             "properties": {
-                                "address_line_1": {"type": "string"},
-                                "address_line_2": {"type": "string"},
-                                "address_line_3": {"type": "string"},
-                                "admin_area_1": {"type": "string"},
-                                "admin_area_2": {"type": "string"},
-                                "admin_area_3": {"type": "string"},
-                                "postal_code": {"type": "string"},
-                                "country_code": {"type": "string"},
-                                "address_details": {"type": "object"}
+                                "address_line_1": {"type": ["null", "string"]},
+                                "address_line_2": {"type": ["null", "string"]},
+                                "address_line_3": {"type": ["null", "string"]},
+                                "admin_area_1": {"type": ["null", "string"]},
+                                "admin_area_2": {"type": ["null", "string"]},
+                                "admin_area_3": {"type": ["null", "string"]},
+                                "postal_code": {"type": ["null", "string"]},
+                                "country_code": {"type": ["null", "string"]},
+                                "address_details": {"type": ["null", "object"]}
                             }
                         }
                     }
@@ -54,100 +54,104 @@
             }
         }
         },
-        "additional_recipients": { "type": "array"},
+        "additional_recipients": { "type": ["null", "array"]},
         "detail": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
-                "reference": { "type": "string" },
-                "note": { "type": "string" },
-                "terms_and_conditions": { "type": "string" },
-                "memo": { "type": "string" },
+                "reference": { "type": ["null", "string"] },
+                "note": { "type": ["null", "string"] },
+                "terms_and_conditions": { "type": ["null", "string"] },
+                "memo": { "type": ["null", "string"] },
                 "attachments": {
-                    "type": "array",
+                    "type": ["null", "array"],
                     "items": {
-                        "type": "object",
+                        "type": ["null", "object"],
                         "properties": {
-                            "id": { "type": "string" },
-                            "reference_url": { "type": "string" },
-                            "content_type": { "type": "string" },
-                            "size": { "type": "string" },
-                            "create_time": { "type": "string" }
+                            "id": { "type": ["null", "string"] },
+                            "reference_url": { "type": ["null", "string"] },
+                            "content_type": { "type": ["null", "string"] },
+                            "size": { "type": ["null", "string"] },
+                            "create_time": { "type": ["null", "string"] }
                         }
                     }
                 },
-                "currency_code": { "type": "string" },
-                "invoice_number": { "type": "string" },
-                "invoice_date": { "type": "string", "format": "date-time" },            
+                "currency_code": { "type": ["null", "string"] },
+                "invoice_number": { "type": ["null", "string"] },
+                "invoice_date": { "type": ["null", "string"], "format": "date-time" },            
                 "payment_term": {
-                    "type": "object",
+                    "type": ["null", "object"],
                     "properties": {
-                        "term_type": { "type": "string"},
-                        "due_date": { "type": "string", "format": "date-time" }
+                        "term_type": { "type": ["null", "string"]},
+                        "due_date": { "type": ["null", "string"], "format": "date-time" }
                     }
                 },
                 "metadata": {
-                    "type": "object",
+                    "type": ["null", "object"],
                     "properties": {
-                        "created_by": { "type": "string"},
-                        "last_updated_by": { "type": "string"},
-                        "create_time": { "type": "string", "format": "date-time" },
-                        "last_update_time": { "type": "string", "format": "date-time" },
-                        "cancelled_by": { "type": "string"},
-                        "last_seen_by": { "type": "string"},
-                        "recipient_view_url": { "type": "string"},
-                        "invoicer_view_url": { "type": "string"},
-                        "cancel_time": { "type": "string", "format": "date-time" },
-                        "first_sent_time": { "type": "string", "format": "date-time" },
-                        "last_sent_time": { "type": "string", "format": "date-time" },
-                        "created_by_flow": { "type": "string"}
+                        "created_by": { "type": ["null", "string"]},
+                        "last_updated_by": { "type": ["null", "string"]},
+                        "create_time": { "type": ["null", "string"], "format": "date-time" },
+                        "last_update_time": { "type": ["null", "string"], "format": "date-time" },
+                        "cancelled_by": { "type": ["null", "string"]},
+                        "last_seen_by": { "type": ["null", "string"]},
+                        "recipient_view_url": { "type": ["null", "string"]},
+                        "invoicer_view_url": { "type": ["null", "string"]},
+                        "cancel_time": { "type": ["null", "string"], "format": "date-time" },
+                        "first_sent_time": { "type": ["null", "string"], "format": "date-time" },
+                        "last_sent_time": { "type": ["null", "string"], "format": "date-time" },
+                        "created_by_flow": { "type": ["null", "string"]}
                     }   
                 } 
               }
         },
+        "last_update_time": {
+            "type": ["null", "string"],
+            "format": "date-time"
+        },
         "invoicer": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
-                "business_name": { "type": "string"},
+                "business_name": { "type": ["null", "string"]},
                 "name": {
-                    "type": "object",
+                    "type": ["null", "object"],
                     "properties": {
-                        "prefix": {"type": "string"},
-                        "given_name": {"type": "string"},
-                        "surname": {"type": "string"},
-                        "middle_name": {"type": "string"},
-                        "suffix": {"type": "string"},
-                        "alternate_full_name": {"type": "string"},
-                        "full_name": {"type": "string"}
+                        "prefix": {"type": ["null", "string"]},
+                        "given_name": {"type": ["null", "string"]},
+                        "surname": {"type": ["null", "string"]},
+                        "middle_name": {"type": ["null", "string"]},
+                        "suffix": {"type": ["null", "string"]},
+                        "alternate_full_name": {"type": ["null", "string"]},
+                        "full_name": {"type": ["null", "string"]}
                         },
                 "address": {
-                    "type": "object",
+                    "type": ["null", "object"],
                     "properties": {
-                        "address_line_1": {"type": "string"},
-                        "address_line_2": {"type": "string"},
-                        "address_line_3": {"type": "string"},
-                        "admin_area_1": {"type": "string"},
-                        "admin_area_2": {"type": "string"},
-                        "admin_area_3": {"type": "string"},
-                        "postal_code": {"type": "string"},
-                        "country_code": {"type": "string"},
-                        "address_details": {"type": "object"}
+                        "address_line_1": {"type": ["null", "string"]},
+                        "address_line_2": {"type": ["null", "string"]},
+                        "address_line_3": {"type": ["null", "string"]},
+                        "admin_area_1": {"type": ["null", "string"]},
+                        "admin_area_2": {"type": ["null", "string"]},
+                        "admin_area_3": {"type": ["null", "string"]},
+                        "postal_code": {"type": ["null", "string"]},
+                        "country_code": {"type": ["null", "string"]},
+                        "address_details": {"type": ["null", "object"]}
                     },
                 "phones": {
-                    "type": "array",
+                    "type": ["null", "array"],
                     "items": {
-                        "type": "object",
+                        "type": ["null", "object"],
                         "properties": {
-                            "country_code": {"type": "string"},
-                            "national_number": {"type": "string"},
-                            "extension_number": {"type": "string"},
-                            "phone_type": {"type": "string"}
+                            "country_code": {"type": ["null", "string"]},
+                            "national_number": {"type": ["null", "string"]},
+                            "extension_number": {"type": ["null", "string"]},
+                            "phone_type": {"type": ["null", "string"]}
                         }
                     }
                 },
-                "website": {"type": "string"},
-                "tax_id": {"type": "string"},
-                "additional_notes": {"type": "string"},
-                "email_address": { "type": "string"}
+                "website": {"type": ["null", "string"]},
+                "tax_id": {"type": ["null", "string"]},
+                "additional_notes": {"type": ["null", "string"]},
+                "email_address": { "type": ["null", "string"]}
             }
         }
 
@@ -155,98 +159,98 @@
           }
         },
         "configuration": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
-                "tax_calculated_after_discount": {"type": "string"},
-                "tax_inclusive": {"type": "string"},
-                "allow_tip": {"type": "string"},
+                "tax_calculated_after_discount": {"type": ["null", "string"]},
+                "tax_inclusive": {"type": ["null", "string"]},
+                "allow_tip": {"type": ["null", "string"]},
                 "partial_payment": {
-                    "type": "object",
+                    "type": ["null", "object"],
                     "properties": {
-                        "allow_partial_payment": {"type": "string"},
-                        "minimum_amount_due": {"type": "object"} 
+                        "allow_partial_payment": {"type": ["null", "string"]},
+                        "minimum_amount_due": {"type": ["null", "object"]} 
                     }
                 },
-                "template_id": {"type": "string"}
+                "template_id": {"type": ["null", "string"]}
             }
         },
         "amount": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
-                "currency_code": {"type": "string"},
-                "value": {"type": "string"},
+                "currency_code": {"type": ["null", "string"]},
+                "value": {"type": ["null", "string"]},
                 "breakdown": {
-                    "type": "object",
+                    "type": ["null", "object"],
                     "properties": {
-                        "item_total": {"type": "object"},
-                        "discount": {"type": "object"},
-                        "tax_total": {"type": "object"},
-                        "shipping": {"type": "object"},
-                        "custom": {"type": "object"}
+                        "item_total": {"type": ["null", "object"]},
+                        "discount": {"type": ["null", "object"]},
+                        "tax_total": {"type": ["null", "object"]},
+                        "shipping": {"type": ["null", "object"]},
+                        "custom": {"type": ["null", "object"]}
                     }
                 }
             }
         },
         "due_amount": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
-                "currency_code": {"type": "string"},
-                "value": {"type": "string"}
+                "currency_code": {"type": ["null", "string"]},
+                "value": {"type": ["null", "string"]}
             }
         },
         "gratuity": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
-                "currency_code": {"type": "string"},
-                "value": {"type": "string"}
+                "currency_code": {"type": ["null", "string"]},
+                "value": {"type": ["null", "string"]}
             }
         },
         "payments": {
             "transactions": {
-                "type": "array",
+                "type": ["null", "array"],
                 "items": {
-                    "type": "object",
+                    "type": ["null", "object"],
                     "properties": {
-                        "payment_id": { "type": "string" },
-                        "note": { "type": "string" },
-                        "type": { "type": "string" },
-                        "payment_date":{ "type": "string", "format": "date-time" },
-                        "method": { "type": "string" },
+                        "payment_id": { "type": ["null", "string"] },
+                        "note": { "type": ["null", "string"] },
+                        "type": { "type": ["null", "string"] },
+                        "payment_date":{ "type": ["null", "string"], "format": "date-time" },
+                        "method": { "type": ["null", "string"] },
                         "amount": {
-                            "type": "object",
+                            "type": ["null", "object"],
                             "properties": {
-                                    "currency_code": {"type": "string"},
-                                    "value": {"type": "string"}
+                                    "currency_code": {"type": ["null", "string"]},
+                                    "value": {"type": ["null", "string"]}
                             }
                         },
                         "shipping_info": {
-                            "type": "object",
+                            "type": ["null", "object"],
                             "properties": {
-                                "business_name": {"type": "string"},
+                                "business_name": {"type": ["null", "string"]},
                                 "name": {
-                                    "type": "object",
+                                    "type": ["null", "object"],
                                     "properties": {
-                                        "prefix": {"type": "string"},
-                                        "given_name": {"type": "string"},
-                                        "surname": {"type": "string"},
-                                        "middle_name": {"type": "string"},
-                                        "suffix": {"type": "string"},
-                                        "alternate_full_name": {"type": "string"},
-                                        "full_name": {"type": "string"}
+                                        "prefix": {"type": ["null", "string"]},
+                                        "given_name": {"type": ["null", "string"]},
+                                        "surname": {"type": ["null", "string"]},
+                                        "middle_name": {"type": ["null", "string"]},
+                                        "suffix": {"type": ["null", "string"]},
+                                        "alternate_full_name": {"type": ["null", "string"]},
+                                        "full_name": {"type": ["null", "string"]}
                                         }
                                 },
                                 "address": {
-                                    "type": "object",
+                                    "type": ["null", "object"],
                                     "properties": {
-                                        "address_line_1": {"type": "string"},
-                                        "address_line_2": {"type": "string"},
-                                        "address_line_3": {"type": "string"},
-                                        "admin_area_1": {"type": "string"},
-                                        "admin_area_2": {"type": "string"},
-                                        "admin_area_3": {"type": "string"},
-                                        "postal_code": {"type": "string"},
-                                        "country_code": {"type": "string"},
-                                        "address_details": {"type": "object"}
+                                        "address_line_1": {"type": ["null", "string"]},
+                                        "address_line_2": {"type": ["null", "string"]},
+                                        "address_line_3": {"type": ["null", "string"]},
+                                        "admin_area_1": {"type": ["null", "string"]},
+                                        "admin_area_2": {"type": ["null", "string"]},
+                                        "admin_area_3": {"type": ["null", "string"]},
+                                        "postal_code": {"type": ["null", "string"]},
+                                        "country_code": {"type": ["null", "string"]},
+                                        "address_details": {"type": ["null", "object"]}
         
                                     }
                                 }
@@ -256,49 +260,49 @@
             }
             },
             "paid_amount": {
-                "type": "object",
+                "type": ["null", "object"],
                 "properties": {
-                    "currency_code": {"type": "string"},
-                    "value": {"type": "string"} 
+                    "currency_code": {"type": ["null", "string"]},
+                    "value": {"type": ["null", "string"]} 
                 }
             }
         },
         "refunds": {
             "transactions": {
-                "type": "array",
+                "type": ["null", "array"],
                 "items": {
-                    "type": "object",
+                    "type": ["null", "object"],
                     "properties": {
-                        "refund_id": { "type": "string" },
-                        "type": { "type": "string" },
-                        "refund_date":{ "type": "string", "format": "date-time" },
-                        "method": { "type": "string" },
+                        "refund_id": { "type": ["null", "string"] },
+                        "type": { "type": ["null", "string"] },
+                        "refund_date":{ "type": ["null", "string"], "format": "date-time" },
+                        "method": { "type": ["null", "string"] },
                         "amount": {
-                            "type": "object",
+                            "type": ["null", "object"],
                             "properties": {
-                                    "currency_code": {"type": "string"},
-                                    "value": {"type": "string"}
+                                    "currency_code": {"type": ["null", "string"]},
+                                    "value": {"type": ["null", "string"]}
                             }
                         }
                 }
             }
             },
             "refund_amount": {
-                "type": "object",
+                "type": ["null", "object"],
                 "properties": {
-                    "currency_code": {"type": "string"},
-                    "value": {"type": "string"} 
+                    "currency_code": {"type": ["null", "string"]},
+                    "value": {"type": ["null", "string"]} 
                 }
             }
         },
         "links": {
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
-                "type": "object",
+                "type": ["null", "object"],
                 "properties": {
-                    "href": { "type": "string", "format": "uri" },
-                    "rel": { "type": "string" },
-                    "method": { "type": "string" }
+                    "href": { "type": ["null", "string"], "format": "uri" },
+                    "rel": { "type": ["null", "string"] },
+                    "method": { "type": ["null", "string"] }
                 }
             }
         }
