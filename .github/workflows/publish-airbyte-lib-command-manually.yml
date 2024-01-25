@@ -1,5 +1,5 @@
 name: Publish AirbyteLib Manually
-on: workflow_dispatch
+on: [workflow_dispatch, push]
 
 concurrency:
   group: publish-airbyte-lib
