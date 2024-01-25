@@ -9,6 +9,7 @@ from typing import cast
 
 from overrides import overrides
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.telemetry import CacheTelemetryInfo
@@ -93,9 +94,11 @@ class DuckDBCache(DuckDBCacheBase):
         Databases that do not support this syntax can override this method.
         """
         if not self._get_primary_keys(stream_name):
-            raise RuntimeError(
-                f"Primary keys not found for stream {stream_name}. "
-                "Cannot run merge updates without primary keys."
+            raise exc.AirbyteLibInternalError(
+                message="Primary keys not found. Cannot run merge updates without primary keys.",
+                context={
+                    "stream_name": stream_name,
+                },
             )
 
         _ = stream_name
@@ -135,10 +138,14 @@ class DuckDBCache(DuckDBCacheBase):
         table_pk_cols = table.primary_key.columns.keys()
         if set(pk_cols) != set(table_pk_cols):
             if raise_on_error:
-                raise RuntimeError(
-                    f"Primary keys do not match for table {table_name}. "
-                    f"Expected: {pk_cols}. "
-                    f"Found: {table_pk_cols}.",
+                raise exc.AirbyteLibCacheTableValidationError(
+                    violation="Primary keys do not match.",
+                    context={
+                        "stream_name": stream_name,
+                        "table_name": table_name,
+                        "expected": pk_cols,
+                        "found": table_pk_cols,
+                    },
                 )
             return False
 

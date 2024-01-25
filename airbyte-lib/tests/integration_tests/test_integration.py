@@ -23,6 +23,7 @@ from airbyte_lib.datasets import CachedDataset, LazyDataset, SQLDataset
 import airbyte_lib as ab
 
 from airbyte_lib.results import ReadResult
+from airbyte_lib import exceptions as exc
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -318,7 +319,7 @@ def test_lazy_dataset_from_source(
     assert list_from_iter_a == list_from_iter_b
 
     # Make sure that we get a key error if we try to access a stream that doesn't exist
-    with pytest.raises(KeyError):
+    with pytest.raises(exc.AirbyteLibInputError):
         source.get_records(not_a_stream_name)
 
     # Make sure we can iterate on all available streams
@@ -343,7 +344,7 @@ def test_lazy_dataset_from_source(
 def test_check_fail_on_missing_config(method_call):
     source = ab.get_connector("source-test")
 
-    with pytest.raises(Exception, match="Config is not set, either set in get_connector or via source.set_config"):
+    with pytest.raises(exc.AirbyteConnectorConfigurationMissingError):
         method_call(source)
 
 def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):

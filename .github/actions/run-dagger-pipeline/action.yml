@@ -83,6 +83,9 @@ inputs:
     description: "URL to airbyte-ci binary"
     required: false
     default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
+  python_registry_token:
+    description: "Python registry API token to publish python package"
+    required: false
 
 runs:
   using: "composite"
@@ -154,7 +157,7 @@ runs:
       shell: bash
       run: |
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-        airbyte-ci --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+        airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
         CI_CONTEXT: "${{ inputs.context }}"
         CI_GIT_BRANCH: ${{ inputs.git_branch || github.head_ref }}
@@ -182,3 +185,4 @@ runs:
         CI: "True"
         TAILSCALE_AUTH_KEY: ${{ inputs.tailscale_auth_key }}
         DOCKER_REGISTRY_MIRROR_URL: ${{ inputs.docker_registry_mirror_url }}
+        PYTHON_REGISTRY_TOKEN: ${{ inputs.python_registry_token }}
