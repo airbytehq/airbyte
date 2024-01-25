@@ -1201,17 +1201,17 @@ class TestConnectorAttributes(BaseTest):
         metadata = connector_metadata.get("data", {})
 
         has_allowed_hosts_property = "allowedHosts" in metadata.keys()
-        assert has_allowed_hosts_property, f"The `AllowedHosts` property is missing in `metadata.data` for `metadata.yaml`."
+        assert has_allowed_hosts_property, f"The `allowedHosts` property is missing in `metadata.data` for `metadata.yaml`."
 
         allowed_hosts = metadata.get("allowedHosts", {})
         has_hosts_property = "hosts" in allowed_hosts.keys() if allowed_hosts else False
-        assert has_hosts_property, f"The `hosts` property is missing in `metadata.data.AllowedHosts` for `metadata.yaml`."
+        assert has_hosts_property, f"The `hosts` property is missing in `metadata.data.allowedHosts` for `metadata.yaml`."
 
         hosts = allowed_hosts.get("hosts", [])
         has_assigned_hosts = len(hosts) > 0 if hosts else False
         assert (
             has_assigned_hosts
-        ), f"The `hosts` empty list is not allowed for `metadata.data.AllowedHosts` for certified connectors. Please add `hosts` or define the `allowed_hosts.bypass_reason` in `acceptance-test-config.yaml`."
+        ), f"The `hosts` empty list is not allowed for `metadata.data.allowedHosts` for certified connectors. Please add `hosts` or define the `allowed_hosts.bypass_reason` in `acceptance-test-config.yaml`."
 
     @pytest.fixture(name="suggested_streams_test")
     def suggested_streams_fixture_test(self, inputs: ConnectorAttributesConfig) -> bool:

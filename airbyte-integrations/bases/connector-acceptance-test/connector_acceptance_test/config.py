@@ -210,9 +210,11 @@ class ConnectorAttributesConfig(BaseConfig):
         description="Streams that do not support a primary key such as reports streams"
     )
     allowed_hosts: Optional[AllowedHostsConfiguration] = Field(
-        description="The list of external whitelisted resources the connector is allowed to communicate with."
+        description="Used to bypass checking the `allowedHosts` field in a source's `metadata.yaml` when all external hosts should be reachable."
     )
-    suggested_streams: Optional[SuggestedStreamsConfiguration] = Field(description="The list of suggested streams for an `Initial Sync`.")
+    suggested_streams: Optional[SuggestedStreamsConfiguration] = Field(
+        description="Used to bypass checking the `suggestedStreams` field in a source's `metadata.yaml` when certified source doesn't have any."
+    )
 
 
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
