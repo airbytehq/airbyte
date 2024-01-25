@@ -278,7 +278,7 @@ def test_streams_page_size():
         ({"access_token": "test_token", "repository": "airbyte/test"}, 39),
     ),
 )
-def test_streams_config_start_date(config, expected):
+def test_streams_config_start_date(config, expected, rate_limit_mock_response):
     responses.add(responses.GET, "https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "airbyte/test"})
     responses.add(
         responses.GET,
