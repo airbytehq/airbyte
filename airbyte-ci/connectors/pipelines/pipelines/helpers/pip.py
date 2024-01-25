@@ -3,7 +3,7 @@
 from typing import Optional
 from urllib.parse import urlparse
 
-import requests
+import requests  # type: ignore
 
 
 def is_package_published(package_name: Optional[str], version: Optional[str], registry_url: str) -> bool:
