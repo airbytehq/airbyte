@@ -83,17 +83,17 @@ async def test_streams_define_primary_key(mocker, stream_configs, excluded_strea
         pytest.param(
             {"data": {"ab_internal": {"ql": 400}}},
             True,
-            "The `AllowedHosts` property is missing in `metadata.data` for `metadata.yaml`",
+            "The `allowedHosts` property is missing in `metadata.data` for `metadata.yaml`",
         ),
         pytest.param(
             {"data": {"ab_internal": {"ql": 400}, "allowedHosts": {}}},
             True,
-            "The `hosts` property is missing in `metadata.data.AllowedHosts` for `metadata.yaml`",
+            "The `hosts` property is missing in `metadata.data.allowedHosts` for `metadata.yaml`",
         ),
         pytest.param(
             {"data": {"ab_internal": {"ql": 400}, "allowedHosts": {"hosts": []}}},
             True,
-            "'The `hosts` empty list is not allowed for `metadata.data.AllowedHosts` for certified connectors",
+            "'The `hosts` empty list is not allowed for `metadata.data.allowedHosts` for certified connectors",
         ),
         pytest.param(
             {"data": {"ab_internal": {"ql": 400}, "allowedHosts": {"hosts": ["*.test.com"]}}},
