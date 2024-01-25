@@ -16,7 +16,7 @@ To add a user to your workspace:
 
 1. Go to the **Settings** via the side navigation in Airbyte.
 
-2. Click **Access Management**.
+2. Click **Workspace** > **Access Management**.
 
 3. Click **+ New user**.
 
@@ -34,7 +34,7 @@ To remove a user from your workspace:
 
 1. Go to the **Settings** via the side navigation in Airbyte.
 
-2. Click **Access Management**.
+2. Click **Workspace** > **Access Management**.
 
 3. Click **Remove** next to the user’s email.
 
