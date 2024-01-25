@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.59.1
+Fix concurrent CDK deadlock
+
 ## 0.59.0
 Fix state message handling when running concurrent syncs
 
