@@ -354,7 +354,7 @@ class CustomerBalanceTransactions(BasePaginationStripeStream):
     name = "customer_balance_transactions"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"customers/{stream_slice['id']}/balance_transactions"
+        return f"customers/{stream_slice['record_id']}/balance_transactions"
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
