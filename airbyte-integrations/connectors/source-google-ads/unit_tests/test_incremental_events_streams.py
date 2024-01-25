@@ -54,7 +54,7 @@ class MockGoogleAds(GoogleAds):
     def parse_single_result(self, schema, result):
         return result
 
-    def send_request(self, query: str, customer_id: str):
+    def send_request(self, query: str, customer_id: str, login_customer_id: str = "default"):
         if query == "query_parent":
             return mock_response_parent()
         else:
@@ -64,7 +64,7 @@ class MockGoogleAds(GoogleAds):
 def test_change_status_stream(config, customers):
     """ """
     customer_id = next(iter(customers)).id
-    stream_slice = {"customer_id": customer_id}
+    stream_slice = {"customer_id": customer_id, "login_customer_id": "default"}
 
     google_api = MockGoogleAds(credentials=config["credentials"])
 
@@ -78,7 +78,7 @@ def test_change_status_stream(config, customers):
     )
     assert len(result) == 4
     assert stream.get_query.call_count == 1
-    stream.get_query.assert_called_with({"customer_id": customer_id})
+    stream.get_query.assert_called_with({"customer_id": customer_id, "login_customer_id": "default"})
 
 
 def test_child_incremental_events_read(config, customers):
@@ -89,7 +89,7 @@ def test_child_incremental_events_read(config, customers):
     It shouldn't read records on 2021-01-01, 2021-01-02
     """
     customer_id = next(iter(customers)).id
-    parent_stream_slice = {"customer_id": customer_id, "resource_type": "CAMPAIGN_CRITERION"}
+    parent_stream_slice = {"customer_id": customer_id, "resource_type": "CAMPAIGN_CRITERION", "login_customer_id": "default"}
     stream_state = {"change_status": {customer_id: {"change_status.last_change_date_time": "2023-08-16 13:20:01.003295"}}}
 
     google_api = MockGoogleAds(credentials=config["credentials"])
@@ -121,6 +121,7 @@ def test_child_incremental_events_read(config, customers):
                 "3": "2023-06-13 12:36:03.772447",
                 "4": "2023-06-13 12:36:04.772447",
             },
+            "login_customer_id": "default",
         }
     ]
 
@@ -221,7 +222,7 @@ class MockGoogleAdsLimit(GoogleAds):
     def parse_single_result(self, schema, result):
         return result
 
-    def send_request(self, query: str, customer_id: str):
+    def send_request(self, query: str, customer_id: str, login_customer_id: str = "default"):
         self.count += 1
         if self.count == 1:
             return mock_response_1()
@@ -255,7 +256,12 @@ def test_query_limit_hit(config, customers):
     This test simulates a scenario where the limit is hit and slice start_date is updated with latest record cursor
     """
     customer_id = next(iter(customers)).id
-    stream_slice = {"customer_id": customer_id, "start_date": "2023-06-13 11:35:04.772447", "end_date": "2023-06-13 13:36:04.772447"}
+    stream_slice = {
+        "customer_id": customer_id,
+        "start_date": "2023-06-13 11:35:04.772447",
+        "end_date": "2023-06-13 13:36:04.772447",
+        "login_customer_id": "default",
+    }
 
     google_api = MockGoogleAdsLimit(credentials=config["credentials"])
     stream_config = dict(
@@ -275,16 +281,37 @@ def test_query_limit_hit(config, customers):
     assert stream.get_query.call_count == 3
 
     get_query_calls = [
-        call({"customer_id": "123", "start_date": "2023-06-13 11:35:04.772447", "end_date": "2023-06-13 13:36:04.772447"}),
-        call({"customer_id": "123", "start_date": "2023-06-13 12:36:02.772447", "end_date": "2023-06-13 13:36:04.772447"}),
-        call({"customer_id": "123", "start_date": "2023-06-13 12:36:04.772447", "end_date": "2023-06-13 13:36:04.772447"}),
+        call(
+            {
+                "customer_id": "123",
+                "start_date": "2023-06-13 11:35:04.772447",
+                "end_date": "2023-06-13 13:36:04.772447",
+                "login_customer_id": "default",
+            }
+        ),
+        call(
+            {
+                "customer_id": "123",
+                "start_date": "2023-06-13 12:36:02.772447",
+                "end_date": "2023-06-13 13:36:04.772447",
+                "login_customer_id": "default",
+            }
+        ),
+        call(
+            {
+                "customer_id": "123",
+                "start_date": "2023-06-13 12:36:04.772447",
+                "end_date": "2023-06-13 13:36:04.772447",
+                "login_customer_id": "default",
+            }
+        ),
     ]
 
     get_query_mock.assert_has_calls(get_query_calls)
 
 
 class MockGoogleAdsLimitException(MockGoogleAdsLimit):
-    def send_request(self, query: str, customer_id: str):
+    def send_request(self, query: str, customer_id: str, login_customer_id: str = "default"):
         self.count += 1
         if self.count == 1:
             return mock_response_1()
@@ -302,7 +329,12 @@ def test_query_limit_hit_exception(config, customers):
     then error will be raised
     """
     customer_id = next(iter(customers)).id
-    stream_slice = {"customer_id": customer_id, "start_date": "2023-06-13 11:35:04.772447", "end_date": "2023-06-13 13:36:04.772447"}
+    stream_slice = {
+        "customer_id": customer_id,
+        "start_date": "2023-06-13 11:35:04.772447",
+        "end_date": "2023-06-13 13:36:04.772447",
+        "login_customer_id": "default",
+    }
 
     google_api = MockGoogleAdsLimitException(credentials=config["credentials"])
     stream_config = dict(
@@ -342,6 +374,7 @@ def test_change_status_get_query(mocker, config, customers):
         "start_date": "2023-01-01 00:00:00.000000",
         "end_date": "2023-09-19 00:00:00.000000",
         "resource_type": "SOME_RESOURCE_TYPE",
+        "login_customer_id": "default",
     }
 
     # Call the get_query method with the stream_slice
@@ -402,6 +435,7 @@ def test_incremental_events_stream_get_query(mocker, config, customers):
             "customers/1234567890/adGroupCriteria/111111111111~4": "2023-09-18 08:56:59.165599",
             "customers/1234567890/adGroupCriteria/111111111111~5": "2023-09-18 08:56:59.165599",
         },
+        "login_customer_id": "default",
     }
 
     # Call the get_query method with the stream_slice
@@ -431,6 +465,7 @@ def test_read_records_with_slice_splitting(mocker, config):
         "record_changed_time_map": {i: f"time_{i}" for i in range(15000)},
         "customer_id": "sample_customer_id",
         "deleted_ids": set(),
+        "login_customer_id": "default",
     }
 
     # Create a mock instance of the CampaignCriterion stream
@@ -455,12 +490,14 @@ def test_read_records_with_slice_splitting(mocker, config):
         "record_changed_time_map": {i: f"time_{i}" for i in range(10000)},
         "customer_id": "sample_customer_id",
         "deleted_ids": set(),
+        "login_customer_id": "default",
     }
     expected_second_slice = {
         "updated_ids": set(range(10000, 15000)),
         "record_changed_time_map": {i: f"time_{i}" for i in range(10000, 15000)},
         "customer_id": "sample_customer_id",
         "deleted_ids": set(),
+        "login_customer_id": "default",
     }
 
     # Verify the arguments passed to the parent's read_records method for both calls
@@ -512,7 +549,7 @@ def test_update_state_with_parent_state(mocker):
 
     # Set pendulum to return a consistent value
     now = pendulum.datetime(2023, 11, 2, 12, 53, 7)
-    pendulum.travel_to(now)
+    pendulum.set_test_now(now)
 
     # Call the _update_state method with the third stream_slice
     stream_slice_third = {"customer_id": "customer_id_3"}
@@ -529,7 +566,7 @@ def test_update_state_with_parent_state(mocker):
     assert stream._state == expected_state_third_call
 
     # Reset the pendulum mock to its original state
-    pendulum.travel_back()
+    pendulum.set_test_now()
 
 
 def test_update_state_without_parent_state(mocker):
@@ -537,14 +574,14 @@ def test_update_state_without_parent_state(mocker):
     Test the _update_state method when the parent_stream does not have a state.
     """
     # Reset any previous mock state for pendulum
-    pendulum.travel_back()
+    pendulum.set_test_now()
 
     # Mock instance setup
     stream = CampaignCriterion(api=MagicMock(), customers=[])
 
     # Mock pendulum call to return a consistent value
     now = pendulum.datetime(2023, 11, 2, 12, 53, 7)
-    pendulum.travel_to(now)
+    pendulum.set_test_now(now)
 
     # Call the _update_state method with the first stream_slice
     stream_slice_first = {"customer_id": "customer_id_1"}
@@ -568,4 +605,4 @@ def test_update_state_without_parent_state(mocker):
     assert stream._state == expected_state_second_call
 
     # Reset the pendulum mock to its original state
-    pendulum.travel_back()
+    pendulum.set_test_now()

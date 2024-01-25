@@ -20,7 +20,7 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/appfollow
   tags:
-    - language:lowcode
+    - language:low-code
   releases:
     breakingChanges:
       1.0.0:

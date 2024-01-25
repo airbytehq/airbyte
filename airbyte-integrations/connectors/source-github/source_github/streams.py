@@ -738,7 +738,11 @@ class GitHubGraphQLStream(GithubStream, ABC):
         return "graphql"
 
     def should_retry(self, response: requests.Response) -> bool:
-        return True if response.json().get("errors") else super().should_retry(response)
+        if response.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT):
+            self.page_size = int(self.page_size / 2)
+            return True
+        self.page_size = constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM if self.large_stream else constants.DEFAULT_PAGE_SIZE
+        return super().should_retry(response) or response.json().get("errors")
 
     def _get_repository_name(self, repository: Mapping[str, Any]) -> str:
         return repository["owner"]["login"] + "/" + repository["name"]

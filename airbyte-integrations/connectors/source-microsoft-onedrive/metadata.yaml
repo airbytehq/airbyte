@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   allowedHosts:
     hosts:
       - graph.microsoft.com

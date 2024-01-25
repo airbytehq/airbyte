@@ -3,7 +3,6 @@
 #
 
 
-from typing import Any, Dict
 from unittest.mock import patch
 
 import pendulum
@@ -144,6 +143,6 @@ class TestIncrementalAnalyticsStream:
         stream = SomeIncrementalAnalyticsStream(**report_init_kwargs)
         stream.fixed_period_in_days = fixed_period_in_days
         with patch("pendulum.now", return_value=pendulum.parse("2023-09-09T00:00:00Z")):
-            assert stream.stream_slices(
-                sync_mode=SyncMode.incremental, cursor_field=[stream.cursor_field], stream_state=stream_state
+            assert list(
+                stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=[stream.cursor_field], stream_state=stream_state)
             ) == expected_slices

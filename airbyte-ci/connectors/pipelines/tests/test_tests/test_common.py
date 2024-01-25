@@ -241,6 +241,12 @@ class TestAcceptanceTests:
             fourth_date_result = await cat_container.stdout()
             assert fourth_date_result != third_date_result
 
+    async def test_params(self, dagger_client, mocker, test_context_ci, test_input_dir):
+        acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context_ci, test_input_dir)
+        assert set(acceptance_test_step.params_as_cli_options) == {"-ra", "--disable-warnings", "--durations=3"}
+        acceptance_test_step.extra_params = {"--durations": ["5"], "--collect-only": []}
+        assert set(acceptance_test_step.params_as_cli_options) == {"-ra", "--disable-warnings", "--durations=5", "--collect-only"}
+
 
 class TestCheckBaseImageIsUsed:
     @pytest.fixture

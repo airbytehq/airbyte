@@ -10,6 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "vcrpy==4.1.1"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "requests_mock", "pytest-mock"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-gitlab=source_gitlab.run:run",
+        ],
+    },
     name="source_gitlab",
     description="Source implementation for Gitlab.",
     author="Airbyte",

@@ -5,7 +5,7 @@
 
 from dataclasses import dataclass
 from logging import Logger
-from typing import Any, List
+from typing import Any, List, Optional
 
 import asyncclick as click
 import asyncer
@@ -47,10 +47,12 @@ STDERR:
 @dataclass
 class LogOptions:
     quiet: bool = True
-    help_message: str = None
+    help_message: Optional[str] = None
 
 
-def log_command_results(ctx: click.Context, command_results: List[CommandResult], logger: Logger, options: LogOptions = LogOptions()):
+def log_command_results(
+    ctx: click.Context, command_results: List[CommandResult], logger: Logger, options: LogOptions = LogOptions()
+) -> None:
     """
     Log the output of the subcommands run by `run_all_subcommands`.
     """
@@ -95,4 +97,4 @@ def get_all_sibling_commands(ctx: click.Context) -> List[click.Command]:
     """
     Get all sibling commands of the current command.
     """
-    return [c for c in ctx.parent.command.commands.values() if c.name != ctx.command.name]
+    return [c for c in ctx.parent.command.commands.values() if c.name != ctx.command.name]  # type: ignore

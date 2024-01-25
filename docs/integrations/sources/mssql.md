@@ -109,7 +109,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
   @source_schema = N'{schema name}',
   @source_name   = N'{table name}',
   @role_name     = N'{role name}',  [1]
-  @filegroup_name = N'{fiilegroup name}', [2]
+  @filegroup_name = N'{filegroup name}', [2]
   @supports_net_changes = 0 [3]
   GO
   ```
@@ -342,8 +342,12 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.0   | 2024-01-10 | [33700](https://github.com/airbytehq/airbyte/pull/33700)                                                          | Remove CDC config options for data_to_sync and snapshot isolation.                                                                              |
+| 3.5.1   | 2024-01-05 | [33510](https://github.com/airbytehq/airbyte/pull/33510)                                                          | Test-only changes.                                                                                                                              |
+| 3.5.0   | 2023-12-19 | [33071](https://github.com/airbytehq/airbyte/pull/33071)                                                          | Fix SSL configuration parameters                                                                                                                |
+| 3.4.1   | 2024-01-02 | [33755](https://github.com/airbytehq/airbyte/pull/33755)                                                          | Encode binary to base64 format                                                                                                                  |
 | 3.4.0   | 2023-12-19 | [33481](https://github.com/airbytehq/airbyte/pull/33481)                                                          | Remove LEGACY state flag                                                                                                                        |
-| 3.3.2   | 2023-12-14 | [33505](https://github.com/airbytehq/airbyte/pull/33225)                                                          | Using the released CDK.                                                                                                                         |
+| 3.3.2   | 2023-12-14 | [33505](https://github.com/airbytehq/airbyte/pull/33505)                                                          | Using the released CDK.                                                                                                                         |
 | 3.3.1   | 2023-12-12 | [33225](https://github.com/airbytehq/airbyte/pull/33225)                                                          | extracting MsSql specific files out of the CDK.                                                                                                 |
 | 3.3.0   | 2023-12-12 | [33018](https://github.com/airbytehq/airbyte/pull/33018)                                                          | Migrate to Per-stream/Global states and away from Legacy states                                                                                 |
 | 3.2.1   | 2023-12-11 | [33330](https://github.com/airbytehq/airbyte/pull/33330)                                                          | Parse DatetimeOffset fields with the correct format when used as cursor                                                                         |

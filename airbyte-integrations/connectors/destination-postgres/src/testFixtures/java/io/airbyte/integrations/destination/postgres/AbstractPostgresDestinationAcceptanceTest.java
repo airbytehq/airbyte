@@ -89,4 +89,9 @@ public abstract class AbstractPostgresDestinationAcceptanceTest extends JdbcDest
     return true;
   }
 
+  @Override
+  protected boolean supportsInDestinationNormalization() {
+    return true;
+  }
+
 }

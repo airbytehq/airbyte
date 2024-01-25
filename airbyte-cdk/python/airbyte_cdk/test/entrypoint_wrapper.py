@@ -136,6 +136,7 @@ def read(
                     make_file(tmp_directory_path / "state.json", state),
                 ]
             )
+        args.append("--debug")
         source_entrypoint = AirbyteEntrypoint(source)
         parsed_args = source_entrypoint.parse_args(args)
 

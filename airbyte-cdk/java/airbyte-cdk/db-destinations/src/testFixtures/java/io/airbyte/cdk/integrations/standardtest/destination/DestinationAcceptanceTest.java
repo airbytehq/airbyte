@@ -1268,6 +1268,13 @@ public abstract class DestinationAcceptanceTest {
         .stream()
         .filter(m -> m.getType() == Type.STATE)
         .findFirst()
+        .map(msg -> {
+          // Modify state message to remove destination stats.
+          final AirbyteStateMessage clone = msg.getState();
+          clone.setDestinationStats(null);
+          msg.setState(clone);
+          return msg;
+        })
         .orElseGet(() -> {
           fail("Destination failed to output state");
           return null;

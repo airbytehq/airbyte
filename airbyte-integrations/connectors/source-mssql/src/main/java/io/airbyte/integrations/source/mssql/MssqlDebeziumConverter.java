@@ -13,7 +13,6 @@ import io.airbyte.cdk.integrations.debezium.internals.DebeziumConverterUtils;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import java.math.BigDecimal;
-import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -22,6 +21,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import microsoft.sql.DateTimeOffset;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,7 +197,7 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
       }
 
       if (input instanceof byte[]) {
-        return new String((byte[]) input, Charset.defaultCharset());
+        return Base64.encodeBase64String((byte[]) input);
       }
 
       LOGGER.warn("Uncovered binary class type '{}'. Use default converter",

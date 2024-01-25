@@ -133,7 +133,7 @@ When you are done testing, you can disable or delete this testing connection, an
 If you have written downstream transformations directly from the output of raw tables, or use the "Raw JSON" normalization setting, you should know that:
 
 - Multiple column names are being updated (from `airbyte_ab_id` to `airbyte_raw_id`, and `airbyte_emitted_at` to `airbyte_extracted_at`).
-- The location of raw tables will from now on default to an `airbyte` schema in your destination.
+- The location of raw tables will from now on default to an `airbyte_internal` schema in your destination.
 - When you upgrade to a [Destinations V2 compatible version](#destinations-v2-effective-versions) of your destination, we will leave a copy of your existing raw tables as they are, and new syncs will work from a new copy we make in the new `airbyte_internal` schema. Although existing downstream dashboards will go stale, they will not be broken.
 - You can dual write by following the [steps above](#upgrading-connections-one-by-one-with-dual-writing) and copying your raw data to the schema of your newly created connection.
 
@@ -158,7 +158,7 @@ For each destination connector, Destinations V2 is effective as of the following
 | --------------------- | --------------------- | -------------------------- | ------------------------ |
 | BigQuery              | 1.10.2                | 2.0.6+                     | November 7, 2023         |
 | Snowflake             | 2.1.7                 | 3.1.0+                     | November 7, 2023         |
-| Redshift              | 0.6.11                | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| Redshift              | 0.8.0                 | 2.0.0+                     | March 15, 2024           |
 | Postgres              | 0.4.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
 | MySQL                 | 0.2.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
 

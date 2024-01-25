@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 0.5.0
+  dockerImageTag: 0.6.0
   dockerRepository: airbyte/destination-postgres
   documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   githubIssueLabel: destination-postgres
@@ -18,11 +18,9 @@ data:
     normalizationTag: 0.4.3
   registries:
     cloud:
-      dockerImageTag: 0.4.0
       dockerRepository: airbyte/destination-postgres-strict-encrypt
       enabled: true
     oss:
-      dockerImageTag: 0.4.0
       enabled: true
   releaseStage: alpha
   supportLevel: community
