@@ -20,6 +20,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.containers import internal_tools
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.helpers.utils import METADATA_FILE_NAME
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult, StepStatus
 
@@ -296,7 +297,9 @@ class AcceptanceTests(Step):
         if self.context.connector_acceptance_test_image.endswith(":dev"):
             cat_container = self.context.connector_acceptance_test_source_dir.docker_build()
         else:
-            cat_container = self.dagger_client.container().from_(self.context.connector_acceptance_test_image)
+            cat_container = self.dagger_client.container().from_(
+                get_image_name_with_registry_index(self.context.connector_acceptance_test_image)
+            )
 
         connector_container_id = await connector_under_test_container.id()
 

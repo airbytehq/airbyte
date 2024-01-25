@@ -12,6 +12,7 @@ from pipelines import consts
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers import utils
 from pipelines.helpers.connectors.modifed import get_connector_modified_files, get_modified_connectors
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from tests.utils import pick_a_random_connector
 
 
@@ -177,7 +178,7 @@ async def test_check_path_in_workdir(dagger_client):
     connector = Connector("source-openweather")
     container = (
         dagger_client.container()
-        .from_("bash")
+        .from_(get_image_name_with_registry_index("bash"))
         .with_mounted_directory(str(connector.code_directory), dagger_client.host().directory(str(connector.code_directory)))
         .with_workdir(str(connector.code_directory))
     )
@@ -208,7 +209,7 @@ async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_
         host_image_export_dir_path=tmp_path,
         git_revision="my_git_revision",
     )
-    container = dagger_client.container().from_("bash:latest")
+    container = dagger_client.container().from_(get_image_name_with_registry_index("bash:latest"))
     platform = consts.LOCAL_BUILD_PLATFORM
 
     expected_tar_file_path = (

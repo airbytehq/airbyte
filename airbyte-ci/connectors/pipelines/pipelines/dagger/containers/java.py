@@ -7,13 +7,14 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineCo
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions.connector.hooks import finalize_build
 from pipelines.dagger.actions.connector.normalization import DESTINATION_NORMALIZATION_BUILD_CONFIGURATION, with_normalization
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.helpers.utils import sh_dash_c
 
 
 def with_integration_base(context: PipelineContext, build_platform: Platform) -> Container:
     return (
         context.dagger_client.container(platform=build_platform)
-        .from_("amazonlinux:2022.0.20220831.1")
+        .from_(get_image_name_with_registry_index("amazonlinux:2022.0.20220831.1"))
         .with_workdir("/airbyte")
         .with_file("base.sh", context.get_repo_dir("airbyte-integrations/bases/base", include=["base.sh"]).file("base.sh"))
         .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
@@ -32,7 +33,7 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
     return (
         context.dagger_client.container(platform=build_platform)
         # Use a linux+jdk base image with long-term support, such as amazoncorretto.
-        .from_(AMAZONCORRETTO_IMAGE)
+        .from_(get_image_name_with_registry_index(AMAZONCORRETTO_IMAGE))
         # Install a bunch of packages as early as possible.
         .with_exec(
             sh_dash_c(

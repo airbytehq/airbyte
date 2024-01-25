@@ -10,6 +10,7 @@ from unittest.mock import patch
 import anyio
 import pytest
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.models.steps import StepStatus
 
 pytestmark = [
@@ -76,7 +77,7 @@ class TestUploadSpecToCache:
         image_name = f"{random_connector['dockerRepository']}:{random_connector['dockerImageTag']}"
         publish_context.docker_image = image_name
         expected_spec = random_connector["spec"]
-        connector_container = dagger_client.container().from_(image_name)
+        connector_container = dagger_client.container().from_(get_image_name_with_registry_index(image_name))
 
         upload_exit_code = 0 if successful_upload else 1
         mocker.patch.object(

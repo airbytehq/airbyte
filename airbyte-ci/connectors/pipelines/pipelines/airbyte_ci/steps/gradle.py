@@ -10,6 +10,7 @@ from dagger import CacheSharingMode, CacheVolume
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.steps import Step, StepResult
 
@@ -93,7 +94,7 @@ class GradleTask(Step, ABC):
         gradle_container_base = (
             self.dagger_client.container()
             # Use a linux+jdk base image with long-term support, such as amazoncorretto.
-            .from_(AMAZONCORRETTO_IMAGE)
+            .from_(get_image_name_with_registry_index(AMAZONCORRETTO_IMAGE))
             # Mount the dependency cache volume, but not to $GRADLE_HOME, because gradle doesn't expect concurrent modifications.
             .with_mounted_cache(self.GRADLE_DEP_CACHE_PATH, self.dependency_cache_volume, sharing=CacheSharingMode.LOCKED)
             # Set GRADLE_HOME to the directory which will be rsync-ed with the gradle cache volume.

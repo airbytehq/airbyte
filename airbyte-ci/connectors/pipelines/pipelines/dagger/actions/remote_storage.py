@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from dagger import Client, File, Secret
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.helpers.utils import get_exec_result, secret_host_variable, with_exit_code
 
 GOOGLE_CLOUD_SDK_TAG = "425.0.0-slim"
@@ -30,7 +31,7 @@ async def upload_to_s3(dagger_client: Client, file_to_upload_path: Path, key: st
     file_to_upload: File = dagger_client.host().directory(".", include=[str(file_to_upload_path)]).file(str(file_to_upload_path))
     return await with_exit_code(
         dagger_client.container()
-        .from_("amazon/aws-cli:latest")
+        .from_(get_image_name_with_registry_index("amazon/aws-cli:latest"))
         .with_file(str(file_to_upload_path), file_to_upload)
         .with_(secret_host_variable(dagger_client, "AWS_ACCESS_KEY_ID"))
         .with_(secret_host_variable(dagger_client, "AWS_SECRET_ACCESS_KEY"))
@@ -67,7 +68,7 @@ async def upload_to_gcs(
 
     gcloud_container = (
         dagger_client.container()
-        .from_(f"google/cloud-sdk:{GOOGLE_CLOUD_SDK_TAG}")
+        .from_(get_image_name_with_registry_index(f"google/cloud-sdk:{GOOGLE_CLOUD_SDK_TAG}"))
         .with_workdir("/upload")
         .with_new_file("credentials.json", contents=await gcs_credentials.plaintext())
         .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/upload/credentials.json")

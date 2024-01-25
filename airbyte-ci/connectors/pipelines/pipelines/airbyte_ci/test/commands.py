@@ -13,6 +13,7 @@ import asyncer
 from pipelines.cli.click_decorators import click_ci_requirements_option, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.consts import DOCKER_HOST_NAME, DOCKER_HOST_PORT, DOCKER_VERSION
 from pipelines.dagger.actions.system import docker
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 
@@ -111,7 +112,7 @@ async def test(pipeline_context: ClickPipelineContext) -> None:
 
     test_container = await (
         dagger_client.container()
-        .from_("python:3.10.12")
+        .from_(get_image_name_with_registry_index("python:3.10.12"))
         .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
         .with_exec(
             sh_dash_c(

@@ -16,6 +16,7 @@ from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST, REPO_
 from pipelines.consts import GIT_IMAGE
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.cli import LogOptions, log_command_results
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 from pipelines.models.steps import CommandResult, StepStatus
@@ -90,7 +91,7 @@ class FormatCommand(click.Command):
 
         return (
             dagger_client.container()
-            .from_(GIT_IMAGE)
+            .from_(get_image_name_with_registry_index(GIT_IMAGE))
             .with_workdir(REPO_MOUNT_PATH)
             .with_mounted_directory(REPO_MOUNT_PATH, dir_to_format)
             # All with_exec commands below will re-run if the to_format directory changes

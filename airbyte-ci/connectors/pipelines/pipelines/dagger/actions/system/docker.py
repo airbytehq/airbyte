@@ -18,6 +18,7 @@ from pipelines.consts import (
     DOCKER_VAR_LIB_VOLUME_NAME,
     STORAGE_DRIVER,
 )
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.helpers.utils import sh_dash_c
 
 
@@ -37,7 +38,7 @@ def get_base_dockerd_container(dagger_client: Client) -> Container:
     ]
     base_container = (
         dagger_client.container()
-        .from_(consts.DOCKER_DIND_IMAGE)
+        .from_(get_image_name_with_registry_index(consts.DOCKER_DIND_IMAGE))
         # We set this env var because we need to use a non-default zombie reaper setting.
         # The reason for this is that by default it will want to set its parent process ID to 1 when reaping.
         # This won't be possible because of container-ception: dind is running inside the dagger engine.
@@ -184,7 +185,7 @@ def with_docker_cli(context: ConnectorContext) -> Container:
     Returns:
         Container: A docker cli container bound to a docker host.
     """
-    docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
+    docker_cli = context.dagger_client.container().from_(get_image_name_with_registry_index(consts.DOCKER_CLI_IMAGE))
     return with_bound_docker_host(context, docker_cli)
 
 
@@ -219,7 +220,9 @@ def with_crane(
 
     # We use the debug image as it contains a shell which we need to properly use environment variables
     # https://github.com/google/go-containerregistry/tree/main/cmd/crane#images
-    base_container = context.dagger_client.container().from_("gcr.io/go-containerregistry/crane/debug:v0.15.1")
+    base_container = context.dagger_client.container().from_(
+        get_image_name_with_registry_index("go-containerregistry/crane/debug:v0.15.1", registry_index="gcr.io")
+    )
 
     if context.docker_hub_username_secret and context.docker_hub_password_secret:
         base_container = (

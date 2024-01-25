@@ -3,6 +3,7 @@
 from typing import Optional
 
 from dagger import Client, Container
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.helpers.utils import AIRBYTE_REPO_URL
 
 
@@ -17,7 +18,7 @@ async def checked_out_git_container(
     diffed_branch = current_git_branch if diffed_branch is None else diffed_branch.removeprefix("origin/")
     return await (
         dagger_client.container()
-        .from_("alpine/git:latest")
+        .from_(get_image_name_with_registry_index("alpine/git:latest"))
         .with_workdir("/repo")
         .with_exec(["init"])
         .with_env_variable("CACHEBUSTER", current_git_revision)

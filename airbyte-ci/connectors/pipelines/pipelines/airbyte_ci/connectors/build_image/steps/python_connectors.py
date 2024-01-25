@@ -10,6 +10,7 @@ from pipelines.airbyte_ci.connectors.build_image.steps import build_customizatio
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python.common import apply_python_development_overrides, with_python_connector_installed
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.models.steps import StepResult
 
 
@@ -34,7 +35,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     def _get_base_container(self, platform: Platform) -> Container:
         base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
         self.logger.info(f"Building connector from base image {base_image_name}")
-        return self.dagger_client.container(platform=platform).from_(base_image_name)
+        return self.dagger_client.container(platform=platform).from_(get_image_name_with_registry_index(base_image_name))
 
     async def _create_builder_container(self, base_container: Container) -> Container:
         """Pre install the connector dependencies in a builder container.

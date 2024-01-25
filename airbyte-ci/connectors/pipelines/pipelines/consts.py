@@ -51,6 +51,7 @@ DOCS_DIRECTORY_ROOT_PATH = "docs/"
 GCS_PUBLIC_DOMAIN = "https://storage.cloud.google.com"
 DOCKER_HOST_NAME = "global-docker-host"
 DOCKER_HOST_PORT = 2375
+DOCKER_REGISTRY_INDEX = os.environ.get("DOCKER_REGISTRY_INDEX", "docker.io")
 DOCKER_TMP_VOLUME_NAME = "shared-tmp"
 DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache"
 STATIC_REPORT_PREFIX = "airbyte-ci"

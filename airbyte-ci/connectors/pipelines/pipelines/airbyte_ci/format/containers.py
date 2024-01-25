@@ -8,6 +8,7 @@ import dagger
 from pipelines.airbyte_ci.format.consts import CACHE_MOUNT_PATH, DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS, Formatter
 from pipelines.consts import GO_IMAGE, MAVEN_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
 from pipelines.helpers import cache_keys
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.helpers.utils import sh_dash_c
 
 
@@ -34,7 +35,7 @@ def build_container(
         dagger.Container: The container to use for formatting
     """
     # Create container from base image
-    container = dagger_client.container().from_(base_image)
+    container = dagger_client.container().from_(get_image_name_with_registry_index(base_image))
 
     # Add any environment variables
     for key, value in env_vars.items():

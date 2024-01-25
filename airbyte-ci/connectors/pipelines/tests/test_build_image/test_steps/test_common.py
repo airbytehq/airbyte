@@ -9,6 +9,7 @@ import docker
 import pytest
 from pipelines.airbyte_ci.connectors.build_image.steps import common
 from pipelines.consts import LOCAL_BUILD_PLATFORM
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.models.steps import StepStatus
 
 pytestmark = [
@@ -88,7 +89,7 @@ class TestLoadContainerToLocalDockerHost:
         """Test that the step fails if the export of the container fails."""
         built_containers = {
             LOCAL_BUILD_PLATFORM: dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(
-                f'{test_context.connector.metadata["dockerRepository"]}:latest'
+                get_image_name_with_registry_index(f'{test_context.connector.metadata["dockerRepository"]}:latest')
             )
         }
         step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
@@ -102,7 +103,7 @@ class TestLoadContainerToLocalDockerHost:
         """Test that the step fails if the connection to the docker host fails."""
         built_containers = {
             LOCAL_BUILD_PLATFORM: dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(
-                f'{test_context.connector.metadata["dockerRepository"]}:latest'
+                get_image_name_with_registry_index(f'{test_context.connector.metadata["dockerRepository"]}:latest')
             )
         }
         step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
@@ -115,7 +116,7 @@ class TestLoadContainerToLocalDockerHost:
         """Test that the step fails if the docker import of the tar fails."""
         built_containers = {
             LOCAL_BUILD_PLATFORM: dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(
-                f'{test_context.connector.metadata["dockerRepository"]}:latest'
+                get_image_name_with_registry_index(f'{test_context.connector.metadata["dockerRepository"]}:latest')
             )
         }
         step = common.LoadContainerToLocalDockerHost(test_context, built_containers)

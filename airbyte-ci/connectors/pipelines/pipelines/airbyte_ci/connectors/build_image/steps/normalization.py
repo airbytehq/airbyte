@@ -5,6 +5,7 @@
 from dagger import Platform
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.connector import normalization
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
@@ -35,5 +36,5 @@ class BuildOrPullNormalization(Step):
         if self.use_dev_normalization:
             build_normalization_container = normalization.with_normalization(self.context, self.build_platform)
         else:
-            build_normalization_container = self.context.dagger_client.container().from_(self.normalization_image)
+            build_normalization_container = self.context.dagger_client.container().from_(get_image_name_with_registry_index(self.normalization_image))
         return StepResult(self, StepStatus.SUCCESS, output_artifact=build_normalization_container)

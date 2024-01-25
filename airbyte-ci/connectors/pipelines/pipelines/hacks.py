@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, List
 
 from pipelines import consts
+from pipelines.helpers.docker import get_image_name_with_registry_index
 
 if TYPE_CHECKING:
     from dagger import Container
@@ -39,7 +40,7 @@ async def cache_latest_cdk(context: ConnectorContext) -> None:
 
     await (
         context.dagger_client.container()
-        .from_("python:3.9-slim")
+        .from_(get_image_name_with_registry_index("python:3.9-slim"))
         .with_mounted_cache(consts.PIP_CACHE_PATH, context.dagger_client.cache_volume(consts.PIP_CACHE_VOLUME_NAME))
         .with_env_variable("CACHEBUSTER", cachebuster_value)
         .with_exec(["pip", "install", "--force-reinstall", "airbyte-cdk", "-vvv"])

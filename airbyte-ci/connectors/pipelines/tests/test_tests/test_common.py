@@ -15,6 +15,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps import common
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.models.steps import StepStatus
 
 pytestmark = [
@@ -28,7 +29,7 @@ class TestAcceptanceTests:
         secret_file_paths = secret_file_paths or []
         container = (
             dagger_client.container()
-            .from_("bash:latest")
+            .from_(get_image_name_with_registry_index("bash:latest"))
             .with_exec(["mkdir", "-p", common.AcceptanceTests.CONTAINER_TEST_INPUT_DIRECTORY])
             .with_exec(["mkdir", "-p", common.AcceptanceTests.CONTAINER_SECRETS_DIRECTORY])
         )
@@ -56,11 +57,11 @@ class TestAcceptanceTests:
 
     @pytest.fixture
     def dummy_connector_under_test_container(self, dagger_client) -> dagger.Container:
-        return dagger_client.container().from_("airbyte/source-faker:latest")
+        return dagger_client.container().from_(get_image_name_with_registry_index("airbyte/source-faker:latest"))
 
     @pytest.fixture
     def another_dummy_connector_under_test_container(self, dagger_client) -> dagger.File:
-        return dagger_client.container().from_("airbyte/source-pokeapi:latest")
+        return dagger_client.container().from_(get_image_name_with_registry_index("airbyte/source-pokeapi:latest"))
 
     async def test_skipped_when_no_acceptance_test_config(self, mocker, test_context_ci):
         test_context_ci.connector = mocker.MagicMock(acceptance_test_config=None)

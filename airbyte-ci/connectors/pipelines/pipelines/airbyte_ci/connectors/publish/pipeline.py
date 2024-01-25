@@ -17,6 +17,7 @@ from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValid
 from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry, PythonRegistryPublishContext
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.helpers.pip import is_package_published
 from pipelines.models.steps import Step, StepResult, StepStatus
 from pydantic import ValidationError
@@ -139,7 +140,9 @@ class PullConnectorImageFromRegistry(Step):
     async def _run(self, attempt: int = 3) -> StepResult:
         try:
             try:
-                await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image}").with_exec(["spec"])
+                await self.context.dagger_client.container().from_(
+                    get_image_name_with_registry_index({self.context.docker_image})
+                ).with_exec(["spec"])
             except ExecError:
                 if attempt > 0:
                     await anyio.sleep(10)
@@ -294,7 +297,9 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 context.logger.info(
                     "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened."
                 )
-                already_published_connector = context.dagger_client.container().from_(context.docker_image)
+                already_published_connector = context.dagger_client.container().from_(
+                    get_image_name_with_registry_index(context.docker_image)
+                )
                 upload_to_spec_cache_results = await UploadSpecToCache(context).run(already_published_connector)
                 results.append(upload_to_spec_cache_results)
                 if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:

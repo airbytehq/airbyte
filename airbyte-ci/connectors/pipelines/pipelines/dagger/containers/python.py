@@ -12,6 +12,7 @@ from pipelines.consts import (
     POETRY_CACHE_VOLUME_NAME,
     PYPROJECT_TOML_FILE_PATH,
 )
+from pipelines.helpers.docker import get_image_name_with_registry_index
 from pipelines.helpers.utils import sh_dash_c
 
 
@@ -33,7 +34,7 @@ def with_python_base(context: PipelineContext, python_version: str = "3.10") -> 
 
     base_container = (
         context.dagger_client.container()
-        .from_(f"python:{python_version}-slim")
+        .from_(get_image_name_with_registry_index(f"python:{python_version}-slim"))
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(
             sh_dash_c(
