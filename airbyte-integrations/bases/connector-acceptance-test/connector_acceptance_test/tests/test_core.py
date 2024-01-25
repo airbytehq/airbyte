@@ -120,6 +120,12 @@ class TestSpec(BaseTest):
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
         return False
 
+    @pytest.fixture(name="skip_oauth_default_method_test")
+    def skip_oauth_default_method_test_fixture(self, inputs: SpecTestConfig):
+        if inputs.auth_default_method and not inputs.auth_default_method.oauth:
+            pytest.skip(f"Skipping OAuth is default method test: {inputs.auth_default_method.bypass_reason}")
+        return False
+
     def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
         """Check that config matches the actual schema from the spec call"""
         # Getting rid of technical variables that start with an underscore
@@ -520,6 +526,29 @@ class TestSpec(BaseTest):
 
         diff = paths_to_validate - set(get_expected_schema_structure(spec_schema))
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
+
+    def test_oauth_is_default_method(self, skip_oauth_default_method_test: bool, actual_connector_spec: ConnectorSpecification):
+        """
+        OAuth is default check.
+        If credentials do have oneOf: we check that the OAuth is listed at first.
+        If there is no oneOf and Oauth: OAuth is only option to authenticate the source and no check is needed.
+        """
+        advanced_auth = actual_connector_spec.advanced_auth
+        if not advanced_auth:
+            pytest.skip("Source does not have OAuth method.")
+
+        spec_schema = actual_connector_spec.connectionSpecification
+        credentials = advanced_auth.predicate_key[0]
+        try:
+            one_of_default_method = dpath.util.get(spec_schema, f"/**/{credentials}/oneOf/0")
+        except KeyError as e:  # Key Error when oneOf is not in credentials object
+            pytest.skip("Credentials object does not have oneOf option.")
+
+        path_in_credentials = "/".join(advanced_auth.predicate_key[1:])
+        auth_method_predicate_const = dpath.util.get(one_of_default_method, f"/**/{path_in_credentials}/const")
+        assert (
+            auth_method_predicate_const == advanced_auth.predicate_value
+        ), f"Oauth method should be a default option. Current default method is {auth_method_predicate_const}."
 
     @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility
