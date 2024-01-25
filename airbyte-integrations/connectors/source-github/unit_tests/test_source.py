@@ -42,7 +42,7 @@ def check_source(repo_line: str) -> AirbyteConnectionStatus:
         ({"access_token": "test_token", "repository": "airbyte/test"}, True),
     ),
 )
-def test_check_start_date(config, expected):
+def test_check_start_date(config, expected, rate_limit_mock_response):
     responses.add(responses.GET, "https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "test_full_name"})
     source = SourceGithub()
     status, _ = source.check_connection(logger=logging.getLogger("airbyte"), config=config)
@@ -73,18 +73,18 @@ def test_connection_fail_due_to_config_error(api_url, deployment_env, expected_m
 
 
 @responses.activate
-def test_check_connection_repos_only():
+def test_check_connection_repos_only(rate_limit_mock_response):
     responses.add("GET", "https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte"})
 
     status = check_source("airbytehq/airbyte airbytehq/airbyte airbytehq/airbyte")
     assert not status.message
     assert status.status == Status.SUCCEEDED
     # Only one request since 3 repos have same name
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
 
 
 @responses.activate
-def test_check_connection_repos_and_org_repos():
+def test_check_connection_repos_and_org_repos(rate_limit_mock_response):
     repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(1000)]
     responses.add(
         "GET", "https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test", "organization": {"login": "airbyte"}}
@@ -99,11 +99,11 @@ def test_check_connection_repos_and_org_repos():
     assert not status.message
     assert status.status == Status.SUCCEEDED
     # Two requests for repos and two for organization
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 5
 
 
 @responses.activate
-def test_check_connection_org_only():
+def test_check_connection_org_only(rate_limit_mock_response):
     repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(1000)]
     responses.add("GET", "https://api.github.com/orgs/airbytehq/repos", json=repos)
 
@@ -111,7 +111,7 @@ def test_check_connection_org_only():
     assert not status.message
     assert status.status == Status.SUCCEEDED
     # One request to check organization
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -183,7 +183,7 @@ def test_get_org_repositories():
     assert set(organisations) == {"airbytehq", "docker"}
 
 
-def test_organization_or_repo_available(monkeypatch):
+def test_organization_or_repo_available(monkeypatch, rate_limit_mock_response):
     monkeypatch.setattr(SourceGithub, "_get_org_repositories", MagicMock(return_value=(False, False)))
     source = SourceGithub()
     with pytest.raises(Exception) as exc_info:
@@ -238,7 +238,7 @@ def test_check_config_repository():
             assert command_check(source, config)
 
 
-def test_streams_no_streams_available_error(monkeypatch):
+def test_streams_no_streams_available_error(monkeypatch, rate_limit_mock_response):
     monkeypatch.setattr(SourceGithub, "_get_org_repositories", MagicMock(return_value=(False, False)))
     with pytest.raises(AirbyteTracedException) as e:
         SourceGithub().streams(config={"access_token": "test_token", "repository": "airbytehq/airbyte-test"})

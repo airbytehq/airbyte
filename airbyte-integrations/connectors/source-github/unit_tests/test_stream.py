@@ -918,7 +918,7 @@ def test_stream_reviews_incremental_read():
 
 
 @responses.activate
-def test_stream_team_members_full_refresh(caplog):
+def test_stream_team_members_full_refresh(caplog, rate_limit_mock_response):
     organization_args = {"organizations": ["org1"]}
     repository_args = {"repositories": [], "page_size_for_large_streams": 100}
 
@@ -1305,7 +1305,7 @@ def test_stream_pull_request_comment_reactions_read():
 
 
 @responses.activate
-def test_stream_projects_v2_graphql_retry():
+def test_stream_projects_v2_graphql_retry(rate_limit_mock_response):
     repository_args_with_start_date = {
         "start_date": "2022-01-01T00:00:00Z",
         "page_size_for_large_streams": 20,
