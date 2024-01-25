@@ -2,9 +2,9 @@
 
 import json
 from typing import Dict, List, Optional
-import urllib3
 
 import requests
+import urllib3
 
 
 class AstraClient:

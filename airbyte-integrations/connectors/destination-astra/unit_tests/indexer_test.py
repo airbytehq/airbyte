@@ -155,6 +155,7 @@ def test_astra_pre_sync():
 def test_astra_check(collection_name, describe_throws, reported_dimensions, check_succeeds, error_message):
     indexer = create_astra_indexer()
 
+    indexer.client.create_collection = MagicMock()
     indexer.client.find_collections = MagicMock()
     indexer.client.find_collections.return_value = [create_index_description(collection_name=collection_name, dimensions=reported_dimensions)]
 
