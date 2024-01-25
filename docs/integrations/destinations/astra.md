@@ -1,6 +1,7 @@
 # Astra Destination
 
 This page contains the setup guide and reference information for the destination-astra connector.
+
 ## Pre-Requisites
 
 - An OpenAI, AzureOpenAI, Cohere, etc. API Key
