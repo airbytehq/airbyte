@@ -11,11 +11,8 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 
 def getter(D: dict, key_or_keys, strict=True):
@@ -35,6 +32,10 @@ def read_full_refresh(stream_instance: Stream):
         records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
         for record in records:
             yield record
+
+
+class GitHubAPILimitException(Exception):
+    """General class for Rate Limits errors"""
 
 
 @dataclass
@@ -79,8 +80,8 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
 
     def __call__(self, request):
         """Attach the HTTP headers required to authenticate on the HTTP request"""
-        current_token = self._tokens[self.current_active_token]
         while True:
+            current_token = self._tokens[self.current_active_token]
             if "graphql" in request.path_url:
                 if self.process_token(current_token, "count_graphql", "reset_at_graphql"):
                     break
@@ -137,13 +138,11 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             return True
         elif all(getattr(x, count_attr) == 0 for x in self._tokens.values()):
             min_time_to_wait = min((getattr(x, reset_attr) - pendulum.now()).in_seconds() for x in self._tokens.values())
-            if min_time_to_wait < HttpStream.max_time:
+            if min_time_to_wait < 600:  # see HttpStream.max_time
                 time.sleep(min_time_to_wait)
                 self.check_all_tokens()
             else:
-                raise AirbyteTracedException(
-                    failure_type=FailureType.config_error, message=f"Rate limits for all tokens ({count_attr}) were reached"
-                )
+                raise GitHubAPILimitException(f"Rate limits for all tokens ({count_attr}) were reached")
         else:
             self.update_token()
         return False

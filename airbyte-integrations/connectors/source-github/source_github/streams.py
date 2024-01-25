@@ -25,7 +25,7 @@ from .graphql import (
     get_query_pull_requests,
     get_query_reviews,
 )
-from .utils import getter
+from .utils import GitHubAPILimitException, getter
 
 
 class GithubStreamABC(HttpStream, ABC):
@@ -214,6 +214,8 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
 
             self.logger.warning(error_msg)
+        except GitHubAPILimitException:
+            self.logger.warning("Limits for all provided tokens were reached, please try again later")
 
 
 class GithubStream(GithubStreamABC):
