@@ -169,6 +169,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
     return SQLDialect.POSTGRES;
   }
 
+  @Override
   protected Field<?> toJsonValue(final String valueAsString) {
     return DSL.function("JSON_PARSE", String.class, DSL.val(escapeStringLiteral(valueAsString)));
   }

@@ -29,5 +29,5 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
   tags:
-    - language:lowcode
+    - language:low-code
 metadataSpecVersion: "1.0"

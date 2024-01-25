@@ -16,6 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-xero=source_xero.run:run",
+        ],
+    },
     name="source_xero",
     description="Source implementation for Xero.",
     author="Airbyte",

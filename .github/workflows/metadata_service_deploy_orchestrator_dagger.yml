@@ -8,9 +8,31 @@ on:
     paths:
       - "airbyte-ci/connectors/metadata_service/orchestrator/**"
 jobs:
+  get_ci_runner:
+    runs-on: ubuntu-latest
+    name: Get CI runner
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          fetch-depth: 1
+      - name: Get CI runner
+        id: get_ci_runner
+        uses: ./.github/actions/airbyte-ci-requirements
+        with:
+          runner_type: "test" # We don't have a specific runner for metadata, let's use the test one
+          runner_size: "large"
+          airbyte_ci_command: "metadata"
+          github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+    outputs:
+      runner_name: ${{ steps.get_ci_runner.outputs.runner_name }}
   connector_metadata_service_deploy_orchestrator:
     name: Connector metadata service deploy orchestrator
-    runs-on: ci-runner-connector-test-large-dagger-0-9-5
+    needs: get_ci_runner
+    runs-on: ${{ needs.get_ci_runner.outputs.runner_name }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2

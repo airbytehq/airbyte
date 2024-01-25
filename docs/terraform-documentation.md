@@ -9,3 +9,5 @@ Airbyte's Terraform provider enables you to automate & version-control your Airb
 The Terraform provider is available for users on Airbyte Cloud, OSS & Self-Managed Enterprise. 
 
 Check out our guide for [getting started with Airbyte's Terraform provider](https://reference.airbyte.com/reference/using-the-terraform-provider).
+
+Additionally, you can find examples of data stacks using the Terraform provider in our [quickstarts repository](https://github.com/airbytehq/quickstarts). 

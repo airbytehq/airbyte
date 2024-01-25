@@ -9,6 +9,11 @@ TEST_REQUIREMENTS = ["pytest-mock~=3.6.1", "pytest~=6.1", "responses~=0.19.0", "
 
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-mailchimp=source_mailchimp.run:run",
+        ],
+    },
     name="source_mailchimp",
     description="Source implementation for Mailchimp.",
     author="Airbyte",
