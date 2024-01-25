@@ -24,6 +24,7 @@ import airbyte_lib as ab
 
 from airbyte_lib.results import ReadResult
 from airbyte_lib import exceptions as exc
+import ulid
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -142,6 +143,57 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
     for stream_name, expected_data in expected_test_stream_data.items():
         pd.testing.assert_frame_equal(
             result[stream_name].to_pandas(),
+            pd.DataFrame(expected_data),
+            check_dtype=False,
+        )
+
+
+def test_read_from_cache(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    """
+    Test that we can read from a cache that already has data (identigier by name)
+    """
+    cache_name = str(ulid.ULID())
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.new_local_cache(cache_name)
+
+    source.read(cache)
+
+    # Create a new cache pointing to the same duckdb file
+    second_cache = ab.new_local_cache(cache_name)
+
+
+    for stream_name, expected_data in expected_test_stream_data.items():
+        pd.testing.assert_frame_equal(
+            second_cache[stream_name].to_pandas(),
+            pd.DataFrame(expected_data),
+            check_dtype=False,
+        )
+
+
+def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    """
+    Test that we can extend a cache with new streams
+    """
+    cache_name = str(ulid.ULID())
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.new_local_cache(cache_name)
+
+    source.set_streams(["stream1"])
+    source.read(cache)
+
+    # Assert that the cache only contains stream1
+    with pytest.raises(KeyError):
+        cache["stream2"]
+
+    # Create a new cache with the same name
+    second_cache = ab.new_local_cache(cache_name)
+    source.set_streams(["stream2"])
+    source.read(second_cache)
+
+
+    for stream_name, expected_data in expected_test_stream_data.items():
+        pd.testing.assert_frame_equal(
+            second_cache[stream_name].to_pandas(),
             pd.DataFrame(expected_data),
             check_dtype=False,
         )
