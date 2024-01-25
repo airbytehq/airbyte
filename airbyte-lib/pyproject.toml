@@ -14,7 +14,7 @@ airbyte-cdk = "^0.58.3"
 jsonschema = "3.2.0"
 orjson = "^3.9.10"
 overrides = "^7.4.0"
-pandas = "^2.1.4"
+pandas = "2.1.4" # 2.2.0 breaks sqlalchemy interop - TODO: optionally retest higher versions
 psycopg2-binary = "^2.9.9"
 python-ulid = "^2.2.0"
 types-pyyaml = "^6.0.12.12"
@@ -109,9 +109,11 @@ select = [
     "TD", # flake8-todos
     "TID", # flake8-tidy-imports
     "TRY", # tryceratops
+    "TRY002", # Disallow raising vanilla Exception. Create or use a custom exception instead.
+    "TRY003", # Disallow vanilla string passing. Prefer kwargs to the exception constructur.
     "UP", # pyupgrade
     "W", # pycodestyle (warnings)
-    "YTT" # flake8-2020
+    "YTT", # flake8-2020
 ]
 ignore = [
     # For rules reference, see https://docs.astral.sh/ruff/rules/
@@ -130,7 +132,6 @@ ignore = [
     "S", # flake8-bandit (noisy, security related)
     "TD002", # Require author for TODOs
     "TRIO", # flake8-trio (opinionated, noisy)
-    "TRY003",  # Exceptions with too-long string descriptions  # TODO: re-evaluate once we have our own exception classes
     "INP001", # Dir 'examples' is part of an implicit namespace package. Add an __init__.py.
 
     # TODO: Consider re-enabling these before release:
@@ -140,7 +141,6 @@ ignore = [
     "FIX002", # Allow "TODO:" until release (then switch to requiring links via TDO003)
     "PLW0603", # Using the global statement to update _cache is discouraged
     "TD003", # Require links for TODOs # TODO: Re-enable when we disable FIX002
-    "TRY002", # TODO: When we have time to tackle exception management ("Create your own exception")
 ]
 fixable = ["ALL"]
 unfixable = [
@@ -156,6 +156,7 @@ force-sort-within-sections = false
 lines-after-imports = 2
 known-first-party = ["airbyte_cdk", "airbyte_protocol"]
 known-local-folder = ["airbyte_lib"]
+required-imports = ["from __future__ import annotations"]
 known-third-party = []
 section-order = [
     "future",

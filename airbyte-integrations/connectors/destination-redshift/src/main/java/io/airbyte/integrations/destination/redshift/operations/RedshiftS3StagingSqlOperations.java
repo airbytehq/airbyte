@@ -71,7 +71,12 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public void createStageIfNotExists() throws Exception {
+  public String getStageName(String namespace, String streamName) {
+    return "garbage-unused";
+  }
+
+  @Override
+  public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
     s3StorageOperations.createBucketIfNotExists();
   }
 
@@ -79,6 +84,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   public String uploadRecordsToStage(final JdbcDatabase database,
                                      final SerializableBuffer recordsData,
                                      final String schemaName,
+                                     final String stageName,
                                      final String stagingPath)
       throws Exception {
     return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stagingPath);
@@ -92,6 +98,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   @Override
   public void copyIntoTableFromStage(final JdbcDatabase database,
+                                     final String stageName,
                                      final String stagingPath,
                                      final List<String> stagedFiles,
                                      final String tableName,
@@ -160,8 +167,9 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
-    s3StorageOperations.dropBucketObject(stageName);
+  public void dropStageIfExists(final JdbcDatabase database, final String stageName, final String stagingPath) throws Exception {
+    // stageName is unused here but used in Snowflake. This interface needs to be fixed.
+    s3StorageOperations.dropBucketObject(stagingPath);
   }
 
 }

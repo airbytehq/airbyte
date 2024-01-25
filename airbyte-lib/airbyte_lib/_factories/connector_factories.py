@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from airbyte_lib._executor import Executor, PathExecutor, VenvExecutor
+from airbyte_lib.exceptions import AirbyteLibInputError
 from airbyte_lib.registry import get_connector_metadata
 from airbyte_lib.source import Source
 
@@ -37,9 +38,13 @@ def get_connector(
     metadata = get_connector_metadata(name)
     if use_local_install:
         if pip_url:
-            raise ValueError("Param 'pip_url' is not supported when 'use_local_install' is True")
+            raise AirbyteLibInputError(
+                message="Param 'pip_url' is not supported when 'use_local_install' is True."
+            )
         if version:
-            raise ValueError("Param 'version' is not supported when 'use_local_install' is True")
+            raise AirbyteLibInputError(
+                message="Param 'version' is not supported when 'use_local_install' is True."
+            )
         executor: Executor = PathExecutor(
             metadata=metadata,
             target_version=version,
