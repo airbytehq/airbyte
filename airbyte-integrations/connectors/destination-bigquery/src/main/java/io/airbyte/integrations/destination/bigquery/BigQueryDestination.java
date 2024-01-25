@@ -457,6 +457,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   }
 
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
   public static void main(final String[] args) throws Exception {
     AirbyteExceptionHandler.addThrowableForDeinterpolation(BigQueryException.class);
     final Destination destination = new BigQueryDestination();

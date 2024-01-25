@@ -12,6 +12,8 @@ from airbyte_protocol.models import (
     Type,
 )
 
+from airbyte_lib import exceptions as exc
+
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
@@ -66,6 +68,10 @@ def get_primary_keys_from_stream(
         None,
     )
     if stream is None:
-        raise KeyError(f"Stream {stream_name} not found in catalog.")
+        raise exc.AirbyteStreamNotFoundError(
+            stream_name=stream_name,
+            connector_name=configured_catalog.connection.configuration["name"],
+            available_streams=[stream.stream.name for stream in configured_catalog.streams],
+        )
 
     return set(stream.stream.source_defined_primary_key or [])
