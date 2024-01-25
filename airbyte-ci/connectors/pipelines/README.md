@@ -91,6 +91,24 @@ However, this will not automatically install the dependencies for the local depe
 
 Its often best to use the `poetry` steps instead.
 
+#### Running Tests
+
+From `airbyte-ci/connectors/pipelines`:
+```bash
+poetry run pytest tests
+```
+
+You can also run a subset of tests:
+```bash
+poetry run pytest pipelines/models/steps.py
+```
+
+#### Checking Code Format (Pipelines)
+
+```bash
+poetry run ruff check pipelines
+```
+
 ## Commands reference
 
 At this point you can run `airbyte-ci` commands.
