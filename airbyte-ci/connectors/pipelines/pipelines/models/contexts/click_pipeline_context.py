@@ -86,6 +86,7 @@ class ClickPipelineContext(BaseModel, Singleton):
         if not self._dagger_client:
             async with self._dagger_client_lock:
                 if not self._dagger_client:
+
                     connection = dagger.Connection(dagger.Config(log_output=self.get_log_output()))
                     """
                     Sets up the '_dagger_client' attribute, intended for single-threaded use within connectors.
