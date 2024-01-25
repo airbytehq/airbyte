@@ -84,7 +84,7 @@ runs:
       id: get-dagger-version
       shell: bash
       run: |
-        dagger_version=$(airbyte-ci ${{ inputs.airbyte_ci_command }} --ci-requirements | tail -n 1 | jq -r '.dagger_version')
+        dagger_version=$(airbyte-ci --disable-update-check ${{ inputs.airbyte_ci_command }} --ci-requirements | tail -n 1 | jq -r '.dagger_version')
         echo "dagger_version=${dagger_version}" >> "$GITHUB_OUTPUT"
 
     - name: Get runner name
