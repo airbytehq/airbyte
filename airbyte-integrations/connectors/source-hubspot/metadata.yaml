@@ -35,6 +35,9 @@ data:
           This version brings extended schema with data types changes for the Marketing Emails stream.
           Users will need to refresh it and reset this stream after upgrading.
         upgradeDeadline: 2024-02-12
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["marketing_emails"]
   suggestedStreams:
     streams:
       - contacts

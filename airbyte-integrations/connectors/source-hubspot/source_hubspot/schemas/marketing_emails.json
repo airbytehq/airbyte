@@ -215,6 +215,9 @@
     "resolvedDomain": {
       "type": ["null", "string"]
     },
+    "rootMicId": {
+      "type": ["null", "string"]
+    },
     "selected": {
       "type": ["null", "integer"]
     },
@@ -478,152 +481,51 @@
             },
             "sections": {
               "type": ["null", "array"],
-              "items": [
-                {
-                  "type": ["null", "object"],
-                  "properties": {
-                    "columns": {
-                      "type": ["null", "array"],
-                      "items": [
-                        {
-                          "type": ["null", "object"],
-                          "properties": {
-                            "id": {
-                              "type": ["null", "string"]
-                            },
-                            "widgets": {
-                              "type": ["null", "array"],
-                              "items": [
-                                {
-                                  "type": ["null", "string"]
-                                }
-                              ]
-                            },
-                            "width": {
-                              "type": ["null", "integer"]
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    "id": {
-                      "type": ["null", "string"]
-                    },
-                    "style": {
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "columns": {
+                    "type": ["null", "array"],
+                    "items": {
                       "type": ["null", "object"],
                       "properties": {
-                        "backgroundColor": {
+                        "id": {
                           "type": ["null", "string"]
                         },
-                        "backgroundType": {
-                          "type": ["null", "string"]
+                        "widgets": {
+                          "type": ["null", "array"],
+                          "items": {
+                            "type": ["null", "string"]
+                          }
                         },
-                        "paddingBottom": {
-                          "type": ["null", "string"]
-                        },
-                        "paddingTop": {
-                          "type": ["null", "string"]
+                        "width": {
+                          "type": ["null", "integer"]
                         }
                       }
                     }
-                  }
-                },
-                {
-                  "type": ["null", "object"],
-                  "properties": {
-                    "columns": {
-                      "type": ["null", "array"],
-                      "items": [
-                        {
-                          "type": ["null", "object"],
-                          "properties": {
-                            "id": {
-                              "type": ["null", "string"]
-                            },
-                            "widgets": {
-                              "type": ["null", "array"],
-                              "items": [
-                                {
-                                  "type": ["null", "string"]
-                                }
-                              ]
-                            },
-                            "width": {
-                              "type": ["null", "integer"]
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    "id": {
-                      "type": ["null", "string"]
-                    },
-                    "style": {
-                      "type": ["null", "object"],
-                      "properties": {
-                        "backgroundType": {
-                          "type": ["null", "string"]
-                        },
-                        "paddingBottom": {
-                          "type": ["null", "string"]
-                        },
-                        "paddingTop": {
-                          "type": ["null", "string"]
-                        }
-                      }
-                    }
-                  }
-                },
-                {
-                  "type": ["null", "object"],
-                  "properties": {
-                    "columns": {
-                      "type": ["null", "array"],
-                      "items": [
-                        {
-                          "type": ["null", "object"],
-                          "properties": {
-                            "id": {
-                              "type": ["null", "string"]
-                            },
-                            "widgets": {
-                              "type": ["null", "array"],
-                              "items": [
-                                {
-                                  "type": ["null", "string"]
-                                }
-                              ]
-                            },
-                            "width": {
-                              "type": ["null", "integer"]
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    "id": {
-                      "type": ["null", "string"]
-                    },
-                    "style": {
-                      "type": ["null", "object"],
-                      "properties": {
-                        "backgroundColor": {
-                          "type": ["null", "string"]
-                        },
-                        "backgroundType": {
-                          "type": ["null", "string"]
-                        },
-                        "paddingBottom": {
-                          "type": ["null", "string"]
-                        },
-                        "paddingTop": {
-                          "type": ["null", "string"]
-                        }
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "style": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "backgroundColor": {
+                        "type": ["null", "string"]
+                      },
+                      "backgroundType": {
+                        "type": ["null", "string"]
+                      },
+                      "paddingBottom": {
+                        "type": ["null", "string"]
+                      },
+                      "paddingTop": {
+                        "type": ["null", "string"]
                       }
                     }
                   }
                 }
-              ]
+              }
             }
           }
         }
