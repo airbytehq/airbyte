@@ -147,10 +147,18 @@ def test_get_matching_files_empty_drive(setup_reader_class):
         list(instance.get_matching_files(globs, prefix, logger))
 
 
+@pytest.mark.parametrize(
+    "file_extension, expected_compression",
+    [
+        (".txt.gz", ".gz"),
+        (".txt.bz2", ".bz2"),
+        ("txt", "disable"),
+    ],
+)
 @patch("smart_open.open")
-def test_open_file(mock_smart_open):
+def test_open_file(mock_smart_open, file_extension, expected_compression):
     """Test the open_file method in SourceMicrosoftSharePointStreamReader."""
-    mock_file = Mock(download_url="http://example.com/file.txt", uri="file.txt")
+    mock_file = Mock(download_url=f"http://example.com/file.{file_extension}", uri=f"file.{file_extension}")
     mock_logger = Mock()
 
     stream_reader = SourceMicrosoftSharePointStreamReader()
@@ -159,7 +167,7 @@ def test_open_file(mock_smart_open):
     with stream_reader.open_file(mock_file, FileReadMode.READ, "utf-8", mock_logger) as result:
         pass
 
-    mock_smart_open.assert_called_once_with(mock_file.download_url, mode="r", encoding="utf-8", compression="disable")
+    mock_smart_open.assert_called_once_with(mock_file.download_url, mode="r", encoding="utf-8", compression=expected_compression)
     assert result is not None
 
 

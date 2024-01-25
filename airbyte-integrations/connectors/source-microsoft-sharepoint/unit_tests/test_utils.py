@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from unittest.mock import Mock, patch
@@ -31,7 +33,7 @@ class MockException(Exception):
             HTTPStatus.SERVICE_UNAVAILABLE,
             "4",
             4,
-            "Maximum total wait time of 10 seconds exceeded for execute_query.",
+            "Maximum total wait time of 10 seconds exceeded for execute_query. Retry-After header: 4",
         ),  # With 'Retry-After' header, limited retries due to time constraint
         (
             HTTPStatus.SERVICE_UNAVAILABLE,

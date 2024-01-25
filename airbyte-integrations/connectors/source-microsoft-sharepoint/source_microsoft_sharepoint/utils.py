@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import time
 from datetime import datetime, timedelta
 from http import HTTPStatus
@@ -50,6 +52,8 @@ def execute_query_with_retry(obj, max_retries=5, initial_retry_after=5, max_retr
 
                 if elapsed_time + retry_after > max_total_wait_time:
                     message = f"Maximum total wait time of {max_total_wait_time} seconds exceeded for execute_query."
+                    if retry_after_header:
+                        message += f" Retry-After header: {retry_after_header}"
                     raise AirbyteTracedException(message, message, failure_type=FailureType.system_error)
 
                 time.sleep(retry_after)

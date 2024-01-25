@@ -93,7 +93,7 @@ class SourceMicrosoftSharePointSpec(AbstractFileBasedSpec, BaseModel):
     @classmethod
     def documentation_url(cls) -> str:
         """Provides the URL to the documentation for this specific source."""
-        return "https://docs.airbyte.com/integrations/sources/one-drive"
+        return "https://docs.airbyte.com/integrations/sources/microsoft-sharepoint"
 
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:

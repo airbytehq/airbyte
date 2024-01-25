@@ -1,7 +1,9 @@
 # Microsoft SharePoint
+<HideInUI>
 
 This page contains the setup guide and reference information for the Microsoft SharePoint source connector.
 
+</HideInUI>
 ### Requirements
 
 * Application \(client\) ID 
@@ -13,9 +15,11 @@ This page contains the setup guide and reference information for the Microsoft S
 ## Setup guide
 
 <!-- env:cloud -->
+<HideInUI>
 
 **For Airbyte Cloud:**
 
+</HideInUI>
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Microsoft SharePoint** from the Source type dropdown.
@@ -34,9 +38,11 @@ This page contains the setup guide and reference information for the Microsoft S
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+<HideInUI>
 
 **For Airbyte Open Source:**
 
+</HideInUI>
 ### Step 1: Set up SharePoint application
 
 The Microsoft Graph API uses OAuth for authentication. Microsoft Graph exposes granular permissions that control the access that apps have to resources, like users, groups, and mail. When a user signs in to your app they, or, in some cases, an administrator, are given a chance to consent to these permissions. If the user consents, your app is given access to the resources and APIs that it has requested. For apps that don't take a signed-in user, permissions can be pre-consented to by an administrator when the app is installed.
@@ -95,6 +101,8 @@ This source requires **Application permissions**. Follow these [instructions](ht
 
 <!-- /env:oss -->
 
+<HideInUI>
+
 ## Sync overview
 
 ### Data type mapping
@@ -121,4 +129,6 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------|
-| 0.1.0   | 2021-12-06 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | New source |
+| 0.1.0   | 2024-01-25 | [33537](https://github.com/airbytehq/airbyte/pull/33537) | New source |
+
+</HideInUI>

@@ -118,9 +118,11 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 )
                 yield from self.list_directories_and_files(folder)
 
-    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
+    @property
+    @lru_cache(maxsize=None)
+    def drives(self):
         """
-        Retrieve all files matching the specified glob patterns in SharePoint.
+        Retrieves and caches SharePoint drives, including the user's drive based on authentication type.
         """
         drives = execute_query_with_retry(self.one_drive_client.drives.get())
 
@@ -133,7 +135,13 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
         drives.add_child(my_drive)
 
-        files = self.get_files_by_drive_name(drives, self.config.folder_path)
+        return drives
+
+    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
+        """
+        Retrieve all files matching the specified glob patterns in SharePoint.
+        """
+        files = self.get_files_by_drive_name(self.drives, self.config.folder_path)
 
         try:
             first_file, path = next(files)
@@ -170,6 +178,9 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         )
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+        if file.download_url.startswith("http") and not file.download_url.startswith("https"):  # ignore-https-check
+            logger.error(f"Cannot open file {file.uri}. The URL returned by SharePoint is not secure.")
+
         # choose correct compression mode because the url is random and doesn't end with filename extension
         file_extension = file.uri.split(".")[-1]
         if file_extension in ["gz", "bz2"]:
