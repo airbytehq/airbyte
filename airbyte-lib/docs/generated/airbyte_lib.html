@@ -1,5 +1,255 @@
 <!-- THIS IS AN AUTO-GENERATED FILE, DO NOT EDIT MANUALLY. INSTEAD, RUN `poetry run generate-docs` -->
 <main class="pdoc">
+                <section id="CachedDataset">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">CachedDataset</span><wbr>(<span class="base">airbyte_lib.datasets._sql.SQLDataset</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#CachedDataset"></a>
+    
+            <div class="docstring"><p>A dataset backed by a SQL table cache.</p>
+
+<p>Because this dataset includes all records from the underlying table, we also expose the
+underlying table as a SQLAlchemy Table object.</p>
+</div>
+
+
+                            <div id="CachedDataset.__init__" class="classattr">
+                                <div class="attr function">
+            
+        <span class="name">CachedDataset</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">cache</span><span class="p">:</span> <span class="s1">&#39;SQLCacheBase&#39;</span>, </span><span class="param"><span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
+
+        
+    </div>
+    <a class="headerlink" href="#CachedDataset.__init__"></a>
+    
+    
+
+                            </div>
+                            <div id="CachedDataset.to_pandas" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">to_pandas</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#CachedDataset.to_pandas"></a>
+    
+            <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
+
+<p>The base implementation simply passes the record iterator to Panda's DataFrame constructor.</p>
+</div>
+
+
+                            </div>
+                            <div id="CachedDataset.to_sql_table" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">to_sql_table</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="s1">&#39;Table&#39;</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#CachedDataset.to_sql_table"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>airbyte_lib.datasets._sql.SQLDataset</dt>
+                                <dd id="CachedDataset.stream_name" class="variable">stream_name</dd>
+                <dd id="CachedDataset.with_filter" class="function">with_filter</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="DuckDBCache">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">DuckDBCache</span><wbr>(<span class="base">airbyte_lib.caches.duckdb.DuckDBCacheBase</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCache"></a>
+    
+            <div class="docstring"><p>A DuckDB implementation of the cache.</p>
+
+<p>Parquet is used for local file storage before bulk loading.
+Unlike the Snowflake implementation, we can't use the COPY command to load data
+so we insert as values instead.</p>
+</div>
+
+
+                            <div id="DuckDBCache.file_writer_class" class="classattr">
+                                <div class="attr variable">
+            <span class="name">file_writer_class</span>        =
+<span class="default_value">&lt;class &#39;airbyte_lib._file_writers.parquet.ParquetWriter&#39;&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCache.file_writer_class"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>airbyte_lib.caches.base.SQLCacheBase</dt>
+                                <dd id="DuckDBCache.__init__" class="function">SQLCacheBase</dd>
+                <dd id="DuckDBCache.type_converter_class" class="variable">type_converter_class</dd>
+                <dd id="DuckDBCache.use_singleton_connection" class="variable">use_singleton_connection</dd>
+                <dd id="DuckDBCache.config" class="variable">config</dd>
+                <dd id="DuckDBCache.file_writer" class="variable">file_writer</dd>
+                <dd id="DuckDBCache.type_converter" class="variable">type_converter</dd>
+                <dd id="DuckDBCache.get_sql_alchemy_url" class="function">get_sql_alchemy_url</dd>
+                <dd id="DuckDBCache.database_name" class="variable">database_name</dd>
+                <dd id="DuckDBCache.get_sql_engine" class="function">get_sql_engine</dd>
+                <dd id="DuckDBCache.get_sql_connection" class="function">get_sql_connection</dd>
+                <dd id="DuckDBCache.get_sql_table_name" class="function">get_sql_table_name</dd>
+                <dd id="DuckDBCache.get_sql_table" class="function">get_sql_table</dd>
+                <dd id="DuckDBCache.streams" class="variable">streams</dd>
+                <dd id="DuckDBCache.get_records" class="function">get_records</dd>
+                <dd id="DuckDBCache.get_pandas_dataframe" class="function">get_pandas_dataframe</dd>
+
+            </div>
+            <div><dt>airbyte_lib.caches.duckdb.DuckDBCacheBase</dt>
+                                <dd id="DuckDBCache.config_class" class="variable">config_class</dd>
+                <dd id="DuckDBCache.supports_merge_insert" class="variable">supports_merge_insert</dd>
+                <dd id="DuckDBCache.get_telemetry_info" class="function">get_telemetry_info</dd>
+
+            </div>
+            <div><dt>airbyte_lib._processors.RecordProcessor</dt>
+                                <dd id="DuckDBCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
+                <dd id="DuckDBCache.source_catalog" class="variable">source_catalog</dd>
+                <dd id="DuckDBCache.register_source" class="function">register_source</dd>
+                <dd id="DuckDBCache.process_stdin" class="function">process_stdin</dd>
+                <dd id="DuckDBCache.process_input_stream" class="function">process_input_stream</dd>
+                <dd id="DuckDBCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="DuckDBCacheConfig">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">DuckDBCacheConfig</span><wbr>(<span class="base">airbyte_lib.caches.base.SQLCacheConfigBase</span>, <span class="base">airbyte_lib._file_writers.parquet.ParquetWriterConfig</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCacheConfig"></a>
+    
+            <div class="docstring"><p>Configuration for the DuckDB cache.</p>
+
+<p>Also inherits config from the ParquetWriter, which is responsible for writing files to disk.</p>
+</div>
+
+
+                            <div id="DuckDBCacheConfig.db_path" class="classattr">
+                                <div class="attr variable">
+            <span class="name">db_path</span><span class="annotation">: pathlib.Path | str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCacheConfig.db_path"></a>
+    
+            <div class="docstring"><p>Normally db_path is a Path object.</p>
+
+<p>There are some cases, such as when connecting to MotherDuck, where it could be a string that
+is not also a path, such as "md:" to connect the user's default MotherDuck DB.</p>
+</div>
+
+
+                            </div>
+                            <div id="DuckDBCacheConfig.schema_name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">schema_name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCacheConfig.schema_name"></a>
+    
+            <div class="docstring"><p>The name of the schema to write to. Defaults to "main".</p>
+</div>
+
+
+                            </div>
+                            <div id="DuckDBCacheConfig.get_sql_alchemy_url" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">get_sql_alchemy_url</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCacheConfig.get_sql_alchemy_url"></a>
+    
+            <div class="docstring"><p>Return the SQLAlchemy URL to use.</p>
+</div>
+
+
+                            </div>
+                            <div id="DuckDBCacheConfig.get_database_name" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_database_name</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCacheConfig.get_database_name"></a>
+    
+            <div class="docstring"><p>Return the name of the database.</p>
+</div>
+
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>pydantic.main.BaseModel</dt>
+                                <dd id="DuckDBCacheConfig.__init__" class="function">BaseModel</dd>
+                <dd id="DuckDBCacheConfig.Config" class="variable">Config</dd>
+                <dd id="DuckDBCacheConfig.dict" class="function">dict</dd>
+                <dd id="DuckDBCacheConfig.json" class="function">json</dd>
+                <dd id="DuckDBCacheConfig.parse_obj" class="function">parse_obj</dd>
+                <dd id="DuckDBCacheConfig.parse_raw" class="function">parse_raw</dd>
+                <dd id="DuckDBCacheConfig.parse_file" class="function">parse_file</dd>
+                <dd id="DuckDBCacheConfig.from_orm" class="function">from_orm</dd>
+                <dd id="DuckDBCacheConfig.construct" class="function">construct</dd>
+                <dd id="DuckDBCacheConfig.copy" class="function">copy</dd>
+                <dd id="DuckDBCacheConfig.schema" class="function">schema</dd>
+                <dd id="DuckDBCacheConfig.schema_json" class="function">schema_json</dd>
+                <dd id="DuckDBCacheConfig.validate" class="function">validate</dd>
+                <dd id="DuckDBCacheConfig.update_forward_refs" class="function">update_forward_refs</dd>
+
+            </div>
+            <div><dt>airbyte_lib.caches.base.SQLCacheConfigBase</dt>
+                                <dd id="DuckDBCacheConfig.dedupe_mode" class="variable">dedupe_mode</dd>
+                <dd id="DuckDBCacheConfig.table_prefix" class="variable">table_prefix</dd>
+                <dd id="DuckDBCacheConfig.table_suffix" class="variable">table_suffix</dd>
+
+            </div>
+            <div><dt>airbyte_lib._file_writers.base.FileWriterConfigBase</dt>
+                                <dd id="DuckDBCacheConfig.cache_dir" class="variable">cache_dir</dd>
+                <dd id="DuckDBCacheConfig.cleanup" class="variable">cleanup</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
                 <section id="get_connector">
                     <div class="attr function">
             
@@ -34,7 +284,7 @@
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_default_cache</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBCache</span>:</span></span>
+        <span class="name">get_default_cache</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="n"><a href="#DuckDBCache">DuckDBCache</a></span>:</span></span>
 
         
     </div>
@@ -52,7 +302,7 @@ working directory.</p>
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">new_local_cache</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">cache_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">cleanup</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBCache</span>:</span></span>
+        <span class="name">new_local_cache</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">cache_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">cleanup</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="n"><a href="#DuckDBCache">DuckDBCache</a></span>:</span></span>
 
         
     </div>
@@ -70,61 +320,6 @@ working directory.</p>
 </div>
 
 
-                </section>
-                <section id="CachedDataset">
-                    <div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">CachedDataset</span><wbr>(<span class="base">abc.ABC</span>, <span class="base">collections.abc.Iterator[collections.abc.Mapping[str, typing.Any]]</span>):
-
-        
-    </div>
-    <a class="headerlink" href="#CachedDataset"></a>
-    
-            <div class="docstring"><p>Base implementation for all datasets.</p>
-</div>
-
-
-                            <div id="CachedDataset.__init__" class="classattr">
-                                <div class="attr function">
-            
-        <span class="name">CachedDataset</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
-
-        
-    </div>
-    <a class="headerlink" href="#CachedDataset.__init__"></a>
-    
-    
-
-                            </div>
-                            <div id="CachedDataset.to_pandas" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">to_pandas</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span>:</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#CachedDataset.to_pandas"></a>
-    
-            <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
-</div>
-
-
-                            </div>
-                            <div id="CachedDataset.to_sql_table" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">to_sql_table</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">Table</span>:</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#CachedDataset.to_sql_table"></a>
-    
-    
-
-                            </div>
                 </section>
                 <section id="ReadResult">
                     <div class="attr class">
@@ -170,6 +365,17 @@ working directory.</p>
         
     </div>
     <a class="headerlink" href="#ReadResult.get_sql_engine"></a>
+    
+    
+
+                            </div>
+                            <div id="ReadResult.streams" class="classattr">
+                                <div class="attr variable">
+            <span class="name">streams</span><span class="annotation">: collections.abc.Mapping[str, <a href="#CachedDataset">CachedDataset</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ReadResult.streams"></a>
     
     
 
@@ -234,17 +440,6 @@ working directory.</p>
     
 
                             </div>
-                            <div id="Source.streams" class="classattr">
-                                <div class="attr variable">
-            <span class="name">streams</span><span class="annotation">: list[str] | None</span>
-
-        
-    </div>
-    <a class="headerlink" href="#Source.streams"></a>
-    
-    
-
-                            </div>
                             <div id="Source.set_streams" class="classattr">
                                 <div class="attr function">
             
@@ -255,7 +450,15 @@ working directory.</p>
     </div>
     <a class="headerlink" href="#Source.set_streams"></a>
     
-    
+            <div class="docstring"><p>Optionally, select the stream names that should be read from the connector.</p>
+
+<p>Currently, if this is not set, all streams will be read.</p>
+
+<p>TODO: In the future if not set, the default behavior may exclude streams which the connector
+would default to disabled. (For instance, streams that require a premium license
+are sometimes disabled by default within the connector.)</p>
+</div>
+
 
                             </div>
                             <div id="Source.set_config" class="classattr">
@@ -286,15 +489,17 @@ working directory.</p>
 
 
                             </div>
-                            <div id="Source.raw_catalog" class="classattr">
+                            <div id="Source.discovered_catalog" class="classattr">
                                 <div class="attr variable">
-            <span class="name">raw_catalog</span><span class="annotation">: airbyte_protocol.models.airbyte_protocol.AirbyteCatalog</span>
+            <span class="name">discovered_catalog</span><span class="annotation">: airbyte_protocol.models.airbyte_protocol.AirbyteCatalog</span>
 
         
     </div>
-    <a class="headerlink" href="#Source.raw_catalog"></a>
+    <a class="headerlink" href="#Source.discovered_catalog"></a>
     
             <div class="docstring"><p>Get the raw catalog for the given streams.</p>
+
+<p>If the catalog is not yet known, we call discover to get it.</p>
 </div>
 
 
@@ -308,6 +513,14 @@ working directory.</p>
     <a class="headerlink" href="#Source.configured_catalog"></a>
     
             <div class="docstring"><p>Get the configured catalog for the given streams.</p>
+
+<p>If the raw catalog is not yet known, we call discover to get it.</p>
+
+<p>If no specific streams are selected, we return a catalog that syncs all available streams.</p>
+
+<p>TODO: We should consider disabling by default the streams that the connector would
+disable by default. (For instance, streams that require a premium license are sometimes
+disabled by default within the connector.)</p>
 </div>
 
 
@@ -316,7 +529,7 @@ working directory.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_records</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]]</span>:</span></span>
+        <span class="name">get_records</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">_lazy</span><span class="o">.</span><span class="n">LazyDataset</span>:</span></span>
 
         
     </div>
