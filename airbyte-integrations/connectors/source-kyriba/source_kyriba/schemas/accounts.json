@@ -1,5 +1,8 @@
 {
   "type": "object",
+  "title": "AccountSearchModel",
+  "description": "Account search",
+  "$schema": "http://json-schema.org/schema#",
   "required": [
     "bank",
     "branch",
@@ -454,8 +457,5 @@
       "type": ["null", "string"],
       "description": "Account ZBA identifier"
     }
-  },
-  "title": "AccountSearchModel",
-  "description": "Account search",
-  "$schema": "http://json-schema.org/schema#"
+  }
 }

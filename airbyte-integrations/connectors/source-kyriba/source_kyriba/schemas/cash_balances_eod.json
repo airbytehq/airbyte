@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "account": {
       "type": "object",
