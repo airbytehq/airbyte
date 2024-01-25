@@ -36,18 +36,22 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s String,\n"
-            + "%s String,\n"
-            + "%s DateTime64(3, 'GMT') DEFAULT now(),\n"
-            + "PRIMARY KEY(%s)\n"
-            + ")\n"
-            + "ENGINE = MergeTree;\n",
+        """
+            CREATE TABLE IF NOT EXISTS %s.%s (
+            %s String,
+            %s JSON,
+            %s DateTime64(3, 'GMT') DEFAULT now(),
+            %s DateTime64(3, 'GMT') DEFAULT now(),
+            PRIMARY KEY(%s)
+            )
+            ENGINE = MergeTree;
+            """,
         schemaName, tableName,
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-        JavaBaseConstants.COLUMN_NAME_AB_ID);
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID);
   }
 
   @Override

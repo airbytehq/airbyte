@@ -121,4 +121,9 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   protected JdbcSqlGenerator getSqlGenerator() {
     return new RawOnlySqlGenerator(new ClickhouseSQLNameTransformer());
   }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
 }

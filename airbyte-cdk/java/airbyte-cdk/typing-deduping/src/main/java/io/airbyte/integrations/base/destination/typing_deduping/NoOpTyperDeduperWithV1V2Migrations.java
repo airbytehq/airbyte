@@ -7,20 +7,17 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.countOfTypingDedupingThreads;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
+import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtilKt.prepareAllSchemas;
 
-import com.google.common.collect.Streams;
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -56,14 +53,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
   }
 
   private void prepareSchemas(final ParsedCatalog parsedCatalog) throws Exception {
-    final var rawSchema = parsedCatalog.streams().stream().map(stream -> stream.id().rawNamespace());
-    final var finalSchema = parsedCatalog.streams().stream().map(stream -> stream.id().finalNamespace());
-    final var createAllSchemasSql = Streams.concat(rawSchema, finalSchema)
-        .filter(Objects::nonNull)
-        .distinct()
-        .map(sqlGenerator::createSchema)
-        .toList();
-    destinationHandler.execute(Sql.concat(createAllSchemasSql));
+    prepareAllSchemas(parsedCatalog, sqlGenerator, destinationHandler);
   }
 
   @Override
@@ -96,42 +86,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
 
   @Override
   public Lock getRawTableInsertLock(final String originalNamespace, final String originalName) {
-    return new Lock() {
-
-      @Override
-      public void lock() {
-
-      }
-
-      @Override
-      public void lockInterruptibly() {
-
-      }
-
-      @Override
-      public boolean tryLock() {
-        // To mimic NoOp behavior always return true that lock is acquired
-        return true;
-      }
-
-      @Override
-      public boolean tryLock(final long time, final TimeUnit unit) {
-        // To mimic NoOp behavior always return true that lock is acquired
-        return true;
-      }
-
-      @Override
-      public void unlock() {
-
-      }
-
-      @Override
-      public Condition newCondition() {
-        // Always throw exception to avoid callers from using this path
-        throw new UnsupportedOperationException("This lock implementation does not support retrieving a Condition");
-      }
-
-    };
+    return new NoOpRawTableTDLock();
   }
 
   @Override

@@ -14,19 +14,19 @@ import java.util.*
 class RawOnlySqlGenerator(namingTransformer: NamingConventionTransformer?) :
     JdbcSqlGenerator(namingTransformer) {
     override fun getStructType(): DataType<*>? {
-        return null
+        throw NotImplementedError("This Destination Does not support typing")
     }
 
     override fun getArrayType(): DataType<*>? {
-        return null
+        throw NotImplementedError("This Destination Does not support typing")
     }
 
     override fun getWidestType(): DataType<*>? {
-        return null
+        throw NotImplementedError("This Destination Does not support typing")
     }
 
     override fun getDialect(): SQLDialect? {
-        return null
+        throw NotImplementedError("This Destination Does not support typing")
     }
 
     override fun extractRawDataFields(
