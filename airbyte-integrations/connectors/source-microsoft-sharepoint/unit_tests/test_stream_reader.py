@@ -48,13 +48,13 @@ def mock_drive_files():
     return [
         Mock(
             properties={
-                "@microsoft.graph.downloadUrl": "http://example.com/file1.csv",
+                "@microsoft.graph.downloadUrl": "https://example.com/file1.csv",
                 "lastModifiedDateTime": datetime.datetime(2021, 1, 1),
             }
         ),
         Mock(
             properties={
-                "@microsoft.graph.downloadUrl": "http://example.com/file2.txt",
+                "@microsoft.graph.downloadUrl": "https://example.com/file2.txt",
                 "lastModifiedDateTime": datetime.datetime(2021, 1, 1),
             }
         ),
@@ -130,7 +130,7 @@ def test_get_matching_files(mock_filter_files, mock_execute_query, setup_reader_
     assert len(files) == 1
     assert isinstance(files[0], MicrosoftSharePointRemoteFile)
     assert files[0].uri == "file1.csv"
-    assert "http://example.com/file1.csv" in files[0].download_url
+    assert "https://example.com/file1.csv" in files[0].download_url
 
 
 def test_get_matching_files_empty_drive(setup_reader_class):
@@ -158,7 +158,7 @@ def test_get_matching_files_empty_drive(setup_reader_class):
 @patch("smart_open.open")
 def test_open_file(mock_smart_open, file_extension, expected_compression):
     """Test the open_file method in SourceMicrosoftSharePointStreamReader."""
-    mock_file = Mock(download_url=f"http://example.com/file.{file_extension}", uri=f"file.{file_extension}")
+    mock_file = Mock(download_url=f"https://example.com/file.{file_extension}", uri=f"file.{file_extension}")
     mock_logger = Mock()
 
     stream_reader = SourceMicrosoftSharePointStreamReader()

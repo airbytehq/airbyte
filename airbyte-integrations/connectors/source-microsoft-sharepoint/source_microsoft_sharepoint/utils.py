@@ -13,6 +13,14 @@ class MicrosoftSharePointRemoteFile(RemoteFile):
     download_url: str
 
 
+def filter_http_urls(files, logger):
+    for file in files:
+        if file.download_url.startswith("http") and not file.download_url.startswith("https"):  # ignore-https-check
+            logger.error(f"Cannot open file {file.uri}. The URL returned by SharePoint is not secure.")
+        else:
+            yield file
+
+
 def execute_query_with_retry(obj, max_retries=5, initial_retry_after=5, max_retry_after=300, max_total_wait_time=600):
     """
     Executes a query with retry logic on encountering specific HTTP errors.

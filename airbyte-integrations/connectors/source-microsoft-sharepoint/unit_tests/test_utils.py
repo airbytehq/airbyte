@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from source_microsoft_sharepoint.utils import execute_query_with_retry
+from source_microsoft_sharepoint.utils import execute_query_with_retry, filter_http_urls
 
 
 class MockResponse:
@@ -73,3 +73,18 @@ def test_execute_query_success_before_max_retries():
 
     assert obj.execute_query.call_count == 2
     assert result == "success"
+
+
+def test_filter_http_urls():
+    files = [
+        Mock(download_url="https://example.com/file1.txt"),
+        Mock(download_url="https://example.com/file2.txt"),
+        Mock(uri="file3.txt", download_url="http://example.com/file3.txt"),
+    ]
+
+    mock_logger = Mock()
+    filtered_files = filter_http_urls(files, mock_logger)
+    filtered_files = list(filtered_files)
+
+    assert len(filtered_files) == 2
+    mock_logger.error.assert_called_once_with("Cannot open file file3.txt. The URL returned by SharePoint is not secure.")

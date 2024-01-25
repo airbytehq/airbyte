@@ -16,7 +16,7 @@ from msal.exceptions import MsalServiceError
 from office365.graph_client import GraphClient
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
-from .utils import MicrosoftSharePointRemoteFile, execute_query_with_retry
+from .utils import MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
 
 
 class SourceMicrosoftSharePointClient:
@@ -146,15 +146,18 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         try:
             first_file, path = next(files)
 
-            yield from self.filter_files_by_globs_and_start_date(
-                [
-                    MicrosoftSharePointRemoteFile(
-                        uri=path,
-                        download_url=first_file.properties["@microsoft.graph.downloadUrl"],
-                        last_modified=first_file.properties["lastModifiedDateTime"],
-                    )
-                ],
-                globs,
+            yield from filter_http_urls(
+                self.filter_files_by_globs_and_start_date(
+                    [
+                        MicrosoftSharePointRemoteFile(
+                            uri=path,
+                            download_url=first_file.properties["@microsoft.graph.downloadUrl"],
+                            last_modified=first_file.properties["lastModifiedDateTime"],
+                        )
+                    ],
+                    globs,
+                ),
+                logger,
             )
 
         except StopIteration as e:
@@ -165,22 +168,22 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 exception=e,
             )
 
-        yield from self.filter_files_by_globs_and_start_date(
-            [
-                MicrosoftSharePointRemoteFile(
-                    uri=path,
-                    download_url=file.properties["@microsoft.graph.downloadUrl"],
-                    last_modified=file.properties["lastModifiedDateTime"],
-                )
-                for file, path in files
-            ],
-            globs,
+        yield from filter_http_urls(
+            self.filter_files_by_globs_and_start_date(
+                [
+                    MicrosoftSharePointRemoteFile(
+                        uri=path,
+                        download_url=file.properties["@microsoft.graph.downloadUrl"],
+                        last_modified=file.properties["lastModifiedDateTime"],
+                    )
+                    for file, path in files
+                ],
+                globs,
+            ),
+            logger,
         )
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        if file.download_url.startswith("http") and not file.download_url.startswith("https"):  # ignore-https-check
-            logger.error(f"Cannot open file {file.uri}. The URL returned by SharePoint is not secure.")
-
         # choose correct compression mode because the url is random and doesn't end with filename extension
         file_extension = file.uri.split(".")[-1]
         if file_extension in ["gz", "bz2"]:
