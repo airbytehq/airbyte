@@ -46,7 +46,7 @@ To rename a workspace:
 
 1. Go to the **Settings** via the side navigation in Airbyte.
 
-2. Click **General Settings**.
+2. Click **Workspace** > **General**.
 
 3. In the **Workspace name** field, enter the new name for your workspace. 
 
@@ -58,7 +58,7 @@ To delete a workspace:
 
 1. Go to the **Settings** via the side navigation in Airbyte.
 
-2. Click **General Settings**.
+2. Click **Workspace** > **General**.
 
 3. In the **Delete your workspace** section, click **Delete**.
 
