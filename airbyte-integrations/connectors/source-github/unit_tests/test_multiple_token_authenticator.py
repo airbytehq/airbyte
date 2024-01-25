@@ -40,7 +40,7 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch, caplog):
     """
     This test ensures that:
      1. The rate limiter iterates over all tokens one-by-one after the previous is fully drained.
-     2. Counter is set to zero after 15_000 requests were made. (5_000 available requests per key were set as default)
+     2. Counter is set to zero after 1500 requests were made. (500 available requests per key were set as default)
      3. Exception is handled and log warning message could be found in output. Connector does not raise AirbyteTracedException because there might be GraphQL streams with remaining request we still can read.
     """
 
@@ -54,15 +54,15 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch, caplog):
             resp_body = {
                 "resources": {
                     "core": {
-                        "limit": 5000,
+                        "limit": 500,
                         "used": 0,
-                        "remaining": 5000,
+                        "remaining": 500,
                         "reset": 4070908800
                     },
                     "graphql": {
-                        "limit": 5000,
+                        "limit": 500,
                         "used": 0,
-                        "remaining": 5000,
+                        "remaining": 500,
                         "reset": 4070908800
                     }
                 }
@@ -76,10 +76,8 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch, caplog):
 
     def request_callback_orgs(request):
         nonlocal counter_orgs
-        while counter_orgs < 15_001:
+        while counter_orgs < 1_501:
             counter_orgs += 1
-            if not counter_orgs % 1000:
-                print(counter_orgs)
             resp_body = {"id": 1}
             headers = {"Link": '<https://api.github.com/orgs/org1?page=2>; rel="next"'}
             return (200, headers, json.dumps(resp_body))
@@ -92,5 +90,5 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch, caplog):
     )
 
     list(read_full_refresh(stream))
-    assert [(x.count_rest, x.count_graphql) for x in authenticator._tokens.values()] == [(0, 5000), (0, 5000), (0, 5000)]
+    assert [(x.count_rest, x.count_graphql) for x in authenticator._tokens.values()] == [(0, 500), (0, 500), (0, 500)]
     assert "Limits for all provided tokens were reached, please try again later" in caplog.messages
