@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.3.1
+## 3.1.0
 Add TestSpec.test_oauth_is_default_method test with OAuth is default option validation.
 
 ## 3.0.1
