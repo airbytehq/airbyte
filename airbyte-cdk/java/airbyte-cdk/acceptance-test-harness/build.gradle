@@ -9,12 +9,6 @@ java {
 }
 
 dependencies {
-    annotationProcessor platform(libs.micronaut.bom)
-    annotationProcessor libs.bundles.micronaut.annotation.processor
-
-    implementation platform(libs.micronaut.bom)
-    implementation libs.bundles.micronaut
-
     implementation group: 'joda-time', name: 'joda-time', version: '2.12.5'
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'com.auth0:java-jwt:3.19.2'
@@ -33,11 +27,8 @@ dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
 
-    testAnnotationProcessor platform(libs.micronaut.bom)
-    testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
     testAnnotationProcessor libs.jmh.annotations
 
-    testImplementation libs.bundles.micronaut.test
     testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
     testImplementation 'org.mockito:mockito-inline:4.7.0'
     testImplementation libs.postgresql

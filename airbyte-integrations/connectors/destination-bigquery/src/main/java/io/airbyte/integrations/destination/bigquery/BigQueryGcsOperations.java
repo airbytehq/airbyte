@@ -114,7 +114,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   public String uploadRecordsToStage(final String datasetId, final String stream, final SerializableBuffer writer) {
     final String objectPath = getStagingFullPath(datasetId, stream);
     LOGGER.info("Uploading records to staging for stream {} (dataset {}): {}", stream, datasetId, objectPath);
-    return gcsStorageOperations.uploadRecordsToBucket(writer, datasetId, getStagingRootPath(datasetId, stream), objectPath);
+    return gcsStorageOperations.uploadRecordsToBucket(writer, datasetId, objectPath);
   }
 
   /**

@@ -211,7 +211,7 @@
       },
       "use_1s1t_format": {
         "type": "boolean",
-        "description": "(Early Access) Use <a href=\"https://docs.airbyte.com/understanding-airbyte/typing-deduping\" target=\"_blank\">Destinations V2</a>.",
+        "description": "(Early Access) Use <a href=\"https://docs.airbyte.com/using-airbyte/core-concepts/typing-deduping\" target=\"_blank\">Destinations V2</a>.",
         "title": "Use Destinations V2 (Early Access)",
         "order": 9
       },

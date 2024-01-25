@@ -5,6 +5,7 @@ from pathlib import Path
 
 import ulid
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib.caches.duckdb import DuckDBCache, DuckDBCacheConfig
 
 
@@ -38,12 +39,15 @@ def new_local_cache(
     """
     if cache_name:
         if " " in cache_name:
-            raise ValueError(f"Cache name '{cache_name}' cannot contain spaces")
+            raise exc.AirbyteLibInputError(
+                message="Cache name cannot contain spaces.",
+                input_value=cache_name,
+            )
 
         if not cache_name.replace("_", "").isalnum():
-            raise ValueError(
-                f"Cache name '{cache_name}' can only contain alphanumeric "
-                "characters and underscores."
+            raise exc.AirbyteLibInputError(
+                message="Cache name can only contain alphanumeric characters and underscores.",
+                input_value=cache_name,
             )
 
     cache_name = cache_name or str(ulid.ULID())
