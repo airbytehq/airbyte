@@ -82,41 +82,11 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         current_token = self._tokens[self.current_active_token]
         while True:
             if "graphql" in request.path_url:
-                if current_token.count_graphql > 0:
-                    current_token.count_graphql -= 1
+                if self.process_token(current_token, "count_graphql", "reset_at_graphql"):
                     break
-                else:
-                    if all([x.count_graphql == 0 for x in self._tokens.values()]):
-                        min_time_to_wait_till_next_token_available = min(
-                            (x.reset_at_graphql - pendulum.now()).in_seconds() for x in self._tokens.values()
-                        )
-                        if min_time_to_wait_till_next_token_available < HttpStream.max_time:
-                            time.sleep(min_time_to_wait_till_next_token_available)
-                            self.check_all_tokens()
-                        else:
-                            raise AirbyteTracedException(
-                                failure_type=FailureType.config_error, message="rate limits for all token were reached"
-                            )
-                    else:
-                        self.update_token()
             else:
-                if current_token.count_rest > 0:
-                    current_token.count_rest -= 1
+                if self.process_token(current_token, "count_rest", "reset_at_rest"):
                     break
-                else:
-                    if all([x.count_rest == 0 for x in self._tokens.values()]):
-                        min_time_to_wait_till_next_token_available = min(
-                            (x.reset_at_rest - pendulum.now()).in_seconds() for x in self._tokens.values()
-                        )
-                        if min_time_to_wait_till_next_token_available < HttpStream.max_time:
-                            time.sleep(min_time_to_wait_till_next_token_available)
-                            self.check_all_tokens()
-                        else:
-                            raise AirbyteTracedException(
-                                failure_type=FailureType.config_error, message="rate limits for all token were reached"
-                            )
-                    else:
-                        self.update_token()
 
         request.headers.update(self.get_auth_header())
 
