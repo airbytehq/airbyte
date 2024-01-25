@@ -26,6 +26,7 @@ public abstract class BaseConnector implements Integration {
     // noise
     // noise
     // noise
+    // noise
     return Jsons.deserialize(resourceString, ConnectorSpecification.class);
   }
 
