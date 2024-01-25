@@ -188,7 +188,11 @@ def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[s
     # Create a new cache with the same name
     second_cache = ab.new_local_cache(cache_name)
     source.set_streams(["stream2"])
-    source.read(second_cache)
+    result = source.read(second_cache)
+
+    # Assert that the read result only contains stream2
+    with pytest.raises(KeyError):
+        result["stream1"]
 
 
     for stream_name, expected_data in expected_test_stream_data.items():

@@ -377,4 +377,5 @@ class Source:
         return ReadResult(
             processed_records=self._processed_records,
             cache=cache,
+            processed_streams=[stream.stream.name for stream in self.configured_catalog.streams],
         )
