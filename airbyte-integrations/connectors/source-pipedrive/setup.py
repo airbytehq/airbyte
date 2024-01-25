@@ -15,6 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-pipedrive=source_pipedrive.run:run",
+        ],
+    },
     name="source_pipedrive",
     description="Source implementation for Pipedrive.",
     author="Airbyte",

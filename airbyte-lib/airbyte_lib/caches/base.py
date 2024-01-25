@@ -1,13 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 """A SQL Cache implementation."""
+from __future__ import annotations
 
 import abc
 import enum
-from collections.abc import Generator, Iterator, Mapping
 from contextlib import contextmanager
-from functools import cached_property, lru_cache
-from pathlib import Path
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, cast, final
 
 import pandas as pd
@@ -15,23 +14,31 @@ import pyarrow as pa
 import sqlalchemy
 import ulid
 from overrides import overrides
-from sqlalchemy import CursorResult, Executable, TextClause, create_engine, text
-from sqlalchemy.engine import Engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.sql.elements import TextClause
 
-from airbyte_protocol.models import ConfiguredAirbyteStream
-
+from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
+from airbyte_lib.datasets._sql import CachedDataset
 from airbyte_lib.types import SQLTypeConverter
 
 
 if TYPE_CHECKING:
-    from sqlalchemy.engine import Connection
+    from collections.abc import Generator, Iterator
+    from pathlib import Path
+
+    from sqlalchemy.engine import Connection, Engine
+    from sqlalchemy.engine.cursor import CursorResult
     from sqlalchemy.engine.reflection import Inspector
+    from sqlalchemy.sql.base import Executable
+
+    from airbyte_protocol.models import ConfiguredAirbyteStream
 
     from airbyte_lib.datasets._base import DatasetBase
+    from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
 DEBUG_MODE = False  # Set to True to enable additional debug logging.
@@ -112,6 +119,15 @@ class SQLCacheBase(RecordProcessor):
 
         self.file_writer = file_writer or self.file_writer_class(config)
         self.type_converter = self.type_converter_class()
+
+    def __getitem__(self, stream: str) -> DatasetBase:
+        return self.streams[stream]
+
+    def __contains__(self, stream: str) -> bool:
+        return stream in self._streams_with_data
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._streams_with_data)
 
     # Public interface:
 
@@ -206,28 +222,22 @@ class SQLCacheBase(RecordProcessor):
     @property
     def streams(
         self,
-    ) -> dict[str, "DatasetBase"]:
+    ) -> dict[str, CachedDataset]:
         """Return a temporary table name."""
-        # TODO: Add support for streams map, based on the cached catalog.
-        raise NotImplementedError("Streams map is not yet supported.")
+        result = {}
+        for stream_name in self._streams_with_data:
+            result[stream_name] = CachedDataset(self, stream_name)
+
+        return result
 
     # Read methods:
 
     def get_records(
         self,
         stream_name: str,
-    ) -> Iterator[Mapping[str, Any]]:
-        """Uses SQLAlchemy to select all rows from the table.
-
-        # TODO: Refactor to return a LazyDataset here.
-        """
-        table_ref = self.get_sql_table(stream_name)
-        stmt = table_ref.select()
-        with self.get_sql_connection() as conn:
-            for row in conn.execute(stmt):
-                # Access to private member required because SQLAlchemy doesn't expose a public API.
-                # https://pydoc.dev/sqlalchemy/latest/sqlalchemy.engine.row.RowMapping.html
-                yield cast(Mapping[str, Any], row._mapping)  # noqa: SLF001
+    ) -> CachedDataset:
+        """Uses SQLAlchemy to select all rows from the table."""
+        return CachedDataset(self, stream_name)
 
     def get_pandas_dataframe(
         self,
@@ -252,7 +262,7 @@ class SQLCacheBase(RecordProcessor):
 
         try:
             self._execute_sql(sql)
-        except Exception as ex:  # noqa: BLE001 # Too-wide catch because we don't know what the DB will throw.
+        except Exception as ex:
             # Ignore schema exists errors.
             if "already exists" not in str(ex):
                 raise
@@ -278,7 +288,6 @@ class SQLCacheBase(RecordProcessor):
         table_name: str,
     ) -> str:
         """Return the fully qualified name of the given table."""
-        # return f"{self.database_name}.{self.config.schema_name}.{table_name}"
         return f"{self.config.schema_name}.{table_name}"
 
     @final
@@ -324,10 +333,10 @@ class SQLCacheBase(RecordProcessor):
     def _ensure_final_table_exists(
         self,
         stream_name: str,
+        *,
         create_if_missing: bool = True,
     ) -> str:
-        """
-        Create the final table if it doesn't already exist.
+        """Create the final table if it doesn't already exist.
 
         Return the table name.
         """
@@ -348,6 +357,7 @@ class SQLCacheBase(RecordProcessor):
         self,
         stream_name: str,
         table_name: str,
+        *,
         raise_on_error: bool = False,
     ) -> bool:
         """Return true if the given table is compatible with the stream's schema.
@@ -365,8 +375,11 @@ class SQLCacheBase(RecordProcessor):
         missing_columns: set[str] = set(stream_column_names) - set(table_column_names)
         if missing_columns:
             if raise_on_error:
-                raise RuntimeError(
-                    f"Table {table_name} is missing columns: {missing_columns}",
+                raise exc.AirbyteLibCacheTableValidationError(
+                    violation="Cache table is missing expected columns.",
+                    context={
+                        "missing_columns": missing_columns,
+                    },
                 )
             return False  # Some columns are missing.
 
@@ -431,16 +444,25 @@ class SQLCacheBase(RecordProcessor):
     ) -> ConfiguredAirbyteStream:
         """Return the column definitions for the given stream."""
         if not self.source_catalog:
-            raise RuntimeError("Cannot get stream JSON schema without a catalog.")
+            raise exc.AirbyteLibInternalError(
+                message="Cannot get stream JSON schema without a catalog.",
+            )
 
         matching_streams: list[ConfiguredAirbyteStream] = [
             stream for stream in self.source_catalog.streams if stream.stream.name == stream_name
         ]
         if not matching_streams:
-            raise RuntimeError(f"Stream '{stream_name}' not found in catalog.")
+            raise exc.AirbyteStreamNotFoundError(
+                stream_name=stream_name,
+            )
 
         if len(matching_streams) > 1:
-            raise RuntimeError(f"Multiple streams found with name '{stream_name}'.")
+            raise exc.AirbyteLibInternalError(
+                message="Multiple streams found with same name.",
+                context={
+                    "stream_name": stream_name,
+                },
+            )
 
         return matching_streams[0]
 
@@ -459,8 +481,7 @@ class SQLCacheBase(RecordProcessor):
         batch_id: str,
         record_batch: pa.Table | pa.RecordBatch,
     ) -> FileWriterBatchHandle:
-        """
-        Process a record batch.
+        """Process a record batch.
 
         Return the path to the cache file.
         """
@@ -517,12 +538,12 @@ class SQLCacheBase(RecordProcessor):
                 raise_on_error=True,
             )
 
+            temp_table_name = self._write_files_to_new_table(
+                files,
+                stream_name,
+                max_batch_id,
+            )
             try:
-                temp_table_name = self._write_files_to_new_table(
-                    files,
-                    stream_name,
-                    max_batch_id,
-                )
                 self._write_temp_table_to_final_table(
                     stream_name,
                     temp_table_name,
@@ -558,6 +579,7 @@ class SQLCacheBase(RecordProcessor):
     def _drop_temp_table(
         self,
         table_name: str,
+        *,
         if_exists: bool = True,
     ) -> None:
         """Drop the given table."""
@@ -583,7 +605,12 @@ class SQLCacheBase(RecordProcessor):
 
                 # Pandas will auto-create the table if it doesn't exist, which we don't want.
                 if not self._table_exists(temp_table_name):
-                    raise RuntimeError(f"Table {temp_table_name} does not exist after creation.")
+                    raise exc.AirbyteLibInternalError(
+                        message="Table does not exist after creation.",
+                        context={
+                            "temp_table_name": temp_table_name,
+                        },
+                    )
 
                 dataframe.to_sql(
                     temp_table_name,
@@ -591,7 +618,7 @@ class SQLCacheBase(RecordProcessor):
                     schema=self.config.schema_name,
                     if_exists="append",
                     index=False,
-                    dtype=self._get_sql_column_definitions(stream_name),  # type: ignore
+                    dtype=self._get_sql_column_definitions(stream_name),
                 )
         return temp_table_name
 
@@ -648,7 +675,6 @@ class SQLCacheBase(RecordProcessor):
             """,
         )
 
-    @lru_cache
     def _get_primary_keys(
         self,
         stream_name: str,
@@ -677,9 +703,9 @@ class SQLCacheBase(RecordProcessor):
         Databases that do not support this syntax can override this method.
         """
         if final_table_name is None:
-            raise ValueError("Arg 'final_table_name' cannot be None.")
+            raise exc.AirbyteLibInternalError(message="Arg 'final_table_name' cannot be None.")
         if temp_table_name is None:
-            raise ValueError("Arg 'temp_table_name' cannot be None.")
+            raise exc.AirbyteLibInternalError(message="Arg 'temp_table_name' cannot be None.")
 
         _ = stream_name
         deletion_name = f"{final_table_name}_deleteme"
@@ -736,3 +762,7 @@ class SQLCacheBase(RecordProcessor):
     ) -> bool:
         """Return true if the given table exists."""
         return table_name in self._get_tables_list()
+
+    @abc.abstractmethod
+    def get_telemetry_info(self) -> CacheTelemetryInfo:
+        pass

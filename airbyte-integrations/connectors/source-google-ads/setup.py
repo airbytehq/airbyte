@@ -14,6 +14,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk>=0.51.3", "google-ads==22.1.0", "protobuf", "p
 TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock", "freezegun", "requests-mock"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-google-ads=source_google_ads.run:run",
+        ],
+    },
     name="source_google_ads",
     description="Source implementation for Google Ads.",
     author="Airbyte",

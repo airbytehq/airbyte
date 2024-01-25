@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.joda.time.DateTime;
@@ -49,16 +48,7 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StagingConsumerFactory.class);
 
-  // using a random string here as a placeholder for the moment.
-  // This would avoid mixing data in the staging area between different syncs (especially if they
-  // manipulate streams with similar names)
-  // if we replaced the random connection id by the actual connection_id, we'd gain the opportunity to
-  // leverage data that was uploaded to stage
-  // in a previous attempt but failed to load to the warehouse for some reason (interrupted?) instead.
-  // This would also allow other programs/scripts
-  // to load (or reload backups?) in the connection's staging area to be loaded at the next sync.
   private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
-  public static final UUID RANDOM_CONNECTION_ID = UUID.randomUUID();
 
   public SerializedAirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
                                                       final JdbcDatabase database,

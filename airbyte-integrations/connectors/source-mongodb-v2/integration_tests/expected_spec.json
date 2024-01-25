@@ -164,7 +164,7 @@
         "description": "The maximum number of documents to sample when attempting to discover the unique fields for a collection.",
         "default": 10000,
         "order": 10,
-        "minimum": 1000,
+        "minimum": 10,
         "maximum": 100000,
         "group": "advanced"
       }

@@ -4,15 +4,13 @@ products: all
 
 # Namespaces
 
-## High-Level Overview
-
 Namespaces are used to generally organize data, separate tests and production data, and enforce permissions. In most cases, namespaces are schemas in the database you're replicating to.
 
 As a part of connection setup, you select where in the destination you want to write your data. Note: The default configuration is **Destination default**.
 
-| Destination Namepsace | Description                |
+| Destination Namespace | Description                |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Destination default | All streams will be replicated to the single default namespace defined by the Destination. |
+| Destination default | All streams will be replicated to the single default namespace defined in the Destination's settings.  |
 | Mirror source structure | Some sources (for example, databases) provide namespace information for a stream. If a source provides namespace information, the destination will mirror the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option.  |
 | Custom format | All streams will be replicated to a single user-defined namespace. See<a href="/understanding-airbyte/namespaces#--custom-format"> Custom format</a> for more details | 
 
@@ -58,12 +56,16 @@ When replicating multiple sources into the same destination, you may create tabl
 For example, a Github source can be replicated into a `github` schema. However, you may have multiple connections writing from different GitHub repositories \(common in multi-tenant scenarios\).
 
 :::tip
-To keep the same table names, Airbyte recommends writing the connections to unique namespaces to avoid mixing data from the different GitHub repositories. 
+To write more than 1 table with the same name to your destination, Airbyte recommends writing the connections to unique namespaces to avoid mixing data from the different GitHub repositories. 
 :::
 
 You can enter plain text (most common) or additionally add a dynamic parameter `${SOURCE_NAMESPACE}`, which uses the namespace provided by the source if available.
 
 ### Examples
+
+:::info
+If the Source does not support namespaces, the data will be replicated into the Destination's default namespace. If the Destination does not support namespaces, any preference set in the connection is ignored.
+:::
 
 The following table summarises how this works. In this example, we're looking at the replication configuration between a Postgres Source and Snowflake Destination \(with settings of schema = "my\_schema"\):
 
@@ -78,21 +80,15 @@ The following table summarises how this works. In this example, we're looking at
 | Custom format = `"my\_${SOURCE\_NAMESPACE}\_schema"` | public | my\_table | my\_public\_schema | my\_table |
 | Custom format = "   " | public | my\_table | my\_schema | my\_table |
 
-## Syncing Details
-
-If the Source does not support namespaces, the data will be replicated into the Destination's default namespace. For databases, the default namespace is the schema provided in the destination configuration.
-
-If the Destination does not support namespaces, any preference set in the connection is ignored.
-
 ## Using Namespaces with Basic Normalization
 
-As part of the connections sync settings, it is possible to configure the namespace used by: 1. destination connectors: to store the `_airbyte_raw_*` tables. 2. basic normalization: to store the final normalized tables.
+As part of the connection settings, it is possible to configure the namespace used by: 1. destination connectors: to store the `_airbyte_raw_*` tables. 2. basic normalization: to store the final normalized tables.
 
-:::info
 When basic normalization is enabled, this is the location that both your normalized and raw data will get written to. Your raw data will show up with the prefix `_airbyte_raw_` in the namespace you define. If you don't enable basic normalization, you will only receive the raw tables.
-:::note
 
+:::note
 Note custom transformation outputs are not affected by the namespace settings from Airbyte: It is up to the configuration of the custom dbt project, and how it is written to handle its [custom schemas](https://docs.getdbt.com/docs/building-a-dbt-project/building-models/using-custom-schemas). The default target schema for dbt in this case, will always be the destination namespace.
+:::
 
 ## Requirements
 

@@ -11,6 +11,7 @@ from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pipeline
+from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import LOCAL_BUILD_PLATFORM, ContextState
 from pipelines.helpers.execution import argument_parsing
@@ -27,6 +28,7 @@ from pipelines.models.steps import STEP_PARAMS
         ignore_unknown_options=True,
     ),
 )
+@click_ci_requirements_option()
 @click.option(
     "--code-tests-only",
     is_flag=True,
@@ -51,9 +53,18 @@ from pipelines.models.steps import STEP_PARAMS
 @click.option(
     "--skip-step",
     "-x",
+    "skip_steps",
     multiple=True,
     type=click.Choice([step_id.value for step_id in CONNECTOR_TEST_STEP_ID]),
     help="Skip a step by name. Can be used multiple times to skip multiple steps.",
+)
+@click.option(
+    "--only-step",
+    "-k",
+    "only_steps",
+    multiple=True,
+    type=click.Choice([step_id.value for step_id in CONNECTOR_TEST_STEP_ID]),
+    help="Only run specific step by name. Can be used multiple times to keep multiple steps.",
 )
 @click.argument(
     "extra_params", nargs=-1, type=click.UNPROCESSED, callback=argument_parsing.build_extra_params_mapping(CONNECTOR_TEST_STEP_ID)
@@ -64,7 +75,8 @@ async def test(
     code_tests_only: bool,
     fail_fast: bool,
     concurrent_cat: bool,
-    skip_step: List[str],
+    skip_steps: List[str],
+    only_steps: List[str],
     extra_params: Dict[CONNECTOR_TEST_STEP_ID, STEP_PARAMS],
 ) -> bool:
     """Runs a test pipeline for the selected connectors.
@@ -72,6 +84,8 @@ async def test(
     Args:
         ctx (click.Context): The click context.
     """
+    if only_steps and skip_steps:
+        raise click.UsageError("Cannot use both --only-step and --skip-step at the same time.")
     if ctx.obj["is_ci"]:
         fail_if_missing_docker_hub_creds(ctx)
     if ctx.obj["is_ci"] and ctx.obj["pull_request"] and ctx.obj["pull_request"].draft:
@@ -87,7 +101,8 @@ async def test(
 
     run_step_options = RunStepOptions(
         fail_fast=fail_fast,
-        skip_steps=[CONNECTOR_TEST_STEP_ID(step_id) for step_id in skip_step],
+        skip_steps=[CONNECTOR_TEST_STEP_ID(step_id) for step_id in skip_steps],
+        keep_steps=[CONNECTOR_TEST_STEP_ID(step_id) for step_id in only_steps],
         step_params=extra_params,
     )
     connectors_tests_contexts = [

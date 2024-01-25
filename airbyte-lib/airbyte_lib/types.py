@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 """Type conversion methods for SQL Caches."""
+from __future__ import annotations
 
 from typing import cast
 

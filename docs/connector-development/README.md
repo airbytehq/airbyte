@@ -120,7 +120,7 @@ The steps for updating an existing connector are the same as for building a new 
 
 _Coming soon._
 
-Typing and Deduplication is how Airbyte transforms the raw data which is transmitted during a sync into easy-to-use final tables for database and data warehouse destinations. For more information on how typing and deduplication works, see [this doc](/understanding-airbyte/typing-deduping).
+Typing and Deduplication is how Airbyte transforms the raw data which is transmitted during a sync into easy-to-use final tables for database and data warehouse destinations. For more information on how typing and deduplication works, see [this doc](/using-airbyte/core-concepts/typing-deduping).
 
 ## Publishing a connector
 

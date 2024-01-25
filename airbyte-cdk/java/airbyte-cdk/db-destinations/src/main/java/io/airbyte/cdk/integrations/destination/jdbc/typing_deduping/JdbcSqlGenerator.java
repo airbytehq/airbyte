@@ -44,10 +44,12 @@ import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.jooq.CommonTableExpression;
 import org.jooq.Condition;
 import org.jooq.CreateSchemaFinalStep;
@@ -259,11 +261,15 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
     final String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
     if (!force) {
-      return Sql.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()));
+      return transactionally(Stream.concat(
+          Stream.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
+          createIndexSql(stream, suffix).stream()).toList());
     }
-    return transactionally(
-        dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
-        createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()));
+    return transactionally(Stream.concat(
+        Stream.of(
+            dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
+            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
+        createIndexSql(stream, suffix).stream()).toList());
   }
 
   @Override
@@ -419,8 +425,16 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     final DSLContext dsl = getDslContext();
     final CreateTableColumnStep createTableSql = dsl
         .createTable(quotedName(namespace, tableName))
-        .columns(buildFinalTableFields(columns, getFinalTableMetaColumns(true)));;
+        .columns(buildFinalTableFields(columns, getFinalTableMetaColumns(true)));
     return createTableSql.getSQL();
+  }
+
+  /**
+   * Subclasses may override this method to add additional indexes after their CREATE TABLE statement.
+   * This is useful if the destination's CREATE TABLE statement does not accept an index definition.
+   */
+  protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
+    return Collections.emptyList();
   }
 
   protected String beginTransaction() {
@@ -471,22 +485,26 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         .getSQL(ParamType.INLINED);
   }
 
-  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias) {
+  protected Field<?> castedField(
+                                 final Field<?> field,
+                                 final AirbyteType type,
+                                 final String alias,
+                                 final boolean useExpensiveSaferCasting) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
-      return castedField(field, airbyteProtocolType).as(quotedName(alias));
-
+      return castedField(field, airbyteProtocolType, useExpensiveSaferCasting).as(quotedName(alias));
     }
+
     // Redshift SUPER can silently cast an array type to struct and vice versa.
     return switch (type.getTypeName()) {
       case Struct.TYPE, UnsupportedOneOf.TYPE -> cast(field, getStructType()).as(quotedName(alias));
       case Array.TYPE -> cast(field, getArrayType()).as(quotedName(alias));
       // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias);
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias, useExpensiveSaferCasting);
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
     };
   }
 
-  protected Field<?> castedField(final Field<?> field, final AirbyteProtocolType type) {
+  protected Field<?> castedField(final Field<?> field, final AirbyteProtocolType type, final boolean useExpensiveSaferCasting) {
     return cast(field, toDialectType(type));
   }
 

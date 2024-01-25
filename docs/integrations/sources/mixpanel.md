@@ -55,6 +55,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 2.0.1   | 2024-01-11 | [34147](https://github.com/airbytehq/airbyte/pull/34147) | prepare for airbyte-lib                                                        |
 | 2.0.0   | 2023-10-30 | [31955](https://github.com/airbytehq/airbyte/pull/31955) | Delete the default primary key for the Export stream                                                        |
 | 1.0.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                             |
 | 1.0.0   | 2023-09-27 | [30025](https://github.com/airbytehq/airbyte/pull/30025) | Fix type of datetime field in engage stream; fix primary key for export stream.                             |
