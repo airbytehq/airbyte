@@ -41,6 +41,7 @@ definitions:
               backoff_time_in_seconds: 100
     request_body_json: {}
 
+  #Stream Transactions
   transactions_stream:
     type: DeclarativeStream
     primary_key: transaction_id
@@ -67,6 +68,15 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           fields: all
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers: 
+            - type: DefaultErrorHandler
+              description: "Handle HTTP 400 with error message: Data for the given start date is not available. "
+              response_filters:
+                - http_codes: [400]
+                  action: IGNORE
+                  predicate: "{{ 'Data for the given start date is not available' in response['message']}}"
     transformations:
       - type: AddFields
         fields:
@@ -108,7 +118,8 @@ definitions:
     $parameters:
       path: "v1/reporting/transactions"
       field_path: transaction_details
-
+  
+  #Stream balances
   balances_stream:
     type: DeclarativeStream
     primary_key: as_of_time
@@ -152,6 +163,7 @@ definitions:
     $parameters:
       path: "v1/reporting/balances"
 
+  #Stream search Invoices
   search_invoices_stream:
     type: DeclarativeStream
     primary_key: id
@@ -173,7 +185,7 @@ definitions:
         pagination_strategy:
           type: PageIncrement
           start_from_page: 1
-          page_size: 100
+          page_size: 20
       requester:
         $ref: "#/definitions/requester"
         http_method: POST
@@ -183,12 +195,11 @@ definitions:
       - type: AddFields
         fields:
           - path:
-              - invoice_updated_date
-            value: >-
-              {{ format_datetime(record['detail']['metadata']['last_updated_time'], '%Y-%m-%dT%H:%M:%SZ') }}    
+              - last_update_time
+            value: "{{ format_datetime(record['detail']['metadata']['last_update_time'], '%Y-%m-%dT%H:%M:%SZ') }}"   
     incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: invoice_updated_date
+        cursor_field: last_update_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
@@ -214,11 +225,44 @@ definitions:
     $parameters:
       field_path: items
       path: "v2/invoicing/search-invoices"
+  
+  #New Stream
+  products_stream:
+    type: DeclarativeStream
+    primary_key: id
+    name: "products"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 10
+        page_token_option:
+           type: RequestOption
+           inject_into: request_parameter
+           field_name: page
+        page_size_option:
+           inject_into: request_parameter
+           field_name: page_size
+           type: RequestOption
+      requester:
+        $ref: "#/definitions/requester"
+        http_method: GET
+        request_headers:
+          Content-Type: application/json
+    $parameters:
+      path: "v1/catalogs/products"
+      field_path: products
 
 streams:
   - "#/definitions/transactions_stream"
   - "#/definitions/balances_stream"
   - "#/definitions/search_invoices_stream"
+  - "#/definitions/products_stream"
 
 spec:
   type: Spec
