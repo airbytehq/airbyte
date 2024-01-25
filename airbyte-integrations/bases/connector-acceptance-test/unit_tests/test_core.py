@@ -1334,17 +1334,19 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
 @pytest.mark.parametrize(
     ("metadata", "expected_file_based"),
     (
-        ({"data": {"connectorSubtype": "file", "supportLevel": "certified"}}, True),
+        ({"data": {"connectorSubtype": "file", "ab_internal": {"ql": 400}}}, True),
+        ({"data": {"connectorSubtype": "file", "ab_internal": {"ql": 500}}}, True),
         ({}, False),
-        ({"data": {"supportLevel": "certified"}}, False),
+        ({"data": {"ab_internal": {}}}, False),
+        ({"data": {"ab_internal": {"ql": 400}}}, False),
         ({"data": {"connectorSubtype": "file"}}, False),
-        ({"data": {"connectorSubtype": "not_file", "supportLevel": "certified"}}, False),
-        ({"data": {"connectorSubtype": "file", "supportLevel": "community"}}, False),
+        ({"data": {"connectorSubtype": "file", "ab_internal": {"ql": 200}}}, False),
+        ({"data": {"connectorSubtype": "not_file", "ab_internal": {"ql": 400}}}, False),
     ),
 )
-def test_is_file_based_connector(metadata, expected_file_based):
+def test_is_certified_file_based_connector(metadata, expected_file_based):
     t = test_core.TestBasicRead()
-    assert test_core.TestBasicRead.is_file_based_connector.__wrapped__(t, metadata) is expected_file_based
+    assert test_core.TestBasicRead.is_certified_file_based_connector.__wrapped__(t, metadata) is expected_file_based
 
 
 @pytest.mark.parametrize(
@@ -1352,6 +1354,7 @@ def test_is_file_based_connector(metadata, expected_file_based):
     (
         ("test.csv", ".csv"),
         ("test/directory/test.csv", ".csv"),
+        ("test/directory/test.CSV", ".csv"),
         ("test/directory/", ""),
         (".bashrc", ""),
         ("", ""),
@@ -1371,6 +1374,7 @@ def test_get_file_extension(file_name, expected_extension):
                 AirbyteRecordMessage(stream="stream", data={"field": "value", "_ab_source_file_url": "test.csv"}, emitted_at=111),
                 AirbyteRecordMessage(stream="stream", data={"field": "value", "_ab_source_file_url": "test_2.pdf"}, emitted_at=111),
                 AirbyteRecordMessage(stream="stream", data={"field": "value", "_ab_source_file_url": "test_3.pdf"}, emitted_at=111),
+                AirbyteRecordMessage(stream="stream", data={"field": "value", "_ab_source_file_url": "test_3.CSV"}, emitted_at=111),
             ],
             {".csv", ".pdf"},
         ),
@@ -1394,6 +1398,7 @@ def test_get_actual_file_types(records, expected_file_types):
     (
         ([], set()),
         ([UnsupportedFileTypeConfig(extension=".csv"), UnsupportedFileTypeConfig(extension=".pdf")], {".csv", ".pdf"}),
+        ([UnsupportedFileTypeConfig(extension=".CSV")], {".csv"}),
     ),
 )
 def test_get_unsupported_file_types(config, expected_file_types):
@@ -1430,6 +1435,6 @@ async def test_all_supported_file_types_present(mocker, file_types_found, should
 
     if should_fail:
         with pytest.raises(AssertionError) as e:
-            await t.test_all_supported_file_types_present(file_based_connector=True, inputs=config)
+            await t.test_all_supported_file_types_present(certified_file_based_connector=True, inputs=config)
     else:
-        await t.test_all_supported_file_types_present(file_based_connector=True, inputs=config)
+        await t.test_all_supported_file_types_present(certified_file_based_connector=True, inputs=config)

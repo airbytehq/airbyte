@@ -1181,28 +1181,34 @@ class TestBasicRead(BaseTest):
 
         return result
 
-    @pytest.fixture(name="file_based_connector")
-    def is_file_based_connector(self, connector_metadata: Dict[str, Any]) -> bool:
+    @pytest.fixture(name="certified_file_based_connector")
+    def is_certified_file_based_connector(self, connector_metadata: Dict[str, Any]) -> bool:
         metadata = connector_metadata.get("data", {})
-        return metadata.get("connectorSubtype") == "file" and metadata.get("supportLevel") == "certified"
+
+        # connector subtype is specified in data.connectorSubtype field
+        file_based_connector = metadata.get("connectorSubtype") == "file"
+        # a certified connector has ab_internal.ql value >= 400
+        certified_connector = metadata.get("ab_internal", {}).get("ql", 0) >= 400
+
+        return file_based_connector and certified_connector
 
     @staticmethod
     def _get_file_extension(file_name: str) -> str:
         _, file_extension = splitext(file_name)
-        return file_extension
+        return file_extension.casefold()
 
     def _get_actual_file_types(self, records: List[AirbyteRecordMessage]) -> Set[str]:
         return {self._get_file_extension(record.data.get("_ab_source_file_url", "")) for record in records}
 
     @staticmethod
     def _get_unsupported_file_types(config: List[UnsupportedFileTypeConfig]) -> Set[str]:
-        return {t.extension for t in config}
+        return {t.extension.casefold() for t in config}
 
-    async def test_all_supported_file_types_present(self, file_based_connector: bool, inputs: BasicReadTestConfig):
-        if not file_based_connector or inputs.file_types.skip_test:
+    async def test_all_supported_file_types_present(self, certified_file_based_connector: bool, inputs: BasicReadTestConfig):
+        if not certified_file_based_connector or inputs.file_types.skip_test:
             reason = (
                 "Skipping the test for supported file types"
-                f"{' as it is only applicable for certified file-based connectors' if not file_based_connector else ''}."
+                f"{' as it is only applicable for certified file-based connectors' if not certified_file_based_connector else ''}."
             )
             pytest.skip(reason)
 
