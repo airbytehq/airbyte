@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.2.0
+Add TestBasicRead.test_all_supported_file_types_present, which validates that all supported file types are present in the sandbox account for certified file-based connectors.
+
 ## 3.1.0
 Add TestSpec.test_oauth_is_default_method test with OAuth is default option validation.
 

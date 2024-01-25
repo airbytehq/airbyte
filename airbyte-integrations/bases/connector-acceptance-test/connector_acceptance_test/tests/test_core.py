@@ -1029,12 +1029,12 @@ class TestBasicRead(BaseTest):
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         docker_runner: ConnectorRunner,
         detailed_logger: Logger,
-        file_based_connector: bool,
+        certified_file_based_connector: bool,
     ):
         output = await docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
-        if file_based_connector:
+        if certified_file_based_connector:
             self._file_types.update(self._get_actual_file_types(records))
 
         assert records, "At least one record should be read using provided catalog"
@@ -1225,8 +1225,9 @@ class TestBasicRead(BaseTest):
 
         # all structured and at least one of unstructured supported file types should be present
         assert not missing_structured_types and len(missing_unstructured_types) != len(unstructured_types), (
-            f"Please make sure you added files with all of supported structured types {structured_types} "
-            f"and at least one with unstructured type {unstructured_types} to the test account."
+            f"Please make sure you added files with the following supported structured types {missing_structured_types} "
+            f"and at least one with unstructured type {unstructured_types} to the test account "
+            "or add them to the `file_types -> unsupported_types` list in config."
         )
 
 
