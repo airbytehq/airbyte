@@ -179,6 +179,7 @@ def test_get_org_repositories():
     assert set(organisations) == {"airbytehq", "docker"}
 
 
+@responses.activate
 def test_organization_or_repo_available(monkeypatch, rate_limit_mock_response):
     monkeypatch.setattr(SourceGithub, "_get_org_repositories", MagicMock(return_value=(False, False)))
     source = SourceGithub()
@@ -234,6 +235,7 @@ def test_check_config_repository():
             assert command_check(source, config)
 
 
+@responses.activate
 def test_streams_no_streams_available_error(monkeypatch, rate_limit_mock_response):
     monkeypatch.setattr(SourceGithub, "_get_org_repositories", MagicMock(return_value=(False, False)))
     with pytest.raises(AirbyteTracedException) as e:
@@ -242,7 +244,7 @@ def test_streams_no_streams_available_error(monkeypatch, rate_limit_mock_respons
 
 
 @responses.activate
-def test_streams_page_size():
+def test_streams_page_size(rate_limit_mock_response):
     responses.get("https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte", "default_branch": "master"})
     responses.get("https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"repository": "airbytehq/airbyte", "name": "master"}])
 
