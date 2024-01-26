@@ -28,10 +28,15 @@ def _parse_args() -> argparse.Namespace:
         help="Path to the connector directory",
     )
     parser.add_argument(
+        "--validate-install-only",
+        action="store_true",
+        help="Only validate that the connector can be installed and config can be validated.",
+    )
+    parser.add_argument(
         "--sample-config",
         type=str,
-        required=True,
-        help="Path to the sample config.json file",
+        required=False,
+        help="Path to the sample config.json file. Required without --validate-install-only.",
     )
     return parser.parse_args()
 
@@ -45,7 +50,7 @@ def _run_subprocess_and_raise_on_failure(args: list[str]) -> None:
         )
 
 
-def tests(connector_name: str, sample_config: str) -> None:
+def full_tests(connector_name: str, sample_config: str) -> None:
     print("Creating source and validating spec and version...")
     source = ab.get_connector(
         # TODO: FIXME: noqa: SIM115, PTH123
@@ -76,6 +81,12 @@ def tests(connector_name: str, sample_config: str) -> None:
         )
 
 
+def install_only_test(connector_name: str) -> None:
+    print("Creating source and validating spec is returned successfully...")
+    source = ab.get_connector(connector_name)
+    source._get_spec(force_refresh=True)  # noqa: SLF001
+
+
 def run() -> None:
     """Handle CLI entrypoint for the `airbyte-lib-validate-source` command.
 
@@ -91,10 +102,11 @@ def run() -> None:
     args = _parse_args()
     connector_dir = args.connector_dir
     sample_config = args.sample_config
-    validate(connector_dir, sample_config)
+    validate_install_only = args.validate_install_only
+    validate(connector_dir, sample_config, validate_install_only=validate_install_only)
 
 
-def validate(connector_dir: str, sample_config: str) -> None:
+def validate(connector_dir: str, sample_config: str, *, validate_install_only: bool) -> None:
     # read metadata.yaml
     metadata_path = Path(connector_dir) / "metadata.yaml"
     with Path(metadata_path).open() as stream:
@@ -127,4 +139,9 @@ def validate(connector_dir: str, sample_config: str) -> None:
         temp_file.write(json.dumps(registry))
         temp_file.seek(0)
         os.environ["AIRBYTE_LOCAL_REGISTRY"] = str(temp_file.name)
-        tests(connector_name, sample_config)
+        if validate_install_only:
+            install_only_test(connector_name)
+        else:
+            if not sample_config:
+                raise Exception("sample_config is required when -validate-install-only is not set")
+            full_tests(connector_name, sample_config)
