@@ -68,12 +68,11 @@ def get_connector(
             name=name,
             metadata=metadata,
             target_version=version,
-            install_if_missing=install_if_missing,
             pip_url=pip_url,
         )
 
     if install_if_missing:
-        executor.ensure_installation()
+        executor.install()
 
     return Source(
         executor=executor,
