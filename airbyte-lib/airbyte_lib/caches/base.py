@@ -238,7 +238,6 @@ class SQLCacheBase(RecordProcessor):
     ) -> sqlalchemy.Table:
         """Return a temporary table name."""
         table_name = self.get_sql_table_name(stream_name)
-        print("table name", table_name, "stream name", stream_name)
         return sqlalchemy.Table(
             table_name,
             sqlalchemy.MetaData(schema=self.config.schema_name),
@@ -519,7 +518,6 @@ class SQLCacheBase(RecordProcessor):
               Some sources will send us duplicate records within the same stream,
               although this is a fairly rare edge case we can ignore in V1.
         """
-        print(f"Finalizing batches for stream {stream_name}")
         with self._finalizing_batches(stream_name) as batches_to_finalize:
             if not batches_to_finalize:
                 return {}
