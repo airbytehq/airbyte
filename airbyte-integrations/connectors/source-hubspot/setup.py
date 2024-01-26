@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-hubspot=source_hubspot.run:run",
         ],
-    },    name="source_hubspot",
+    },
+    name="source_hubspot",
     description="Source implementation for HubSpot.",
     author="Airbyte",
     author_email="contact@airbyte.io",
