@@ -30,9 +30,7 @@ class Executor(ABC):
         target_version: str | None = None,
     ) -> None:
         if name is None and metadata is None:
-            raise exc.AirbyteLibInternalError(
-                message="Either name or metadata must be provided."
-            )
+            raise exc.AirbyteLibInternalError(message="Either name or metadata must be provided.")
 
         self.name: str = name or metadata.name
         self.metadata: ConnectorMetadata | None = metadata

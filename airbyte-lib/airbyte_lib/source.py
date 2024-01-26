@@ -125,7 +125,6 @@ class Source:
 
         self._config_dict = config
 
-
     @property
     def _config(self) -> dict[str, Any]:
         if self._config_dict is None:
