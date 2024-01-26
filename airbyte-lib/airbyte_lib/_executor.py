@@ -224,21 +224,36 @@ class VenvExecutor(Executor):
             return self.reported_version
 
         connector_name = self.name
+        if not self.interpreter_path.exists():
+            # No point in trying to detect the version if the interpreter does not exist
+            if raise_on_error:
+                raise exc.AirbyteLibInternalError(
+                    message="Connector's virtual environment interpreter could not be found.",
+                    context={
+                        "interpreter_path": self.interpreter_path,
+                    },
+                )
+            return None
 
         try:
             return subprocess.check_output(
                 [
-                    self._get_venv_path() / "bin" / "python",
+                    self.interpreter_path,
                     "-c",
                     f"from importlib.metadata import version; print(version('{connector_name}'))",
                 ],
                 universal_newlines=True,
             ).strip()
-        except subprocess.CalledProcessError:
-            if not raise_on_error:
+        except Exception:
+            if raise_on_error:
                 raise
 
             return None
+
+    @property
+    def interpreter_path(self) -> Path:
+        return self._get_venv_path() / "bin" / "python"
+
 
     def ensure_installation(
         self,
