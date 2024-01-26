@@ -22,8 +22,7 @@
       "type": ["integer", "null"]
     },
     "pricing_model": {
-      "type": ["string", "null"],
-      "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+      "type": ["string", "null"]
     },
     "quantity": {
       "type": ["integer", "null"]
@@ -100,19 +99,7 @@
       }
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "additionalProperties": true,
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }
