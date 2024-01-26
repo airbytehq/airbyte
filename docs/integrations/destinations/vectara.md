@@ -56,6 +56,7 @@ You'll need the following information to configure the Vectara destination:
 
 In addition, in the connector UI you define two set of fields for this connector:
 * `text_fields` define the source fields which are turned into text in the Vectara side and are used for query or summarization.
+* `title_field` define the source field which will be used as a title of the document on the Vectara side
 * `metadata_fields` define the source fields which will be added to each document as meta-data.
 
 ## Changelog
