@@ -68,7 +68,13 @@ class Source:
         name: str,
         config: dict[str, Any] | None = None,
         streams: list[str] | None = None,
+        *,
+        validate: bool = False,
     ) -> None:
+        """Initialize the source.
+
+        If config is provided, it will be validated against the spec if validate is True.
+        """
         self._processed_records = 0
         self.executor = executor
         self.name = name
@@ -79,7 +85,7 @@ class Source:
         self._spec: ConnectorSpecification | None = None
         self._selected_stream_names: list[str] | None = None
         if config is not None:
-            self.set_config(config)
+            self.set_config(config, validate=validate)
         if streams is not None:
             self.set_streams(streams)
 
@@ -102,9 +108,23 @@ class Source:
                 )
         self._selected_stream_names = streams
 
-    def set_config(self, config: dict[str, Any]) -> None:
-        self._validate_config(config)
+    def set_config(
+        self,
+        config: dict[str, Any],
+        *,
+        validate: bool = False,
+    ) -> None:
+        """Set the config for the connector.
+
+        If validate is True, raise an exception if the config fails validation.
+
+        If validate is False, validation will be deferred until check() is called.
+        """
+        if validate:
+            self._validate_config(config)
+
         self._config_dict = config
+
 
     @property
     def _config(self) -> dict[str, Any]:

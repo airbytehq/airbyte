@@ -24,15 +24,25 @@ _LATEST_VERSION = "latest"
 class Executor(ABC):
     def __init__(
         self,
-        metadata: ConnectorMetadata,
+        *,
+        name: str | None = None,
+        metadata: ConnectorMetadata | None = None,
         target_version: str | None = None,
     ) -> None:
-        self.metadata = metadata
-        self.enforce_version = target_version is not None
-        if target_version is None or target_version == _LATEST_VERSION:
-            self.target_version = metadata.latest_available_version
-        else:
+        if name is None and metadata is None:
+            raise exc.AirbyteLibInternalError(
+                message="Either name or metadata must be provided."
+            )
+
+        self.name: str = name or metadata.name
+        self.metadata: ConnectorMetadata | None = metadata
+        self.enforce_version: bool = target_version is not None
+
+        self.target_version: str | None = None
+        if target_version is not None:
             self.target_version = target_version
+        elif metadata and (target_version is None or target_version == _LATEST_VERSION):
+            self.target_version = metadata.latest_available_version
 
     @abstractmethod
     def execute(self, args: list[str]) -> Iterator[str]:
@@ -107,25 +117,24 @@ def _stream_from_subprocess(args: list[str]) -> Generator[Iterable[str], None, N
 class VenvExecutor(Executor):
     def __init__(
         self,
-        metadata: ConnectorMetadata,
+        name: str | None = None,
+        *,
+        metadata: ConnectorMetadata | None = None,
         target_version: str | None = None,
         pip_url: str | None = None,
-        *,
-        install_if_missing: bool = False,
     ) -> None:
-        super().__init__(metadata, target_version)
-        self.install_if_missing = install_if_missing
+        super().__init__(name=name, metadata=metadata, target_version=target_version)
 
         # This is a temporary install path that will be replaced with a proper package
         # name once they are published.
-        # TODO: Replace with `f"airbyte-{self.metadata.name}"`
-        self.pip_url = pip_url or f"../airbyte-integrations/connectors/{self.metadata.name}"
+        # TODO: Replace with `f"airbyte-{self.name}"`
+        self.pip_url = pip_url or f"../airbyte-integrations/connectors/{self.name}"
 
     def _get_venv_name(self) -> str:
-        return f".venv-{self.metadata.name}"
+        return f".venv-{self.name}"
 
     def _get_connector_path(self) -> Path:
-        return Path(self._get_venv_name(), "bin", self.metadata.name)
+        return Path(self._get_venv_name(), "bin", self.name)
 
     def _run_subprocess_and_raise_on_failure(self, args: list[str]) -> None:
         result = subprocess.run(args, check=False)
@@ -154,7 +163,7 @@ class VenvExecutor(Executor):
         > python -c "from importlib.metadata import version; print(version('<connector-name>'))"
         """
         venv_name = self._get_venv_name()
-        connector_name = self.metadata.name
+        connector_name = self.name
         return subprocess.check_output(
             [
                 Path(venv_name) / "bin" / "python",
@@ -176,27 +185,15 @@ class VenvExecutor(Executor):
         Note: Version verification is not supported for connectors installed from a
         local path.
         """
-        venv_name = f".venv-{self.metadata.name}"
+        venv_name = f".venv-{self.name}"
         venv_path = Path(venv_name)
         if not venv_path.exists():
-            if not self.install_if_missing:
-                raise exc.AirbyteConnectorNotFoundError(
-                    message="Connector not available and venv does not exist.",
-                    guidance=(
-                        "Please ensure the connector is pre-installed or consider enabling "
-                        "`install_if_missing=True`."
-                    ),
-                    context={
-                        "connector_name": self.metadata.name,
-                        "venv_name": venv_name,
-                    },
-                )
             self.install()
 
         connector_path = self._get_connector_path()
         if not connector_path.exists():
             raise exc.AirbyteConnectorNotFoundError(
-                connector_name=self.metadata.name,
+                connector_name=self.name,
                 context={
                     "venv_name": venv_name,
                 },
@@ -212,7 +209,7 @@ class VenvExecutor(Executor):
                 version_after_install = self._get_installed_version()
                 if version_after_install != self.target_version:
                     raise exc.AirbyteConnectorInstallationError(
-                        connector_name=self.metadata.name,
+                        connector_name=self.name,
                         context={
                             "venv_name": venv_name,
                             "target_version": self.target_version,
@@ -228,7 +225,7 @@ class VenvExecutor(Executor):
             yield from stream
 
     def get_telemetry_info(self) -> SourceTelemetryInfo:
-        return SourceTelemetryInfo(self.metadata.name, SourceType.VENV, self.target_version)
+        return SourceTelemetryInfo(self.name, SourceType.VENV, self.target_version)
 
 
 class PathExecutor(Executor):
@@ -237,24 +234,24 @@ class PathExecutor(Executor):
             self.execute(["spec"])
         except Exception as e:
             raise exc.AirbyteConnectorNotFoundError(
-                connector_name=self.metadata.name,
+                connector_name=self.name,
             ) from e
 
     def install(self) -> NoReturn:
         raise exc.AirbyteConnectorInstallationError(
             message="Connector cannot be installed because it is not managed by airbyte-lib.",
-            connector_name=self.metadata.name,
+            connector_name=self.name,
         )
 
     def uninstall(self) -> NoReturn:
         raise exc.AirbyteConnectorInstallationError(
             message="Connector cannot be uninstalled because it is not managed by airbyte-lib.",
-            connector_name=self.metadata.name,
+            connector_name=self.name,
         )
 
     def execute(self, args: list[str]) -> Iterator[str]:
-        with _stream_from_subprocess([self.metadata.name, *args]) as stream:
+        with _stream_from_subprocess([self.name, *args]) as stream:
             yield from stream
 
     def get_telemetry_info(self) -> SourceTelemetryInfo:
-        return SourceTelemetryInfo(self.metadata.name, SourceType.LOCAL_INSTALL, version=None)
+        return SourceTelemetryInfo(self.name, SourceType.LOCAL_INSTALL, version=None)
