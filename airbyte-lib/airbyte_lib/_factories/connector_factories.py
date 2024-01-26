@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib._executor import Executor, PathExecutor, VenvExecutor
-from airbyte_lib.exceptions import AirbyteLibInputError
-from airbyte_lib.registry import get_connector_metadata
+from airbyte_lib.registry import ConnectorMetadata, get_connector_metadata
 from airbyte_lib.source import Source
 
 
@@ -35,28 +35,46 @@ def get_connector(
         install_if_missing: whether to install the connector if it is not available locally. This
             parameter is ignored if use_local_install is True.
     """
-    metadata = get_connector_metadata(name)
+    if use_local_install and pip_url:
+        raise exc.AirbyteLibInputError(
+            message="Param 'pip_url' is not supported when 'use_local_install' is True."
+        )
+
+    if use_local_install and version:
+        raise exc.AirbyteLibInputError(
+            message="Param 'version' is not supported when 'use_local_install' is True."
+        )
+
+    if use_local_install and install_if_missing:
+        raise exc.AirbyteLibInputError(
+            message="Param 'install_if_missing' is not supported when 'use_local_install' is True."
+        )
+
+    metadata: ConnectorMetadata | None = None
+    try:
+        metadata = get_connector_metadata(name)
+    except exc.AirbyteConnectorNotRegisteredError:
+        if not pip_url:
+            raise
+
     if use_local_install:
-        if pip_url:
-            raise AirbyteLibInputError(
-                message="Param 'pip_url' is not supported when 'use_local_install' is True."
-            )
-        if version:
-            raise AirbyteLibInputError(
-                message="Param 'version' is not supported when 'use_local_install' is True."
-            )
         executor: Executor = PathExecutor(
-            metadata=metadata,
+            name=name,
             target_version=version,
         )
 
     else:
         executor = VenvExecutor(
+            name=name,
             metadata=metadata,
             target_version=version,
             install_if_missing=install_if_missing,
             pip_url=pip_url,
         )
+
+    if install_if_missing:
+        executor.ensure_installation()
+
     return Source(
         executor=executor,
         name=name,

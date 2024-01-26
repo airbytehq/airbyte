@@ -174,6 +174,13 @@ class AirbyteConnectorRegistryError(AirbyteError):
     """Error when accessing the connector registry."""
 
 
+@dataclass
+class AirbyteConnectorNotRegisteredError(AirbyteConnectorRegistryError):
+    """Connector not found in registry."""
+
+    connector_name: str | None = None
+    guidance = "Please double check the connector name."
+
 # Connector Errors
 
 
@@ -185,7 +192,8 @@ class AirbyteConnectorError(AirbyteError):
 
 
 class AirbyteConnectorNotFoundError(AirbyteConnectorError):
-    """Connector not found."""
+    """Connector name not found in registry."""
+
 
 
 class AirbyteConnectorInstallationError(AirbyteConnectorError):
