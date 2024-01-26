@@ -38,11 +38,8 @@ async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container,
     secrets_to_mask = []
     if secrets_to_mask_file := await get_file_contents(ci_credentials_with_downloaded_secrets, "/tmp/secrets_to_mask.txt"):
         for secret_to_mask in secrets_to_mask_file.splitlines():
-            if secret_to_mask in NOT_REALLY_SECRETS:
-                # Don't mask secrets which are also common words.
-                continue
-            if secret_to_mask in connector_technical_name:
-                # Similarly, don't mask secrets which are substrings of the connector name.
+            if secret_to_mask in NOT_REALLY_SECRETS or secret_to_mask in connector_technical_name:
+                # Don't mask secrets which are also common words or connector name.
                 continue
             # We print directly to stdout because the GHA runner will mask only if the log line starts with "::add-mask::"
             # If we use the dagger logger, or context logger, the log line will start with other stuff and will not be masked
