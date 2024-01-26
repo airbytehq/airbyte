@@ -288,10 +288,14 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   @Override
   public Sql overwriteFinalTable(final StreamId stream, final String finalSuffix) {
     return transactionally(
-        dropTableIfExists(name(stream.finalNamespace(), stream.finalName())).getSQL(ParamType.INLINED),
-        alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
-            .renameTo(name(stream.finalName()))
-            .getSQL());
+        getDslContext().dropTableIfExists(name(stream.finalNamespace(), stream.finalName())).getSQL(ParamType.INLINED),
+        renameTable(stream, finalSuffix));
+  }
+
+  protected String renameTable(final StreamId stream, final String finalSuffix) {
+    return getDslContext().alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
+        .renameTo(name(stream.finalName()))
+        .getSQL();
   }
 
   @Override
@@ -301,7 +305,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     return transactionally(
         dsl.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
         dsl.dropTableIfExists(rawTableName).getSQL(),
-        DSL.createTable(rawTableName)
+        getDslContext().createTable(rawTableName)
             .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
             .column(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false))
             .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType().nullable(false))

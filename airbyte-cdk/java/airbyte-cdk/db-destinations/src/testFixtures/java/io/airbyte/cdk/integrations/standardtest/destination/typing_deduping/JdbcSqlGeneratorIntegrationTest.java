@@ -55,7 +55,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest extends BaseSqlGeneratorIn
 
   protected abstract SQLDialect getSqlDialect();
 
-  private DSLContext getDslContext() {
+  protected DSLContext getDslContext() {
     return DSL.using(getSqlDialect());
   }
 

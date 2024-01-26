@@ -20,6 +20,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -167,6 +168,15 @@ public class MysqlSqlGenerator extends JdbcSqlGenerator {
   @Override
   public Sql createSchema(final String schema) {
     throw new NotImplementedException();
+  }
+
+  @Override
+  protected String renameTable(final StreamId stream, final String finalSuffix) {
+    return getDslContext().alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
+        // mysql ALTER TABLE ... REANME TO requires a fully-qualified target table name.
+        // otherwise it puts the table in the default database, which is typically not what we want.
+        .renameTo(name(stream.finalNamespace(), stream.finalName()))
+        .getSQL();
   }
 
   @Override

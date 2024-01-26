@@ -21,6 +21,7 @@ import javax.sql.DataSource;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
+import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.junit.jupiter.api.AfterAll;
@@ -94,5 +95,12 @@ public class MysqlSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegratio
   protected Field<?> toJsonValue(final String valueAsString) {
     // mysql lets you just insert json strings directly into json columns
     return DSL.val(valueAsString);
+  }
+
+  @Override
+  protected void teardownNamespace(final String namespace) throws Exception {
+    // mysql doesn't have a CASCADE keyword in DROP SCHEMA, so we have to override this method.
+    // we're currently on jooq 3.13; jooq's dropDatabase() call was only added in 3.14
+    getDatabase().execute(getDslContext().dropSchema(namespace).getSQL(ParamType.INLINED));
   }
 }
