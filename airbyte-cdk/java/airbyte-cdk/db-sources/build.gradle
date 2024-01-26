@@ -32,12 +32,6 @@ project.configurations {
     testFixturesRuntimeOnly.extendsFrom runtimeOnly
 }
 
-configurations.all {
-    // From airbyte-test-utils
-    exclude group: 'io.micronaut.jaxrs'
-    exclude group: 'io.micronaut.sql'
-}
-
 // Convert yaml to java: relationaldb.models
 jsonSchema2Pojo {
     sourceType = SourceType.YAMLSCHEMA
@@ -60,7 +54,6 @@ dependencies {
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
 
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
@@ -69,7 +62,6 @@ dependencies {
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
 
     testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
 
