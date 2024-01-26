@@ -10,7 +10,7 @@ import time
 from airbyte_lib.caches.snowflake import SnowflakeCacheConfig
 
 import docker
-import psycopg
+import psycopg2 as psycopg
 import pytest
 from google.cloud import secretmanager
 from pytest_docker.plugin import get_docker_ip
