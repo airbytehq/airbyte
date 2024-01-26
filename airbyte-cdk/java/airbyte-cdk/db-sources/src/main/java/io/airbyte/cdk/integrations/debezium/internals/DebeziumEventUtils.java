@@ -62,11 +62,11 @@ public class DebeziumEventUtils {
         .withRecord(airbyteRecordMessage);
   }
 
-  private static AirbyteMessage formatMongoDbEvent(final ChangeEventWithMetadata event,
-                                                   final CdcMetadataInjector cdcMetadataInjector,
-                                                   final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
-                                                   final Instant emittedAt,
-                                                   final JsonNode config) {
+  public static AirbyteMessage formatMongoDbEvent(final ChangeEventWithMetadata event,
+                                                  final CdcMetadataInjector cdcMetadataInjector,
+                                                  final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+                                                  final Instant emittedAt,
+                                                  final JsonNode config) {
     final JsonNode debeziumEventKey = event.eventKeyAsJson();
     final JsonNode debeziumEvent = event.eventValueAsJson();
     final JsonNode before = debeziumEvent.get(BEFORE_EVENT);
@@ -93,9 +93,9 @@ public class DebeziumEventUtils {
     return buildAirbyteMessage(source, cdcMetadataInjector, emittedAt, data);
   }
 
-  private static AirbyteMessage formatRelationalDbEvent(final ChangeEventWithMetadata event,
-                                                        final CdcMetadataInjector cdcMetadataInjector,
-                                                        final Instant emittedAt) {
+  public static AirbyteMessage formatRelationalDbEvent(final ChangeEventWithMetadata event,
+                                                       final CdcMetadataInjector cdcMetadataInjector,
+                                                       final Instant emittedAt) {
     final JsonNode debeziumEvent = event.eventValueAsJson();
     final JsonNode before = debeziumEvent.get(BEFORE_EVENT);
     final JsonNode after = debeziumEvent.get(AFTER_EVENT);

@@ -44,8 +44,11 @@ public class DebeziumRecordPublisher implements AutoCloseable {
                                  final AirbyteFileOffsetBackingStore offsetManager,
                                  final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager,
                                  final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType) {
-    this.debeziumPropertiesManager = createDebeziumPropertiesManager(debeziumConnectorType, properties, config, catalog, offsetManager,
-        schemaHistoryManager);
+    this(createDebeziumPropertiesManager(debeziumConnectorType, properties, config, catalog, offsetManager, schemaHistoryManager));
+  }
+
+  public DebeziumRecordPublisher(DebeziumPropertiesManager debeziumPropertiesManager) {
+    this.debeziumPropertiesManager = debeziumPropertiesManager;
     this.hasClosed = new AtomicBoolean(false);
     this.isClosing = new AtomicBoolean(false);
     this.thrownError = new AtomicReference<>();
@@ -53,13 +56,13 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     this.engineLatch = new CountDownLatch(1);
   }
 
-  private DebeziumPropertiesManager createDebeziumPropertiesManager(final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
-                                                                    final Properties properties,
-                                                                    final JsonNode config,
-                                                                    final ConfiguredAirbyteCatalog catalog,
-                                                                    final AirbyteFileOffsetBackingStore offsetManager,
-                                                                    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
-    return switch (debeziumConnectorType) {
+  static private DebeziumPropertiesManager createDebeziumPropertiesManager(final DebeziumPropertiesManager.DebeziumConnectorType connectorType,
+                                                                           final Properties properties,
+                                                                           final JsonNode config,
+                                                                           final ConfiguredAirbyteCatalog catalog,
+                                                                           final AirbyteFileOffsetBackingStore offsetManager,
+                                                                           final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
+    return switch (connectorType) {
       case MONGODB -> new MongoDbDebeziumPropertiesManager(properties, config, catalog, offsetManager);
       default -> new RelationalDbDebeziumPropertiesManager(properties, config, catalog, offsetManager, schemaHistoryManager);
     };

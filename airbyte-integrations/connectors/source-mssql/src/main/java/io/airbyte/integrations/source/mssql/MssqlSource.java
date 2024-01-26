@@ -32,8 +32,18 @@ import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
+import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
+import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordIterator;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumShutdownProcedure;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
@@ -41,6 +51,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -51,6 +62,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
+import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.security.KeyStoreException;
@@ -69,7 +81,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -499,13 +513,16 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       }
 
       // Otherwise, we build the snapshot iterators for the newly added streams(s)
-      final AutoCloseableIterator<AirbyteMessage> snapshotIterators =
-          handler.getSnapshotIterators(streamsToSnapshotCatalog,
-              mssqlCdcConnectorMetadataInjector,
-              MssqlCdcHelper.getDebeziumProperties(database, catalog, true),
-              new MssqlCdcStateHandler(stateManager),
-              DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
-              emittedAt);
+      final AutoCloseableIterator<AirbyteMessage> snapshotIterators = getDebeziumSnapshotIterators(
+          sourceConfig,
+          streamsToSnapshotCatalog,
+          targetPosition,
+          firstRecordWaitTime,
+          subsequentRecordWaitTime,
+          mssqlCdcConnectorMetadataInjector,
+          MssqlCdcHelper.getDebeziumProperties(database, catalog, true),
+          new MssqlCdcStateHandler(stateManager),
+          emittedAt);
       /*
        * The incremental iterators needs to be wrapped in a lazy iterator since only 1 Debezium engine for
        * the DB can be running at a time
@@ -515,6 +532,44 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
+  }
+
+  public AutoCloseableIterator<AirbyteMessage> getDebeziumSnapshotIterators(
+                                                                            final JsonNode config,
+                                                                            final ConfiguredAirbyteCatalog catalog,
+                                                                            final CdcTargetPosition<Lsn> targetPosition,
+                                                                            final Duration firstRecordWaitTime,
+                                                                            final Duration subsequentRecordWaitTime,
+                                                                            final MssqlCdcConnectorMetadataInjector cdcMetadataInjector,
+                                                                            final Properties properties,
+                                                                            final CdcStateHandler cdcStateHandler,
+                                                                            final Instant emittedAt) {
+
+    LOGGER.info("Running snapshot for " + catalog.getStreams().size() + " new tables");
+    final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(AirbyteDebeziumHandler.QUEUE_CAPACITY);
+
+    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
+    final var emptyHistory = new AirbyteSchemaHistoryStorage.SchemaHistory<Optional<JsonNode>>(Optional.empty(), false);
+    final var schemaHistoryManager = AirbyteSchemaHistoryStorage.initializeDBHistory(emptyHistory, cdcStateHandler.compressSchemaHistoryForState());
+    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
+        properties, config, catalog, offsetManager, Optional.of(schemaHistoryManager));
+    final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(propertiesManager);
+    tableSnapshotPublisher.start(queue);
+
+    final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
+        queue,
+        targetPosition,
+        tableSnapshotPublisher::hasClosed,
+        new DebeziumShutdownProcedure<>(queue, tableSnapshotPublisher::close, tableSnapshotPublisher::hasClosed),
+        firstRecordWaitTime,
+        subsequentRecordWaitTime);
+
+    return AutoCloseableIterators.concatWithEagerClose(
+        AutoCloseableIterators.transform(
+            eventIterator, (event) -> DebeziumEventUtils.formatRelationalDbEvent(event, cdcMetadataInjector, emittedAt)),
+        AutoCloseableIterators.fromIterator(
+            MoreIterators.singletonIteratorFromSupplier(
+                cdcStateHandler::saveStateAfterCompletionOfSnapshotOfNewStreams)));
   }
 
   @Override

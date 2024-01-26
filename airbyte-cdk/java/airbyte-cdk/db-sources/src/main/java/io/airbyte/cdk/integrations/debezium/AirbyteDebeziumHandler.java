@@ -15,7 +15,6 @@ import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingSt
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordIterator;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
@@ -23,7 +22,6 @@ import io.airbyte.cdk.integrations.debezium.internals.DebeziumShutdownProcedure;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateDecoratingIterator;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -70,43 +68,6 @@ public class AirbyteDebeziumHandler<T> {
     this.firstRecordWaitTime = firstRecordWaitTime;
     this.subsequentRecordWaitTime = subsequentRecordWaitTime;
     this.queueSize = queueSize;
-  }
-
-  public AutoCloseableIterator<AirbyteMessage> getSnapshotIterators(
-                                                                    final ConfiguredAirbyteCatalog catalogContainingStreamsToSnapshot,
-                                                                    final CdcMetadataInjector cdcMetadataInjector,
-                                                                    final Properties snapshotProperties,
-                                                                    final CdcStateHandler cdcStateHandler,
-                                                                    final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
-                                                                    final Instant emittedAt) {
-
-    LOGGER.info("Running snapshot for " + catalogContainingStreamsToSnapshot.getStreams().size() + " new tables");
-    final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(queueSize);
-
-    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
-    final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(snapshotProperties,
-        config,
-        catalogContainingStreamsToSnapshot,
-        offsetManager,
-        schemaHistoryManager(new SchemaHistory<>(Optional.empty(), false), cdcStateHandler.compressSchemaHistoryForState()),
-        debeziumConnectorType);
-    tableSnapshotPublisher.start(queue);
-
-    final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
-        queue,
-        targetPosition,
-        tableSnapshotPublisher::hasClosed,
-        new DebeziumShutdownProcedure<>(queue, tableSnapshotPublisher::close, tableSnapshotPublisher::hasClosed),
-        firstRecordWaitTime,
-        subsequentRecordWaitTime);
-
-    return AutoCloseableIterators.concatWithEagerClose(AutoCloseableIterators
-        .transform(
-            eventIterator,
-            (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, catalogContainingStreamsToSnapshot, emittedAt,
-                debeziumConnectorType, config)),
-        AutoCloseableIterators
-            .fromIterator(MoreIterators.singletonIteratorFromSupplier(cdcStateHandler::saveStateAfterCompletionOfSnapshotOfNewStreams)));
   }
 
   public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
