@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk>=0.58.8",  # previous versions had a bug with http_method value from the manifest
 ]
 
 TEST_REQUIREMENTS = [

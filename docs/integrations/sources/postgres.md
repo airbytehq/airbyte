@@ -1,6 +1,7 @@
 # Postgres
 
 Airbyte's certified Postgres connector offers the following features:
+* Replicate data from tables, views and materilized views. Other data objects won't be replicated to the destination like indexes, permissions.
 * Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication using the [xmin system column](#xmin). 
 * All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
 * Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
@@ -291,6 +292,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.2   | 2024-01-24 | [34465](https://github.com/airbytehq/airbyte/pull/34465) | Check xmin only if user selects xmin sync mode.                                                                                                                            |
+| 3.3.1   | 2024-01-10 | [34119](https://github.com/airbytehq/airbyte/pull/34119) | Adopt java CDK version 0.11.5.                                                                                                                                             |
 | 3.3.0   | 2023-12-19 | [33437](https://github.com/airbytehq/airbyte/pull/33437) | Remove LEGACY state flag                                                                                                                                                   |
 | 3.2.27  | 2023-12-18 | [33605](https://github.com/airbytehq/airbyte/pull/33605) | Advance Postgres LSN for PG 14 & below.                                                                                                                                    |
 | 3.2.26  | 2023-12-11 | [33027](https://github.com/airbytehq/airbyte/pull/32961) | Support for better debugging tools.                                                                                                                                        |

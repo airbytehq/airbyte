@@ -8,6 +8,7 @@ import pytest
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 os.environ["CACHE_DISABLED"] = "true"
+os.environ["DEPLOYMENT_MODE"] = "testing"
 
 
 @pytest.fixture(name="config")

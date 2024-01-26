@@ -16,6 +16,11 @@ TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1"
 
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-iterable=source_iterable.run:run",
+        ],
+    },
     name="source_iterable",
     description="Source implementation for Iterable.",
     author="Airbyte",

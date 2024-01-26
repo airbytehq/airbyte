@@ -11,6 +11,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
@@ -56,10 +57,10 @@ public class RedshiftSqlGeneratorTest {
     streamId = new StreamId("test_schema", "users_final", "test_schema", "users_raw", "test_schema", "users_final");
     final ColumnId id1 = redshiftSqlGenerator.buildColumnId("id1");
     final ColumnId id2 = redshiftSqlGenerator.buildColumnId("id2");
-    List<ColumnId> primaryKey = List.of(id1, id2);
-    ColumnId cursor = redshiftSqlGenerator.buildColumnId("updated_at");
+    final List<ColumnId> primaryKey = List.of(id1, id2);
+    final ColumnId cursor = redshiftSqlGenerator.buildColumnId("updated_at");
 
-    LinkedHashMap<ColumnId, AirbyteType> columns = new LinkedHashMap<>();
+    final LinkedHashMap<ColumnId, AirbyteType> columns = new LinkedHashMap<>();
     columns.put(id1, AirbyteProtocolType.INTEGER);
     columns.put(id2, AirbyteProtocolType.INTEGER);
     columns.put(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
@@ -94,11 +95,15 @@ public class RedshiftSqlGeneratorTest {
 
   @Test
   public void testTypingAndDeduping() throws IOException {
-    String expectedSql = MoreResources.readResource("typing_deduping_with_cdc.sql");
-    String generatedSql =
+    final String expectedSql = MoreResources.readResource("typing_deduping_with_cdc.sql");
+    final Sql generatedSql =
         redshiftSqlGenerator.updateTable(incrementalDedupStream, "unittest", Optional.of(Instant.parse("2023-02-15T18:35:24.00Z")), false);
-    List<String> expectedSqlLines = Arrays.stream(expectedSql.split("\n")).map(String::trim).toList();
-    List<String> generatedSqlLines = Arrays.stream(generatedSql.split("\n")).map(String::trim).toList();
+    final List<String> expectedSqlLines = Arrays.stream(expectedSql.split("\n")).map(String::trim).toList();
+    final List<String> generatedSqlLines = generatedSql.asSqlStrings("BEGIN", "COMMIT").stream()
+        .flatMap(statement -> Arrays.stream(statement.split("\n")))
+        .map(String::trim)
+        .filter(line -> !line.isEmpty())
+        .toList();
     System.out.println(generatedSql);
     assertEquals(expectedSqlLines, generatedSqlLines);
   }
@@ -107,10 +112,10 @@ public class RedshiftSqlGeneratorTest {
   public void test2000ColumnSql() {
     final ColumnId id1 = redshiftSqlGenerator.buildColumnId("id1");
     final ColumnId id2 = redshiftSqlGenerator.buildColumnId("id2");
-    List<ColumnId> primaryKey = List.of(id1, id2);
-    ColumnId cursor = redshiftSqlGenerator.buildColumnId("updated_at");
+    final List<ColumnId> primaryKey = List.of(id1, id2);
+    final ColumnId cursor = redshiftSqlGenerator.buildColumnId("updated_at");
 
-    LinkedHashMap<ColumnId, AirbyteType> columns = new LinkedHashMap<>();
+    final LinkedHashMap<ColumnId, AirbyteType> columns = new LinkedHashMap<>();
     columns.put(id1, AirbyteProtocolType.INTEGER);
     columns.put(id2, AirbyteProtocolType.INTEGER);
     columns.put(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
@@ -123,7 +128,7 @@ public class RedshiftSqlGeneratorTest {
           .toString();
       columns.put(redshiftSqlGenerator.buildColumnId(columnName), AirbyteProtocolType.STRING);
     }
-    String generatedSql = redshiftSqlGenerator.updateTable(new StreamConfig(
+    final Sql generatedSql = redshiftSqlGenerator.updateTable(new StreamConfig(
         streamId,
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
@@ -131,7 +136,7 @@ public class RedshiftSqlGeneratorTest {
         Optional.of(cursor),
         columns), "unittest", Optional.of(Instant.parse("2023-02-15T18:35:24.00Z")), false);
     // This should not throw an exception.
-    assertFalse(generatedSql.isEmpty());
+    assertFalse(generatedSql.transactions().isEmpty());
   }
 
 }

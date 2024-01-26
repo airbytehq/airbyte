@@ -104,6 +104,11 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends AbstractPost
     return "airbyte/destination-postgres";
   }
 
+  @Override
+  protected boolean supportsInDestinationNormalization() {
+    return true;
+  }
+
   @Disabled("Custom DBT does not have root certificate created in the Postgres container.")
   public void testCustomDbtTransformations() throws Exception {
     super.testCustomDbtTransformations();

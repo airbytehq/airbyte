@@ -26,6 +26,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.db.util.SSLCertificateUtils;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
@@ -40,7 +41,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -51,7 +51,11 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
-import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -67,6 +71,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,9 +99,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String NO_TUNNEL = "NO_TUNNEL";
   public static final String SSL_METHOD = "ssl_method";
   public static final String SSL_METHOD_UNENCRYPTED = "unencrypted";
+
+  public static final String JDBC_DELIMITER = ";";
   private List<String> schemas;
 
-  public static Source sshWrappedSource(MssqlSource source) {
+  public static Source sshWrappedSource(final MssqlSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
@@ -364,7 +371,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       checkOperations.add(database -> assertCdcEnabledInDb(config, database));
       checkOperations.add(database -> assertCdcSchemaQueryable(config, database));
       checkOperations.add(database -> assertSqlServerAgentRunning(database));
-      checkOperations.add(database -> assertSnapshotIsolationAllowed(config, database));
     }
 
     return checkOperations;
@@ -445,35 +451,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       } else {
         throw e;
       }
-    }
-  }
-
-  protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
-      throws SQLException {
-    if (MssqlCdcHelper.getSnapshotIsolationConfig(config) != SnapshotIsolation.SNAPSHOT) {
-      return;
-    }
-
-    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
-      final PreparedStatement ps = connection.prepareStatement(sql);
-      ps.setString(1, config.get(JdbcUtils.DATABASE_KEY).asText());
-      LOGGER.info(String.format(
-          "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
-          config.get(JdbcUtils.DATABASE_KEY).asText(), sql));
-      return ps;
-    }, sourceOperations::rowToJson);
-
-    if (queryResponse.size() < 1) {
-      throw new RuntimeException(String.format(
-          "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-          config.get(JdbcUtils.DATABASE_KEY).asText()));
-    }
-    if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
-      throw new RuntimeException(String.format(
-          "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
-              + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
-          config.get(JdbcUtils.DATABASE_KEY).asText()));
     }
   }
 
@@ -599,30 +576,33 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private void readSsl(final JsonNode sslMethod, final List<String> additionalParameters) {
     final JsonNode config = sslMethod.get("ssl_method");
     switch (config.get("ssl_method").asText()) {
-      case "unencrypted" -> additionalParameters.add("encrypt=false");
+      case "unencrypted" -> {
+        additionalParameters.add("encrypt=false");
+        additionalParameters.add("trustServerCertificate=true");
+      }
       case "encrypted_trust_server_certificate" -> {
         additionalParameters.add("encrypt=true");
         additionalParameters.add("trustServerCertificate=true");
       }
       case "encrypted_verify_certificate" -> {
         additionalParameters.add("encrypt=true");
+        additionalParameters.add("trustServerCertificate=false");
 
-        // trust store location code found at https://stackoverflow.com/a/56570588
-        final String trustStoreLocation = Optional
-            .ofNullable(System.getProperty("javax.net.ssl.trustStore"))
-            .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
-        final File trustStoreFile = new File(trustStoreLocation);
-        if (!trustStoreFile.exists()) {
-          throw new RuntimeException(
-              "Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
-                  + trustStoreLocation + " does not exist.");
-        }
-        final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
-        additionalParameters.add("trustStore=" + trustStoreLocation);
-        if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
+        if (config.has("certificate")) {
+          String certificate = config.get("certificate").asText();
+          String password = RandomStringUtils.randomAlphanumeric(100);
+          final URI keyStoreUri;
+          try {
+            keyStoreUri = SSLCertificateUtils.keyStoreFromCertificate(certificate, password, null, null);
+          } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+            throw new RuntimeException(e);
+          }
           additionalParameters
-              .add("trustStorePassword=" + config.get("trustStorePassword").asText());
+              .add("trustStore=" + keyStoreUri.getPath());
+          additionalParameters
+              .add("trustStorePassword=" + password);
         }
+
         if (config.has("hostNameInCertificate")) {
           additionalParameters
               .add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
@@ -637,6 +617,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   public Duration getConnectionTimeoutMssql(final Map<String, String> connectionProperties) {
     return getConnectionTimeout(connectionProperties);
+  }
+
+  @Override
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    return createDatabase(sourceConfig, JDBC_DELIMITER);
   }
 
   public static void main(final String[] args) throws Exception {

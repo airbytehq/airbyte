@@ -8,6 +8,7 @@ from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.publish.pipeline import reorder_contexts, run_connector_publish_pipeline
+from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import ContextState
@@ -15,6 +16,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
 @click.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
+@click_ci_requirements_option()
 @click.option("--pre-release/--main-release", help="Use this flag if you want to publish pre-release images.", default=True, type=bool)
 @click.option(
     "--spec-cache-gcs-credentials",

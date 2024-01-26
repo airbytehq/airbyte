@@ -1,12 +1,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
-import importlib.metadata
 import json
 import os
 from dataclasses import dataclass
-from typing import Dict, Optional
+from pathlib import Path
 
 import requests
+
+from airbyte_lib import exceptions as exc
+from airbyte_lib.version import get_version
 
 
 @dataclass
@@ -15,8 +18,7 @@ class ConnectorMetadata:
     latest_available_version: str
 
 
-_cache: Optional[Dict[str, ConnectorMetadata]] = None
-airbyte_lib_version = importlib.metadata.version("airbyte-lib")
+_cache: dict[str, ConnectorMetadata] | None = None
 
 REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 
@@ -24,10 +26,12 @@ REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.
 def _update_cache() -> None:
     global _cache
     if os.environ.get("AIRBYTE_LOCAL_REGISTRY"):
-        with open(str(os.environ.get("AIRBYTE_LOCAL_REGISTRY")), "r") as f:
+        with Path(str(os.environ.get("AIRBYTE_LOCAL_REGISTRY"))).open() as f:
             data = json.load(f)
     else:
-        response = requests.get(REGISTRY_URL, headers={"User-Agent": f"airbyte-lib-{airbyte_lib_version}"})
+        response = requests.get(
+            REGISTRY_URL, headers={"User-Agent": f"airbyte-lib-{get_version()}"}
+        )
         response.raise_for_status()
         data = response.json()
     _cache = {}
@@ -36,12 +40,19 @@ def _update_cache() -> None:
         _cache[name] = ConnectorMetadata(name, connector["dockerImageTag"])
 
 
-def get_connector_metadata(name: str):
-    """
-    check the cache for the connector. If the cache is empty, populate by calling update_cache
+def get_connector_metadata(name: str) -> ConnectorMetadata:
+    """Check the cache for the connector.
+
+    If the cache is empty, populate by calling update_cache.
     """
     if not _cache:
         _update_cache()
     if not _cache or name not in _cache:
-        raise Exception(f"Connector {name} not found")
+        raise exc.AirbyteLibInputError(
+            message="Connector name not found in registry.",
+            guidance="Please double check the connector name.",
+            context={
+                "connector_name": name,
+            },
+        )
     return _cache[name]

@@ -80,6 +80,7 @@ def test_request_body_json(patch_base_class):
             {"name": "operatingSystem"},
             {"name": "browser"},
         ],
+        "keepEmptyRows": True,
         "dateRanges": [request_body_params["stream_slice"]],
         "returnPropertyQuota": True,
         "offset": str(0),

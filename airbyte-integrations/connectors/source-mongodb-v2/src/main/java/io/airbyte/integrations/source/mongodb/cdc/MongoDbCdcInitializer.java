@@ -92,9 +92,9 @@ public class MongoDbCdcInitializer {
     final boolean isEnforceSchema = config.getEnforceSchema();
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     logOplogInfo(mongoClient);
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
+    final BsonDocument initialResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
     final JsonNode initialDebeziumState =
-        mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeToken, mongoClient, databaseName);
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, mongoClient, databaseName);
     final MongoDbCdcState cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null)
         ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
         : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
@@ -137,7 +137,7 @@ public class MongoDbCdcInitializer {
             emittedAt, config.getCheckpointInterval(), isEnforceSchema);
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
-        new MongoDbCdcTargetPosition(resumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
+        new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
 
@@ -164,8 +164,8 @@ public class MongoDbCdcInitializer {
       final Document command = new Document("collStats", "oplog.rs");
       final Document result = localDatabase.runCommand(command);
       if (result != null) {
-        LOGGER.info("Max oplog size is {} bytes", result.getInteger("maxSize"));
-        LOGGER.info("Free space in oplog is {} bytes", result.getInteger("freeStorageSize"));
+        LOGGER.info("Max oplog size is {} bytes", result.getLong("maxSize"));
+        LOGGER.info("Free space in oplog is {} bytes", result.getLong("freeStorageSize"));
       }
     } catch (final Exception e) {
       LOGGER.warn("Unable to query for op log stats, exception: {}" + e.getMessage());

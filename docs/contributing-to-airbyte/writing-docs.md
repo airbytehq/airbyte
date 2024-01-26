@@ -58,13 +58,13 @@ To make complex changes or edit multiple files, edit the files on your local mac
 
    ```bash
    cd docusaurus
-   yarn install
+   pnpm install
    ```
 
    To see changes as you make them, run:
 
    ```bash
-   yarn start
+   pnpm start
    ```
 
    Then navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you will see them reflected in the server. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
@@ -72,8 +72,8 @@ To make complex changes or edit multiple files, edit the files on your local mac
    You can also build the docs locally and see the resulting changes. This is useful if you introduce changes that need to be run at build-time (e.g. adding a docs plug-in). To do so, run:
 
    ```bash
-   yarn build
-   yarn serve
+   pnpm build
+   pnpm serve
    ```
   
    Then navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  

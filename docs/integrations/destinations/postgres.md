@@ -170,6 +170,12 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.6.0   | 2024-01-19 | [34372](https://github.com/airbytehq/airbyte/pull/34372)   | Add dv2 flag in spec                                                                                |
+| 0.5.5   | 2024-01-18 | [34236](https://github.com/airbytehq/airbyte/pull/34236)   | Upgrade CDK to 0.13.1; Add indexes in raw table for query optimization                              |
+| 0.5.4   | 2024-01-11 | [34177](https://github.com/airbytehq/airbyte/pull/34177)   | Add code for DV2 beta (no user-visible changes)                                                     |
+| 0.5.3   | 2024-01-10 | [34135](https://github.com/airbytehq/airbyte/pull/34135)   | Use published CDK missed in previous release                                                        |
+| 0.5.2   | 2024-01-08 | [33875](https://github.com/airbytehq/airbyte/pull/33875)   | Update CDK to get Tunnel heartbeats feature                                                         |
+| 0.5.1   | 2024-01-04 | [33873](https://github.com/airbytehq/airbyte/pull/33873)   | Install normalization to enable DV2 beta                                                            |
 | 0.5.0   | 2023-12-18 | [33507](https://github.com/airbytehq/airbyte/pull/33507)   | Upgrade to latest CDK; Fix DATs and tests                                                           |
 | 0.4.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
 | 0.3.27  | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                               |

@@ -90,16 +90,19 @@ class PublishConnectorContext(ConnectorContext):
         return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
 
     @property
+    def pre_release_suffix(self) -> str:
+        return self.git_revision[:10]
+
+    @property
     def docker_image_tag(self) -> str:
         # get the docker image tag from the parent class
         metadata_tag = super().docker_image_tag
         if self.pre_release:
-            return f"{metadata_tag}-dev.{self.git_revision[:10]}"
+            return f"{metadata_tag}-dev.{self.pre_release_suffix}"
         else:
             return metadata_tag
 
     def create_slack_message(self) -> str:
-        assert self.report and self.report.run_duration is not None, "The report must be set to create a slack message."
 
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
         message = f"*Publish <{docker_hub_url}|{self.docker_image}>*\n"
@@ -121,6 +124,7 @@ class PublishConnectorContext(ConnectorContext):
             message += "🔴"
         message += f" {self.state.value['description']}\n"
         if self.state is ContextState.SUCCESSFUL:
+            assert self.report is not None, "Report should be set when state is successful"
             message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
         if self.state is ContextState.FAILURE:
             message += "\ncc. <!subteam^S0407GYHW4E>"  # @dev-connector-ops

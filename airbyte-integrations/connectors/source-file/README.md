@@ -1,17 +1,17 @@
-# Mailerlite Source
+# File Source
 
-This is the repository for the Mailerlite configuration based source connector.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/mailerlite).
+This is the repository for the File source connector.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/file).
 
 ## Local development
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/mailerlite)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_mailerlite/spec.yaml` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/file)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_file/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source mailerlite test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source file test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector docker image
@@ -20,23 +20,23 @@ and place them into `secrets/config.json`.
 #### Build
 **Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
 ```bash
-airbyte-ci connectors --name source-mailerlite build
+airbyte-ci connectors --name source-file build
 ```
 
-An image will be built with the tag `airbyte/source-mailerlite:dev`.
+An image will be built with the tag `airbyte/source-file:dev`.
 
 **Via `docker build`:**
 ```bash
-docker build -t airbyte/source-mailerlite:dev .
+docker build -t airbyte/source-file:dev .
 ```
 
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-mailerlite:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-mailerlite:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-mailerlite:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-mailerlite:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-file:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-file:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-file:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-file:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ## Testing

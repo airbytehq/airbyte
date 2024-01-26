@@ -45,7 +45,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dbt_adapter": "dbt-postgres==1.0.0",
         "integration_name": "postgres",
         "normalization_image": "airbyte/normalization:0.4.3",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
         "yum_packages": [],
     },
     "destination-redshift": {
