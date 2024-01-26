@@ -1,7 +1,7 @@
 # Changelog
 
 ## 3.3.1
-Fix TestSpec.test_oauth_is_default_method to skipp connectors that doesn't have predicate_key object. 
+Fix TestSpec.test_oauth_is_default_method to skip connectors that doesn't have predicate_key object. 
 
 ## 3.3.0
 Add `test_certified_connector_has_allowed_hosts` and `test_certified_connector_has_suggested_streams` tests to the `connector_attribute` test suite
