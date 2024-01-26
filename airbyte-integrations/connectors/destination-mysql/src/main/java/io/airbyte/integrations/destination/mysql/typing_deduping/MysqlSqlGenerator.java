@@ -30,10 +30,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
-import org.jooq.InsertOnDuplicateStep;
-import org.jooq.InsertReturningStep;
 import org.jooq.Param;
-import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
@@ -126,9 +123,9 @@ public class MysqlSqlGenerator extends JdbcSqlGenerator {
                 ).else_(extractedValue)
                 .as(quotedName(column.getKey().name()));
           } else {
-            final Field<?> castedValue = castedField(extractedValue, type, column.getKey().name(), useExpensiveSaferCasting);
+            final Field<?> castedValue = castedField(extractedValue, type, useExpensiveSaferCasting);
             if (!(type instanceof final AirbyteProtocolType primitive)) {
-              return castedValue;
+              return castedValue.as(quotedName(column.getKey().name()));
             }
             return switch (primitive) {
               // These types are just casting to strings, so we need to use regex to validate their format
@@ -140,7 +137,7 @@ public class MysqlSqlGenerator extends JdbcSqlGenerator {
                   .when(castedValue.notLikeRegex("^[0-9]+-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?([-+][0-9]{2}:[0-9]{2}|Z)$"), val((Object) null))
                   .else_(castedValue)
                   .as(quotedName(column.getKey().name()));
-              default -> castedValue;
+              default -> castedValue.as(quotedName(column.getKey().name()));
             };
           }
         })

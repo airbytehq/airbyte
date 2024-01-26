@@ -142,20 +142,12 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         .map(column -> castedField(
             extractColumnAsJson(column.getKey()),
             column.getValue(),
-            column.getKey().name(),
-            useExpensiveSaferCasting))
-        .collect(Collectors.toList());
+            useExpensiveSaferCasting
+            ).as(quotedName(column.getKey().name()))
+        ).collect(Collectors.toList());
   }
 
   @Override
-  protected Field<?> castedField(
-                                 final Field<?> field,
-                                 final AirbyteType type,
-                                 final String alias,
-                                 final boolean useExpensiveSaferCasting) {
-    return castedField(field, type, useExpensiveSaferCasting).as(quotedName(alias));
-  }
-
   protected Field<?> castedField(
                                  final Field<?> field,
                                  final AirbyteType type,
