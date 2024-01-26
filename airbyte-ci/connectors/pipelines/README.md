@@ -103,6 +103,7 @@ You can also run a subset of tests:
 poetry run pytest pipelines/models/steps.py
 ```
 
+More options, such as running test by keyword matching, are available - see the [pytest CLI documentation](https://docs.pytest.org/en/6.2.x/usage.html) for all the available options.```
 #### Checking Code Format (Pipelines)
 
 ```bash
