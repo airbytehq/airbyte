@@ -6,7 +6,7 @@
 # REQUIREMENTS:
 # 1. sudo apt-get install chromium-chromedriver
 # 2. pip install selenium
-# 3. ../secrets/creds.json with buyers email/password and account client_id/secret
+# 3. ../secrets/config.json with buyers email/password and account client_id/secret
 
 # HOW TO USE:
 # python paypal_transaction_generator.py    - will generate 3 transactions by default
@@ -95,7 +95,7 @@ def read_json(filepath):
 def get_api_token():
 
     client_id = CREDS.get("client_id")
-    secret = CREDS.get("secret")
+    secret = CREDS.get("client_secret")
 
     token_refresh_endpoint = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
     data = "grant_type=client_credentials"
@@ -103,7 +103,7 @@ def get_api_token():
     auth = (client_id, secret)
     response = requests.request(method="POST", url=token_refresh_endpoint, data=data, headers=headers, auth=auth)
     response_json = response.json()
-    # print(response_json)
+    print("RESPONSE -->",response_json)
     API_TOKEN = response_json["access_token"]
     return API_TOKEN
 
@@ -187,7 +187,7 @@ def execute_payment(url):
 
 TOTAL_TRANSACTIONS = int(sys.argv[1]) if len(sys.argv) > 1 else 3
 
-CREDS = read_json("../secrets/creds.json")
+CREDS = read_json("../secrets/config.json")
 headers = {"Authorization": f"Bearer {get_api_token()}", "Content-Type": "application/json"}
 driver = login()
 cookies_accepted = False
