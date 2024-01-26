@@ -179,13 +179,6 @@ public class MysqlSqlGenerator extends JdbcSqlGenerator {
     return "START TRANSACTION";
   }
 
-  @Override
-  protected InsertReturningStep<Record> mutateInsertStatement(final InsertOnDuplicateStep<Record> insert) {
-    // this turns the insert into an `INSERT IGNORE ...`
-    // We're actually using this to ignore CAST() errors, rather than duplicate key errors.
-    return insert.onDuplicateKeyIgnore();
-  }
-
   private static Param<String> jsonPath(final ColumnId column) {
     // TODO escape jsonpath
     return val("$." + column.originalName());

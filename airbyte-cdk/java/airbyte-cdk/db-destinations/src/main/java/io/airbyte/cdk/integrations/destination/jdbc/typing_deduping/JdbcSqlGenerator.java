@@ -371,7 +371,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         select(asterisk(), rowNumber).from(rawTableRowsWithCast));
 
     // Used for append-dedupe mode.
-    final String insertStmtWithDedupe = mutateInsertStatement(
+    final String insertStmtWithDedupe =
         insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
             .select(with(rawTableRowsWithCast)
                 .with(filteredRows)
@@ -379,16 +379,14 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
                 .from(filteredRows)
                 .where(field(name(ROW_NUMBER_COLUMN_NAME), Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type
                                                                                  // them.
-            )
     ).getSQL(ParamType.INLINED);
 
     // Used for append and overwrite modes.
-    final String insertStmt = mutateInsertStatement(
+    final String insertStmt =
         insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
             .select(with(rawTableRowsWithCast)
                 .select(finalTableFields)
                 .from(rawTableRowsWithCast)
-            )
     ).getSQL(ParamType.INLINED);
     final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
     final String deleteCdcDeletesStmt =
@@ -513,10 +511,6 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
 
   protected Field<Timestamp> currentTimestamp() {
     return DSL.currentTimestamp();
-  }
-
-  protected InsertReturningStep<Record> mutateInsertStatement(final InsertOnDuplicateStep<Record> insert) {
-    return insert;
   }
 
 }
