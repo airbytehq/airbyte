@@ -144,7 +144,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
           // but for large queries we _would_ need to escape them.
           // Instead, force jooq to always inline params.
           // This allows us to always escape backslashes.
-          database.execute(insert.getSQL(ParamType.INLINED));
+          connection.prepareStatement(insert.getSQL(ParamType.INLINED)).execute();
           LOGGER.info("Executed batch size: {}, {}, {}", batch.size(), schemaName, tableName);
         }
       });
