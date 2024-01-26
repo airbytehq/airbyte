@@ -1,7 +1,10 @@
 # Changelog
 
-## 3.2.1
+## 3.3.1
 Fix TestSpec.test_oauth_is_default_method to skipp connectors that doesn't have predicate_key object. 
+
+## 3.3.0
+Add `test_certified_connector_has_allowed_hosts` and `test_certified_connector_has_suggested_streams` tests to the `connector_attribute` test suite
 
 ## 3.2.0
 Add TestBasicRead.test_all_supported_file_types_present, which validates that all supported file types are present in the sandbox account for certified file-based connectors.
