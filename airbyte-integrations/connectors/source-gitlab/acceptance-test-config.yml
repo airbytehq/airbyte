@@ -1,5 +1,5 @@
 connector_image: airbyte/source-gitlab:dev
-#test_strictness_level: "high"
+test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
