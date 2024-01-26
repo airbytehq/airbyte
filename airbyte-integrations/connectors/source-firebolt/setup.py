@@ -15,7 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_firebolt",
+    entry_points={
+        "console_scripts": [
+            "source-firebolt=source_firebolt.run:run",
+        ],
+    },    name="source_firebolt",
     description="Source implementation for Firebolt.",
     author="Airbyte",
     author_email="contact@airbyte.io",

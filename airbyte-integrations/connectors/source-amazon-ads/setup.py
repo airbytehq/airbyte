@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_amazon_ads",
+    entry_points={
+        "console_scripts": [
+            "source-amazon-ads=source_amazon_ads.run:run",
+        ],
+    },    name="source_amazon_ads",
     description="Source implementation for Amazon Ads.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_intercom",
+    entry_points={
+        "console_scripts": [
+            "source-intercom=source_intercom.run:run",
+        ],
+    },    name="source_intercom",
     description="Source implementation for Intercom Yaml.",
     author="Airbyte",
     author_email="contact@airbyte.io",

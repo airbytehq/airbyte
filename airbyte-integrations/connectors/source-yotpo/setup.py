@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_yotpo",
+    entry_points={
+        "console_scripts": [
+            "source-yotpo=source_yotpo.run:run",
+        ],
+    },    name="source_yotpo",
     description="Source implementation for Yotpo.",
     author="Airbyte",
     author_email="contact@airbyte.io",

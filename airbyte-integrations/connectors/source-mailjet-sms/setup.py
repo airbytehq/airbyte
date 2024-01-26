@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_mailjet_sms",
+    entry_points={
+        "console_scripts": [
+            "source-mailjet-sms=source_mailjet_sms.run:run",
+        ],
+    },    name="source_mailjet_sms",
     description="Source implementation for Mailjet Sms.",
     author="Airbyte",
     author_email="contact@airbyte.io",

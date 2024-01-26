@@ -12,7 +12,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2", "pytest-mock~=3.6.1"]
 
 setup(
-    name="source_zenefits",
+    entry_points={
+        "console_scripts": [
+            "source-zenefits=source_zenefits.run:run",
+        ],
+    },    name="source_zenefits",
     description="Source implementation for Zenefits.",
     author="Airbyte",
     author_email="contact@airbyte.io",

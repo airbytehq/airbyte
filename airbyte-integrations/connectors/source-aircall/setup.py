@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_aircall",
+    entry_points={
+        "console_scripts": [
+            "source-aircall=source_aircall.run:run",
+        ],
+    },    name="source_aircall",
     description="Source implementation for Aircall.",
     author="Airbyte",
     author_email="contact@airbyte.io",

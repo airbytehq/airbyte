@@ -19,7 +19,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_appstore_singer",
+    entry_points={
+        "console_scripts": [
+            "source-appstore-singer=source_appstore_singer.run:run",
+        ],
+    },    name="source_appstore_singer",
     description="Source implementation for Appstore, built on the Singer tap implementation.",
     author="Airbyte",
     author_email="contact@airbyte.io",

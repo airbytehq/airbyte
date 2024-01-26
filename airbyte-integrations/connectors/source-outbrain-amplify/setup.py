@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_outbrain_amplify",
+    entry_points={
+        "console_scripts": [
+            "source-outbrain-amplify=source_outbrain_amplify.run:run",
+        ],
+    },    name="source_outbrain_amplify",
     description="Source implementation for Outbrain Amplify.",
     author="Airbyte",
     author_email="contact@airbyte.io",

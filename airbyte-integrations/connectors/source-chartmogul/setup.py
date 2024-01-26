@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_chartmogul",
+    entry_points={
+        "console_scripts": [
+            "source-chartmogul=source_chartmogul.run:run",
+        ],
+    },    name="source_chartmogul",
     description="Source implementation for Chartmogul.",
     author="Titas Skrebe",
     author_email="titas@omnisend.com",

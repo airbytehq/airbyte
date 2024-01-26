@@ -20,7 +20,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_google_directory",
+    entry_points={
+        "console_scripts": [
+            "source-google-directory=source_google_directory.run:run",
+        ],
+    },    name="source_google_directory",
     description="Source implementation for Google Directory.",
     author="Airbyte",
     author_email="contact@airbyte.io",

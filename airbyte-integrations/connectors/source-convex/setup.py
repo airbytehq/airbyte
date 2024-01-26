@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_convex",
+    entry_points={
+        "console_scripts": [
+            "source-convex=source_convex.run:run",
+        ],
+    },    name="source_convex",
     description="Source implementation for Convex.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -5,7 +5,11 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="source_python_http_tutorial",
+    entry_points={
+        "console_scripts": [
+            "source-python-http-tutorial=source_python_http_tutorial.run:run",
+        ],
+    },    name="source_python_http_tutorial",
     description="Source implementation for Python Http Tutorial.",
     author="Airbyte",
     author_email="contact@airbyte.io",

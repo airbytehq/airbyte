@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_recharge",
+    entry_points={
+        "console_scripts": [
+            "source-recharge=source_recharge.run:run",
+        ],
+    },    name="source_recharge",
     description="Source implementation for Recharge.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_gocardless",
+    entry_points={
+        "console_scripts": [
+            "source-gocardless=source_gocardless.run:run",
+        ],
+    },    name="source_gocardless",
     description="Source implementation for Gocardless.",
     author="Airbyte",
     author_email="contact@airbyte.io",

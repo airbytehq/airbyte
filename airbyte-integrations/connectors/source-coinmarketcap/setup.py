@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_coinmarketcap",
+    entry_points={
+        "console_scripts": [
+            "source-coinmarketcap=source_coinmarketcap.run:run",
+        ],
+    },    name="source_coinmarketcap",
     description="Source implementation for Coinmarketcap.",
     author="Airbyte",
     author_email="contact@airbyte.io",

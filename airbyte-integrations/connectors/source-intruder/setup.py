@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_intruder",
+    entry_points={
+        "console_scripts": [
+            "source-intruder=source_intruder.run:run",
+        ],
+    },    name="source_intruder",
     description="Source implementation for Intruder.",
     author="Airbyte",
     author_email="contact@airbyte.io",

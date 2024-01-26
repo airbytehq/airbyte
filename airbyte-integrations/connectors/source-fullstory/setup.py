@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_fullstory",
+    entry_points={
+        "console_scripts": [
+            "source-fullstory=source_fullstory.run:run",
+        ],
+    },    name="source_fullstory",
     description="Source implementation for Fullstory.",
     author="Airbyte",
     author_email="contact@airbyte.io",

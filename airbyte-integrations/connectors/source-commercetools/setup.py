@@ -10,7 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2", "pytest-mock~=3.6.1"]
 
 setup(
-    name="source_commercetools",
+    entry_points={
+        "console_scripts": [
+            "source-commercetools=source_commercetools.run:run",
+        ],
+    },    name="source_commercetools",
     description="Source implementation for Commercetools.",
     author="Airbyte",
     author_email="contact@airbyte.io",

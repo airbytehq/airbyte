@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_lemlist",
+    entry_points={
+        "console_scripts": [
+            "source-lemlist=source_lemlist.run:run",
+        ],
+    },    name="source_lemlist",
     description="Source implementation for Lemlist.",
     author="Airbyte",
     author_email="contact@airbyte.io",

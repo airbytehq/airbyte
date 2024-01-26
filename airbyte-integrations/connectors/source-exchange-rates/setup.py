@@ -15,7 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_exchange_rates",
+    entry_points={
+        "console_scripts": [
+            "source-exchange-rates=source_exchange_rates.run:run",
+        ],
+    },    name="source_exchange_rates",
     description="Source implementation for Exchange Rates.",
     author="Airbyte",
     author_email="contact@airbyte.io",

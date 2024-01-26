@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_hellobaton",
+    entry_points={
+        "console_scripts": [
+            "source-hellobaton=source_hellobaton.run:run",
+        ],
+    },    name="source_hellobaton",
     description="Source implementation for Hellobaton.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_airtable",
+    entry_points={
+        "console_scripts": [
+            "source-airtable=source_airtable.run:run",
+        ],
+    },    name="source_airtable",
     description="Source implementation for Airtable.",
     author="Airbyte",
     author_email="anhtuan.nguyen@me.com",

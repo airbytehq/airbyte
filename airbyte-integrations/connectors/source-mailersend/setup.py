@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_mailersend",
+    entry_points={
+        "console_scripts": [
+            "source-mailersend=source_mailersend.run:run",
+        ],
+    },    name="source_mailersend",
     description="Source implementation for Mailersend.",
     author="Airbyte",
     author_email="contact@airbyte.io",

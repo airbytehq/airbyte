@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_linnworks",
+    entry_points={
+        "console_scripts": [
+            "source-linnworks=source_linnworks.run:run",
+        ],
+    },    name="source_linnworks",
     description="Source implementation for Linnworks.",
     author="Labanoras Tech",
     author_email="jv@labanoras.io",

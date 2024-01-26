@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_unleash",
+    entry_points={
+        "console_scripts": [
+            "source-unleash=source_unleash.run:run",
+        ],
+    },    name="source_unleash",
     description="Source implementation for Unleash.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_tyntec_sms",
+    entry_points={
+        "console_scripts": [
+            "source-tyntec-sms=source_tyntec_sms.run:run",
+        ],
+    },    name="source_tyntec_sms",
     description="Source implementation for Tyntec Sms.",
     author="Airbyte",
     author_email="contact@airbyte.io",

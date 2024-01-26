@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_whisky_hunter",
+    entry_points={
+        "console_scripts": [
+            "source-whisky-hunter=source_whisky_hunter.run:run",
+        ],
+    },    name="source_whisky_hunter",
     description="Source implementation for Whisky Hunter.",
     author="Airbyte",
     author_email="contact@airbyte.io",

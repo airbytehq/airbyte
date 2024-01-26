@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_freshcaller",
+    entry_points={
+        "console_scripts": [
+            "source-freshcaller=source_freshcaller.run:run",
+        ],
+    },    name="source_freshcaller",
     description="Source implementation for Freshcaller.",
     author="Airbyte",
     author_email="contact@airbyte.io",

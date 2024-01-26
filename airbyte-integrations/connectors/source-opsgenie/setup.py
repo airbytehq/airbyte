@@ -15,7 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_opsgenie",
+    entry_points={
+        "console_scripts": [
+            "source-opsgenie=source_opsgenie.run:run",
+        ],
+    },    name="source_opsgenie",
     description="Source implementation for Opsgenie.",
     author="Airbyte",
     author_email="contact@airbyte.io",

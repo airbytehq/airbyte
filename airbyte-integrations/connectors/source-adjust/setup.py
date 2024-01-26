@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_adjust",
+    entry_points={
+        "console_scripts": [
+            "source-adjust=source_adjust.run:run",
+        ],
+    },    name="source_adjust",
     description="Source implementation for Adjust.",
     author="Airbyte",
     author_email="contact@airbyte.io",

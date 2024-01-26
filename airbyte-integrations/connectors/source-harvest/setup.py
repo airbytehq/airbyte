@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_harvest",
+    entry_points={
+        "console_scripts": [
+            "source-harvest=source_harvest.run:run",
+        ],
+    },    name="source_harvest",
     description="Source implementation for Harvest.",
     author="Airbyte",
     author_email="contact@airbyte.io",

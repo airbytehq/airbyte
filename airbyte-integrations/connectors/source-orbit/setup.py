@@ -10,7 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2", "pytest-mock~=3.6.1"]
 
 setup(
-    name="source_orbit",
+    entry_points={
+        "console_scripts": [
+            "source-orbit=source_orbit.run:run",
+        ],
+    },    name="source_orbit",
     description="Source implementation for Orbit.",
     author="Airbyte",
     author_email="contact@airbyte.io",

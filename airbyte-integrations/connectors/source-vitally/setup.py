@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_vitally",
+    entry_points={
+        "console_scripts": [
+            "source-vitally=source_vitally.run:run",
+        ],
+    },    name="source_vitally",
     description="Source implementation for Vitally.",
     author="Elliot Trabac",
     author_email="elliot.trabac1@gmail.com",

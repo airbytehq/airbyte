@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_workramp",
+    entry_points={
+        "console_scripts": [
+            "source-workramp=source_workramp.run:run",
+        ],
+    },    name="source_workramp",
     description="Source implementation for Workramp.",
     author="Elliot Trabac",
     author_email="elliot.trabac1@gmail.com",

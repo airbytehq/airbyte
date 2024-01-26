@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_news_api",
+    entry_points={
+        "console_scripts": [
+            "source-news-api=source_news_api.run:run",
+        ],
+    },    name="source_news_api",
     description="Source implementation for News Api.",
     author="Airbyte",
     author_email="contact@airbyte.io",

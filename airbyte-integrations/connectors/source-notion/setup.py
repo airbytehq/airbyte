@@ -18,7 +18,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_notion",
+    entry_points={
+        "console_scripts": [
+            "source-notion=source_notion.run:run",
+        ],
+    },    name="source_notion",
     description="Source implementation for Notion.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_ip2whois",
+    entry_points={
+        "console_scripts": [
+            "source-ip2whois=source_ip2whois.run:run",
+        ],
+    },    name="source_ip2whois",
     description="Source implementation for Ip2whois.",
     author="Airbyte",
     author_email="contact@airbyte.io",

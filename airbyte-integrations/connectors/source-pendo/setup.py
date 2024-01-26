@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_pendo",
+    entry_points={
+        "console_scripts": [
+            "source-pendo=source_pendo.run:run",
+        ],
+    },    name="source_pendo",
     description="Source implementation for Pendo.",
     author="Airbyte",
     author_email="contact@airbyte.io",

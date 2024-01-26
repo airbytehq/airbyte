@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_linkedin_pages",
+    entry_points={
+        "console_scripts": [
+            "source-linkedin-pages=source_linkedin_pages.run:run",
+        ],
+    },    name="source_linkedin_pages",
     description="Source implementation for Linkedin Company Pages.",
     author="Airbyte",
     author_email="contact@airbyte.io",

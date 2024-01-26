@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_chargify",
+    entry_points={
+        "console_scripts": [
+            "source-chargify=source_chargify.run:run",
+        ],
+    },    name="source_chargify",
     description="Source implementation for Chargify.",
     author="Airbyte",
     author_email="contact@airbyte.io",

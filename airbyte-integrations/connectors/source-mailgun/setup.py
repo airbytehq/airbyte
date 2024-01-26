@@ -15,7 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_mailgun",
+    entry_points={
+        "console_scripts": [
+            "source-mailgun=source_mailgun.run:run",
+        ],
+    },    name="source_mailgun",
     description="Source implementation for Mailgun.",
     author="Airbyte",
     author_email="contact@airbyte.io",

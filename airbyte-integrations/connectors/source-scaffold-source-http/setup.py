@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_scaffold_source_http",
+    entry_points={
+        "console_scripts": [
+            "source-scaffold-source-http=source_scaffold_source_http.run:run",
+        ],
+    },    name="source_scaffold_source_http",
     description="Source implementation for Scaffold Source Http.",
     author="Airbyte",
     author_email="contact@airbyte.io",

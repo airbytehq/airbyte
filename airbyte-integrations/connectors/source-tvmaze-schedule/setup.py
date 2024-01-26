@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_tvmaze_schedule",
+    entry_points={
+        "console_scripts": [
+            "source-tvmaze-schedule=source_tvmaze_schedule.run:run",
+        ],
+    },    name="source_tvmaze_schedule",
     description="Source implementation for Tvmaze Schedule.",
     author="Airbyte",
     author_email="contact@airbyte.io",

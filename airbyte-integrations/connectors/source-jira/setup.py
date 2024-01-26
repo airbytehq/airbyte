@@ -15,7 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_jira",
+    entry_points={
+        "console_scripts": [
+            "source-jira=source_jira.run:run",
+        ],
+    },    name="source_jira",
     description="Source implementation for Jira.",
     author="Airbyte",
     author_email="contact@airbyte.io",

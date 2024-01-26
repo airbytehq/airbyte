@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_clockify",
+    entry_points={
+        "console_scripts": [
+            "source-clockify=source_clockify.run:run",
+        ],
+    },    name="source_clockify",
     description="Source implementation for Clockify.",
     author="Airbyte",
     author_email="contact@airbyte.io",

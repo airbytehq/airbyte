@@ -12,7 +12,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "pytest-mock~=3.6.1"]
 
 setup(
-    name="source_everhour",
+    entry_points={
+        "console_scripts": [
+            "source-everhour=source_everhour.run:run",
+        ],
+    },    name="source_everhour",
     description="Source implementation for Everhour.",
     author="Airbyte",
     author_email="contact@airbyte.io",

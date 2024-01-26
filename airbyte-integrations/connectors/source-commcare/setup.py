@@ -19,7 +19,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_commcare",
+    entry_points={
+        "console_scripts": [
+            "source-commcare=source_commcare.run:run",
+        ],
+    },    name="source_commcare",
     description="Source implementation for Commcare.",
     author="Airbyte",
     author_email="contact@airbyte.io",

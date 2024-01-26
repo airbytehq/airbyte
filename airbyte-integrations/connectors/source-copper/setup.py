@@ -10,7 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk"]
 TEST_REQUIREMENTS = ["pytest~=6.2", "pytest-mock~=3.6.1"]
 
 setup(
-    name="source_copper",
+    entry_points={
+        "console_scripts": [
+            "source-copper=source_copper.run:run",
+        ],
+    },    name="source_copper",
     description="Source implementation for Copper.",
     author="Airbyte",
     author_email="contact@airbyte.io",

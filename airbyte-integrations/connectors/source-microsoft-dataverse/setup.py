@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_microsoft_dataverse",
+    entry_points={
+        "console_scripts": [
+            "source-microsoft-dataverse=source_microsoft_dataverse.run:run",
+        ],
+    },    name="source_microsoft_dataverse",
     description="Source implementation for Microsoft Dataverse.",
     author="Airbyte",
     author_email="contact@airbyte.io",

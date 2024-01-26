@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_getlago",
+    entry_points={
+        "console_scripts": [
+            "source-getlago=source_getlago.run:run",
+        ],
+    },    name="source_getlago",
     description="Source implementation for Getlago.",
     author="Airbyte",
     author_email="contact@airbyte.io",

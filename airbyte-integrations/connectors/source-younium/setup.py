@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_younium",
+    entry_points={
+        "console_scripts": [
+            "source-younium=source_younium.run:run",
+        ],
+    },    name="source_younium",
     description="Source implementation for Younium.",
     author="Airbyte",
     author_email="contact@airbyte.io",

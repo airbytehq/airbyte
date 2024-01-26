@@ -19,7 +19,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_microsoft_teams",
+    entry_points={
+        "console_scripts": [
+            "source-microsoft-teams=source_microsoft_teams.run:run",
+        ],
+    },    name="source_microsoft_teams",
     description="Source implementation for Microsoft Teams.",
     author="Airbyte",
     author_email="contact@airbyte.io",

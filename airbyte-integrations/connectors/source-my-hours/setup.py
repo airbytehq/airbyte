@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_my_hours",
+    entry_points={
+        "console_scripts": [
+            "source-my-hours=source_my_hours.run:run",
+        ],
+    },    name="source_my_hours",
     description="Source implementation for My Hours.",
     author="Wisse Jelgersma",
     author_email="wisse@vrowl.nl",

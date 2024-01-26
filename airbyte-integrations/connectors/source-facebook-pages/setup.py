@@ -12,7 +12,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6.1", "requests-mock"]
 
 setup(
-    name="source_facebook_pages",
+    entry_points={
+        "console_scripts": [
+            "source-facebook-pages=source_facebook_pages.run:run",
+        ],
+    },    name="source_facebook_pages",
     description="Source implementation for Facebook Pages.",
     author="Airbyte",
     author_email="contact@airbyte.io",

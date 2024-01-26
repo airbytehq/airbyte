@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_prestashop",
+    entry_points={
+        "console_scripts": [
+            "source-prestashop=source_prestashop.run:run",
+        ],
+    },    name="source_prestashop",
     description="Source implementation for PrestaShop.",
     author="Airbyte",
     author_email="contact@airbyte.io",

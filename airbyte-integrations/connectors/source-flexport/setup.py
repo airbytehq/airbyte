@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_flexport",
+    entry_points={
+        "console_scripts": [
+            "source-flexport=source_flexport.run:run",
+        ],
+    },    name="source_flexport",
     description="Source implementation for Flexport.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_freshsales",
+    entry_points={
+        "console_scripts": [
+            "source-freshsales=source_freshsales.run:run",
+        ],
+    },    name="source_freshsales",
     description="Source implementation for Freshsales.",
     author="Airbyte",
     author_email="contact@airbyte.io",

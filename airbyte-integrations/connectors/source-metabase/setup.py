@@ -15,7 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_metabase",
+    entry_points={
+        "console_scripts": [
+            "source-metabase=source_metabase.run:run",
+        ],
+    },    name="source_metabase",
     description="Source implementation for Metabase.",
     author="Airbyte",
     author_email="contact@airbyte.io",

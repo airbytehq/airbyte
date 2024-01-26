@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_openweather",
+    entry_points={
+        "console_scripts": [
+            "source-openweather=source_openweather.run:run",
+        ],
+    },    name="source_openweather",
     description="Source implementation for Openweather.",
     author="Airbyte",
     author_email="contact@airbyte.io",

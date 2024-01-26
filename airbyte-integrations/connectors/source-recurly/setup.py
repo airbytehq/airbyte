@@ -14,7 +14,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_recurly",
+    entry_points={
+        "console_scripts": [
+            "source-recurly=source_recurly.run:run",
+        ],
+    },    name="source_recurly",
     description="Source implementation for Recurly.",
     author="Airbyte",
     author_email="contact@airbyte.io",

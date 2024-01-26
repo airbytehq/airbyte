@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_pocket",
+    entry_points={
+        "console_scripts": [
+            "source-pocket=source_pocket.run:run",
+        ],
+    },    name="source_pocket",
     description="Source implementation for Pocket.",
     author="Airbyte",
     author_email="contact@airbyte.io",

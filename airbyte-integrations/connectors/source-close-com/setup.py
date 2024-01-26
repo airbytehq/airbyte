@@ -14,7 +14,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_close_com",
+    entry_points={
+        "console_scripts": [
+            "source-close-com=source_close_com.run:run",
+        ],
+    },    name="source_close_com",
     description="Source implementation for Close.com.",
     author="Airbyte",
     author_email="contact@airbyte.io",

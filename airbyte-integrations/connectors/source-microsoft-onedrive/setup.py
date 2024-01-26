@@ -19,7 +19,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_microsoft_onedrive",
+    entry_points={
+        "console_scripts": [
+            "source-microsoft-onedrive=source_microsoft_onedrive.run:run",
+        ],
+    },    name="source_microsoft_onedrive",
     description="Source implementation for Microsoft OneDrive.",
     author="Airbyte",
     author_email="contact@airbyte.io",

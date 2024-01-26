@@ -15,7 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_klaus_api",
+    entry_points={
+        "console_scripts": [
+            "source-klaus-api=source_klaus_api.run:run",
+        ],
+    },    name="source_klaus_api",
     description="Source implementation for Klaus Api.",
     author="Deke Li",
     author_email="deke.li@sendinblue.com",

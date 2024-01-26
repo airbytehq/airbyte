@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_launchdarkly",
+    entry_points={
+        "console_scripts": [
+            "source-launchdarkly=source_launchdarkly.run:run",
+        ],
+    },    name="source_launchdarkly",
     description="Source implementation for Launchdarkly.",
     author="Airbyte",
     author_email="contact@airbyte.io",

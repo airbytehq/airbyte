@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_serpstat",
+    entry_points={
+        "console_scripts": [
+            "source-serpstat=source_serpstat.run:run",
+        ],
+    },    name="source_serpstat",
     description="Source implementation for Serpstat.",
     author="Airbyte",
     author_email="contact@airbyte.io",

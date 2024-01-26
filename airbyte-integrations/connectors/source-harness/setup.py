@@ -14,7 +14,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_harness",
+    entry_points={
+        "console_scripts": [
+            "source-harness=source_harness.run:run",
+        ],
+    },    name="source_harness",
     description="Source implementation for Harness.",
     author="Airbyte",
     author_email="contact@airbyte.io",

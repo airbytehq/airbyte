@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_zuora",
+    entry_points={
+        "console_scripts": [
+            "source-zuora=source_zuora.run:run",
+        ],
+    },    name="source_zuora",
     description="Airbyte source-connector for Zuora.",
     author="Airbyte",
     author_email="contact@airbyte.io",

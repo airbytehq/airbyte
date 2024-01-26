@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_n8n",
+    entry_points={
+        "console_scripts": [
+            "source-n8n=source_n8n.run:run",
+        ],
+    },    name="source_n8n",
     description="Source implementation for N8n.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_coin_api",
+    entry_points={
+        "console_scripts": [
+            "source-coin-api=source_coin_api.run:run",
+        ],
+    },    name="source_coin_api",
     description="Source implementation for Coin Api.",
     author="Airbyte",
     author_email="contact@airbyte.io",

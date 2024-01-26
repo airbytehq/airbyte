@@ -16,7 +16,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "docker==5.0.3"]
 
 setup(
-    name="source_sftp_bulk",
+    entry_points={
+        "console_scripts": [
+            "source-sftp-bulk=source_sftp_bulk.run:run",
+        ],
+    },    name="source_sftp_bulk",
     description="Source implementation for SFTP Bulk.",
     author="Airbyte",
     author_email="contact@airbyte.io",

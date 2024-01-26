@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_monday",
+    entry_points={
+        "console_scripts": [
+            "source-monday=source_monday.run:run",
+        ],
+    },    name="source_monday",
     description="Source implementation for Monday.",
     author="Airbyte",
     author_email="contact@airbyte.io",

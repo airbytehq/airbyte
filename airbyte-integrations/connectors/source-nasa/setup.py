@@ -10,7 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2", "pytest-mock~=3.6.1"]
 
 setup(
-    name="source_nasa",
+    entry_points={
+        "console_scripts": [
+            "source-nasa=source_nasa.run:run",
+        ],
+    },    name="source_nasa",
     description="Source implementation for Nasa.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_chargebee",
+    entry_points={
+        "console_scripts": [
+            "source-chargebee=source_chargebee.run:run",
+        ],
+    },    name="source_chargebee",
     description="Source implementation for Chargebee.",
     author="Airbyte",
     author_email="contact@airbyte.io",

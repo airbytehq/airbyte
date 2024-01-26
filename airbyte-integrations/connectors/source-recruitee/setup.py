@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_recruitee",
+    entry_points={
+        "console_scripts": [
+            "source-recruitee=source_recruitee.run:run",
+        ],
+    },    name="source_recruitee",
     description="Source implementation for Recruitee.",
     author="Airbyte",
     author_email="contact@airbyte.io",

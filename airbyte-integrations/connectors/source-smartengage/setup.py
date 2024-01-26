@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_smartengage",
+    entry_points={
+        "console_scripts": [
+            "source-smartengage=source_smartengage.run:run",
+        ],
+    },    name="source_smartengage",
     description="Source implementation for Smartengage.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_courier",
+    entry_points={
+        "console_scripts": [
+            "source-courier=source_courier.run:run",
+        ],
+    },    name="source_courier",
     description="Source implementation for Courier.",
     author="Airbyte",
     author_email="contact@airbyte.io",

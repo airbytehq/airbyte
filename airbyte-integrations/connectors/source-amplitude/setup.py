@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_amplitude",
+    entry_points={
+        "console_scripts": [
+            "source-amplitude=source_amplitude.run:run",
+        ],
+    },    name="source_amplitude",
     description="Source implementation for Amplitude.",
     author="Airbyte",
     author_email="contact@airbyte.io",

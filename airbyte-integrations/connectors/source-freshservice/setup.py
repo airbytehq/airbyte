@@ -12,7 +12,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["pytest~=6.2", "pytest-mock~=3.6.1"]
 
 setup(
-    name="source_freshservice",
+    entry_points={
+        "console_scripts": [
+            "source-freshservice=source_freshservice.run:run",
+        ],
+    },    name="source_freshservice",
     description="Source implementation for Freshservice.",
     author="Airbyte",
     author_email="contact@airbyte.io",

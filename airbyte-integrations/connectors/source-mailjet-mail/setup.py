@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_mailjet_mail",
+    entry_points={
+        "console_scripts": [
+            "source-mailjet-mail=source_mailjet_mail.run:run",
+        ],
+    },    name="source_mailjet_mail",
     description="Source implementation for Mailjet Mail.",
     author="Airbyte",
     author_email="contact@airbyte.io",

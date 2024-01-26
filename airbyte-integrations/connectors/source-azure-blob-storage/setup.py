@@ -14,7 +14,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.2"]
 
 setup(
-    name="source_azure_blob_storage",
+    entry_points={
+        "console_scripts": [
+            "source-azure-blob-storage=source_azure_blob_storage.run:run",
+        ],
+    },    name="source_azure_blob_storage",
     description="Source implementation for Azure Blob Storage.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_google_pagespeed_insights",
+    entry_points={
+        "console_scripts": [
+            "source-google-pagespeed-insights=source_google_pagespeed_insights.run:run",
+        ],
+    },    name="source_google_pagespeed_insights",
     description="Source implementation for Google Pagespeed Insights.",
     author="Airbyte",
     author_email="contact@airbyte.io",

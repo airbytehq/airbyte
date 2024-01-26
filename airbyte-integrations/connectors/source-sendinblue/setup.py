@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_sendinblue",
+    entry_points={
+        "console_scripts": [
+            "source-sendinblue=source_sendinblue.run:run",
+        ],
+    },    name="source_sendinblue",
     description="Source implementation for Sendinblue.",
     author="Airbyte",
     author_email="contact@airbyte.io",

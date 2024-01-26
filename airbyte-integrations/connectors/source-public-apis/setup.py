@@ -12,7 +12,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2", "pytest-mock~=3.6.1"]
 
 setup(
-    name="source_public_apis",
+    entry_points={
+        "console_scripts": [
+            "source-public-apis=source_public_apis.run:run",
+        ],
+    },    name="source_public_apis",
     description="Source implementation for Public Apis.",
     author="Airbyte",
     author_email="contact@airbyte.io",

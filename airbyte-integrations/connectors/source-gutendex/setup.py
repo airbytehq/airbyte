@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_gutendex",
+    entry_points={
+        "console_scripts": [
+            "source-gutendex=source_gutendex.run:run",
+        ],
+    },    name="source_gutendex",
     description="Source implementation for Gutendex.",
     author="Airbyte",
     author_email="contact@airbyte.io",

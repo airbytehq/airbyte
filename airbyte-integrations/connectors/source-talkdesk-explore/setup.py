@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_talkdesk_explore",
+    entry_points={
+        "console_scripts": [
+            "source-talkdesk-explore=source_talkdesk_explore.run:run",
+        ],
+    },    name="source_talkdesk_explore",
     description="Source implementation for Talkdesk Explore API.",
     author="Airbyte",
     author_email="alexandre.martins@saltpay.co",

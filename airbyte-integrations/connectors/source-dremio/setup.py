@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_dremio",
+    entry_points={
+        "console_scripts": [
+            "source-dremio=source_dremio.run:run",
+        ],
+    },    name="source_dremio",
     description="Source implementation for Dremio.",
     author="Airbyte",
     author_email="contact@airbyte.io",

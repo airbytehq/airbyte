@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_dockerhub",
+    entry_points={
+        "console_scripts": [
+            "source-dockerhub=source_dockerhub.run:run",
+        ],
+    },    name="source_dockerhub",
     description="Source implementation for Dockerhub.",
     author="Airbyte",
     author_email="contact@airbyte.io",

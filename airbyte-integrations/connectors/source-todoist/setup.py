@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_todoist",
+    entry_points={
+        "console_scripts": [
+            "source-todoist=source_todoist.run:run",
+        ],
+    },    name="source_todoist",
     description="Source implementation for Todoist.",
     author="Airbyte",
     author_email="contact@airbyte.io",

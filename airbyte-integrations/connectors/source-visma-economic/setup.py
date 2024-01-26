@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_visma_economic",
+    entry_points={
+        "console_scripts": [
+            "source-visma-economic=source_visma_economic.run:run",
+        ],
+    },    name="source_visma_economic",
     description="Source implementation for Visma Economic.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -14,7 +14,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_appsflyer",
+    entry_points={
+        "console_scripts": [
+            "source-appsflyer=source_appsflyer.run:run",
+        ],
+    },    name="source_appsflyer",
     description="Source implementation for Appsflyer.",
     author="Airbyte",
     author_email="contact@airbyte.io",

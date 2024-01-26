@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_genesys",
+    entry_points={
+        "console_scripts": [
+            "source-genesys=source_genesys.run:run",
+        ],
+    },    name="source_genesys",
     description="Source implementation for Genesys.",
     author="Airbyte",
     author_email="contact@airbyte.io",

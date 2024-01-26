@@ -18,7 +18,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_firebase_realtime_database",
+    entry_points={
+        "console_scripts": [
+            "source-firebase-realtime-database=source_firebase_realtime_database.run:run",
+        ],
+    },    name="source_firebase_realtime_database",
     description="Source implementation for Firebase Realtime Database.",
     author="Airbyte",
     author_email="contact@airbyte.io",

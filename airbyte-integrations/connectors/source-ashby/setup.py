@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_ashby",
+    entry_points={
+        "console_scripts": [
+            "source-ashby=source_ashby.run:run",
+        ],
+    },    name="source_ashby",
     description="Source implementation for Ashby.",
     author="Elliot Trabac",
     author_email="elliot.trabac1@gmail.com",

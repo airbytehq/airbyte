@@ -10,7 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk"]
 TEST_REQUIREMENTS = ["pytest~=6.2", "pytest-mock~=3.6.1"]
 
 setup(
-    name="source_fastbill",
+    entry_points={
+        "console_scripts": [
+            "source-fastbill=source_fastbill.run:run",
+        ],
+    },    name="source_fastbill",
     description="Source implementation for Fastbill.",
     author="Airbyte",
     author_email="contact@airbyte.io",

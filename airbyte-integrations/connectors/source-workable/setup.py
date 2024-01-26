@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_workable",
+    entry_points={
+        "console_scripts": [
+            "source-workable=source_workable.run:run",
+        ],
+    },    name="source_workable",
     description="Source implementation for Workable.",
     author="Airbyte",
     author_email="contact@airbyte.io",

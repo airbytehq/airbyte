@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_webflow",
+    entry_points={
+        "console_scripts": [
+            "source-webflow=source_webflow.run:run",
+        ],
+    },    name="source_webflow",
     description="Source implementation for Webflow.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_klarna",
+    entry_points={
+        "console_scripts": [
+            "source-klarna=source_klarna.run:run",
+        ],
+    },    name="source_klarna",
     description="Source implementation for Klarna.",
     author="Airbyte",
     author_email="contact@airbyte.io",

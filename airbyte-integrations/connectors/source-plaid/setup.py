@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_plaid",
+    entry_points={
+        "console_scripts": [
+            "source-plaid=source_plaid.run:run",
+        ],
+    },    name="source_plaid",
     description="Source implementation for Plaid.",
     author="Airbyte",
     author_email="contact@airbyte.io",

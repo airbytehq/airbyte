@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_gridly",
+    entry_points={
+        "console_scripts": [
+            "source-gridly=source_gridly.run:run",
+        ],
+    },    name="source_gridly",
     description="Source implementation for Gridly.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_statuspage",
+    entry_points={
+        "console_scripts": [
+            "source-statuspage=source_statuspage.run:run",
+        ],
+    },    name="source_statuspage",
     description="Source implementation for Statuspage.",
     author="Airbyte",
     author_email="contact@airbyte.io",

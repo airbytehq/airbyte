@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_google_webfonts",
+    entry_points={
+        "console_scripts": [
+            "source-google-webfonts=source_google_webfonts.run:run",
+        ],
+    },    name="source_google_webfonts",
     description="Source implementation for Google Webfonts.",
     author="Airbyte",
     author_email="contact@airbyte.io",

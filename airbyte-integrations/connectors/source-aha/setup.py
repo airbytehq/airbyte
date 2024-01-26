@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_aha",
+    entry_points={
+        "console_scripts": [
+            "source-aha=source_aha.run:run",
+        ],
+    },    name="source_aha",
     description="Source implementation for Aha.",
     author="Airbyte",
     author_email="contact@airbyte.io",

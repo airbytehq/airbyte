@@ -21,7 +21,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_google_workspace_admin_reports",
+    entry_points={
+        "console_scripts": [
+            "source-google-workspace-admin-reports=source_google_workspace_admin_reports.run:run",
+        ],
+    },    name="source_google_workspace_admin_reports",
     description="Source implementation for Google Workspace Admin Reports.",
     author="Airbyte",
     author_email="contact@airbyte.io",

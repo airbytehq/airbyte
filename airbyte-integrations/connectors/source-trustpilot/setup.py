@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_trustpilot",
+    entry_points={
+        "console_scripts": [
+            "source-trustpilot=source_trustpilot.run:run",
+        ],
+    },    name="source_trustpilot",
     description="Source implementation for Trustpilot.",
     author="Airbyte",
     author_email="contact@airbyte.io",

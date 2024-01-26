@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_pexels_api",
+    entry_points={
+        "console_scripts": [
+            "source-pexels-api=source_pexels_api.run:run",
+        ],
+    },    name="source_pexels_api",
     description="Source implementation for Pexels Api.",
     author="Airbyte",
     author_email="contact@airbyte.io",

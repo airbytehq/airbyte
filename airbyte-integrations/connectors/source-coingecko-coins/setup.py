@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_coingecko_coins",
+    entry_points={
+        "console_scripts": [
+            "source-coingecko-coins=source_coingecko_coins.run:run",
+        ],
+    },    name="source_coingecko_coins",
     description="Source implementation for Coingecko Coins.",
     author="Airbyte",
     author_email="contact@airbyte.io",

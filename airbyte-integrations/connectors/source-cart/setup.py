@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_cart",
+    entry_points={
+        "console_scripts": [
+            "source-cart=source_cart.run:run",
+        ],
+    },    name="source_cart",
     description="Source implementation for Cart.",
     author="Airbyte",
     author_email="contact@airbyte.io",

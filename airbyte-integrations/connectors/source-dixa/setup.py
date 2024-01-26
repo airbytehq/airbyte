@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_dixa",
+    entry_points={
+        "console_scripts": [
+            "source-dixa=source_dixa.run:run",
+        ],
+    },    name="source_dixa",
     description="Source implementation for Dixa.",
     author="Airbyte",
     author_email="contact@airbyte.io",

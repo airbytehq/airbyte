@@ -15,7 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_coda",
+    entry_points={
+        "console_scripts": [
+            "source-coda=source_coda.run:run",
+        ],
+    },    name="source_coda",
     description="Source implementation for Coda.",
     author="Airbyte",
     author_email="contact@airbyte.io",

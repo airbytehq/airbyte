@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_babelforce",
+    entry_points={
+        "console_scripts": [
+            "source-babelforce=source_babelforce.run:run",
+        ],
+    },    name="source_babelforce",
     description="Source implementation for Babelforce.",
     author="Airbyte",
     author_email="contact@airbyte.io",

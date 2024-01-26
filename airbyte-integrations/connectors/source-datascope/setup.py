@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_datascope",
+    entry_points={
+        "console_scripts": [
+            "source-datascope=source_datascope.run:run",
+        ],
+    },    name="source_datascope",
     description="Source implementation for Datascope.",
     author="Airbyte",
     author_email="contact@airbyte.io",

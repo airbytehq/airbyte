@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_polygon_stock_api",
+    entry_points={
+        "console_scripts": [
+            "source-polygon-stock-api=source_polygon_stock_api.run:run",
+        ],
+    },    name="source_polygon_stock_api",
     description="Source implementation for Polygon Stock Api.",
     author="Airbyte",
     author_email="contact@airbyte.io",

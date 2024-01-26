@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_convertkit",
+    entry_points={
+        "console_scripts": [
+            "source-convertkit=source_convertkit.run:run",
+        ],
+    },    name="source_convertkit",
     description="Source implementation for Convertkit.",
     author="Airbyte",
     author_email="contact@airbyte.io",

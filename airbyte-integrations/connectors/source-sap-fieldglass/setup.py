@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_sap_fieldglass",
+    entry_points={
+        "console_scripts": [
+            "source-sap-fieldglass=source_sap_fieldglass.run:run",
+        ],
+    },    name="source_sap_fieldglass",
     description="Source implementation for Sap Fieldglass.",
     author="Airbyte",
     author_email="contact@airbyte.io",

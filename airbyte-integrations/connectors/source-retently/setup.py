@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_retently",
+    entry_points={
+        "console_scripts": [
+            "source-retently=source_retently.run:run",
+        ],
+    },    name="source_retently",
     description="Source implementation for Retently.",
     author="Airbyte",
     author_email="contact@airbyte.io",

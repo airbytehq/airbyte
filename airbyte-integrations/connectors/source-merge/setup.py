@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_merge",
+    entry_points={
+        "console_scripts": [
+            "source-merge=source_merge.run:run",
+        ],
+    },    name="source_merge",
     description="Source implementation for Merge.",
     author="Airbyte",
     author_email="contact@airbyte.io",

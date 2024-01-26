@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_instatus",
+    entry_points={
+        "console_scripts": [
+            "source-instatus=source_instatus.run:run",
+        ],
+    },    name="source_instatus",
     description="Source implementation for Instatus.",
     author="Airbyte",
     author_email="contact@airbyte.io",

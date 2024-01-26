@@ -14,7 +14,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "pytest-mock", "requests_mock", "freezegun"]
 
 setup(
-    name="source_twilio",
+    entry_points={
+        "console_scripts": [
+            "source-twilio=source_twilio.run:run",
+        ],
+    },    name="source_twilio",
     description="Source implementation for Twilio.",
     author="Airbyte",
     author_email="contact@airbyte.io",

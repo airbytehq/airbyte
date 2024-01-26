@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_punk_api",
+    entry_points={
+        "console_scripts": [
+            "source-punk-api=source_punk_api.run:run",
+        ],
+    },    name="source_punk_api",
     description="Source implementation for Punk Api.",
     author="Airbyte",
     author_email="contact@airbyte.io",

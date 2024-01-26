@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_twitter",
+    entry_points={
+        "console_scripts": [
+            "source-twitter=source_twitter.run:run",
+        ],
+    },    name="source_twitter",
     description="Source implementation for Twitter.",
     author="Airbyte",
     author_email="contact@airbyte.io",

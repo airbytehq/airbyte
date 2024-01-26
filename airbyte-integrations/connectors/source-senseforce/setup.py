@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_senseforce",
+    entry_points={
+        "console_scripts": [
+            "source-senseforce=source_senseforce.run:run",
+        ],
+    },    name="source_senseforce",
     description="Source implementation for Senseforce.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_toggl",
+    entry_points={
+        "console_scripts": [
+            "source-toggl=source_toggl.run:run",
+        ],
+    },    name="source_toggl",
     description="Source implementation for Toggl.",
     author="Airbyte",
     author_email="contact@airbyte.io",

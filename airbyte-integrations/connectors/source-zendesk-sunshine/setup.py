@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_zendesk_sunshine",
+    entry_points={
+        "console_scripts": [
+            "source-zendesk-sunshine=source_zendesk_sunshine.run:run",
+        ],
+    },    name="source_zendesk_sunshine",
     description="Source implementation for Zendesk Sunshine.",
     author="Airbyte",
     author_email="contact@airbyte.io",

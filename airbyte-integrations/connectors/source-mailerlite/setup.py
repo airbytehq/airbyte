@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_mailerlite",
+    entry_points={
+        "console_scripts": [
+            "source-mailerlite=source_mailerlite.run:run",
+        ],
+    },    name="source_mailerlite",
     description="Source implementation for Mailerlite.",
     author="Airbyte",
     author_email="contact@airbyte.io",

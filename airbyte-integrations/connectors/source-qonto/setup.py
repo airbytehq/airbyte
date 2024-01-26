@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_qonto",
+    entry_points={
+        "console_scripts": [
+            "source-qonto=source_qonto.run:run",
+        ],
+    },    name="source_qonto",
     description="Source implementation for Qonto.",
     author="Airbyte",
     author_email="contact@airbyte.io",

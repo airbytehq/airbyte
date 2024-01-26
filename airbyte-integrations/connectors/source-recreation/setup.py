@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_recreation",
+    entry_points={
+        "console_scripts": [
+            "source-recreation=source_recreation.run:run",
+        ],
+    },    name="source_recreation",
     description="Source implementation for Recreation.",
     author="Airbyte",
     author_email="contact@airbyte.io",

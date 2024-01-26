@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_woocommerce",
+    entry_points={
+        "console_scripts": [
+            "source-woocommerce=source_woocommerce.run:run",
+        ],
+    },    name="source_woocommerce",
     description="Source implementation for Woocommerce.",
     author="Airbyte",
     author_email="contact@airbyte.io",

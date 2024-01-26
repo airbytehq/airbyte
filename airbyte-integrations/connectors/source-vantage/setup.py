@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_vantage",
+    entry_points={
+        "console_scripts": [
+            "source-vantage=source_vantage.run:run",
+        ],
+    },    name="source_vantage",
     description="Source implementation for Vantage.",
     author="Airbyte",
     author_email="contact@airbyte.io",

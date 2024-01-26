@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_lokalise",
+    entry_points={
+        "console_scripts": [
+            "source-lokalise=source_lokalise.run:run",
+        ],
+    },    name="source_lokalise",
     description="Source implementation for Lokalise.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_delighted",
+    entry_points={
+        "console_scripts": [
+            "source-delighted=source_delighted.run:run",
+        ],
+    },    name="source_delighted",
     description="Source implementation for Delighted.",
     author="Airbyte",
     author_email="contact@airbyte.io",

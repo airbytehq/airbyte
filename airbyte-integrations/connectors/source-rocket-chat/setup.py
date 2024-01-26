@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_rocket_chat",
+    entry_points={
+        "console_scripts": [
+            "source-rocket-chat=source_rocket_chat.run:run",
+        ],
+    },    name="source_rocket_chat",
     description="Source implementation for Rocket Chat.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_youtube_analytics",
+    entry_points={
+        "console_scripts": [
+            "source-youtube-analytics=source_youtube_analytics.run:run",
+        ],
+    },    name="source_youtube_analytics",
     description="Source implementation for Youtube Analytics.",
     author="Airbyte",
     author_email="contact@airbyte.io",

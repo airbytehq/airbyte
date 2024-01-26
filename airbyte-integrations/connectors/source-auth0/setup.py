@@ -15,7 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_auth0",
+    entry_points={
+        "console_scripts": [
+            "source-auth0=source_auth0.run:run",
+        ],
+    },    name="source_auth0",
     description="Source implementation for Auth0.",
     author="Airbyte",
     author_email="contact@airbyte.io",

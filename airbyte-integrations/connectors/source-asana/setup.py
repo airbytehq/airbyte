@@ -12,7 +12,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["pytest-mock~=3.6.1", "pytest~=6.1", "requests-mock~=1.9.3"]
 
 setup(
-    name="source_asana",
+    entry_points={
+        "console_scripts": [
+            "source-asana=source_asana.run:run",
+        ],
+    },    name="source_asana",
     description="Source implementation for Asana.",
     author="Airbyte",
     author_email="contact@airbyte.io",

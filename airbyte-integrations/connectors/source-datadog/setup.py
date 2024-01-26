@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_datadog",
+    entry_points={
+        "console_scripts": [
+            "source-datadog=source_datadog.run:run",
+        ],
+    },    name="source_datadog",
     description="Source implementation for Datadog.",
     author="Airbyte",
     author_email="contact@airbyte.io",

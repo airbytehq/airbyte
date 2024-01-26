@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_callrail",
+    entry_points={
+        "console_scripts": [
+            "source-callrail=source_callrail.run:run",
+        ],
+    },    name="source_callrail",
     description="Source implementation for Callrail.",
     author="Airbyte",
     author_email="contact@airbyte.io",

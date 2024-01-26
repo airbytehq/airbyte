@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_omnisend",
+    entry_points={
+        "console_scripts": [
+            "source-omnisend=source_omnisend.run:run",
+        ],
+    },    name="source_omnisend",
     description="Source implementation for Omnisend.",
     author="Airbyte",
     author_email="contact@airbyte.io",

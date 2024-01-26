@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_fauna",
+    entry_points={
+        "console_scripts": [
+            "source-fauna=source_fauna.run:run",
+        ],
+    },    name="source_fauna",
     description="Source implementation for Fauna.",
     author="Airbyte",
     author_email="contact@airbyte.io",

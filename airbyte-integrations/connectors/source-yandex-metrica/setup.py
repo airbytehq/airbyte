@@ -10,7 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "freezegun", "pytest~=6.1", "pytest-mock", "requests_mock"]
 
 setup(
-    name="source_yandex_metrica",
+    entry_points={
+        "console_scripts": [
+            "source-yandex-metrica=source_yandex_metrica.run:run",
+        ],
+    },    name="source_yandex_metrica",
     description="Source implementation for Yandex Metrica.",
     author="Airbyte",
     author_email="contact@airbyte.io",

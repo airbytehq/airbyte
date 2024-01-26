@@ -16,7 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_gainsight_px",
+    entry_points={
+        "console_scripts": [
+            "source-gainsight-px=source_gainsight_px.run:run",
+        ],
+    },    name="source_gainsight_px",
     description="Source implementation for Gainsight Px.",
     author="Airbyte",
     author_email="contact@airbyte.io",

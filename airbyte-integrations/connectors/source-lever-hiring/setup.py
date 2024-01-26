@@ -17,7 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_lever_hiring",
+    entry_points={
+        "console_scripts": [
+            "source-lever-hiring=source_lever_hiring.run:run",
+        ],
+    },    name="source_lever_hiring",
     description="Source implementation for Lever Hiring.",
     author="Airbyte",
     author_email="contact@airbyte.io",
