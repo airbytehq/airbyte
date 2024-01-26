@@ -4,7 +4,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, NoReturn
 
@@ -137,10 +137,16 @@ class VenvExecutor(Executor):
         return Path(self._get_venv_name(), "bin", self.name)
 
     def _run_subprocess_and_raise_on_failure(self, args: list[str]) -> None:
-        result = subprocess.run(args, check=False)
+        result = subprocess.run(
+            args,
+            check=False,
+            stderr=subprocess.PIPE,
+        )
         if result.returncode != 0:
-            raise exc.AirbyteConnectorInstallationError from exc.AirbyteSubprocessFailedError(
-                exit_code=result.returncode
+            raise exc.AirbyteSubprocessFailedError(
+                run_args=args,
+                exit_code=result.returncode,
+                log_text=result.stderr.decode("utf-8"),
             )
 
     def uninstall(self) -> None:
@@ -154,7 +160,18 @@ class VenvExecutor(Executor):
 
         pip_path = str(Path(venv_name) / "bin" / "pip")
 
-        self._run_subprocess_and_raise_on_failure([pip_path, "install", "-e", self.pip_url])
+        try:
+            self._run_subprocess_and_raise_on_failure(
+                args=[pip_path, "install", *self.pip_url.split(" ")]
+            )
+        except exc.AirbyteSubprocessFailedError as ex:
+            # If the installation failed, remove the virtual environment
+            # Otherwise, the connector will be considered as installed and the user may not be able
+            # to retry the installation.
+            with suppress(exc.AirbyteSubprocessFailedError):
+                self.uninstall()
+
+            raise exc.AirbyteConnectorInstallationError from ex
 
     def _get_installed_version(self) -> str:
         """Detect the version of the connector installed.
