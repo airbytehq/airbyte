@@ -5,516 +5,375 @@ check:
   stream_names:
     - submitted_inspection_forms
 streams:
-  - type: DeclarativeStream
-    name: submitted_inspection_forms
+  - name: submitted_inspection_forms
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v1/submitted_inspection_forms
+        type: HttpRequester
+        url_base: https://secure.fleetio.com/api/
+        http_method: GET
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: '{{ config[''account_token''] }}'
+          Authorization: Token {{ config['api_token'] }}
+          X-Api-Version: '2024-01-01'
+          X-Client-Name: fleetio_airbyte
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
     primary_key: []
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/submitted_inspection_forms.json"
+  - name: issues
+    type: DeclarativeStream
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
       requester:
+        path: /v2/issues
         type: HttpRequester
-        url_base: https://secure.fleetio.com/api/
-        path: /v1/submitted_inspection_forms
+        url_base: https://demo.fleetio.com/api/
         http_method: GET
-        request_parameters:
-          q[s]: submitted_at+desc
+        authenticator:
+          type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          request_source: fleetio_airbyte_connector
-        authenticator:
-          type: NoAuth
+          X-Client-Name: fleetio_airbyte
         request_body_json: {}
+        request_parameters:
+          q[s]: updated_at+asc
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        pagination_strategy:
-          type: PageIncrement
-    incremental_sync:
-      type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      cursor_field: submitted_at
-      start_time_option:
-        inject_into: request_parameter
-        field_name: q[submitted_at_gteq]
-        type: RequestOption
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ day_delta(-1) }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
-    name: issues
+      partition_router: []
     primary_key: []
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/issues.json" 
+  - name: service_entries
+    type: DeclarativeStream
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
       requester:
+        path: /v2/service_entries
         type: HttpRequester
-        url_base: https://secure.fleetio.com/api/
-        path: /v2/issues
+        url_base: https://demo.fleetio.com/api/
         http_method: GET
-        request_parameters:
-          q[s]: submitted_at+desc
+        authenticator:
+          type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          request_source: fleetio_airbyte_connector
-        authenticator:
-          type: NoAuth
+          X-Client-Name: fleetio_airbyte
         request_body_json: {}
+        request_parameters:
+          q[s]: updated_at+asc
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        pagination_strategy:
-          type: PageIncrement
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      start_time_option:
-        type: RequestOption
-        field_name: q[updated_at_gteq]
-        inject_into: request_parameter
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ day_delta(-1) }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
-    name: service_entries
+      partition_router: []
     primary_key: []
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/service_entries.json" 
+  - name: vehicles
+    type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://secure.fleetio.com/api/
-        path: /v2/service_entries
-        http_method: GET
-        request_parameters:
-          q[s]: submitted_at+desc
-        request_headers:
-          Account-Token: '{{ config[''account_token''] }}'
-          Authorization: Token {{ config['api_token'] }}
-          request_source: fleetio_airbyte_connector
-        authenticator:
-          type: NoAuth
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
       paginator:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
+          field_name: start_cursor
           inject_into: request_parameter
-          field_name: page
         pagination_strategy:
-          type: PageIncrement
-    incremental_sync:
-      type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      cursor_field: updated_at
-      start_time_option:
-        inject_into: request_parameter
-        type: RequestOption
-        field_name: q[updated_at_gteq]
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ day_delta(-1) }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
-    name: vehicles
-    primary_key: []
-    schema_loader:
-      type: JsonSchema
-      file_path: "./source_fleetio/schemas/vehicles.json" 
-    retriever:
-      type: SimpleRetriever
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
       requester:
-        type: HttpRequester
-        url_base: https://secure.fleetio.com/api/
         path: /v1/vehicles
+        type: HttpRequester
+        url_base: https://demo.fleetio.com/api/
         http_method: GET
-        request_parameters:
-          q[s]: submitted_at+desc
+        authenticator:
+          type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          request_source: fleetio_airbyte_connector
+          X-Api-Version: '2024-01-01'
+          X-Client-Name: fleetio_airbyte
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key: []
+  - name: expense_entries
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+      requester:
+        path: /v1/expense_entries
+        type: HttpRequester
+        url_base: https://demo.fleetio.com/api/
+        http_method: GET
         authenticator:
           type: NoAuth
+        request_headers:
+          Account-Token: '{{ config[''account_token''] }}'
+          Authorization: Token {{ config['api_token'] }}
+          X-Client-Name: fleetio_airbyte
         request_body_json: {}
+        request_parameters:
+          q[s]: updated_at+asc
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        pagination_strategy:
-          type: PageIncrement
-    incremental_sync:
-      type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      cursor_field: updated_at
-      start_time_option:
-        inject_into: request_parameter
-        field_name: q[updated_at_gteq]
-        type: RequestOption
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ day_delta(-1) }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
-    name: expense_entries
+      partition_router: []
     primary_key: []
     schema_loader:
       type: JsonSchema
-      file_path: "./source_fleetio/schemas/expense_entries.json" 
+      file_path: "./source_fleetio/schemas/expense_entries.json"
+  - name: contacts
+    type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://secure.fleetio.com/api/
-        path: /v1/expense_entries
-        http_method: GET
-        request_parameters:
-          q[s]: updated_at+desc
-        request_headers:
-          Account-Token: '{{ config[''account_token''] }}'
-          Authorization: Token {{ config['api_token'] }}
-          request_source: fleetio_airbyte_connector
-        authenticator:
-          type: NoAuth
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
       paginator:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
+          field_name: start_cursor
           inject_into: request_parameter
-          field_name: page
         pagination_strategy:
-          type: PageIncrement
-    incremental_sync:
-      type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      cursor_field: updated_at
-      start_time_option:
-        inject_into: request_parameter
-        field_name: q[updated_at_gteq]
-        type: RequestOption
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ day_delta(-1) }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
-    name: contacts
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v2/contacts
+        type: HttpRequester
+        url_base: https://demo.fleetio.com/api/
+        http_method: GET
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: '{{ config[''account_token''] }}'
+          Authorization: Token {{ config['api_token'] }}
+          X-Api-Version: '2024-01-01'
+          X-Client-Name: fleetio_airbyte
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
     primary_key: []
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/contacts.json" 
+  - name: fuel_entries
+    type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://secure.fleetio.com/api/
-        path: /v2/contacts
-        http_method: GET
-        request_parameters:
-          q[s]: updated_at+desc
-        request_headers:
-          Account-Token: '{{ config[''account_token''] }}'
-          Authorization: Token {{ config['api_token'] }}
-          request_source: fleetio_airbyte_connector
-        authenticator:
-          type: NoAuth
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
       paginator:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: page
+          inject_into: request_parameter
         pagination_strategy:
           type: PageIncrement
-    incremental_sync:
-      type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      cursor_field: updated_at
-      start_time_option:
-        inject_into: request_parameter
-        field_name: q[updated_at_gteq]
-        type: RequestOption
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ day_delta(-1) }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
-    name: fuel_entries
-    primary_key: []
-    schema_loader:
-      type: JsonSchema
-      file_path: "./source_fleetio/schemas/fuel_entries.json" 
-    retriever:
-      type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://secure.fleetio.com/api/
         path: /v1/fuel_entries
+        type: HttpRequester
+        url_base: https://demo.fleetio.com/api/
         http_method: GET
-        request_parameters:
-          q[s]: updated_at+desc
+        authenticator:
+          type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          request_source: fleetio_airbyte_connector
-        authenticator:
-          type: NoAuth
+          X-Client-Name: fleetio_airbyte
         request_body_json: {}
+        request_parameters:
+          q[s]: updated_at+asc
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
+      partition_router: []
+    primary_key: []
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/fuel_entries.json"
+  - name: parts
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
       paginator:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: page
+          inject_into: request_parameter
         pagination_strategy:
           type: PageIncrement
-    incremental_sync:
-      type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      cursor_field: updated_at
-      start_time_option:
-        inject_into: request_parameter
-        field_name: q[updated_at_gteq]
-        type: RequestOption
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ day_delta(-1) }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
-    name: parts
-    primary_key: []
-    schema_loader:
-      type: JsonSchema
-      file_path: "./source_fleetio/schemas/parts.json" 
-    retriever:
-      type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://secure.fleetio.com/api/
         path: /v1/parts
+        type: HttpRequester
+        url_base: https://demo.fleetio.com/api/
         http_method: GET
-        request_parameters:
-          q[s]: updated_at+desc
+        authenticator:
+          type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          request_source: fleetio_airbyte_connector
-        authenticator:
-          type: NoAuth
+          X-Client-Name: fleetio_airbyte
         request_body_json: {}
+        request_parameters:
+          q[s]: updated_at+asc
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
+      partition_router: []
+    primary_key: []
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/parts.json"
+  - name: purchase_orders
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
       paginator:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: page
+          inject_into: request_parameter
         pagination_strategy:
           type: PageIncrement
-    incremental_sync:
-      type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      cursor_field: updated_at
-      start_time_option:
-        inject_into: request_parameter
-        field_name: q[updated_at_gteq]
-        type: RequestOption
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ day_delta(-1) }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
-    name: purchase_orders
-    primary_key: []
-    schema_loader:
-      type: JsonSchema
-      file_path: "./source_fleetio/schemas/purchase_orders.json" 
-    retriever:
-      type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://secure.fleetio.com/api/
         path: /v1/purchase_orders
+        type: HttpRequester
+        url_base: https://demo.fleetio.com/api/
         http_method: GET
-        request_parameters:
-          q[s]: updated_at+desc
+        authenticator:
+          type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          request_source: fleetio_airbyte_connector
-        authenticator:
-          type: NoAuth
+          X-Client-Name: fleetio_airbyte
         request_body_json: {}
+        request_parameters:
+          q[s]: updated_at+asc
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        pagination_strategy:
-          type: PageIncrement
-    incremental_sync:
-      type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      cursor_field: updated_at
-      start_time_option:
-        inject_into: request_parameter
-        field_name: q[updated_at_gteq]
-        type: RequestOption
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ day_delta(-1) }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
-    name: vehicle_assignments
+      partition_router: []
     primary_key: []
     schema_loader:
       type: JsonSchema
-      file_path: "./source_fleetio/schemas/vehicle_assignments.json" 
+      file_path: "./source_fleetio/schemas/purchase_orders.json"
+  - name: vehicle_assignments
+    type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://secure.fleetio.com/api/
-        path: /v1/vehicle_assignments
-        http_method: GET
-        request_parameters:
-          q[s]: updated_at+desc
-        request_headers:
-          Account-Token: '{{ config[''account_token''] }}'
-          Authorization: Token {{ config['api_token'] }}
-          request_source: fleetio_airbyte_connector
-        authenticator:
-          type: NoAuth
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
       paginator:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
+          field_name: start_cursor
           inject_into: request_parameter
-          field_name: page
         pagination_strategy:
-          type: PageIncrement
-    incremental_sync:
-      type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      cursor_field: updated_at
-      start_time_option:
-        inject_into: request_parameter
-        field_name: q[updated_at_gteq]
-        type: RequestOption
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ day_delta(-1) }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v1/vehicle_assignments
+        type: HttpRequester
+        url_base: https://demo.fleetio.com/api/
+        http_method: GET
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: '{{ config[''account_token''] }}'
+          Authorization: Token {{ config['api_token'] }}
+          X-Api-Version: '2024-01-01'
+          X-Client-Name: fleetio_airbyte
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key: []
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/vehicle_assignments.json"
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
