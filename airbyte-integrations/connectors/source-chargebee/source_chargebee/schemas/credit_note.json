@@ -80,7 +80,7 @@
     },
     "fractional_correction": {
       "type": ["integer", "null"],
-     "maximum": 50000
+      "maximum": 50000
     },
     "deleted": {
       "type": ["boolean", "null"]
@@ -153,7 +153,7 @@
           },
           "tax_rate": {
             "type": ["number", "null"],
-           "maximum": 100.0
+            "maximum": 100.0
           },
           "unit_amount_in_decimal": {
             "type": ["string", "null"]
@@ -296,7 +296,7 @@
           },
           "tax_rate": {
             "type": ["number", "null"],
-           "maximum": 100.0
+            "maximum": 100.0
           },
           "is_partial_tax_applied": {
             "type": ["boolean", "null"]
