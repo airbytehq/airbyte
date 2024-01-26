@@ -12,12 +12,10 @@ import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebe
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -45,9 +43,8 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   public MongoDbDebeziumPropertiesManager(final Properties properties,
                                           final JsonNode config,
-                                          final ConfiguredAirbyteCatalog catalog,
-                                          final AirbyteFileOffsetBackingStore offsetManager) {
-    super(properties, config, catalog, offsetManager, Optional.empty());
+                                          final ConfiguredAirbyteCatalog catalog) {
+    super(properties, config, catalog);
   }
 
   @Override

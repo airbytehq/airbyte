@@ -59,20 +59,15 @@ class MongoDbDebeziumPropertiesManagerTest {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
 
-    when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
 
     final Properties cdcProperties = new Properties();
     cdcProperties.put("test", "value");
 
-    final MongoDbDebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
-        cdcProperties,
-        config,
-        catalog,
-        offsetManager);
+    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
 
-    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
-    assertEquals(22 + cdcProperties.size(), debeziumProperties.size());
+    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
+    assertEquals(19 + cdcProperties.size(), debeziumProperties.size());
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
@@ -94,20 +89,15 @@ class MongoDbDebeziumPropertiesManagerTest {
     ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
         .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
 
-    when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
 
     final Properties cdcProperties = new Properties();
     cdcProperties.put("test", "value");
 
-    final MongoDbDebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
-        cdcProperties,
-        config,
-        catalog,
-        offsetManager);
+    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
 
-    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
-    assertEquals(22 + cdcProperties.size(), debeziumProperties.size());
+    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
+    assertEquals(19 + cdcProperties.size(), debeziumProperties.size());
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
@@ -128,20 +118,15 @@ class MongoDbDebeziumPropertiesManagerTest {
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
     ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
 
-    when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
 
     final Properties cdcProperties = new Properties();
     cdcProperties.put("test", "value");
 
-    final MongoDbDebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
-        cdcProperties,
-        config,
-        catalog,
-        offsetManager);
+    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
 
-    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
-    assertEquals(22 + cdcProperties.size(), debeziumProperties.size());
+    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
+    assertEquals(19 + cdcProperties.size(), debeziumProperties.size());
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
@@ -162,20 +147,15 @@ class MongoDbDebeziumPropertiesManagerTest {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final JsonNode config = createConfiguration(Optional.empty(), Optional.empty(), Optional.empty());
 
-    when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
 
     final Properties cdcProperties = new Properties();
     cdcProperties.put("test", "value");
 
-    final MongoDbDebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
-        cdcProperties,
-        config,
-        catalog,
-        offsetManager);
+    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
 
-    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
-    assertEquals(19 + cdcProperties.size(), debeziumProperties.size());
+    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
+    assertEquals(16 + cdcProperties.size(), debeziumProperties.size());
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));

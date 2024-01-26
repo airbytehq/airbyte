@@ -169,10 +169,9 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
       return Optional.empty();
     }
 
-    final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog,
-        AirbyteFileOffsetBackingStore.initializeState(cdcOffset, Optional.empty()),
-        Optional.empty());
-    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
+    final var offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcOffset, Optional.empty());
+    final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog);
+    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     return parseSavedOffset(debeziumProperties);
   }
 
@@ -244,13 +243,10 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     final AirbyteSchemaHistoryStorage schemaHistoryStorage =
         AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), COMPRESSION_ENABLED);
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
-    try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties,
-        database.getSourceConfig(),
-        catalog,
-        offsetManager,
-        Optional.of(schemaHistoryStorage),
-        DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB)) {
-      publisher.start(queue);
+    final var debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(properties, database.getSourceConfig(), catalog);
+
+    try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(debeziumPropertiesManager)) {
+      publisher.start(queue, offsetManager, Optional.of(schemaHistoryStorage));
       final Instant engineStartTime = Instant.now();
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);

@@ -13,13 +13,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
-import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordIterator;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumShutdownProcedure;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateDecoratingIterator;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -83,16 +84,19 @@ public class AirbyteDebeziumHandler<T> {
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
         cdcSavedInfoFetcher.getSavedOffset(),
         addDbNameToState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
-    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager =
-        trackSchemaHistory ? schemaHistoryManager(
-            cdcSavedInfoFetcher.getSavedSchemaHistory(),
-            cdcStateHandler.compressSchemaHistoryForState())
-            : Optional.empty();
+    final var schemaHistoryManager = trackSchemaHistory
+        ? Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(
+            cdcSavedInfoFetcher.getSavedSchemaHistory(), cdcStateHandler.compressSchemaHistoryForState()))
+        : Optional.<AirbyteSchemaHistoryStorage>empty();
 
-    final var publisher = new DebeziumRecordPublisher(
-        connectorProperties, config, catalog, offsetManager, schemaHistoryManager, debeziumConnectorType);
+    final var debeziumPropertiesManager = switch (debeziumConnectorType) {
+      case MONGODB -> new MongoDbDebeziumPropertiesManager(connectorProperties, config, catalog);
+      default -> new RelationalDbDebeziumPropertiesManager(connectorProperties, config, catalog);
+    };
+
+    final var publisher = new DebeziumRecordPublisher(debeziumPropertiesManager);
     final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(queueSize);
-    publisher.start(queue);
+    publisher.start(queue, offsetManager, schemaHistoryManager);
     // handle state machine around pub/sub logic.
     final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
         queue,
@@ -121,15 +125,6 @@ public class AirbyteDebeziumHandler<T> {
         catalog,
         debeziumConnectorType,
         config));
-  }
-
-  private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final SchemaHistory<Optional<JsonNode>> schemaHistory,
-                                                                     final boolean compressSchemaHistoryForState) {
-    if (trackSchemaHistory) {
-      return Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(schemaHistory, compressSchemaHistoryForState));
-    }
-
-    return Optional.empty();
   }
 
   public static boolean isAnyStreamIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {
