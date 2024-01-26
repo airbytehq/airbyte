@@ -146,10 +146,11 @@ if test $(tput cols) -ge 64; then
 fi
 
 ########## Dependency Check ##########
-if ! docker compose version >/dev/null 2>/dev/null; then
-  echo -e "$red_text""docker compose v2 not found! please install docker compose!""$default_text"
+if ! command -v docker-compose >/dev/null 2>&1; then
+  echo -e "$red_text""docker-compose command not found! Please install Docker Compose.""$default_text"
   exit 1
 fi
+
 
 Download
 
