@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from airbyte_lib import exceptions as exc
-from airbyte_lib._executor import Executor, PathExecutor, VenvExecutor
+from airbyte_lib._executor import PathExecutor, VenvExecutor
 from airbyte_lib.registry import ConnectorMetadata, get_connector_metadata
 from airbyte_lib.source import Source
 

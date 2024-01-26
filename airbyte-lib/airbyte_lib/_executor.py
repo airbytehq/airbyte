@@ -18,7 +18,6 @@ if TYPE_CHECKING:
     from collections.abc import Generator, Iterable, Iterator
 
 
-
 _LATEST_VERSION = "latest"
 
 
@@ -202,7 +201,6 @@ class VenvExecutor(Executor):
         # Assuming the installation succeeded, store the installed version
         self.reported_version = self._get_installed_version(raise_on_error=False, recheck=True)
 
-
     def _get_installed_version(
         self,
         *,
@@ -253,7 +251,6 @@ class VenvExecutor(Executor):
     @property
     def interpreter_path(self) -> Path:
         return self._get_venv_path() / "bin" / "python"
-
 
     def ensure_installation(
         self,
@@ -358,7 +355,6 @@ class VenvExecutor(Executor):
 
 
 class PathExecutor(Executor):
-
     def __init__(
         self,
         name: str | None = None,
@@ -408,12 +404,12 @@ class PathExecutor(Executor):
         )
 
     def execute(self, args: list[str]) -> Iterator[str]:
-        with _stream_from_subprocess([self.path, *args]) as stream:
+        with _stream_from_subprocess([str(self.path), *args]) as stream:
             yield from stream
 
     def get_telemetry_info(self) -> SourceTelemetryInfo:
         return SourceTelemetryInfo(
-            self.path,
+            str(self.name),
             SourceType.LOCAL_INSTALL,
             version=self.reported_version,
         )

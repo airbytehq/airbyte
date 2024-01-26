@@ -7,6 +7,7 @@ from typing import Any
 from unittest.mock import Mock, call, patch
 import tempfile
 from pathlib import Path
+import pip
 
 from sqlalchemy import column, text
 
@@ -57,15 +58,34 @@ def expected_test_stream_data() -> dict[str, list[dict[str, str | int]]]:
     }
 
 def test_list_streams(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
-
+    source = ab.get_connector(
+        "source-test", config={"apiKey": "test"}, install_if_missing=False
+    )
     assert source.get_available_streams() == list(expected_test_stream_data.keys())
 
 
 def test_invalid_config():
-    source = ab.get_connector("source-test", config={"apiKey": 1234})
+    source = ab.get_connector(
+        "source-test", config={"apiKey": 1234}, install_if_missing=False
+    )
     with pytest.raises(exc.AirbyteConnectorCheckFailedError):
         source.check()
+
+
+def test_ensure_installation_detection():
+    """Assert that install isn't called, since the connector is already installed by the fixture."""
+    with patch("airbyte_lib._executor.VenvExecutor.install") as mock_venv_install, \
+         patch("airbyte_lib.source.Source.install") as mock_source_install, \
+         patch("airbyte_lib._executor.VenvExecutor.ensure_installation") as mock_ensure_installed:
+        source = ab.get_connector(
+            "source-test",
+            config={"apiKey": 1234},
+            pip_url="https://pypi.org/project/airbyte-not-found",
+            install_if_missing=True,
+        )
+        assert mock_ensure_installed.call_count == 1
+        assert not mock_venv_install.called
+        assert not mock_source_install.called
 
 
 def test_non_existing_connector():

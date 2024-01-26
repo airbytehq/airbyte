@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import tempfile
 from contextlib import contextmanager, suppress
 from typing import TYPE_CHECKING, Any
