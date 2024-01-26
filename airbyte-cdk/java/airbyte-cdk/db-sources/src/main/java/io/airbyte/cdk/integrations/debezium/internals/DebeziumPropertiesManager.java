@@ -102,7 +102,7 @@ public abstract class DebeziumPropertiesManager {
     StringBuilder sanitizedNameBuilder = new StringBuilder(topicName.length());
     boolean changed = false;
 
-    for(int i = 0; i < topicName.length(); ++i) {
+    for (int i = 0; i < topicName.length(); ++i) {
       char c = topicName.charAt(i);
       if (isValidCharacter(c)) {
         sanitizedNameBuilder.append(c);

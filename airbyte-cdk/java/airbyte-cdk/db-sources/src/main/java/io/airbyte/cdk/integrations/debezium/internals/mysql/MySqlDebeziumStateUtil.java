@@ -4,9 +4,7 @@
 
 package io.airbyte.cdk.integrations.debezium.internals.mysql;
 
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager.TOPIC_PREFIX_KEY;
 import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
-import static io.debezium.config.CommonConnectorConfig.TOPIC_PREFIX;
 import static io.debezium.relational.RelationalDatabaseConnectorConfig.DATABASE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -241,7 +239,8 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     // construct the db schema history.
     properties.setProperty("snapshot.mode", "schema_only_recovery");
     final String dbName = database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText();
-    // Topic.prefix is sanitized version of database name. At this stage properties does not have this value - it's set in RelationalDbDebeziumPropertiesManager.
+    // Topic.prefix is sanitized version of database name. At this stage properties does not have this
+    // value - it's set in RelationalDbDebeziumPropertiesManager.
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
         constructBinlogOffset(database, dbName, DebeziumPropertiesManager.sanitizeTopicPrefix(dbName)),
         Optional.empty());

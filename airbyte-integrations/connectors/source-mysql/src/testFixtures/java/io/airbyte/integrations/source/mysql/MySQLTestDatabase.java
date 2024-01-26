@@ -85,8 +85,7 @@ public class MySQLTestDatabase extends
   public String getDatabaseName() {
     if (databaseName.isBlank()) {
       return super.getDatabaseName();
-    }
-    else {
+    } else {
       return databaseName;
     }
   }
@@ -103,7 +102,7 @@ public class MySQLTestDatabase extends
 
   @Override
   protected Stream<Stream<String>> inContainerBootstrapCmd() {
-System.out.println("name: " + String.format("CREATE DATABASE `%s`", getDatabaseName()));
+    System.out.println("name: " + String.format("CREATE DATABASE `%s`", getDatabaseName()));
     return Stream.of(mysqlCmd(Stream.of(
         String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
         String.format("CREATE DATABASE \\`%s\\`", getDatabaseName()),
