@@ -38,6 +38,7 @@ class HttpStream(Stream, ABC):
 
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
+    DEFAULT_MAX_TIME_IN_SECONDS = 60 * 10
 
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
@@ -125,7 +126,7 @@ class HttpStream(Stream, ABC):
         """
         Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
         """
-        return 60 * 10
+        return self.DEFAULT_MAX_TIME_IN_SECONDS
 
     @property
     def retry_factor(self) -> float:
