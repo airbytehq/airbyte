@@ -7,6 +7,7 @@ from typing import Any
 from unittest.mock import Mock, call, patch
 import tempfile
 from pathlib import Path
+from airbyte_lib.caches.base import SQLCacheBase
 
 from sqlalchemy import column, text
 
@@ -133,6 +134,19 @@ def test_file_write_and_cleanup() -> None:
         assert len(list(Path(temp_dir_2).glob("*.parquet"))) == 2, "Expected files to exist"
 
 
+def assert_cache_data(expected_test_stream_data: dict[str, list[dict[str, str | int]]], cache: SQLCacheBase, streams: list[str] = None):
+    for stream_name in streams or expected_test_stream_data.keys():
+        pd.testing.assert_frame_equal(
+            cache[stream_name].to_pandas(),
+            pd.DataFrame(expected_test_stream_data[stream_name]),
+            check_dtype=False,
+        )
+    
+    # validate that the cache doesn't contain any other streams
+    if streams:
+        assert len(list(cache.__iter__())) == len(streams)
+
+
 def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_connector("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache()
@@ -140,12 +154,7 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
     result: ReadResult = source.read(cache)
 
     assert result.processed_records == 3
-    for stream_name, expected_data in expected_test_stream_data.items():
-        pd.testing.assert_frame_equal(
-            result[stream_name].to_pandas(),
-            pd.DataFrame(expected_data),
-            check_dtype=False,
-        )
+    assert_cache_data(expected_test_stream_data, cache)
 
 
 def test_read_from_cache(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
@@ -162,12 +171,42 @@ def test_read_from_cache(expected_test_stream_data: dict[str, list[dict[str, str
     second_cache = ab.new_local_cache(cache_name)
 
 
-    for stream_name, expected_data in expected_test_stream_data.items():
-        pd.testing.assert_frame_equal(
-            second_cache[stream_name].to_pandas(),
-            pd.DataFrame(expected_data),
-            check_dtype=False,
-        )
+    assert_cache_data(expected_test_stream_data, second_cache)
+
+
+def test_read_isolated_by_prefix(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    """
+    Test that cache correctly isolates streams when different table prefixes are used
+    """
+    cache_name = str(ulid.ULID())
+    db_path = Path(f"./.cache/{cache_name}.duckdb")
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="prefix_"))
+
+    source.read(cache)
+
+    same_prefix_cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="prefix_"))
+    different_prefix_cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="different_prefix_"))
+    no_prefix_cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix=None))
+
+    # validate that the cache with the same prefix has the data as expected, while the other two are empty
+    assert_cache_data(expected_test_stream_data, same_prefix_cache)
+    assert len(list(different_prefix_cache.__iter__())) == 0
+    assert len(list(no_prefix_cache.__iter__())) == 0
+
+    # read partial data into the other two caches
+    source.set_streams(["stream1"])
+    source.read(different_prefix_cache)
+    source.read(no_prefix_cache)
+
+    second_same_prefix_cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="prefix_"))
+    second_different_prefix_cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="different_prefix_"))
+    second_no_prefix_cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix=None))
+
+    # validate that the first cache still has full data, while the other two have partial data
+    assert_cache_data(expected_test_stream_data, second_same_prefix_cache)
+    assert_cache_data(expected_test_stream_data, second_different_prefix_cache, streams=["stream1"])
+    assert_cache_data(expected_test_stream_data, second_no_prefix_cache, streams=["stream1"])
 
 
 def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
@@ -194,13 +233,7 @@ def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[s
     with pytest.raises(KeyError):
         result["stream1"]
 
-
-    for stream_name, expected_data in expected_test_stream_data.items():
-        pd.testing.assert_frame_equal(
-            second_cache[stream_name].to_pandas(),
-            pd.DataFrame(expected_data),
-            check_dtype=False,
-        )
+    assert_cache_data(expected_test_stream_data, second_cache)
 
 
 def test_read_result_as_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):

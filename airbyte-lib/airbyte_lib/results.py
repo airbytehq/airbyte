@@ -23,20 +23,16 @@ class ReadResult:
         self._processed_streams = processed_streams
 
     def __getitem__(self, stream: str) -> CachedDataset:
-        if stream not in self._processed_streams or stream not in self._cache:
+        if stream not in self._processed_streams:
             raise KeyError(stream)
 
         return CachedDataset(self._cache, stream)
 
     def __contains__(self, stream: str) -> bool:
-        return stream in self._cache and stream in self._processed_streams
+        return stream in self._processed_streams
 
     def __iter__(self) -> Iterator[str]:
-        return [
-            stream_name
-            for stream_name in self._cache.__iter__()
-            if stream_name in self._processed_streams
-        ].__iter__()
+        return self._processed_streams.__iter__()
 
     def get_sql_engine(self) -> Engine:
         return self._cache.get_sql_engine()
@@ -45,8 +41,7 @@ class ReadResult:
     def streams(self) -> Mapping[str, CachedDataset]:
         return {
             stream_name: CachedDataset(self._cache, stream_name)
-            for stream_name in self._cache.__iter__()
-            if stream_name in self._processed_streams
+            for stream_name in self._processed_streams
         }
 
     @property
