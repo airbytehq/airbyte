@@ -11,6 +11,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 
@@ -42,7 +43,6 @@ class GitHubAPILimitException(Exception):
 class Token:
     count_rest: int
     count_graphql: int
-    update_at: pendulum.DateTime
     reset_at_rest: pendulum.DateTime
     reset_at_graphql: pendulum.DateTime
 
@@ -61,9 +61,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         self._auth_method = auth_method
         self._auth_header = auth_header
         now = pendulum.now()
-        self._tokens = {
-            t: Token(count_rest=5000, count_graphql=5000, update_at=now, reset_at_rest=now, reset_at_graphql=now) for t in tokens
-        }
+        self._tokens = {t: Token(count_rest=5000, count_graphql=5000, reset_at_rest=now, reset_at_graphql=now) for t in tokens}
         self.check_all_tokens()
         self._tokens_iter = cycle(self._tokens)
         self._active_token = next(self._tokens_iter)
@@ -117,7 +115,6 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             .get("resources")
         )
         token_info = self._tokens[token]
-        token_info.update_at = pendulum.now()
         remaining_info_core = rate_limit_info.get("core")
         token_info.count_rest, token_info.reset_at_rest = remaining_info_core.get("remaining"), pendulum.from_timestamp(
             remaining_info_core.get("reset")
@@ -138,7 +135,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             return True
         elif all(getattr(x, count_attr) == 0 for x in self._tokens.values()):
             min_time_to_wait = min((getattr(x, reset_attr) - pendulum.now()).in_seconds() for x in self._tokens.values())
-            if min_time_to_wait < 600:  # see HttpStream.max_time
+            if min_time_to_wait < HttpStream.DEFAULT_MAX_TIME:
                 time.sleep(min_time_to_wait)
                 self.check_all_tokens()
             else:
