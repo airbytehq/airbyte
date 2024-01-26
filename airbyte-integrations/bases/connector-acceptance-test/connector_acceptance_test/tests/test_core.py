@@ -30,6 +30,7 @@ from airbyte_protocol.models import (
 )
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import (
+    AllowedHostsConfiguration,
     BasicReadTestConfig,
     Config,
     ConnectionTestConfig,
@@ -1233,7 +1234,9 @@ class TestBasicRead(BaseTest):
 
 @pytest.mark.default_timeout(TEN_MINUTES)
 class TestConnectorAttributes(BaseTest):
-    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []  # Used so that this is not part of the mandatory high strictness test suite yet
+    # Overide from BaseTest!
+    # Used so that this is not part of the mandatory high strictness test suite yet
+    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []
 
     @pytest.fixture(name="operational_certification_test")
     async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
@@ -1252,7 +1255,7 @@ class TestConnectorAttributes(BaseTest):
 
     async def test_streams_define_primary_key(
         self, operational_certification_test, streams_without_primary_key, connector_config, docker_runner: ConnectorRunner
-    ):
+    ) -> None:
         output = await docker_runner.call_discover(config=connector_config)
         catalog_messages = filter_output(output, Type.CATALOG)
         streams = catalog_messages[0].catalog.streams
@@ -1261,3 +1264,72 @@ class TestConnectorAttributes(BaseTest):
 
         quoted_missing_primary_keys = {f"'{primary_key}'" for primary_key in missing_primary_keys}
         assert not missing_primary_keys, f"The following streams {', '.join(quoted_missing_primary_keys)} do not define a primary_key"
+
+    @pytest.fixture(name="allowed_hosts_test")
+    def allowed_hosts_fixture_test(self, inputs: ConnectorAttributesConfig) -> bool:
+        allowed_hosts = inputs.allowed_hosts
+        bypass_reason = allowed_hosts.bypass_reason if allowed_hosts else None
+        if bypass_reason:
+            pytest.skip(f"Skipping `metadata.allowedHosts` checks. Reason: {bypass_reason}")
+        return True
+
+    async def test_certified_connector_has_allowed_hosts(
+        self, operational_certification_test, allowed_hosts_test, connector_metadata: dict
+    ) -> None:
+        """
+        Checks whether or not the connector has `allowedHosts` and it's components defined in `metadata.yaml`.
+        Suitable for certified connectors starting `ql` >= 400.
+
+        Arguments:
+            :: operational_certification_test -- pytest.fixure defines the connector is suitable for this test or not.
+            :: connector_metadata -- `metadata.yaml` file content
+        """
+        metadata = connector_metadata.get("data", {})
+
+        has_allowed_hosts_property = "allowedHosts" in metadata.keys()
+        assert has_allowed_hosts_property, f"The `allowedHosts` property is missing in `metadata.data` for `metadata.yaml`."
+
+        allowed_hosts = metadata.get("allowedHosts", {})
+        has_hosts_property = "hosts" in allowed_hosts.keys() if allowed_hosts else False
+        assert has_hosts_property, f"The `hosts` property is missing in `metadata.data.allowedHosts` for `metadata.yaml`."
+
+        hosts = allowed_hosts.get("hosts", [])
+        has_assigned_hosts = len(hosts) > 0 if hosts else False
+        assert (
+            has_assigned_hosts
+        ), f"The `hosts` empty list is not allowed for `metadata.data.allowedHosts` for certified connectors. Please add `hosts` or define the `allowed_hosts.bypass_reason` in `acceptance-test-config.yaml`."
+
+    @pytest.fixture(name="suggested_streams_test")
+    def suggested_streams_fixture_test(self, inputs: ConnectorAttributesConfig) -> bool:
+        suggested_streams = inputs.suggested_streams
+        bypass_reason = suggested_streams.bypass_reason if suggested_streams else None
+        if bypass_reason:
+            pytest.skip(f"Skipping `metadata.suggestedStreams` checks. Reason: {bypass_reason}")
+        return True
+
+    async def test_certified_connector_has_suggested_streams(
+        self, operational_certification_test, suggested_streams_test, connector_metadata: dict
+    ) -> None:
+        """
+        Checks whether or not the connector has `suggestedStreams` and it's components defined in `metadata.yaml`.
+        Suitable for certified connectors starting `ql` >= 400.
+
+        Arguments:
+            :: operational_certification_test -- pytest.fixure defines the connector is suitable for this test or not.
+            :: connector_metadata -- `metadata.yaml` file content
+        """
+
+        metadata = connector_metadata.get("data", {})
+
+        has_suggested_streams_property = "suggestedStreams" in metadata.keys()
+        assert has_suggested_streams_property, f"The `suggestedStreams` property is missing in `metadata.data` for `metadata.yaml`."
+
+        suggested_streams = metadata.get("suggestedStreams", {})
+        has_streams_property = "streams" in suggested_streams.keys() if suggested_streams else False
+        assert has_streams_property, f"The `streams` property is missing in `metadata.data.suggestedStreams` for `metadata.yaml`."
+
+        streams = suggested_streams.get("streams", [])
+        has_assigned_suggested_streams = len(streams) > 0 if streams else False
+        assert (
+            has_assigned_suggested_streams
+        ), f"The `streams` empty list is not allowed for `metadata.data.suggestedStreams` for certified connectors."
