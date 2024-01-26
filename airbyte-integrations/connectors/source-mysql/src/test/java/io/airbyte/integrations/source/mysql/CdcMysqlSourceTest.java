@@ -288,7 +288,6 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertStateTypes(stateMessages, 4);
   }
 
-  @Override
   protected void assertExpectedStateMessagesWithTotalCount(final List<AirbyteStateMessage> stateMessages, final long totalRecordCount) {
     long actualRecordCount = 0L;
     for (final AirbyteStateMessage message : stateMessages) {
