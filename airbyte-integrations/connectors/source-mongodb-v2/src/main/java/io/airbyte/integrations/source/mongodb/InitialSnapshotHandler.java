@@ -51,7 +51,8 @@ public class InitialSnapshotHandler {
                                                                   final MongoDatabase database,
                                                                   final MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector,
                                                                   final Instant emittedAt,
-                                                                  final int checkpointInterval) {
+                                                                  final int checkpointInterval,
+                                                                  final boolean isEnforceSchema) {
     return streams
         .stream()
         .peek(airbyteStream -> {
@@ -90,16 +91,23 @@ public class InitialSnapshotHandler {
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);
 
-          final var cursor = collection.find()
+          // When schema is enforced we query for the selected fields
+          // Otherwise we retreive the entire set of fields
+          final var cursor = isEnforceSchema ? collection.find()
               .filter(filter)
               .projection(fields)
               .sort(Sorts.ascending(MongoConstants.ID_FIELD))
               .allowDiskUse(true)
-              .cursor();
+              .cursor()
+              : collection.find()
+                  .filter(filter)
+                  .sort(Sorts.ascending(MongoConstants.ID_FIELD))
+                  .allowDiskUse(true)
+                  .cursor();
 
           final var stateIterator =
               new MongoDbStateIterator(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
-                  airbyteStream, emittedAt, checkpointInterval, MongoConstants.CHECKPOINT_DURATION);
+                  airbyteStream, emittedAt, checkpointInterval, MongoConstants.CHECKPOINT_DURATION, isEnforceSchema);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();

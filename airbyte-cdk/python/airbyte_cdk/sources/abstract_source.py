@@ -19,7 +19,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
-from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
@@ -30,6 +30,8 @@ from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+_default_message_repository = InMemoryMessageRepository()
 
 
 class AbstractSource(Source, ABC):
@@ -99,6 +101,9 @@ class AbstractSource(Source, ABC):
         stream_instances = {s.name: s for s in self.streams(config)}
         state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         self._stream_to_instance_map = stream_instances
+
+        stream_name_to_exception: MutableMapping[str, AirbyteTracedException] = {}
+
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:
                 stream_instance = stream_instances.get(configured_stream.stream.name)
@@ -129,7 +134,10 @@ class AbstractSource(Source, ABC):
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
                 except AirbyteTracedException as e:
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                    raise e
+                    if self.continue_sync_on_stream_failure:
+                        stream_name_to_exception[stream_instance.name] = e
+                    else:
+                        raise e
                 except Exception as e:
                     yield from self._emit_queued_messages()
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
@@ -144,6 +152,8 @@ class AbstractSource(Source, ABC):
                     logger.info(f"Finished syncing {configured_stream.stream.name}")
                     logger.info(timer.report())
 
+        if self.continue_sync_on_stream_failure and len(stream_name_to_exception) > 0:
+            raise AirbyteTracedException(message=self._generate_failed_streams_error_message(stream_name_to_exception))
         logger.info(f"Finished syncing {self.name}")
 
     @property
@@ -269,4 +279,20 @@ class AbstractSource(Source, ABC):
 
     @property
     def message_repository(self) -> Union[None, MessageRepository]:
-        return None
+        return _default_message_repository
+
+    @property
+    def continue_sync_on_stream_failure(self) -> bool:
+        """
+        WARNING: This function is in-development which means it is subject to change. Use at your own risk.
+
+        By default, a source should raise an exception and stop the sync when it encounters an error while syncing a stream. This
+        method can be overridden on a per-source basis so that a source will continue syncing streams other streams even if an
+        exception is raised for a stream.
+        """
+        return False
+
+    @staticmethod
+    def _generate_failed_streams_error_message(stream_failures: Mapping[str, AirbyteTracedException]) -> str:
+        failures = ", ".join([f"{stream}: {exception.__repr__()}" for stream, exception in stream_failures.items()])
+        return f"During the sync, the following streams did not sync successfully: {failures}"

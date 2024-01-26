@@ -10,11 +10,13 @@ from typing import Any, Mapping
 
 import pytest
 import requests_mock
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams import Stream
 from source_salesforce.source import SourceSalesforce
 
 HERE = Path(__file__).parent
+_ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
+_ANY_CONFIG = {}
 
 
 @pytest.fixture(name="input_config")
@@ -31,9 +33,9 @@ def parse_input_sandbox_config():
 
 def get_stream(input_config: Mapping[str, Any], stream_name: str) -> Stream:
     stream_cls = type("a", (object,), {"name": stream_name})
-    configured_stream_cls = type("b", (object,), {"stream": stream_cls()})
+    configured_stream_cls = type("b", (object,), {"stream": stream_cls(), "sync_mode": "full_refresh"})
     catalog_cls = type("c", (object,), {"streams": [configured_stream_cls()]})
-    source = SourceSalesforce()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
     source.catalog = catalog_cls()
     return source.streams(input_config)[0]
 

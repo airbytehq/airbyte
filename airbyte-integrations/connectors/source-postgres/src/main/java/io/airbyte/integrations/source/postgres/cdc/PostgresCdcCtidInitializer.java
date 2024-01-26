@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres.cdc;
 
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.isDebugMode;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,6 +18,7 @@ import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresDebeziumS
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -68,9 +70,15 @@ public class PostgresCdcCtidInitializer {
     try {
       final JsonNode sourceConfig = database.getSourceConfig();
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
+      final Duration subsequentRecordWaitTime = PostgresUtils.getSubsequentRecordWaitTime(sourceConfig);
       final OptionalInt queueSize = OptionalInt.of(PostgresUtils.getQueueSize(sourceConfig));
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
       LOGGER.info("Queue size: {}", queueSize.getAsInt());
+
+      if (isDebugMode(sourceConfig) && !PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
+        throw new ConfigErrorException("WARNING: The config indicates that we are clearing the WAL while reading data. This will mutate the WAL" +
+            " associated with the source being debugged and is not advised.");
+      }
 
       final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
 
@@ -104,7 +112,8 @@ public class PostgresCdcCtidInitializer {
 
       if (!savedOffsetAfterReplicationSlotLSN) {
         LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
-      } else if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
+      } else if (!isDebugMode(sourceConfig) && PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
+        // We do not want to acknowledge the WAL logs in debug mode.
         postgresDebeziumStateUtil.commitLSNToPostgresDatabase(database.getDatabaseConfig(),
             savedOffset,
             sourceConfig.get("replication_method").get("replication_slot").asText(),
@@ -161,21 +170,15 @@ public class PostgresCdcCtidInitializer {
         LOGGER.info("No streams will be synced via ctid");
       }
 
+      // Gets the target position.
       final var targetPosition = PostgresCdcTargetPosition.targetPosition(database);
+      // Attempt to advance LSN past the target position. For versions of Postgres before PG15, this
+      // ensures that there is an event that debezium will
+      // receive that is after the target LSN.
+      PostgresUtils.advanceLsn(database);
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
-          targetPosition, false, firstRecordWaitTime, queueSize);
+          targetPosition, false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
-
-      final boolean canShortCircuitDebeziumEngine = savedOffset.isPresent() &&
-      // Until the need presents itself in production, short-circuiting should only be done in tests.
-          sourceConfig.has("is_test") && sourceConfig.get("is_test").asBoolean() &&
-          !postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
-              database.getDatabaseConfig(),
-              sourceConfig.get("replication_method").get("replication_slot").asText(),
-              sourceConfig.get("replication_method").get("publication").asText(),
-              PostgresUtils.getPluginValue(sourceConfig.get("replication_method")),
-              savedOffset.getAsLong(),
-              targetPosition.targetLsn.asLong());
 
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
           catalog,
@@ -185,8 +188,7 @@ public class PostgresCdcCtidInitializer {
           PostgresCdcProperties.getDebeziumDefaultProperties(database),
           DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt,
-          false,
-          canShortCircuitDebeziumEngine);
+          false);
 
       if (initialSyncCtidIterators.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());

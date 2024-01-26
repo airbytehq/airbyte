@@ -58,7 +58,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     @property
     def primary_key(self) -> PrimaryKeyType:
-        return self.config.primary_key
+        return self.config.primary_key or self.get_parser().get_parser_defined_primary_key(self.config)
 
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         # Sort files by last_modified, uri and return them grouped by last_modified
@@ -112,14 +112,20 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             except RecordParseError:
                 # Increment line_no because the exception was raised before we could increment it
                 line_no += 1
-                yield AirbyteMessage(
-                    type=MessageType.LOG,
-                    log=AirbyteLogMessage(
-                        level=Level.ERROR,
-                        message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
-                        stack_trace=traceback.format_exc(),
+                self.errors_collector.collect(
+                    AirbyteMessage(
+                        type=MessageType.LOG,
+                        log=AirbyteLogMessage(
+                            level=Level.ERROR,
+                            message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
+                            stack_trace=traceback.format_exc(),
+                        ),
                     ),
                 )
+
+            except AirbyteTracedException as exc:
+                # Re-raise the exception to stop the whole sync immediately as this is a fatal error
+                raise exc
 
             except Exception:
                 yield AirbyteMessage(

@@ -17,7 +17,7 @@ data:
   name: Facebook Pages
   registries:
     cloud:
-      enabled: true
+      enabled: false # hide from cloud until https://github.com/airbytehq/airbyte/issues/25515 is finished
     oss:
       enabled: true
   releaseStage: beta

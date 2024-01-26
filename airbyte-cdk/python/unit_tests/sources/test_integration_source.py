@@ -9,6 +9,7 @@ from unittest.mock import patch
 import pytest
 import requests
 from airbyte_cdk.entrypoint import launch
+from airbyte_cdk.utils import AirbyteTracedException
 from unit_tests.sources.fixtures.source_test_fixture import (
     HttpTestStream,
     SourceFixtureOauthAuthenticator,
@@ -22,8 +23,8 @@ from unit_tests.sources.fixtures.source_test_fixture import (
     [
         pytest.param("CLOUD", "https://airbyte.com/api/v1/", [], None, id="test_cloud_read_with_public_endpoint"),
         pytest.param("CLOUD", "http://unsecured.com/api/v1/", [], ValueError, id="test_cloud_read_with_unsecured_url"),
-        pytest.param("CLOUD", "https://172.20.105.99/api/v1/", [], ValueError, id="test_cloud_read_with_private_endpoint"),
-        pytest.param("CLOUD", "https://localhost:80/api/v1/", [], ValueError, id="test_cloud_read_with_localhost"),
+        pytest.param("CLOUD", "https://172.20.105.99/api/v1/", [], AirbyteTracedException, id="test_cloud_read_with_private_endpoint"),
+        pytest.param("CLOUD", "https://localhost:80/api/v1/", [], AirbyteTracedException, id="test_cloud_read_with_localhost"),
         pytest.param("OSS", "https://airbyte.com/api/v1/", [], None, id="test_oss_read_with_public_endpoint"),
         pytest.param("OSS", "https://172.20.105.99/api/v1/", [], None, id="test_oss_read_with_private_endpoint"),
     ],
@@ -47,7 +48,7 @@ def test_external_request_source(capsys, deployment_mode, url_base, expected_rec
     [
         pytest.param("CLOUD", "https://airbyte.com/api/v1/", [], None, id="test_cloud_read_with_public_endpoint"),
         pytest.param("CLOUD", "http://unsecured.com/api/v1/", [], ValueError, id="test_cloud_read_with_unsecured_url"),
-        pytest.param("CLOUD", "https://172.20.105.99/api/v1/", [], ValueError, id="test_cloud_read_with_private_endpoint"),
+        pytest.param("CLOUD", "https://172.20.105.99/api/v1/", [], AirbyteTracedException, id="test_cloud_read_with_private_endpoint"),
         pytest.param("OSS", "https://airbyte.com/api/v1/", [], None, id="test_oss_read_with_public_endpoint"),
         pytest.param("OSS", "https://172.20.105.99/api/v1/", [], None, id="test_oss_read_with_private_endpoint"),
     ],

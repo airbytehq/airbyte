@@ -1,4 +1,4 @@
-# Gradle Cheatsheet
+# (DEPRECATED) Gradle Cheatsheet
 
 ## Overview
 
@@ -223,22 +223,23 @@ The TOML file consists of 4 major sections:
 - the [bundles] section is used to declare dependency bundles
 - the [plugins] section is used to declare plugins
 
-> TOML file Example:
-> ```gradle
-> [versions]
-> groovy = "3.0.5"
->
-> [libraries]
-> groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
->
-> [bundles]
-> groovy = ["groovy-core", "groovy-json", "groovy-nio"]
->
-> [plugins]
-> jmh = { id = "me.champeau.jmh", version = "0.6.5" }
-> ```
-> NOTE: for more information please follow [this](https://docs.gradle.org/current/userguide/platforms.html#:~:text=The%20version%20catalog%20TOML%20file%20format
-) link.
+TOML file Example:
+
+```gradle
+[versions]
+groovy = "3.0.5"
+
+[libraries]
+groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
+
+[bundles]
+groovy = ["groovy-core", "groovy-json", "groovy-nio"]
+
+[plugins]
+jmh = { id = "me.champeau.jmh", version = "0.6.5" }
+```
+
+NOTE: for more information please follow [this](https://docs.gradle.org/current/userguide/platforms.html#:~:text=The%20version%20catalog%20TOML%20file%20format) link.
 
 As described above this project contains TOML file `deps.toml` which is fully fulfilled with respect to [official](https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format) documentation.
 In case when new versions should be used please update `deps.toml` accordingly.
@@ -246,6 +247,7 @@ In case when new versions should be used please update `deps.toml` accordingly.
 <details>
 <summary>deps.toml</summary>
 
+```
 [versions]
 fasterxml_version = "2.13.0"
 glassfish_version = "2.31"
@@ -293,37 +295,41 @@ apache = ["apache-commons", "apache-commons-lang"]
 log4j = ["log4j-api", "log4j-core", "log4j-impl", "log4j-web"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]
+```
 
 </details>
 
 #### Declaring a version catalog
 Version catalogs can be declared in the settings.gradle file.
 There should be specified section `dependencyResolutionManagement` which uses `deps.toml` file as a declared catalog.
-> Example:
-> ```gradle
-> dependencyResolutionManagement {
->     repositories {
->         maven {
->             url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
->        }
->     }
->     versionCatalogs {
->         libs {
->             from(files("deps.toml"))
->         }
->     }
-> }
-> ```
+Example:
+
+```gradle
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+       }
+    }
+    versionCatalogs {
+        libs {
+            from(files("deps.toml"))
+        }
+    }
+}
+```
 
 #### Sharing Catalogs
 To share this catalog for further usage by other Projects, we do the following 2 steps:
 - Define `version-catalog` plugin in `build.gradle` file (ignore if this record exists)
+
   ```gradle
   plugins {
       id '...'
       id 'version-catalog'
   ```
 - Prepare Catalog for Publishing
+
   ```gradle
   catalog {
       versionCatalog {
@@ -334,6 +340,7 @@ To share this catalog for further usage by other Projects, we do the following 2
 
 #### Configure the Plugin Publishing Plugin
 To **Publishing**, first define the `maven-publish` plugin in `build.gradle` file (ignore if this already exists):
+
 ```gradle
 plugins {
     id '...'
@@ -341,29 +348,30 @@ plugins {
 }
 ```
 After that, describe the publishing section. Please use [this](https://docs.gradle.org/current/userguide/publishing_gradle_plugins.html) official documentation for more details.
-> Example:
-> ```gradle
-> publishing {
->     publications {
->         maven(MavenPublication) {
->             groupId = 'io.airbyte'
->             artifactId = 'oss-catalog'
->
->                 from components.versionCatalog
->         }
->     }
->
->     repositories {
->         maven {
->             url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
->             credentials {
->                 name 'cloudrepo'
->                 username System.getenv('CLOUDREPO_USER')
->                 password System.getenv('CLOUDREPO_PASSWORD')
->             }
->         }
->
->         mavenLocal()
->     }
-> }
-> ```
+Example:
+
+```gradle
+publishing {
+    publications {
+         maven(MavenPublication) {
+            groupId = 'io.airbyte'
+            artifactId = 'oss-catalog'
+
+                from components.versionCatalog
+        }
+    }
+
+    repositories {
+        maven {
+            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+            credentials {
+                name 'cloudrepo'
+                username System.getenv('CLOUDREPO_USER')
+                password System.getenv('CLOUDREPO_PASSWORD')
+            }
+        }
+
+        mavenLocal()
+    }
+}
+```

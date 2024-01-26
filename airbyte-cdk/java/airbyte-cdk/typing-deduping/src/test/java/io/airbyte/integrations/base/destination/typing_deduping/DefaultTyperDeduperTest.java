@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static io.airbyte.integrations.base.destination.typing_deduping.Sql.separately;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
@@ -17,9 +18,12 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +40,7 @@ public class DefaultTyperDeduperTest {
   void setup() throws Exception {
     sqlGenerator = spy(new MockSqlGenerator());
     destinationHandler = mock(DestinationHandler.class);
-    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.empty());
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.empty()));
     migrator = new NoOpDestinationV1V2Migrator<>();
 
     final ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
@@ -73,18 +77,19 @@ public class DefaultTyperDeduperTest {
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.empty());
 
     typerDeduper.prepareTables();
-    verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream");
-    verify(destinationHandler).execute("CREATE TABLE append_ns.append_stream");
-    verify(destinationHandler).execute("CREATE TABLE dedup_ns.dedup_stream");
+    verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
+    verify(destinationHandler).execute(Sql.of("CREATE TABLE overwrite_ns.overwrite_stream"));
+    verify(destinationHandler).execute(Sql.of("CREATE TABLE append_ns.append_stream"));
+    verify(destinationHandler).execute(Sql.of("CREATE TABLE dedup_ns.dedup_stream"));
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false);
-    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING");
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING"));
     typerDeduper.typeAndDedupe("append_ns", "append_stream", false);
-    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING");
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING"));
     typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
-    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING");
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING"));
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
@@ -102,27 +107,28 @@ public class DefaultTyperDeduperTest {
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
     when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(false);
     typerDeduper.prepareTables();
-    verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
-    verify(destinationHandler).execute("PREPARE append_ns.append_stream FOR SOFT RESET");
-    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream_ab_soft_reset WITHOUT SAFER CASTING");
-    verify(destinationHandler).execute("OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset");
-    verify(destinationHandler).execute("PREPARE dedup_ns.dedup_stream FOR SOFT RESET");
-    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream_ab_soft_reset WITHOUT SAFER CASTING");
-    verify(destinationHandler).execute("OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset");
+    verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
+    verify(destinationHandler).execute(Sql.of("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp"));
+    verify(destinationHandler).execute(Sql.of("PREPARE append_ns.append_stream FOR SOFT RESET"));
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE append_ns.append_stream_ab_soft_reset WITHOUT SAFER CASTING"));
+    verify(destinationHandler).execute(Sql.of("OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset"));
+    verify(destinationHandler).execute(Sql.of("PREPARE dedup_ns.dedup_stream FOR SOFT RESET"));
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE dedup_ns.dedup_stream_ab_soft_reset WITHOUT SAFER CASTING"));
+    verify(destinationHandler).execute(Sql.of("OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset"));
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false);
-    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING");
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING"));
     typerDeduper.typeAndDedupe("append_ns", "append_stream", false);
-    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING");
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING"));
     typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
-    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING");
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING"));
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
     typerDeduper.commitFinalTables();
-    verify(destinationHandler).execute("OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp");
+    verify(destinationHandler).execute(Sql.of("OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp"));
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
   }
 
@@ -137,6 +143,8 @@ public class DefaultTyperDeduperTest {
     when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);
 
     typerDeduper.prepareTables();
+    verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
+    clearInvocations(destinationHandler);
     verify(destinationHandler, never()).execute(any());
   }
 
@@ -146,36 +154,40 @@ public class DefaultTyperDeduperTest {
    */
   @Test
   void existingNonemptyTable() throws Exception {
-    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.of(Instant.parse("2023-01-01T12:34:56Z")));
+    when(destinationHandler.getInitialRawTableState(any()))
+        .thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-01T12:34:56Z"))));
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
 
     typerDeduper.prepareTables();
+    verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
     // NB: We only create a tmp table for the overwrite stream, and do _not_ soft reset the existing
     // overwrite stream's table.
-    verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
-    verify(destinationHandler).execute("PREPARE append_ns.append_stream FOR SOFT RESET");
-    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream_ab_soft_reset WITHOUT SAFER CASTING");
-    verify(destinationHandler).execute("OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset");
-    verify(destinationHandler).execute("PREPARE dedup_ns.dedup_stream FOR SOFT RESET");
-    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream_ab_soft_reset WITHOUT SAFER CASTING");
-    verify(destinationHandler).execute("OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset");
+
+    verify(destinationHandler).execute(Sql.of("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp"));
+    verify(destinationHandler).execute(Sql.of("PREPARE append_ns.append_stream FOR SOFT RESET"));
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE append_ns.append_stream_ab_soft_reset WITHOUT SAFER CASTING"));
+    verify(destinationHandler).execute(Sql.of("OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset"));
+    verify(destinationHandler).execute(Sql.of("PREPARE dedup_ns.dedup_stream FOR SOFT RESET"));
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE dedup_ns.dedup_stream_ab_soft_reset WITHOUT SAFER CASTING"));
+    verify(destinationHandler).execute(Sql.of("OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset"));
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false);
     // NB: no airbyte_tmp suffix on the non-overwrite streams
     verify(destinationHandler)
-        .execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z");
+        .execute(Sql.of("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z"));
     typerDeduper.typeAndDedupe("append_ns", "append_stream", false);
-    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z");
+    verify(destinationHandler)
+        .execute(Sql.of("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z"));
     typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
-    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z");
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z"));
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
     typerDeduper.commitFinalTables();
-    verify(destinationHandler).execute("OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp");
+    verify(destinationHandler).execute(Sql.of("OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp"));
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
   }
 
@@ -185,7 +197,7 @@ public class DefaultTyperDeduperTest {
    */
   @Test
   void existingNonemptyTableMatchingSchema() throws Exception {
-    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.of(Instant.now()));
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.now())));
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
     when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);
@@ -193,7 +205,8 @@ public class DefaultTyperDeduperTest {
     typerDeduper.prepareTables();
     // NB: We only create one tmp table here.
     // Also, we need to alter the existing _real_ table, not the tmp table!
-    verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
+    verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
+    verify(destinationHandler).execute(Sql.of("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp"));
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
   }
 
@@ -215,6 +228,50 @@ public class DefaultTyperDeduperTest {
     typerDeduper.commitFinalTables();
 
     verifyNoInteractions(ignoreStubs(destinationHandler));
+  }
+
+  /**
+   * Test a typical sync, where the previous sync left no unprocessed raw records. If this sync writes
+   * some records for a stream, we should run T+D for that stream.
+   */
+  @Test
+  void noUnprocessedRecords() throws Exception {
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(false, Optional.empty()));
+    typerDeduper.prepareTables();
+    clearInvocations(destinationHandler);
+
+    typerDeduper.typeAndDedupe(Map.of(
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new StreamSyncSummary(Optional.of(0L)),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new StreamSyncSummary(Optional.of(1L))));
+
+    // append_stream and dedup_stream should be T+D-ed. overwrite_stream has explicitly 0 records, but
+    // dedup_stream
+    // is missing from the map, so implicitly has nonzero records.
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING"));
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING"));
+    verifyNoMoreInteractions(destinationHandler);
+  }
+
+  /**
+   * Test a sync where the previous sync failed to run T+D for some stream. Even if this sync writes
+   * zero records, it should still run T+D.
+   */
+  @Test
+  void unprocessedRecords() throws Exception {
+    when(destinationHandler.getInitialRawTableState(any()))
+        .thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z"))));
+    typerDeduper.prepareTables();
+    clearInvocations(destinationHandler);
+
+    typerDeduper.typeAndDedupe(Map.of(
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new StreamSyncSummary(Optional.of(0L)),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new StreamSyncSummary(Optional.of(1L))));
+
+    verify(destinationHandler)
+        .execute(Sql.of("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z"));
+    verify(destinationHandler)
+        .execute(Sql.of("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z"));
+    verify(destinationHandler).execute(Sql.of("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z"));
   }
 
 }

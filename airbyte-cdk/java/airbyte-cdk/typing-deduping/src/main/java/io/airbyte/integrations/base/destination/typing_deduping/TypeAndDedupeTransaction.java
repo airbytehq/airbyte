@@ -26,23 +26,29 @@ public class TypeAndDedupeTransaction {
    * @param suffix table suffix for temporary tables
    * @throws Exception if the safe query fails
    */
-  public static void executeTypeAndDedupe(final SqlGenerator sqlGenerator,
-                                          final DestinationHandler destinationHandler,
-                                          StreamConfig streamConfig,
-                                          Optional<Instant> minExtractedAt,
-                                          String suffix)
+  public static <TableDefinition> void executeTypeAndDedupe(final SqlGenerator<TableDefinition> sqlGenerator,
+                                                            final DestinationHandler<TableDefinition> destinationHandler,
+                                                            final StreamConfig streamConfig,
+                                                            final Optional<Instant> minExtractedAt,
+                                                            final String suffix)
       throws Exception {
     try {
-      LOGGER.info("Attempting typing and deduping for {}.{} with suffix", streamConfig.id().originalNamespace(), streamConfig.id().originalName(),
+      LOGGER.info("Attempting typing and deduping for {}.{} with suffix {}", streamConfig.id().originalNamespace(), streamConfig.id().originalName(),
           suffix);
-      final String unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, false);
+      final Sql unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, false);
       destinationHandler.execute(unsafeSql);
-      // TODO determine which Exceptions should not be retried even with safer sql
-    } catch (Exception e) {
-      LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, attempting with error handling",
-          streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
-      final String saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, true);
-      destinationHandler.execute(saferSql);
+    } catch (final Exception e) {
+      if (sqlGenerator.shouldRetry(e)) {
+        // TODO Destination specific non-retryable exceptions should be added.
+        LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, attempting with error handling",
+            streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
+        final Sql saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, true);
+        destinationHandler.execute(saferSql);
+      } else {
+        LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, Retry is skipped",
+            streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
+        throw e;
+      }
     }
   }
 
@@ -56,7 +62,7 @@ public class TypeAndDedupeTransaction {
    * @param streamConfig which stream to operate on
    * @throws Exception if the safe query fails
    */
-  public static void executeSoftReset(final SqlGenerator sqlGenerator, final DestinationHandler destinationHandler, StreamConfig streamConfig)
+  public static void executeSoftReset(final SqlGenerator sqlGenerator, final DestinationHandler destinationHandler, final StreamConfig streamConfig)
       throws Exception {
     LOGGER.info("Attempting soft reset for stream {} {}", streamConfig.id().originalNamespace(), streamConfig.id().originalName());
     destinationHandler.execute(sqlGenerator.prepareTablesForSoftReset(streamConfig));

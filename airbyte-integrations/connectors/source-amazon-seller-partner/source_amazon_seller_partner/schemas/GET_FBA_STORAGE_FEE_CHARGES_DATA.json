@@ -66,6 +66,40 @@
     },
     "currency": {
       "type": ["null", "string"]
+    },
+    "average-quantity-customer-orders": {
+      "type": ["null", "number"]
+    },
+    "base-rate": {
+      "type": ["null", "number"]
+    },
+    "breakdown-incentive-fee-amount": {
+      "type": ["null", "string"]
+    },
+    "dangerous-goods-storage-type": {
+      "type": ["null", "string"]
+    },
+    "eligible_for_inventory_discount": {
+      "type": ["null", "string"]
+    },
+    "qualifies_for_inventory_discount": {
+      "type": ["null", "string"]
+    },
+    "storage-utilization-ratio": {
+      "type": ["null", "number"]
+    },
+    "storage-utilization-ratio-units": {
+      "type": ["null", "string"]
+    },
+    "total-incentive-fee-amount": {
+      "type": ["null", "number"]
+    },
+    "utilization-surcharge-rate": {
+      "type": ["null", "number"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

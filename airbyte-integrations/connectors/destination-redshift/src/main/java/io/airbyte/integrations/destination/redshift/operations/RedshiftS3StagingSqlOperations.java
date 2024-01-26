@@ -53,24 +53,16 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public String getStageName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
-        nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)));
-  }
-
-  @Override
-  public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+  public String getStagingPath(final UUID connectionId,
+                               final String namespace,
+                               final String streamName,
+                               final String outputTableName,
+                               final DateTime writeDatetime) {
     final String bucketPath = s3Config.getBucketPath();
     final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     return nameTransformer.applyDefaultCase(String.format("%s%s/%s_%02d_%02d_%02d_%s/",
         prefix,
-        // TODO switch this to use the raw table name. This is so that after DV2, the stage names are still
-        // unique per stream.
-        // For example, if there are two streams public1.users and public2.users, we would want their stages
-        // to be
-        // airbyte_internal.public1_raw__stream_users and airbyte_internal.public2_raw__stream_users
-        getStageName(namespace, streamName),
+        nameTransformer.applyDefaultCase(nameTransformer.convertStreamName(outputTableName)),
         writeDatetime.year().get(),
         writeDatetime.monthOfYear().get(),
         writeDatetime.dayOfMonth().get(),
@@ -79,9 +71,12 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
+  public String getStageName(String namespace, String streamName) {
+    return "garbage-unused";
+  }
+
+  @Override
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     s3StorageOperations.createBucketIfNotExists();
   }
 
@@ -92,7 +87,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
                                      final String stageName,
                                      final String stagingPath)
       throws Exception {
-    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath);
+    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stagingPath);
   }
 
   private String putManifest(final String manifestContents, final String stagingPath) {
@@ -172,17 +167,9 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    s3StorageOperations.cleanUpBucketObject(prefix + stageName, stagedFiles);
-  }
-
-  @Override
-  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    s3StorageOperations.dropBucketObject(prefix + stageName);
+  public void dropStageIfExists(final JdbcDatabase database, final String stageName, final String stagingPath) throws Exception {
+    // stageName is unused here but used in Snowflake. This interface needs to be fixed.
+    s3StorageOperations.dropBucketObject(stagingPath);
   }
 
 }

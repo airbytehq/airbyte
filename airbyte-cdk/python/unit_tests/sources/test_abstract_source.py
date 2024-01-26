@@ -111,6 +111,14 @@ class MockStreamOverridesStateMethod(Stream, IncrementalMixin):
         self._cursor_value = value.get(self.cursor_field, self.start_date)
 
 
+class StreamRaisesException(Stream):
+    name = "lamentations"
+    primary_key = None
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        raise AirbyteTracedException(message="I was born only to crash like Icarus")
+
+
 MESSAGE_FROM_REPOSITORY = Mock()
 
 
@@ -1158,3 +1166,97 @@ def test_checkpoint_state_from_stream_instance():
     assert actual_message == _as_state(
         {"teams": {"updated_at": "2022-09-11"}, "managers": {"updated": "expected_here"}}, "managers", {"updated": "expected_here"}
     )
+
+
+def test_continue_sync_with_failed_streams(mocker):
+    """
+    Tests that running a sync for a connector with multiple streams and continue_sync_on_stream_failure enabled continues
+    syncing even when one stream fails with an error.
+    """
+    stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+    s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
+    s2 = StreamRaisesException()
+    s3 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(StreamRaisesException, "get_json_schema", return_value={})
+
+    src = MockSource(streams=[s1, s2, s3])
+    mocker.patch.object(MockSource, "continue_sync_on_stream_failure", return_value=True)
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(s1, SyncMode.full_refresh),
+            _configured_stream(s2, SyncMode.full_refresh),
+            _configured_stream(s3, SyncMode.full_refresh),
+        ]
+    )
+
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", stream_output),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("lamentations", AirbyteStreamStatus.STARTED),
+            _as_stream_status("lamentations", AirbyteStreamStatus.INCOMPLETE),
+            _as_stream_status("s3", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s3", AirbyteStreamStatus.RUNNING),
+            *_as_records("s3", stream_output),
+            _as_stream_status("s3", AirbyteStreamStatus.COMPLETE),
+        ]
+    )
+
+    messages = []
+    with pytest.raises(AirbyteTracedException) as exc:
+        # We can't use list comprehension or list() here because we are still raising a final exception for the
+        # failed streams and that disrupts parsing the generator into the messages emitted before
+        for message in src.read(logger, {}, catalog):
+            messages.append(message)
+
+    messages = _fix_emitted_at(messages)
+    assert expected == messages
+    assert "lamentations" in exc.value.message
+
+
+def test_stop_sync_with_failed_streams(mocker):
+    """
+    Tests that running a sync for a connector with multiple streams and continue_sync_on_stream_failure disabled stops
+    syncing once a stream fails with an error.
+    """
+    stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+    s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
+    s2 = StreamRaisesException()
+    s3 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(StreamRaisesException, "get_json_schema", return_value={})
+
+    src = MockSource(streams=[s1, s2, s3])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(s1, SyncMode.full_refresh),
+            _configured_stream(s2, SyncMode.full_refresh),
+            _configured_stream(s3, SyncMode.full_refresh),
+        ]
+    )
+
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", stream_output),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("lamentations", AirbyteStreamStatus.STARTED),
+            _as_stream_status("lamentations", AirbyteStreamStatus.INCOMPLETE),
+        ]
+    )
+
+    messages = []
+    with pytest.raises(AirbyteTracedException):
+        # We can't use list comprehension or list() here because we are still raising a final exception for the
+        # failed streams and that disrupts parsing the generator into the messages emitted before
+        for message in src.read(logger, {}, catalog):
+            messages.append(message)
+
+    messages = _fix_emitted_at(messages)
+    assert expected == messages

@@ -9,7 +9,8 @@ from urllib import parse
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
@@ -24,7 +25,7 @@ from .graphql import (
     get_query_pull_requests,
     get_query_reviews,
 )
-from .utils import getter
+from .utils import GitHubAPILimitException, getter
 
 
 class GithubStreamABC(HttpStream, ABC):
@@ -37,6 +38,8 @@ class GithubStreamABC(HttpStream, ABC):
     stream_base_params = {}
 
     def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
+        if kwargs.get("authenticator"):
+            kwargs["authenticator"].max_time = self.max_time
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
@@ -125,16 +128,25 @@ class GithubStreamABC(HttpStream, ABC):
         # we again could have 5000 per another hour.
 
         min_backoff_time = 60.0
-
         retry_after = response.headers.get("Retry-After")
         if retry_after is not None:
-            return max(float(retry_after), min_backoff_time)
+            backoff_time_in_seconds = max(float(retry_after), min_backoff_time)
+            return self.get_waiting_time(backoff_time_in_seconds)
 
         reset_time = response.headers.get("X-RateLimit-Reset")
         if reset_time:
-            return max(float(reset_time) - time.time(), min_backoff_time)
+            backoff_time_in_seconds = max(float(reset_time) - time.time(), min_backoff_time)
+            return self.get_waiting_time(backoff_time_in_seconds)
 
-    def check_graphql_rate_limited(self, response_json) -> bool:
+    def get_waiting_time(self, backoff_time_in_seconds):
+        if backoff_time_in_seconds < self.max_time:
+            return backoff_time_in_seconds
+        else:
+            self._session.auth.update_token()  # New token will be used in next request
+            return 1
+
+    @staticmethod
+    def check_graphql_rate_limited(response_json: dict) -> bool:
         errors = response_json.get("errors")
         if errors:
             for error in errors:
@@ -202,6 +214,8 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
 
             self.logger.warning(error_msg)
+        except GitHubAPILimitException:
+            self.logger.warning("Limits for all provided tokens are reached, please try again later")
 
 
 class GithubStream(GithubStreamABC):
@@ -737,7 +751,11 @@ class GitHubGraphQLStream(GithubStream, ABC):
         return "graphql"
 
     def should_retry(self, response: requests.Response) -> bool:
-        return True if response.json().get("errors") else super().should_retry(response)
+        if response.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT):
+            self.page_size = int(self.page_size / 2)
+            return True
+        self.page_size = constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM if self.large_stream else constants.DEFAULT_PAGE_SIZE
+        return super().should_retry(response) or response.json().get("errors")
 
     def _get_repository_name(self, repository: Mapping[str, Any]) -> str:
         return repository["owner"]["login"] + "/" + repository["name"]
@@ -1606,8 +1624,13 @@ class ContributorActivity(GithubStream):
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
             if e.response.status_code == requests.codes.ACCEPTED:
-                self.logger.info(f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`.")
-                yield
+                yield AirbyteMessage(
+                    type=MessageType.LOG,
+                    log=AirbyteLogMessage(
+                        level=Level.INFO,
+                        message=f"Syncing `{self.__class__.__name__}` " f"stream isn't available for repository `{repository}`.",
+                    ),
+                )
             else:
                 raise e
 

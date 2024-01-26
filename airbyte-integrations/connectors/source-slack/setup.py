@@ -12,6 +12,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-slack=source_slack.run:run",
+        ],
+    },
     name="source_slack",
     description="Source implementation for Slack.",
     author="Airbyte",

@@ -18,6 +18,9 @@
     "customer_id": {
       "type": ["string", "null"]
     },
+    "object": {
+      "type": ["string", "null"]
+    },
     "type": {
       "type": ["string", "null"],
       "enum": [

@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk[file-based]>=0.53.5",
+    "airbyte-cdk[file-based]>=0.57.7",
     "smart-open[s3]==5.1.0",
     "wcmatch==8.4",
     "dill==0.3.4",
@@ -14,13 +14,7 @@ MAIN_REQUIREMENTS = [
     "python-snappy==0.6.1",
 ]
 
-TEST_REQUIREMENTS = [
-    "requests-mock~=1.9.3",
-    "pytest-mock~=3.6.1",
-    "pytest~=6.1",
-    "pandas==2.0.3",
-    "docker",
-]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "pandas==2.0.3", "docker", "moto"]
 
 setup(
     name="source_s3",
@@ -32,5 +26,10 @@ setup(
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
+    },
+    entry_points={
+        "console_scripts": [
+            "source-s3=source_s3.run:run",
+        ],
     },
 )

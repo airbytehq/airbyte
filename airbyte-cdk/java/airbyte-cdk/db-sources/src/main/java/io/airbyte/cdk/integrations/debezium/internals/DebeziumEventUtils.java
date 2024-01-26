@@ -36,9 +36,10 @@ public class DebeziumEventUtils {
                                                 final CdcMetadataInjector cdcMetadataInjector,
                                                 final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
                                                 final Instant emittedAt,
-                                                final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType) {
+                                                final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
+                                                final JsonNode config) {
     return switch (debeziumConnectorType) {
-      case MONGODB -> formatMongoDbEvent(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt);
+      case MONGODB -> formatMongoDbEvent(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, config);
       case RELATIONALDB -> formatRelationalDbEvent(event, cdcMetadataInjector, emittedAt);
     };
   }
@@ -64,14 +65,18 @@ public class DebeziumEventUtils {
   private static AirbyteMessage formatMongoDbEvent(final ChangeEventWithMetadata event,
                                                    final CdcMetadataInjector cdcMetadataInjector,
                                                    final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
-                                                   final Instant emittedAt) {
+                                                   final Instant emittedAt,
+                                                   final JsonNode config) {
     final JsonNode debeziumEventKey = event.eventKeyAsJson();
     final JsonNode debeziumEvent = event.eventValueAsJson();
     final JsonNode before = debeziumEvent.get(BEFORE_EVENT);
     final JsonNode after = debeziumEvent.get(AFTER_EVENT);
     final JsonNode source = debeziumEvent.get(SOURCE_EVENT);
     final String operation = debeziumEvent.get(OPERATION_FIELD).asText();
-    final Set<String> configuredFields = getConfiguredMongoDbCollectionFields(source, configuredAirbyteCatalog, cdcMetadataInjector);
+    final boolean isEnforceSchema = MongoDbCdcEventUtils.isEnforceSchema(config);
+
+    final Set<String> configuredFields = isEnforceSchema ? getConfiguredMongoDbCollectionFields(source, configuredAirbyteCatalog, cdcMetadataInjector)
+        : null;
 
     /*
      * Delete events need to be handled separately from other CrUD events, as depending on the version
@@ -79,8 +84,9 @@ public class DebeziumEventUtils {
      * #formatMongoDbDeleteDebeziumData() for more details.
      */
     final JsonNode data = switch (operation) {
-      case "c", "i", "u" -> formatMongoDbDebeziumData(before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields);
-      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields);
+      case "c", "i", "u" -> formatMongoDbDebeziumData(before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields,
+          isEnforceSchema);
+      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
       default -> throw new IllegalArgumentException("Unsupported MongoDB change event operation '" + operation + "'.");
     };
 
@@ -104,16 +110,21 @@ public class DebeziumEventUtils {
                                                     final JsonNode source,
                                                     final JsonNode debeziumEventKey,
                                                     final CdcMetadataInjector cdcMetadataInjector,
-                                                    final Set<String> configuredFields) {
+                                                    final Set<String> configuredFields,
+                                                    final boolean isEnforceSchema) {
 
     if ((before == null || before.isNull()) && (after == null || after.isNull())) {
       // In case a mongodb document was updated and then deleted, the update change event will not have
       // any information ({after: null})
       // We are going to treat it as a delete.
-      return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields);
+      return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
     } else {
       final String eventJson = (after.isNull() ? before : after).asText();
-      return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields), source, cdcMetadataInjector, false);
+      return addCdcMetadata(
+          isEnforceSchema
+              ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
+              : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
+          source, cdcMetadataInjector, false);
     }
   }
 
@@ -121,7 +132,8 @@ public class DebeziumEventUtils {
                                                           final JsonNode debeziumEventKey,
                                                           final JsonNode source,
                                                           final CdcMetadataInjector cdcMetadataInjector,
-                                                          final Set<String> configuredFields) {
+                                                          final Set<String> configuredFields,
+                                                          final boolean isEnforceSchema) {
     final String eventJson;
 
     /*
@@ -141,7 +153,10 @@ public class DebeziumEventUtils {
       eventJson = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
     }
 
-    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields), source, cdcMetadataInjector, true);
+    return addCdcMetadata(
+        isEnforceSchema ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
+            : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
+        source, cdcMetadataInjector, true);
   }
 
   private static JsonNode formatRelationalDbDebeziumData(final JsonNode before,

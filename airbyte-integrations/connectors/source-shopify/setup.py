@@ -24,4 +24,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        "console_scripts": [
+            "source-shopify=source_shopify.run:run",
+        ],
+    },
 )

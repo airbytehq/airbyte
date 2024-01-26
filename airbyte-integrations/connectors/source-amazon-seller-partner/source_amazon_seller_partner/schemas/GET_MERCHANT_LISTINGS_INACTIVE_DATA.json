@@ -10,7 +10,7 @@
     "seller-sku": { "type": ["null", "string"] },
     "price": { "type": ["null", "string"] },
     "quantity": { "type": ["null", "string"] },
-    "open-date": { "type": ["null", "string"] },
+    "open-date": { "type": ["null", "string"], "format": "date-time" },
     "image-url": { "type": ["null", "string"] },
     "item-is-marketplace": { "type": ["null", "string"] },
     "product-id-type": { "type": ["null", "string"] },
@@ -31,6 +31,7 @@
     "add-delete": { "type": ["null", "string"] },
     "pending-quantity": { "type": ["null", "string"] },
     "fulfillment-channel": { "type": ["null", "string"] },
-    "merchant-shipping-group": { "type": ["null", "string"] }
+    "merchant-shipping-group": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

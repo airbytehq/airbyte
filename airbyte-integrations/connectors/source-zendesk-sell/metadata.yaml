@@ -19,7 +19,7 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sell
   tags:
-    - language:lowcode
+    - language:low-code
   ab_internal:
     sl: 100
     ql: 100
