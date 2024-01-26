@@ -145,7 +145,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
   private int stateEmissionFrequency;
-  private XminStatus xminStatus;
 
   public static Source sshWrappedSource(PostgresSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
@@ -272,11 +271,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       }
       indexInfo.close();
     }
-
-    // Log and save the xmin status
-    this.xminStatus = PostgresQueryUtils.getXminStatus(database);
-    LOGGER.info(String.format("Xmin Status : {Number of wraparounds: %s, Xmin Transaction Value: %s, Xmin Raw Value: %s",
-        xminStatus.getNumWraparound(), xminStatus.getXminXidValue(), xminStatus.getXminRawValue()));
 
   }
 
@@ -483,6 +477,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
 
     if (isAnyStreamIncrementalSyncMode(catalog) && PostgresUtils.isXmin(sourceConfig)) {
+      // Log and save the xmin status
+      final XminStatus xminStatus;
+      try {
+        xminStatus = PostgresQueryUtils.getXminStatus(database);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+      LOGGER.info(String.format("Xmin Status : {Number of wraparounds: %s, Xmin Transaction Value: %s, Xmin Raw Value: %s",
+          xminStatus.getNumWraparound(), xminStatus.getXminXidValue(), xminStatus.getXminRawValue()));
       final StreamsCategorised<XminStreams> streamsCategorised = categoriseStreams(stateManager, catalog, xminStatus);
       final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
           streamsCategorised.ctidStreams().streamsForCtidSync(),

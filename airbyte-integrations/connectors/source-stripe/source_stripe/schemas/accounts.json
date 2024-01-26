@@ -6,6 +6,24 @@
     "business_profile": {
       "type": ["null", "object"],
       "properties": {
+        "annual_revenue": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "amount": {
+              "type": ["null", "integer"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            },
+            "fiscal_year_end": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "estimated_worker_count": {
+          "type": ["null", "integer"]
+        },
         "mcc": {
           "type": ["null", "string"]
         },
