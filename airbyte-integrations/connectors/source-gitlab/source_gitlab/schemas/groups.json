@@ -74,6 +74,9 @@
     "subgroup_creation_level": {
       "type": ["null", "string"]
     },
+    "enabled_git_access_protocol": {
+      "type": ["null", "string"]
+    },
     "emails_disabled": {
       "type": ["null", "boolean"]
     },

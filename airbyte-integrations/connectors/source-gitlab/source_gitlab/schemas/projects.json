@@ -329,6 +329,9 @@
         },
         "packages_size": {
           "type": ["null", "integer"]
+        },
+        "container_registry_size": {
+          "type": ["null", "integer"]
         }
       }
     },
