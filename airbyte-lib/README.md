@@ -36,8 +36,10 @@ airbyte-lib-validate-source —connector-dir . -—sample-config secrets/config.
 
 The script will install the python package in the provided directory, and run the connector against the provided config. The config should be a valid JSON file, with the same structure as the one that would be provided to the connector in Airbyte. The script will exit with a non-zero exit code if the connector fails to run.
 
+For a more lightweight check, the `--validate-install-only` flag can be used. This will only check that the connector can be installed and returns a spec, no sample config required.
+
 ## Changelog
 
 | Version     | PR                                                         | Description                                                                                                       |
 | ----------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| 0.1.0dev.1   | [#34111](https://github.com/airbytehq/airbyte/pull/34111)  | Initial publish - add publish workflow                                                                            |
+| 0.1.0dev.2   | [#34111](https://github.com/airbytehq/airbyte/pull/34111)  | Initial publish - add publish workflow                                                                            |

@@ -193,6 +193,12 @@ def test_sh_dash_c():
     assert utils.sh_dash_c([]) == ["sh", "-c", "set -o xtrace"]
 
 
+def test_java_log_scrub_pattern():
+    assert utils.java_log_scrub_pattern([]) == ""
+    assert utils.java_log_scrub_pattern(["foo", "bar"]) == "foo|bar"
+    assert utils.java_log_scrub_pattern(["|", "'\"{}\t[]<>&"]) == "\\||&apos;&quot;\\&#123;\\&#125;\\&#9;\\[\\]&lt;&gt;\\&amp;"
+
+
 @pytest.mark.anyio
 @pytest.mark.parametrize("tar_file_name", [None, "custom_tar_name.tar"])
 async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_file_name):
