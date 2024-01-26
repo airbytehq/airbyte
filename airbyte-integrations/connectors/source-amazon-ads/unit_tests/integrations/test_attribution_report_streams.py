@@ -41,6 +41,10 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_non_breaking_error_when_read_products_then_stream_is_ignored(self, http_mocker):
+        """
+        Check products stream: non-breaking errors are ignored
+        When error of this kind happen, we warn and then keep syncing another streams
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -65,6 +69,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
     
     @HttpMocker()
     def test_given_breaking_error_when_read_products_then_stream_is_ignored(self, http_mocker):
+        """
+        Check products stream: when unknown error happen we stop syncing with raising the error
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -90,6 +97,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_products_then_return_records(self, http_mocker):
+        """
+        Check prodcts stream: normal full refresh sync without pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -110,6 +120,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_many_pages_when_read_products_then_return_records(self, http_mocker):
+        """
+        Check products stream: normal full refresh sync with pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -143,6 +156,10 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_non_breaking_error_when_read_performance_adgroup_then_stream_is_ignored(self, http_mocker):
+        """
+        Check performance ad group stream: non-breaking errors are ignored
+        When error of this kind happen, we warn and then keep syncing another streams
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -167,6 +184,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
     
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_adgroup_then_stream_is_ignored(self, http_mocker):
+        """
+        Check performance ad group stream: when unknown error happen we stop syncing with raising the error
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -192,6 +212,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_performance_adgroup_then_return_records(self, http_mocker):
+        """
+        Check performance ad group stream: normal full refresh sync without pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -212,6 +235,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
     
     @HttpMocker()
     def test_given_many_pages_when_read_performance_adgroup_then_return_records(self, http_mocker):
+        """
+        Check performance ad group stream: normal full refresh sync with pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -245,6 +271,10 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
     
     @HttpMocker()
     def test_given_non_breaking_error_when_read_performance_campaign_then_stream_is_ignored(self, http_mocker):
+        """
+        Check performance campaign stream: non-breaking errors are ignored
+        When error of this kind happen, we warn and then keep syncing another streams
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -269,6 +299,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
     
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_campaign_then_stream_is_ignored(self, http_mocker):
+        """
+        Check performance campaign stream: when unknown error happen we stop syncing with raising the error
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -294,6 +327,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_performance_campaign_then_return_records(self, http_mocker):
+        """
+        Check performance campaign stream: normal full refresh sync without pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -314,6 +350,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
     
     @HttpMocker()
     def test_given_many_pages_when_read_performance_campaign_then_return_records(self, http_mocker):
+        """
+        Check performance campaign stream: normal full refresh sync with pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -347,6 +386,10 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_non_breaking_error_when_read_performance_creative_then_stream_is_ignored(self, http_mocker):
+        """
+        Check performance creative stream: non-breaking errors are ignored
+        When error of this kind happen, we warn and then keep syncing another streams
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -371,6 +414,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
     
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_creative_then_stream_is_ignored(self, http_mocker):
+        """
+        Check performance creative stream: when unknown error happen we stop syncing with raising the error
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -396,6 +442,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_performance_creative_then_return_records(self, http_mocker):
+        """
+        Check performance creative stream: normal full refresh sync without pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -416,6 +465,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_many_pages_when_read_performance_creative_then_return_records(self, http_mocker):
+        """
+        Check performance creative stream: normal full refresh sync with pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")

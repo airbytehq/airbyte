@@ -47,6 +47,9 @@ class TestDisplayReportStreams(TestCase):
         return ConfigBuilder().build()
 
     def _given_oauth_and_profiles(self, http_mocker: HttpMocker, config: dict) -> None:
+        """
+        Authenticate and get profiles
+        """
         http_mocker.post(
             OAuthRequestBuilder.oauth_endpoint(client_id=config["client_id"], client_secred=config["client_secret"], refresh_token=config["refresh_token"]).build(),
             OAuthResponseBuilder.token_response().build()
@@ -58,6 +61,14 @@ class TestDisplayReportStreams(TestCase):
 
     @HttpMocker()
     def test_given_file_when_read_display_report_then_return_records(self, http_mocker):
+        """
+        Check display report stream: normal stream read flow
+        In this test we prepare http mocker to handle all report types and tactics as well as workaround to handle gzipped file content
+        Request structure:
+            1. Request report for start processing
+            2. Check status and get a download link
+            3. Download report file using the link
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -100,6 +111,15 @@ class TestDisplayReportStreams(TestCase):
 
     @HttpMocker()
     def test_given_file_when_read_products_report_then_return_records(self, http_mocker):
+        """
+        Check products report stream: normal stream read flow.
+        In this test we prepare http mocker to handle all report types based on metrics defined for the report stream
+        as well as workaround to handle gzipped file content.
+        Request structure:
+            1. Request report for start processing
+            2. Check status and get a download link
+            3. Download report file using the link
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -143,6 +163,15 @@ class TestDisplayReportStreams(TestCase):
 
     @HttpMocker()
     def test_given_file_when_read_brands_video_report_then_return_records(self, http_mocker):
+        """
+        Check brands video report stream: normal stream read flow.
+        In this test we prepare http mocker to handle all report types based on metrics defined for the report stream
+        as well as workaround to handle gzipped file content
+        Request structure:
+            1. Request report for start processing
+            2. Check status and get a download link
+            3. Download report file using the link
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -186,6 +215,15 @@ class TestDisplayReportStreams(TestCase):
 
     @HttpMocker()
     def test_given_file_when_read_brands_report_then_return_records(self, http_mocker):
+        """
+        Check brands report stream: normal stream read flow.
+        In this test we prepare http mocker to handle all report types based on metrics defined for the report stream
+        as well as workaround to handle gzipped file content.
+        Request structure:
+            1. Request report for start processing
+            2. Check status and get a download link
+            3. Download report file using the link
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -229,6 +267,15 @@ class TestDisplayReportStreams(TestCase):
 
     @HttpMocker()
     def test_given_file_when_read_brands_v3_report_then_return_records(self, http_mocker):
+        """
+        Check brands v3 report stream: normal stream read flow.
+        In this test we prepare http mocker to handle all report types based on metrics defined for the report stream
+        as well as workaround to handle gzipped file content.
+        Request structure:
+            1. Request report for start processing
+            2. Check status and get a download link
+            3. Download report file using the link
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
@@ -272,6 +319,11 @@ class TestDisplayReportStreams(TestCase):
 
     @HttpMocker()
     def test_given_known_error_when_read_brands_v3_report_then_skip_report(self, http_mocker):
+        """
+        Check brands v3 stream: non-breaking errors are ignored.
+        When error of this kind happen, we warn and then keep syncing another reports if possible.
+        In this test all report init requests are failed with known error and skipped
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         ERRORS = [
@@ -305,6 +357,11 @@ class TestDisplayReportStreams(TestCase):
 
     @HttpMocker()
     def test_given_known_error_when_read_display_report_then_partially_skip_records(self, http_mocker):
+        """
+        Check brands v3 stream: non-breaking errors are ignored.
+        When error of this kind happen, we warn and then keep syncing another reports if possible.
+        In this test half of report init requests are failed with known error and skipped while another half of reports successfully processed
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         ERRORS = [

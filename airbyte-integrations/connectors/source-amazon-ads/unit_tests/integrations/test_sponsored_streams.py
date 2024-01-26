@@ -21,6 +21,9 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         return ConfigBuilder().build()
 
     def _given_oauth_and_profiles(self, http_mocker: HttpMocker, config: dict) -> None:
+        """
+        Authenticate and get profiles
+        """
         http_mocker.post(
             OAuthRequestBuilder.oauth_endpoint(client_id=config["client_id"], client_secred=config["client_secret"], refresh_token=config["refresh_token"]).build(),
             OAuthResponseBuilder.token_response().build()
@@ -32,6 +35,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_non_breaking_error_when_read_ad_groups_then_stream_is_ignored(self, http_mocker):
+        """
+        Check ad groups stream: non-breaking errors are ignored
+        When error of this kind happen, we warn and then keep syncing another streams
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         non_breaking_error = ErrorRecordBuilder.non_breaking_error()
@@ -47,6 +54,9 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_breaking_error_when_read_ad_groups_then_stream_stop_syncing(self, http_mocker):
+        """
+        Check ad groups stream: when unknown error happen we stop syncing with raising the error
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         breaking_error = ErrorRecordBuilder.breaking_error()
@@ -63,6 +73,9 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_ad_groups_then_return_records(self, http_mocker):
+        """
+        Check ad groups stream: normal full refresh sync without pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
@@ -75,6 +88,9 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_many_pages_when_read_ad_groups_then_return_records(self, http_mocker):
+        """
+        Check ad groups stream: normal full refresh sync with pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
@@ -92,9 +108,13 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
         output = read_stream("sponsored_brands_ad_groups", SyncMode.full_refresh, self._config)
         assert len(output.records) == 201
-    
+
     @HttpMocker()
     def test_given_non_breaking_error_when_read_campaigns_then_stream_is_ignored(self, http_mocker):
+        """
+        Check campaigns stream: non-breaking errors are ignored
+        When error of this kind happen, we warn and then keep syncing another streams
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         non_breaking_error = ErrorRecordBuilder.non_breaking_error()
@@ -110,6 +130,9 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_breaking_error_when_read_campaigns_then_stream_stop_syncing(self, http_mocker):
+        """
+        Check campaigns stream: when unknown error happen we stop syncing with raising the error
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         breaking_error = ErrorRecordBuilder.breaking_error()
@@ -126,6 +149,9 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_campaigns_then_return_records(self, http_mocker):
+        """
+        Check campaigns stream: normal full refresh sync without pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
@@ -138,6 +164,9 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_many_pages_when_read_campaigns_then_return_records(self, http_mocker):
+        """
+        Check campaigns stream: normal full refresh sync with pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
@@ -158,6 +187,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_non_breaking_error_when_read_keywords_then_stream_is_ignored(self, http_mocker):
+        """
+        Check keywords stream: non-breaking errors are ignored
+        When error of this kind happen, we warn and then keep syncing another streams
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         non_breaking_error = ErrorRecordBuilder.non_breaking_error()
@@ -173,6 +206,9 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_breaking_error_when_read_keywords_then_stream_stop_syncing(self, http_mocker):
+        """
+        Check keywords stream: when unknown error happen we stop syncing with raising the error
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         breaking_error = ErrorRecordBuilder.breaking_error()
@@ -189,6 +225,9 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_keywords_then_return_records(self, http_mocker):
+        """
+        Check keywords stream: normal full refresh sync without pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
@@ -201,6 +240,9 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_many_pages_when_read_keywords_then_return_records(self, http_mocker):
+        """
+        Check keywords stream: normal full refresh sync with pagination
+        """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
