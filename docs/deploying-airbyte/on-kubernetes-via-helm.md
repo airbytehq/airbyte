@@ -14,7 +14,7 @@ Alternatively, you can deploy Airbyte on [Restack](https://www.restack.io) to pr
 Airbyte running on Self-Hosted Kubernetes doesn't support DBT Transformations. Please refer to [#5901](https://github.com/airbytehq/airbyte/issues/5091)
 :::
 
-::: note
+:::note
 Airbyte Kubernetes Community Edition does not support basic auth by default.
 To enable basic auth, consider adding a reverse proxy in front of Airbyte.
 :::
