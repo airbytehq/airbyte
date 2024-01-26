@@ -1,6 +1,6 @@
 # Gitlab Migration Guide
 
-## Upgrading to 2.2.0
+## Upgrading to 3.0.0
 
 In this release, merge_request_commits stream was fixed so now it returns commits for each found merge_request.
 These changes leads to complete change of stream schema.
