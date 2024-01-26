@@ -47,6 +47,13 @@ class AirbyteJavaConnectorExtension {
     void addCdkDependencies() {
         def projectName = { ":airbyte-cdk:java:airbyte-cdk:${it}" }
         def jarName = { "io.airbyte.cdk:airbyte-cdk-${it}:${cdkVersionRequired}" }
+        project.processIntegrationTestJavaResources {
+            // The metadata.yaml file is required by DestinationAcceptanceTest.
+            from(project.projectDir) {
+                include 'metadata.yaml'
+                duplicatesStrategy DuplicatesStrategy.EXCLUDE
+            }
+        }
         project.dependencies {
             def dep = { useLocalCdk ? project.project(projectName(it)) : jarName(it) }
             def testFixturesDep = { useLocalCdk ? testFixtures(project.project(projectName(it))) : "${jarName(it)}:test-fixtures" }

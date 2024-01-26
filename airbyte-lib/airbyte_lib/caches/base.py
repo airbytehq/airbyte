@@ -18,6 +18,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql.elements import TextClause
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
@@ -374,8 +375,11 @@ class SQLCacheBase(RecordProcessor):
         missing_columns: set[str] = set(stream_column_names) - set(table_column_names)
         if missing_columns:
             if raise_on_error:
-                raise RuntimeError(
-                    f"Table {table_name} is missing columns: {missing_columns}",
+                raise exc.AirbyteLibCacheTableValidationError(
+                    violation="Cache table is missing expected columns.",
+                    context={
+                        "missing_columns": missing_columns,
+                    },
                 )
             return False  # Some columns are missing.
 
@@ -440,16 +444,25 @@ class SQLCacheBase(RecordProcessor):
     ) -> ConfiguredAirbyteStream:
         """Return the column definitions for the given stream."""
         if not self.source_catalog:
-            raise RuntimeError("Cannot get stream JSON schema without a catalog.")
+            raise exc.AirbyteLibInternalError(
+                message="Cannot get stream JSON schema without a catalog.",
+            )
 
         matching_streams: list[ConfiguredAirbyteStream] = [
             stream for stream in self.source_catalog.streams if stream.stream.name == stream_name
         ]
         if not matching_streams:
-            raise RuntimeError(f"Stream '{stream_name}' not found in catalog.")
+            raise exc.AirbyteStreamNotFoundError(
+                stream_name=stream_name,
+            )
 
         if len(matching_streams) > 1:
-            raise RuntimeError(f"Multiple streams found with name '{stream_name}'.")
+            raise exc.AirbyteLibInternalError(
+                message="Multiple streams found with same name.",
+                context={
+                    "stream_name": stream_name,
+                },
+            )
 
         return matching_streams[0]
 
@@ -525,12 +538,12 @@ class SQLCacheBase(RecordProcessor):
                 raise_on_error=True,
             )
 
+            temp_table_name = self._write_files_to_new_table(
+                files,
+                stream_name,
+                max_batch_id,
+            )
             try:
-                temp_table_name = self._write_files_to_new_table(
-                    files,
-                    stream_name,
-                    max_batch_id,
-                )
                 self._write_temp_table_to_final_table(
                     stream_name,
                     temp_table_name,
@@ -592,7 +605,12 @@ class SQLCacheBase(RecordProcessor):
 
                 # Pandas will auto-create the table if it doesn't exist, which we don't want.
                 if not self._table_exists(temp_table_name):
-                    raise RuntimeError(f"Table {temp_table_name} does not exist after creation.")
+                    raise exc.AirbyteLibInternalError(
+                        message="Table does not exist after creation.",
+                        context={
+                            "temp_table_name": temp_table_name,
+                        },
+                    )
 
                 dataframe.to_sql(
                     temp_table_name,
@@ -685,9 +703,9 @@ class SQLCacheBase(RecordProcessor):
         Databases that do not support this syntax can override this method.
         """
         if final_table_name is None:
-            raise ValueError("Arg 'final_table_name' cannot be None.")
+            raise exc.AirbyteLibInternalError(message="Arg 'final_table_name' cannot be None.")
         if temp_table_name is None:
-            raise ValueError("Arg 'temp_table_name' cannot be None.")
+            raise exc.AirbyteLibInternalError(message="Arg 'temp_table_name' cannot be None.")
 
         _ = stream_name
         deletion_name = f"{final_table_name}_deleteme"
