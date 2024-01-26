@@ -11,7 +11,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "secrets/config_oauth.json"
-        status: "failed"
+        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
@@ -48,17 +48,17 @@ acceptance_tests:
           projects:
             - name: "updated_at"
               bypass_reason: "value can be changed"
-#      - config_path: "secrets/config_oauth.json"
-#        timeout_seconds: 3600
-#        expect_records:
-#          path: "integration_tests/expected_records.jsonl"
-#        ignored_fields:
-#          jobs:
-#            - name: "user"
-#              bypass_reason: "User object contains local_time which will be different each time test is run"
-#          projects:
-#            - name: "updated_at"
-#              bypass_reason: "value can be changed"
+      - config_path: "secrets/config_oauth.json"
+        timeout_seconds: 3600
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        ignored_fields:
+          jobs:
+            - name: "user"
+              bypass_reason: "User object contains local_time which will be different each time test is run"
+          projects:
+            - name: "updated_at"
+              bypass_reason: "value can be changed"
   incremental:
     tests:
       - config_path: "secrets/config_with_ids.json"
