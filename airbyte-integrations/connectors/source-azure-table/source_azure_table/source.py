@@ -39,6 +39,7 @@ class SourceAzureTable(AbstractSource):
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
+            "additionalProperties": True,
             "properties": {"PartitionKey": {"type": "string"}},
         }
 
@@ -50,7 +51,7 @@ class SourceAzureTable(AbstractSource):
             next(tables_iterator)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except StopIteration:
-            logger.log("No tables found, but credentials are correct.")
+            logger.info("No tables found, but credentials are correct.")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")

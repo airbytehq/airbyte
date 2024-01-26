@@ -47,6 +47,7 @@ def test_discover(mocker, config, tables):
     assert stream.json_schema == {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
+        "additionalProperties": True,
         "properties": {"PartitionKey": {"type": "string"}},
     }
     assert stream.supported_sync_modes == [SyncMode.full_refresh, SyncMode.incremental]
