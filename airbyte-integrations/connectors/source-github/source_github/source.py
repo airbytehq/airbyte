@@ -123,10 +123,7 @@ class SourceGithub(AbstractSource):
     def _get_authenticator(self, config: Mapping[str, Any]):
         _, token = self.get_access_token(config)
         tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
-        return MultipleTokenAuthenticatorWithRateLimiter(
-            tokens=tokens,
-            auth_method="token",
-        )
+        return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens)
 
     def _validate_and_transform_config(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config = self._ensure_default_values(config)
