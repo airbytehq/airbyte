@@ -31,6 +31,7 @@ import org.jooq.DSLContext;
 import org.jooq.InsertValuesStep4;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
+import org.jooq.conf.ParamType;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
@@ -137,7 +138,13 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
                 val(Instant.ofEpochMilli(record.getRecord().getEmittedAt()).atOffset(ZoneOffset.UTC)),
                 val((OffsetDateTime) null));
           }
-          insert.execute();
+          // Intentionally don't use insert.execute().
+          // jooq will try to use a parameterized query if there are not too many query params.
+          // This means that for small queries, we would need to not-escape backslashes,
+          // but for large queries we _would_ need to escape them.
+          // Instead, force jooq to always inline params.
+          // This allows us to always escape backslashes.
+          database.execute(insert.getSQL(ParamType.INLINED));
           LOGGER.info("Executed batch size: {}, {}, {}", batch.size(), schemaName, tableName);
         }
       });
@@ -152,7 +159,8 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
       return null;
     } else {
       // jooq handles most things
-      // but we need to manually escape backslashes for some reason
+      // but we need to manually escape backslashes because postgres and redshift have
+      // different backslash handling.
       return str.replace("\\", "\\\\");
     }
   }
