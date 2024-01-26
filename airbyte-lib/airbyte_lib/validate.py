@@ -37,11 +37,16 @@ def _parse_args() -> argparse.Namespace:
 
 
 def _run_subprocess_and_raise_on_failure(args: list[str]) -> None:
-    result = subprocess.run(args, check=False)
+    result = subprocess.run(
+        args,
+        check=False,
+        stderr=subprocess.PIPE,
+    )
     if result.returncode != 0:
         raise exc.AirbyteSubprocessFailedError(
             run_args=args,
             exit_code=result.returncode,
+            log_text=result.stderr.decode("utf-8"),
         )
 
 
@@ -50,7 +55,8 @@ def tests(connector_name: str, sample_config: str) -> None:
     source = ab.get_connector(
         # TODO: FIXME: noqa: SIM115, PTH123
         connector_name,
-        config=json.load(open(sample_config)),  # noqa: SIM115, PTH123
+        config=json.load(open(sample_config)),  # noqa: SIM115, PTH123,
+        install_if_missing=False,
     )
 
     print("Running check...")

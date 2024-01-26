@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import tempfile
 from contextlib import contextmanager, suppress
 from typing import TYPE_CHECKING, Any
@@ -267,17 +268,23 @@ class Source:
         * Make sure the subprocess is killed when the function returns.
         """
         with as_temp_files([self._config]) as [config_file]:
-            for msg in self._execute(["check", "--config", config_file]):
-                if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
-                    if msg.connectionStatus.status != Status.FAILED:
-                        return  # Success!
+            try:
+                for msg in self._execute(["check", "--config", config_file]):
+                    if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
+                        if msg.connectionStatus.status != Status.FAILED:
+                            return  # Success!
 
-                    raise exc.AirbyteConnectorCheckFailedError(
-                        context={
-                            "message": msg.connectionStatus.message,
-                        }
-                    )
-            raise exc.AirbyteConnectorCheckFailedError(log_text=self._last_log_messages)
+                        raise exc.AirbyteConnectorCheckFailedError(
+                            context={
+                                "message": msg.connectionStatus.message,
+                            }
+                        )
+                raise exc.AirbyteConnectorCheckFailedError(log_text=self._last_log_messages)
+            except exc.AirbyteConnectorReadError as ex:
+                raise exc.AirbyteConnectorCheckFailedError(
+                    message="The connector failed to check the connection.",
+                    log_text=ex.log_text,
+                ) from ex
 
     def install(self) -> None:
         """Install the connector if it is not yet installed."""
@@ -357,7 +364,8 @@ class Source:
         * Read the output line by line of the subprocess and serialize them AirbyteMessage objects.
           Drop if not valid.
         """
-        self.executor.ensure_installation()
+        # Fail early if the connector is not installed.
+        self.executor.ensure_installation(auto_fix=False)
 
         try:
             self._last_log_messages = []

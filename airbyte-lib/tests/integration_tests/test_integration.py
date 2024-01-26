@@ -63,8 +63,9 @@ def test_list_streams(expected_test_stream_data: dict[str, list[dict[str, str | 
 
 
 def test_invalid_config():
-    with pytest.raises(Exception):
-        ab.get_connector("source-test", config={"apiKey": 1234})
+    source = ab.get_connector("source-test", config={"apiKey": 1234})
+    with pytest.raises(exc.AirbyteConnectorCheckFailedError):
+        source.check()
 
 
 def test_non_existing_connector():
@@ -96,17 +97,32 @@ def test_version_enforcement(raises, latest_available_version, requested_version
     _cache["source-test"].latest_available_version = latest_available_version
     if raises:
         with pytest.raises(Exception):
-            ab.get_connector("source-test", version=requested_version, config={"apiKey": "abc"})
+            source = ab.get_connector(
+                "source-test",
+                version=requested_version,
+                config={"apiKey": "abc"},
+                install_if_missing=False,
+            )
+            source.executor.ensure_installation(auto_fix=False)
     else:
-        ab.get_connector("source-test", version=requested_version, config={"apiKey": "abc"})
+        source = ab.get_connector(
+            "source-test",
+            version=requested_version,
+            config={"apiKey": "abc"},
+            install_if_missing=False,
+        )
+        source.executor.ensure_installation(auto_fix=False)
 
     # reset
     _cache["source-test"].latest_available_version = "0.0.1"
 
 
 def test_check():
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
-
+    source = ab.get_connector(
+        "source-test",
+        config={"apiKey": "test"},
+        install_if_missing=False,
+    )
     source.check()
 
 
@@ -370,6 +386,13 @@ def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, e
             check_dtype=False,
         )
 
+
+def test_airbyte_lib_version() -> None:
+    assert get_version()
+    assert isinstance(get_version(), str)
+    assert len(get_version().split(".")) == 3
+
+
 @patch.dict('os.environ', {'DO_NOT_TRACK': ''})
 @patch('airbyte_lib.telemetry.requests')
 @patch('airbyte_lib.telemetry.datetime')
@@ -512,27 +535,48 @@ def test_failing_path_connector():
         ab.get_connector("source-test", config={"apiKey": "test"}, use_local_install=True)
 
 def test_succeeding_path_connector():
-    old_path = os.environ["PATH"]
+    new_path = f"{os.path.abspath('.venv-source-test/bin')}:{os.environ['PATH']}"
 
-    # set path to include the test venv bin folder
-    os.environ["PATH"] = f"{os.path.abspath('.venv-source-test/bin')}:{os.environ['PATH']}"
-    source = ab.get_connector("source-test", config={"apiKey": "test"}, use_local_install=True)
-    source.check()
-
-    os.environ["PATH"] = old_path
-
-def test_install_uninstall():
-    source = ab.get_connector("source-test", pip_url="./tests/integration_tests/fixtures/source-test", config={"apiKey": "test"}, install_if_missing=False)
-
-    source.uninstall()
-
-    # assert that the venv is gone
-    assert not os.path.exists(".venv-source-test")
-
-    # assert that the connector is not available
-    with pytest.raises(Exception):
+    # Patch the PATH env var to include the test venv bin folder
+    with patch.dict(os.environ, {"PATH": new_path}):
+        source = ab.get_connector(
+            "source-test",
+            config={"apiKey": "test"},
+            local_executable="source-test",
+        )
         source.check()
 
-    source.install()
+def test_install_uninstall():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        source = ab.get_connector(
+            "source-test",
+            pip_url="./tests/integration_tests/fixtures/source-test",
+            config={"apiKey": "test"},
+            install_if_missing=False,
+        )
 
-    source.check()
+        # Override the install root to a temp dir
+        install_root = Path(temp_dir)
+        source.executor.install_root = install_root
+
+        # assert that the venv is gone
+        assert not os.path.exists(install_root / ".venv-source-test")
+
+        # use which to check if the executable is available
+        assert shutil.which("source-test") is None
+
+        # assert that the connector is not available
+        with pytest.raises(Exception):
+            source.check()
+
+        source.install()
+
+        assert os.path.exists(install_root / ".venv-source-test")
+        assert os.path.exists(install_root / ".venv-source-test/bin/source-test")
+
+        source.check()
+
+        source.uninstall()
+
+        assert not os.path.exists(install_root / ".venv-source-test")
+        assert not os.path.exists(install_root / ".venv-source-test/bin/source-test")
