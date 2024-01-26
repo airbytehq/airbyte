@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*" 
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 10d595c1-e10f-48a3-9fd3-cc197c74954f
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-camunda-history
+  githubIssueLabel: source-camunda-history
+  icon: camunda-history.svg
+  license: MIT
+  name: Camunda History
+  releaseDate: 2024-01-25
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/camunda-history
+  tags:
+    - language:low-code
+metadataSpecVersion: "1.0"

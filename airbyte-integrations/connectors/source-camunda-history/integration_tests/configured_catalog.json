@@ -1,0 +1,1051 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "activity-instance-startedAfter",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "taskId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "endTime": {
+              "type": "string"
+            },
+            "assignee": [
+              "null",
+              "string"
+            ],
+            "canceled": {
+              "type": "boolean"
+            },
+            "tenantId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "startTime": {
+              "type": "string"
+            },
+            "activityId": {
+              "type": "string"
+            },
+            "executionId": {
+              "type": "string"
+            },
+            "removalTime": {
+              "type": "string"
+            },
+            "activityName": {
+              "type": "string"
+            },
+            "activityType": {
+              "type": "string"
+            },
+            "completeScope": {
+              "type": "boolean"
+            },
+            "durationInMillis": {
+              "type": "number"
+            },
+            "processInstanceId": {
+              "type": "string"
+            },
+            "processDefinitionId": {
+              "type": "string"
+            },
+            "calledCaseInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "processDefinitionKey": {
+              "type": "string"
+            },
+            "rootProcessInstanceId": {
+              "type": "string"
+            },
+            "calledProcessInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "parentActivityInstanceId": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["startTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [ "startTime" ]
+    },
+    {
+      "stream": {
+        "name": "activity-instance-finishedAfter",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "taskId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "endTime": {
+              "type": "string"
+            },
+            "assignee": [
+              "null",
+              "string"
+            ],
+            "canceled": {
+              "type": "boolean"
+            },
+            "tenantId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "startTime": {
+              "type": "string"
+            },
+            "activityId": {
+              "type": "string"
+            },
+            "executionId": {
+              "type": "string"
+            },
+            "removalTime": {
+              "type": "string"
+            },
+            "activityName": {
+              "type": "string"
+            },
+            "activityType": {
+              "type": "string"
+            },
+            "completeScope": {
+              "type": "boolean"
+            },
+            "durationInMillis": {
+              "type": "number"
+            },
+            "processInstanceId": {
+              "type": "string"
+            },
+            "processDefinitionId": {
+              "type": "string"
+            },
+            "calledCaseInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "processDefinitionKey": {
+              "type": "string"
+            },
+            "rootProcessInstanceId": {
+              "type": "string"
+            },
+            "calledProcessInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "parentActivityInstanceId": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["endTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [ "endTime" ]
+    },
+    {
+      "stream": {
+        "name": "process-instance-startedAfter",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string"
+            },
+            "endTime": {
+              "type": "string"
+            },
+            "tenantId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "startTime": {
+              "type": "string"
+            },
+            "businessKey": {
+              "type": "string"
+            },
+            "removalTime": {
+              "type": "string"
+            },
+            "startUserId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "deleteReason": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "caseInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "startActivityId": {
+              "type": "string"
+            },
+            "durationInMillis": {
+              "type": "number"
+            },
+            "processDefinitionId": {
+              "type": "string"
+            },
+            "superCaseInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "processDefinitionKey": {
+              "type": "string"
+            },
+            "processDefinitionName": {
+              "type": "string"
+            },
+            "rootProcessInstanceId": {
+              "type": "string"
+            },
+            "superProcessInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "processDefinitionVersion": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["startTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [ "startTime" ]
+    },
+    {
+      "stream": {
+        "name": "process-instance-finishedAfter",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string"
+            },
+            "endTime": {
+              "type": "string"
+            },
+            "tenantId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "startTime": {
+              "type": "string"
+            },
+            "businessKey": {
+              "type": "string"
+            },
+            "removalTime": {
+              "type": "string"
+            },
+            "startUserId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "deleteReason": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "caseInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "startActivityId": {
+              "type": "string"
+            },
+            "durationInMillis": {
+              "type": "number"
+            },
+            "processDefinitionId": {
+              "type": "string"
+            },
+            "superCaseInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "processDefinitionKey": {
+              "type": "string"
+            },
+            "processDefinitionName": {
+              "type": "string"
+            },
+            "rootProcessInstanceId": {
+              "type": "string"
+            },
+            "superProcessInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "processDefinitionVersion": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["endTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [ "endTime" ]
+    },
+    {
+      "stream": {
+        "name": "batch",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "endTime": {
+              "type": "string"
+            },
+            "tenantId": {
+              "type": "string"
+            },
+            "startTime": {
+              "type": "string"
+            },
+            "totalJobs": {
+              "type": "number"
+            },
+            "removalTime": {
+              "type": "string"
+            },
+            "createUserId": {
+              "type": "string"
+            },
+            "batchJobsPerSeed": {
+              "type": "number"
+            },
+            "seedJobDefinitionId": {
+              "type": "string"
+            },
+            "batchJobDefinitionId": {
+              "type": "string"
+            },
+            "invocationsPerBatchJob": {
+              "type": "number"
+            },
+            "monitorJobDefinitionId": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "case-instance-createdAfter",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "closed": {
+              "type": "boolean"
+            },
+            "tenantId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "closeTime": {
+              "type": "string"
+            },
+            "completed": {
+              "type": "boolean"
+            },
+            "createTime": {
+              "type": "string"
+            },
+            "terminated": {
+              "type": "boolean"
+            },
+            "businessKey": {
+              "type": "string"
+            },
+            "createUserId": {
+              "type": "string"
+            },
+            "caseDefinitionId": {
+              "type": "string"
+            },
+            "durationInMillis": {
+              "type": "number"
+            },
+            "caseDefinitionKey": {
+              "type": "string"
+            },
+            "caseDefinitionName": {
+              "type": "string"
+            },
+            "superCaseInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "superProcessInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [ "createTime" ]
+    },
+    {
+      "stream": {
+        "name": "case-instance-closedAfter",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "closed": {
+              "type": "boolean"
+            },
+            "tenantId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "closeTime": {
+              "type": "string"
+            },
+            "completed": {
+              "type": "boolean"
+            },
+            "createTime": {
+              "type": "string"
+            },
+            "terminated": {
+              "type": "boolean"
+            },
+            "businessKey": {
+              "type": "string"
+            },
+            "createUserId": {
+              "type": "string"
+            },
+            "caseDefinitionId": {
+              "type": "string"
+            },
+            "durationInMillis": {
+              "type": "number"
+            },
+            "caseDefinitionKey": {
+              "type": "string"
+            },
+            "caseDefinitionName": {
+              "type": "string"
+            },
+            "superCaseInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "superProcessInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["closeTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [ "closeTime" ]
+    },
+    {
+      "stream": {
+        "name": "case-activity-instance-createdAfter",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "taskId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "disabled": {
+              "type": "boolean"
+            },
+            "required": {
+              "type": "boolean"
+            },
+            "tenantId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "available": {
+              "type": "boolean"
+            },
+            "endTime": {
+              "type": "string"
+            },
+            "completed": {
+              "type": "boolean"
+            },
+            "createTime": {
+              "type": "string"
+            },
+            "repeatable": {
+              "type": "boolean"
+            },
+            "repetition": {
+              "type": "boolean"
+            },
+            "terminated": {
+              "type": "boolean"
+            },
+            "caseActivityId": {
+              "type": "string"
+            },
+            "caseInstanceId": {
+              "type": "string"
+            },
+            "caseExecutionId": {
+              "type": "string"
+            },
+            "caseActivityName": {
+              "type": "string"
+            },
+            "caseActivityType": {
+              "type": "string"
+            },
+            "caseDefinitionId": {
+              "type": "string"
+            },
+            "durationInMillis": {
+              "type": "number"
+            },
+            "calledCaseInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "calledProcessInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "parentCaseActivityInstanceId": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [ "createTime" ]
+    },
+    {
+      "stream": {
+        "name": "case-activity-instance-endedAfter",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "taskId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "disabled": {
+              "type": "boolean"
+            },
+            "required": {
+              "type": "boolean"
+            },
+            "tenantId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "available": {
+              "type": "boolean"
+            },
+            "completed": {
+              "type": "boolean"
+            },
+            "createTime": {
+              "type": "string"
+            },
+            "endTime": {
+              "type": "string"
+            },
+            "repeatable": {
+              "type": "boolean"
+            },
+            "repetition": {
+              "type": "boolean"
+            },
+            "terminated": {
+              "type": "boolean"
+            },
+            "caseActivityId": {
+              "type": "string"
+            },
+            "caseInstanceId": {
+              "type": "string"
+            },
+            "caseExecutionId": {
+              "type": "string"
+            },
+            "caseActivityName": {
+              "type": "string"
+            },
+            "caseActivityType": {
+              "type": "string"
+            },
+            "caseDefinitionId": {
+              "type": "string"
+            },
+            "durationInMillis": {
+              "type": "number"
+            },
+            "calledCaseInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "calledProcessInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "parentCaseActivityInstanceId": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["endTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [ "endTime" ]
+    },
+    {
+      "stream": {
+        "name": "decision-instance",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "userId": {
+              "type": "string"
+            },
+            "tenantId": {
+              "type": "string"
+            },
+            "activityId": {
+              "type": "string"
+            },
+            "removalTime": {
+              "type": "string"
+            },
+            "caseInstanceId": {
+              "type": "string"
+            },
+            "evaluationTime": {
+              "type": "string"
+            },
+            "caseDefinitionId": {
+              "type": "string"
+            },
+            "caseDefinitionKey": {
+              "type": "string"
+            },
+            "processInstanceId": {
+              "type": "string"
+            },
+            "activityInstanceId": {
+              "type": "string"
+            },
+            "processDefinitionId": {
+              "type": "string"
+            },
+            "decisionDefinitionId": {
+              "type": "string"
+            },
+            "processDefinitionKey": {
+              "type": "string"
+            },
+            "decisionDefinitionKey": {
+              "type": "string"
+            },
+            "rootProcessInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "decisionDefinitionName": {
+              "type": "string"
+            },
+            "rootDecisionInstanceId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "decisionRequirementsDefinitionId": {
+              "type": "string"
+            },
+            "decisionRequirementsDefinitionKey": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["evaluationTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [ "evaluationTime" ]
+    },
+    {
+      "stream": {
+        "name": "task-startedAfter",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "due": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "owner": {
+              "type": "string"
+            },
+            "endTime": {
+              "type": "string"
+            },
+            "assignee": {
+              "type": "string"
+            },
+            "duration": {
+              "type": "number"
+            },
+            "followUp": {
+              "type": "string"
+            },
+            "priority": {
+              "type": "number"
+            },
+            "tenantId": {
+              "type": "string"
+            },
+            "startTime": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "executionId": {
+              "type": "string"
+            },
+            "removalTime": {
+              "type": "string"
+            },
+            "deleteReason": {
+              "type": "string"
+            },
+            "parentTaskId": {
+              "type": "string"
+            },
+            "caseInstanceId": {
+              "type": "string"
+            },
+            "caseExecutionId": {
+              "type": "string"
+            },
+            "caseDefinitionId": {
+              "type": "string"
+            },
+            "caseDefinitionKey": {
+              "type": "string"
+            },
+            "processInstanceId": {
+              "type": "string"
+            },
+            "taskDefinitionKey": {
+              "type": "string"
+            },
+            "activityInstanceId": {
+              "type": "string"
+            },
+            "processDefinitionId": {
+              "type": "string"
+            },
+            "processDefinitionKey": {
+              "type": "string"
+            },
+            "rootProcessInstanceId": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["startTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [ "startTime" ]
+    },
+    {
+      "stream": {
+        "name": "task-finishedAfter",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "due": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "owner": {
+              "type": "string"
+            },
+            "endTime": {
+              "type": "string"
+            },
+            "assignee": {
+              "type": "string"
+            },
+            "duration": {
+              "type": "number"
+            },
+            "followUp": {
+              "type": "string"
+            },
+            "priority": {
+              "type": "number"
+            },
+            "tenantId": {
+              "type": "string"
+            },
+            "startTime": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "executionId": {
+              "type": "string"
+            },
+            "removalTime": {
+              "type": "string"
+            },
+            "deleteReason": {
+              "type": "string"
+            },
+            "parentTaskId": {
+              "type": "string"
+            },
+            "caseInstanceId": {
+              "type": "string"
+            },
+            "caseExecutionId": {
+              "type": "string"
+            },
+            "caseDefinitionId": {
+              "type": "string"
+            },
+            "caseDefinitionKey": {
+              "type": "string"
+            },
+            "processInstanceId": {
+              "type": "string"
+            },
+            "taskDefinitionKey": {
+              "type": "string"
+            },
+            "activityInstanceId": {
+              "type": "string"
+            },
+            "processDefinitionId": {
+              "type": "string"
+            },
+            "processDefinitionKey": {
+              "type": "string"
+            },
+            "rootProcessInstanceId": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["endTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [ "endTime" ]
+    }
+  ]
+}
