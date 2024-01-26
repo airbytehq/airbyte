@@ -8,6 +8,7 @@ from overrides import overrides
 
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
+from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
 class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -22,13 +23,12 @@ class PostgresCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
     password: str
     database: str
 
-    # Already defined in base class:
-    # schema_name: str
+    # Already defined in base class: `schema_name`
 
     @overrides
     def get_sql_alchemy_url(self) -> str:
         """Return the SQLAlchemy URL to use."""
-        return f"postgresql+psycopg://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+        return f"postgresql+psycopg2://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
 
     def get_database_name(self) -> str:
         """Return the name of the database."""
@@ -49,3 +49,7 @@ class PostgresCache(SQLCacheBase):
     config_class = PostgresCacheConfig
     file_writer_class = ParquetWriter
     supports_merge_insert = True
+
+    @overrides
+    def get_telemetry_info(self) -> CacheTelemetryInfo:
+        return CacheTelemetryInfo("postgres")

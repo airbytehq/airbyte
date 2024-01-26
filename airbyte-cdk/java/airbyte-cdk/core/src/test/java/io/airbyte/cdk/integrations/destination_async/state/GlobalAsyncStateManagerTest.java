@@ -48,12 +48,22 @@ class GlobalAsyncStateManagerTest {
       .withType(Type.STATE)
       .withState(new PartialAirbyteStateMessage()
           .withType(AirbyteStateType.GLOBAL));
+  private static final PartialAirbyteMessage GLOBAL_STATE_MESSAGE3 = new PartialAirbyteMessage()
+      .withType(Type.STATE)
+      .withState(new PartialAirbyteStateMessage()
+          .withType(AirbyteStateType.GLOBAL));
   private static final PartialAirbyteMessage STREAM1_STATE_MESSAGE1 = new PartialAirbyteMessage()
       .withType(Type.STATE)
       .withState(new PartialAirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
           .withStream(new PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)));
   private static final PartialAirbyteMessage STREAM1_STATE_MESSAGE2 = new PartialAirbyteMessage()
+      .withType(Type.STATE)
+      .withState(new PartialAirbyteStateMessage()
+          .withType(AirbyteStateType.STREAM)
+          .withStream(new PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)));
+
+  private static final PartialAirbyteMessage STREAM1_STATE_MESSAGE3 = new PartialAirbyteMessage()
       .withType(Type.STATE)
       .withState(new PartialAirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
@@ -150,6 +160,33 @@ class GlobalAsyncStateManagerTest {
     }
 
     @Test
+    void testZeroRecordFlushing() {
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
+
+      final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
+      stateManager.decrement(preConvertId0, 10);
+      final Map<PartialAirbyteMessage, AirbyteStateStats> stateWithStats = stateManager.flushStates().stream()
+          .collect(Collectors.toMap(PartialStateWithDestinationStats::stateMessage, PartialStateWithDestinationStats::stats));
+      assertEquals(List.of(GLOBAL_STATE_MESSAGE1), stateWithStats.keySet().stream().toList());
+      assertEquals(List.of(new AirbyteStateStats().withRecordCount(10.0)), stateWithStats.values().stream().toList());
+
+      stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
+      final Map<PartialAirbyteMessage, AirbyteStateStats> stateWithStats2 = stateManager.flushStates().stream()
+          .collect(Collectors.toMap(PartialStateWithDestinationStats::stateMessage, PartialStateWithDestinationStats::stats));
+      assertEquals(List.of(GLOBAL_STATE_MESSAGE2), stateWithStats2.keySet().stream().toList());
+      assertEquals(List.of(new AirbyteStateStats().withRecordCount(0.0)), stateWithStats2.values().stream().toList());
+
+      final var afterConvertId2 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE3, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
+      stateManager.decrement(afterConvertId2, 10);
+      final Map<PartialAirbyteMessage, AirbyteStateStats> stateWithStats3 = stateManager.flushStates().stream()
+          .collect(Collectors.toMap(PartialStateWithDestinationStats::stateMessage, PartialStateWithDestinationStats::stats));
+      assertEquals(List.of(GLOBAL_STATE_MESSAGE3), stateWithStats3.keySet().stream().toList());
+      assertEquals(List.of(new AirbyteStateStats().withRecordCount(10.0)), stateWithStats3.values().stream().toList());
+    }
+
+    @Test
     void testCorrectFlushingManyStreams() {
       final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
@@ -213,6 +250,33 @@ class GlobalAsyncStateManagerTest {
           .collect(Collectors.toMap(PartialStateWithDestinationStats::stateMessage, PartialStateWithDestinationStats::stats));
       assertEquals(List.of(STREAM1_STATE_MESSAGE2), stateWithStats2.keySet().stream().toList());
       assertEquals(List.of(new AirbyteStateStats().withRecordCount(10.0)), stateWithStats2.values().stream().toList());
+    }
+
+    @Test
+    void testZeroRecordFlushing() {
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
+
+      var stateId = simulateIncomingRecords(STREAM1_DESC, 3, stateManager);
+      stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
+      stateManager.decrement(stateId, 3);
+      final Map<PartialAirbyteMessage, AirbyteStateStats> stateWithStats = stateManager.flushStates().stream()
+          .collect(Collectors.toMap(PartialStateWithDestinationStats::stateMessage, PartialStateWithDestinationStats::stats));
+      assertEquals(List.of(STREAM1_STATE_MESSAGE1), stateWithStats.keySet().stream().toList());
+      assertEquals(List.of(new AirbyteStateStats().withRecordCount(3.0)), stateWithStats.values().stream().toList());
+
+      stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
+      final Map<PartialAirbyteMessage, AirbyteStateStats> stateWithStats2 = stateManager.flushStates().stream()
+          .collect(Collectors.toMap(PartialStateWithDestinationStats::stateMessage, PartialStateWithDestinationStats::stats));
+      assertEquals(List.of(STREAM1_STATE_MESSAGE2), stateWithStats2.keySet().stream().toList());
+      assertEquals(List.of(new AirbyteStateStats().withRecordCount(0.0)), stateWithStats2.values().stream().toList());
+
+      stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
+      stateManager.trackState(STREAM1_STATE_MESSAGE3, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
+      stateManager.decrement(stateId, 10);
+      final Map<PartialAirbyteMessage, AirbyteStateStats> stateWithStats3 = stateManager.flushStates().stream()
+          .collect(Collectors.toMap(PartialStateWithDestinationStats::stateMessage, PartialStateWithDestinationStats::stats));
+      assertEquals(List.of(STREAM1_STATE_MESSAGE3), stateWithStats3.keySet().stream().toList());
+      assertEquals(List.of(new AirbyteStateStats().withRecordCount(10.0)), stateWithStats3.values().stream().toList());
     }
 
     @Test

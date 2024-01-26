@@ -785,16 +785,6 @@ class BrandAnalyticsRepeatPurchaseReports(IncrementalAnalyticsStream):
     result_key = "dataByAsin"
 
 
-class BrandAnalyticsAlternatePurchaseReports(IncrementalAnalyticsStream):
-    name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
-    result_key = "dataByAsin"
-
-
-class BrandAnalyticsItemComparisonReports(IncrementalAnalyticsStream):
-    name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
-    result_key = "dataByAsin"
-
-
 class VendorInventoryReports(IncrementalAnalyticsStream):
     """
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports

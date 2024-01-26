@@ -9,6 +9,7 @@ import re
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
+from os.path import splitext
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple
 from xmlrpc.client import Boolean
 
@@ -39,6 +40,7 @@ from connector_acceptance_test.config import (
     IgnoredFieldsConfiguration,
     NoPrimaryKeyConfiguration,
     SpecTestConfig,
+    UnsupportedFileTypeConfig,
 )
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
 from connector_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
@@ -118,6 +120,12 @@ class TestSpec(BaseTest):
 
         if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
+        return False
+
+    @pytest.fixture(name="skip_oauth_default_method_test")
+    def skip_oauth_default_method_test_fixture(self, inputs: SpecTestConfig):
+        if inputs.auth_default_method and not inputs.auth_default_method.oauth:
+            pytest.skip(f"Skipping OAuth is default method test: {inputs.auth_default_method.bypass_reason}")
         return False
 
     def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
@@ -520,6 +528,29 @@ class TestSpec(BaseTest):
 
         diff = paths_to_validate - set(get_expected_schema_structure(spec_schema))
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
+
+    def test_oauth_is_default_method(self, skip_oauth_default_method_test: bool, actual_connector_spec: ConnectorSpecification):
+        """
+        OAuth is default check.
+        If credentials do have oneOf: we check that the OAuth is listed at first.
+        If there is no oneOf and Oauth: OAuth is only option to authenticate the source and no check is needed.
+        """
+        advanced_auth = actual_connector_spec.advanced_auth
+        if not advanced_auth:
+            pytest.skip("Source does not have OAuth method.")
+
+        spec_schema = actual_connector_spec.connectionSpecification
+        credentials = advanced_auth.predicate_key[0]
+        try:
+            one_of_default_method = dpath.util.get(spec_schema, f"/**/{credentials}/oneOf/0")
+        except KeyError as e:  # Key Error when oneOf is not in credentials object
+            pytest.skip("Credentials object does not have oneOf option.")
+
+        path_in_credentials = "/".join(advanced_auth.predicate_key[1:])
+        auth_method_predicate_const = dpath.util.get(one_of_default_method, f"/**/{path_in_credentials}/const")
+        assert (
+            auth_method_predicate_const == advanced_auth.predicate_value
+        ), f"Oauth method should be a default option. Current default method is {auth_method_predicate_const}."
 
     @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility
@@ -983,10 +1014,12 @@ class TestBasicRead(BaseTest):
         else:
             return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
 
+    _file_types: Set[str] = set()
+
     async def test_read(
         self,
-        connector_config,
-        configured_catalog,
+        connector_config: SecretDict,
+        configured_catalog: ConfiguredAirbyteCatalog,
         expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
@@ -995,10 +1028,14 @@ class TestBasicRead(BaseTest):
         ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         docker_runner: ConnectorRunner,
-        detailed_logger,
+        detailed_logger: Logger,
+        certified_file_based_connector: bool,
     ):
         output = await docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
+
+        if certified_file_based_connector:
+            self._file_types.update(self._get_actual_file_types(records))
 
         assert records, "At least one record should be read using provided catalog"
 
@@ -1143,6 +1180,55 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
+
+    @pytest.fixture(name="certified_file_based_connector")
+    def is_certified_file_based_connector(self, connector_metadata: Dict[str, Any]) -> bool:
+        metadata = connector_metadata.get("data", {})
+
+        # connector subtype is specified in data.connectorSubtype field
+        file_based_connector = metadata.get("connectorSubtype") == "file"
+        # a certified connector has ab_internal.ql value >= 400
+        certified_connector = metadata.get("ab_internal", {}).get("ql", 0) >= 400
+
+        return file_based_connector and certified_connector
+
+    @staticmethod
+    def _get_file_extension(file_name: str) -> str:
+        _, file_extension = splitext(file_name)
+        return file_extension.casefold()
+
+    def _get_actual_file_types(self, records: List[AirbyteRecordMessage]) -> Set[str]:
+        return {self._get_file_extension(record.data.get("_ab_source_file_url", "")) for record in records}
+
+    @staticmethod
+    def _get_unsupported_file_types(config: List[UnsupportedFileTypeConfig]) -> Set[str]:
+        return {t.extension.casefold() for t in config}
+
+    async def test_all_supported_file_types_present(self, certified_file_based_connector: bool, inputs: BasicReadTestConfig):
+        if not certified_file_based_connector or inputs.file_types.skip_test:
+            reason = (
+                "Skipping the test for supported file types"
+                f"{' as it is only applicable for certified file-based connectors' if not certified_file_based_connector else ''}."
+            )
+            pytest.skip(reason)
+
+        structured_types = {".avro", ".csv", ".jsonl", ".parquet"}
+        unstructured_types = {".pdf", ".doc", ".docx", ".ppt", ".pptx", ".md"}
+
+        if inputs.file_types.unsupported_types:
+            unsupported_file_types = self._get_unsupported_file_types(inputs.file_types.unsupported_types)
+            structured_types.difference_update(unsupported_file_types)
+            unstructured_types.difference_update(unsupported_file_types)
+
+        missing_structured_types = structured_types - self._file_types
+        missing_unstructured_types = unstructured_types - self._file_types
+
+        # all structured and at least one of unstructured supported file types should be present
+        assert not missing_structured_types and len(missing_unstructured_types) != len(unstructured_types), (
+            f"Please make sure you added files with the following supported structured types {missing_structured_types} "
+            f"and at least one with unstructured type {unstructured_types} to the test account "
+            "or add them to the `file_types -> unsupported_types` list in config."
+        )
 
 
 @pytest.mark.default_timeout(TEN_MINUTES)

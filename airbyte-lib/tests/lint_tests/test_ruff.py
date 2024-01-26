@@ -4,16 +4,7 @@ import subprocess
 
 import pytest
 
-XFAIL = True  # Toggle to set if the test is expected to fail or not
 
-
-@pytest.mark.xfail(
-    condition=XFAIL,
-    reason=(
-        "This is expected to fail until Ruff cleanup is completed.\n"
-        "In the meanwhile, use `poetry run ruff check --fix .` to find and fix issues."
-    ),
-)
 def test_ruff_linting():
     # Run the check command
     check_result = subprocess.run(

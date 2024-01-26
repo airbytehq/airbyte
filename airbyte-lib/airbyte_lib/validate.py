@@ -1,5 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-"""Defines the `airbyte-lib-validate-source` CLI, which checks if connectors are compatible with airbyte-lib."""
+"""Defines the `airbyte-lib-validate-source` CLI.
+
+This tool checks if connectors are compatible with airbyte-lib.
+"""
+from __future__ import annotations
 
 import argparse
 import json
@@ -12,6 +16,7 @@ from pathlib import Path
 import yaml
 
 import airbyte_lib as ab
+from airbyte_lib import exceptions as exc
 
 
 def _parse_args() -> argparse.Namespace:
@@ -23,10 +28,15 @@ def _parse_args() -> argparse.Namespace:
         help="Path to the connector directory",
     )
     parser.add_argument(
+        "--validate-install-only",
+        action="store_true",
+        help="Only validate that the connector can be installed and config can be validated.",
+    )
+    parser.add_argument(
         "--sample-config",
         type=str,
-        required=True,
-        help="Path to the sample config.json file",
+        required=False,
+        help="Path to the sample config.json file. Required without --validate-install-only.",
     )
     return parser.parse_args()
 
@@ -34,13 +44,16 @@ def _parse_args() -> argparse.Namespace:
 def _run_subprocess_and_raise_on_failure(args: list[str]) -> None:
     result = subprocess.run(args, check=False)
     if result.returncode != 0:
-        raise Exception(f"{args} exited with code {result.returncode}")
+        raise exc.AirbyteSubprocessFailedError(
+            run_args=args,
+            exit_code=result.returncode,
+        )
 
 
-def tests(connector_name: str, sample_config: str) -> None:
+def full_tests(connector_name: str, sample_config: str) -> None:
     print("Creating source and validating spec and version...")
     source = ab.get_connector(
-        # FIXME: noqa: SIM115, PTH123
+        # TODO: FIXME: noqa: SIM115, PTH123
         connector_name,
         config=json.load(open(sample_config)),  # noqa: SIM115, PTH123
     )
@@ -58,33 +71,45 @@ def tests(connector_name: str, sample_config: str) -> None:
             record = next(source.get_records(stream))
             assert record, "No record returned"
             break
-        except Exception as e:
+        except exc.AirbyteError as e:
             print(f"Could not read from stream {stream}: {e}")
+        except Exception as e:
+            print(f"Unhandled error occurred when trying to read from {stream}: {e}")
     else:
-        raise Exception(f"Could not read from any stream from {streams}")
+        raise exc.AirbyteNoDataFromConnectorError(
+            context={"selected_streams": streams},
+        )
+
+
+def install_only_test(connector_name: str) -> None:
+    print("Creating source and validating spec is returned successfully...")
+    source = ab.get_connector(connector_name)
+    source._get_spec(force_refresh=True)  # noqa: SLF001
 
 
 def run() -> None:
-    """
-    This is a CLI entrypoint for the `airbyte-lib-validate-source` command.
-    It's called like this: airbyte-lib-validate-source —connector-dir . -—sample-config secrets/config.json
+    """Handle CLI entrypoint for the `airbyte-lib-validate-source` command.
+
+    It's called like this:
+    > airbyte-lib-validate-source —connector-dir . -—sample-config secrets/config.json
+
     It performs a basic smoke test to make sure the connector in question is airbyte-lib compliant:
     * Can be installed into a venv
     * Can be called via cli entrypoint
-    * Answers according to the Airbyte protocol when called with spec, check, discover and read
+    * Answers according to the Airbyte protocol when called with spec, check, discover and read.
     """
-
     # parse args
     args = _parse_args()
     connector_dir = args.connector_dir
     sample_config = args.sample_config
-    validate(connector_dir, sample_config)
+    validate_install_only = args.validate_install_only
+    validate(connector_dir, sample_config, validate_install_only=validate_install_only)
 
 
-def validate(connector_dir: str, sample_config: str) -> None:
+def validate(connector_dir: str, sample_config: str, *, validate_install_only: bool) -> None:
     # read metadata.yaml
     metadata_path = Path(connector_dir) / "metadata.yaml"
-    with open(metadata_path) as stream:
+    with Path(metadata_path).open() as stream:
         metadata = yaml.safe_load(stream)["data"]
 
     # TODO: Use remoteRegistries.pypi.packageName once set for connectors
@@ -96,7 +121,7 @@ def validate(connector_dir: str, sample_config: str) -> None:
     if not venv_path.exists():
         _run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", venv_name])
 
-    pip_path = os.path.join(venv_name, "bin", "pip")
+    pip_path = str(venv_path / "bin" / "pip")
 
     _run_subprocess_and_raise_on_failure([pip_path, "install", "-e", connector_dir])
 
@@ -114,4 +139,11 @@ def validate(connector_dir: str, sample_config: str) -> None:
         temp_file.write(json.dumps(registry))
         temp_file.seek(0)
         os.environ["AIRBYTE_LOCAL_REGISTRY"] = str(temp_file.name)
-        tests(connector_name, sample_config)
+        if validate_install_only:
+            install_only_test(connector_name)
+        else:
+            if not sample_config:
+                raise exc.AirbyteLibInputError(
+                    input_value="--sample-config is required without --validate-install-only set"
+                )
+            full_tests(connector_name, sample_config)

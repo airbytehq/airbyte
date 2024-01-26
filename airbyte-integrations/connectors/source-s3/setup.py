@@ -14,13 +14,7 @@ MAIN_REQUIREMENTS = [
     "python-snappy==0.6.1",
 ]
 
-TEST_REQUIREMENTS = [
-    "requests-mock~=1.9.3",
-    "pytest-mock~=3.6.1",
-    "pytest~=6.1",
-    "pandas==2.0.3",
-    "docker",
-]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "pandas==2.0.3", "docker", "moto"]
 
 setup(
     name="source_s3",
