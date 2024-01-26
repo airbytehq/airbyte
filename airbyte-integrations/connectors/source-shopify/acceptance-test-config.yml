@@ -32,6 +32,10 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         timeout_seconds: 4800
         expect_records:
+          path: "integration_tests/expected_records_.jsonl"
+      - config_path: "secrets/config.json"
+        timeout_seconds: 4800
+        expect_records:
           path: "integration_tests/expected_records.jsonl"
         empty_streams:
           - name: abandoned_checkouts

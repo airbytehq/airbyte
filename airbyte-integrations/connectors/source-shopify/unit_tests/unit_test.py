@@ -66,7 +66,7 @@ def test_get_next_page_token(requests_mock, auth_config):
                 "orders",
                 "shop",
                 "tender_transactions",
-                "transactions_graphql",
+                "transactions",
                 "countries",
             ],
         ),
@@ -84,7 +84,6 @@ def test_get_next_page_token(requests_mock, auth_config):
                 "shop",
                 "tender_transactions",
                 "transactions",
-                "transactions_graphql",
                 "countries",
             ],
         )
