@@ -126,7 +126,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
               // but need to not escape bound strings.
               // Instead, we force jooq to always inline params,
               // and always call escapeStringLiteral() on the string values.
-              new Settings().withParamType(ParamType.INLINED));
+              new Settings().withStatementType(StatementType.STATIC_STATEMENT));
           // JOOQ adds some overhead here. Building the InsertValuesStep object takes about 139ms for 5K
           // records.
           // That's a nontrivial execution speed loss when the actual statement execution takes 500ms.
