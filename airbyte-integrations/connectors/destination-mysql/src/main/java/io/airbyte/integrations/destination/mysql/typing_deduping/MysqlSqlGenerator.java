@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.NotImplementedException;
-import org.jooq.CaseConditionStep;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -126,7 +125,7 @@ public class MysqlSqlGenerator extends JdbcSqlGenerator {
                 ).else_(extractedValue)
                 .as(quotedName(column.getKey().name()));
           } else {
-            final Field<?> castedValue = castedField(extractedValue, type, column.getKey().name());
+            final Field<?> castedValue = castedField(extractedValue, type, column.getKey().name(), useExpensiveSaferCasting);
             if (!(type instanceof final AirbyteProtocolType primitive)) {
               return castedValue;
             }
