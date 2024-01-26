@@ -14,8 +14,9 @@ public interface DestinationHandler<DialectTableDefinition> {
   Optional<DialectTableDefinition> findExistingTable(StreamId id) throws Exception;
 
   /**
-   * Given a list of stream ids, return a map of stream ids to existing tables.
-   * If the table is missing, the key should not be present in the map.
+   * Given a list of stream ids, return a map of stream ids to existing tables. If the table is
+   * missing, the key should not be present in the map.
+   *
    * @param streamIds
    * @return
    * @throws Exception

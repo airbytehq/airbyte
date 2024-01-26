@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.commons.concurrency;
 
 import java.util.List;
@@ -6,7 +10,9 @@ import java.util.concurrent.CompletableFuture;
 public class CompletableFutures {
 
   /**
-   * Utility method which blocks until all futures are complete. Returns a list of the results of all futures.
+   * Utility method which blocks until all futures are complete. Returns a list of the results of all
+   * futures.
+   *
    * @param futures
    * @return
    * @param <T>
