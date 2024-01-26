@@ -28,6 +28,9 @@ acceptance_tests:
           extra_fields: no
           exact_order: no
           extra_records: yes
+        file_types:
+          skip_test: true
+          bypass_reason: "The source does not have _ab_source_file_url in output records"
   full_refresh:
     tests:
       - config_path: "integration_tests/config.json"
