@@ -2,284 +2,293 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-        "comments_count": {
-          "type": "number"
+      "comments_count": {
+        "type": "number"
+      },
+      "contact_id": {
+        "type": "number"
+      },
+      "date": {
+        "type": "string"
+      },
+      "duration": {
+        "type": "string"
+      },
+      "failed_items": {
+        "type": "number"
+      },
+      "id": {
+        "type": "number"
+      },
+      "images_count": {
+        "type": "number"
+      },
+      "inspection_form": {
+        "properties": {
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "id": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          }
         },
-        "contact_id": {
-          "type": "number"
-        },
-        "date": {
-          "type": "string"
-        },
-        "duration": {
-          "type": "string"
-        },
-        "failed_items": {
-          "type": "number"
-        },
-        "id": {
-          "type": "number"
-        },
-        "images_count": {
-          "type": "number"
-        },
-        "inspection_form": {
+        "type": "object"
+      },
+      "started_at": {
+        "type": "string"
+      },
+      "starting_latitude": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "starting_longitude": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "submitted_at": {
+        "type": "string"
+      },
+      "submitted_inspection_items": {
+        "items": {
           "properties": {
-            "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+            "comments": {
+              "items": {
+                "properties": {
+                  "comment": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "comments_count": {
+              "type": "number"
             },
             "id": {
               "type": "number"
             },
-            "title": {
+            "images": {
+              "items": {
+                "properties": {
+                  "created_at": {
+                    "type": "string"
+                  },
+                  "file_mime_type": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "file_name": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "file_size": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "file_url": {
+                    "type": "string"
+                  },
+                  "full_url": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "number"
+                  },
+                  "imageable_id": {
+                    "type": "number"
+                  },
+                  "imageable_type": {
+                    "type": "string"
+                  },
+                  "updated_at": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "images_count": {
+              "type": "number"
+            },
+            "inspection_item": {
+              "properties": {
+                "dropdown_options": {
+                  "items": {
+                    "properties": {
+                      "fail_if_chosen": {
+                        "type": "boolean"
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "position": {
+                        "type": "number"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": ["array", "null"]
+                },
+                "fail_label": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "label": {
+                  "type": ["string", "null"]
+                },
+                "na_label": {
+                  "type": ["string", "null"]
+                },
+                "numeric_range_max": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "numeric_range_min": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "pass_label": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "latitude": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "longitude": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "meter_entry_value": {
               "type": "string"
+            },
+            "result": {
+              "properties": {
+                "file_url": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "full_file_url": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "full_signature_file_url": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "label": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "signature_file_mime_type": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "signature_file_size": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "signature_file_url": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "text": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "secondary_meter_entry_value": {
+              "type": ["string", "null"]
+            },
+            "submitted_inspection_form_id": {
+              "type": "number"
             }
           },
           "type": "object"
         },
-        "started_at": {
-          "type": "string"
-        },
-        "starting_latitude": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "starting_longitude": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "submitted_at": {
-          "type": "string"
-        },
-        "submitted_inspection_items": {
-          "items": {
-            "properties": {
-              "comments": {
-                "items": {
-                  "properties": {
-                    "comment": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "number"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "comments_count": {
-                "type": "number"
-              },
-              "id": {
-                "type": "number"
-              },
-              "images": {
-                "items": {
-                  "properties": {
-                    "created_at": {
-                      "type": "string"
-                    },
-                    "file_mime_type": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "file_name": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "file_size": {
-                      "type": [
-                        "null",
-                        "number"
-                      ]
-                    },
-                    "file_url": {
-                      "type": "string"
-                    },
-                    "full_url": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "number"
-                    },
-                    "imageable_id": {
-                      "type": "number"
-                    },
-                    "imageable_type": {
-                      "type": "string"
-                    },
-                    "updated_at": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "images_count": {
-                "type": "number"
-              },
-              "inspection_item": {
-                "properties": {
-                  "dropdown_options": {
-                    "items": {
-                      "properties": {
-                        "fail_if_chosen": {
-                          "type": "boolean"
-                        },
-                        "label": {
-                          "type": "string"
-                        },
-                        "position": {
-                          "type": "number"
-                        }
-                      },
-                      "type": "object"
-                    },
-                    "type": "array"
-                  },
-                  "fail_label": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "label": {
-                    "type": "string"
-                  },
-                  "na_label": {
-                    "type": "string"
-                  },
-                  "numeric_range_max": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
-                  },
-                  "numeric_range_min": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
-                  },
-                  "pass_label": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "type": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
-              },
-              "latitude": {
-                "type": [
-                  "null",
-                  "number"
-                ]
-              },
-              "longitude": {
-                "type": [
-                  "null",
-                  "number"
-                ]
-              },
-              "meter_entry_value": {
-                "type": "string"
-              },
-              "result": {
-                "properties": {
-                  "file_url": {
-                    "type": ["null", "string"]
-                  },
-                  "full_file_url": {
-                    "type": ["null", "string"]
-                  },
-                  "full_signature_file_url": {
-                    "type": ["null", "string"]
-                  },
-                  "label": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "signature_file_mime_type": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "signature_file_size": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
-                  },
-                  "signature_file_url": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "text": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "value": {
-                    "type": [
-                      "null",
-                      "number",
-                      "string"
-                    ]
-                  }
-                },
-                "type": "object"
-              },
-              "secondary_meter_entry_value": {
-                "type": "string"
-              },
-              "submitted_inspection_form_id": {
-                "type": "number"
-              }
-            },
-            "type": "object"
-          },
-          "type": "array"
-        },
-        "submitted_latitude": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "submitted_longitude": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "user": {
-          "type": "string"
-        },
-        "vehicle_id": {
-          "type": "number"
-        }
+        "type": "array"
+      },
+      "submitted_latitude": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "submitted_longitude": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "user": {
+        "type": "string"
+      },
+      "vehicle_id": {
+        "type": "number"
+      }
     }
 }

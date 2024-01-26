@@ -8,13 +8,22 @@
         "items": {
           "properties": {
             "comment": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "commentable_id": {
-              "type": ["number", "null"]
+              "type": [
+                "number",
+                "null"
+              ]
             },
             "commentable_type": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "created_at": {
               "type": "string"
@@ -50,13 +59,19 @@
               "type": "object"
             },
             "title": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "updated_at": {
               "type": "string"
             },
             "user_full_name": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "user_id": {
               "type": "number"
@@ -70,16 +85,28 @@
         "type": "array"
       },
       "comments_count": {
-        "type": ["number", "null"]
+        "type": [
+          "number",
+          "null"
+        ]
       },
       "contact_full_name": {
-        "type": ["string", "null"]
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "contact_id": {
-        "type": ["number", "null"]
+        "type": [
+          "number",
+          "null"
+        ]
       },
       "contact_image_url": {
-        "type": ["string", "null"]
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "created_at": {
         "type": "string"
@@ -90,19 +117,34 @@
       "custom_fields": {
         "properties": {
           "checkbox_type": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "department_using_vehicle": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "license_expiration_date": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "operator_id": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "test_restricted_custom_fields": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "type": "object"
@@ -111,7 +153,10 @@
         "type": "boolean"
       },
       "id": {
-        "type": ["number", "null"]
+        "type": [
+          "number",
+          "null"
+        ]
       },
       "updated_at": {
         "type": "string"

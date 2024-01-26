@@ -1,931 +1,228 @@
 {
-    "type": "object",
-    "additionalProperties": false,
-    "properties": {
-        "account_id": {
-          "type": "number"
-        },
-        "ai_enabled": {
-          "type": "boolean"
-        },
-        "assetable_type": {
-          "type": "string"
-        },
-        "color": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "comments_count": {
-          "type": "number"
-        },
-        "created_at": {
-          "type": "string"
-        },
-        "current_location_entry": {
-          "properties": {
-            "address": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "address_components": {
-              "properties": {
-                "city": {
-                  "type": "string"
-                },
-                "country": {
-                  "type": "string"
-                },
-                "country_short": {
-                  "type": "string"
-                },
-                "postal_code": {
-                  "type": "string"
-                },
-                "region": {
-                  "type": "string"
-                },
-                "region_short": {
-                  "type": "string"
-                },
-                "street": {
-                  "type": "string"
-                },
-                "street_number": {
-                  "type": "string"
-                }
-              },
-              "type": "object"
-            },
-            "created_at": {
-              "type": "string"
-            },
-            "date": {
-              "type": "string"
-            },
-            "geolocation": {
-              "properties": {
-                "latitude": {
-                  "type": "number"
-                },
-                "longitude": {
-                  "type": "number"
-                }
-              },
-              "type": "object"
-            },
-            "id": {
-              "type": "number"
-            },
-            "is_current": {
-              "type": "boolean"
-            },
-            "item_id": {
-              "type": "number"
-            },
-            "item_type": {
-              "type": "string"
-            },
-            "locatable_id": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "locatable_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "location": {
-              "type": "string"
-            },
-            "updated_at": {
-              "type": "string"
-            },
-            "vehicle_id": {
-              "type": "number"
-            }
-          },
-          "type": "object"
-        },
-        "current_location_entry_id": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "current_meter_date": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "current_meter_value": {
-          "type": "number"
-        },
-        "custom_fields": {
-          "properties": {
-            "checkbox_filter_test": {
-              "type": "string"
-            },
-            "extra_rextra_read_all_about_it_this_is_a_super_long_field_name_my_guyyy": {
-              "type": "string"
-            },
-            "in_service_date": {
-              "type": "string"
-            },
-            "manufacturer_model": {
-              "type": "string"
-            },
-            "rear_camera_enabled": {
-              "type": "string"
-            },
-            "registration_expiration": {
-              "type": "string"
-            },
-            "req": {
-              "type": "string"
-            },
-            "restrict": {
-              "type": "string"
-            },
-            "telematics_subscription": {
-              "type": "string"
-            },
-            "test": {
-              "type": "string"
-            },
-            "test_roles_on_restricted_custom_fields": {
-              "type": "string"
-            },
-            "toll_pass_number": {
-              "type": "string"
-            },
-            "vehicle": {
-              "type": "string"
-            },
-            "vehicle_cleanliness": {
-              "type": "string"
-            },
-            "warranty_expiration": {
-              "type": "string"
-            },
-            "warranty_type": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "default_image_url": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "default_image_url_large": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "default_image_url_medium": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "default_image_url_small": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "documents_count": {
-          "type": "number"
-        },
-        "driver": {
-          "properties": {
-            "default_image_url": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "first_name": {
-              "type": "string"
-            },
-            "full_name": {
-              "type": "string"
-            },
-            "id": {
-              "type": "number"
-            },
-            "last_name": {
-              "type": [
-                "null",
-                "string"
-              ]
-            }
-          },
-          "type": "object"
-        },
-        "estimated_replacement_mileage": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "estimated_resale_price": {
-          "properties": {
-            "cents": {
-              "type": "number"
-            },
-            "currency_iso": {
-              "type": "string"
-            }
-          },
-          "type": [
-            "object",
-            "null"
-          ]
-        },
-        "estimated_service_months": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "external_ids": {
-          "properties": {
-            "clearpathgps": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "external_fuel_id": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "fuel_id": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "task_code": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "traxxis_id": {
-              "type": [
-                "null",
-                "string"
-              ]
-            }
-          },
-          "type": "object"
-        },
-        "fuel_entries_count": {
-          "type": "number"
-        },
-        "fuel_type_id": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "fuel_type_name": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "fuel_volume_units": {
-          "type": "string"
-        },
-        "group_ancestry": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "group_id": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "group_name": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "id": {
-          "type": "number"
-        },
-        "images_count": {
-          "type": "number"
-        },
-        "in_service_date": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "in_service_meter": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "inspection_schedules_count": {
-          "type": "number"
-        },
-        "is_sample": {
-          "type": "boolean"
-        },
-        "issues_count": {
-          "type": "number"
-        },
-        "license_plate": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "loan_account_number": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "loan_amount": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "loan_ended_at": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "loan_interest_rate": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "loan_notes": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "loan_payment": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "loan_started_at": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "loan_vendor_id": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "loan_vendor_name": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "make": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "meter_name": {
-          "type": "string"
-        },
-        "meter_unit": {
-          "type": "string"
-        },
-        "model": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "name": {
-          "type": "string"
-        },
-        "out_of_service_date": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "out_of_service_meter": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "ownership": {
-          "type": "string"
-        },
-        "primary_meter_usage_per_day": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "registration_expiration_month": {
-          "type": "number"
-        },
-        "registration_state": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "residual_value": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "secondary_meter": {
-          "type": "boolean"
-        },
-        "secondary_meter_date": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "secondary_meter_name": {
-          "type": "string"
-        },
-        "secondary_meter_unit": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "secondary_meter_usage_per_day": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "secondary_meter_value": {
-          "type": "number"
-        },
-        "service_entries_count": {
-          "type": "number"
-        },
-        "service_reminders_count": {
-          "type": "number"
-        },
-        "specs": {
-          "properties": {
-            "account_id": {
-              "type": "number"
-            },
-            "base_towing_capacity": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "bed_length": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "body_subtype": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "body_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "brake_system": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "cargo_volume": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "created_at": {
-              "type": "string"
-            },
-            "curb_weight": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "drive_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "duty_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "engine_aspiration": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "engine_block_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "engine_bore": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "engine_bore_with_units": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "engine_brand": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "engine_cam_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "engine_compression": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "engine_cylinders": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "engine_description": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "engine_displacement": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "engine_stroke": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "engine_valves": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "epa_city": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "epa_combined": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "epa_highway": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "front_tire_psi": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "front_tire_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "front_track_width": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "front_wheel_diameter": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "fuel_induction": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "fuel_quality": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "fuel_tank_2_capacity": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "fuel_tank_capacity": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "gross_vehicle_weight_rating": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "ground_clearance": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "height": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "id": {
-              "type": "number"
-            },
-            "interior_volume": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "length": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "max_hp": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "max_payload": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "max_torque": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "msrp": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "msrp_cents": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "oil_capacity": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "passenger_volume": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "rear_axle_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "rear_tire_psi": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "rear_tire_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "rear_track_width": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "rear_wheel_diameter": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "redline_rpm": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "transmission_brand": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "transmission_description": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "transmission_gears": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "transmission_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "updated_at": {
-              "type": "string"
-            },
-            "vehicle_id": {
-              "type": "number"
-            },
-            "weight_class": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "wheelbase": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "wheelbase_with_units": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "width": {
-              "type": [
-                "null",
-                "number"
-              ]
-            }
-          },
-          "type": "object"
-        },
-        "system_of_measurement": {
-          "type": "string"
-        },
-        "trim": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "type_name": {
-          "type": "string"
-        },
-        "updated_at": {
-          "type": "string"
-        },
-        "vehicle_renewal_reminders_count": {
-          "type": "number"
-        },
-        "vehicle_status_color": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "vehicle_status_id": {
-          "type": "number"
-        },
-        "vehicle_status_name": {
-          "type": "string"
-        },
-        "vehicle_type_id": {
-          "type": "number"
-        },
-        "vehicle_type_name": {
-          "type": "string"
-        },
-        "vin": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "work_orders_count": {
-          "type": "number"
-        },
-        "year": {
-          "type": [
-            "null",
-            "number"
-          ]
-        }
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "account_id": {
+      "type": "number"
+    },
+    "ai_enabled": {
+      "type": "boolean"
+    },
+    "assetable_type": {
+      "type": "string"
+    },
+    "color": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "comments_count": {
+      "type": "number"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "current_location_entry_id": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "default_image_url_small": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "documents_count": {
+      "type": "number"
+    },
+    "estimated_replacement_mileage": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "estimated_resale_price_cents": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "estimated_service_months": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "fuel_entries_count": {
+      "type": "number"
+    },
+    "fuel_volume_units": {
+      "type": "string"
+    },
+    "group_ancestry": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "group_id": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "group_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "images_count": {
+      "type": "number"
+    },
+    "in_service_date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "in_service_meter_value": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "is_sample": {
+      "type": "boolean"
+    },
+    "issues_count": {
+      "type": "number"
+    },
+    "labels": {
+      "type": "array"
+    },
+    "license_plate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "make": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "model": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "out_of_service_date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "out_of_service_meter_value": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ownership": {
+      "type": "string"
+    },
+    "primary_meter_date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "primary_meter_unit": {
+      "type": "string"
+    },
+    "primary_meter_usage_per_day": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "primary_meter_value": {
+      "type": "string"
+    },
+    "registration_expiration_month": {
+      "type": "number"
+    },
+    "secondary_meter_usage_per_day": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "secondary_meter_value": {
+      "type": "string"
+    },
+    "service_entries_count": {
+      "type": "number"
+    },
+    "service_reminders_count": {
+      "type": "number"
+    },
+    "system_of_measurement": {
+      "type": "string"
+    },
+    "trim": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "vehicle_renewal_reminders_count": {
+      "type": ["number", "null"]
+    },
+    "vehicle_status_color": {
+      "type": ["string", "null"]
+    },
+    "vehicle_status_id": {
+      "type": ["number", "null"]
+    },
+    "vehicle_status_name": {
+      "type": ["string", "null"]
+    },
+    "vehicle_type_id": {
+      "type": ["number", "null"]
+    },
+    "vehicle_type_name": {
+      "type": ["string", "null"]
+    },
+    "vin": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "work_orders_count": {
+      "type": "number"
+    },
+    "year": {
+      "type": [
+        "null",
+        "number"
+      ]
     }
+  },
+  "type": "object"
 }

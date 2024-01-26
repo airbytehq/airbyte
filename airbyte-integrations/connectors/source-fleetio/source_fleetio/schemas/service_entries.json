@@ -2,867 +2,217 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-        "attachment_permissions": {
+      "attachment_permissions": {
+        "type": "object"
+      },
+      "auto_integrate_repair_order_status_color": {
+        "type": ["string", "null"]
+      },
+      "comments": {
+        "items": {
+          "properties": {
+            "comment": {
+              "type": ["string", "null"]
+            },
+            "commentable_id": {
+              "type": ["number", "null"]
+            },
+            "commentable_type": {
+              "type": ["string", "null"]
+            },
+            "created_at": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": "number"
+            },
+            "title": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "user_full_name": {
+              "type": ["string", "null"]
+            },
+            "user_id": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "user_image_url": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "with_mentions": {
+              "type": "boolean"
+            }
+          },
           "type": "object"
         },
-        "auto_integrate_repair_order_status_color": {
-          "type": "string"
-        },
-        "comments": {
-          "items": {
-            "properties": {
-              "comment": {
-                "type": "string"
-              },
-              "commentable_id": {
-                "type": "number"
-              },
-              "commentable_type": {
-                "type": "string"
-              },
-              "created_at": {
-                "type": "string"
-              },
-              "id": {
-                "type": "number"
-              },
-              "title": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "updated_at": {
-                "type": "string"
-              },
-              "user_full_name": {
-                "type": "string"
-              },
-              "user_id": {
-                "type": [
-                  "null",
-                  "number"
-                ]
-              },
-              "user_image_url": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "with_mentions": {
-                "type": "boolean"
-              }
-            },
-            "type": "object"
+        "type": "array"
+      },
+      "comments_count": {
+        "type": ["number", "null"]
+      },
+      "completed_at": {
+        "type": ["string", "null"]
+      },
+      "created_at": {
+        "type": ["string", "null"]
+      },
+      "custom_fields": {
+        "properties": {
+          "datum": {
+            "type": ["string", "null"]
           },
-          "type": "array"
+          "id_number": {
+            "type": ["string", "null"]
+          },
+          "position": {
+            "type": ["string", "null"]
+          },
+          "service_type": {
+            "type": ["string", "null"]
+          },
+          "test_restricted_custom_fields": {
+            "type": ["string", "null"]
+          },
+          "this": {
+            "type": ["string", "null"]
+          },
+          "true_or_false": {
+            "type": ["string", "null"]
+          }
         },
-        "comments_count": {
-          "type": "number"
-        },
-        "completed_at": {
-          "type": "string"
-        },
-        "created_at": {
-          "type": "string"
-        },
-        "custom_fields": {
+        "type": "object"
+      },
+      "date": {
+        "type": "string"
+      },
+      "discount": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "discount_percentage": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "discount_type": {
+        "type": "string"
+      },
+      "documents": {
+        "items": {
           "properties": {
-            "datum": {
-              "type": "string"
+            "created_at": {
+              "type": ["string", "null"]
             },
-            "id_number": {
-              "type": "string"
+            "documentable_id": {
+              "type": ["number", "null"]
             },
-            "position": {
-              "type": "string"
+            "documentable_type": {
+              "type": ["string", "null"]
             },
-            "service_type": {
-              "type": "string"
+            "file_mime_type": {
+              "type": ["string", "null"]
             },
-            "test_restricted_custom_fields": {
-              "type": "string"
+            "file_name": {
+              "type": ["string", "null"]
             },
-            "this": {
-              "type": "string"
+            "file_size": {
+              "type": ["number", "null"]
             },
-            "true_or_false": {
+            "file_url": {
+              "type": ["string", "null"]
+            },
+            "full_file_url": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["number", "null"]
+            },
+            "updated_at": {
               "type": "string"
             }
           },
           "type": "object"
         },
-        "date": {
-          "type": "string"
-        },
-        "discount": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "discount_percentage": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "discount_type": {
-          "type": "string"
-        },
-        "documents": {
-          "items": {
-            "properties": {
-              "created_at": {
-                "type": "string"
-              },
-              "documentable_id": {
-                "type": "number"
-              },
-              "documentable_type": {
-                "type": "string"
-              },
-              "file_mime_type": {
-                "type": "string"
-              },
-              "file_name": {
-                "type": "string"
-              },
-              "file_size": {
-                "type": "number"
-              },
-              "file_url": {
-                "type": "string"
-              },
-              "full_file_url": {
-                "type": "string"
-              },
-              "id": {
-                "type": "number"
-              },
-              "updated_at": {
-                "type": "string"
-              }
+        "type": "array"
+      },
+      "documents_count": {
+        "type": "number"
+      },
+      "general_notes": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "id": {
+        "type": "number"
+      },
+      "images": {
+        "items": {
+          "properties": {
+            "created_at": {
+              "type": ["string", "null"]
             },
-            "type": "object"
-          },
-          "type": "array"
-        },
-        "documents_count": {
-          "type": "number"
-        },
-        "general_notes": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "id": {
-          "type": "number"
-        },
-        "images": {
-          "items": {
-            "properties": {
-              "created_at": {
-                "type": "string"
-              },
-              "file_mime_type": {
-                "type": "string"
-              },
-              "file_name": {
-                "type": "string"
-              },
-              "file_size": {
-                "type": [
-                  "null",
-                  "number"
-                ]
-              },
-              "file_url": {
-                "type": "string"
-              },
-              "full_url": {
-                "type": "string"
-              },
-              "id": {
-                "type": "number"
-              },
-              "imageable_id": {
-                "type": "number"
-              },
-              "imageable_type": {
-                "type": "string"
-              },
-              "updated_at": {
-                "type": "string"
-              }
+            "file_mime_type": {
+              "type": ["string", "null"]
             },
-            "type": "object"
+            "file_name": {
+              "type": ["string", "null"]
+            },
+            "file_size": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "file_url": {
+              "type": ["string", "null"]
+            },
+            "full_url": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": "number"
+            },
+            "imageable_id": {
+              "type": ["number", "null"]
+            },
+            "imageable_type": {
+              "type": ["string", "null"]
+            },
+            "updated_at": {
+              "type": "string"
+            }
           },
-          "type": "array"
+          "type": "object"
         },
-        "images_count": {
-          "type": "number"
-        },
-        "is_sample": {
-          "type": "boolean"
-        },
-        "issues": {
-          "items": {
-            "properties": {
-              "assigned_contacts": {
-                "items": {
-                  "properties": {
-                    "account_membership_id": {
-                      "type": ["null", "number"]
-                    },
-                    "attachment_permissions": {
-                      "type": "object"
-                    },
-                    "birth_date": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "city": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "comments_count": {
-                      "type": "number"
-                    },
-                    "country": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "created_at": {
-                      "type": "string"
-                    },
-                    "custom_fields": {
-                      "properties": {
-                        "birthday": {
-                          "type": "string"
-                        },
-                        "certification": {
-                          "type": "string"
-                        },
-                        "checkbox": {
-                          "type": "string"
-                        },
-                        "dropdown": {
-                          "type": "string"
-                        },
-                        "out_of_network_mechanic": {
-                          "type": "string"
-                        },
-                        "pronouns": {
-                          "type": "string"
-                        },
-                        "t-shirt_size": {
-                          "type": "string"
-                        },
-                        "test_restricted_custom_fields": {
-                          "type": "string"
-                        }
-                      },
-                      "type": "object"
-                    },
-                    "default_image_url": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "documents_count": {
-                      "type": "number"
-                    },
-                    "email": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "employee": {
-                      "type": [
-                        "boolean",
-                        "null"
-                      ]
-                    },
-                    "employee_number": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "first_name": {
-                      "type": "string"
-                    },
-                    "group_hierarchy": {
-                      "type": "string"
-                    },
-                    "group_id": {
-                      "type": "number"
-                    },
-                    "group_name": {
-                      "type": "string"
-                    },
-                    "home_phone_number": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "hourly_labor_rate": {
-                      "type": [
-                        "null",
-                        "number"
-                      ]
-                    },
-                    "id": {
-                      "type": "number"
-                    },
-                    "images_count": {
-                      "type": "number"
-                    },
-                    "job_title": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "last_name": {
-                      "type": "string"
-                    },
-                    "leave_date": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "license_class": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "license_number": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "license_state": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "middle_name": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "mobile_phone_number": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "other_phone_number": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "postal_code": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "region": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "start_date": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "street_address": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "street_address_line_2": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "technician": {
-                      "type": [
-                        "boolean",
-                        "null"
-                      ]
-                    },
-                    "updated_at": {
-                      "type": "string"
-                    },
-                    "user": {
-                      "properties": {
-                        "contacts_record_set": {
-                          "properties": {
-                            "id": {
-                              "type": "number"
-                            },
-                            "name": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
-                        },
-                        "email": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "equipments_record_set": {
-                          "properties": {
-                            "id": {
-                              "type": "number"
-                            },
-                            "name": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
-                        },
-                        "id": {
-                          "type": "number"
-                        },
-                        "inspection_forms_record_set": {
-                          "properties": {
-                            "id": {
-                              "type": "number"
-                            },
-                            "name": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
-                        },
-                        "parts_record_set": {
-                          "properties": {
-                            "id": {
-                              "type": "number"
-                            },
-                            "name": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
-                        },
-                        "role": {
-                          "properties": {
-                            "id": {
-                              "type": "number"
-                            },
-                            "name": {
-                              "type": [
-                                "null",
-                                "string"
-                              ]
-                            }
-                          },
-                          "type": "object"
-                        },
-                        "time_zone": {
-                          "type": "string"
-                        },
-                        "user_type": {
-                          "type": "string"
-                        },
-                        "username": {
-                          "type": ["null", "string"]
-                        },
-                        "vehicles_record_set": {
-                          "properties": {
-                            "id": {
-                              "type": "number"
-                            },
-                            "name": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
-                        }
-                      },
-                      "type": ["null", "object"]
-                    },
-                    "vehicle_operator": {
-                      "type": "boolean"
-                    },
-                    "work_phone_number": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "attachment_permissions": {
-                "type": "object"
-              },
-              "comments": {
-                "items": {
-                  "properties": {
-                    "comment": {
-                      "type": "string"
-                    },
-                    "commentable_id": {
-                      "type": "number"
-                    },
-                    "commentable_type": {
-                      "type": "string"
-                    },
-                    "created_at": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "number"
-                    },
-                    "title": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "updated_at": {
-                      "type": "string"
-                    },
-                    "user_full_name": {
-                      "type": "string"
-                    },
-                    "user_id": {
-                      "type": "number"
-                    },
-                    "user_image_url": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "with_mentions": {
-                      "type": "boolean"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "comments_count": {
-                "type": "number"
-              },
-              "created_at": {
-                "type": "string"
-              },
-              "created_by_workflow": {
-                "type": "boolean"
-              },
-              "custom_fields": {
-                "properties": {
-                  "already_discussed_with_manager": {
-                    "type": "string"
-                  },
-                  "custom_date": {
-                    "type": "string"
-                  },
-                  "priority": {
-                    "type": "string"
-                  },
-                  "restricted_field": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
-              },
-              "description": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "documents": {
-                "items": {
-                  "properties": {
-                    "created_at": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "documentable_id": {
-                      "type": "number"
-                    },
-                    "documentable_type": {
-                      "type": "string"
-                    },
-                    "file_mime_type": {
-                      "type": "string"
-                    },
-                    "file_name": {
-                      "type": "string"
-                    },
-                    "file_size": {
-                      "type": "number"
-                    },
-                    "file_url": {
-                      "type": "string"
-                    },
-                    "full_file_url": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "number"
-                    },
-                    "name": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "updated_at": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "documents_count": {
-                "type": "number"
-              },
-              "due_date": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "due_meter_value": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "due_secondary_meter_value": {
-                "type": [
-                  "null",
-                  "number"
-                ]
-              },
-              "id": {
-                "type": "number"
-              },
-              "images": {
-                "items": {
-                  "properties": {
-                    "created_at": {
-                      "type": "string"
-                    },
-                    "file_mime_type": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "file_name": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "file_size": {
-                      "type": [
-                        "null",
-                        "number"
-                      ]
-                    },
-                    "file_url": {
-                      "type": "string"
-                    },
-                    "full_url": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "number"
-                    },
-                    "imageable_id": {
-                      "type": "number"
-                    },
-                    "imageable_type": {
-                      "type": "string"
-                    },
-                    "updated_at": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "images_count": {
-                "type": "number"
-              },
-              "is_sample": {
-                "type": "boolean"
-              },
-              "is_watched": {
-                "type": "boolean"
-              },
-              "issue_resolution": {
-                "properties": {
-                  "confirmed_at": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "id": {
-                    "type": "number"
-                  },
-                  "issue_id": {
-                    "type": "number"
-                  },
-                  "rejected_at": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "submitted_inspection_form_id": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
-                  },
-                  "user": {
-                    "properties": {
-                      "image": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
-                      },
-                      "name": {
-                        "type": "string"
-                      }
-                    },
-                    "type": "object"
-                  }
-                },
-                "type": "object"
-              },
-              "labels": {
-                "items": {
-                  "properties": {
-                    "id": {
-                      "type": "number"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "linked_work_orders": {
-                "items": {
-                  "properties": {
-                    "id": {
-                      "type": "number"
-                    },
-                    "issued_at": {
-                      "type": "string"
-                    },
-                    "number": {
-                      "type": "number"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": [
-                  "array",
-                  "null"
-                ]
-              },
-              "meter_entry": {
-                "properties": {
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "date": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "number"
-                  },
-                  "meterable_id": {
-                    "type": "number"
-                  },
-                  "meterable_type": {
-                    "type": "string"
-                  },
-                  "updated_at": {
-                    "type": "string"
-                  },
-                  "value": {
-                    "type": "string"
-                  },
-                  "vehicle_id": {
-                    "type": "number"
-                  },
-                  "void": {
-                    "type": "boolean"
-                  }
-                },
-                "type": "object"
-              },
-              "name": {
-                "type": "string"
-              },
-              "number": {
-                "type": "string"
-              },
-              "overdue": {
-                "type": "boolean"
-              },
-              "reported_at": {
-                "type": "string"
-              },
-              "reported_by": {
+        "type": "array"
+      },
+      "images_count": {
+        "type": "number"
+      },
+      "is_sample": {
+        "type": "boolean"
+      },
+      "issues": {
+        "items": {
+          "properties": {
+            "assigned_contacts": {
+              "items": {
                 "properties": {
                   "account_membership_id": {
                     "type": [
@@ -886,7 +236,7 @@
                     ]
                   },
                   "comments_count": {
-                    "type": "number"
+                    "type": ["number", "null"]
                   },
                   "country": {
                     "type": [
@@ -900,28 +250,28 @@
                   "custom_fields": {
                     "properties": {
                       "birthday": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "certification": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "checkbox": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "dropdown": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "out_of_network_mechanic": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "pronouns": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "t-shirt_size": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       },
                       "test_restricted_custom_fields": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       }
                     },
                     "type": "object"
@@ -960,16 +310,10 @@
                     "type": "string"
                   },
                   "group_id": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": "number"
                   },
                   "group_name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": "string"
                   },
                   "home_phone_number": {
                     "type": [
@@ -996,10 +340,7 @@
                     ]
                   },
                   "last_name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": "string"
                   },
                   "leave_date": {
                     "type": [
@@ -1020,6 +361,12 @@
                     ]
                   },
                   "license_state": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "middle_name": {
                     "type": [
                       "null",
                       "string"
@@ -1173,8 +520,8 @@
                       }
                     },
                     "type": [
-                      "object",
-                      "null"
+                      "null",
+                      "object"
                     ]
                   },
                   "vehicle_operator": {
@@ -1192,789 +539,972 @@
                 },
                 "type": "object"
               },
-              "reported_by_id": {
-                "type": [
-                  "null",
-                  "number"
-                ]
-              },
-              "reported_by_name": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "resolvable_id": {
-                "type": "number"
-              },
-              "resolvable_type": {
-                "type": "string"
-              },
-              "resolved_at": {
-                "type": "string"
-              },
-              "secondary_meter_entry": {
+              "type": "array"
+            },
+            "attachment_permissions": {
+              "type": "object"
+            },
+            "comments": {
+              "items": {
                 "properties": {
-                  "auto_voided_at": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "created_at": {
+                  "comment": {
                     "type": "string"
                   },
-                  "date": {
+                  "commentable_id": {
+                    "type": "number"
+                  },
+                  "commentable_type": {
+                    "type": "string"
+                  },
+                  "created_at": {
                     "type": "string"
                   },
                   "id": {
                     "type": "number"
                   },
-                  "meter_type": {
-                    "type": "string"
-                  },
-                  "meterable_id": {
-                    "type": "number"
-                  },
-                  "meterable_type": {
-                    "type": "string"
+                  "title": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
                   },
                   "updated_at": {
                     "type": "string"
                   },
-                  "value": {
+                  "user_full_name": {
                     "type": "string"
                   },
-                  "vehicle_id": {
+                  "user_id": {
                     "type": "number"
                   },
-                  "void": {
+                  "user_image_url": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "with_mentions": {
                     "type": "boolean"
                   }
                 },
                 "type": "object"
               },
-              "source": {
+              "type": "array"
+            },
+            "comments_count": {
+              "type": "number"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "created_by_workflow": {
+              "type": "boolean"
+            },
+            "custom_fields": {
+              "properties": {
+                "already_discussed_with_manager": {
+                  "type": "string"
+                },
+                "custom_date": {
+                  "type": "string"
+                },
+                "priority": {
+                  "type": "string"
+                },
+                "restricted_field": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "description": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "documents": {
+              "items": {
                 "properties": {
-                  "failed_inspection_item_label": {
+                  "created_at": {
+                    "type": "string"
+                  },
+                  "description": {
                     "type": [
                       "null",
                       "string"
                     ]
                   },
-                  "inspection_form": {
-                    "properties": {
-                      "color": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
-                      },
-                      "id": {
-                        "type": [
-                          "null",
-                          "number"
-                        ]
-                      },
-                      "title": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
-                      }
-                    },
-                    "type": "object"
-                  },
-                  "inspection_submissions_count": {
+                  "documentable_id": {
                     "type": "number"
                   },
-                  "last_inspection_submission_at": {
+                  "documentable_type": {
+                    "type": "string"
+                  },
+                  "file_mime_type": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string"
+                  },
+                  "file_size": {
+                    "type": "number"
+                  },
+                  "file_url": {
+                    "type": "string"
+                  },
+                  "full_file_url": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "number"
+                  },
+                  "name": {
                     "type": [
                       "null",
                       "string"
                     ]
+                  },
+                  "updated_at": {
+                    "type": "string"
                   }
                 },
                 "type": "object"
               },
-              "state": {
-                "type": "string"
-              },
-              "submitted_inspection_form_id": {
-                "type": [
-                  "null",
-                  "number"
-                ]
-              },
-              "summary": {
-                "type": "string"
-              },
-              "updated_at": {
-                "type": "string"
-              },
-              "valid_required_custom_fields": {
-                "type": "boolean"
-              },
-              "vehicle_id": {
-                "type": "number"
-              },
-              "vehicle_image_url": {
-                "type": ["null", "string"]
-              },
-              "vehicle_image_url_large": {
-                "type": ["null", "string"]
-              },
-              "vehicle_image_url_medium": {
-                "type": ["null", "string"]
-              },
-              "vehicle_image_url_small": {
-                "type": ["null", "string"]
-              },
-              "vehicle_name": {
-                "type": "string"
-              },
-              "watchers_count": {
-                "type": "number"
-              }
+              "type": "array"
             },
-            "type": "object"
-          },
-          "type": "array"
-        },
-        "labels": {
-          "items": {
-            "properties": {
-              "id": {
-                "type": "number"
-              },
-              "name": {
-                "type": "string"
-              }
+            "documents_count": {
+              "type": "number"
             },
-            "type": "object"
-          },
-          "type": "array"
-        },
-        "labor_subtotal": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "meter_entry": {
-          "properties": {
-            "auto_voided_at": {
+            "due_date": {
               "type": [
                 "null",
                 "string"
               ]
             },
-            "created_at": {
-              "type": "string"
-            },
-            "date": {
-              "type": "string"
-            },
-            "id": {
-              "type": "number"
-            },
-            "meterable_id": {
-              "type": "number"
-            },
-            "meterable_type": {
-              "type": "string"
-            },
-            "updated_at": {
-              "type": "string"
-            },
-            "value": {
-              "type": "string"
-            },
-            "vehicle_id": {
-              "type": "number"
-            },
-            "void": {
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        },
-        "parts_subtotal": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "reference": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "secondary_meter_entry": {
-          "properties": {
-            "auto_voided_at": {
+            "due_meter_value": {
               "type": [
                 "null",
                 "string"
               ]
             },
-            "created_at": {
-              "type": "string"
-            },
-            "date": {
-              "type": "string"
+            "due_secondary_meter_value": {
+              "type": [
+                "null",
+                "number"
+              ]
             },
             "id": {
               "type": "number"
             },
-            "meter_type": {
-              "type": "string"
+            "images": {
+              "items": {
+                "properties": {
+                  "created_at": {
+                    "type": "string"
+                  },
+                  "file_mime_type": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "file_name": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "file_size": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "file_url": {
+                    "type": "string"
+                  },
+                  "full_url": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "number"
+                  },
+                  "imageable_id": {
+                    "type": "number"
+                  },
+                  "imageable_type": {
+                    "type": "string"
+                  },
+                  "updated_at": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
             },
-            "meterable_id": {
+            "images_count": {
               "type": "number"
             },
-            "meterable_type": {
-              "type": "string"
-            },
-            "updated_at": {
-              "type": "string"
-            },
-            "value": {
-              "type": "string"
-            },
-            "vehicle_id": {
-              "type": "number"
-            },
-            "void": {
+            "is_sample": {
               "type": "boolean"
-            }
-          },
-          "type": "object"
-        },
-        "service_entry_line_items": {
-          "items": {
-            "properties": {
-              "created_at": {
-                "type": "string"
-              },
-              "description": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "id": {
-                "type": "number"
-              },
-              "issues": {
-                "items": {
+            },
+            "is_watched": {
+              "type": "boolean"
+            },
+            "issue_resolution": {
+              "properties": {
+                "confirmed_at": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "id": {
+                  "type": "number"
+                },
+                "issue_id": {
+                  "type": "number"
+                },
+                "rejected_at": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "submitted_inspection_form_id": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "user": {
                   "properties": {
-                    "assigned_contacts": {
-                      "items": {
-                        "properties": {
-                          "account_membership_id": {
-                            "type": ["null", "number"]
-                          },
-                          "attachment_permissions": {
-                            "type": "object"
-                          },
-                          "comments_count": {
-                            "type": "number"
-                          },
-                          "created_at": {
-                            "type": "string"
-                          },
-                          "custom_fields": {
-                            "properties": {
-                              "birthday": {
-                                "type": "string"
-                              },
-                              "certification": {
-                                "type": "string"
-                              },
-                              "checkbox": {
-                                "type": "string"
-                              },
-                              "dropdown": {
-                                "type": "string"
-                              },
-                              "out_of_network_mechanic": {
-                                "type": "string"
-                              },
-                              "pronouns": {
-                                "type": "string"
-                              },
-                              "t-shirt_size": {
-                                "type": "string"
-                              },
-                              "test_restricted_custom_fields": {
-                                "type": "string"
-                              }
-                            },
-                            "type": "object"
-                          },
-                          "default_image_url": {
-                            "type": [
-                              "null",
-                              "string"
-                            ]
-                          },
-                          "documents_count": {
-                            "type": "number"
-                          },
-                          "email": {
-                            "type": [
-                              "null",
-                              "string"
-                            ]
-                          },
-                          "employee": {
-                            "type": "boolean"
-                          },
-                          "first_name": {
-                            "type": "string"
-                          },
-                          "group_hierarchy": {
-                            "type": "string"
-                          },
-                          "group_id": {
-                            "type": "number"
-                          },
-                          "group_name": {
-                            "type": "string"
-                          },
-                          "id": {
-                            "type": "number"
-                          },
-                          "images_count": {
-                            "type": "number"
-                          },
-                          "last_name": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "technician": {
-                            "type": "boolean"
-                          },
-                          "updated_at": {
-                            "type": "string"
-                          },
-                          "user": {
-                            "properties": {
-                              "contacts_record_set": {
-                                "properties": {
-                                  "id": {
-                                    "type": "number"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  }
-                                },
-                                "type": "object"
-                              },
-                              "email": {
-                                "type": [
-                                  "null",
-                                  "string"
-                                ]
-                              },
-                              "equipments_record_set": {
-                                "properties": {
-                                  "id": {
-                                    "type": "number"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  }
-                                },
-                                "type": "object"
-                              },
-                              "id": {
-                                "type": "number"
-                              },
-                              "inspection_forms_record_set": {
-                                "properties": {
-                                  "id": {
-                                    "type": "number"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  }
-                                },
-                                "type": "object"
-                              },
-                              "parts_record_set": {
-                                "properties": {
-                                  "id": {
-                                    "type": "number"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  }
-                                },
-                                "type": "object"
-                              },
-                              "role": {
-                                "properties": {
-                                  "id": {
-                                    "type": "number"
-                                  },
-                                  "name": {
-                                    "type": ["null", "string"]
-                                  }
-                                },
-                                "type": "object"
-                              },
-                              "time_zone": {
-                                "type": "string"
-                              },
-                              "user_type": {
-                                "type": "string"
-                              },
-                              "username": {
-                                "type": ["null", "string"]
-                              },
-                              "vehicles_record_set": {
-                                "properties": {
-                                  "id": {
-                                    "type": "number"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  }
-                                },
-                                "type": "object"
-                              }
-                            },
-                            "type": ["null", "object"]
-                          },
-                          "vehicle_operator": {
-                            "type": "boolean"
-                          }
-                        },
-                        "type": "object"
-                      },
-                      "type": "array"
+                    "image": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
                     },
-                    "attachment_permissions": {
-                      "type": "object"
-                    },
-                    "comments": {
-                      "items": {
-                        "properties": {
-                          "comment": {
-                            "type": "string"
-                          },
-                          "commentable_id": {
-                            "type": "number"
-                          },
-                          "commentable_type": {
-                            "type": "string"
-                          },
-                          "created_at": {
-                            "type": "string"
-                          },
-                          "id": {
-                            "type": "number"
-                          },
-                          "title": {
-                            "type": "string"
-                          },
-                          "updated_at": {
-                            "type": "string"
-                          },
-                          "user_full_name": {
-                            "type": "string"
-                          },
-                          "user_id": {
-                            "type": "number"
-                          },
-                          "user_image_url": {
-                            "type": "string"
-                          },
-                          "with_mentions": {
-                            "type": "boolean"
-                          }
-                        },
-                        "type": "object"
-                      },
-                      "type": "array"
-                    },
-                    "comments_count": {
-                      "type": "number"
-                    },
-                    "created_at": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "labels": {
+              "items": {
+                "properties": {
+                  "id": {
+                    "type": "number"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "linked_work_orders": {
+              "items": {
+                "properties": {
+                  "id": {
+                    "type": "number"
+                  },
+                  "issued_at": {
+                    "type": "string"
+                  },
+                  "number": {
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "meter_entry": {
+              "properties": {
+                "created_at": {
+                  "type": "string"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "number"
+                },
+                "meterable_id": {
+                  "type": "number"
+                },
+                "meterable_type": {
+                  "type": "string"
+                },
+                "updated_at": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "vehicle_id": {
+                  "type": "number"
+                },
+                "void": {
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "name": {
+              "type": "string"
+            },
+            "number": {
+              "type": "string"
+            },
+            "overdue": {
+              "type": "boolean"
+            },
+            "reported_at": {
+              "type": "string"
+            },
+            "reported_by": {
+              "properties": {
+                "account_membership_id": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "attachment_permissions": {
+                  "type": "object"
+                },
+                "birth_date": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "city": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "comments_count": {
+                  "type": "number"
+                },
+                "country": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "created_at": {
+                  "type": "string"
+                },
+                "custom_fields": {
+                  "properties": {
+                    "birthday": {
                       "type": "string"
                     },
-                    "created_by_workflow": {
-                      "type": "boolean"
+                    "certification": {
+                      "type": "string"
                     },
-                    "custom_fields": {
+                    "checkbox": {
+                      "type": "string"
+                    },
+                    "dropdown": {
+                      "type": "string"
+                    },
+                    "out_of_network_mechanic": {
+                      "type": "string"
+                    },
+                    "pronouns": {
+                      "type": "string"
+                    },
+                    "t-shirt_size": {
+                      "type": "string"
+                    },
+                    "test_restricted_custom_fields": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "default_image_url": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "documents_count": {
+                  "type": "number"
+                },
+                "email": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "employee": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "employee_number": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "group_hierarchy": {
+                  "type": "string"
+                },
+                "group_id": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "group_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "home_phone_number": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "hourly_labor_rate": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "id": {
+                  "type": "number"
+                },
+                "images_count": {
+                  "type": "number"
+                },
+                "job_title": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "last_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "leave_date": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "license_class": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "license_number": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "license_state": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "mobile_phone_number": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "other_phone_number": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "postal_code": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "region": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "start_date": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "street_address": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "street_address_line_2": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "technician": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "updated_at": {
+                  "type": "string"
+                },
+                "user": {
+                  "properties": {
+                    "contacts_record_set": {
                       "properties": {
-                        "already_discussed_with_manager": {
-                          "type": "string"
+                        "id": {
+                          "type": "number"
                         },
-                        "custom_date": {
-                          "type": "string"
-                        },
-                        "priority": {
-                          "type": "string"
-                        },
-                        "restricted_field": {
+                        "name": {
                           "type": "string"
                         }
                       },
                       "type": "object"
                     },
-                    "description": {
+                    "email": {
                       "type": [
                         "null",
                         "string"
                       ]
                     },
-                    "documents": {
-                      "items": {
-                        "properties": {
-                          "created_at": {
-                            "type": "string"
-                          },
-                          "documentable_id": {
-                            "type": "number"
-                          },
-                          "documentable_type": {
-                            "type": "string"
-                          },
-                          "file_mime_type": {
-                            "type": "string"
-                          },
-                          "file_name": {
-                            "type": "string"
-                          },
-                          "file_size": {
-                            "type": "number"
-                          },
-                          "file_url": {
-                            "type": "string"
-                          },
-                          "full_file_url": {
-                            "type": "string"
-                          },
-                          "id": {
-                            "type": "number"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "updated_at": {
-                            "type": "string"
-                          }
+                    "equipments_record_set": {
+                      "properties": {
+                        "id": {
+                          "type": "number"
                         },
-                        "type": "object"
+                        "name": {
+                          "type": "string"
+                        }
                       },
-                      "type": "array"
+                      "type": "object"
                     },
-                    "documents_count": {
+                    "id": {
                       "type": "number"
                     },
-                    "due_date": {
+                    "inspection_forms_record_set": {
+                      "properties": {
+                        "id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "parts_record_set": {
+                      "properties": {
+                        "id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "role": {
+                      "properties": {
+                        "id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": [
+                            "null",
+                            "string"
+                          ]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "time_zone": {
+                      "type": "string"
+                    },
+                    "user_type": {
+                      "type": "string"
+                    },
+                    "username": {
                       "type": [
                         "null",
                         "string"
                       ]
                     },
-                    "due_meter_value": {
+                    "vehicles_record_set": {
+                      "properties": {
+                        "id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "vehicle_operator": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "work_phone_number": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "reported_by_id": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "reported_by_name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "resolvable_id": {
+              "type": "number"
+            },
+            "resolvable_type": {
+              "type": "string"
+            },
+            "resolved_at": {
+              "type": "string"
+            },
+            "secondary_meter_entry": {
+              "properties": {
+                "auto_voided_at": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "created_at": {
+                  "type": "string"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "number"
+                },
+                "meter_type": {
+                  "type": "string"
+                },
+                "meterable_id": {
+                  "type": "number"
+                },
+                "meterable_type": {
+                  "type": "string"
+                },
+                "updated_at": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "vehicle_id": {
+                  "type": "number"
+                },
+                "void": {
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "source": {
+              "properties": {
+                "failed_inspection_item_label": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "inspection_form": {
+                  "properties": {
+                    "color": {
                       "type": [
                         "null",
                         "string"
                       ]
                     },
                     "id": {
-                      "type": "number"
-                    },
-                    "images": {
-                      "items": {
-                        "properties": {
-                          "created_at": {
-                            "type": "string"
-                          },
-                          "file_mime_type": {
-                            "type": "string"
-                          },
-                          "file_name": {
-                            "type": "string"
-                          },
-                          "file_size": {
-                            "type": "number"
-                          },
-                          "file_url": {
-                            "type": "string"
-                          },
-                          "full_url": {
-                            "type": "string"
-                          },
-                          "id": {
-                            "type": "number"
-                          },
-                          "imageable_id": {
-                            "type": "number"
-                          },
-                          "imageable_type": {
-                            "type": "string"
-                          },
-                          "updated_at": {
-                            "type": "string"
-                          }
-                        },
-                        "type": "object"
-                      },
-                      "type": "array"
-                    },
-                    "images_count": {
-                      "type": "number"
-                    },
-                    "is_sample": {
-                      "type": "boolean"
-                    },
-                    "is_watched": {
-                      "type": "boolean"
-                    },
-                    "issue_resolution": {
-                      "properties": {
-                        "confirmed_at": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "id": {
-                          "type": "number"
-                        },
-                        "issue_id": {
-                          "type": "number"
-                        },
-                        "rejected_at": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "submitted_inspection_form_id": {
-                          "type": "number"
-                        },
-                        "user": {
-                          "properties": {
-                            "image": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
-                        }
-                      },
-                      "type": "object"
-                    },
-                    "labels": {
-                      "items": {
-                        "properties": {
-                          "id": {
-                            "type": "number"
-                          },
-                          "name": {
-                            "type": "string"
-                          }
-                        },
-                        "type": "object"
-                      },
-                      "type": "array"
-                    },
-                    "linked_work_orders": {
-                      "items": {
-                        "properties": {
-                          "id": {
-                            "type": "number"
-                          },
-                          "issued_at": {
-                            "type": "string"
-                          },
-                          "number": {
-                            "type": "number"
-                          }
-                        },
-                        "type": "object"
-                      },
                       "type": [
-                        "array",
-                        "null"
+                        "null",
+                        "number"
                       ]
                     },
-                    "meter_entry": {
-                      "properties": {
-                        "created_at": {
-                          "type": "string"
-                        },
-                        "date": {
-                          "type": "string"
-                        },
-                        "id": {
-                          "type": "number"
-                        },
-                        "meterable_id": {
-                          "type": "number"
-                        },
-                        "meterable_type": {
-                          "type": "string"
-                        },
-                        "updated_at": {
-                          "type": "string"
-                        },
-                        "value": {
-                          "type": "string"
-                        },
-                        "vehicle_id": {
-                          "type": "number"
-                        },
-                        "void": {
-                          "type": "boolean"
-                        }
-                      },
-                      "type": "object"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "number": {
-                      "type": "string"
-                    },
-                    "overdue": {
-                      "type": "boolean"
-                    },
-                    "reported_at": {
-                      "type": "string"
-                    },
-                    "reported_by": {
+                    "title": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  },
+                  "type": "object"
+                },
+                "inspection_submissions_count": {
+                  "type": "number"
+                },
+                "last_inspection_submission_at": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "state": {
+              "type": "string"
+            },
+            "submitted_inspection_form_id": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "summary": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "valid_required_custom_fields": {
+              "type": "boolean"
+            },
+            "vehicle_id": {
+              "type": "number"
+            },
+            "vehicle_image_url": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "vehicle_image_url_large": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "vehicle_image_url_medium": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "vehicle_image_url_small": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "vehicle_name": {
+              "type": "string"
+            },
+            "watchers_count": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "labels": {
+        "items": {
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "labor_subtotal": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "meter_entry": {
+        "properties": {
+          "auto_voided_at": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "id": {
+            "type": "number"
+          },
+          "meterable_id": {
+            "type": "number"
+          },
+          "meterable_type": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "vehicle_id": {
+            "type": "number"
+          },
+          "void": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "parts_subtotal": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "reference": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "secondary_meter_entry": {
+        "properties": {
+          "auto_voided_at": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "id": {
+            "type": "number"
+          },
+          "meter_type": {
+            "type": "string"
+          },
+          "meterable_id": {
+            "type": "number"
+          },
+          "meterable_type": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "vehicle_id": {
+            "type": "number"
+          },
+          "void": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "service_entry_line_items": {
+        "items": {
+          "properties": {
+            "created_at": {
+              "type": "string"
+            },
+            "description": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "id": {
+              "type": "number"
+            },
+            "issues": {
+              "items": {
+                "properties": {
+                  "assigned_contacts": {
+                    "items": {
                       "properties": {
                         "account_membership_id": {
-                          "type": "number"
+                          "type": [
+                            "null",
+                            "number"
+                          ]
                         },
                         "attachment_permissions": {
                           "type": "object"
-                        },
-                        "birth_date": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "city": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
                         },
                         "comments_count": {
                           "type": "number"
@@ -2029,12 +1559,6 @@
                         "employee": {
                           "type": "boolean"
                         },
-                        "employee_number": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
                         "first_name": {
                           "type": "string"
                         },
@@ -2047,98 +1571,20 @@
                         "group_name": {
                           "type": "string"
                         },
-                        "home_phone_number": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "hourly_labor_rate": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
-                        },
                         "id": {
                           "type": "number"
                         },
                         "images_count": {
                           "type": "number"
                         },
-                        "job_title": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
                         "last_name": {
                           "type": "string"
-                        },
-                        "leave_date": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "license_class": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "license_number": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "license_state": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "mobile_phone_number": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
                         },
                         "name": {
                           "type": "string"
                         },
-                        "postal_code": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "region": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "start_date": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "street_address": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "street_address_line_2": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
                         "technician": {
-                          "type": "boolean"
+                          "type": ["boolean", "null"]
                         },
                         "updated_at": {
                           "type": "string"
@@ -2219,7 +1665,10 @@
                               "type": "string"
                             },
                             "username": {
-                              "type": ["null", "string"]
+                              "type": [
+                                "null",
+                                "string"
+                              ]
                             },
                             "vehicles_record_set": {
                               "properties": {
@@ -2233,165 +1682,1433 @@
                               "type": "object"
                             }
                           },
-                          "type": "object"
+                          "type": [
+                            "null",
+                            "object"
+                          ]
                         },
                         "vehicle_operator": {
-                          "type": "boolean"
-                        },
-                        "work_phone_number": {
                           "type": [
-                            "null",
-                            "string"
+                            "boolean",
+                            "null"
                           ]
                         }
                       },
                       "type": "object"
                     },
-                    "reported_by_id": {
-                      "type": [
-                        "null",
-                        "number"
-                      ]
-                    },
-                    "reported_by_name": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "resolvable_id": {
-                      "type": "number"
-                    },
-                    "resolvable_type": {
-                      "type": "string"
-                    },
-                    "resolved_at": {
-                      "type": "string"
-                    },
-                    "source": {
+                    "type": "array"
+                  },
+                  "attachment_permissions": {
+                    "type": "object"
+                  },
+                  "comments": {
+                    "items": {
                       "properties": {
-                        "failed_inspection_item_label": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
+                        "comment": {
+                          "type": "string"
                         },
-                        "inspection_form": {
-                          "properties": {
-                            "color": {
-                              "type": [
-                                "null",
-                                "string"
-                              ]
-                            },
-                            "id": {
-                              "type": [
-                                "null",
-                                "number"
-                              ]
-                            },
-                            "title": {
-                              "type": [
-                                "null",
-                                "string"
-                              ]
-                            }
-                          },
-                          "type": "object"
-                        },
-                        "inspection_submissions_count": {
+                        "commentable_id": {
                           "type": "number"
                         },
-                        "last_inspection_submission_at": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
+                        "commentable_type": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "number"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "updated_at": {
+                          "type": "string"
+                        },
+                        "user_full_name": {
+                          "type": "string"
+                        },
+                        "user_id": {
+                          "type": "number"
+                        },
+                        "user_image_url": {
+                          "type": "string"
+                        },
+                        "with_mentions": {
+                          "type": "boolean"
                         }
                       },
                       "type": "object"
                     },
-                    "state": {
+                    "type": "array"
+                  },
+                  "comments_count": {
+                    "type": "number"
+                  },
+                  "created_at": {
+                    "type": "string"
+                  },
+                  "created_by_workflow": {
+                    "type": "boolean"
+                  },
+                  "custom_fields": {
+                    "properties": {
+                      "already_discussed_with_manager": {
+                        "type": "string"
+                      },
+                      "custom_date": {
+                        "type": "string"
+                      },
+                      "priority": {
+                        "type": "string"
+                      },
+                      "restricted_field": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "description": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "documents": {
+                    "items": {
+                      "properties": {
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "documentable_id": {
+                          "type": "number"
+                        },
+                        "documentable_type": {
+                          "type": "string"
+                        },
+                        "file_mime_type": {
+                          "type": "string"
+                        },
+                        "file_name": {
+                          "type": "string"
+                        },
+                        "file_size": {
+                          "type": "number"
+                        },
+                        "file_url": {
+                          "type": "string"
+                        },
+                        "full_file_url": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "updated_at": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "documents_count": {
+                    "type": "number"
+                  },
+                  "due_date": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "due_meter_value": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "id": {
+                    "type": "number"
+                  },
+                  "images": {
+                    "items": {
+                      "properties": {
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "file_mime_type": {
+                          "type": "string"
+                        },
+                        "file_name": {
+                          "type": "string"
+                        },
+                        "file_size": {
+                          "type": "number"
+                        },
+                        "file_url": {
+                          "type": "string"
+                        },
+                        "full_url": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "number"
+                        },
+                        "imageable_id": {
+                          "type": "number"
+                        },
+                        "imageable_type": {
+                          "type": "string"
+                        },
+                        "updated_at": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "images_count": {
+                    "type": "number"
+                  },
+                  "is_sample": {
+                    "type": "boolean"
+                  },
+                  "is_watched": {
+                    "type": "boolean"
+                  },
+                  "issue_resolution": {
+                    "properties": {
+                      "confirmed_at": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "id": {
+                        "type": "number"
+                      },
+                      "issue_id": {
+                        "type": "number"
+                      },
+                      "rejected_at": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "submitted_inspection_form_id": {
+                        "type": "number"
+                      },
+                      "user": {
+                        "properties": {
+                          "image": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "labels": {
+                    "items": {
+                      "properties": {
+                        "id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "linked_work_orders": {
+                    "items": {
+                      "properties": {
+                        "id": {
+                          "type": "number"
+                        },
+                        "issued_at": {
+                          "type": "string"
+                        },
+                        "number": {
+                          "type": "number"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": [
+                      "array",
+                      "null"
+                    ]
+                  },
+                  "meter_entry": {
+                    "properties": {
+                      "created_at": {
+                        "type": "string"
+                      },
+                      "date": {
+                        "type": "string"
+                      },
+                      "id": {
+                        "type": "number"
+                      },
+                      "meterable_id": {
+                        "type": "number"
+                      },
+                      "meterable_type": {
+                        "type": "string"
+                      },
+                      "updated_at": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      },
+                      "vehicle_id": {
+                        "type": "number"
+                      },
+                      "void": {
+                        "type": "boolean"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "number": {
+                    "type": "string"
+                  },
+                  "overdue": {
+                    "type": "boolean"
+                  },
+                  "reported_at": {
+                    "type": "string"
+                  },
+                  "reported_by": {
+                    "properties": {
+                      "account_membership_id": {
+                        "type": "number"
+                      },
+                      "attachment_permissions": {
+                        "type": "object"
+                      },
+                      "birth_date": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "city": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "comments_count": {
+                        "type": "number"
+                      },
+                      "created_at": {
+                        "type": "string"
+                      },
+                      "custom_fields": {
+                        "properties": {
+                          "birthday": {
+                            "type": "string"
+                          },
+                          "certification": {
+                            "type": "string"
+                          },
+                          "checkbox": {
+                            "type": "string"
+                          },
+                          "dropdown": {
+                            "type": "string"
+                          },
+                          "out_of_network_mechanic": {
+                            "type": "string"
+                          },
+                          "pronouns": {
+                            "type": "string"
+                          },
+                          "t-shirt_size": {
+                            "type": "string"
+                          },
+                          "test_restricted_custom_fields": {
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "default_image_url": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "documents_count": {
+                        "type": "number"
+                      },
+                      "email": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "employee": {
+                        "type": "boolean"
+                      },
+                      "employee_number": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "first_name": {
+                        "type": "string"
+                      },
+                      "group_hierarchy": {
+                        "type": "string"
+                      },
+                      "group_id": {
+                        "type": "number"
+                      },
+                      "group_name": {
+                        "type": "string"
+                      },
+                      "home_phone_number": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "hourly_labor_rate": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "id": {
+                        "type": "number"
+                      },
+                      "images_count": {
+                        "type": "number"
+                      },
+                      "job_title": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "last_name": {
+                        "type": "string"
+                      },
+                      "leave_date": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "license_class": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "license_number": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "license_state": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "mobile_phone_number": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "postal_code": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "region": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "start_date": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "street_address": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "street_address_line_2": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "technician": {
+                        "type": ["boolean", "null"]
+                      },
+                      "updated_at": {
+                        "type": "string"
+                      },
+                      "user": {
+                        "properties": {
+                          "contacts_record_set": {
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "email": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          },
+                          "equipments_record_set": {
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "id": {
+                            "type": "number"
+                          },
+                          "inspection_forms_record_set": {
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "parts_record_set": {
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "role": {
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "name": {
+                                "type": [
+                                  "null",
+                                  "string"
+                                ]
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "time_zone": {
+                            "type": "string"
+                          },
+                          "user_type": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          },
+                          "vehicles_record_set": {
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "vehicle_operator": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "work_phone_number": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "reported_by_id": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "reported_by_name": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "resolvable_id": {
+                    "type": "number"
+                  },
+                  "resolvable_type": {
+                    "type": "string"
+                  },
+                  "resolved_at": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "properties": {
+                      "failed_inspection_item_label": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "inspection_form": {
+                        "properties": {
+                          "color": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          },
+                          "id": {
+                            "type": [
+                              "null",
+                              "number"
+                            ]
+                          },
+                          "title": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "inspection_submissions_count": {
+                        "type": "number"
+                      },
+                      "last_inspection_submission_at": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "state": {
+                    "type": "string"
+                  },
+                  "submitted_inspection_form_id": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "summary": {
+                    "type": "string"
+                  },
+                  "updated_at": {
+                    "type": "string"
+                  },
+                  "valid_required_custom_fields": {
+                    "type": "boolean"
+                  },
+                  "vehicle_id": {
+                    "type": "number"
+                  },
+                  "vehicle_image_url": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "vehicle_image_url_large": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "vehicle_image_url_medium": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "vehicle_image_url_small": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "vehicle_name": {
+                    "type": "string"
+                  },
+                  "watchers_count": {
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "labor_cost": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "parts_cost": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "service_entry_line_item_id": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "service_reminder_id": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "service_task": {
+              "properties": {
+                "created_at": {
+                  "type": "string"
+                },
+                "default_vmrs_assembly": {
+                  "properties": {
+                    "assembly_code": {
                       "type": "string"
                     },
-                    "submitted_inspection_form_id": {
-                      "type": [
-                        "null",
-                        "number"
-                      ]
-                    },
-                    "summary": {
+                    "assembly_name": {
                       "type": "string"
                     },
-                    "updated_at": {
+                    "component_code": {
                       "type": "string"
                     },
-                    "valid_required_custom_fields": {
+                    "enabled": {
                       "type": "boolean"
                     },
-                    "vehicle_id": {
+                    "id": {
                       "type": "number"
                     },
-                    "vehicle_image_url": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "vehicle_image_url_large": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "vehicle_image_url_medium": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "vehicle_image_url_small": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "vehicle_name": {
+                    "system_code": {
                       "type": "string"
                     },
-                    "watchers_count": {
-                      "type": "number"
+                    "system_group_code": {
+                      "type": "string"
+                    },
+                    "system_group_name": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "system_name": {
+                      "type": "string"
                     }
                   },
-                  "type": "object"
+                  "type": [
+                    "object",
+                    "null"
+                  ]
                 },
-                "type": "array"
+                "default_vmrs_component": {
+                  "properties": {
+                    "assembly_code": {
+                      "type": "string"
+                    },
+                    "assembly_name": {
+                      "type": "string"
+                    },
+                    "component_code": {
+                      "type": "string"
+                    },
+                    "component_name": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "number"
+                    },
+                    "system_code": {
+                      "type": "string"
+                    },
+                    "system_group_code": {
+                      "type": "string"
+                    },
+                    "system_group_name": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "system_name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "default_vmrs_system": {
+                  "properties": {
+                    "assembly_code": {
+                      "type": "string"
+                    },
+                    "assembly_name": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "component_code": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "number"
+                    },
+                    "system_code": {
+                      "type": "string"
+                    },
+                    "system_group_code": {
+                      "type": "string"
+                    },
+                    "system_group_name": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "system_name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "default_vmrs_system_group": {
+                  "properties": {
+                    "assembly_code": {
+                      "type": "string"
+                    },
+                    "component_code": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "number"
+                    },
+                    "system_code": {
+                      "type": "string"
+                    },
+                    "system_group_code": {
+                      "type": "string"
+                    },
+                    "system_group_name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "description": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "id": {
+                  "type": "number"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "subtasks": {
+                  "items": {
+                    "properties": {
+                      "created_at": {
+                        "type": "string"
+                      },
+                      "default_vmrs_assembly": {
+                        "properties": {
+                          "assembly_code": {
+                            "type": "string"
+                          },
+                          "assembly_name": {
+                            "type": "string"
+                          },
+                          "component_code": {
+                            "type": "string"
+                          },
+                          "enabled": {
+                            "type": "boolean"
+                          },
+                          "id": {
+                            "type": "number"
+                          },
+                          "system_code": {
+                            "type": "string"
+                          },
+                          "system_group_code": {
+                            "type": "string"
+                          },
+                          "system_group_name": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          },
+                          "system_name": {
+                            "type": "string"
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "default_vmrs_component": {
+                        "properties": {
+                          "assembly_code": {
+                            "type": "string"
+                          },
+                          "assembly_name": {
+                            "type": "string"
+                          },
+                          "component_code": {
+                            "type": "string"
+                          },
+                          "component_name": {
+                            "type": "string"
+                          },
+                          "enabled": {
+                            "type": "boolean"
+                          },
+                          "id": {
+                            "type": "number"
+                          },
+                          "system_code": {
+                            "type": "string"
+                          },
+                          "system_group_code": {
+                            "type": "string"
+                          },
+                          "system_group_name": {
+                            "type": "string"
+                          },
+                          "system_name": {
+                            "type": "string"
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "default_vmrs_system": {
+                        "properties": {
+                          "assembly_code": {
+                            "type": "string"
+                          },
+                          "component_code": {
+                            "type": "string"
+                          },
+                          "enabled": {
+                            "type": "boolean"
+                          },
+                          "id": {
+                            "type": "number"
+                          },
+                          "system_code": {
+                            "type": "string"
+                          },
+                          "system_group_code": {
+                            "type": "string"
+                          },
+                          "system_group_name": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          },
+                          "system_name": {
+                            "type": "string"
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "default_vmrs_system_group": {
+                        "properties": {
+                          "assembly_code": {
+                            "type": "string"
+                          },
+                          "component_code": {
+                            "type": "string"
+                          },
+                          "enabled": {
+                            "type": "boolean"
+                          },
+                          "id": {
+                            "type": "number"
+                          },
+                          "system_code": {
+                            "type": "string"
+                          },
+                          "system_group_code": {
+                            "type": "string"
+                          },
+                          "system_group_name": {
+                            "type": "string"
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "description": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "id": {
+                        "type": "number"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "subtasks": {
+                        "type": "array"
+                      },
+                      "updated_at": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "updated_at": {
+                  "type": "string"
+                }
               },
-              "labor_cost": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+              "type": "object"
+            },
+            "subtotal": {
+              "type": "number"
+            },
+            "type": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "vmrs_assembly": {
+              "properties": {
+                "assembly_code": {
+                  "type": "string"
+                },
+                "assembly_name": {
+                  "type": "string"
+                },
+                "component_code": {
+                  "type": "string"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "id": {
+                  "type": "number"
+                },
+                "system_code": {
+                  "type": "string"
+                },
+                "system_group_code": {
+                  "type": "string"
+                },
+                "system_group_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "system_name": {
+                  "type": "string"
+                }
               },
-              "parts_cost": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "vmrs_component": {
+              "properties": {
+                "assembly_code": {
+                  "type": "string"
+                },
+                "assembly_name": {
+                  "type": "string"
+                },
+                "component_code": {
+                  "type": "string"
+                },
+                "component_name": {
+                  "type": "string"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "id": {
+                  "type": "number"
+                },
+                "system_code": {
+                  "type": "string"
+                },
+                "system_group_code": {
+                  "type": "string"
+                },
+                "system_group_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "system_name": {
+                  "type": "string"
+                }
               },
-              "service_entry_line_item_id": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "vmrs_system": {
+              "properties": {
+                "assembly_code": {
+                  "type": "string"
+                },
+                "assembly_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "component_code": {
+                  "type": "string"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "id": {
+                  "type": "number"
+                },
+                "system_code": {
+                  "type": "string"
+                },
+                "system_group_code": {
+                  "type": "string"
+                },
+                "system_group_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "system_name": {
+                  "type": "string"
+                }
               },
-              "service_reminder_id": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "vmrs_system_group": {
+              "properties": {
+                "assembly_code": {
+                  "type": "string"
+                },
+                "component_code": {
+                  "type": "string"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "id": {
+                  "type": "number"
+                },
+                "system_code": {
+                  "type": "string"
+                },
+                "system_group_code": {
+                  "type": "string"
+                },
+                "system_group_name": {
+                  "type": "string"
+                }
               },
-              "service_task": {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "service_tasks": {
+        "items": {
+          "properties": {
+            "created_at": {
+              "type": "string"
+            },
+            "default_vmrs_assembly": {
+              "properties": {
+                "assembly_code": {
+                  "type": "string"
+                },
+                "assembly_name": {
+                  "type": "string"
+                },
+                "component_code": {
+                  "type": "string"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "id": {
+                  "type": "number"
+                },
+                "system_code": {
+                  "type": "string"
+                },
+                "system_group_code": {
+                  "type": "string"
+                },
+                "system_group_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "system_name": {
+                  "type": "string"
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "default_vmrs_component": {
+              "properties": {
+                "assembly_code": {
+                  "type": "string"
+                },
+                "assembly_name": {
+                  "type": "string"
+                },
+                "component_code": {
+                  "type": "string"
+                },
+                "component_name": {
+                  "type": "string"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "id": {
+                  "type": "number"
+                },
+                "system_code": {
+                  "type": "string"
+                },
+                "system_group_code": {
+                  "type": "string"
+                },
+                "system_group_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "system_name": {
+                  "type": "string"
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "default_vmrs_system": {
+              "properties": {
+                "assembly_code": {
+                  "type": "string"
+                },
+                "assembly_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "component_code": {
+                  "type": "string"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "id": {
+                  "type": "number"
+                },
+                "system_code": {
+                  "type": "string"
+                },
+                "system_group_code": {
+                  "type": "string"
+                },
+                "system_group_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "system_name": {
+                  "type": "string"
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "default_vmrs_system_group": {
+              "properties": {
+                "assembly_code": {
+                  "type": "string"
+                },
+                "component_code": {
+                  "type": "string"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "id": {
+                  "type": "number"
+                },
+                "system_code": {
+                  "type": "string"
+                },
+                "system_group_code": {
+                  "type": "string"
+                },
+                "system_group_name": {
+                  "type": "string"
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "description": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "id": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "subtasks": {
+              "items": {
                 "properties": {
                   "created_at": {
                     "type": "string"
@@ -2461,10 +3178,7 @@
                         "type": "string"
                       },
                       "system_group_name": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": "string"
                       },
                       "system_name": {
                         "type": "string"
@@ -2479,12 +3193,6 @@
                     "properties": {
                       "assembly_code": {
                         "type": "string"
-                      },
-                      "assembly_name": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
                       },
                       "component_code": {
                         "type": "string"
@@ -2558,172 +3266,6 @@
                     "type": "string"
                   },
                   "subtasks": {
-                    "items": {
-                      "properties": {
-                        "created_at": {
-                          "type": "string"
-                        },
-                        "default_vmrs_assembly": {
-                          "properties": {
-                            "assembly_code": {
-                              "type": "string"
-                            },
-                            "assembly_name": {
-                              "type": "string"
-                            },
-                            "component_code": {
-                              "type": "string"
-                            },
-                            "enabled": {
-                              "type": "boolean"
-                            },
-                            "id": {
-                              "type": "number"
-                            },
-                            "system_code": {
-                              "type": "string"
-                            },
-                            "system_group_code": {
-                              "type": "string"
-                            },
-                            "system_group_name": {
-                              "type": [
-                                "null",
-                                "string"
-                              ]
-                            },
-                            "system_name": {
-                              "type": "string"
-                            }
-                          },
-                          "type": [
-                            "object",
-                            "null"
-                          ]
-                        },
-                        "default_vmrs_component": {
-                          "properties": {
-                            "assembly_code": {
-                              "type": "string"
-                            },
-                            "assembly_name": {
-                              "type": "string"
-                            },
-                            "component_code": {
-                              "type": "string"
-                            },
-                            "component_name": {
-                              "type": "string"
-                            },
-                            "enabled": {
-                              "type": "boolean"
-                            },
-                            "id": {
-                              "type": "number"
-                            },
-                            "system_code": {
-                              "type": "string"
-                            },
-                            "system_group_code": {
-                              "type": "string"
-                            },
-                            "system_group_name": {
-                              "type": "string"
-                            },
-                            "system_name": {
-                              "type": "string"
-                            }
-                          },
-                          "type": [
-                            "object",
-                            "null"
-                          ]
-                        },
-                        "default_vmrs_system": {
-                          "properties": {
-                            "assembly_code": {
-                              "type": "string"
-                            },
-                            "component_code": {
-                              "type": "string"
-                            },
-                            "enabled": {
-                              "type": "boolean"
-                            },
-                            "id": {
-                              "type": "number"
-                            },
-                            "system_code": {
-                              "type": "string"
-                            },
-                            "system_group_code": {
-                              "type": "string"
-                            },
-                            "system_group_name": {
-                              "type": [
-                                "null",
-                                "string"
-                              ]
-                            },
-                            "system_name": {
-                              "type": "string"
-                            }
-                          },
-                          "type": [
-                            "object",
-                            "null"
-                          ]
-                        },
-                        "default_vmrs_system_group": {
-                          "properties": {
-                            "assembly_code": {
-                              "type": "string"
-                            },
-                            "component_code": {
-                              "type": "string"
-                            },
-                            "enabled": {
-                              "type": "boolean"
-                            },
-                            "id": {
-                              "type": "number"
-                            },
-                            "system_code": {
-                              "type": "string"
-                            },
-                            "system_group_code": {
-                              "type": "string"
-                            },
-                            "system_group_name": {
-                              "type": "string"
-                            }
-                          },
-                          "type": [
-                            "object",
-                            "null"
-                          ]
-                        },
-                        "description": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "id": {
-                          "type": "number"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "subtasks": {
-                          "type": "array"
-                        },
-                        "updated_at": {
-                          "type": "string"
-                        }
-                      },
-                      "type": "object"
-                    },
                     "type": "array"
                   },
                   "updated_at": {
@@ -2732,619 +3274,122 @@
                 },
                 "type": "object"
               },
-              "subtotal": {
-                "type": "number"
-              },
-              "type": {
-                "type": "string"
-              },
-              "updated_at": {
-                "type": "string"
-              },
-              "vmrs_assembly": {
-                "properties": {
-                  "assembly_code": {
-                    "type": "string"
-                  },
-                  "assembly_name": {
-                    "type": "string"
-                  },
-                  "component_code": {
-                    "type": "string"
-                  },
-                  "enabled": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "number"
-                  },
-                  "system_code": {
-                    "type": "string"
-                  },
-                  "system_group_code": {
-                    "type": "string"
-                  },
-                  "system_group_name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "system_name": {
-                    "type": "string"
-                  }
-                },
-                "type": [
-                  "object",
-                  "null"
-                ]
-              },
-              "vmrs_component": {
-                "properties": {
-                  "assembly_code": {
-                    "type": "string"
-                  },
-                  "assembly_name": {
-                    "type": "string"
-                  },
-                  "component_code": {
-                    "type": "string"
-                  },
-                  "component_name": {
-                    "type": "string"
-                  },
-                  "enabled": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "number"
-                  },
-                  "system_code": {
-                    "type": "string"
-                  },
-                  "system_group_code": {
-                    "type": "string"
-                  },
-                  "system_group_name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "system_name": {
-                    "type": "string"
-                  }
-                },
-                "type": [
-                  "object",
-                  "null"
-                ]
-              },
-              "vmrs_system": {
-                "properties": {
-                  "assembly_code": {
-                    "type": "string"
-                  },
-                  "assembly_name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "component_code": {
-                    "type": "string"
-                  },
-                  "enabled": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "number"
-                  },
-                  "system_code": {
-                    "type": "string"
-                  },
-                  "system_group_code": {
-                    "type": "string"
-                  },
-                  "system_group_name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "system_name": {
-                    "type": "string"
-                  }
-                },
-                "type": [
-                  "object",
-                  "null"
-                ]
-              },
-              "vmrs_system_group": {
-                "properties": {
-                  "assembly_code": {
-                    "type": "string"
-                  },
-                  "component_code": {
-                    "type": "string"
-                  },
-                  "enabled": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "number"
-                  },
-                  "system_code": {
-                    "type": "string"
-                  },
-                  "system_group_code": {
-                    "type": "string"
-                  },
-                  "system_group_name": {
-                    "type": "string"
-                  }
-                },
-                "type": [
-                  "object",
-                  "null"
-                ]
-              }
+              "type": "array"
             },
-            "type": "object"
-          },
-          "type": "array"
-        },
-        "service_tasks": {
-          "items": {
-            "properties": {
-              "created_at": {
-                "type": "string"
-              },
-              "default_vmrs_assembly": {
-                "properties": {
-                  "assembly_code": {
-                    "type": "string"
-                  },
-                  "assembly_name": {
-                    "type": "string"
-                  },
-                  "component_code": {
-                    "type": "string"
-                  },
-                  "enabled": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "number"
-                  },
-                  "system_code": {
-                    "type": "string"
-                  },
-                  "system_group_code": {
-                    "type": "string"
-                  },
-                  "system_group_name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "system_name": {
-                    "type": "string"
-                  }
-                },
-                "type": [
-                  "object",
-                  "null"
-                ]
-              },
-              "default_vmrs_component": {
-                "properties": {
-                  "assembly_code": {
-                    "type": "string"
-                  },
-                  "assembly_name": {
-                    "type": "string"
-                  },
-                  "component_code": {
-                    "type": "string"
-                  },
-                  "component_name": {
-                    "type": "string"
-                  },
-                  "enabled": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "number"
-                  },
-                  "system_code": {
-                    "type": "string"
-                  },
-                  "system_group_code": {
-                    "type": "string"
-                  },
-                  "system_group_name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "system_name": {
-                    "type": "string"
-                  }
-                },
-                "type": [
-                  "object",
-                  "null"
-                ]
-              },
-              "default_vmrs_system": {
-                "properties": {
-                  "assembly_code": {
-                    "type": "string"
-                  },
-                  "assembly_name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "component_code": {
-                    "type": "string"
-                  },
-                  "enabled": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "number"
-                  },
-                  "system_code": {
-                    "type": "string"
-                  },
-                  "system_group_code": {
-                    "type": "string"
-                  },
-                  "system_group_name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "system_name": {
-                    "type": "string"
-                  }
-                },
-                "type": [
-                  "object",
-                  "null"
-                ]
-              },
-              "default_vmrs_system_group": {
-                "properties": {
-                  "assembly_code": {
-                    "type": "string"
-                  },
-                  "component_code": {
-                    "type": "string"
-                  },
-                  "enabled": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "number"
-                  },
-                  "system_code": {
-                    "type": "string"
-                  },
-                  "system_group_code": {
-                    "type": "string"
-                  },
-                  "system_group_name": {
-                    "type": "string"
-                  }
-                },
-                "type": [
-                  "object",
-                  "null"
-                ]
-              },
-              "description": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "id": {
-                "type": "number"
-              },
-              "name": {
-                "type": "string"
-              },
-              "subtasks": {
-                "items": {
-                  "properties": {
-                    "created_at": {
-                      "type": "string"
-                    },
-                    "default_vmrs_assembly": {
-                      "properties": {
-                        "assembly_code": {
-                          "type": "string"
-                        },
-                        "assembly_name": {
-                          "type": "string"
-                        },
-                        "component_code": {
-                          "type": "string"
-                        },
-                        "enabled": {
-                          "type": "boolean"
-                        },
-                        "id": {
-                          "type": "number"
-                        },
-                        "system_code": {
-                          "type": "string"
-                        },
-                        "system_group_code": {
-                          "type": "string"
-                        },
-                        "system_group_name": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "system_name": {
-                          "type": "string"
-                        }
-                      },
-                      "type": [
-                        "object",
-                        "null"
-                      ]
-                    },
-                    "default_vmrs_component": {
-                      "properties": {
-                        "assembly_code": {
-                          "type": "string"
-                        },
-                        "assembly_name": {
-                          "type": "string"
-                        },
-                        "component_code": {
-                          "type": "string"
-                        },
-                        "component_name": {
-                          "type": "string"
-                        },
-                        "enabled": {
-                          "type": "boolean"
-                        },
-                        "id": {
-                          "type": "number"
-                        },
-                        "system_code": {
-                          "type": "string"
-                        },
-                        "system_group_code": {
-                          "type": "string"
-                        },
-                        "system_group_name": {
-                          "type": "string"
-                        },
-                        "system_name": {
-                          "type": "string"
-                        }
-                      },
-                      "type": [
-                        "object",
-                        "null"
-                      ]
-                    },
-                    "default_vmrs_system": {
-                      "properties": {
-                        "assembly_code": {
-                          "type": "string"
-                        },
-                        "component_code": {
-                          "type": "string"
-                        },
-                        "enabled": {
-                          "type": "boolean"
-                        },
-                        "id": {
-                          "type": "number"
-                        },
-                        "system_code": {
-                          "type": "string"
-                        },
-                        "system_group_code": {
-                          "type": "string"
-                        },
-                        "system_group_name": {
-                          "type": [
-                            "null",
-                            "string"
-                          ]
-                        },
-                        "system_name": {
-                          "type": "string"
-                        }
-                      },
-                      "type": [
-                        "object",
-                        "null"
-                      ]
-                    },
-                    "default_vmrs_system_group": {
-                      "properties": {
-                        "assembly_code": {
-                          "type": "string"
-                        },
-                        "component_code": {
-                          "type": "string"
-                        },
-                        "enabled": {
-                          "type": "boolean"
-                        },
-                        "id": {
-                          "type": "number"
-                        },
-                        "system_code": {
-                          "type": "string"
-                        },
-                        "system_group_code": {
-                          "type": "string"
-                        },
-                        "system_group_name": {
-                          "type": "string"
-                        }
-                      },
-                      "type": [
-                        "object",
-                        "null"
-                      ]
-                    },
-                    "description": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "id": {
-                      "type": "number"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "subtasks": {
-                      "type": "array"
-                    },
-                    "updated_at": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "updated_at": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "type": "array"
-        },
-        "started_at": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "status": {
-          "type": "string"
-        },
-        "subtotal": {
-          "type": "number"
-        },
-        "tax_1": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "tax_1_percentage": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "tax_1_type": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "tax_2": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "tax_2_percentage": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "tax_2_type": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "tax_free_labor": {
-          "type": "boolean"
-        },
-        "total_amount": {
-          "type": "number"
-        },
-        "updated_at": {
-          "type": "string"
-        },
-        "vehicle_id": {
-          "type": "number"
-        },
-        "vehicle_name": {
-          "type": "string"
-        },
-        "vendor_id": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "vendor_name": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "vmrs_repair_priority_class": {
-          "properties": {
-            "code": {
-              "type": "string"
-            },
-            "color": {
-              "type": "string"
-            },
-            "id": {
-              "type": "number"
-            },
-            "name": {
+            "updated_at": {
               "type": "string"
             }
           },
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
-        "work_order_id": {
-          "type": [
-            "null",
-            "number"
-          ]
+        "type": "array"
+      },
+      "started_at": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "status": {
+        "type": "string"
+      },
+      "subtotal": {
+        "type": "number"
+      },
+      "tax_1": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "tax_1_percentage": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "tax_1_type": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "tax_2": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "tax_2_percentage": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "tax_2_type": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "tax_free_labor": {
+        "type": "boolean"
+      },
+      "total_amount": {
+        "type": "number"
+      },
+      "updated_at": {
+        "type": "string"
+      },
+      "vehicle_id": {
+        "type": "number"
+      },
+      "vehicle_name": {
+        "type": "string"
+      },
+      "vendor_id": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "vendor_name": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "vmrs_repair_priority_class": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
         },
-        "work_order_number": {
-          "type": [
-            "null",
-            "number"
-          ]
-        }
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "work_order_id": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "work_order_number": {
+        "type": [
+          "null",
+          "number"
+        ]
+      }
     }
 }

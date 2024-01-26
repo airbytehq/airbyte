@@ -2,158 +2,184 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-        "asset": {
-          "properties": {
-            "id": {
-              "type": "number"
-            }
-          },
-          "type": "object"
+      "asset": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
         },
-        "asset_type": {
-          "type": "string"
+        "type": "object"
+      },
+      "asset_type": {
+        "type": "string"
+      },
+      "closed_at": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "closed_by": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
         },
-        "closed_at": {
-          "type": [
-            "null",
-            "string"
-          ]
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "closed_note": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "comments_count": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "created_at": {
+        "type": [
+          "string"
+        ]
+      },
+      "creation_type": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "documents_count": {
+        "type": "number"
+      },
+      "due_date": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "due_meter_value": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "due_secondary_meter_value": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "fault": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
         },
-        "closed_by": {
-          "properties": {
-            "id": {
-              "type": "number"
-            }
-          },
-          "type": [
-            "object",
-            "null"
-          ]
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "id": {
+        "type": "number"
+      },
+      "images_count": {
+        "type": "number"
+      },
+      "is_overdue": {
+        "type": "boolean"
+      },
+      "is_watched": {
+        "type": "boolean"
+      },
+      "number": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "reported_at": {
+        "type": "string"
+      },
+      "reported_by": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
         },
-        "closed_note": {
-          "type": ["string", "null"]
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "resolvable": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
         },
-        "comments_count": {
-          "type": ["number", "null"]
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "resolvable_type": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "resolved_at": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "resolved_note": {
+        "type": "string"
+      },
+      "state": {
+        "type": "string"
+      },
+      "submitted_inspection_form": {
+        "properties": {
+          "id": {
+            "type": "number"
+          }
         },
-        "created_at": {
-          "type": ["string"]
-        },
-        "creation_type": {
-          "type": ["string", "null"]
-        },
-        "description": {
-          "type": ["string", "null"]
-        },
-        "documents_count": {
-          "type": "number"
-        },
-        "due_date": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "due_meter_value": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "due_secondary_meter_value": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "fault": {
-          "properties": {
-            "id": {
-              "type": "number"
-            }
-          },
-          "type": [
-            "object",
-            "null"
-          ]
-        },
-        "id": {
-          "type": "number"
-        },
-        "images_count": {
-          "type": "number"
-        },
-        "is_overdue": {
-          "type": "boolean"
-        },
-        "is_watched": {
-          "type": "boolean"
-        },
-        "number": {
-          "type": ["number", "null"]
-        },
-        "reported_at": {
-          "type": "string"
-        },
-        "reported_by": {
-          "properties": {
-            "id": {
-              "type": "number"
-            }
-          },
-          "type": [
-            "object",
-            "null"
-          ]
-        },
-        "resolvable": {
-          "properties": {
-            "id": {
-              "type": "number"
-            }
-          },
-          "type": [
-            "object",
-            "null"
-          ]
-        },
-        "resolvable_type": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "resolved_at": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "resolved_note": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
-        },
-        "submitted_inspection_form": {
-          "properties": {
-            "id": {
-              "type": "number"
-            }
-          },
-          "type": [
-            "object",
-            "null"
-          ]
-        },
-        "summary": {
-          "type": ["string", "null"]
-        },
-        "updated_at": {
-          "type": ["string", "null"]
-        },
-        "watchers_count": {
-          "type": ["number", "null"]
-        }
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "summary": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "updated_at": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "watchers_count": {
+        "type": [
+          "number",
+          "null"
+        ]
+      }
     }
 }

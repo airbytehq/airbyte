@@ -53,13 +53,19 @@
                   "type": "array"
                 }
               },
-              "type": ["object", "null"]
+              "type": [
+                "object",
+                "null"
+              ]
             },
             "title": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "updated_at": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "user_full_name": {
               "type": "string"
@@ -74,7 +80,7 @@
               ]
             },
             "with_mentions": {
-              "type": "boolean"
+              "type": ["boolean", "null"]
             }
           },
           "type": "object"
@@ -129,7 +135,10 @@
         ]
       },
       "description": {
-        "type": "string"
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "documents": {
         "items": {
@@ -141,31 +150,34 @@
               "type": "number"
             },
             "documentable_type": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "file_mime_type": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "file_name": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "file_size": {
-              "type": "number"
+              "type": ["number", "null"]
             },
             "file_url": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "full_file_url": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "id": {
               "type": "number"
             },
             "name": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "updated_at": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           "type": "object"
@@ -173,7 +185,10 @@
         "type": "array"
       },
       "documents_count": {
-        "type": ["number", "null"]
+        "type": [
+          "number",
+          "null"
+        ]
       },
       "id": {
         "type": "number"
@@ -185,31 +200,40 @@
               "type": "string"
             },
             "file_mime_type": {
-              "type": ["string"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "file_name": {
-              "type": ["string"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "file_size": {
-              "type": "number"
+              "type": ["number", "null"]
             },
             "file_url": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "full_url": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "id": {
               "type": "number"
             },
             "imageable_id": {
-              "type": "number"
+              "type": ["number", "null"]
             },
             "imageable_type": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "updated_at": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           "type": "object"
@@ -217,10 +241,13 @@
         "type": "array"
       },
       "images_count": {
-        "type": ["number", "null"]
+        "type": [
+          "number",
+          "null"
+        ]
       },
       "inventory_item": {
-        "type": "boolean"
+        "type": ["boolean", "null"]
       },
       "manufacturer_part_number": {
         "type": [
@@ -249,7 +276,7 @@
             "type": "number"
           },
           "tire_category": {
-            "type": "boolean"
+            "type": ["boolean", "null"]
           }
         },
         "type": "object"
@@ -270,7 +297,7 @@
         "items": {
           "properties": {
             "active": {
-              "type": "boolean"
+              "type": ["boolean", "null"]
             },
             "aisle": {
               "type": [
@@ -297,19 +324,31 @@
               ]
             },
             "created_at": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "id": {
               "type": "number"
             },
             "name": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "part_location_id": {
-              "type": ["number", "null"]
+              "type": [
+                "number",
+                "null"
+              ]
             },
             "part_location_name": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "quantity_allocated_to_work_orders": {
               "type": [
@@ -330,7 +369,7 @@
               ]
             },
             "reorder_point_enabled": {
-              "type": "boolean"
+              "type": ["boolean", "null"]
             },
             "row": {
               "type": [
@@ -339,10 +378,13 @@
               ]
             },
             "track_inventory": {
-              "type": "boolean"
+              "type": ["boolean", "null"]
             },
             "updated_at": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           "type": "object"
@@ -377,7 +419,9 @@
         ]
       },
       "updated_at": {
-        "type": ["string"]
+        "type": [
+          "string"
+        ]
       }
     },
     "type": "object"
