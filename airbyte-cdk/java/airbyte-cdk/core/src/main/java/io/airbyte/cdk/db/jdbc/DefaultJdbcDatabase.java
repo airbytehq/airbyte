@@ -79,7 +79,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
    * static information like getIndentifierQuoteString() etc but calling methods which return a ResultSet needs the connection
    * to be still open. This may or may not work depending on how the underlying Connection object is handled
    * eg. Hikari's ProxyConnection is not actually closed, rather recycled into Pool.
-   * See {@link #execute(CheckedConsumer)} which gives the caller a safe alternative to access ResultSet methods of DatabaseMetadata
+   * See {@link #executeMetadataQuery(Function)} which gives the caller a safe alternative to access ResultSet methods of DatabaseMetadata
    * in the consumer before closing connection.
    * @return
    * @throws SQLException
