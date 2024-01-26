@@ -23,11 +23,11 @@ if TYPE_CHECKING:
 # These keywords may have been marked as secrets, perhaps somewhat aggressively.
 # Masking them, however, is annoying and pointless.
 # This list should be extended (carefully) as needed.
-NOT_REALLY_SECRETS = [
+NOT_REALLY_SECRETS = {
     "admin",
     "airbyte",
     "host",
-]
+}
 
 
 async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container, connector_technical_name: str) -> list[str]:
