@@ -14,12 +14,15 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordIterator;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumShutdownProcedure;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateDecoratingIterator;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumEventConverter;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -111,20 +114,20 @@ public class AirbyteDebeziumHandler<T> {
             : SYNC_CHECKPOINT_DURATION;
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : SYNC_CHECKPOINT_RECORDS;
+    final DebeziumEventConverter eventConverter = switch (debeziumConnectorType) {
+      case MONGODB -> new MongoDbDebeziumEventConverter(cdcMetadataInjector, catalog, emittedAt, config);
+      default -> new RelationalDbDebeziumEventConverter(cdcMetadataInjector, emittedAt);
+    };
     return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator<>(
         eventIterator,
         cdcStateHandler,
         targetPosition,
-        cdcMetadataInjector,
-        emittedAt,
+        eventConverter,
         offsetManager,
         trackSchemaHistory,
         schemaHistoryManager.orElse(null),
         syncCheckpointDuration,
-        syncCheckpointRecords,
-        catalog,
-        debeziumConnectorType,
-        config));
+        syncCheckpointRecords));
   }
 
   public static boolean isAnyStreamIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {

@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.mssql;
 
 import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
@@ -37,12 +37,12 @@ import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordIterator;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumShutdownProcedure;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
@@ -563,9 +563,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         firstRecordWaitTime,
         subsequentRecordWaitTime);
 
+    final var eventConverter = new RelationalDbDebeziumEventConverter(cdcMetadataInjector, emittedAt);
     return AutoCloseableIterators.concatWithEagerClose(
-        AutoCloseableIterators.transform(
-            eventIterator, (event) -> DebeziumEventUtils.formatRelationalDbEvent(event, cdcMetadataInjector, emittedAt)),
+        AutoCloseableIterators.transform(eventIterator, eventConverter::toAirbyteMessage),
         AutoCloseableIterators.fromIterator(
             MoreIterators.singletonIteratorFromSupplier(
                 cdcStateHandler::saveStateAfterCompletionOfSnapshotOfNewStreams)));

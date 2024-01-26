@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.IS_COMPRESSED;
 import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
 import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_DB_HISTORY;
