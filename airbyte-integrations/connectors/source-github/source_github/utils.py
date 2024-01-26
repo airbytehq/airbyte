@@ -40,10 +40,10 @@ class GitHubAPILimitException(Exception):
 
 @dataclass
 class Token:
-    count_rest: int
-    count_graphql: int
-    reset_at_rest: pendulum.DateTime
-    reset_at_graphql: pendulum.DateTime
+    count_rest: int = 5000
+    count_graphql: int = 5000
+    reset_at_rest: pendulum.DateTime = pendulum.now()
+    reset_at_graphql: pendulum.DateTime = pendulum.now()
 
 
 class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
@@ -59,8 +59,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
     def __init__(self, tokens: List[str], auth_method: str = "token", auth_header: str = "Authorization"):
         self._auth_method = auth_method
         self._auth_header = auth_header
-        now = pendulum.now()
-        self._tokens = {t: Token(count_rest=5000, count_graphql=5000, reset_at_rest=now, reset_at_graphql=now) for t in tokens}
+        self._tokens = {t: Token() for t in tokens}
         self.check_all_tokens()
         self._tokens_iter = cycle(self._tokens)
         self._active_token = next(self._tokens_iter)
