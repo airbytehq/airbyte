@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-tempo=source_tempo.run:run",
         ],
-    },    name="source_tempo",
+    },
+    name="source_tempo",
     description="Source implementation for Tempo.",
     author="Thomas van Latum",
     author_email="thomas@gcompany.nl",

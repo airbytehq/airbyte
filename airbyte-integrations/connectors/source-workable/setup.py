@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-workable=source_workable.run:run",
         ],
-    },    name="source_workable",
+    },
+    name="source_workable",
     description="Source implementation for Workable.",
     author="Airbyte",
     author_email="contact@airbyte.io",

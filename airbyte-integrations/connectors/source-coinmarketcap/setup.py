@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-coinmarketcap=source_coinmarketcap.run:run",
         ],
-    },    name="source_coinmarketcap",
+    },
+    name="source_coinmarketcap",
     description="Source implementation for Coinmarketcap.",
     author="Airbyte",
     author_email="contact@airbyte.io",

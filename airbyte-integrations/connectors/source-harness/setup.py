@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-harness=source_harness.run:run",
         ],
-    },    name="source_harness",
+    },
+    name="source_harness",
     description="Source implementation for Harness.",
     author="Airbyte",
     author_email="contact@airbyte.io",

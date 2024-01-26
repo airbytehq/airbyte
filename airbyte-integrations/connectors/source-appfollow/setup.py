@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-appfollow=source_appfollow.run:run",
         ],
-    },    name="source_appfollow",
+    },
+    name="source_appfollow",
     description="Source implementation for Appfollow.",
     author="Airbyte",
     author_email="contact@airbyte.io",

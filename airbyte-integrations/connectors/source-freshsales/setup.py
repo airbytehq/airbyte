@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-freshsales=source_freshsales.run:run",
         ],
-    },    name="source_freshsales",
+    },
+    name="source_freshsales",
     description="Source implementation for Freshsales.",
     author="Airbyte",
     author_email="contact@airbyte.io",

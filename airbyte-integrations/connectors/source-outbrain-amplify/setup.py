@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-outbrain-amplify=source_outbrain_amplify.run:run",
         ],
-    },    name="source_outbrain_amplify",
+    },
+    name="source_outbrain_amplify",
     description="Source implementation for Outbrain Amplify.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_callrail import SourceCallrail
 
+
 def run():
     source = SourceCallrail()
     launch(source, sys.argv[1:])

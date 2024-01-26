@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-cart=source_cart.run:run",
         ],
-    },    name="source_cart",
+    },
+    name="source_cart",
     description="Source implementation for Cart.",
     author="Airbyte",
     author_email="contact@airbyte.io",

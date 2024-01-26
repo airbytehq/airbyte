@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_kyve import SourceKyve
 
+
 def run():
     source = SourceKyve()
     launch(source, sys.argv[1:])

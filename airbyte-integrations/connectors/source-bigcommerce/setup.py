@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-bigcommerce=source_bigcommerce.run:run",
         ],
-    },    name="source_bigcommerce",
+    },
+    name="source_bigcommerce",
     description="Source implementation for Bigcommerce.",
     author="Airbyte",
     author_email="contact@airbyte.io",

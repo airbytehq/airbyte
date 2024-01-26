@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_recurly import SourceRecurly
 
+
 def run():
     source = SourceRecurly()
     launch(source, sys.argv[1:])

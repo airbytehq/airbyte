@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_paystack import SourcePaystack
 
+
 def run():
     source = SourcePaystack()
     launch(source, sys.argv[1:])

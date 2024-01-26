@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-ringcentral=source_ringcentral.run:run",
         ],
-    },    name="source_ringcentral",
+    },
+    name="source_ringcentral",
     description="Source implementation for Ringcentral.",
     author="Airbyte",
     author_email="contact@airbyte.io",

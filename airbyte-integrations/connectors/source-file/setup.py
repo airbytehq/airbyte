@@ -31,7 +31,8 @@ setup(
         "console_scripts": [
             "source-file=source_file.run:run",
         ],
-    },    name="source_file",
+    },
+    name="source_file",
     description="Source implementation for File",
     author="Airbyte",
     author_email="contact@airbyte.io",

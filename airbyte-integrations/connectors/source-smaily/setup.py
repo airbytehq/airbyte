@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-smaily=source_smaily.run:run",
         ],
-    },    name="source_smaily",
+    },
+    name="source_smaily",
     description="Source implementation for Smaily.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-mailersend=source_mailersend.run:run",
         ],
-    },    name="source_mailersend",
+    },
+    name="source_mailersend",
     description="Source implementation for Mailersend.",
     author="Airbyte",
     author_email="contact@airbyte.io",

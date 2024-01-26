@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_vitally import SourceVitally
 
+
 def run():
     source = SourceVitally()
     launch(source, sys.argv[1:])

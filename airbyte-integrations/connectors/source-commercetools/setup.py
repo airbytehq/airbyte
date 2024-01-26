@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-commercetools=source_commercetools.run:run",
         ],
-    },    name="source_commercetools",
+    },
+    name="source_commercetools",
     description="Source implementation for Commercetools.",
     author="Airbyte",
     author_email="contact@airbyte.io",

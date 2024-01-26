@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-genesys=source_genesys.run:run",
         ],
-    },    name="source_genesys",
+    },
+    name="source_genesys",
     description="Source implementation for Genesys.",
     author="Airbyte",
     author_email="contact@airbyte.io",

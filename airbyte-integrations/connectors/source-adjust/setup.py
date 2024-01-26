@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-adjust=source_adjust.run:run",
         ],
-    },    name="source_adjust",
+    },
+    name="source_adjust",
     description="Source implementation for Adjust.",
     author="Airbyte",
     author_email="contact@airbyte.io",

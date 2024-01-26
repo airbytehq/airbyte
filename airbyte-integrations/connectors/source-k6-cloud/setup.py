@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-k6-cloud=source_k6_cloud.run:run",
         ],
-    },    name="source_k6_cloud",
+    },
+    name="source_k6_cloud",
     description="Source implementation for K6 Cloud.",
     author="Airbyte",
     author_email="contact@airbyte.io",

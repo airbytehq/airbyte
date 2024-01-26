@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-aircall=source_aircall.run:run",
         ],
-    },    name="source_aircall",
+    },
+    name="source_aircall",
     description="Source implementation for Aircall.",
     author="Airbyte",
     author_email="contact@airbyte.io",

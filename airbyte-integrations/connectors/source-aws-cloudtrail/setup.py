@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-aws-cloudtrail=source_aws_cloudtrail.run:run",
         ],
-    },    name="source_aws_cloudtrail",
+    },
+    name="source_aws_cloudtrail",
     description="Source implementation for Aws Cloudtrail.",
     author="Airbyte",
     author_email="contact@airbyte.io",

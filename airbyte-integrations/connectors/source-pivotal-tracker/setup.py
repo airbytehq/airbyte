@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-pivotal-tracker=source_pivotal_tracker.run:run",
         ],
-    },    name="source_pivotal_tracker",
+    },
+    name="source_pivotal_tracker",
     description="Source implementation for Pivotal Tracker.",
     author="Airbyte",
     author_email="contact@airbyte.io",

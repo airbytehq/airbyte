@@ -10,6 +10,7 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
 from source_azure_blob_storage import Config, SourceAzureBlobStorage, SourceAzureBlobStorageStreamReader
 
+
 def run():
     args = sys.argv[1:]
     catalog_path = AirbyteEntrypoint.extract_catalog(args)

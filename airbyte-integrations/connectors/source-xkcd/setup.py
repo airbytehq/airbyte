@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-xkcd=source_xkcd.run:run",
         ],
-    },    name="source_xkcd",
+    },
+    name="source_xkcd",
     description="Source implementation for Xkcd.",
     author="Airbyte",
     author_email="contact@airbyte.io",

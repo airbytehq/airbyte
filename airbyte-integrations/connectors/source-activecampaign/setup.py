@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-activecampaign=source_activecampaign.run:run",
         ],
-    },    name="source_activecampaign",
+    },
+    name="source_activecampaign",
     description="Source implementation for Activecampaign.",
     author="Airbyte",
     author_email="contact@airbyte.io",

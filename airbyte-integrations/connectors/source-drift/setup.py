@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-drift=source_drift.run:run",
         ],
-    },    name="source_drift",
+    },
+    name="source_drift",
     description="Source implementation for Drift.",
     author="Airbyte",
     author_email="contact@airbyte.io",

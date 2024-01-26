@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_courier import SourceCourier
 
+
 def run():
     source = SourceCourier()
     launch(source, sys.argv[1:])

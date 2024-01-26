@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-configcat=source_configcat.run:run",
         ],
-    },    name="source_configcat",
+    },
+    name="source_configcat",
     description="Source implementation for Configcat.",
     author="Airbyte",
     author_email="contact@airbyte.io",

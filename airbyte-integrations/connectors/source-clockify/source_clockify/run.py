@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_clockify import SourceClockify
 
+
 def run():
     source = SourceClockify()
     launch(source, sys.argv[1:])

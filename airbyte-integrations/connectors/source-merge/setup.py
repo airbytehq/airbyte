@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-merge=source_merge.run:run",
         ],
-    },    name="source_merge",
+    },
+    name="source_merge",
     description="Source implementation for Merge.",
     author="Airbyte",
     author_email="contact@airbyte.io",

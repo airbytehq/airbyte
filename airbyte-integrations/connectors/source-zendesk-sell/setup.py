@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-zendesk-sell=source_zendesk_sell.run:run",
         ],
-    },    name="source_zendesk_sell",
+    },
+    name="source_zendesk_sell",
     description="Source implementation for Zendesk Sell.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_hubplanner import SourceHubplanner
 
+
 def run():
     source = SourceHubplanner()
     launch(source, sys.argv[1:])

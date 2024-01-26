@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-weatherstack=source_weatherstack.run:run",
         ],
-    },    name="source_weatherstack",
+    },
+    name="source_weatherstack",
     description="Source implementation for Weatherstack.",
     author="Airbyte",
     author_email="contact@airbyte.io",

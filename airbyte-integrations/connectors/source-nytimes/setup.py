@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-nytimes=source_nytimes.run:run",
         ],
-    },    name="source_nytimes",
+    },
+    name="source_nytimes",
     description="Source implementation for Nytimes.",
     author="Airbyte",
     author_email="contact@airbyte.io",

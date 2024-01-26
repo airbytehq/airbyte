@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_pendo import SourcePendo
 
+
 def run():
     source = SourcePendo()
     launch(source, sys.argv[1:])

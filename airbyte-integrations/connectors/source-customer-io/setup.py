@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-customer-io=source_customer_io.run:run",
         ],
-    },    name="source_customer_io",
+    },
+    name="source_customer_io",
     description="Source implementation for Customer Io.",
     author="Airbyte",
     author_email="contact@airbyte.io",

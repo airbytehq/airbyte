@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-rki-covid=source_rki_covid.run:run",
         ],
-    },    name="source_rki_covid",
+    },
+    name="source_rki_covid",
     description="Source implementation for Rki Covid.",
     author="Airbyte",
     author_email="contact@airbyte.io",

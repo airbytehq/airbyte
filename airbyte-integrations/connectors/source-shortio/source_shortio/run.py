@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_shortio import SourceShortio
 
+
 def run():
     source = SourceShortio()
     launch(source, sys.argv[1:])

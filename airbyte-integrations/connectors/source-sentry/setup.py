@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-sentry=source_sentry.run:run",
         ],
-    },    name="source_sentry",
+    },
+    name="source_sentry",
     description="Source implementation for Sentry.",
     author="Airbyte",
     author_email="contact@airbyte.io",

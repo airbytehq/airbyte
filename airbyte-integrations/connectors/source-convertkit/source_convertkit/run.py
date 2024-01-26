@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_convertkit import SourceConvertkit
 
+
 def run():
     source = SourceConvertkit()
     launch(source, sys.argv[1:])

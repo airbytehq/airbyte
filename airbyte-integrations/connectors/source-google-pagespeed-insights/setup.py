@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-google-pagespeed-insights=source_google_pagespeed_insights.run:run",
         ],
-    },    name="source_google_pagespeed_insights",
+    },
+    name="source_google_pagespeed_insights",
     description="Source implementation for Google Pagespeed Insights.",
     author="Airbyte",
     author_email="contact@airbyte.io",

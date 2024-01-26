@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_asana import SourceAsana
 
+
 def run():
     source = SourceAsana()
     launch(source, sys.argv[1:])

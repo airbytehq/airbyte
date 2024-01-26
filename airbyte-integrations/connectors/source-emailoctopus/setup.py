@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-emailoctopus=source_emailoctopus.run:run",
         ],
-    },    name="source_emailoctopus",
+    },
+    name="source_emailoctopus",
     description="Source implementation for Emailoctopus.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-strava=source_strava.run:run",
         ],
-    },    name="source_strava",
+    },
+    name="source_strava",
     description="Source implementation for Strava.",
     author="Airbyte",
     author_email="contact@airbyte.io",

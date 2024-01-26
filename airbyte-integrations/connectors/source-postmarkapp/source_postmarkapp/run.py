@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_postmarkapp import SourcePostmarkapp
 
+
 def run():
     source = SourcePostmarkapp()
     launch(source, sys.argv[1:])

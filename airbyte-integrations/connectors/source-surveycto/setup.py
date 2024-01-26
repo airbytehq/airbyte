@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-surveycto=source_surveycto.run:run",
         ],
-    },    name="source_surveycto",
+    },
+    name="source_surveycto",
     description="Source implementation for Surveycto.",
     author="Airbyte",
     author_email="contact@airbyte.io",

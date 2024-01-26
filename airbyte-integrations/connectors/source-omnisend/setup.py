@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-omnisend=source_omnisend.run:run",
         ],
-    },    name="source_omnisend",
+    },
+    name="source_omnisend",
     description="Source implementation for Omnisend.",
     author="Airbyte",
     author_email="contact@airbyte.io",

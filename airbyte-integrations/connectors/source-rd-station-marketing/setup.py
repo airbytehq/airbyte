@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-rd-station-marketing=source_rd_station_marketing.run:run",
         ],
-    },    name="source_rd_station_marketing",
+    },
+    name="source_rd_station_marketing",
     description="Source implementation for RD Station Marketing.",
     author="Airbyte",
     author_email="contact@airbyte.io",

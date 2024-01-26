@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-gnews=source_gnews.run:run",
         ],
-    },    name="source_gnews",
+    },
+    name="source_gnews",
     description="Source implementation for Gnews.",
     author="Airbyte",
     author_email="contact@airbyte.io",

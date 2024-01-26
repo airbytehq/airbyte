@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_waiteraid import SourceWaiteraid
 
+
 def run():
     source = SourceWaiteraid()
     launch(source, sys.argv[1:])

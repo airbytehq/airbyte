@@ -23,7 +23,8 @@ setup(
         "console_scripts": [
             "source-railz=source_railz.run:run",
         ],
-    },    name="source_railz",
+    },
+    name="source_railz",
     description="Source implementation for Railz.",
     author="Airbyte",
     author_email="contact@airbyte.io",

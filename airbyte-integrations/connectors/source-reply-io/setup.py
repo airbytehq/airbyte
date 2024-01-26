@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-reply-io=source_reply_io.run:run",
         ],
-    },    name="source_reply_io",
+    },
+    name="source_reply_io",
     description="Source implementation for Reply Io.",
     author="Elliot Trabac",
     author_email="elliot.trabac1@gmail.com",

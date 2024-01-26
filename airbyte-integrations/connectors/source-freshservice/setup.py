@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-freshservice=source_freshservice.run:run",
         ],
-    },    name="source_freshservice",
+    },
+    name="source_freshservice",
     description="Source implementation for Freshservice.",
     author="Airbyte",
     author_email="contact@airbyte.io",

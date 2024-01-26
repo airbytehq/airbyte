@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-public-apis=source_public_apis.run:run",
         ],
-    },    name="source_public_apis",
+    },
+    name="source_public_apis",
     description="Source implementation for Public Apis.",
     author="Airbyte",
     author_email="contact@airbyte.io",

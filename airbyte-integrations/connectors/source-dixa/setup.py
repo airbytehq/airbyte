@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-dixa=source_dixa.run:run",
         ],
-    },    name="source_dixa",
+    },
+    name="source_dixa",
     description="Source implementation for Dixa.",
     author="Airbyte",
     author_email="contact@airbyte.io",

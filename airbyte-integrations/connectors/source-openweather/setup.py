@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-openweather=source_openweather.run:run",
         ],
-    },    name="source_openweather",
+    },
+    name="source_openweather",
     description="Source implementation for Openweather.",
     author="Airbyte",
     author_email="contact@airbyte.io",

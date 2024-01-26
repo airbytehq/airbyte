@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-linnworks=source_linnworks.run:run",
         ],
-    },    name="source_linnworks",
+    },
+    name="source_linnworks",
     description="Source implementation for Linnworks.",
     author="Labanoras Tech",
     author_email="jv@labanoras.io",

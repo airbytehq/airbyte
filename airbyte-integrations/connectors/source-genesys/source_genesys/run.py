@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_genesys import SourceGenesys
 
+
 def run():
     source = SourceGenesys()
     launch(source, sys.argv[1:])

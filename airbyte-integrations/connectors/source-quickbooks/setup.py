@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-quickbooks=source_quickbooks.run:run",
         ],
-    },    name="source_quickbooks",
+    },
+    name="source_quickbooks",
     description="Source implementation for Quickbooks.",
     author="Airbyte",
     author_email="contact@airbyte.io",

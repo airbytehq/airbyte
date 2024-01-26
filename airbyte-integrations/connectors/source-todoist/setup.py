@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-todoist=source_todoist.run:run",
         ],
-    },    name="source_todoist",
+    },
+    name="source_todoist",
     description="Source implementation for Todoist.",
     author="Airbyte",
     author_email="contact@airbyte.io",

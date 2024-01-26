@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-gocardless=source_gocardless.run:run",
         ],
-    },    name="source_gocardless",
+    },
+    name="source_gocardless",
     description="Source implementation for Gocardless.",
     author="Airbyte",
     author_email="contact@airbyte.io",

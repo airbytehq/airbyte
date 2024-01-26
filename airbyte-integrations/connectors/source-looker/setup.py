@@ -24,7 +24,8 @@ setup(
         "console_scripts": [
             "source-looker=source_looker.run:run",
         ],
-    },    name="source_looker",
+    },
+    name="source_looker",
     description="Source implementation for Looker.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-hellobaton=source_hellobaton.run:run",
         ],
-    },    name="source_hellobaton",
+    },
+    name="source_hellobaton",
     description="Source implementation for Hellobaton.",
     author="Airbyte",
     author_email="contact@airbyte.io",

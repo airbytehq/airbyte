@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-greenhouse=source_greenhouse.run:run",
         ],
-    },    name="source_greenhouse",
+    },
+    name="source_greenhouse",
     description="Source implementation for Greenhouse.",
     author="Airbyte",
     author_email="contact@airbyte.io",

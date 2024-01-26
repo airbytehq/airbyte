@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-facebook-pages=source_facebook_pages.run:run",
         ],
-    },    name="source_facebook_pages",
+    },
+    name="source_facebook_pages",
     description="Source implementation for Facebook Pages.",
     author="Airbyte",
     author_email="contact@airbyte.io",

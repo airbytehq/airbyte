@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-apple-search-ads=source_apple_search_ads.run:run",
         ],
-    },    name="source_apple_search_ads",
+    },
+    name="source_apple_search_ads",
     description="Source implementation for Apple Search Ads.",
     author="Airbyte",
     author_email="contact@airbyte.io",

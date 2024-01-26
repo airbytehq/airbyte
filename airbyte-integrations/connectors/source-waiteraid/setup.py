@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-waiteraid=source_waiteraid.run:run",
         ],
-    },    name="source_waiteraid",
+    },
+    name="source_waiteraid",
     description="Source implementation for Waiteraid.",
     author="Airbyte",
     author_email="contact@airbyte.io",

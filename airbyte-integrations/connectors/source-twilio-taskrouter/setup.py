@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-twilio-taskrouter=source_twilio_taskrouter.run:run",
         ],
-    },    name="source_twilio_taskrouter",
+    },
+    name="source_twilio_taskrouter",
     description="Source implementation for Twilio Taskrouter.",
     author="Airbyte",
     author_email="contact@airbyte.io",

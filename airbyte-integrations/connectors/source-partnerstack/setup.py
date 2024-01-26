@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-partnerstack=source_partnerstack.run:run",
         ],
-    },    name="source_partnerstack",
+    },
+    name="source_partnerstack",
     description="Source implementation for Partnerstack.",
     author="Elliot Trabac",
     author_email="elliot.trabac1@gmail.com",

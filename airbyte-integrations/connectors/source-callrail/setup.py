@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-callrail=source_callrail.run:run",
         ],
-    },    name="source_callrail",
+    },
+    name="source_callrail",
     description="Source implementation for Callrail.",
     author="Airbyte",
     author_email="contact@airbyte.io",

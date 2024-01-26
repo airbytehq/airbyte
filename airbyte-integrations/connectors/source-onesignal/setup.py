@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-onesignal=source_onesignal.run:run",
         ],
-    },    name="source_onesignal",
+    },
+    name="source_onesignal",
     description="Source implementation for Onesignal.",
     author="Airbyte",
     author_email="contact@airbyte.io",

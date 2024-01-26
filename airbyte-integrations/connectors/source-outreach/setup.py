@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-outreach=source_outreach.run:run",
         ],
-    },    name="source_outreach",
+    },
+    name="source_outreach",
     description="Source implementation for Outreach.",
     author="Airbyte",
     author_email="contact@airbyte.io",

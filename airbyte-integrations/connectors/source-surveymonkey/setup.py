@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-surveymonkey=source_surveymonkey.run:run",
         ],
-    },    name="source_surveymonkey",
+    },
+    name="source_surveymonkey",
     description="Source implementation for Surveymonkey.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_pagerduty import SourcePagerduty
 
+
 def run():
     source = SourcePagerduty()
     launch(source, sys.argv[1:])

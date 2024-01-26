@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_younium import SourceYounium
 
+
 def run():
     source = SourceYounium()
     launch(source, sys.argv[1:])

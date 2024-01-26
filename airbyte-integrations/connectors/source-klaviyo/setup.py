@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-klaviyo=source_klaviyo.run:run",
         ],
-    },    name="source_klaviyo",
+    },
+    name="source_klaviyo",
     description="Source implementation for Klaviyo.",
     author="Airbyte",
     author_email="contact@airbyte.io",

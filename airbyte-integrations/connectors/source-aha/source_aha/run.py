@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_aha import SourceAha
 
+
 def run():
     source = SourceAha()
     launch(source, sys.argv[1:])

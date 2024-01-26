@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-spacex-api=source_spacex_api.run:run",
         ],
-    },    name="source_spacex_api",
+    },
+    name="source_spacex_api",
     description="Source implementation for Spacex Api.",
     author="Airbyte",
     author_email="contact@airbyte.io",

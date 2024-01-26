@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-linkedin-pages=source_linkedin_pages.run:run",
         ],
-    },    name="source_linkedin_pages",
+    },
+    name="source_linkedin_pages",
     description="Source implementation for Linkedin Company Pages.",
     author="Airbyte",
     author_email="contact@airbyte.io",

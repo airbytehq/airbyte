@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-timely=source_timely.run:run",
         ],
-    },    name="source_timely",
+    },
+    name="source_timely",
     description="Source implementation for Timely.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_nytimes import SourceNytimes
 
+
 def run():
     source = SourceNytimes()
     launch(source, sys.argv[1:])

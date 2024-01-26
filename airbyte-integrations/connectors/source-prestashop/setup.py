@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-prestashop=source_prestashop.run:run",
         ],
-    },    name="source_prestashop",
+    },
+    name="source_prestashop",
     description="Source implementation for PrestaShop.",
     author="Airbyte",
     author_email="contact@airbyte.io",

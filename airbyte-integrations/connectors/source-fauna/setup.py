@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-fauna=source_fauna.run:run",
         ],
-    },    name="source_fauna",
+    },
+    name="source_fauna",
     description="Source implementation for Fauna.",
     author="Airbyte",
     author_email="contact@airbyte.io",

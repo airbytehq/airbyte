@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_vantage import SourceVantage
 
+
 def run():
     source = SourceVantage()
     launch(source, sys.argv[1:])

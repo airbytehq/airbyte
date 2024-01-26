@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_news_api import SourceNewsApi
 
+
 def run():
     source = SourceNewsApi()
     launch(source, sys.argv[1:])

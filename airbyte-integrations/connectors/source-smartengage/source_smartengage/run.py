@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_smartengage import SourceSmartengage
 
+
 def run():
     source = SourceSmartengage()
     launch(source, sys.argv[1:])

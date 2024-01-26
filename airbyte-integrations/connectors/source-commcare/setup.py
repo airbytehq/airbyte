@@ -23,7 +23,8 @@ setup(
         "console_scripts": [
             "source-commcare=source_commcare.run:run",
         ],
-    },    name="source_commcare",
+    },
+    name="source_commcare",
     description="Source implementation for Commcare.",
     author="Airbyte",
     author_email="contact@airbyte.io",

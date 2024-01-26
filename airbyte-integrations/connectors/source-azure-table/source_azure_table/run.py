@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_azure_table import SourceAzureTable
 
+
 def run():
     source = SourceAzureTable()
     launch(source, sys.argv[1:])

@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-pypi=source_pypi.run:run",
         ],
-    },    name="source_pypi",
+    },
+    name="source_pypi",
     description="Source implementation for Pypi.",
     author="Airbyte",
     author_email="contact@airbyte.io",

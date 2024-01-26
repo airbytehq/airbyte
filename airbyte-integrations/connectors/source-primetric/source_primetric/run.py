@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_primetric import SourcePrimetric
 
+
 def run():
     source = SourcePrimetric()
     launch(source, sys.argv[1:])

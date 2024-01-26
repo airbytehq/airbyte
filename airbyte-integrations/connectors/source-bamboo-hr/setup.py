@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-bamboo-hr=source_bamboo_hr.run:run",
         ],
-    },    name="source_bamboo_hr",
+    },
+    name="source_bamboo_hr",
     description="Source implementation for Bamboo Hr.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-plaid=source_plaid.run:run",
         ],
-    },    name="source_plaid",
+    },
+    name="source_plaid",
     description="Source implementation for Plaid.",
     author="Airbyte",
     author_email="contact@airbyte.io",

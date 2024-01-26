@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-captain-data=source_captain_data.run:run",
         ],
-    },    name="source_captain_data",
+    },
+    name="source_captain_data",
     description="Source implementation for Captain Data.",
     author="Elliot Trabac",
     author_email="elliot.trabac1@gmail.com",

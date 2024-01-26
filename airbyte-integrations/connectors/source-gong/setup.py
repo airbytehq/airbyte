@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-gong=source_gong.run:run",
         ],
-    },    name="source_gong",
+    },
+    name="source_gong",
     description="Source implementation for Gong.",
     author="Elliot Trabac",
     author_email="elliot.trabac1@gmail.com",

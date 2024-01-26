@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-pardot=source_pardot.run:run",
         ],
-    },    name="source_pardot",
+    },
+    name="source_pardot",
     description="Source implementation for Pardot.",
     author="Airbyte",
     author_email="contact@airbyte.io",

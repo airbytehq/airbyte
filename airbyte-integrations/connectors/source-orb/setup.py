@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-orb=source_orb.run:run",
         ],
-    },    name="source_orb",
+    },
+    name="source_orb",
     description="Source implementation for Orb.",
     author="Airbyte",
     author_email="contact@airbyte.io",

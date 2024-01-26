@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_kyriba import SourceKyriba
 
+
 def run():
     source = SourceKyriba()
     launch(source, sys.argv[1:])

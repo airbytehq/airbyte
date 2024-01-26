@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_xkcd import SourceXkcd
 
+
 def run():
     source = SourceXkcd()
     launch(source, sys.argv[1:])

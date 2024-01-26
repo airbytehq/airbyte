@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-qualaroo=source_qualaroo.run:run",
         ],
-    },    name="source_qualaroo",
+    },
+    name="source_qualaroo",
     description="Source implementation for Qualaroo.",
     author="Airbyte",
     author_email="contact@airbyte.io",

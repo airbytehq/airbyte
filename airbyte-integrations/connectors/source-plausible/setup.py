@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-plausible=source_plausible.run:run",
         ],
-    },    name="source_plausible",
+    },
+    name="source_plausible",
     description="Source implementation for Plausible.",
     author="Airbyte",
     author_email="contact@airbyte.io",

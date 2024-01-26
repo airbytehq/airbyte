@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-fullstory=source_fullstory.run:run",
         ],
-    },    name="source_fullstory",
+    },
+    name="source_fullstory",
     description="Source implementation for Fullstory.",
     author="Airbyte",
     author_email="contact@airbyte.io",

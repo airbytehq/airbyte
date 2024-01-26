@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_reply_io import SourceReplyIo
 
+
 def run():
     source = SourceReplyIo()
     launch(source, sys.argv[1:])

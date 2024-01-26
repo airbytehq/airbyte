@@ -19,7 +19,8 @@ setup(
         "console_scripts": [
             "source-klaus-api=source_klaus_api.run:run",
         ],
-    },    name="source_klaus_api",
+    },
+    name="source_klaus_api",
     description="Source implementation for Klaus Api.",
     author="Deke Li",
     author_email="deke.li@sendinblue.com",

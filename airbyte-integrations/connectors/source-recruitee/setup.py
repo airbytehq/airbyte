@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-recruitee=source_recruitee.run:run",
         ],
-    },    name="source_recruitee",
+    },
+    name="source_recruitee",
     description="Source implementation for Recruitee.",
     author="Airbyte",
     author_email="contact@airbyte.io",

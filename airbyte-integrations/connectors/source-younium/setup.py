@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-younium=source_younium.run:run",
         ],
-    },    name="source_younium",
+    },
+    name="source_younium",
     description="Source implementation for Younium.",
     author="Airbyte",
     author_email="contact@airbyte.io",

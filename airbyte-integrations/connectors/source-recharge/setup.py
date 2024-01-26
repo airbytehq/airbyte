@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-recharge=source_recharge.run:run",
         ],
-    },    name="source_recharge",
+    },
+    name="source_recharge",
     description="Source implementation for Recharge.",
     author="Airbyte",
     author_email="contact@airbyte.io",

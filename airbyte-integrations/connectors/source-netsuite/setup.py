@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-netsuite=source_netsuite.run:run",
         ],
-    },    name="source_netsuite",
+    },
+    name="source_netsuite",
     description="Source implementation for Netsuite Soap.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_firebolt import SourceFirebolt
 
+
 def run():
     source = SourceFirebolt()
     launch(source, sys.argv[1:])

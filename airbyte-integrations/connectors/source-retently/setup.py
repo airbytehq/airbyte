@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-retently=source_retently.run:run",
         ],
-    },    name="source_retently",
+    },
+    name="source_retently",
     description="Source implementation for Retently.",
     author="Airbyte",
     author_email="contact@airbyte.io",

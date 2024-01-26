@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_pivotal_tracker import SourcePivotalTracker
 
+
 def run():
     source = SourcePivotalTracker()
     launch(source, sys.argv[1:])

@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-amazon-sqs=source_amazon_sqs.run:run",
         ],
-    },    name="source_amazon_sqs",
+    },
+    name="source_amazon_sqs",
     description="Source implementation for Amazon Sqs.",
     author="Alasdair Brown",
     author_email="airbyte@alasdairb.com",

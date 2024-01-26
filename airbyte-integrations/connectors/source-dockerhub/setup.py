@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-dockerhub=source_dockerhub.run:run",
         ],
-    },    name="source_dockerhub",
+    },
+    name="source_dockerhub",
     description="Source implementation for Dockerhub.",
     author="Airbyte",
     author_email="contact@airbyte.io",

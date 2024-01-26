@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-azure-blob-storage=source_azure_blob_storage.run:run",
         ],
-    },    name="source_azure_blob_storage",
+    },
+    name="source_azure_blob_storage",
     description="Source implementation for Azure Blob Storage.",
     author="Airbyte",
     author_email="contact@airbyte.io",

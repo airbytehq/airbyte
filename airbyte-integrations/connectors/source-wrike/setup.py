@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-wrike=source_wrike.run:run",
         ],
-    },    name="source_wrike",
+    },
+    name="source_wrike",
     description="Source implementation for Wrike.",
     author="Airbyte",
     author_email="contact@airbyte.io",

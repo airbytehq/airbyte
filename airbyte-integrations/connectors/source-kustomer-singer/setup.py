@@ -57,7 +57,8 @@ setup(
         "console_scripts": [
             "source-kustomer-singer=source_kustomer_singer.run:run",
         ],
-    },    name="source_kustomer_singer",
+    },
+    name="source_kustomer_singer",
     description="Source implementation for Kustomer, built on the Singer tap implementation.",
     author="Airbyte",
     author_email="contact@airbyte.io",

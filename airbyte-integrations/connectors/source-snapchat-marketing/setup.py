@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-snapchat-marketing=source_snapchat_marketing.run:run",
         ],
-    },    name="source_snapchat_marketing",
+    },
+    name="source_snapchat_marketing",
     description="Source implementation for Snapchat Marketing.",
     author="Airbyte",
     author_email="contact@airbyte.io",

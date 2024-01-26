@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-the-guardian-api=source_the_guardian_api.run:run",
         ],
-    },    name="source_the_guardian_api",
+    },
+    name="source_the_guardian_api",
     description="Source implementation for The Guardian Api.",
     author="Airbyte",
     author_email="contact@airbyte.io",

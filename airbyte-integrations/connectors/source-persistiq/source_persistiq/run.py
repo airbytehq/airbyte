@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_persistiq import SourcePersistiq
 
+
 def run():
     source = SourcePersistiq()
     launch(source, sys.argv[1:])

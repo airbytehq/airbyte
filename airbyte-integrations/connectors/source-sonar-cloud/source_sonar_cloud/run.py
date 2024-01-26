@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_sonar_cloud import SourceSonarCloud
 
+
 def run():
     source = SourceSonarCloud()
     launch(source, sys.argv[1:])

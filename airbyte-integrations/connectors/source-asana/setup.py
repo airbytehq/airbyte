@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-asana=source_asana.run:run",
         ],
-    },    name="source_asana",
+    },
+    name="source_asana",
     description="Source implementation for Asana.",
     author="Airbyte",
     author_email="contact@airbyte.io",

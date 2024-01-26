@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-sendgrid=source_sendgrid.run:run",
         ],
-    },    name="source_sendgrid",
+    },
+    name="source_sendgrid",
     description="Source implementation for Sendgrid.",
     author="Airbyte",
     author_email="contact@airbyte.io",

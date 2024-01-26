@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-twilio=source_twilio.run:run",
         ],
-    },    name="source_twilio",
+    },
+    name="source_twilio",
     description="Source implementation for Twilio.",
     author="Airbyte",
     author_email="contact@airbyte.io",

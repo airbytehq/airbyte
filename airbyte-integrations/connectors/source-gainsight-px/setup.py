@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-gainsight-px=source_gainsight_px.run:run",
         ],
-    },    name="source_gainsight_px",
+    },
+    name="source_gainsight_px",
     description="Source implementation for Gainsight Px.",
     author="Airbyte",
     author_email="contact@airbyte.io",

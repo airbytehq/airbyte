@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-trustpilot=source_trustpilot.run:run",
         ],
-    },    name="source_trustpilot",
+    },
+    name="source_trustpilot",
     description="Source implementation for Trustpilot.",
     author="Airbyte",
     author_email="contact@airbyte.io",

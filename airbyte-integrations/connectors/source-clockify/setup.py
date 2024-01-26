@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-clockify=source_clockify.run:run",
         ],
-    },    name="source_clockify",
+    },
+    name="source_clockify",
     description="Source implementation for Clockify.",
     author="Airbyte",
     author_email="contact@airbyte.io",

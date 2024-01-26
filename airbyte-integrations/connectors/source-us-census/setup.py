@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-us-census=source_us_census.run:run",
         ],
-    },    name="source_us_census",
+    },
+    name="source_us_census",
     description="Source implementation for Us Census.",
     author="Airbyte",
     author_email="contact@airbyte.io",

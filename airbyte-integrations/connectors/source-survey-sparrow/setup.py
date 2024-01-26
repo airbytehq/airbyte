@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-survey-sparrow=source_survey_sparrow.run:run",
         ],
-    },    name="source_survey_sparrow",
+    },
+    name="source_survey_sparrow",
     description="Source implementation for Survey Sparrow.",
     author="Airbyte",
     author_email="contact@airbyte.io",

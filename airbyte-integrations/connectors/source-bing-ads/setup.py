@@ -19,7 +19,8 @@ setup(
         "console_scripts": [
             "source-bing-ads=source_bing_ads.run:run",
         ],
-    },    name="source_bing_ads",
+    },
+    name="source_bing_ads",
     description="Source implementation for Bing Ads.",
     author="Airbyte",
     author_email="contact@airbyte.io",

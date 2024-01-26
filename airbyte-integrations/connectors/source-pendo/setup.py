@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-pendo=source_pendo.run:run",
         ],
-    },    name="source_pendo",
+    },
+    name="source_pendo",
     description="Source implementation for Pendo.",
     author="Airbyte",
     author_email="contact@airbyte.io",

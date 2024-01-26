@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_bing_ads import SourceBingAds
 
+
 def run():
     source = SourceBingAds()
     launch(source, sys.argv[1:])

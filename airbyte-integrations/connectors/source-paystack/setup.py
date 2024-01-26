@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-paystack=source_paystack.run:run",
         ],
-    },    name="source_paystack",
+    },
+    name="source_paystack",
     description="Source implementation for Paystack.",
     author="Airbyte",
     author_email="contact@airbyte.io",

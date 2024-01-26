@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-glassfrog=source_glassfrog.run:run",
         ],
-    },    name="source_glassfrog",
+    },
+    name="source_glassfrog",
     description="Source implementation for Glassfrog.",
     author="Airbyte",
     author_email="contact@airbyte.io",

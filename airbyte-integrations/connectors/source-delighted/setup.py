@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-delighted=source_delighted.run:run",
         ],
-    },    name="source_delighted",
+    },
+    name="source_delighted",
     description="Source implementation for Delighted.",
     author="Airbyte",
     author_email="contact@airbyte.io",

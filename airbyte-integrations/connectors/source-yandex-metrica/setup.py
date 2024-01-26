@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-yandex-metrica=source_yandex_metrica.run:run",
         ],
-    },    name="source_yandex_metrica",
+    },
+    name="source_yandex_metrica",
     description="Source implementation for Yandex Metrica.",
     author="Airbyte",
     author_email="contact@airbyte.io",

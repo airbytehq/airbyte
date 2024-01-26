@@ -19,7 +19,8 @@ setup(
         "console_scripts": [
             "source-opsgenie=source_opsgenie.run:run",
         ],
-    },    name="source_opsgenie",
+    },
+    name="source_opsgenie",
     description="Source implementation for Opsgenie.",
     author="Airbyte",
     author_email="contact@airbyte.io",

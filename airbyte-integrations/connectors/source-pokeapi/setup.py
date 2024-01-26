@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-pokeapi=source_pokeapi.run:run",
         ],
-    },    name="source_pokeapi",
+    },
+    name="source_pokeapi",
     description="Source implementation for Pokeapi.",
     author="Airbyte",
     author_email="contact@airbyte.io",

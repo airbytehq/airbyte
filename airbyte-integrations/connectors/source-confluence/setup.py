@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-confluence=source_confluence.run:run",
         ],
-    },    name="source_confluence",
+    },
+    name="source_confluence",
     description="Source implementation for Confluence.",
     author="Airbyte",
     author_email="contact@airbyte.io",

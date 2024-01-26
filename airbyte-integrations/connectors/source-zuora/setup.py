@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-zuora=source_zuora.run:run",
         ],
-    },    name="source_zuora",
+    },
+    name="source_zuora",
     description="Airbyte source-connector for Zuora.",
     author="Airbyte",
     author_email="contact@airbyte.io",

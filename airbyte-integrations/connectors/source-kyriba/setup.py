@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-kyriba=source_kyriba.run:run",
         ],
-    },    name="source_kyriba",
+    },
+    name="source_kyriba",
     description="Source implementation for Kyriba.",
     author="Airbyte",
     author_email="contact@airbyte.io",

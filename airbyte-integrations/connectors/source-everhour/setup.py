@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-everhour=source_everhour.run:run",
         ],
-    },    name="source_everhour",
+    },
+    name="source_everhour",
     description="Source implementation for Everhour.",
     author="Airbyte",
     author_email="contact@airbyte.io",

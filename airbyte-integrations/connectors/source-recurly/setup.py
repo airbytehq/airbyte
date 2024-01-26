@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-recurly=source_recurly.run:run",
         ],
-    },    name="source_recurly",
+    },
+    name="source_recurly",
     description="Source implementation for Recurly.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-datadog=source_datadog.run:run",
         ],
-    },    name="source_datadog",
+    },
+    name="source_datadog",
     description="Source implementation for Datadog.",
     author="Airbyte",
     author_email="contact@airbyte.io",

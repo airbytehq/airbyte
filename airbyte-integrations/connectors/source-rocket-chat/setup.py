@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-rocket-chat=source_rocket_chat.run:run",
         ],
-    },    name="source_rocket_chat",
+    },
+    name="source_rocket_chat",
     description="Source implementation for Rocket Chat.",
     author="Airbyte",
     author_email="contact@airbyte.io",

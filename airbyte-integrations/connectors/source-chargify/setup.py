@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-chargify=source_chargify.run:run",
         ],
-    },    name="source_chargify",
+    },
+    name="source_chargify",
     description="Source implementation for Chargify.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-braze=source_braze.run:run",
         ],
-    },    name="source_braze",
+    },
+    name="source_braze",
     description="Source implementation for Braze.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-zoho-crm=source_zoho_crm.run:run",
         ],
-    },    name="source_zoho_crm",
+    },
+    name="source_zoho_crm",
     description="Source implementation for Zoho Crm.",
     author="Airbyte",
     author_email="contact@airbyte.io",

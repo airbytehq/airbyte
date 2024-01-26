@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-visma-economic=source_visma_economic.run:run",
         ],
-    },    name="source_visma_economic",
+    },
+    name="source_visma_economic",
     description="Source implementation for Visma Economic.",
     author="Airbyte",
     author_email="contact@airbyte.io",

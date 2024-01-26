@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-sonar-cloud=source_sonar_cloud.run:run",
         ],
-    },    name="source_sonar_cloud",
+    },
+    name="source_sonar_cloud",
     description="Source implementation for Sonar Cloud.",
     author="Airbyte",
     author_email="contact@airbyte.io",

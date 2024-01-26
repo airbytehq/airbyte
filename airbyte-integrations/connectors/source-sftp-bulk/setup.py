@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-sftp-bulk=source_sftp_bulk.run:run",
         ],
-    },    name="source_sftp_bulk",
+    },
+    name="source_sftp_bulk",
     description="Source implementation for SFTP Bulk.",
     author="Airbyte",
     author_email="contact@airbyte.io",

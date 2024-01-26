@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-dv-360=source_dv_360.run:run",
         ],
-    },    name="source_dv_360",
+    },
+    name="source_dv_360",
     description="Source implementation for Display & Video 360.",
     author="Airbyte",
     author_email="contact@airbyte.io",

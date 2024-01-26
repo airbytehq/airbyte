@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-salesloft=source_salesloft.run:run",
         ],
-    },    name="source_salesloft",
+    },
+    name="source_salesloft",
     description="Source implementation for Salesloft.",
     author="Airbyte",
     author_email="contact@airbyte.io",

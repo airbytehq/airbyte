@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-tmdb=source_tmdb.run:run",
         ],
-    },    name="source_tmdb",
+    },
+    name="source_tmdb",
     description="Source implementation for Tmdb.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-wikipedia-pageviews=source_wikipedia_pageviews.run:run",
         ],
-    },    name="source_wikipedia_pageviews",
+    },
+    name="source_wikipedia_pageviews",
     description="Source implementation for Wikipedia Pageviews.",
     author="Airbyte",
     author_email="contact@airbyte.io",

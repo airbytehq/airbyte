@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-talkdesk-explore=source_talkdesk_explore.run:run",
         ],
-    },    name="source_talkdesk_explore",
+    },
+    name="source_talkdesk_explore",
     description="Source implementation for Talkdesk Explore API.",
     author="Airbyte",
     author_email="alexandre.martins@saltpay.co",

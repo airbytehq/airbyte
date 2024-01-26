@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-breezometer=source_breezometer.run:run",
         ],
-    },    name="source_breezometer",
+    },
+    name="source_breezometer",
     description="Source implementation for Breezometer.",
     author="Airbyte",
     author_email="contact@airbyte.io",

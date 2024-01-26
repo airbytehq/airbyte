@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-hubplanner=source_hubplanner.run:run",
         ],
-    },    name="source_hubplanner",
+    },
+    name="source_hubplanner",
     description="Source implementation for Hubplanner.",
     author="Airbyte",
     author_email="contact@airbyte.io",

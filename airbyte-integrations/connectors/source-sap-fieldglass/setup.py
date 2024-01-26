@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-sap-fieldglass=source_sap_fieldglass.run:run",
         ],
-    },    name="source_sap_fieldglass",
+    },
+    name="source_sap_fieldglass",
     description="Source implementation for Sap Fieldglass.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-gridly=source_gridly.run:run",
         ],
-    },    name="source_gridly",
+    },
+    name="source_gridly",
     description="Source implementation for Gridly.",
     author="Airbyte",
     author_email="contact@airbyte.io",

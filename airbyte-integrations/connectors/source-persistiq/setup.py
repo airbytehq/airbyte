@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-persistiq=source_persistiq.run:run",
         ],
-    },    name="source_persistiq",
+    },
+    name="source_persistiq",
     description="Source implementation for Persistiq.",
     author="Airbyte",
     author_email="contact@airbyte.io",

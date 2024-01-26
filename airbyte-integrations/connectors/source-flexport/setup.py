@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-flexport=source_flexport.run:run",
         ],
-    },    name="source_flexport",
+    },
+    name="source_flexport",
     description="Source implementation for Flexport.",
     author="Airbyte",
     author_email="contact@airbyte.io",

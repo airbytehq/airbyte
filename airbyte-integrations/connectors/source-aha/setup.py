@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-aha=source_aha.run:run",
         ],
-    },    name="source_aha",
+    },
+    name="source_aha",
     description="Source implementation for Aha.",
     author="Airbyte",
     author_email="contact@airbyte.io",

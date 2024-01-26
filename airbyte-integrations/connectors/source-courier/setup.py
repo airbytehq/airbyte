@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-courier=source_courier.run:run",
         ],
-    },    name="source_courier",
+    },
+    name="source_courier",
     description="Source implementation for Courier.",
     author="Airbyte",
     author_email="contact@airbyte.io",

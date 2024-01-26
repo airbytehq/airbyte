@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_strava import SourceStrava
 
+
 def run():
     source = SourceStrava()
     launch(source, sys.argv[1:])

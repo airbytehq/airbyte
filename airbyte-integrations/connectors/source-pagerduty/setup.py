@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-pagerduty=source_pagerduty.run:run",
         ],
-    },    name="source_pagerduty",
+    },
+    name="source_pagerduty",
     description="Source implementation for Pagerduty.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-qonto=source_qonto.run:run",
         ],
-    },    name="source_qonto",
+    },
+    name="source_qonto",
     description="Source implementation for Qonto.",
     author="Airbyte",
     author_email="contact@airbyte.io",

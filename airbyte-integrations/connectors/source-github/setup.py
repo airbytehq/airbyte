@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-github=source_github.run:run",
         ],
-    },    name="source_github",
+    },
+    name="source_github",
     description="Source implementation for Github.",
     author="Airbyte",
     author_email="contact@airbyte.io",

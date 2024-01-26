@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-babelforce=source_babelforce.run:run",
         ],
-    },    name="source_babelforce",
+    },
+    name="source_babelforce",
     description="Source implementation for Babelforce.",
     author="Airbyte",
     author_email="contact@airbyte.io",

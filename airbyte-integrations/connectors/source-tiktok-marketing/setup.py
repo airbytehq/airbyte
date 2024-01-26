@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-tiktok-marketing=source_tiktok_marketing.run:run",
         ],
-    },    name="source_tiktok_marketing",
+    },
+    name="source_tiktok_marketing",
     description="Source implementation for Tiktok Marketing.",
     author="Airbyte",
     author_email="contact@airbyte.io",

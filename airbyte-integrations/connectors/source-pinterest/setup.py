@@ -19,7 +19,8 @@ setup(
         "console_scripts": [
             "source-pinterest=source_pinterest.run:run",
         ],
-    },    name="source_pinterest",
+    },
+    name="source_pinterest",
     description="Source implementation for Pinterest.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_customer_io import SourceCustomerIo
 
+
 def run():
     source = SourceCustomerIo()
     launch(source, sys.argv[1:])

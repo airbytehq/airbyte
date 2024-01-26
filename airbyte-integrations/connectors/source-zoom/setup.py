@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-zoom=source_zoom.run:run",
         ],
-    },    name="source_zoom",
+    },
+    name="source_zoom",
     description="Source implementation for Zoom.",
     author="Airbyte",
     author_email="contact@airbyte.io",

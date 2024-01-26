@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-copper=source_copper.run:run",
         ],
-    },    name="source_copper",
+    },
+    name="source_copper",
     description="Source implementation for Copper.",
     author="Airbyte",
     author_email="contact@airbyte.io",

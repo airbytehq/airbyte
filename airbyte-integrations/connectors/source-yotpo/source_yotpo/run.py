@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_yotpo import SourceYotpo
 
+
 def run():
     source = SourceYotpo()
     launch(source, sys.argv[1:])

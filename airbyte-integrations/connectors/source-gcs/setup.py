@@ -23,7 +23,8 @@ setup(
         "console_scripts": [
             "source-gcs=source_gcs.run:run",
         ],
-    },    name="source_gcs",
+    },
+    name="source_gcs",
     description="Source implementation for Gcs.",
     author="Airbyte",
     author_email="contact@airbyte.io",

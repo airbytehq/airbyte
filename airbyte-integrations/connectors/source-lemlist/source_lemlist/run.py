@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_lemlist import SourceLemlist
 
+
 def run():
     source = SourceLemlist()
     launch(source, sys.argv[1:])

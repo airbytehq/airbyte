@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-postmarkapp=source_postmarkapp.run:run",
         ],
-    },    name="source_postmarkapp",
+    },
+    name="source_postmarkapp",
     description="Source implementation for Postmarkapp.",
     author="Airbyte",
     author_email="contact@airbyte.io",

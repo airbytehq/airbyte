@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_file import SourceFile
 
+
 def run():
     source = SourceFile()
     launch(source, sys.argv[1:])

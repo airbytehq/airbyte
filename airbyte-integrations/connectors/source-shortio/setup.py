@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-shortio=source_shortio.run:run",
         ],
-    },    name="source_shortio",
+    },
+    name="source_shortio",
     description="Source implementation for Shortio.",
     author="Airbyte",
     author_email="contact@airbyte.io",

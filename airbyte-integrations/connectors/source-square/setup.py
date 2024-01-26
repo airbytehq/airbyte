@@ -21,7 +21,8 @@ setup(
         "console_scripts": [
             "source-square=source_square.run:run",
         ],
-    },    name="source_square",
+    },
+    name="source_square",
     description="Source implementation for Square.",
     author="Airbyte",
     author_email="contact@airbyte.io",

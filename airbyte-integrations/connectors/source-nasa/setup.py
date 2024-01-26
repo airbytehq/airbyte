@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-nasa=source_nasa.run:run",
         ],
-    },    name="source_nasa",
+    },
+    name="source_nasa",
     description="Source implementation for Nasa.",
     author="Airbyte",
     author_email="contact@airbyte.io",

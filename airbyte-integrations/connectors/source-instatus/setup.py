@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-instatus=source_instatus.run:run",
         ],
-    },    name="source_instatus",
+    },
+    name="source_instatus",
     description="Source implementation for Instatus.",
     author="Airbyte",
     author_email="contact@airbyte.io",

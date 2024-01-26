@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-pocket=source_pocket.run:run",
         ],
-    },    name="source_pocket",
+    },
+    name="source_pocket",
     description="Source implementation for Pocket.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_smaily import SourceSmaily
 
+
 def run():
     source = SourceSmaily()
     launch(source, sys.argv[1:])

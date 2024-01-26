@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_tvmaze_schedule import SourceTvmazeSchedule
 
+
 def run():
     source = SourceTvmazeSchedule()
     launch(source, sys.argv[1:])

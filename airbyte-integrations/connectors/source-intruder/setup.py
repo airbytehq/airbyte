@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-intruder=source_intruder.run:run",
         ],
-    },    name="source_intruder",
+    },
+    name="source_intruder",
     description="Source implementation for Intruder.",
     author="Airbyte",
     author_email="contact@airbyte.io",

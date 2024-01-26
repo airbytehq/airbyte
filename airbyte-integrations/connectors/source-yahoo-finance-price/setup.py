@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-yahoo-finance-price=source_yahoo_finance_price.run:run",
         ],
-    },    name="source_yahoo_finance_price",
+    },
+    name="source_yahoo_finance_price",
     description="Source implementation for Yahoo Finance Price.",
     author="Airbyte",
     author_email="contact@airbyte.io",

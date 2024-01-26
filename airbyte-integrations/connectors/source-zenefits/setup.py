@@ -16,7 +16,8 @@ setup(
         "console_scripts": [
             "source-zenefits=source_zenefits.run:run",
         ],
-    },    name="source_zenefits",
+    },
+    name="source_zenefits",
     description="Source implementation for Zenefits.",
     author="Airbyte",
     author_email="contact@airbyte.io",

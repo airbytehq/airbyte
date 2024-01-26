@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-sendinblue=source_sendinblue.run:run",
         ],
-    },    name="source_sendinblue",
+    },
+    name="source_sendinblue",
     description="Source implementation for Sendinblue.",
     author="Airbyte",
     author_email="contact@airbyte.io",

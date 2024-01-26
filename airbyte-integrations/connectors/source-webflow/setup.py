@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-webflow=source_webflow.run:run",
         ],
-    },    name="source_webflow",
+    },
+    name="source_webflow",
     description="Source implementation for Webflow.",
     author="Airbyte",
     author_email="contact@airbyte.io",

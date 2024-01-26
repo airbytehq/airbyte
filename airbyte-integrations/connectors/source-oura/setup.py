@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-oura=source_oura.run:run",
         ],
-    },    name="source_oura",
+    },
+    name="source_oura",
     description="Source implementation for Oura.",
     author="Airbyte",
     author_email="contact@airbyte.io",

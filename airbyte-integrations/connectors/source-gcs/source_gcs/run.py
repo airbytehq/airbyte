@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from source_gcs import Config, Cursor, SourceGCS, SourceGCSStreamReader
 
+
 def run():
     _args = sys.argv[1:]
     catalog_path = AirbyteEntrypoint.extract_catalog(_args)

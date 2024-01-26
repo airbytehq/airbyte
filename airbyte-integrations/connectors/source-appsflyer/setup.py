@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-appsflyer=source_appsflyer.run:run",
         ],
-    },    name="source_appsflyer",
+    },
+    name="source_appsflyer",
     description="Source implementation for Appsflyer.",
     author="Airbyte",
     author_email="contact@airbyte.io",

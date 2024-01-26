@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-clickup-api=source_clickup_api.run:run",
         ],
-    },    name="source_clickup_api",
+    },
+    name="source_clickup_api",
     description="Source implementation for Clickup Api.",
     author="Airbyte",
     author_email="contact@airbyte.io",

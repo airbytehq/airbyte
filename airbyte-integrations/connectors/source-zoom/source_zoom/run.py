@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_zoom import SourceZoom
 
+
 def run():
     source = SourceZoom()
     launch(source, sys.argv[1:])

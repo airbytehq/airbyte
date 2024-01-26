@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_youtube_analytics import SourceYoutubeAnalytics
 
+
 def run():
     source = SourceYoutubeAnalytics()
     launch(source, sys.argv[1:])

@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-alpha-vantage=source_alpha_vantage.run:run",
         ],
-    },    name="source_alpha_vantage",
+    },
+    name="source_alpha_vantage",
     description="Source implementation for Alpha Vantage.",
     author="Airbyte",
     author_email="contact@airbyte.io",

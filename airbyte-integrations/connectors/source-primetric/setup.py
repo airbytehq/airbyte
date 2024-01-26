@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-primetric=source_primetric.run:run",
         ],
-    },    name="source_primetric",
+    },
+    name="source_primetric",
     description="Source implementation for Primetric.",
     author="Airbyte",
     author_email="contact@airbyte.io",

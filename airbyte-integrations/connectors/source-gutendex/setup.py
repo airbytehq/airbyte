@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-gutendex=source_gutendex.run:run",
         ],
-    },    name="source_gutendex",
+    },
+    name="source_gutendex",
     description="Source implementation for Gutendex.",
     author="Airbyte",
     author_email="contact@airbyte.io",

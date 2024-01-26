@@ -18,7 +18,8 @@ setup(
         "console_scripts": [
             "source-insightly=source_insightly.run:run",
         ],
-    },    name="source_insightly",
+    },
+    name="source_insightly",
     description="Source implementation for Insightly.",
     author="Airbyte",
     author_email="contact@airbyte.io",

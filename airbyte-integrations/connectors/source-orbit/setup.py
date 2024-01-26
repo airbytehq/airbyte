@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-orbit=source_orbit.run:run",
         ],
-    },    name="source_orbit",
+    },
+    name="source_orbit",
     description="Source implementation for Orbit.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-statuspage=source_statuspage.run:run",
         ],
-    },    name="source_statuspage",
+    },
+    name="source_statuspage",
     description="Source implementation for Statuspage.",
     author="Airbyte",
     author_email="contact@airbyte.io",

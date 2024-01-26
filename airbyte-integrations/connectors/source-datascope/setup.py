@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-datascope=source_datascope.run:run",
         ],
-    },    name="source_datascope",
+    },
+    name="source_datascope",
     description="Source implementation for Datascope.",
     author="Airbyte",
     author_email="contact@airbyte.io",

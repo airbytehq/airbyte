@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-fastbill=source_fastbill.run:run",
         ],
-    },    name="source_fastbill",
+    },
+    name="source_fastbill",
     description="Source implementation for Fastbill.",
     author="Airbyte",
     author_email="contact@airbyte.io",

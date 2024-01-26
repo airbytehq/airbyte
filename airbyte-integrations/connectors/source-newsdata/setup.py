@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-newsdata=source_newsdata.run:run",
         ],
-    },    name="source_newsdata",
+    },
+    name="source_newsdata",
     description="Source implementation for Newsdata.",
     author="Airbyte",
     author_email="contact@airbyte.io",

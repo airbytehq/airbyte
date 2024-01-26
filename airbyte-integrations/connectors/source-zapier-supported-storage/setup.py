@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-zapier-supported-storage=source_zapier_supported_storage.run:run",
         ],
-    },    name="source_zapier_supported_storage",
+    },
+    name="source_zapier_supported_storage",
     description="Source implementation for Zapier Supported Storage.",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_appfollow import SourceAppfollow
 
+
 def run():
     source = SourceAppfollow()
     launch(source, sys.argv[1:])

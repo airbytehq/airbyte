@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-polygon-stock-api=source_polygon_stock_api.run:run",
         ],
-    },    name="source_polygon_stock_api",
+    },
+    name="source_polygon_stock_api",
     description="Source implementation for Polygon Stock Api.",
     author="Airbyte",
     author_email="contact@airbyte.io",

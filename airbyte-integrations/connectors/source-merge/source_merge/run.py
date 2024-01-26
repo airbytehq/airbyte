@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_merge import SourceMerge
 
+
 def run():
     source = SourceMerge()
     launch(source, sys.argv[1:])

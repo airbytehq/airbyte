@@ -19,7 +19,8 @@ setup(
         "console_scripts": [
             "source-coda=source_coda.run:run",
         ],
-    },    name="source_coda",
+    },
+    name="source_coda",
     description="Source implementation for Coda.",
     author="Airbyte",
     author_email="contact@airbyte.io",

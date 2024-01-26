@@ -20,7 +20,8 @@ setup(
         "console_scripts": [
             "source-secoda=source_secoda.run:run",
         ],
-    },    name="source_secoda",
+    },
+    name="source_secoda",
     description="Source implementation for Secoda.",
     author="Airbyte",
     author_email="contact@airbyte.io",

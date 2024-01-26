@@ -14,7 +14,8 @@ setup(
         "console_scripts": [
             "source-amazon-seller-partner=source_amazon_seller_partner.run:run",
         ],
-    },    name="source_amazon_seller_partner",
+    },
+    name="source_amazon_seller_partner",
     description="Source implementation for Amazon Seller Partner.",
     author="Airbyte",
     author_email="contact@airbyte.io",
