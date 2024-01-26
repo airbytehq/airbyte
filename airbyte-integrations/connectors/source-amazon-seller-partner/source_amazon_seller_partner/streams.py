@@ -765,6 +765,7 @@ class NetPureProductMarginReport(IncrementalAnalyticsStream):
 class RapidRetailAnalyticsInventoryReport(IncrementalAnalyticsStream):
     name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
     result_key = "reportData"
+    cursor_field = "endTime"
 
 
 class BrandAnalyticsMarketBasketReports(IncrementalAnalyticsStream):
