@@ -578,8 +578,9 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.7.2   | [#34555](https://github.com/airbytehq/airbyte/pull/34555)  | Override secret masking in some very specific special cases.                                                      |
 | 3.7.1   | [#34441](https://github.com/airbytehq/airbyte/pull/34441)  | Support masked secret scrubbing for java CDK v0.15+                                                               |
-| 3.7.0   | [#34343](https://github.com/airbytehq/airbyte/pull/34343)  | allow running connector upgrade_cdk for java connectors                                                             |
+| 3.7.0   | [#34343](https://github.com/airbytehq/airbyte/pull/34343)  | allow running connector upgrade_cdk for java connectors                                                           |
 | 3.6.1   | [#34490](https://github.com/airbytehq/airbyte/pull/34490)  | Fix inconsistent dagger log path typing                                                                           |
 | 3.6.0   | [#34111](https://github.com/airbytehq/airbyte/pull/34111)  | Add python registry publishing                                                                                    |
 | 3.5.3   | [#34339](https://github.com/airbytehq/airbyte/pull/34339)  | only do minimal changes on a connector version_bump                                                               |
