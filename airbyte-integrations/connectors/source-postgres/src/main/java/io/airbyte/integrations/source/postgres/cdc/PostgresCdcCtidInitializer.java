@@ -48,7 +48,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -71,9 +70,9 @@ public class PostgresCdcCtidInitializer {
       final JsonNode sourceConfig = database.getSourceConfig();
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
       final Duration subsequentRecordWaitTime = PostgresUtils.getSubsequentRecordWaitTime(sourceConfig);
-      final OptionalInt queueSize = OptionalInt.of(PostgresUtils.getQueueSize(sourceConfig));
+      final int queueSize = PostgresUtils.getQueueSize(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
-      LOGGER.info("Queue size: {}", queueSize.getAsInt());
+      LOGGER.info("Queue size: {}", queueSize);
 
       if (isDebugMode(sourceConfig) && !PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
         throw new ConfigErrorException("WARNING: The config indicates that we are clearing the WAL while reading data. This will mutate the WAL" +

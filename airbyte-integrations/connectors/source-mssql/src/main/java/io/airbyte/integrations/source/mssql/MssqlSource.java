@@ -69,7 +69,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -472,7 +471,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           true,
           firstRecordWaitTime,
           subsequentRecordWaitTime,
-          OptionalInt.empty());
+          AirbyteDebeziumHandler.QUEUE_CAPACITY);
       final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
       // Determine if new stream(s) have been added to the catalog after initial sync of existing streams

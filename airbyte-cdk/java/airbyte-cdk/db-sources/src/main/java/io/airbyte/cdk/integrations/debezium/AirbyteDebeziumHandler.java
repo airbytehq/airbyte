@@ -33,7 +33,6 @@ import io.debezium.engine.DebeziumEngine;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
@@ -51,20 +50,20 @@ public class AirbyteDebeziumHandler<T> {
    * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_BATCH_SIZE}is 2048
    * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_QUEUE_SIZE} is 8192
    */
-  private static final int QUEUE_CAPACITY = 10000;
+  public static final int QUEUE_CAPACITY = 10_000;
 
   private final JsonNode config;
   private final CdcTargetPosition<T> targetPosition;
   private final boolean trackSchemaHistory;
   private final Duration firstRecordWaitTime, subsequentRecordWaitTime;
-  private final OptionalInt queueSize;
+  private final int queueSize;
 
   public AirbyteDebeziumHandler(final JsonNode config,
                                 final CdcTargetPosition<T> targetPosition,
                                 final boolean trackSchemaHistory,
                                 final Duration firstRecordWaitTime,
                                 final Duration subsequentRecordWaitTime,
-                                final OptionalInt queueSize) {
+                                final int queueSize) {
     this.config = config;
     this.targetPosition = targetPosition;
     this.trackSchemaHistory = trackSchemaHistory;
@@ -82,7 +81,7 @@ public class AirbyteDebeziumHandler<T> {
                                                                     final Instant emittedAt) {
 
     LOGGER.info("Running snapshot for " + catalogContainingStreamsToSnapshot.getStreams().size() + " new tables");
-    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(queueSize.orElse(QUEUE_CAPACITY));
+    final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(queueSize);
 
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
     final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(snapshotProperties,
@@ -131,7 +130,7 @@ public class AirbyteDebeziumHandler<T> {
 
     final var publisher = new DebeziumRecordPublisher(
         connectorProperties, config, catalog, offsetManager, schemaHistoryManager, debeziumConnectorType);
-    final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(queueSize.orElse(QUEUE_CAPACITY));
+    final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(queueSize);
     publisher.start(queue);
     // handle state machine around pub/sub logic.
     final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(

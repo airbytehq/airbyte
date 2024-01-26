@@ -28,7 +28,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.function.Supplier;
 import org.bson.BsonDocument;
@@ -87,7 +86,7 @@ public class MongoDbCdcInitializer {
 
     final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(config.rawConfig());
     final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(config.rawConfig());
-    final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
+    final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.getDatabaseName();
     final boolean isEnforceSchema = config.getEnforceSchema();
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();

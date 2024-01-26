@@ -57,7 +57,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -156,7 +155,7 @@ public class MySqlInitialReadUtil {
         true,
         firstRecordWaitTime,
         subsequentRecordWaitTime,
-        OptionalInt.empty());
+        AirbyteDebeziumHandler.QUEUE_CAPACITY);
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
         new MySqlCdcSavedInfoFetcher(stateToBeUsed),
