@@ -56,7 +56,7 @@ class SourcePendoPython(AbstractSource):
         try:
             session = requests.get(url, headers=auth.get_auth_header())
             body = session.json()
-            return [obj["id"] for obj in body]
+            return [{"id": obj["id"], "type": obj["type"]} for obj in body]
         except requests.exceptions.RequestException as e:
             return False, e
 
@@ -78,7 +78,7 @@ class SourcePendoPython(AbstractSource):
         ]
 
         all_reports = self.get_reports(config)
-        for report_id in all_reports:
-            result.append(ReportResult(report_id=report_id, authenticator=auth))
+        for report in all_reports:
+            result.append(ReportResult(report=report, authenticator=auth))
 
         return result

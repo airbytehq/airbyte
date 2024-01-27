@@ -196,17 +196,17 @@ class Report(PendoPythonStream):
 class ReportResult(PendoPythonStream):
     primary_key = "reportId"
 
-    def __init__(self, report_id: str, **kwargs):
+    def __init__(self, report: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
-        self.report_id = report_id
-        self.report_name = f"report_result_{report_id}"
+        self.report = report
+        self.report_name = f"report_result_{report['id']}"
 
     @property
     def name(self):
         return self.report_name
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"report/{self.report_id}/results.json"
+        return f"report/{self.report['id']}/results.json"
 
     def parse_response(
         self,
@@ -219,11 +219,11 @@ class ReportResult(PendoPythonStream):
             yield self.transform(record=record)
 
     def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        record["reportId"] = self.report_id
+        record["reportId"] = self.report['id']
         return record
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        return {
+        schema = {
             "type": "object",
             "$schema": "http://json-schema.org/schema#",
             "properties": {
@@ -232,6 +232,13 @@ class ReportResult(PendoPythonStream):
                 }
             }
         }
+
+        if self.report['type'] == "Visitor":
+            schema["properties"]["visitorId"] = {
+                    "type": "string"
+                }
+
+        return schema
 
 
 class VisitorMetadata(PendoPythonStream):
