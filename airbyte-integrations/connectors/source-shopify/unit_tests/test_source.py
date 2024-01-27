@@ -44,6 +44,7 @@ from source_shopify.streams.streams import (
     Shop,
     TenderTransactions,
     Transactions,
+    TransactionsGraphql,
 )
 
 
@@ -203,3 +204,24 @@ def test_get_shop_name(config, shop, expected) -> None:
     config["shop"] = shop
     actual = source.get_shop_name(config)
     assert actual == expected
+
+@pytest.mark.parametrize(
+    "config, expected_stream_class",
+    [
+        ({"fetch_transactions_user_id": False}, TransactionsGraphql),
+        ({"fetch_transactions_user_id": True}, Transactions),
+        ({}, TransactionsGraphql),
+     ]
+)
+def test_select_transactions_stream(config, expected_stream_class):
+    config["shop"] = "test-store"
+    config["credentials"] = {
+        "auth_method": "api_password",
+        "api_password": "shppa_123"
+    }
+    config["authenticator"] = ShopifyAuthenticator(config)
+
+    source = SourceShopify()
+    actual = source.select_transactions_stream(config)
+    assert type(actual) == expected_stream_class
+
