@@ -17,7 +17,6 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -37,7 +36,6 @@ import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordIterator;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumShutdownProcedure;
@@ -84,6 +82,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -485,22 +484,22 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           true,
           firstRecordWaitTime,
           subsequentRecordWaitTime,
-          AirbyteDebeziumHandler.QUEUE_CAPACITY);
+          AirbyteDebeziumHandler.QUEUE_CAPACITY,
+          true);
       final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
       // Determine if new stream(s) have been added to the catalog after initial sync of existing streams
       final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
       final ConfiguredAirbyteCatalog streamsToSnapshotCatalog = new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot);
+      final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
+          MssqlCdcHelper.getDebeziumProperties(database, catalog, false), sourceConfig, catalog);
+      final var eventConverter = new RelationalDbDebeziumEventConverter(mssqlCdcConnectorMetadataInjector, emittedAt);
 
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(
-          catalog,
+          propertiesManager,
+          eventConverter,
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MssqlCdcStateHandler(stateManager),
-          mssqlCdcConnectorMetadataInjector,
-          MssqlCdcHelper.getDebeziumProperties(database, catalog, false),
-          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
-          emittedAt,
-          true);
+          new MssqlCdcStateHandler(stateManager));
 
       /*
        * If the CDC state is null or there is no streams to snapshot, that means no stream has gone

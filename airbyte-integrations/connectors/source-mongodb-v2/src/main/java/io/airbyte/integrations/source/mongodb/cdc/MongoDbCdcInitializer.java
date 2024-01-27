@@ -9,9 +9,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumEventConverter;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.commons.json.Jsons;
@@ -136,18 +137,14 @@ public class MongoDbCdcInitializer {
             emittedAt, config.getCheckpointInterval(), isEnforceSchema);
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
-        new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
+        new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
+    final var propertiesManager = new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.rawConfig(), catalog);
+    final var eventConverter = new MongoDbDebeziumEventConverter(cdcMetadataInjector, catalog, emittedAt, config.rawConfig());
 
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
-        cdcSavedInfoFetcher,
-        mongoDbCdcStateHandler,
-        cdcMetadataInjector,
-        defaultDebeziumProperties,
-        DebeziumPropertiesManager.DebeziumConnectorType.MONGODB,
-        emittedAt,
-        false);
+    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
+        propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);
 
     // We can close the client after the initial snapshot is complete, incremental
     // iterator does not make use of the client.

@@ -91,9 +91,4 @@ public abstract class DebeziumPropertiesManager {
 
   protected abstract Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config);
 
-  public enum DebeziumConnectorType {
-    RELATIONALDB,
-    MONGODB;
-  }
-
 }

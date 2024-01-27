@@ -20,10 +20,6 @@ import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordIterator;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumShutdownProcedure;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateDecoratingIterator;
-import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
-import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumEventConverter;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -33,9 +29,7 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,44 +53,37 @@ public class AirbyteDebeziumHandler<T> {
   private final boolean trackSchemaHistory;
   private final Duration firstRecordWaitTime, subsequentRecordWaitTime;
   private final int queueSize;
+  private final boolean addDbNameToOffsetState;
 
   public AirbyteDebeziumHandler(final JsonNode config,
                                 final CdcTargetPosition<T> targetPosition,
                                 final boolean trackSchemaHistory,
                                 final Duration firstRecordWaitTime,
                                 final Duration subsequentRecordWaitTime,
-                                final int queueSize) {
+                                final int queueSize,
+                                final boolean addDbNameToOffsetState) {
     this.config = config;
     this.targetPosition = targetPosition;
     this.trackSchemaHistory = trackSchemaHistory;
     this.firstRecordWaitTime = firstRecordWaitTime;
     this.subsequentRecordWaitTime = subsequentRecordWaitTime;
     this.queueSize = queueSize;
+    this.addDbNameToOffsetState = addDbNameToOffsetState;
   }
 
-  public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
+  public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final DebeziumPropertiesManager debeziumPropertiesManager,
+                                                                       final DebeziumEventConverter eventConverter,
                                                                        final CdcSavedInfoFetcher cdcSavedInfoFetcher,
-                                                                       final CdcStateHandler cdcStateHandler,
-                                                                       final CdcMetadataInjector cdcMetadataInjector,
-                                                                       final Properties connectorProperties,
-                                                                       final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
-                                                                       final Instant emittedAt,
-                                                                       final boolean addDbNameToState) {
+                                                                       final CdcStateHandler cdcStateHandler) {
     LOGGER.info("Using CDC: {}", true);
     LOGGER.info("Using DBZ version: {}", DebeziumEngine.class.getPackage().getImplementationVersion());
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
         cdcSavedInfoFetcher.getSavedOffset(),
-        addDbNameToState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
+        addDbNameToOffsetState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
     final var schemaHistoryManager = trackSchemaHistory
         ? Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(
             cdcSavedInfoFetcher.getSavedSchemaHistory(), cdcStateHandler.compressSchemaHistoryForState()))
         : Optional.<AirbyteSchemaHistoryStorage>empty();
-
-    final var debeziumPropertiesManager = switch (debeziumConnectorType) {
-      case MONGODB -> new MongoDbDebeziumPropertiesManager(connectorProperties, config, catalog);
-      default -> new RelationalDbDebeziumPropertiesManager(connectorProperties, config, catalog);
-    };
-
     final var publisher = new DebeziumRecordPublisher(debeziumPropertiesManager);
     final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(queueSize);
     publisher.start(queue, offsetManager, schemaHistoryManager);
@@ -109,15 +96,12 @@ public class AirbyteDebeziumHandler<T> {
         firstRecordWaitTime,
         subsequentRecordWaitTime);
 
-    final Duration syncCheckpointDuration =
-        config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
-            : SYNC_CHECKPOINT_DURATION;
-    final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
+    final Duration syncCheckpointDuration = config.has(SYNC_CHECKPOINT_DURATION_PROPERTY)
+        ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
+        : SYNC_CHECKPOINT_DURATION;
+    final Long syncCheckpointRecords = config.has(SYNC_CHECKPOINT_RECORDS_PROPERTY)
+        ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : SYNC_CHECKPOINT_RECORDS;
-    final DebeziumEventConverter eventConverter = switch (debeziumConnectorType) {
-      case MONGODB -> new MongoDbDebeziumEventConverter(cdcMetadataInjector, catalog, emittedAt, config);
-      default -> new RelationalDbDebeziumEventConverter(cdcMetadataInjector, emittedAt);
-    };
     return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator<>(
         eventIterator,
         cdcStateHandler,
