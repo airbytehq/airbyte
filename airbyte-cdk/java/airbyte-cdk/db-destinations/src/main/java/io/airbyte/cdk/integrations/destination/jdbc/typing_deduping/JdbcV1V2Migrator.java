@@ -37,7 +37,7 @@ public class JdbcV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinitio
     String retrievedSchema = "";
     try (ResultSet columns = database.getMetaData().getSchemas(databaseName, streamConfig.id().rawNamespace())) {
       while (columns.next()) {
-        retrievedSchema = columns.getString("TABLE_SCHEMA");
+        retrievedSchema = columns.getString("TABLE_SCHEM");
         // Catalog can be null, so don't do anything with it.
         String catalog = columns.getString("TABLE_CATALOG");
       }

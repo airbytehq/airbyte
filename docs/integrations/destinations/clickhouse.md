@@ -44,6 +44,18 @@ You can create such a user by running:
 
 ```
 GRANT CREATE ON * TO airbyte_user;
+GRANT CREATE ON default * TO airbyte_user
+
+GRANT DROP ON * TO airbyte_user
+GRANT TRUNCATE ON * TO airbyte_user
+GRANT INSERT ON * TO airbyte_user
+GRANT SELECT ON * TO airbyte_user
+GRANT CREATE DATABASE ON airbyte_internal.* TO airbyte_user
+GRANT CREATE TABLE ON airbyte_internal.* TO airbyte_user
+GRANT DROP ON airbyte_internal.* TO airbyte_user
+GRANT TRUNCATE ON airbyte_internal.* TO airbyte_user
+GRANT INSERT ON airbyte_internal.* TO airbyte_user
+GRANT SELECT ON airbyte_internal.* TO airbyte_user
 ```
 
 You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.

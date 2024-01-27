@@ -126,4 +126,9 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   public boolean isV2Destination() {
     return true;
   }
+
+  @Override
+  protected String getConfigSchemaKey() {
+    return "database";
+  }
 }

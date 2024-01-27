@@ -25,3 +25,6 @@ java {
         options.compilerArgs.remove("-Werror")
     }
 }
+
+compileKotlin {}
+compileTestKotlin {}

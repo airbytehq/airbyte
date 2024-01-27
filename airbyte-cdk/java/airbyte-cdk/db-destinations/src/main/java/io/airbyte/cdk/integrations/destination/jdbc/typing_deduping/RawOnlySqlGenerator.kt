@@ -11,7 +11,7 @@ import org.jooq.Field
 import org.jooq.SQLDialect
 import java.util.*
 
-class RawOnlySqlGenerator(namingTransformer: NamingConventionTransformer?) :
+class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransformer) :
     JdbcSqlGenerator(namingTransformer) {
     override fun getStructType(): DataType<*>? {
         throw NotImplementedError("This Destination Does not support typing")

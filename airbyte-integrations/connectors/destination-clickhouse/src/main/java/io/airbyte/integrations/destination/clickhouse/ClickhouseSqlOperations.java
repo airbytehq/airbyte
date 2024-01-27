@@ -39,7 +39,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
         """
             CREATE TABLE IF NOT EXISTS %s.%s (
             %s String,
-            %s JSON,
+            %s String,
             %s DateTime64(3, 'GMT') DEFAULT now(),
             %s DateTime64(3, 'GMT') DEFAULT now(),
             PRIMARY KEY(%s)
@@ -110,6 +110,6 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
   protected void insertRecordsInternalV2(final JdbcDatabase database, final List<PartialAirbyteMessage> records, final String schemaName,
                                          final String tableName)
       throws Exception {
-
+    insertRecordsInternal(database, records, schemaName, tableName);
   }
 }

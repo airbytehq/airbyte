@@ -96,3 +96,6 @@ dependencies {
 
     testImplementation libs.junit.jupiter.system.stubs
 }
+
+compileKotlin {}
+compileTestKotlin {}

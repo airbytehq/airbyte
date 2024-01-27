@@ -71,6 +71,10 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
     return sqlOperations;
   }
 
+  protected String getConfigSchemaKey() {
+    return "schema";
+  }
+
   public AbstractJdbcDestination(final String driverClass,
                                  final NamingConventionTransformer namingResolver,
                                  final SqlOperations sqlOperations) {
@@ -279,7 +283,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
     final String defaultNamespace;
     final TyperDeduper typerDeduper;
     if (TypingAndDedupingFlag.isDestinationV2()) {
-      defaultNamespace = config.get("schema").asText();
+      defaultNamespace = config.get(getConfigSchemaKey()).asText();
       addDefaultNamespaceToStreams(catalog, defaultNamespace);
       typerDeduper = getV2TyperDeduper(config, catalog, database);
     } else {

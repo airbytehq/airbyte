@@ -41,6 +41,7 @@ public class DestinationConfig {
       config = new DestinationConfig();
       config.root = root;
       config.isV2Destination = isV2Destination;
+      LOGGER.info("Initializing Destination: is " + (isV2Destination ? "": "not" + " a V2 Destination" ));
     } else {
       LOGGER.warn("Singleton was already initialized.");
     }
