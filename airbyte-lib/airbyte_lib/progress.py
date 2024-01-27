@@ -29,7 +29,7 @@ def log_records_read(total_count: int) -> None:
         return
 
     ipy_display.clear_output(wait=True)
-    ipy_display.display(ipy_display.Markdown(f"Read {total_count} records."), raw=True)
+    ipy_display.display(ipy_display.Markdown(f"Read {total_count} records."))
 
 
 def log_batch_written(stream_name: str, batch_size: int) -> None:
@@ -44,8 +44,7 @@ def log_batch_written(stream_name: str, batch_size: int) -> None:
 
     ipy_display.clear_output(wait=True)
     ipy_display.display(
-        ipy_display.Markdown(f"Wrote batch for stream '{stream_name}' with {batch_size} records."),
-        raw=True,
+        ipy_display.Markdown(f"Wrote batch for stream '{stream_name}' with {batch_size} records.")
     )
 
 
@@ -56,8 +55,7 @@ def log_batch_finalizing(stream_name: str) -> None:
 
     ipy_display.clear_output(wait=True)
     ipy_display.display(
-        ipy_display.Markdown(f"Finalizing batches for stream '{stream_name}'..."),
-        raw=True,
+        ipy_display.Markdown(f"Finalizing batches for stream '{stream_name}'...")
     )
 
 
@@ -68,6 +66,5 @@ def log_batch_finalized(stream_name: str) -> None:
 
     ipy_display.clear_output(wait=True)
     ipy_display.display(
-        ipy_display.Markdown(f"Finalized batch for stream '{stream_name}'."),
-        raw=True,
+        ipy_display.Markdown(f"Finalized batch for stream '{stream_name}'.")
     )
