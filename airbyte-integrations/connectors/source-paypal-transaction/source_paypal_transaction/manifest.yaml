@@ -162,8 +162,121 @@ definitions:
         inject_into: request_parameter
     $parameters:
       path: "v1/reporting/balances"
+  
+  #New Stream - List Product
+  list_products_stream:
+    type: DeclarativeStream
+    primary_key: id
+    name: "list_products"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 10
+        page_token_option:
+           type: RequestOption
+           inject_into: request_parameter
+           field_name: page
+        page_size_option:
+           inject_into: request_parameter
+           field_name: page_size
+           type: RequestOption
+      requester:
+        $ref: "#/definitions/requester"
+        http_method: GET
+        request_headers:
+          Content-Type: application/json
+    $parameters:
+      path: "v1/catalogs/products"
+      field_path: products
 
-  #Stream search Invoices 
+  # New Stream - Show Product Details
+  show_product_details_stream:
+    type: DeclarativeStream
+    primary_key: id
+    name: "show_product_details"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/v1/catalogs/products/{{ stream_slice.product_id }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "product_id"
+            stream: 
+              $ref: "#/definitions/list_products_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: update_time
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ max( format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      step: "P{{ config.get('time_window', 7) }}D"
+      cursor_granularity: PT1S
+    transformations:
+      - type: AddFields
+        fields:
+          - path: 
+            - product_id
+            value: "{{ stream_slice.product_id }}"
+
+  #Stream List Disputes
+  list_disputes_stream:
+    type: DeclarativeStream
+    primary_key: dispute_id
+    name: "list_disputes"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next_page_token
+        page_size_option:
+          inject_into: request_parameter
+          field_name: page_size
+          type: RequestOption
+        pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 50
+      requester:
+        $ref: "#/definitions/requester"
+        http_method: GET
+        request_parameters:
+          start_time: "{{ stream_slice.get('update_time_after', config['start_date']) }}"   
+    $parameters:
+      path: "v1/customer/disputes"
+      field_path: items
+
+#Stream search Invoices 
   # Currently it does not support incremental sync as metadata does not contain last_update_date
   # TODO: Review if this is only a sandbox problem
   search_invoices_stream:
@@ -199,99 +312,16 @@ definitions:
             end: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"    
     $parameters:
       field_path: items
-      path: "v2/invoicing/search-invoices"
+      path: "v2/invoicing/search-invoices"  
   
-  #New Stream
-  products_stream:
-    type: DeclarativeStream
-    primary_key: id
-    name: "products"
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 10
-        page_token_option:
-           type: RequestOption
-           inject_into: request_parameter
-           field_name: page
-        page_size_option:
-           inject_into: request_parameter
-           field_name: page_size
-           type: RequestOption
-      requester:
-        $ref: "#/definitions/requester"
-        http_method: GET
-        request_headers:
-          Content-Type: application/json
-    $parameters:
-      path: "v1/catalogs/products"
-      field_path: products
-
-  #Stream List Disputes
-  list_disputes_stream:
-    type: DeclarativeStream
-    primary_key: dispute_id
-    name: "list_disputes"
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: next_page_token
-        page_size_option:
-          inject_into: request_parameter
-          field_name: page_size
-          type: RequestOption
-        pagination_strategy:
-            type: PageIncrement
-            start_from_page: 1
-            page_size: 50
-      requester:
-        $ref: "#/definitions/requester"
-        http_method: GET
-        request_parameters:
-          start_time: "{{ stream_slice.get('update_time_after', config['start_date']) }}"   
-    # incremental_sync:
-    #   type: DatetimeBasedCursor
-    #   cursor_field: update_time
-    #   cursor_datetime_formats:
-    #     - "%Y-%m-%dT%H:%M:%SZ"
-    #   datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    #   start_datetime:
-    #     type: MinMaxDatetime
-    #     datetime: >-
-    #         {{ max( format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
-    #     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    #   start_time_option:
-    #       type: RequestOption
-    #       field_name: start_time
-    #       inject_into: request_parameter
-    #   end_datetime:
-    #     type: MinMaxDatetime
-    #     datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-    #     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    #   step: "P{{ config.get('time_window', 7) }}D"
-    #   cursor_granularity: PT1S
-    $parameters:
-      path: "v1/customer/disputes"
-      field_path: items
 
 streams:
   - "#/definitions/transactions_stream"
   - "#/definitions/balances_stream"
-  - "#/definitions/search_invoices_stream"
-  - "#/definitions/products_stream"
+  - "#/definitions/list_products_stream"
+  - "#/definitions/show_product_details_stream"
   - "#/definitions/list_disputes_stream"
+  - "#/definitions/search_invoices_stream"
 
 spec:
   type: Spec

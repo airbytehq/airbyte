@@ -11,7 +11,8 @@
 #  }
 
 # HOW TO USE:
-# python product_catalog.py
+# To create a new product: python script_name.py --action create
+#To update an existing product: python script_name.py --action update --product_id <product_id>
 # NOTE: This is version one, it conly creates 1 product at a time. This has not been parametrized
 # TODO: Generate N products in one run.
 
@@ -20,6 +21,7 @@ import random
 import string
 import base64
 import json
+import argparse
 
 def read_json(filepath):
     with open(filepath, "r") as f:
@@ -61,17 +63,48 @@ def create_paypal_product(access_token):
     }
     response = requests.post(url=url, json=payload, headers=headers)
     return response.json()
-# Replace with your actual client_id and secret_id from PayPal
 
+def update_paypal_product(access_token, product_id, updates):
+    """Update a product in PayPal."""
+    url = f"https://api-m.sandbox.paypal.com/v1/catalogs/products/{product_id}"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    }
+    response = requests.patch(url=url, json=updates, headers=headers)
+    if response.status_code == 204: 
+        print(f"Update Successful. Response {response.status_code}. This succesful repsonse has no response body")
+        return None 
+    else: 
+        print(f"Error: {response.status_code}, {response.text}") 
+        return None
+    
+
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='Create or Update a PayPal Product.')
+parser.add_argument('--action', choices=['create', 'update'], required=True, help='Action to perform: create or update')
+parser.add_argument('--product_id', help='Product ID for update action')
+args = parser.parse_args()
+
+# Common setup
 CREDS = read_json("../secrets/config.json")
-
 client_id = CREDS.get("client_id")
 secret_id = CREDS.get("client_secret")
-
-# Get the access token
 access_token = get_paypal_token(client_id, secret_id)
-# Create a product using the access token
-
-product = create_paypal_product(access_token)
-print(product)
+# Perform action based on arguments
+if args.action == 'create':
+    product = create_paypal_product(access_token)
+    print("Created product:", product)
+elif args.action == 'update' and args.product_id:
+    updates = [
+        {
+            "op": "replace",
+            "path": "/description",
+            "value": "Anothe rUpdate. Let's see if something changes or not"
+        }
+    ]
+    product = update_paypal_product(access_token, args.product_id, updates)
+    print("Updated product:", product)
+else:
+    print("Invalid arguments")
 

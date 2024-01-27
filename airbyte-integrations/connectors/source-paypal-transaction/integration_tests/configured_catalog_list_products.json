@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "products",
+        "name": "list_products",
         "json_schema": {},
         "source_defined_cursor": false,
         "supported_sync_modes": ["full_refresh"]
