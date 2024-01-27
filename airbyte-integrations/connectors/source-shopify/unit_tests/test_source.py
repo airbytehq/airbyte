@@ -211,7 +211,8 @@ def test_get_shop_name(config, shop, expected) -> None:
         ({"fetch_transactions_user_id": False}, TransactionsGraphql),
         ({"fetch_transactions_user_id": True}, Transactions),
         ({}, TransactionsGraphql),
-     ]
+     ],
+    ids=["don't fetch user_id", "fetch user id", "unset config value shouldn't fetch user_id"],
 )
 def test_select_transactions_stream(config, expected_stream_class):
     config["shop"] = "test-store"
