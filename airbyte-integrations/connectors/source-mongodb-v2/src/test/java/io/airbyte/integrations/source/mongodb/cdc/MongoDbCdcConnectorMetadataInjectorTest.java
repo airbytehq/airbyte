@@ -9,7 +9,6 @@ import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConver
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
 import io.airbyte.commons.json.Jsons;
 import java.lang.reflect.Field;
 import java.time.Instant;

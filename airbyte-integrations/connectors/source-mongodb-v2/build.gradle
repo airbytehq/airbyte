@@ -35,8 +35,18 @@ sourceSets {
     }
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes"
+    }
+}
+
 dependencies {
     implementation libs.mongo.driver.sync
+
+    implementation libs.debezium.api
+    implementation libs.debezium.embedded
+    implementation libs.debezium.mongodb
 
     testImplementation libs.testcontainers.mongodb
 

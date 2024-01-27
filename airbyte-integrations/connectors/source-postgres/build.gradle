@@ -50,6 +50,10 @@ dependencies {
     implementation libs.postgresql
     implementation libs.bundles.datadog
 
+    implementation libs.debezium.api
+    implementation libs.debezium.embedded
+    implementation libs.debezium.postgres
+
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testFixturesImplementation libs.testcontainers.jdbc
     testFixturesImplementation libs.testcontainers.postgresql
