@@ -187,7 +187,7 @@ class Source:
         )
 
     @property
-    def yaml_spec(self) -> str:
+    def _yaml_spec(self) -> str:
         """Get the spec as a yaml string."""
         spec_obj: ConnectorSpecification = self._get_spec()
         spec_dict = spec_obj.dict(exclude_unset=True)

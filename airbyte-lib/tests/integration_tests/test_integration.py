@@ -108,7 +108,7 @@ def test_source_yaml_spec():
     source = ab.get_connector(
         "source-test", config={"apiKey": 1234}, install_if_missing=False
     )
-    assert source.yaml_spec.startswith("connectionSpecification:\n  $schema:")
+    assert source._yaml_spec.startswith("connectionSpecification:\n  $schema:")
 
 
 def test_non_existing_connector():
