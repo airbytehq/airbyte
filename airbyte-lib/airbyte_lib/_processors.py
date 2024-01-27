@@ -32,6 +32,7 @@ from airbyte_protocol.models import (
 
 from airbyte_lib import exceptions as exc
 from airbyte_lib._util import protocol_util  # Internal utility functions
+from airbyte_lib.progress import log_batch_finalized, log_batch_finalizing, log_batch_written
 
 
 if TYPE_CHECKING:
@@ -95,7 +96,7 @@ class RecordProcessor(abc.ABC):
         For now, only one source at a time is supported.
         If this method is called multiple times, the last call will overwrite the previous one.
 
-        TODO: Expand this to handle mutliple sources.
+        TODO: Expand this to handle multiple sources.
         """
         _ = source_name
         self.source_catalog = source_catalog
@@ -157,6 +158,7 @@ class RecordProcessor(abc.ABC):
                 if len(stream_batch) >= max_batch_size:
                     record_batch = pa.Table.from_pylist(stream_batch)
                     self._process_batch(stream_name, record_batch)
+                    log_batch_written(stream_name, len(stream_batch))
                     stream_batch.clear()
 
             elif message.type is Type.STATE:
@@ -184,10 +186,13 @@ class RecordProcessor(abc.ABC):
             if batch:
                 record_batch = pa.Table.from_pylist(batch)
                 self._process_batch(stream_name, record_batch)
+                log_batch_written(stream_name, len(stream_batch))
 
         # Finalize any pending batches
         for stream_name in list(self._pending_batches.keys()):
+            log_batch_finalizing(stream_name)
             self._finalize_batches(stream_name)
+            log_batch_finalized(stream_name)
 
     @final
     def _process_batch(

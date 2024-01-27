@@ -26,6 +26,7 @@ from airbyte_lib import exceptions as exc
 from airbyte_lib._factories.cache_factories import get_default_cache
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.datasets._lazy import LazyDataset
+from airbyte_lib.progress import log_records_read
 from airbyte_lib.results import ReadResult
 from airbyte_lib.telemetry import (
     CacheTelemetryInfo,
@@ -76,7 +77,6 @@ class Source:
 
         If config is provided, it will be validated against the spec if validate is True.
         """
-        self._processed_records = 0
         self.executor = executor
         self.name = name
         self._processed_records = 0
@@ -401,16 +401,22 @@ class Source:
     ) -> Generator[AirbyteRecordMessage, Any, None]:
         """This method simply tallies the number of records processed and yields the messages."""
         self._processed_records = 0  # Reset the counter before we start
+
         for message in messages:
             self._processed_records += 1
             yield message
+            log_records_read(self._processed_records)
 
     def read(self, cache: SQLCacheBase | None = None) -> ReadResult:
         if cache is None:
             cache = get_default_cache()
 
         cache.register_source(source_name=self.name, source_catalog=self.configured_catalog)
-        cache.process_airbyte_messages(self._tally_records(self._read(cache.get_telemetry_info())))
+        cache.process_airbyte_messages(
+            self._tally_records(
+                self._read(cache.get_telemetry_info())
+            )
+        )
 
         return ReadResult(
             processed_records=self._processed_records,
