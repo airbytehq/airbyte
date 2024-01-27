@@ -578,6 +578,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.7.3   | [#34560](https://github.com/airbytehq/airbyte/pull/34560)  | Simplify Gradle task execution framework by removing local maven repo support.                                    |
 | 3.7.2   | [#34555](https://github.com/airbytehq/airbyte/pull/34555)  | Override secret masking in some very specific special cases.                                                      |
 | 3.7.1   | [#34441](https://github.com/airbytehq/airbyte/pull/34441)  | Support masked secret scrubbing for java CDK v0.15+                                                               |
 | 3.7.0   | [#34343](https://github.com/airbytehq/airbyte/pull/34343)  | allow running connector upgrade_cdk for java connectors                                                           |
