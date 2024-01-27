@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
+import shlex
 
 import subprocess
 import sys
@@ -29,6 +30,10 @@ class Executor(ABC):
         metadata: ConnectorMetadata | None = None,
         target_version: str | None = None,
     ) -> None:
+        """Initialize a connector executor.
+
+        The 'name' param is required if 'metadata' is None.
+        """
         if not name and not metadata:
             raise exc.AirbyteLibInternalError(message="Either name or metadata must be provided.")
 
@@ -187,7 +192,7 @@ class VenvExecutor(Executor):
 
         try:
             self._run_subprocess_and_raise_on_failure(
-                args=[pip_path, "install", *self.pip_url.split(" ")]
+                args=[pip_path, "install", *shlex.split(self.pip_url)]
             )
         except exc.AirbyteSubprocessFailedError as ex:
             # If the installation failed, remove the virtual environment
