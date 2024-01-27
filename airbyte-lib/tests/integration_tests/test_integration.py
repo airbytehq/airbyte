@@ -3,11 +3,11 @@
 from collections.abc import Mapping
 import os
 import shutil
+import subprocess
 from typing import Any
 from unittest.mock import Mock, call, patch
 import tempfile
 from pathlib import Path
-import pip
 
 from sqlalchemy import column, text
 
@@ -17,7 +17,7 @@ import pandas as pd
 import pytest
 
 from airbyte_lib.caches import PostgresCache, PostgresCacheConfig
-from airbyte_lib.registry import _update_cache
+from airbyte_lib import registry
 from airbyte_lib.version import get_version
 from airbyte_lib.results import ReadResult
 from airbyte_lib.datasets import CachedDataset, LazyDataset, SQLDataset
@@ -27,23 +27,31 @@ from airbyte_lib.results import ReadResult
 from airbyte_lib import exceptions as exc
 
 
-@pytest.fixture(scope="module", autouse=True)
+LOCAL_TEST_REGISTRY_URL = "./tests/integration_tests/fixtures/registry.json"
+
+
+@pytest.fixture(scope="package", autouse=True)
 def prepare_test_env():
     """
     Prepare test environment. This will pre-install the test source from the fixtures array and set the environment variable to use the local json file as registry.
     """
+    venv_dir = f".venv-source-test"
     if os.path.exists(".venv-source-test"):
         shutil.rmtree(".venv-source-test")
 
-    os.system("python -m venv .venv-source-test")
-    os.system(".venv-source-test/bin/pip install -e ./tests/integration_tests/fixtures/source-test")
+    subprocess.run(["python", "-m", "venv", venv_dir], check=True)
+    subprocess.run([f"{venv_dir}/bin/pip", "install", "-e", "./tests/integration_tests/fixtures/source-test"], check=True)
 
-    os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/integration_tests/fixtures/registry.json"
+    os.environ["AIRBYTE_LOCAL_REGISTRY"] = LOCAL_TEST_REGISTRY_URL
     os.environ["DO_NOT_TRACK"] = "true"
+
+    # Force-refresh the registry cache
+    _ = registry._get_registry_cache(force_refresh=True)
 
     yield
 
     shutil.rmtree(".venv-source-test")
+
 
 @pytest.fixture
 def expected_test_stream_data() -> dict[str, list[dict[str, str | int]]]:
@@ -56,6 +64,14 @@ def expected_test_stream_data() -> dict[str, list[dict[str, str | int]]]:
             {"column1": "value1", "column2": 1},
         ],
     }
+
+def test_registry_get():
+    assert registry._get_registry_url() == LOCAL_TEST_REGISTRY_URL
+
+    metadata = registry.get_connector_metadata("source-test")
+    assert metadata.name == "source-test"
+    assert metadata.latest_available_version == "0.0.1"
+
 
 def test_list_streams(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_connector(
@@ -112,11 +128,20 @@ def test_version_enforcement(raises, latest_available_version, requested_version
 
     In this test, the actually installed version is 0.0.1
     """
-    _update_cache()
-    from airbyte_lib.registry import _cache
-    _cache["source-test"].latest_available_version = latest_available_version
-    if raises:
-        with pytest.raises(Exception):
+    patched_entry = registry.ConnectorMetadata(
+        name="source-test", latest_available_version=latest_available_version
+    )
+    with patch.dict("airbyte_lib.registry.__cache", {"source-test": patched_entry}, clear=False):
+        if raises:
+            with pytest.raises(Exception):
+                source = ab.get_connector(
+                    "source-test",
+                    version=requested_version,
+                    config={"apiKey": "abc"},
+                    install_if_missing=False,
+                )
+                source.executor.ensure_installation(auto_fix=False)
+        else:
             source = ab.get_connector(
                 "source-test",
                 version=requested_version,
@@ -124,17 +149,6 @@ def test_version_enforcement(raises, latest_available_version, requested_version
                 install_if_missing=False,
             )
             source.executor.ensure_installation(auto_fix=False)
-    else:
-        source = ab.get_connector(
-            "source-test",
-            version=requested_version,
-            config={"apiKey": "abc"},
-            install_if_missing=False,
-        )
-        source.executor.ensure_installation(auto_fix=False)
-
-    # reset
-    _cache["source-test"].latest_available_version = "0.0.1"
 
 
 def test_check():
