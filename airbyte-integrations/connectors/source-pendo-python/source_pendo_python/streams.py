@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class PendoPythonStream(HttpStream, ABC):
@@ -25,6 +25,8 @@ class PendoPythonStream(HttpStream, ABC):
         output_types = []
         if field_type == "time":
             output_types = ["null", "integer"]
+        elif field_type == "float":
+            output_types = ["null", "number"]
         elif field_type == "list":
             output_types = ["null", "array", "string"]
         elif field_type == "":
@@ -229,9 +231,7 @@ class ReportResult(PendoPythonStream):
         }
 
         for field in self.report["fields"]:
-            schema["properties"][field["field"]] = {
-                    "type": self.get_valid_field_info(field["type"])
-                }
+            schema["properties"][field["field"]] = self.get_valid_field_info(field["type"])
 
         return schema
 
