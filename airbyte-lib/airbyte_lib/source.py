@@ -118,10 +118,11 @@ class Source:
 
         If validate is True, raise an exception if the config fails validation.
 
-        If validate is False, validation will be deferred until check() is called.
+        If validate is False, validation will be deferred until check() or validate_config()
+        is called.
         """
         if validate:
-            self._validate_config(config)
+            self.validate_config(config)
 
         self._config_dict = config
 
@@ -150,9 +151,13 @@ class Source:
                 log_text=self._last_log_messages,
             )
 
-    def _validate_config(self, config: dict[str, Any]) -> None:
-        """Validate the config against the spec."""
+    def validate_config(self, config: dict[str, Any] | None = None) -> None:
+        """Validate the config against the spec.
+
+        If config is not provided, the already-set config will be validated.
+        """
         spec = self._get_spec(force_refresh=False)
+        config = self._config if config is None else config
         jsonschema.validate(config, spec.connectionSpecification)
 
     def get_available_streams(self) -> list[str]:
