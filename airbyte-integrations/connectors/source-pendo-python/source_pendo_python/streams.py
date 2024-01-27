@@ -153,7 +153,6 @@ class PendoTimeSeriesAggregationStream(PendoPythonStream):
         else:
             request_body["request"]["pipeline"][0]["source"]["timeSeries"]["first"] = f"now() {next_page_token} * 24*60*60*1000"
 
-        print(request_body)
         return request_body
 
 
@@ -184,10 +183,6 @@ class Page(PendoPythonStream):
 
 class Report(PendoPythonStream):
     name = "report"
-
-    @property
-    def use_cache(self) -> bool:
-        return True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "report"
@@ -233,9 +228,9 @@ class ReportResult(PendoPythonStream):
             }
         }
 
-        if self.report['type'] == "Visitor":
-            schema["properties"]["visitorId"] = {
-                    "type": "string"
+        for field in self.report["fields"]:
+            schema["properties"][field["field"]] = {
+                    "type": self.get_valid_field_info(field["type"])
                 }
 
         return schema
