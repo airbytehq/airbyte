@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
-import shlex
 
+import shlex
 import subprocess
 import sys
 from abc import ABC, abstractmethod
