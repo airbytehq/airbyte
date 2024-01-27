@@ -104,6 +104,13 @@ def test_ensure_installation_detection():
         assert not mock_source_install.called
 
 
+def test_source_yaml_spec():
+    source = ab.get_connector(
+        "source-test", config={"apiKey": 1234}, install_if_missing=False
+    )
+    assert source.yaml_spec.startswith("connectionSpecification:\n  $schema:")
+
+
 def test_non_existing_connector():
     with pytest.raises(Exception):
         ab.get_connector("source-not-existing", config={"apiKey": "abc"})

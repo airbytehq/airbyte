@@ -7,6 +7,7 @@ from contextlib import contextmanager, suppress
 from typing import TYPE_CHECKING, Any
 
 import jsonschema
+import yaml
 
 from airbyte_protocol.models import (
     AirbyteCatalog,
@@ -184,6 +185,14 @@ class Source:
         raise exc.AirbyteConnectorMissingSpecError(
             log_text=self._last_log_messages,
         )
+
+    @property
+    def yaml_spec(self) -> str:
+        """Get the spec as a yaml string."""
+        spec_obj: ConnectorSpecification = self._get_spec()
+        spec_dict = spec_obj.dict(exclude_unset=True)
+        # convert to a yaml string
+        return yaml.dump(spec_dict)
 
     @property
     def discovered_catalog(self) -> AirbyteCatalog:
