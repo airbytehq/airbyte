@@ -193,12 +193,20 @@ class Report(PendoPythonStream):
         return "report"
 
 
-class ReportResult(HttpSubStream, PendoPythonStream):
-    name = "report_result"
+class ReportResult(PendoPythonStream):
     primary_key = "reportId"
 
+    def __init__(self, report_id: str, **kwargs):
+        super().__init__(**kwargs)
+        self.report_id = report_id
+        self.report_name = f"report_result_{report_id}"
+
+    @property
+    def name(self):
+        return self.report_name
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"report/{stream_slice['parent']['id']}/results.json"
+        return f"report/{self.report_id}/results.json"
 
     def parse_response(
         self,
@@ -207,12 +215,23 @@ class ReportResult(HttpSubStream, PendoPythonStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        for record in response.json():  # GitHub puts records in an array.
-            yield self.transform(record=record, stream_slice=stream_slice)
+        for record in response.json():
+            yield self.transform(record=record)
 
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record["reportId"] = stream_slice['parent']['id']
+    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        record["reportId"] = self.report_id
         return record
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {
+            "type": "object",
+            "$schema": "http://json-schema.org/schema#",
+            "properties": {
+                "reportId": {
+                    "type": "string"
+                }
+            }
+        }
 
 
 class VisitorMetadata(PendoPythonStream):

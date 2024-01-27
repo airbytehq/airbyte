@@ -50,16 +50,24 @@ class SourcePendoPython(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, e
 
+    def get_reports(self, config):
+        url = f"{PendoPythonStream.url_base}report"
+        auth = SourcePendoPython._get_authenticator(config)
+        try:
+            session = requests.get(url, headers=auth.get_auth_header())
+            body = session.json()
+            return [obj["id"] for obj in body]
+        except requests.exceptions.RequestException as e:
+            return False, e
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
 
-        reports_stream = Report(authenticator=auth)
-        return [
+        result = [
             Feature(authenticator=auth),
             Guide(authenticator=auth),
             Page(authenticator=auth),
-            reports_stream,
-            ReportResult(authenticator=auth, parent=reports_stream),
+            Report(authenticator=auth),
             VisitorMetadata(authenticator=auth),
             AccountMetadata(authenticator=auth),
             Visitor(authenticator=auth),
@@ -68,3 +76,9 @@ class SourcePendoPython(AbstractSource):
             FeatureEvents(authenticator=auth),
             GuideEvents(authenticator=auth)
         ]
+
+        all_reports = self.get_reports(config)
+        for report_id in all_reports:
+            result.append(ReportResult(report_id=report_id, authenticator=auth))
+
+        return result
