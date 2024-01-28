@@ -166,7 +166,7 @@ class ReadProgress:
         if not ipy_display:
             return
 
-        if self.last_update_time and cast(float, self.elapsed_seconds_since_last_update()) < 0.5:  # noqa: PLR2004
+        if self.last_update_time and cast(float, self.elapsed_seconds_since_last_update) < 0.5:  # noqa: PLR2004
             # Don't update more than twice per second.
             return
 
