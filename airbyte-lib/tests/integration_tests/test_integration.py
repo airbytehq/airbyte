@@ -596,7 +596,7 @@ def test_install_uninstall():
             install_if_missing=False,
         )
 
-        # Override the install root to a temp dir
+        # Override the install root to avoid conflicts with the test fixture
         install_root = Path(temp_dir)
         source.executor.install_root = install_root
 
