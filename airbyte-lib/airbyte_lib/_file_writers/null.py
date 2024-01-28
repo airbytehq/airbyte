@@ -21,13 +21,13 @@ if TYPE_CHECKING:
 
 
 class NullWriterConfig(FileWriterConfigBase):
-    """Configuration for the Snowflake cache."""
+    """Configuration for the Null (no-op) file writer."""
 
     # Inherits `cache_dir` from base class
 
 
 class NullWriter(FileWriterBase):
-    """A Parquet cache implementation."""
+    """A Null (no-op) file writer implementation."""
 
     config_class = NullWriterConfig
 
