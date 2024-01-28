@@ -401,7 +401,7 @@ class Source:
     ) -> Generator[AirbyteRecordMessage, Any, None]:
         """This method simply tallies the number of records processed and yields the messages."""
         self._processed_records = 0  # Reset the counter before we start
-        progress.reset()
+        progress.reset(len(self._selected_stream_names or []))
 
         for message in messages:
             self._processed_records += 1
@@ -413,11 +413,7 @@ class Source:
             cache = get_default_cache()
 
         cache.register_source(source_name=self.name, source_catalog=self.configured_catalog)
-        cache.process_airbyte_messages(
-            self._tally_records(
-                self._read(cache.get_telemetry_info())
-            )
-        )
+        cache.process_airbyte_messages(self._tally_records(self._read(cache.get_telemetry_info())))
 
         return ReadResult(
             processed_records=self._processed_records,
