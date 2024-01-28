@@ -118,17 +118,13 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
 
         errors = []
         for stream in streams:
-            if not isinstance(stream, (AbstractFileBasedStream, FileBasedStreamFacade)):
+            if not isinstance(stream, AbstractFileBasedStream):
                 raise ValueError(f"Stream {stream} is not a file-based stream.")
             try:
-                if isinstance(stream, FileBasedStreamFacade):
-                    _stream = stream._legacy_stream
-                else:
-                    _stream = stream
                 (
                     stream_is_available,
                     reason,
-                ) = stream.availability_strategy.check_availability_and_parsability(_stream, logger, self)
+                ) = stream.availability_strategy.check_availability_and_parsability(stream, logger, self)
             except Exception:
                 errors.append(f"Unable to connect to stream {stream.name} - {''.join(traceback.format_exc())}")
             else:
@@ -137,13 +133,13 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
 
         return not bool(errors), (errors or None)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Union[AbstractFileBasedStream, FileBasedStreamFacade]]:  # type: ignore  # we only want to return file-based streams here, not Stream as the superclass suggests
+    def streams(self, config: Mapping[str, Any]) -> List[AbstractFileBasedStream]:
         """
         Return a list of this source's streams.
         """
         file_based_streams = self._get_file_based_streams(config)
 
-        configured_streams: List[Union[AbstractFileBasedStream, FileBasedStreamFacade]] = []
+        configured_streams: List[AbstractFileBasedStream] = []
 
         for stream in file_based_streams:
             sync_mode = self._get_sync_mode_from_catalog(stream)

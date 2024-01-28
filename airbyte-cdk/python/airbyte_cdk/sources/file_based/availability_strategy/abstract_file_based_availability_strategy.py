@@ -10,8 +10,8 @@ from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
     AbstractAvailabilityStrategy,
-    StreamAvailable,
     StreamAvailability,
+    StreamAvailable,
     StreamUnavailable,
 )
 from airbyte_cdk.sources.streams.core import Stream

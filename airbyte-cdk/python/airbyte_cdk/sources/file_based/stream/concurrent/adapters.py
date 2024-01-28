@@ -6,28 +6,27 @@ import copy
 import json
 import logging
 from functools import cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream, Level, SyncMode, Type
-from airbyte_cdk.sources import AbstractSource, Source
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
-from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, AbstractFileBasedAvailabilityStrategyWrapper
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.file_based.availability_strategy import (
+    AbstractFileBasedAvailabilityStrategy,
+    AbstractFileBasedAvailabilityStrategyWrapper,
+)
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedNoopCursor
+from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.helpers import get_cursor_field_from_stream, get_primary_key_from_stream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
 
@@ -37,7 +36,7 @@ This module contains adapters to help enabling concurrency on File-based Stream 
 
 
 @deprecated("This class is experimental. Use at your own risk.")
-class FileBasedStreamFacade(Stream):
+class FileBasedStreamFacade(AbstractFileBasedStream):
     @classmethod
     def create_from_stream(
         cls,
@@ -99,113 +98,43 @@ class FileBasedStreamFacade(Stream):
         self._cursor = cursor
         self._slice_logger = slice_logger
         self._logger = logger
+        self.catalog_schema = self._legacy_stream.catalog_schema
+        self.config = self._legacy_stream.config
+        self.validation_policy = self._legacy_stream.validation_policy
 
     @property
     def name(self) -> str:
         return self._abstract_stream.name
 
     @property
-    def state(self) -> MutableMapping[str, Any]:
-        raise NotImplementedError("This should not be called as part of the Concurrent CDK code. Please report the problem to Airbyte")
-
-    @state.setter
-    def state(self, value: Mapping[str, Any]) -> None:
-        if "state" in dir(self._legacy_stream):
-            self._legacy_stream.state = value  # type: ignore  # validating `state` is attribute of stream using `if` above
-
-    @property
     def availability_strategy(self) -> AbstractFileBasedAvailabilityStrategy:
         return self._legacy_stream.availability_strategy
 
-    def check_availability(self, logger: logging.Logger, source: Optional[Source] = None) -> Tuple[bool, Optional[str]]:
-        return self.availability_strategy.check_availability(self._legacy_stream, self._logger, None)
+    @property
+    def primary_key(self) -> PrimaryKeyType:
+        return self._legacy_stream.config.primary_key or self.get_parser().get_parser_defined_primary_key(self._legacy_stream.config)
 
     def get_parser(self) -> FileTypeParser:
         return self._legacy_stream.get_parser()
 
-    @property
-    def config(self) -> FileBasedStreamConfig:
-        return self._legacy_stream.config
-
     def get_files(self) -> Iterable[RemoteFile]:
         return self._legacy_stream.get_files()
-
-    @property
-    def catalog_schema(self) -> Optional[Mapping[str, Any]]:
-        return self._legacy_stream.catalog_schema
-
-    @property
-    def validation_policy(self) -> AbstractSchemaValidationPolicy:
-        return self._legacy_stream.validation_policy
 
     @cache
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._legacy_stream.get_json_schema()
 
-    @property
-    def supports_incremental(self) -> bool:
-        return self._legacy_stream.supports_incremental
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._legacy_stream.config.primary_key or self.get_parser().get_parser_defined_primary_key(self._legacy_stream.config)
-
     def as_airbyte_stream(self) -> AirbyteStream:
         return self._abstract_stream.as_airbyte_stream()
 
-    def read_full_refresh(
-        self,
-        cursor_field: Optional[List[str]],
-        logger: logging.Logger,
-        slice_logger: SliceLogger,
-    ) -> Iterable[StreamData]:
-        """
-        Read full refresh. Delegate to the underlying AbstractStream, ignoring all the parameters
-        :param cursor_field: (ignored)
-        :param logger: (ignored)
-        :param slice_logger: (ignored)
-        :return: Iterable of StreamData
-        """
-        yield from self._read_records()
+    def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
+        raise RuntimeError("`read_records_from_slice` should not be called from the FileBasedStreamFacade.")
 
-    def read_incremental(
-        self,
-        cursor_field: Optional[List[str]],
-        logger: logging.Logger,
-        slice_logger: SliceLogger,
-        stream_state: MutableMapping[str, Any],
-        state_manager: ConnectorStateManager,
-        per_stream_state_enabled: bool,
-        internal_config: InternalConfig,
-    ) -> Iterable[StreamData]:
-        yield from self._read_records()
+    def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
+        return self._legacy_stream.compute_slices()
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        try:
-            yield from self._read_records()
-        except Exception as exc:
-            if hasattr(self._cursor, "state"):
-                state = str(self._cursor.state)
-            else:
-                # This shouldn't happen if the ConcurrentCursor was used
-                state = "unknown; no state attribute was available on the cursor"
-            yield AirbyteMessage(
-                type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=f"Cursor State at time of exception: {state}")
-            )
-            raise exc
-
-    def _read_records(self) -> Iterable[StreamData]:
-        for partition in self._abstract_stream.generate_partitions():
-            if self._slice_logger.should_log_slice_message(self._logger):
-                yield self._slice_logger.create_slice_log_message(partition.to_slice())
-            for record in partition.read():
-                yield record.data
+    def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
+        return self._legacy_stream.infer_schema(files)
 
 
 class FileBasedStreamPartition(Partition):
