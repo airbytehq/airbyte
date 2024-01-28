@@ -11,7 +11,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream, Level, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
-from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
+from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, AbstractFileBasedAvailabilityStrategyWrapper
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -20,7 +20,7 @@ from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedNoopCursor
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.default_stream import FileBasedDefaultStream
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.helpers import get_cursor_field_from_stream, get_primary_key_from_stream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -60,8 +60,7 @@ class FileBasedStreamFacade(Stream):
 
         message_repository = source.message_repository
         return FileBasedStreamFacade(
-            FileBasedDefaultStream(  # type: ignore
-                stream,
+            DefaultStream(  # type: ignore
                 partition_generator=FileBasedStreamPartitionGenerator(
                     stream,
                     message_repository,
@@ -71,11 +70,12 @@ class FileBasedStreamFacade(Stream):
                     cursor,
                 ),
                 name=stream.name,
-                namespace=stream.namespace,
                 json_schema=stream.get_json_schema(),
+                availability_strategy=AbstractFileBasedAvailabilityStrategyWrapper(stream),
                 primary_key=pk,
                 cursor_field=cursor_field,
                 logger=logger,
+                namespace=stream.namespace,
             ),
             stream,
             cursor,
@@ -85,7 +85,7 @@ class FileBasedStreamFacade(Stream):
 
     def __init__(
         self,
-        stream: FileBasedDefaultStream,
+        stream: DefaultStream,
         legacy_stream: AbstractFileBasedStream,
         cursor: FileBasedNoopCursor,
         slice_logger: SliceLogger,
