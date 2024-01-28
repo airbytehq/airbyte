@@ -12,13 +12,13 @@ from __future__ import annotations
 import airbyte_lib as ab
 
 
-SCALE = 100_000 # number of records to generate per stream
+SCALE = 1_000_000 # Number of records to generate between users and purchases.
 
 
 source = ab.get_connector(
     "source-faker",
     pip_url="-e ../airbyte-integrations/connectors/source-faker",
-    config={"count": SCALE},
+    config={"count": SCALE / 2},
     install_if_missing=True,
 )
 source.check()
