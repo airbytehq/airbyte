@@ -147,7 +147,8 @@ class ReadProgress:
         """Log that a batch has been finalized."""
         _ = stream_name
         if self.finalize_start_time is None:
-            self.finalize_start_time = time.time()
+            self.read_end_time = time.time()
+            self.finalize_start_time = self.read_end_time
 
         self.update_display()
 
@@ -171,9 +172,20 @@ class ReadProgress:
             # Don't update more than twice per second.
             return
 
+        status_message = self._get_status_message()
+
+        ipy_display.clear_output(wait=True)
+        ipy_display.display(ipy_display.Markdown(status_message))
+
+        self.last_update_time = time.time()
+
+    def _get_status_message(self) -> str:
+        """Compile and return a status message."""
         # Format start time as a friendly string in local timezone:
         start_time_str = datetime.fromtimestamp(self.read_start_time).strftime("%H:%M:%S")
-        records_per_second = round(self.total_records_read / self.elapsed_read_seconds, 1)
+        records_per_second: float = 0.0
+        if self.elapsed_read_seconds > 0:
+            records_per_second = round(self.total_records_read / self.elapsed_read_seconds, 1)
         status_message = (
             f"## Read Progress\n\n"
             f"Started reading at {start_time_str}.\n\n"
@@ -184,7 +196,7 @@ class ReadProgress:
         if self.total_records_written > 0:
             status_message += (
                 f"Wrote **{self.total_records_written:,}** records "
-                f"over {self.total_batches_written:,} batches.\n"
+                f"over {self.total_batches_written:,} batches.\n\n"
             )
         if self.read_end_time is not None:
             read_end_time_str = datetime.fromtimestamp(self.read_end_time).strftime("%H:%M:%S")
@@ -202,10 +214,7 @@ class ReadProgress:
             )
         status_message += "\n------------------------------------------------\n"
 
-        ipy_display.clear_output(wait=True)
-        ipy_display.display(ipy_display.Markdown(status_message))
-
-        self.last_update_time = time.time()
+        return status_message
 
 progress = ReadProgress()
 
