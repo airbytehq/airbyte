@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from airbyte_lib.caches.base import SQLCacheBase
 from airbyte_lib.caches.duckdb import DuckDBCache, DuckDBCacheConfig
+from airbyte_lib.caches.null import NullCache, NullCacheConfig
 from airbyte_lib.caches.postgres import PostgresCache, PostgresCacheConfig
 from airbyte_lib.caches.snowflake import SnowflakeCacheConfig, SnowflakeSQLCache
 
@@ -11,9 +12,11 @@ from airbyte_lib.caches.snowflake import SnowflakeCacheConfig, SnowflakeSQLCache
 __all__ = [
     "DuckDBCache",
     "DuckDBCacheConfig",
+    "NullCache",
+    "NullCacheConfig",
     "PostgresCache",
     "PostgresCacheConfig",
-    "SQLCacheBase",
     "SnowflakeCacheConfig",
     "SnowflakeSQLCache",
+    "SQLCacheBase",
 ]

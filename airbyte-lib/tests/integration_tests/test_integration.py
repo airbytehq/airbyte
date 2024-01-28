@@ -16,7 +16,7 @@ from airbyte_lib.caches import SnowflakeCacheConfig, SnowflakeSQLCache
 import pandas as pd
 import pytest
 
-from airbyte_lib.caches import PostgresCache, PostgresCacheConfig
+from airbyte_lib.caches import PostgresCache, PostgresCacheConfig, NullCache
 from airbyte_lib import registry
 from airbyte_lib.version import get_version
 from airbyte_lib.results import ReadResult
@@ -202,6 +202,20 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
             pd.DataFrame(expected_data),
             check_dtype=False,
         )
+
+def test_sync_to_null_cache(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    cache = NullCache()
+
+    result: ReadResult = source.read(cache)
+
+    assert result.processed_records == 3
+
+    for stream_name, expected_data in expected_test_stream_data.items():
+        with pytest.raises(NotImplementedError):
+            result[stream_name].to_pandas()
+        with pytest.raises(NotImplementedError):
+            result[stream_name].to_sql_table()
 
 
 def test_read_result_as_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
