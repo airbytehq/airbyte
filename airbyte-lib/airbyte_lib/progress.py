@@ -1,5 +1,6 @@
 """A simple progress bar for the command line and IPython notebooks."""
 from __future__ import annotations
+from datetime import datetime
 
 import math
 import time
@@ -123,7 +124,7 @@ class ReadProgress:
         # often when the count is high.
         updated_period = min(
             MAX_UPDATE_FREQUENCY,
-            10 ** math.floor(math.log10(self.total_records_read) / 8)
+            10 ** math.floor(math.log10(self.total_records_read) / 4)
         )
         if self.total_records_read % updated_period != 0:
             return
@@ -170,18 +171,33 @@ class ReadProgress:
             # Don't update more than twice per second.
             return
 
+        # Format start time as a friendly string in local timezone:
+        start_time_str = datetime.fromtimestamp(self.read_start_time).strftime("%H:%M:%S")
+        records_per_second = round(self.total_records_read / self.elapsed_read_seconds, 1)
         status_message = (
-            f"Read **{self.total_records_read}** records "
-            f"over **{self.elapsed_read_time_string}**.\n"
+            f"## Read Progress\n\n"
+            f"Started reading at {start_time_str}.\n\n"
+            f"Read **{self.total_records_read:,}** records "
+            f"over **{self.elapsed_read_time_string}** "
+            f"({records_per_second:,} records / second).\n\n"
         )
         if self.total_records_written > 0:
             status_message += (
-                f"Wrote **{self.total_records_written}** records "
-                f"over {self.total_batches_written} batches.\n"
+                f"Wrote **{self.total_records_written:,}** records "
+                f"over {self.total_batches_written:,} batches.\n"
+            )
+        if self.read_end_time is not None:
+            read_end_time_str = datetime.fromtimestamp(self.read_end_time).strftime("%H:%M:%S")
+            status_message += (
+                f"Finished reading at {read_end_time_str}.\n\n"
             )
         if self.finalize_start_time is not None:
+            finalize_start_time_str = datetime.fromtimestamp(self.finalize_start_time).strftime("%H:%M:%S")
             status_message += (
-                f"Finalized **{self.total_records_finalized}** records "
+                f"Started finalizing streams at {finalize_start_time_str}.\n\n"
+            )
+            status_message += (
+                f"Finalized **{self.total_batches_finalized}** batches "
                 f"over {self.elapsed_finalization_time_str}.\n"
             )
         status_message += "\n------------------------------------------------\n"
@@ -201,18 +217,18 @@ def get_elapsed_time_str(seconds: int) -> str:
     Hours are always included after 1 hour elapsed.
     """
     if seconds <= 60:  # noqa: PLR2004  # Magic numbers OK here.
-        return f"{seconds} seconds elapsed"
+        return f"{seconds} seconds"
 
     if seconds < 60 * 10:
         minutes = seconds // 60
         seconds = seconds % 60
-        return f"{minutes}min {seconds}s elapsed"
+        return f"{minutes}min {seconds}s"
 
     if seconds < 60 * 60:
         minutes = seconds // 60
         seconds = seconds % 60
-        return f"{minutes}min elapsed"
+        return f"{minutes}min"
 
     hours = seconds // (60 * 60)
     minutes = (seconds % (60 * 60)) // 60
-    return f"{hours}hr {minutes}min elapsed"
+    return f"{hours}hr {minutes}min"
