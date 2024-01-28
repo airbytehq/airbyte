@@ -32,6 +32,8 @@ from pydantic import AnyUrl
 
 
 class InMemoryFilesSource(FileBasedSource):
+    _concurrency_level = 10
+
     def __init__(
         self,
         files: Mapping[str, Any],

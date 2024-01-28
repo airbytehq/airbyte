@@ -47,7 +47,8 @@ INITIAL_N_PARTITIONS = MAX_CONCURRENCY // 2
 
 
 class FileBasedSource(ConcurrentSourceAdapter, ABC):
-    concurrency_level = MAX_CONCURRENCY
+    # We make each source override the concurrency level to give control over when they are upgraded.
+    _concurrency_level = None
 
     def __init__(
         self,
@@ -146,7 +147,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
 
         for stream in file_based_streams:
             sync_mode = self._get_sync_mode_from_catalog(stream)
-            if sync_mode == SyncMode.full_refresh:
+            if sync_mode == SyncMode.full_refresh and hasattr(self, "_concurrency_level") and self._concurrency_level is not None:
                 configured_streams.append(FileBasedStreamFacade.create_from_stream(stream, self, self.logger, None, FileBasedNoopCursor()))
             else:
                 configured_streams.append(stream)
