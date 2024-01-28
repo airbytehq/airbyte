@@ -401,6 +401,7 @@ class Source:
     ) -> Generator[AirbyteRecordMessage, Any, None]:
         """This method simply tallies the number of records processed and yields the messages."""
         self._processed_records = 0  # Reset the counter before we start
+        progress.reset()
 
         for message in messages:
             self._processed_records += 1
