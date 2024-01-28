@@ -35,9 +35,9 @@ def prepare_test_env():
     """
     Prepare test environment. This will pre-install the test source from the fixtures array and set the environment variable to use the local json file as registry.
     """
-    venv_dir = f".venv-source-test"
-    if os.path.exists(".venv-source-test"):
-        shutil.rmtree(".venv-source-test")
+    venv_dir = ".venv-source-test"
+    if os.path.exists(venv_dir):
+        shutil.rmtree(venv_dir)
 
     subprocess.run(["python", "-m", "venv", venv_dir], check=True)
     subprocess.run([f"{venv_dir}/bin/pip", "install", "-e", "./tests/integration_tests/fixtures/source-test"], check=True)
@@ -610,7 +610,7 @@ def test_install_uninstall():
             install_if_missing=False,
         )
 
-        # Override the install root to a temp dir
+        # Override the install root to avoid conflicts with the test fixture
         install_root = Path(temp_dir)
         source.executor.install_root = install_root
 
