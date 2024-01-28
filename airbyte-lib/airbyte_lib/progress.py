@@ -3,19 +3,20 @@ from __future__ import annotations
 
 import math
 import time
+from contextlib import suppress
 from datetime import datetime
 from typing import cast
 
+from rich.live import Live as RichLive
+from rich.markdown import Markdown as RichMarkdown
 
-try:
-    from tqdm.notebook import tqdm
-except ImportError:
-    tqdm = None
 
 try:
     from IPython import display as ipy_display
+    IS_NOTEBOOK = True
 except ImportError:
     ipy_display = None
+    IS_NOTEBOOK = False
 
 
 MAX_UPDATE_FREQUENCY = 1000
@@ -49,6 +50,30 @@ class ReadProgress:
 
         self.last_update_time: float | None = None
 
+        self.rich_view: RichLive | None = None
+        if not IS_NOTEBOOK:
+            # If we're in a terminal, use a Rich view to display the progress updates.
+            self.rich_view = RichLive()
+            self.rich_view.start()
+
+    def __del__(self) -> None:
+        """Close the Rich view."""
+        if self.rich_view:
+            with suppress(Exception):
+                self.rich_view.stop()
+
+    def log_success(self) -> None:
+        """Log success and stop tracking progress."""
+        if self.finalize_end_time is None:
+            # If we haven't already finalized, do so now.
+
+            self.finalize_end_time = time.time()
+
+            self.update_display(force_refresh=True)
+            if self.rich_view:
+                with suppress(Exception):
+                    self.rich_view.stop()
+
     def reset(self, num_streams_expected: int) -> None:
         """Reset the progress tracker."""
         # Streams expected (for progress bar)
@@ -74,6 +99,9 @@ class ReadProgress:
     @property
     def elapsed_seconds(self) -> int:
         """Return the number of seconds elapsed since the read operation started."""
+        if self.finalize_end_time:
+            return int(self.finalize_end_time - self.read_start_time)
+
         return int(time.time() - self.read_start_time)
 
     @property
@@ -143,39 +171,53 @@ class ReadProgress:
         self.written_stream_names.add(stream_name)
         self.update_display()
 
-    def log_batch_finalizing(self, stream_name: str) -> None:
-        """Log that a batch has been finalized."""
-        _ = stream_name
+    def log_batches_finalizing(self, stream_name: str, num_batches: int) -> None:
+        """Log that batch are ready to be finalized.
+
+        In our current implementation, we ignore the stream name and number of batches.
+        We just use this as a signal that we're finished reading and have begun to
+        finalize any accumulated batches.
+        """
+        _ = stream_name, num_batches  # unused for now
         if self.finalize_start_time is None:
             self.read_end_time = time.time()
             self.finalize_start_time = self.read_end_time
 
-        self.update_display()
+        self.update_display(force_refresh=True)
 
-    def log_batch_finalized(self, stream_name: str) -> None:
+    def log_batches_finalized(self, stream_name: str, num_batches: int) -> None:
         """Log that a batch has been finalized."""
-        _ = stream_name
-        self.total_batches_finalized += 1
-        self.update_display()
+        _ = stream_name  # unused for now
+        self.total_batches_finalized += num_batches
+        self.update_display(force_refresh=True)
 
     def log_stream_finalized(self, stream_name: str) -> None:
         """Log that a stream has been finalized."""
         self.finalized_stream_names.add(stream_name)
-        self.update_display()
+        if len(self.finalized_stream_names) == self.num_streams_expected:
+            self.log_success()
 
-    def update_display(self) -> None:
+        self.update_display(force_refresh=True)
+
+    def update_display(self, *, force_refresh: bool = False) -> None:
         """Update the display."""
-        if not ipy_display:
-            return
-
-        if self.last_update_time and cast(float, self.elapsed_seconds_since_last_update) < 0.5:  # noqa: PLR2004
-            # Don't update more than twice per second.
+        # Don't update more than twice per second unless force_refresh is True.
+        if (
+            not force_refresh
+            and self.last_update_time  # if not set, then we definitely need to update
+            and cast(float, self.elapsed_seconds_since_last_update) < 0.5  # noqa: PLR2004
+        ):
             return
 
         status_message = self._get_status_message()
 
-        ipy_display.clear_output(wait=True)
-        ipy_display.display(ipy_display.Markdown(status_message))
+        if IS_NOTEBOOK:
+            # We're in a notebook so use the IPython display.
+            ipy_display.clear_output(wait=True)
+            ipy_display.display(ipy_display.Markdown(status_message))
+
+        else:
+            self.rich_view.update(RichMarkdown(status_message))
 
         self.last_update_time = time.time()
 
@@ -208,7 +250,27 @@ class ReadProgress:
             status_message += f"Started finalizing streams at {finalize_start_time_str}.\n\n"
             status_message += (
                 f"Finalized **{self.total_batches_finalized}** batches "
-                f"over {self.elapsed_finalization_time_str}.\n"
+                f"over {self.elapsed_finalization_time_str}.\n\n"
+            )
+        if self.finalized_stream_names:
+            status_message += (
+                f"Completed {len(self.finalized_stream_names)} " +
+                (
+                    f"out of {self.num_streams_expected} "
+                    if self.num_streams_expected else ""
+                ) +
+                "streams:\n\n"
+            )
+            for stream_name in self.finalized_stream_names:
+                status_message += f"  - {stream_name}\n"
+
+        status_message += "\n\n"
+
+        if self.finalize_end_time is not None:
+            completion_time_str = datetime.fromtimestamp(self.finalize_end_time).strftime("%H:%M:%S")
+            status_message += (
+                f"Completed writing at {completion_time_str}. "
+                f"Total time elapsed: {self.elapsed_time_string}\n\n"
             )
         status_message += "\n------------------------------------------------\n"
 
