@@ -479,7 +479,25 @@ are sometimes disabled by default within the connector.)</p>
 
 <p>If validate is True, raise an exception if the config fails validation.</p>
 
-<p>If validate is False, validation will be deferred until check() is called.</p>
+<p>If validate is False, validation will be deferred until check() or validate_config()
+is called.</p>
+</div>
+
+
+                            </div>
+                            <div id="Source.validate_config" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">validate_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.validate_config"></a>
+    
+            <div class="docstring"><p>Validate the config against the spec.</p>
+
+<p>If config is not provided, the already-set config will be validated.</p>
 </div>
 
 
