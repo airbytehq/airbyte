@@ -9,10 +9,18 @@ if your installation gets interrupted or corrupted.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import airbyte_lib as ab
+from airbyte_lib.caches import NullCache
+
+
+if TYPE_CHECKING:
+    from airbyte_lib.caches.base import SQLCacheBase
 
 
 SCALE = 1_000_000 # Number of records to generate between users and purchases.
+NULL_CACHE = False # Set to True to use the Null cache instead of DuckDB.
 
 
 source = ab.get_connector(
@@ -24,8 +32,10 @@ source = ab.get_connector(
 source.check()
 source.set_streams(["products", "users", "purchases"])
 
-cache = ab.new_local_cache()
+cache: SQLCacheBase = NullCache() if NULL_CACHE else ab.new_local_cache()
+
 result = source.read(cache)
 
-for name, records in result.cache.streams.items():
-    print(f"Stream {name}: {len(list(records))} records")
+if not NULL_CACHE:
+    for name, records in result.cache.streams.items():
+        print(f"Stream {name}: {len(list(records))} records")
