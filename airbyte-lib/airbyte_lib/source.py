@@ -26,7 +26,7 @@ from airbyte_lib import exceptions as exc
 from airbyte_lib._factories.cache_factories import get_default_cache
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.datasets._lazy import LazyDataset
-from airbyte_lib.progress import log_records_read
+from airbyte_lib.progress import progress
 from airbyte_lib.results import ReadResult
 from airbyte_lib.telemetry import (
     CacheTelemetryInfo,
@@ -405,7 +405,7 @@ class Source:
         for message in messages:
             self._processed_records += 1
             yield message
-            log_records_read(self._processed_records)
+            progress.log_records_read(self._processed_records)
 
     def read(self, cache: SQLCacheBase | None = None) -> ReadResult:
         if cache is None:
