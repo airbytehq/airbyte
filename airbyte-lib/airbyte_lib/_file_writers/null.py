@@ -1,6 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-"""A Parquet cache implementation."""
+"""A No-Op (Null) cache implementation.
+
+This is designed to test the raw throughput of a source, without any slowdown from writing files.
+"""
 from __future__ import annotations
 
 from pathlib import Path
