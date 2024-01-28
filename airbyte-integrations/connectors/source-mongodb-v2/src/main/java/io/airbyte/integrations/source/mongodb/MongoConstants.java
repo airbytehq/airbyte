@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.mongodb;
 
 import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration;
 import java.time.Duration;
 
 public class MongoConstants {
