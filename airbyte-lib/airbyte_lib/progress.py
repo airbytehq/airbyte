@@ -77,7 +77,7 @@ class ReadProgress:
     @property
     def elapsed_time_string(self) -> str:
         """Return duration as a string."""
-        return get_elapsed_time_str(self.elapsed_seconds())
+        return get_elapsed_time_str(self.elapsed_seconds)
 
     @property
     def elapsed_seconds_since_last_update(self) -> float | None:
@@ -98,7 +98,7 @@ class ReadProgress:
     @property
     def elapsed_read_time_string(self) -> str:
         """Return duration as a string."""
-        return get_elapsed_time_str(self.elapsed_seconds())
+        return get_elapsed_time_str(self.elapsed_read_seconds)
 
     @property
     def elapsed_finalization_seconds(self) -> int:
@@ -112,7 +112,7 @@ class ReadProgress:
     @property
     def elapsed_finalization_time_str(self) -> str:
         """Return duration as a string."""
-        return get_elapsed_time_str(self.elapsed_seconds())
+        return get_elapsed_time_str(self.elapsed_finalization_seconds)
 
     def log_records_read(self, new_total_count: int) -> None:
         """Load a number of records read."""
@@ -177,7 +177,7 @@ class ReadProgress:
         if self.total_records_written > 0:
             status_message += (
                 f"Wrote **{self.total_records_written}** records "
-                f"in {self.total_batches_written} batches.\n"
+                f"over {self.total_batches_written} batches.\n"
             )
         if self.finalize_start_time is not None:
             status_message += (
