@@ -84,15 +84,26 @@ class SourceRepository:
         elif yaml_spec_path and os.path.exists(yaml_spec_path):
             os.remove(yaml_spec_path)
 
-    def fetch_no_code_sources(self) -> List[str]:
+    def fetch_no_code_sources(self, skip_list: List[str]) -> List[str]:
         no_code_sources = []
 
         connectors_folder_path = os.path.join(self._base_path, "airbyte-integrations", "connectors")
         for directory in os.listdir(connectors_folder_path):
             python_package_path = os.path.join(connectors_folder_path, directory, directory.replace("-", "_"))
-            if self._is_no_code_connector(python_package_path):
+
+            if directory in skip_list:
+                logger.info(f"skipping {directory}...")
+            elif self._is_no_code_connector(python_package_path):
                 no_code_sources.append(directory)
         return no_code_sources
+
+    def resolve_no_code_source_path(self, source_name) -> Optional[str]:
+        connectors_folder_path = os.path.join(self._base_path, "airbyte-integrations", "connectors")
+        python_package_path = os.path.join(connectors_folder_path, source_name, source_name.replace("-", "_"))
+        if os.path.exists(python_package_path) and self._is_no_code_connector(python_package_path):
+            return python_package_path
+        else:
+            return None
 
     @staticmethod
     def _is_no_code_connector(python_package_path: str) -> bool:
