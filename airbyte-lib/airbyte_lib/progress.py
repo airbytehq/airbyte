@@ -1,10 +1,10 @@
 """A simple progress bar for the command line and IPython notebooks."""
 from __future__ import annotations
 
+import datetime
 import math
 import time
 from contextlib import suppress
-from datetime import datetime
 from typing import cast
 
 from rich.live import Live as RichLive
@@ -26,7 +26,7 @@ MAX_UPDATE_FREQUENCY = 1000
 
 def _to_local_time_str(timestamp: float) -> str:
     return (
-        datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
+        datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
         .astimezone()
         .strftime("%H:%M:%S")
     )
