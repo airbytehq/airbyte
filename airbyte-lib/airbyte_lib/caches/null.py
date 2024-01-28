@@ -14,14 +14,20 @@ from overrides import overrides
 
 from airbyte_lib._file_writers.null import NullWriter
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
+from airbyte_lib.progress import progress
 from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from pathlib import Path
 
     from pandas.core.api import DataFrame
     from sqlalchemy.schema import Table
+
+    from airbyte_protocol.models import (
+        AirbyteMessage,
+    )
 
 
 class NullCacheConfig(SQLCacheConfigBase):
@@ -100,3 +106,18 @@ class NullCache(SQLCacheBase):
     @overrides
     def get_pandas_dataframe(self, stream_name: str) -> DataFrame:
         raise NotImplementedError("NullCache does not support get_pandas_dataframe()")
+
+    @overrides
+    def process_airbyte_messages(  # type: ignore # noqa: PGH003 # Ignore '@final' and too-general ignore
+        self,
+        messages: Iterable[AirbyteMessage],
+        max_batch_size: int = 0,
+    ) -> None:
+        _ = max_batch_size
+        for _ in messages:
+            pass
+        progress.log_batch_written("dummy", 1)
+        progress.log_batches_finalizing("dummy", 1)
+        progress.log_batches_finalized("dummy", 1)
+        progress.log_stream_finalized("dummy")
+        progress.log_success()
