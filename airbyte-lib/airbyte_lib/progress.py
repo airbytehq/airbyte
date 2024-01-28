@@ -69,14 +69,17 @@ class ReadProgress:
         self.total_batches_finalized = 0
         self.finalized_stream_names = set()
 
+    @property
     def elapsed_seconds(self) -> int:
         """Return the number of seconds elapsed since the read operation started."""
         return int(time.time() - self.read_start_time)
 
+    @property
     def elapsed_time_string(self) -> str:
         """Return duration as a string."""
         return get_elapsed_time_str(self.elapsed_seconds())
 
+    @property
     def elapsed_seconds_since_last_update(self) -> float | None:
         """Return the number of seconds elapsed since the last update."""
         if self.last_update_time is None:
@@ -84,6 +87,7 @@ class ReadProgress:
 
         return time.time() - self.last_update_time
 
+    @property
     def elapsed_read_seconds(self) -> int:
         """Return the number of seconds elapsed since the read operation started."""
         if self.read_end_time is None:
@@ -91,10 +95,12 @@ class ReadProgress:
 
         return int(self.read_end_time - self.read_start_time)
 
+    @property
     def elapsed_read_time_string(self) -> str:
         """Return duration as a string."""
         return get_elapsed_time_str(self.elapsed_seconds())
 
+    @property
     def elapsed_finalization_seconds(self) -> int:
         """Return the number of seconds elapsed since the read operation started."""
         if self.finalize_start_time is None:
@@ -103,13 +109,14 @@ class ReadProgress:
             return int(time.time() - self.finalize_start_time)
         return int(self.finalize_end_time - self.finalize_start_time)
 
+    @property
     def elapsed_finalization_time_str(self) -> str:
         """Return duration as a string."""
         return get_elapsed_time_str(self.elapsed_seconds())
 
-    def log_records_read(self, tally_count: int) -> None:
+    def log_records_read(self, new_total_count: int) -> None:
         """Load a number of records read."""
-        self.total_records_read += tally_count
+        self.total_records_read = new_total_count
 
         # This is some math to make updates adaptive to the scale of records read.
         # We want to update the display more often when the count is low, and less
