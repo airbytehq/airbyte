@@ -1,9 +1,9 @@
 """A simple progress bar for the command line and IPython notebooks."""
 from __future__ import annotations
-from datetime import datetime
 
 import math
 import time
+from datetime import datetime
 from typing import cast
 
 
@@ -20,6 +20,7 @@ except ImportError:
 
 MAX_UPDATE_FREQUENCY = 1000
 """The max number of records to read before updating the progress bar."""
+
 
 class ReadProgress:
     """A simple progress bar for the command line and IPython notebooks."""
@@ -123,8 +124,7 @@ class ReadProgress:
         # We want to update the display more often when the count is low, and less
         # often when the count is high.
         updated_period = min(
-            MAX_UPDATE_FREQUENCY,
-            10 ** math.floor(math.log10(self.total_records_read) / 4)
+            MAX_UPDATE_FREQUENCY, 10 ** math.floor(math.log10(self.total_records_read) / 4)
         )
         if self.total_records_read % updated_period != 0:
             return
@@ -200,14 +200,12 @@ class ReadProgress:
             )
         if self.read_end_time is not None:
             read_end_time_str = datetime.fromtimestamp(self.read_end_time).strftime("%H:%M:%S")
-            status_message += (
-                f"Finished reading at {read_end_time_str}.\n\n"
-            )
+            status_message += f"Finished reading at {read_end_time_str}.\n\n"
         if self.finalize_start_time is not None:
-            finalize_start_time_str = datetime.fromtimestamp(self.finalize_start_time).strftime("%H:%M:%S")
-            status_message += (
-                f"Started finalizing streams at {finalize_start_time_str}.\n\n"
+            finalize_start_time_str = datetime.fromtimestamp(self.finalize_start_time).strftime(
+                "%H:%M:%S"
             )
+            status_message += f"Started finalizing streams at {finalize_start_time_str}.\n\n"
             status_message += (
                 f"Finalized **{self.total_batches_finalized}** batches "
                 f"over {self.elapsed_finalization_time_str}.\n"
@@ -216,7 +214,9 @@ class ReadProgress:
 
         return status_message
 
+
 progress = ReadProgress()
+
 
 def get_elapsed_time_str(seconds: int) -> str:
     """Return duration as a string.
