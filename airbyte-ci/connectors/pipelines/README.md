@@ -91,6 +91,25 @@ However, this will not automatically install the dependencies for the local depe
 
 Its often best to use the `poetry` steps instead.
 
+#### Running Tests
+
+From `airbyte-ci/connectors/pipelines`:
+```bash
+poetry run pytest tests
+```
+
+You can also run a subset of tests:
+```bash
+poetry run pytest pipelines/models/steps.py
+```
+
+More options, such as running test by keyword matching, are available - see the [pytest CLI documentation](https://docs.pytest.org/en/6.2.x/usage.html) for all the available options.```
+#### Checking Code Format (Pipelines)
+
+```bash
+poetry run ruff check pipelines
+```
+
 ## Commands reference
 
 At this point you can run `airbyte-ci` commands.
@@ -578,8 +597,10 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                       |
 | ------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 3.7.3   | [#34560](https://github.com/airbytehq/airbyte/pull/34560)  | Simplify Gradle task execution framework by removing local maven repo support.                                    |
+| 3.7.2   | [#34555](https://github.com/airbytehq/airbyte/pull/34555)  | Override secret masking in some very specific special cases.                                                      |
 | 3.7.1   | [#34441](https://github.com/airbytehq/airbyte/pull/34441)  | Support masked secret scrubbing for java CDK v0.15+                                                               |
-| 3.7.0   | [#34343](https://github.com/airbytehq/airbyte/pull/34343)  | allow running connector upgrade_cdk for java connectors                                                             |
+| 3.7.0   | [#34343](https://github.com/airbytehq/airbyte/pull/34343)  | allow running connector upgrade_cdk for java connectors                                                           |
 | 3.6.1   | [#34490](https://github.com/airbytehq/airbyte/pull/34490)  | Fix inconsistent dagger log path typing                                                                           |
 | 3.6.0   | [#34111](https://github.com/airbytehq/airbyte/pull/34111)  | Add python registry publishing                                                                                    |
 | 3.5.3   | [#34339](https://github.com/airbytehq/airbyte/pull/34339)  | only do minimal changes on a connector version_bump                                                               |
