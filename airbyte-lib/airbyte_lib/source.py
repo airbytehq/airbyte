@@ -188,7 +188,14 @@ class Source:
 
     @property
     def _yaml_spec(self) -> str:
-        """Get the spec as a yaml string."""
+        """Get the spec as a yaml string.
+
+        For now, the primary use case is for writing and debugging a valid config for a source.
+
+        This is private for now because we probably want better polish before exposing this
+        as a stable interface. This will also get easier when we have docs links with this info
+        for each connector.
+        """
         spec_obj: ConnectorSpecification = self._get_spec()
         spec_dict = spec_obj.dict(exclude_unset=True)
         # convert to a yaml string
