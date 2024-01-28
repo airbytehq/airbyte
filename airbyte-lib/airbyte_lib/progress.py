@@ -184,7 +184,7 @@ class ReadProgress:
                 f"Finalized **{self.total_records_finalized}** records "
                 f"over {self.elapsed_finalization_time_str}.\n"
             )
-        status_message += "------------------------------------------------\n"
+        status_message += "\n------------------------------------------------\n"
 
         ipy_display.clear_output(wait=True)
         ipy_display.display(ipy_display.Markdown(status_message))
