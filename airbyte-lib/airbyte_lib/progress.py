@@ -12,8 +12,9 @@ from rich.markdown import Markdown as RichMarkdown
 
 
 try:
-    from IPython import display as ipy_display
     IS_NOTEBOOK = True
+    from IPython import display as ipy_display
+
 except ImportError:
     ipy_display = None
     IS_NOTEBOOK = False
@@ -21,6 +22,39 @@ except ImportError:
 
 MAX_UPDATE_FREQUENCY = 1000
 """The max number of records to read before updating the progress bar."""
+
+
+def _to_local_time_str(timestamp: float) -> str:
+    return (
+        datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
+        .astimezone()
+        .strftime("%H:%M:%S")
+    )
+
+
+def _get_elapsed_time_str(seconds: int) -> str:
+    """Return duration as a string.
+
+    Seconds are included until 10 minutes is exceeded.
+    Minutes are always included after 1 minute elapsed.
+    Hours are always included after 1 hour elapsed.
+    """
+    if seconds <= 60:  # noqa: PLR2004  # Magic numbers OK here.
+        return f"{seconds} seconds"
+
+    if seconds < 60 * 10:
+        minutes = seconds // 60
+        seconds = seconds % 60
+        return f"{minutes}min {seconds}s"
+
+    if seconds < 60 * 60:
+        minutes = seconds // 60
+        seconds = seconds % 60
+        return f"{minutes}min"
+
+    hours = seconds // (60 * 60)
+    minutes = (seconds % (60 * 60)) // 60
+    return f"{hours}hr {minutes}min"
 
 
 class ReadProgress:
@@ -107,7 +141,7 @@ class ReadProgress:
     @property
     def elapsed_time_string(self) -> str:
         """Return duration as a string."""
-        return get_elapsed_time_str(self.elapsed_seconds)
+        return _get_elapsed_time_str(self.elapsed_seconds)
 
     @property
     def elapsed_seconds_since_last_update(self) -> float | None:
@@ -128,7 +162,7 @@ class ReadProgress:
     @property
     def elapsed_read_time_string(self) -> str:
         """Return duration as a string."""
-        return get_elapsed_time_str(self.elapsed_read_seconds)
+        return _get_elapsed_time_str(self.elapsed_read_seconds)
 
     @property
     def elapsed_finalization_seconds(self) -> int:
@@ -142,7 +176,7 @@ class ReadProgress:
     @property
     def elapsed_finalization_time_str(self) -> str:
         """Return duration as a string."""
-        return get_elapsed_time_str(self.elapsed_finalization_seconds)
+        return _get_elapsed_time_str(self.elapsed_finalization_seconds)
 
     def log_records_read(self, new_total_count: int) -> None:
         """Load a number of records read."""
@@ -216,7 +250,7 @@ class ReadProgress:
             ipy_display.clear_output(wait=True)
             ipy_display.display(ipy_display.Markdown(status_message))
 
-        else:
+        elif self.rich_view is not None:
             self.rich_view.update(RichMarkdown(status_message))
 
         self.last_update_time = time.time()
@@ -224,7 +258,7 @@ class ReadProgress:
     def _get_status_message(self) -> str:
         """Compile and return a status message."""
         # Format start time as a friendly string in local timezone:
-        start_time_str = datetime.fromtimestamp(self.read_start_time).strftime("%H:%M:%S")
+        start_time_str = _to_local_time_str(self.read_start_time)
         records_per_second: float = 0.0
         if self.elapsed_read_seconds > 0:
             records_per_second = round(self.total_records_read / self.elapsed_read_seconds, 1)
@@ -241,12 +275,10 @@ class ReadProgress:
                 f"over {self.total_batches_written:,} batches.\n\n"
             )
         if self.read_end_time is not None:
-            read_end_time_str = datetime.fromtimestamp(self.read_end_time).strftime("%H:%M:%S")
+            read_end_time_str = _to_local_time_str(self.read_end_time)
             status_message += f"Finished reading at {read_end_time_str}.\n\n"
         if self.finalize_start_time is not None:
-            finalize_start_time_str = datetime.fromtimestamp(self.finalize_start_time).strftime(
-                "%H:%M:%S"
-            )
+            finalize_start_time_str = _to_local_time_str(self.finalize_start_time)
             status_message += f"Started finalizing streams at {finalize_start_time_str}.\n\n"
             status_message += (
                 f"Finalized **{self.total_batches_finalized}** batches "
@@ -254,12 +286,9 @@ class ReadProgress:
             )
         if self.finalized_stream_names:
             status_message += (
-                f"Completed {len(self.finalized_stream_names)} " +
-                (
-                    f"out of {self.num_streams_expected} "
-                    if self.num_streams_expected else ""
-                ) +
-                "streams:\n\n"
+                f"Completed {len(self.finalized_stream_names)} "
+                + (f"out of {self.num_streams_expected} " if self.num_streams_expected else "")
+                + "streams:\n\n"
             )
             for stream_name in self.finalized_stream_names:
                 status_message += f"  - {stream_name}\n"
@@ -267,7 +296,7 @@ class ReadProgress:
         status_message += "\n\n"
 
         if self.finalize_end_time is not None:
-            completion_time_str = datetime.fromtimestamp(self.finalize_end_time).strftime("%H:%M:%S")
+            completion_time_str = _to_local_time_str(self.finalize_end_time)
             status_message += (
                 f"Completed writing at {completion_time_str}. "
                 f"Total time elapsed: {self.elapsed_time_string}\n\n"
@@ -278,28 +307,3 @@ class ReadProgress:
 
 
 progress = ReadProgress()
-
-
-def get_elapsed_time_str(seconds: int) -> str:
-    """Return duration as a string.
-
-    Seconds are included until 10 minutes is exceeded.
-    Minutes are always included after 1 minute elapsed.
-    Hours are always included after 1 hour elapsed.
-    """
-    if seconds <= 60:  # noqa: PLR2004  # Magic numbers OK here.
-        return f"{seconds} seconds"
-
-    if seconds < 60 * 10:
-        minutes = seconds // 60
-        seconds = seconds % 60
-        return f"{minutes}min {seconds}s"
-
-    if seconds < 60 * 60:
-        minutes = seconds // 60
-        seconds = seconds % 60
-        return f"{minutes}min"
-
-    hours = seconds // (60 * 60)
-    minutes = (seconds % (60 * 60)) // 60
-    return f"{hours}hr {minutes}min"
