@@ -187,20 +187,63 @@ After updating `values.yaml` simply upgrade your chart by running command:
 helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
 ```
 
-### Database external secrets
+### External Airbyte Database
 
-If you're using external DB secrets, then provide them in `values.yaml` under global.database section in the following format:
+The Airbyte Database only works with Postgres 13.
 
-```text
-  database:
-    secretName: "myOctaviaSecret"
-    secretValue: "postgresql-password"
-    host: "example.com"
-    port: "5432"
+:::warning
+If you're using the external database for the first time you must ensure the database you're going to use exists. The default database Airbyte will try to use is `airbyte` but you can modified it in the `values.yaml`.
+:::
+
+Create a Kubernetes secret to store the database password.
+Save the file as `db-secrets.yaml`.
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secrets
+type: Opaque
+stringData:
+  DATABASE_PASSWORD: <PASSWORD>
 ```
 
-And upgrade the chart by running:
+Run `kubectl apply -f db-secrets.yaml -n <NAMESPACE>` to create the secret in the namespace you're using Airbyte.
 
+Afterward, modify the following blocks in the Helm Chart `values.yaml` file:
+```yaml
+externalDatabase:
+  # -- Database host
+  host: <HOST>
+  # -- non-root Username for Airbyte Database
+  user: <USERNAME>
+  # -- Database password
+  password: ""
+  # -- Name of an existing secret resource containing the DB password
+  existingSecret: "db-secrets"
+  # -- Name of an existing secret key containing the DB password
+  existingSecretPasswordKey: "DATABASE_PASSWORD"
+  # -- Database name, default is `airbyte`
+  database: <DATABASE_NAME>
+  # -- Database port number
+  port: 5432
+  # -- Database full JDBL URL (ex: jdbc:postgresql://host:port/db?parameters)
+  jdbcUrl: ""
+```
+Edit only the host, username, and database name. If your database is using a differnet `port` or need an special `jdbcUrl` you can edit here. This wasn't fully tested yet.
+
+Next, reference the secret in the global block:
+```yaml
+global:
+  database:
+    # -- Secret name where database credentials are stored
+    secretName: "db-secrets"
+    # -- Secret value for database password
+    secretValue: "DATABASE_PASSWORD"
+```
+
+Unfortunately, the `airbyte-bootloader` configuration uses this variable. Future improvements are planned.
+
+Upgrade the chart by running:
 ```shell
-helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
+helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version <CHART_VERSION>
 ```
