@@ -3,10 +3,12 @@
 #
 
 import logging
+from unittest import mock
+
 import pytest
 from source_azure_table.azure_table import AzureTableReader
 from source_azure_table.source import SourceAzureTable
-from unittest import mock
+
 
 # Fixtures
 @pytest.fixture
