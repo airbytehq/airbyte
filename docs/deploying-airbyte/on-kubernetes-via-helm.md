@@ -189,6 +189,11 @@ helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
 
 ### External Airbyte Database
 
+::info
+This was tested using [Airbyte Helm Chart Version 0.50.115](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.115).
+Previous or newer version can change how the external database can be configured.
+:::
+
 The Airbyte Database only works with Postgres 13.
 Make sure the database is accessible inside the cluster using `busy-box` service using `telnet` or `ping` command.
 
