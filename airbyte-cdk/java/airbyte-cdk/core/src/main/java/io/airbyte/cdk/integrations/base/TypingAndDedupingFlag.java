@@ -22,8 +22,4 @@ public class TypingAndDedupingFlag {
     }
   }
 
-  public static boolean isUsingV2RawTable() {
-    return isDestinationV2() || DestinationConfig.getInstance().getBooleanValue("use_v2_raw_table");
-  }
-
 }

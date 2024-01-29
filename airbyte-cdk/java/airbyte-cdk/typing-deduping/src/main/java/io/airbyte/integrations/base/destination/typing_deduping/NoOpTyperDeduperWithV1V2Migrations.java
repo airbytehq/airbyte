@@ -54,15 +54,12 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
-  private void prepareSchemas(final ParsedCatalog parsedCatalog) throws Exception {
-    prepareAllSchemas(parsedCatalog, sqlGenerator, destinationHandler);
-  }
 
   @Override
   public void prepareTables() throws Exception {
     try {
       log.info("ensuring schemas exist for prepareTables with V1V2 migrations");
-      prepareSchemas(parsedCatalog);
+      prepareAllSchemas(parsedCatalog, sqlGenerator, destinationHandler);
       final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
       for (final StreamConfig stream : parsedCatalog.streams()) {
         prepareTablesTasks.add(CompletableFuture.supplyAsync(() -> {
@@ -82,7 +79,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
       reduceExceptions(prepareTablesTasks, "The following exceptions were thrown attempting to prepare tables:\n");
     } catch (NotImplementedError | NotImplementedException e) {
       log.warn(
-          "Could not prepare schemas or tables because components are not implemented, this should not be required for this destination to succeed");
+          "Could not prepare schemas or tables because this is not implemented for this destination, this should not be required for this destination to succeed");
     }
   }
 

@@ -14,47 +14,47 @@ import java.util.*
 class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransformer) :
     JdbcSqlGenerator(namingTransformer) {
     override fun getStructType(): DataType<*>? {
-        throw NotImplementedError("This Destination Does not support typing")
+        throw NotImplementedError("This Destination Does not support final tables")
     }
 
     override fun getArrayType(): DataType<*>? {
-        throw NotImplementedError("This Destination Does not support typing")
+        throw NotImplementedError("This Destination Does not support final tables")
     }
 
     override fun getWidestType(): DataType<*>? {
-        throw NotImplementedError("This Destination Does not support typing")
+        throw NotImplementedError("This Destination Does not support final tables")
     }
 
     override fun getDialect(): SQLDialect? {
-        throw NotImplementedError("This Destination Does not support typing")
+        throw NotImplementedError("This Destination Does not support final tables")
     }
 
     override fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
         useExpensiveSaferCasting: Boolean
     ): List<Field<*>>? {
-        return null
+        throw NotImplementedError("This Destination Does not support final tables")
     }
 
     override fun buildAirbyteMetaColumn(columns: LinkedHashMap<ColumnId, AirbyteType>): Field<*>? {
-        return null
+        throw NotImplementedError("This Destination Does not support final tables")
     }
 
     override fun cdcDeletedAtNotNullCondition(): Condition? {
-        return null
+        throw NotImplementedError("This Destination Does not support final tables")
     }
 
     override fun getRowNumber(
         primaryKey: List<ColumnId>,
         cursorField: Optional<ColumnId>
     ): Field<Int>? {
-        return null
+        throw NotImplementedError("This Destination Does not support final tables")
     }
 
     override fun existingSchemaMatchesStreamConfig(
         stream: StreamConfig,
         existingTable: TableDefinition
     ): Boolean {
-        return false
+        throw NotImplementedError("This Destination Does not support final tables")
     }
 }

@@ -64,13 +64,6 @@
         "description": "The schema to write raw tables into (default: airbyte_internal)",
         "title": "Raw Table Schema Name",
         "order": 7
-      },
-      "use_v2_raw_table": {
-        "type": "boolean",
-        "description": "(For internal use.) Declares this uses the v2 raw table schema",
-        "title": "(Internal) Use V2 Raw Table Schema",
-        "airbyte_hidden": true,
-        "default": true
       }
     }
   }

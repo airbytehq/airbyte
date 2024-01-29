@@ -41,7 +41,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
         %s String,
         %s String,
         %s DateTime64(3, 'GMT') DEFAULT now(),
-        %s DateTime64(3, 'GMT') DEFAULT now(),
+        %s DateTime64(3, 'GMT') NULL,
         PRIMARY KEY(%s)
         )
         ENGINE = MergeTree;

@@ -301,6 +301,13 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
         typerDeduper);
   }
 
+  /**
+   * Creates the appropriate TyperDeduper class for the jdbc destination and the user's configuration
+   * @param config the configuration for the connection
+   * @param catalog the catalog for the connection
+   * @param database a database instance
+   * @return the appropriate TyperDeduper instance for this connection.
+   */
   private TyperDeduper getV2TyperDeduper(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JdbcDatabase database) {
     final JdbcSqlGenerator sqlGenerator = getSqlGenerator();
     final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
