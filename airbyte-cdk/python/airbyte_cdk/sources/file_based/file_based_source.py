@@ -133,13 +133,13 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
 
         return not bool(errors), (errors or None)
 
-    def streams(self, config: Mapping[str, Any]) -> List[AbstractFileBasedStream]:
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         Return a list of this source's streams.
         """
         file_based_streams = self._get_file_based_streams(config)
 
-        configured_streams: List[AbstractFileBasedStream] = []
+        configured_streams: List[Stream] = []
 
         for stream in file_based_streams:
             sync_mode = self._get_sync_mode_from_catalog(stream)
@@ -180,6 +180,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             for catalog_stream in self.catalog.streams:
                 if stream.name == catalog_stream.stream.name:
                     return catalog_stream.sync_mode
+            raise RuntimeError(f"No sync mode was found for {stream.name}.")
         return None
 
     def read(
