@@ -30,6 +30,7 @@ from airbyte_protocol.models import (
     Type,
 )
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib._util import protocol_util  # Internal utility functions
 
 
@@ -87,7 +88,7 @@ class RecordProcessor(abc.ABC):
     def register_source(
         self,
         source_name: str,
-        source_catalog: ConfiguredAirbyteCatalog,
+        incoming_source_catalog: ConfiguredAirbyteCatalog,
     ) -> None:
         """Register the source name and catalog.
 
@@ -97,7 +98,7 @@ class RecordProcessor(abc.ABC):
         TODO: Expand this to handle mutliple sources.
         """
         _ = source_name
-        self.source_catalog = source_catalog
+        self.source_catalog = incoming_source_catalog
 
     @property
     def _streams_with_data(self) -> set[str]:
@@ -171,7 +172,12 @@ class RecordProcessor(abc.ABC):
                 pass
 
             else:
-                raise ValueError(f"Unexpected message type: {message.type}")
+                raise exc.AirbyteConnectorError(
+                    message="Unexpected message type.",
+                    context={
+                        "message_type": message.type,
+                    },
+                )
 
         # We are at the end of the stream. Process whatever else is queued.
         for stream_name, batch in stream_batches.items():

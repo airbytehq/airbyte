@@ -7,7 +7,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.11.4'
+    cdkVersionRequired = '0.16.0'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -18,7 +18,11 @@ configurations.all {
     }
 }
 
-
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes"
+    }
+}
 
 application {
     mainClass = 'io.airbyte.integrations.source.mysql.MySqlSource'
@@ -31,6 +35,10 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.30'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation project(path: ':airbyte-cdk:java:airbyte-cdk:db-sources')
+
+    implementation libs.debezium.api
+    implementation libs.debezium.embedded
+    implementation libs.debezium.mysql
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
