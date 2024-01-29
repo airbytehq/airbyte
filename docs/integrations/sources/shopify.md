@@ -111,6 +111,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 - [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2022-01/resources/abandoned-checkouts#top)
 - [Articles](https://shopify.dev/api/admin-rest/2022-01/resources/article)
+- [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2023-10/resources/transactions)
 - [Blogs](https://shopify.dev/api/admin-rest/2022-01/resources/blog)
 - [Collects](https://shopify.dev/api/admin-rest/2022-01/resources/collect#top)
 - [Collections](https://shopify.dev/api/admin-rest/2022-01/resources/collection)
@@ -209,19 +210,20 @@ If a child stream is synced independently of its parent stream, a full sync will
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                         |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| 1.1.6 | 2024-01-04 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
-| 1.1.5   | 2023-12-28 | [33827](https://github.com/airbytehq/airbyte/pull/33827) | Fix GraphQL query                                                                                                               |
-| 1.1.4   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                                 |
-| 1.1.3   | 2023-10-17 | [31500](https://github.com/airbytehq/airbyte/pull/31500) | Fixed the issue caused by the `missing access token` while setup the new source and not yet authenticated                       |
-| 1.1.2   | 2023-10-13 | [31381](https://github.com/airbytehq/airbyte/pull/31381) | Fixed the issue caused by the `state` presence while fetching the `deleted events` with pagination                              |
-| 1.1.1   | 2023-09-18 | [30560](https://github.com/airbytehq/airbyte/pull/30560) | Performance testing - include socat binary in docker image                                                                      |
-| 1.1.0   | 2023-09-07 | [30246](https://github.com/airbytehq/airbyte/pull/30246) | Added ability to fetch `destroyed` records for `Articles, Blogs, CustomCollections, Orders, Pages, PriceRules, Products`        |
-| 1.0.0   | 2023-08-11 | [29361](https://github.com/airbytehq/airbyte/pull/29361) | Migrate to the `2023-07` Shopify API Version                                                                                    |
-| 0.6.2   | 2023-08-09 | [29302](https://github.com/airbytehq/airbyte/pull/29302) | Handle the `Internal Server Error` when entity could be fetched                                                                 |
-| 0.6.1   | 2023-08-08 | [28291](https://github.com/airbytehq/airbyte/pull/28291) | Allow `shop` field to accept `*.myshopify.com` shop names, updated `OAuth Spec`                                                 |
-| 0.6.0   | 2023-08-02 | [28770](https://github.com/airbytehq/airbyte/pull/28770) | Added `Disputes` stream                                                                                                         |
-| 0.5.1   | 2023-07-13 | [28700](https://github.com/airbytehq/airbyte/pull/28700) | Improved `error messages` with more user-friendly description, refactored code                                                  |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| 1.1.7   | 2024-01-19 | [33804](https://github.com/airbytehq/airbyte/pull/33804) | Updated documentation with list of all supported streams |
+| 1.1.6   | 2024-01-04 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
+| 1.1.5   | 2023-12-28 | [33827](https://github.com/airbytehq/airbyte/pull/33827) | Fix GraphQL query |
+| 1.1.4   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 1.1.3   | 2023-10-17 | [31500](https://github.com/airbytehq/airbyte/pull/31500) | Fixed the issue caused by the `missing access token` while setup the new source and not yet authenticated |
+| 1.1.2   | 2023-10-13 | [31381](https://github.com/airbytehq/airbyte/pull/31381) | Fixed the issue caused by the `state` presence while fetching the `deleted events` with pagination |
+| 1.1.1   | 2023-09-18 | [30560](https://github.com/airbytehq/airbyte/pull/30560) | Performance testing - include socat binary in docker image |
+| 1.1.0   | 2023-09-07 | [30246](https://github.com/airbytehq/airbyte/pull/30246) | Added ability to fetch `destroyed` records for `Articles, Blogs, CustomCollections, Orders, Pages, PriceRules, Products` |
+| 1.0.0   | 2023-08-11 | [29361](https://github.com/airbytehq/airbyte/pull/29361) | Migrate to the `2023-07` Shopify API Version  |
+| 0.6.2   | 2023-08-09 | [29302](https://github.com/airbytehq/airbyte/pull/29302) | Handle the `Internal Server Error` when entity could be fetched                 |
+| 0.6.1   | 2023-08-08 | [28291](https://github.com/airbytehq/airbyte/pull/28291) | Allow `shop` field to accept `*.myshopify.com` shop names, updated `OAuth Spec`                  |
+| 0.6.0   | 2023-08-02 | [28770](https://github.com/airbytehq/airbyte/pull/28770) | Added `Disputes` stream  |
+| 0.5.1   | 2023-07-13 | [28700](https://github.com/airbytehq/airbyte/pull/28700) | Improved `error messages` with more user-friendly description, refactored code  |
 | 0.5.0   | 2023-06-13 | [27732](https://github.com/airbytehq/airbyte/pull/27732) | License Update: Elv2                                                                                                            |
 | 0.4.0   | 2023-06-13 | [27083](https://github.com/airbytehq/airbyte/pull/27083) | Added `CustomerSavedSearch`, `CustomerAddress` and `Countries` streams                                                          |
 | 0.3.4   | 2023-05-10 | [25961](https://github.com/airbytehq/airbyte/pull/25961) | Added validation for `shop` in input configuration (accepts non-url-like inputs)                                                |

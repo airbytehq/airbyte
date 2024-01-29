@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.postgres.typing_deduping;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static java.util.Collections.emptyList;
 import static org.jooq.impl.DSL.array;
@@ -28,6 +29,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -36,10 +38,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.Name;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
@@ -77,6 +82,41 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   @Override
   protected SQLDialect getDialect() {
     return SQLDialect.POSTGRES;
+  }
+
+  @Override
+  public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
+    final List<Sql> statements = new ArrayList<>();
+    final Name finalTableName = name(stream.id().finalNamespace(), stream.id().finalName() + suffix);
+
+    statements.add(super.createTable(stream, suffix, force));
+
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      // An index for our ROW_NUMBER() PARTITION BY pk ORDER BY cursor, extracted_at function
+      final List<Name> pkNames = stream.primaryKey().stream()
+          .map(pk -> quotedName(pk.name()))
+          .toList();
+      statements.add(Sql.of(getDslContext().createIndex().on(
+          finalTableName,
+          Stream.of(
+              pkNames.stream(),
+              // if cursor is present, then a stream containing its name
+              // but if no cursor, then empty stream
+              stream.cursor().stream().map(cursor -> quotedName(cursor.name())),
+              Stream.of(name(COLUMN_NAME_AB_EXTRACTED_AT))).flatMap(Function.identity()).toList())
+          .getSQL()));
+    }
+    statements.add(Sql.of(getDslContext().createIndex().on(
+        finalTableName,
+        name(COLUMN_NAME_AB_EXTRACTED_AT))
+        .getSQL()));
+
+    statements.add(Sql.of(getDslContext().createIndex().on(
+        finalTableName,
+        name(COLUMN_NAME_AB_RAW_ID))
+        .getSQL()));
+
+    return Sql.concat(statements);
   }
 
   @Override

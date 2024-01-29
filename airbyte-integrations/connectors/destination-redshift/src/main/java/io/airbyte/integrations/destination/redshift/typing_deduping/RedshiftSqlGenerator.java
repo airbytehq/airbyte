@@ -105,17 +105,17 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    */
 
   @Override
-  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias) {
+  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias, final boolean useExpensiveSaferCasting) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
       switch (airbyteProtocolType) {
         case STRING -> {
           return field(CASE_STATEMENT_SQL_TEMPLATE,
               jsonTypeOf(field).ne("string").and(field.isNotNull()),
               jsonSerialize(field),
-              castedField(field, airbyteProtocolType)).as(quotedName(alias));
+              castedField(field, airbyteProtocolType, useExpensiveSaferCasting)).as(quotedName(alias));
         }
         default -> {
-          return castedField(field, airbyteProtocolType).as(quotedName(alias));
+          return castedField(field, airbyteProtocolType, useExpensiveSaferCasting).as(quotedName(alias));
         }
       }
 
@@ -129,7 +129,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
           jsonTypeOf(field).eq("array"),
           cast(field, getArrayType())).as(quotedName(alias));
       // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias);
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias, useExpensiveSaferCasting);
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
     };
   }
@@ -139,7 +139,11 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     return columns
         .entrySet()
         .stream()
-        .map(column -> castedField(field(quotedName(COLUMN_NAME_DATA, column.getKey().originalName())), column.getValue(), column.getKey().name()))
+        .map(column -> castedField(
+            field(quotedName(COLUMN_NAME_DATA, column.getKey().originalName())),
+            column.getValue(),
+            column.getKey().name(),
+            useExpensiveSaferCasting))
         .collect(Collectors.toList());
   }
 
@@ -180,7 +184,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     // TODO: Timestamp format issues can result in null values when cast, add regex check if destination
     // supports regex functions.
     return field(CASE_STATEMENT_SQL_TEMPLATE,
-        field.isNotNull().and(castedField(field, type, column.name()).isNull()),
+        field.isNotNull().and(castedField(field, type, column.name(), true).isNull()),
         function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT.formatted(column.name()))), field("ARRAY()"));
   }
 
@@ -198,6 +202,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
     // Check that the columns match, with special handling for the metadata columns.
+    // This is mostly identical to the redshift implementation, but swaps jsonb to super
     final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue()).getTypeName()),
@@ -227,6 +232,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    */
   @Override
   protected Field<Integer> getRowNumber(final List<ColumnId> primaryKeys, final Optional<ColumnId> cursor) {
+    // literally identical to postgres's getRowNumber implementation, changes here probably should
+    // be reflected there
     final List<Field<?>> primaryKeyFields =
         primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList())
             : new ArrayList<>();

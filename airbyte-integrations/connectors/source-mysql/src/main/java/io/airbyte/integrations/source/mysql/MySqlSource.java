@@ -6,8 +6,8 @@ package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getCursorBasedSyncStatusForStreams;
@@ -50,8 +50,8 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.mysql.cdc.CdcConfigurationHelper;
 import io.airbyte.integrations.source.mysql.cursor_based.MySqlCursorBasedStateManager;
-import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadHandler;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStreamStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil;
@@ -500,10 +500,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return "1".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value);
   }
 
-  private String toSslJdbcParam(final SslMode sslMode) {
-    return toSslJdbcParamInternal(sslMode);
-  }
-
   private boolean cloudDeploymentMode() {
     return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
@@ -513,7 +509,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
-  protected static String toSslJdbcParamInternal(final SslMode sslMode) {
+  public static String toSslJdbcParam(final SslMode sslMode) {
     final var result = switch (sslMode) {
       case DISABLED, PREFERRED, REQUIRED, VERIFY_CA, VERIFY_IDENTITY -> sslMode.name();
       default -> throw new IllegalArgumentException("unexpected ssl mode");
