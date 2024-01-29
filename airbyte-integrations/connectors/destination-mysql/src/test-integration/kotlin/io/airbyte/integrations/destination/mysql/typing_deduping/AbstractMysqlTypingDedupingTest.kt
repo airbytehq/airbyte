@@ -20,9 +20,8 @@ import org.jooq.impl.DSL.name
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 
-abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest() {
+abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest(SQLDialect.MYSQL) {
     override val imageName = "airbyte/destination-mysql:dev"
-    override val dialect = SQLDialect.MYSQL
     override val sqlGenerator = MysqlSqlGenerator()
     override val sourceOperations = MysqlTestSourceOperations()
     override val nameTransformer = MySQLNameTransformer()
@@ -31,9 +30,12 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest() {
     override fun getDataSource(config: JsonNode?): DataSource =
         MySQLDestination().getDataSource(bareMetalConfig)
 
-    override fun disableFinalTableComparison(): Boolean {
-        // TODO delete this in the next stacked PR
-        return true
+    override fun getDefaultSchema(config: JsonNode): String {
+        return config["database"].asText()
+    }
+
+    override fun setDefaultSchema(config: JsonNode, schema: String?) {
+        (config as ObjectNode).put("database", schema)
     }
 
     @Throws(Exception::class)
@@ -102,7 +104,6 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest() {
         @Throws(Exception::class)
         fun setupMysql() {
             testContainer = MysqlTestDatabase.`in`(MysqlTestDatabase.BaseImage.MYSQL_8)
-
             containerizedConfig =
                 testContainer
                     .configBuilder()
