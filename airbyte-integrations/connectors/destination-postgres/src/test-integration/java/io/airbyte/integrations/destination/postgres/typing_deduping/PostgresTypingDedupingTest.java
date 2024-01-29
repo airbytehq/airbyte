@@ -88,9 +88,9 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
             .withStream(new AirbyteStream()
-                            .withNamespace(streamNamespace)
-                            .withName(streamName)
-                            .withJsonSchema(SCHEMA))));
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
 
     // First sync
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
@@ -106,4 +106,5 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
   protected List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName) throws Exception {
     return super.dumpRawTableRecords(streamNamespace, streamName.toLowerCase());
   }
+
 }

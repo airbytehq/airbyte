@@ -71,9 +71,11 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
     // There is a mismatch between convention used in create table query in SqlOperations vs this.
-    // For postgres specifically, when a create table is issued without a quoted identifier, it will be converted to lowercase.
+    // For postgres specifically, when a create table is issued without a quoted identifier, it will be
+    // converted to lowercase.
     // To keep it consistent when querying raw table in T+D query, convert it to lowercase.
-    // TODO: This logic should be unified across Raw and final table operations in a single class operating on a StreamId.
+    // TODO: This logic should be unified across Raw and final table operations in a single class
+    // operating on a StreamId.
     return new StreamId(
         namingTransformer.getNamespace(namespace),
         namingTransformer.convertStreamName(name),
@@ -82,6 +84,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         namespace,
         name);
   }
+
   @Override
   protected DataType<?> getStructType() {
     return JSONB_TYPE;
