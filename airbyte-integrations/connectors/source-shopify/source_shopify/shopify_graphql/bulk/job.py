@@ -37,6 +37,11 @@ class ShopifyBulkManager:
     retrieve_chunk_size: int = 1024 * 1024 * 5
     # time between job status checks
     job_check_interval_sec: int = 5
+
+    # PLATFORM HEARTBEAT NOTES:
+    # 30 sec / attempt * 19 attempts = 570 sec of wait time in total,
+    # which is < 10 min of retrying, before Heartbeat will kill the source as non-responsive
+
     # sleep time per creation attempt
     concurrent_interval_sec = 30
     # max attempts for job creation
