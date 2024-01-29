@@ -13,7 +13,6 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DAT
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
 import static io.airbyte.integrations.base.destination.typing_deduping.Sql.transactionally;
 import static java.util.stream.Collectors.toList;
-import static org.jooq.impl.DSL.alterTable;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.cast;
 import static org.jooq.impl.DSL.dropTableIfExists;
@@ -57,8 +56,6 @@ import org.jooq.CreateTableColumnStep;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Field;
-import org.jooq.InsertOnDuplicateStep;
-import org.jooq.InsertReturningStep;
 import org.jooq.InsertValuesStepN;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -383,15 +380,15 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
                 .from(filteredRows)
                 .where(field(name(ROW_NUMBER_COLUMN_NAME), Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type
                                                                                  // them.
-    ).getSQL(ParamType.INLINED);
+            ).getSQL(ParamType.INLINED);
 
     // Used for append and overwrite modes.
     final String insertStmt =
         insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
             .select(with(rawTableRowsWithCast)
                 .select(finalTableFields)
-                .from(rawTableRowsWithCast)
-    ).getSQL(ParamType.INLINED);
+                .from(rawTableRowsWithCast))
+            .getSQL(ParamType.INLINED);
     final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
     final String deleteCdcDeletesStmt =
         streamConfig.columns().containsKey(cdcDeletedAtColumn) ? deleteFromFinalTableCdcDeletes(finalSchema, finalTable) : "";

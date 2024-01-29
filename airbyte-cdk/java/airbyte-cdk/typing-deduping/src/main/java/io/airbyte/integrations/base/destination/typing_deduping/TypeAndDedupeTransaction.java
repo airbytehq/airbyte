@@ -5,7 +5,6 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
