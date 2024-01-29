@@ -39,7 +39,7 @@ class MongoDbResumeTokenHelperTest {
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final BsonDocument actualResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
+    final BsonDocument actualResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, null, null); // TEMP
     assertEquals(resumeTokenDocument, actualResumeToken);
   }
 

@@ -8,11 +8,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Collation;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
+import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +39,14 @@ public class MongoDbResumeTokenHelper {
    * @param mongoClient The {@link MongoClient} used to query the MongoDB server.
    * @return The most recent resume token value.
    */
-  public static BsonDocument getMostRecentResumeToken(final MongoClient mongoClient) {
-    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.watch(BsonDocument.class);
+  public static BsonDocument getMostRecentResumeToken(final MongoClient mongoClient, final String databaseName, final ConfiguredAirbyteCatalog catalog) {
+    final List<String> collectionsList = catalog.getStreams().stream()
+        .map(s -> s.getStream().getName())
+        .toList();
+    LOGGER.info("*** resume token for db {} with collection filter {}", databaseName, Arrays.toString(collectionsList.toArray()));
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.in("ns.coll", collectionsList)));
+    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.getDatabase(databaseName).watch(pipeline, BsonDocument.class);
     try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
       /*
        * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
