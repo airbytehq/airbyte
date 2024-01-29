@@ -16,6 +16,7 @@ NUM_PRODUCTS = 100            # This is always the same count, regardless of fak
 SEED_A = 1234
 SEED_B = 5678
 
+
 @pytest.fixture(scope="function")  # Each test gets a fresh source-faker instance.
 def source_faker_seed_a():
     """Fixture to return a source-faker connector instance."""
@@ -30,6 +31,7 @@ def source_faker_seed_a():
     source.check()
     source.set_streams(["products", "users", "purchases"])
     return source
+
 
 @pytest.fixture(scope="function")  # Each test gets a fresh source-faker instance.
 def source_faker_seed_b():
@@ -46,6 +48,7 @@ def source_faker_seed_b():
     source.set_streams(["products", "users", "purchases"])
     return source
 
+
 @pytest.fixture(scope="function")
 def duckdb_cache() -> Generator[ab.DuckDBCache, None, None]:
     """Fixture to return a fresh cache."""
@@ -53,6 +56,7 @@ def duckdb_cache() -> Generator[ab.DuckDBCache, None, None]:
     yield cache
     # TODO: Delete cache DB file after test is complete.
     return
+
 
 def test_replace_strategy(
     source_faker_seed_a: ab.Source,
@@ -67,6 +71,7 @@ def test_replace_strategy(
         assert len(result.cache.streams["users"]) == DEFAULT_FAKER_SCALE
         assert len(result.cache.streams["purchases"]) == DEFAULT_FAKER_SCALE
 
+
 def test_append_strategy(
     source_faker_seed_a: ab.Source,
     duckdb_cache: ab.DuckDBCache,
@@ -80,12 +85,13 @@ def test_append_strategy(
         assert len(result.cache.streams["users"]) == DEFAULT_FAKER_SCALE * iteration
         assert len(result.cache.streams["purchases"]) == DEFAULT_FAKER_SCALE * iteration
 
+
 def test_merge_strategy(
     source_faker_seed_a: ab.Source,
     source_faker_seed_b: ab.Source,
     duckdb_cache: ab.DuckDBCache,
 ) -> None:
-    """Test that the merge-insert strategy works as expected."""
+    """Test that the merge strategy works as expected."""
 
     # First run, seed A (counts should match the scale or the product count)
     result = source_faker_seed_a.read(duckdb_cache, strategy="merge")
@@ -115,6 +121,55 @@ def test_merge_strategy(
 
     # Fourth run, also seed B (record count should not increase from last run)
     result = source_faker_seed_b.read(duckdb_cache, strategy="merge")
+    assert len(result.cache.streams) == 3
+    assert len(result.cache.streams["products"]) == products_count
+    assert len(result.cache.streams["users"]) == users_count
+    assert len(result.cache.streams["purchases"]) == products_count
+
+
+def test_auto_strategy(
+    source_faker_seed_a: ab.Source,
+    source_faker_seed_b: ab.Source,
+    duckdb_cache: ab.DuckDBCache,
+) -> None:
+    """Test that the auto strategy works as expected.
+
+    Auto strategy should use the logic:
+    - If there's a primary key, use merge.
+    - Else, if there's an incremental key, use append.
+    - Else, use full replace (table swap).
+
+    Since source-faker has primary keys, we should always expect merge behavior.
+    """
+
+    # First run, seed A (counts should match the scale or the product count)
+    result = source_faker_seed_a.read(duckdb_cache, strategy="auto")
+    assert len(result.cache.streams) == 3
+    assert len(result.cache.streams["products"]) == NUM_PRODUCTS
+    assert len(result.cache.streams["users"]) == DEFAULT_FAKER_SCALE
+    assert len(result.cache.streams["purchases"]) == DEFAULT_FAKER_SCALE
+
+    # Second run, also seed A (should have same exact data, no change in counts)
+    result = source_faker_seed_a.read(duckdb_cache, strategy="auto")
+    assert len(result.cache.streams["products"]) == NUM_PRODUCTS
+    assert len(result.cache.streams["users"]) == DEFAULT_FAKER_SCALE
+    assert len(result.cache.streams["purchases"]) == DEFAULT_FAKER_SCALE
+
+    # Third run, seed B (should increase record count, but not double)
+    # TODO: See if we can reliably predict the exact number of records, since we use fixed seeds.
+    result = source_faker_seed_b.read(duckdb_cache, strategy="auto")
+    assert NUM_PRODUCTS < len(result.cache.streams["products"]) > NUM_PRODUCTS * 2
+    assert DEFAULT_FAKER_SCALE < len(result.cache.streams["users"]) < DEFAULT_FAKER_SCALE * 2
+    assert DEFAULT_FAKER_SCALE < len(result.cache.streams["purchases"]) < DEFAULT_FAKER_SCALE * 2
+
+    users_count, purchases_count, products_count = (
+        len(result.cache.streams["users"]),
+        len(result.cache.streams["purchases"]),
+        len(result.cache.streams["products"]),
+    )
+
+    # Fourth run, also seed B (record count should not increase from last run)
+    result = source_faker_seed_b.read(duckdb_cache, strategy="auto")
     assert len(result.cache.streams) == 3
     assert len(result.cache.streams["products"]) == products_count
     assert len(result.cache.streams["users"]) == users_count
