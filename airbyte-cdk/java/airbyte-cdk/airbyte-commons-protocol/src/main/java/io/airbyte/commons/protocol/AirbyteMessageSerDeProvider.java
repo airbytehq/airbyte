@@ -8,8 +8,6 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.protocol.serde.AirbyteMessageDeserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageSerializer;
 import io.airbyte.commons.version.Version;
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Singleton;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +21,6 @@ import java.util.Set;
  * This class is intended to help access the serializer/deserializer for a given version of the
  * Airbyte Protocol.
  */
-@Singleton
 public class AirbyteMessageSerDeProvider {
 
   private final List<AirbyteMessageDeserializer<?>> deserializersToRegister;
@@ -42,7 +39,6 @@ public class AirbyteMessageSerDeProvider {
     this(Collections.emptyList(), Collections.emptyList());
   }
 
-  @PostConstruct
   public void initialize() {
     deserializersToRegister.forEach(this::registerDeserializer);
     serializersToRegister.forEach(this::registerSerializer);

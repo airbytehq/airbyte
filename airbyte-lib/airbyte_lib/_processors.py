@@ -88,7 +88,7 @@ class RecordProcessor(abc.ABC):
     def register_source(
         self,
         source_name: str,
-        source_catalog: ConfiguredAirbyteCatalog,
+        incoming_source_catalog: ConfiguredAirbyteCatalog,
     ) -> None:
         """Register the source name and catalog.
 
@@ -98,7 +98,7 @@ class RecordProcessor(abc.ABC):
         TODO: Expand this to handle mutliple sources.
         """
         _ = source_name
-        self.source_catalog = source_catalog
+        self.source_catalog = incoming_source_catalog
 
     @property
     def _streams_with_data(self) -> set[str]:
