@@ -597,6 +597,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 3.8.1   | [#34607](https://github.com/airbytehq/airbyte/pull/34607)  | Improve gradle dependency cache volume protection.                                                                         |
 | 3.8.0   | [#34316](https://github.com/airbytehq/airbyte/pull/34316)  | Expose Dagger engine image name in `--ci-requirements` and add `--ci-requirements` to the `airbyte-ci` root command group. |
 | 3.7.3   | [#34560](https://github.com/airbytehq/airbyte/pull/34560)  | Simplify Gradle task execution framework by removing local maven repo support.                                             |
 | 3.7.2   | [#34555](https://github.com/airbytehq/airbyte/pull/34555)  | Override secret masking in some very specific special cases.                                                               |
