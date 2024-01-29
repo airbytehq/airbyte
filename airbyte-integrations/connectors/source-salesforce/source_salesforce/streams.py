@@ -432,7 +432,8 @@ class BulkSalesforceStream(SalesforceStream):
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response, open(tmp_file, "wb") as data_file:
-            response_encoding = response.encoding or self.encoding
+            self.logger.info(f"Logging encoding values \n actual header: {response.headers} \nresponse.encoding : {response.encoding} \n response.apparent_encoding : {response.apparent_encoding} \n self.encoding : {self.encoding}")
+            response_encoding = self.encoding
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
         # check the file exists
