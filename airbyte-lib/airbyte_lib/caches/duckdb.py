@@ -117,7 +117,6 @@ class DuckDBCache(DuckDBCacheBase):
     def _ensure_compatible_table_schema(
         self,
         stream_name: str,
-        table_name: str,
         *,
         raise_on_error: bool = True,
     ) -> bool:
@@ -128,13 +127,13 @@ class DuckDBCache(DuckDBCacheBase):
         # call super
         if not super()._ensure_compatible_table_schema(
             stream_name=stream_name,
-            table_name=table_name,
             raise_on_error=raise_on_error,
         ):
             return False
 
         pk_cols = self._get_primary_keys(stream_name)
-        table = self.get_sql_table(table_name)
+        table = self.get_sql_table(stream_name)
+        table_name = self.get_sql_table_name(stream_name)
         table_pk_cols = table.primary_key.columns.keys()
         if set(pk_cols) != set(table_pk_cols):
             if raise_on_error:
