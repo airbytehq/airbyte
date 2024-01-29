@@ -66,14 +66,15 @@ class ConcurrentReadProcessor:
         """
         stream_name = sentinel.stream.name
         self._streams_currently_generating_partitions.remove(sentinel.stream.name)
-        ret = []
         # It is possible for the stream to already be done if no partitions were generated
         # If the partition generation process was completed and there are no partitions left to process, the stream is done
         if self._is_stream_done(stream_name) or len(self._streams_to_running_partitions[stream_name]) == 0:
-            ret.append(self._on_stream_is_done(stream_name))
+            yield self._on_stream_is_done(stream_name)
+            if not sentinel.has_generated_partition:
+                sentinel.stream.cursor.emit_state_given_no_partitions_generated()
+                yield from self._message_repository.consume_queue()
         if self._stream_instances_to_start_partition_generation:
-            ret.append(self.start_next_partition_generator())
-        return ret
+            yield self.start_next_partition_generator()
 
     def on_partition(self, partition: Partition) -> None:
         """

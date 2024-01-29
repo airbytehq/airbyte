@@ -88,6 +88,7 @@ class StreamFacade(Stream):
                 primary_key=pk,
                 cursor_field=cursor_field,
                 logger=logger,
+                cursor=cursor,
             ),
             stream,
             cursor,
