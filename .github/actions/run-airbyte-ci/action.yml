@@ -81,6 +81,7 @@ inputs:
     required: false
   python_registry_url:
     description: "Python registry URL to publish python package"
+    default: "https://upload.pypi.org/legacy/"
     required: false
 
 runs:

@@ -55,4 +55,3 @@ jobs:
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "poetry --package-path=airbyte-lib publish"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
-          python_registry_url: "https://upload.pypi.org/legacy/"
