@@ -165,7 +165,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
           new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, defaultThreadCount);
     }
 
-    return new StagingConsumerFactory.Builder(
+    return StagingConsumerFactory.builder(
         outputRecordCollector,
         database,
         new SnowflakeInternalStagingSqlOperations(getNamingResolver()),

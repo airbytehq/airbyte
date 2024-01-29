@@ -103,49 +103,24 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
     // Required (?) fields
     // (TODO which of these are _actually_ required, and which have we just coincidentally always
     // provided?)
-    private final Consumer<AirbyteMessage> outputRecordCollector;
-    private final JdbcDatabase database;
-    private final StagingOperations stagingOperations;
-    private final NamingConventionTransformer namingResolver;
-    private final JsonNode config;
-    private final ConfiguredAirbyteCatalog catalog;
-    private final boolean purgeStagingData;
-    private final TypeAndDedupeOperationValve typerDeduperValve;
-    private final TyperDeduper typerDeduper;
-    private final ParsedCatalog parsedCatalog;
-    private final String defaultNamespace;
-    private final boolean useDestinationsV2Columns;
+    private Consumer<AirbyteMessage> outputRecordCollector;
+    private JdbcDatabase database;
+    private StagingOperations stagingOperations;
+    private NamingConventionTransformer namingResolver;
+    private JsonNode config;
+    private ConfiguredAirbyteCatalog catalog;
+    private boolean purgeStagingData;
+    private TypeAndDedupeOperationValve typerDeduperValve;
+    private TyperDeduper typerDeduper;
+    private ParsedCatalog parsedCatalog;
+    private String defaultNamespace;
+    private boolean useDestinationsV2Columns;
 
     // Optional fields
     private Optional<Long> bufferMemoryLimit = Optional.empty();
     private long optimalBatchSizeBytes = 50 * 1024 * 1024;
 
-    public Builder(
-                   final Consumer<AirbyteMessage> outputRecordCollector,
-                   final JdbcDatabase database,
-                   final StagingOperations stagingOperations,
-                   final NamingConventionTransformer namingResolver,
-                   final JsonNode config,
-                   final ConfiguredAirbyteCatalog catalog,
-                   final boolean purgeStagingData,
-                   final TypeAndDedupeOperationValve typerDeduperValve,
-                   final TyperDeduper typerDeduper,
-                   final ParsedCatalog parsedCatalog,
-                   final String defaultNamespace,
-                   final boolean useDestinationsV2Columns) {
-      this.outputRecordCollector = outputRecordCollector;
-      this.database = database;
-      this.stagingOperations = stagingOperations;
-      this.namingResolver = namingResolver;
-      this.config = config;
-      this.catalog = catalog;
-      this.purgeStagingData = purgeStagingData;
-      this.typerDeduperValve = typerDeduperValve;
-      this.typerDeduper = typerDeduper;
-      this.parsedCatalog = parsedCatalog;
-      this.defaultNamespace = defaultNamespace;
-      this.useDestinationsV2Columns = useDestinationsV2Columns;
-    }
+    private Builder() {}
 
     public Builder setBufferMemoryLimit(final Optional<Long> bufferMemoryLimit) {
       this.bufferMemoryLimit = bufferMemoryLimit;
@@ -175,6 +150,35 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
           optimalBatchSizeBytes);
     }
 
+  }
+
+  public static Builder builder(
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final JdbcDatabase database,
+      final StagingOperations stagingOperations,
+      final NamingConventionTransformer namingResolver,
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final boolean purgeStagingData,
+      final TypeAndDedupeOperationValve typerDeduperValve,
+      final TyperDeduper typerDeduper,
+      final ParsedCatalog parsedCatalog,
+      final String defaultNamespace,
+      final boolean useDestinationsV2Columns) {
+    final Builder builder = new Builder();
+    builder.outputRecordCollector = outputRecordCollector;
+    builder.database = database;
+    builder.stagingOperations = stagingOperations;
+    builder.namingResolver = namingResolver;
+    builder.config = config;
+    builder.catalog = catalog;
+    builder.purgeStagingData = purgeStagingData;
+    builder.typerDeduperValve = typerDeduperValve;
+    builder.typerDeduper = typerDeduper;
+    builder.parsedCatalog = parsedCatalog;
+    builder.defaultNamespace = defaultNamespace;
+    builder.useDestinationsV2Columns = useDestinationsV2Columns;
+    return builder;
   }
 
   public SerializedAirbyteMessageConsumer createAsync() {
