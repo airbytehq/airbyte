@@ -57,6 +57,8 @@ import org.jooq.CreateTableColumnStep;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.InsertOnDuplicateStep;
+import org.jooq.InsertReturningStep;
 import org.jooq.InsertValuesStepN;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -286,10 +288,14 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   @Override
   public Sql overwriteFinalTable(final StreamId stream, final String finalSuffix) {
     return transactionally(
-        dropTableIfExists(name(stream.finalNamespace(), stream.finalName())).getSQL(ParamType.INLINED),
-        alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
-            .renameTo(name(stream.finalName()))
-            .getSQL());
+        getDslContext().dropTableIfExists(name(stream.finalNamespace(), stream.finalName())).getSQL(ParamType.INLINED),
+        renameTable(stream, finalSuffix));
+  }
+
+  protected String renameTable(final StreamId stream, final String finalSuffix) {
+    return getDslContext().alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
+        .renameTo(name(stream.finalName()))
+        .getSQL();
   }
 
   @Override
@@ -299,7 +305,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     return transactionally(
         dsl.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
         dsl.dropTableIfExists(rawTableName).getSQL(),
-        DSL.createTable(rawTableName)
+        getDslContext().createTable(rawTableName)
             .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
             .column(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false))
             .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType().nullable(false))
@@ -377,16 +383,15 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
                 .from(filteredRows)
                 .where(field(name(ROW_NUMBER_COLUMN_NAME), Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type
                                                                                  // them.
-            )
-            .getSQL(ParamType.INLINED);
+    ).getSQL(ParamType.INLINED);
 
     // Used for append and overwrite modes.
     final String insertStmt =
         insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
             .select(with(rawTableRowsWithCast)
                 .select(finalTableFields)
-                .from(rawTableRowsWithCast))
-            .getSQL(ParamType.INLINED);
+                .from(rawTableRowsWithCast)
+    ).getSQL(ParamType.INLINED);
     final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
     final String deleteCdcDeletesStmt =
         streamConfig.columns().containsKey(cdcDeletedAtColumn) ? deleteFromFinalTableCdcDeletes(finalSchema, finalTable) : "";
@@ -488,18 +493,17 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   protected Field<?> castedField(
                                  final Field<?> field,
                                  final AirbyteType type,
-                                 final String alias,
                                  final boolean useExpensiveSaferCasting) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
-      return castedField(field, airbyteProtocolType, useExpensiveSaferCasting).as(quotedName(alias));
+      return castedField(field, airbyteProtocolType, useExpensiveSaferCasting);
     }
 
     // Redshift SUPER can silently cast an array type to struct and vice versa.
     return switch (type.getTypeName()) {
-      case Struct.TYPE, UnsupportedOneOf.TYPE -> cast(field, getStructType()).as(quotedName(alias));
-      case Array.TYPE -> cast(field, getArrayType()).as(quotedName(alias));
+      case Struct.TYPE, UnsupportedOneOf.TYPE -> cast(field, getStructType());
+      case Array.TYPE -> cast(field, getArrayType());
       // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias, useExpensiveSaferCasting);
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), useExpensiveSaferCasting);
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
     };
   }
