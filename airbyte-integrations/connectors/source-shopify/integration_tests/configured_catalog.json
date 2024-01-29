@@ -338,18 +338,6 @@
     },
     {
       "stream": {
-        "name": "transactions_graphql",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created_at"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["created_at"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "tender_transactions",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],

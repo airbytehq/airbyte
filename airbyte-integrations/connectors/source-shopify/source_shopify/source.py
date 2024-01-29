@@ -190,39 +190,23 @@ class SourceShopify(AbstractSource):
             Shop(config),
             SmartCollections(config),
             TenderTransactions(config),
-            Transactions(config),
-            TransactionsGraphql(config),
+            self.select_transactions_stream(config),
             CustomerSavedSearch(config),
             CustomerAddress(config),
             Countries(config),
         ]
 
-        # we allow the customer to decide which API type to use when it comes to the Transactions stream.
-        # Remove `Transactions` or `Transactions_graphql` class (REST/BULK) (True/False) based on `config.fetch_transactions_user_id` value
-        stream_instances = self.select_transactions_stream(stream_instances, config)
-
         return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]
 
-    def select_transactions_stream(self, stream_instances: List[Stream], config: Mapping[str, Any]) -> List[Stream]:
+    def select_transactions_stream(self, config: Mapping[str, Any]) -> Stream:
         """
         Allow the Customer to decide which API type to use when it comes to the `Transactions` stream.
-        Remove either `Transactions` or `Transactions_graphql` class (REST/BULK) based on `config.fetch_transactions_user_id` (True/False) value.
-
-        Note:
-            `_acceptance_test` - the additional flag to skip this logic and leave both streams for CAT tests.
-                                This field is not present in the `spec` or `config` by default.
         """
-        if not config.get("_acceptance_test"):
-            should_fetch_user_id = config.get("fetch_transactions_user_id")
-            for stream in stream_instances:
-                if should_fetch_user_id:
-                    if stream.name == TransactionsGraphql(config).name:
-                        stream_instances.remove(stream)
-                else:
-                    if stream.name == Transactions(config).name:
-                        stream_instances.remove(stream)
-            return stream_instances
-        return stream_instances
+        should_fetch_user_id = config.get("fetch_transactions_user_id")
+        if should_fetch_user_id:
+            return Transactions(config)
+        else:
+            return TransactionsGraphql(config)
 
     @staticmethod
     def get_user_scopes(config) -> list[Any]:

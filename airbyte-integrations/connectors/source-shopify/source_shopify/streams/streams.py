@@ -288,6 +288,11 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Transaction = Transaction
     cursor_field = "created_at"
 
+    @property
+    def name(self) -> str:
+        # override default name. This stream is essentially the same as `Transactions` stream, but it's using GraphQL API, which does not include the user_id field
+        return "transactions"
+
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         This stream has the same schema as `Transactions` stream, except of:
