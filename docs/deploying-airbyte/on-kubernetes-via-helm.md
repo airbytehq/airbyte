@@ -190,7 +190,7 @@ helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
 ### External Airbyte Database
 
 ::info
-This was tested using [Airbyte Helm Chart Version 0.50.115](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.115).
+This was tested using [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13).
 Previous or newer version can change how the external database can be configured.
 :::
 
@@ -250,5 +250,5 @@ Unfortunately, the `airbyte-bootloader` configuration uses this variable. Future
 
 Upgrade the chart by running:
 ```shell
-helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version <CHART_VERSION>
+helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.50.13
 ```
