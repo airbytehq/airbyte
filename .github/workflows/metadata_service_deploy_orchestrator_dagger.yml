@@ -21,6 +21,7 @@ jobs:
           subcommand: "metadata deploy orchestrator"
           context: "master"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          datadog_api_key: ${{ secrets.DD_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}

@@ -13,6 +13,9 @@ inputs:
   dagger_cloud_token:
     description: "Dagger Cloud token"
     required: true
+  datadog_api_key:
+    description: "Datadog API key"
+    required: true
   docker_hub_username:
     description: "Dockerhub username"
     required: true
@@ -87,6 +90,14 @@ runs:
       id: get-start-timestamp
       shell: bash
       run: echo "name=start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+
+    - name: Set up Datadog Agent
+      id: setup-datadog-agent
+      uses: datadog/agent-github-action@v1.3
+      with:
+        api_key: ${{ inputs.datadog_api_key }}
+        # Pulling from GCR to avoid Docker Hub rate limits
+        image_name: gcr.io/datadoghq/agent
 
     - name: Check if PR is from a fork
       id: check-if-pr-is-from-fork
