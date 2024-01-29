@@ -63,7 +63,6 @@ def test_docs_structure_is_correct(mocker, metadata, docs_path, should_fail):
     docs_path = Path(__file__).parent / docs_path
     with open(docs_path, "r") as f:
         documentation = f.read().rstrip()
-        print(documentation)
 
     t.test_docs_structure(documentation, metadata)
 
@@ -110,10 +109,39 @@ def test_docs_description(mocker, metadata, docs_path, should_fail):
     docs_path = Path(__file__).parent / docs_path
     with open(docs_path, "r") as f:
         documentation = f.read().rstrip()
-        print(documentation)
 
     if should_fail is True:
         with pytest.raises(AssertionError):
             t.test_docs_descriptions(docs_path, documentation, metadata)
     else:
         t.test_docs_descriptions(docs_path, documentation, metadata)
+
+
+@pytest.mark.parametrize(
+    ("docs_path", "should_fail"),
+    (
+        (
+            "data/docs/correct_all_description_exist.md",
+            False,
+        ),
+        (
+            "data/docs/invalid_links.md",
+            True,
+        ),
+        (
+            "data/docs/correct.md",
+            False,
+        ),
+    )
+)
+def test_docs_urls(docs_path, should_fail):
+    t = _TestConnectorDocumentation()
+
+    with open(docs_path, "r") as f:
+        documentation = f.read().rstrip()
+
+    if should_fail is True:
+        with pytest.raises(AssertionError):
+            t.test_validate_links(documentation)
+    else:
+        t.test_validate_links(documentation)

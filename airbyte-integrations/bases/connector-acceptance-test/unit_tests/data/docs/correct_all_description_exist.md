@@ -35,4 +35,4 @@ The GitHub source connector supports the following [sync modes](https://docs.air
 
 Now that you have set up the GitHub source connector, check out the following GitHub tutorials:
 
-- [Creating PAT](https:github.com/how-to-create-a-pat)
+- [Creating PAT](https://docs.github.com/en/enterprise-server@3.9/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)

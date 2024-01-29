@@ -10,6 +10,7 @@ from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
 from pathlib import Path
+from threading import Thread
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple
 from xmlrpc.client import Boolean
 
@@ -17,6 +18,7 @@ import connector_acceptance_test.utils.docs as docs_utils
 import dpath.util
 import jsonschema
 import pytest
+import requests
 from airbyte_protocol.models import (
     AirbyteRecordMessage,
     AirbyteStream,
@@ -1325,3 +1327,22 @@ class TestConnectorDocumentation(BaseTest):
                     for d, t in zip(docs_description_content, template_description_content):
                         d, t = docs_utils.prepare_lines_to_compare(connector_name, d, t)
                         assert d == t, f"Description for '{heading}' does not follow structure.\nExpected: {t} Actual: {d}"
+
+    def test_validate_links(self, connector_documentation: str):
+        valid_status_codes = [200, 403, 401]  # we skip 403 and 401 due to needed access
+        links = re.findall("(https?://[^\s)]+)", connector_documentation)
+        invalid_links = []
+        threads = []
+
+        def validate_docs_links(docs_link):
+            response = requests.get(docs_link)
+            if response.status_code not in valid_status_codes:
+                invalid_links.append(docs_link)
+
+        for link in links:
+            process = Thread(target=validate_docs_links, args=[link])
+            process.start()
+            threads.append(process)
+        [process.join() for process in threads]
+
+        assert not invalid_links, f"{len(invalid_links)} invalid links were found in the connector documentation: {invalid_links}."
