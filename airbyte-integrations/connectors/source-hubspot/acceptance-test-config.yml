@@ -72,6 +72,17 @@ acceptance_tests:
           - name: cars_web_analytics
             bypass_reason: Unable to populate
         ignored_fields:
+          engagements_tasks:
+            - name: hs_num_associated_*
+              bypass_reason: Floating value
+            - name: hs_object_source_*
+              bypass_reason: Floating value
+            - name: properties_hs_num_associated_*
+              bypass_reason: Floating value
+            - name: properties_hs_object_source_*
+              bypass_reason: Floating value
+            - name: properties_hs_object_source
+              bypass_reason: Floating value
           contact_lists:
             - name: ilsFilterBranch
               bypass_reason: Floating fields order
