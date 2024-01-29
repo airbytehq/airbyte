@@ -143,6 +143,7 @@ public class Jsons {
 
   /**
    * This method does not generate deserialization warn log on why serialization failed.
+   * See also {@link #tryDeserialize(String)}.
    *
    * @param jsonString
    * @return
