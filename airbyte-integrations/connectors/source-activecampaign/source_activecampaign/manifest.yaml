@@ -48,7 +48,7 @@ definitions:
       primary_key: "id"
       path: "/campaigns"
 
-  # API Docs: https://developers.activecampaign.com/reference/list-all-contacts
+    # API Docs: https://developers.activecampaign.com/reference/list-all-contacts
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -89,11 +89,11 @@ definitions:
           sdate:
             type:
               - string
-              - 'null'
+              - "null"
           ldate:
             type:
               - string
-              - 'null'
+              - "null"
           send_amt:
             type: string
           total_amt:
@@ -165,11 +165,11 @@ definitions:
           htmlunsubdata:
             type:
               - string
-              - 'null'
+              - "null"
           textunsubdata:
             type:
               - string
-              - 'null'
+              - "null"
           recurring:
             type: string
           willrecur:
@@ -197,7 +197,7 @@ definitions:
           reminder_format:
             type:
               - string
-              - 'null'
+              - "null"
           reminder_type:
             type: string
           reminder_offset:
@@ -209,13 +209,13 @@ definitions:
           reminder_last_cron_run:
             type:
               - string
-              - 'null'
+              - "null"
           activerss_interval:
             type: string
           activerss_url:
             type:
               - string
-              - 'null'
+              - "null"
           activerss_items:
             type: string
           ip4:
@@ -229,15 +229,15 @@ definitions:
           scheduleddate:
             type:
               - string
-              - 'null'
+              - "null"
           waitpreview:
             type:
               - string
-              - 'null'
+              - "null"
           deletestamp:
             type:
               - string
-              - 'null'
+              - "null"
           replysys:
             type: string
           links:
@@ -269,7 +269,7 @@ definitions:
           automation:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - type
           - userid
@@ -365,7 +365,7 @@ definitions:
       primary_key: "id"
       path: "/contacts"
 
-  # API Docs: https://developers.activecampaign.com/reference/list-all-deals
+    # API Docs: https://developers.activecampaign.com/reference/list-all-deals
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -394,19 +394,19 @@ definitions:
           bounced_date:
             type:
               - string
-              - 'null'
+              - "null"
           ip:
             type: string
           ua:
             type:
               - string
-              - 'null'
+              - "null"
           hash:
             type: string
           socialdata_lastcheck:
             type:
               - string
-              - 'null'
+              - "null"
           email_local:
             type: string
           email_domain:
@@ -416,7 +416,7 @@ definitions:
           rating_tstamp:
             type:
               - string
-              - 'null'
+              - "null"
           gravatar:
             type: string
           deleted:
@@ -426,17 +426,17 @@ definitions:
           adate:
             type:
               - string
-              - 'null'
+              - "null"
           udate:
             type: string
           edate:
             type:
               - string
-              - 'null'
+              - "null"
           deleted_at:
             type:
               - string
-              - 'null'
+              - "null"
           created_utc_timestamp:
             type: string
           updated_utc_timestamp:
@@ -448,11 +448,11 @@ definitions:
           created_by:
             type:
               - string
-              - 'null'
+              - "null"
           updated_by:
             type:
               - string
-              - 'null'
+              - "null"
           email_empty:
             type: boolean
           mpp_tracking:
@@ -526,7 +526,7 @@ definitions:
           id:
             type: string
           organization:
-            type: 'null'
+            type: "null"
         required:
           - cdate
           - email
@@ -574,7 +574,7 @@ definitions:
       primary_key: "id"
       path: "/deals"
 
-  # API Docs: https://developers.activecampaign.com/reference/retrieve-all-lists
+    # API Docs: https://developers.activecampaign.com/reference/retrieve-all-lists
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -583,164 +583,164 @@ definitions:
           owner:
             type:
               - string
-              - 'null'
+              - "null"
           contact:
             type:
               - string
-              - 'null'
+              - "null"
           organization:
             type:
               - string
-              - 'null'
+              - "null"
           group:
             type:
               - string
-              - 'null'
+              - "null"
           stage:
             type:
               - string
-              - 'null'
+              - "null"
           title:
             type:
               - string
-              - 'null'
+              - "null"
           description:
             type:
               - string
-              - 'null'
+              - "null"
           percent:
             type:
               - string
-              - 'null'
+              - "null"
           cdate:
             type:
               - string
-              - 'null'
+              - "null"
           mdate:
             type:
               - string
-              - 'null'
+              - "null"
           nextdate:
             type:
               - string
-              - 'null'
+              - "null"
           nexttaskid:
             type:
               - string
-              - 'null'
+              - "null"
           nextTask:
             type:
               - string
-              - 'null'
+              - "null"
           value:
             type:
               - string
-              - 'null'
+              - "null"
           currency:
             type:
               - string
-              - 'null'
+              - "null"
           winProbability:
             type:
               - integer
-              - 'null'
+              - "null"
           winProbabilityMdate:
             type:
               - string
-              - 'null'
+              - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           activitycount:
             type:
               - string
-              - 'null'
+              - "null"
           nextdealid:
             type:
               - string
-              - 'null'
+              - "null"
           edate:
             type:
               - string
-              - 'null'
+              - "null"
           links:
             type: object
             properties:
               dealActivities:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               contact:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               contactDeals:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               group:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               nextTask:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               notes:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               account:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               customerAccount:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               organization:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               owner:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               scoreValues:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               stage:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               tasks:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               dealCustomFieldData:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           id:
             type: string
           hash:
             type:
               - string
-              - 'null'
+              - "null"
           isDisabled:
             type:
               - boolean
-              - 'null'
+              - "null"
           account:
             type:
               - string
-              - 'null'
+              - "null"
           customerAccount:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - id
   lists_stream:
@@ -750,7 +750,7 @@ definitions:
       primary_key: "id"
       path: "/lists"
 
-  # API Docs: https://developers.activecampaign.com/reference/list-all-segments
+    # API Docs: https://developers.activecampaign.com/reference/list-all-segments
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -759,188 +759,188 @@ definitions:
           stringid:
             type:
               - string
-              - 'null'
+              - "null"
           userid:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           cdate:
             type:
               - string
-              - 'null'
+              - "null"
           p_use_tracking:
             type:
               - string
-              - 'null'
+              - "null"
           p_use_analytics_read:
             type:
               - string
-              - 'null'
+              - "null"
           p_use_analytics_link:
             type:
               - string
-              - 'null'
+              - "null"
           p_use_twitter:
             type:
               - string
-              - 'null'
+              - "null"
           p_use_facebook:
             type:
               - string
-              - 'null'
+              - "null"
           p_embed_image:
             type:
               - string
-              - 'null'
+              - "null"
           p_use_captcha:
             type:
               - string
-              - 'null'
+              - "null"
           send_last_broadcast:
             type:
               - string
-              - 'null'
+              - "null"
           private:
             type:
               - string
-              - 'null'
+              - "null"
           analytics_domains:
             type:
               - string
-              - 'null'
+              - "null"
           analytics_source:
             type:
               - string
-              - 'null'
+              - "null"
           analytics_ua:
             type:
               - string
-              - 'null'
+              - "null"
           twitter_token:
             type:
               - string
-              - 'null'
+              - "null"
           twitter_token_secret:
             type:
               - string
-              - 'null'
+              - "null"
           facebook_session:
             type:
               - string
-              - 'null'
+              - "null"
           carboncopy:
             type:
               - string
-              - 'null'
+              - "null"
           subscription_notify:
             type:
               - string
-              - 'null'
+              - "null"
           unsubscription_notify:
             type:
               - string
-              - 'null'
+              - "null"
           require_name:
             type:
               - string
-              - 'null'
+              - "null"
           get_unsubscribe_reason:
             type:
               - string
-              - 'null'
+              - "null"
           to_name:
             type:
               - string
-              - 'null'
+              - "null"
           optinoptout:
             type:
               - string
-              - 'null'
+              - "null"
           sender_name:
             type:
               - string
-              - 'null'
+              - "null"
           sender_addr1:
             type:
               - string
-              - 'null'
+              - "null"
           sender_addr2:
             type:
               - string
-              - 'null'
+              - "null"
           sender_city:
             type:
               - string
-              - 'null'
+              - "null"
           sender_state:
             type:
               - string
-              - 'null'
+              - "null"
           sender_zip:
             type:
               - string
-              - 'null'
+              - "null"
           sender_country:
             type:
               - string
-              - 'null'
+              - "null"
           sender_phone:
             type:
               - string
-              - 'null'
+              - "null"
           sender_url:
             type:
               - string
-              - 'null'
+              - "null"
           sender_reminder:
             type:
               - string
-              - 'null'
+              - "null"
           fulladdress:
             type:
               - string
-              - 'null'
+              - "null"
           optinmessageid:
             type:
               - string
-              - 'null'
+              - "null"
           optoutconf:
             type:
               - string
-              - 'null'
+              - "null"
           deletestamp:
             type:
               - string
-              - 'null'
+              - "null"
           udate:
             type:
               - string
-              - 'null'
+              - "null"
           links:
             type: object
             properties:
               contactGoalLists:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               user:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               addressLists:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           id:
             type: string
           user:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - id
   segments_stream:
@@ -950,7 +950,7 @@ definitions:
       primary_key: "id"
       path: "/segments"
 
-  # API Docs: https://developers.activecampaign.com/reference/forms-1
+    # API Docs: https://developers.activecampaign.com/reference/forms-1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -959,35 +959,35 @@ definitions:
           name:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
               - Segment of Automation 1
           logic:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
               - and
           hidden:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
-              - '0'
+              - "0"
           seriesid:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
-              - '1'
+              - "1"
           links:
             type:
               - array
-              - 'null'
+              - "null"
           id:
             type: string
             examples:
-              - '1'
+              - "1"
         required:
           - id
   forms_stream:
@@ -1007,13 +1007,13 @@ definitions:
           name:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
               - Testing
           action:
             type:
               - string
-              - 'null'
+              - "null"
           actiondata:
             type: object
             properties:
@@ -1025,25 +1025,25 @@ definitions:
                     type:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                       examples:
                         - subscribe-to-list
                     email:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                       examples:
                         - johndoe@example.com
                     list:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                       examples:
-                        - '1'
+                        - "1"
           submit:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
               - show-thank-you
           submitdata:
@@ -1052,35 +1052,35 @@ definitions:
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           layout:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
               - inline-form
           title:
             type:
               - string
-              - 'null'
+              - "null"
           body:
             type:
               - string
-              - 'null'
+              - "null"
           button:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
               - Submit
           thanks:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
               - Thanks for signing up!
           style:
@@ -1089,26 +1089,26 @@ definitions:
               background:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 examples:
                   - FFFFFF
               dark:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
                 examples:
                   - true
                   - false
               fontcolor:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 examples:
-                  - '000000'
+                  - "000000"
               layout:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 examples:
                   - normal
               border:
@@ -1117,38 +1117,38 @@ definitions:
                   width:
                     type:
                       - integer
-                      - 'null'
+                      - "null"
                     examples:
                       - 0
                   style:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                     examples:
                       - solid
                   color:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                     examples:
                       - B0B0B0
                   radius:
                     type:
                       - integer
-                      - 'null'
+                      - "null"
                     default: 0
                     examples:
                       - 0
               width:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
                 examples:
                   - 500
               ac_branding:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
                 examples:
                   - true
                   - false
@@ -1158,19 +1158,19 @@ definitions:
                   padding:
                     type:
                       - integer
-                      - 'null'
+                      - "null"
                     examples:
                       - 10
                   background:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                     examples:
-                      - '333333'
+                      - "333333"
                   fontcolor:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                     examples:
                       - FFFFFF
                   border:
@@ -1179,25 +1179,25 @@ definitions:
                       radius:
                         type:
                           - integer
-                          - 'null'
+                          - "null"
                         examples:
                           - 4
                       color:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                         examples:
-                          - '333333'
+                          - "333333"
                       style:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                         examples:
                           - solid
                       width:
                         type:
                           - integer
-                          - 'null'
+                          - "null"
                         examples:
                           - 0
           options:
@@ -1206,27 +1206,27 @@ definitions:
               blanks_overwrite:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
                 examples:
                   - true
                   - false
               confaction:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 examples:
                   - show-message
               sendoptin:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
                 examples:
                   - true
                   - false
               optin_id:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
                 examples:
                   - 1
               optin_created:
@@ -1238,9 +1238,9 @@ definitions:
               confform:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 examples:
-                  - '2'
+                  - "2"
           cfields:
             type: array
             items:
@@ -1249,68 +1249,68 @@ definitions:
                 type:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                   examples:
                     - header
                 header:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                   examples:
                     - Subscribe for Email Updates
                 class:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                   examples:
                     - _x41699710
           parentformid:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
-              - '0'
+              - "0"
           userid:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
-              - '1'
+              - "1"
           addressid:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
-              - '0'
+              - "0"
           cdate:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
-              - '2018-08-17T13:47:31-05:00'
+              - "2018-08-17T13:47:31-05:00"
           udate:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
-              - '2018-08-17T13:47:38-05:00'
+              - "2018-08-17T13:47:38-05:00"
           entries:
             type:
               - string
-              - 'null'
+              - "null"
             examples:
-              - '0'
+              - "0"
           aid:
             type:
               - string
-              - 'null'
-            default: '0'
+              - "null"
+            default: "0"
             examples:
-              - '0'
+              - "0"
           defaultscreenshot:
             type:
               - string
-              - 'null'
+              - "null"
             default: http://img-us1.com/default-form.gif
             examples:
               - http://img-us1.com/default-form.gif
@@ -1332,19 +1332,19 @@ definitions:
               address:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 default: https://:account.api-us1.com/api/3/forms/1/address
                 examples:
                   - https://:account.api-us1.com/api/3/forms/1/address
           id:
             type: string
-            default: '1'
+            default: "1"
             examples:
-              - '1'
+              - "1"
           address:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - id
 streams:
