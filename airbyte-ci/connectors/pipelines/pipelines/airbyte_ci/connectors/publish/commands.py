@@ -63,7 +63,6 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     "--python-registry-token",
     help="Access token for python registry",
     type=click.STRING,
-    required=True,
     envvar="PYTHON_REGISTRY_TOKEN",
 )
 @click.option(
