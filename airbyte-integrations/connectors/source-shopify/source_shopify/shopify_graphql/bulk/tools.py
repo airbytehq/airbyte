@@ -72,7 +72,9 @@ class BulkTools:
             return {self.camel_to_snake(k) if dict_input and k != BULK_PARENT_KEY else k: v for k, v in dict_input.items()}
 
     @staticmethod
-    def resolve_str_id(str_input: Optional[str] = None, output_type: Optional[Union[int, str, float]] = int) -> Union[int, str, float]:
+    def resolve_str_id(
+        str_input: Optional[str] = None, output_type: Optional[Union[int, str, float]] = int
+    ) -> Optional[Union[int, str, float]]:
         # some fields that expected to be resolved as ids, might not be populated for the particular `RECORD`,
         # we should return `None` to make the field `null` in the output as the result of the transformation.
         if str_input:
