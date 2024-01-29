@@ -706,6 +706,9 @@
     },
     "rssEmailEntryTemplateEnabled": {
       "type": ["null", "boolean"]
+    },
+    "rootMicId": {
+      "type": ["null", "integer"]
     }
   }
 }
