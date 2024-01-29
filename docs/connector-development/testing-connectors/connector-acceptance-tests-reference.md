@@ -298,6 +298,10 @@ Some examples of the types of tests covered are verification that streams define
 |:------------------------------------------|:-----------------|:----------------------|:-----------------------------------------------------------------------|
 | `config_path`                             | string           | `secrets/config.json` | Path to a JSON object representing a valid connector configuration     |
 | `streams_without_primary_key`             | array of objects | None                  | List of streams that do not support a primary key like reports streams |
+| `streams_without_primary_key.name`             | string | None                  | Name of the stream missing the PK |
+| `streams_without_primary_key.bypass_reason`             | string | None                  | The reason the stream doesn't have the PK |
+| `allowed_hosts.bypass_reason`             | object with `bypass_reason` | None                  | Defines the `bypass_reason` description about why the `allowedHosts` check for the certified connector should be skipped |
+| `suggested_streams.bypass_reason`             | object with `bypass_reason` | None                  | Defines the `bypass_reason` description about why the `suggestedStreams` check for the certified connector should be skipped |
 
 ## Strictness level
 

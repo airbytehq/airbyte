@@ -142,6 +142,18 @@ class NoPrimaryKeyConfiguration(BaseConfig):
     bypass_reason: Optional[str] = Field(default=None, description="Reason why this stream does not support a primary key")
 
 
+class AllowedHostsConfiguration(BaseConfig):
+    bypass_reason: Optional[str] = Field(
+        default=None, description="Reason why the Metadata `AllowedHosts` check should be skipped for this certified connector."
+    )
+
+
+class SuggestedStreamsConfiguration(BaseConfig):
+    bypass_reason: Optional[str] = Field(
+        default=None, description="Reason why the Metadata `SuggestedStreams` check should be skipped for this certified connector."
+    )
+
+
 class UnsupportedFileTypeConfig(BaseConfig):
     extension: str
     bypass_reason: Optional[str] = Field(description="Reason why this type is considered unsupported.")
@@ -238,6 +250,12 @@ class ConnectorAttributesConfig(BaseConfig):
 
     streams_without_primary_key: Optional[List[NoPrimaryKeyConfiguration]] = Field(
         description="Streams that do not support a primary key such as reports streams"
+    )
+    allowed_hosts: Optional[AllowedHostsConfiguration] = Field(
+        description="Used to bypass checking the `allowedHosts` field in a source's `metadata.yaml` when all external hosts should be reachable."
+    )
+    suggested_streams: Optional[SuggestedStreamsConfiguration] = Field(
+        description="Used to bypass checking the `suggestedStreams` field in a source's `metadata.yaml` when certified source doesn't have any."
     )
 
 
