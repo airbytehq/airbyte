@@ -7,6 +7,10 @@ data:
       enabled: true
     cloud:
       enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pokeapi
   connectorSubtype: api
   connectorType: source
   definitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968

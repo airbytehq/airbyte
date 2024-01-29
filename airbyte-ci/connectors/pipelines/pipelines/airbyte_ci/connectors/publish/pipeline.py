@@ -335,6 +335,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
+
             metadata_upload_results = await metadata_upload_step.run()
             results.append(metadata_upload_results)
             connector_report = create_connector_report(results)
