@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import os
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Type
