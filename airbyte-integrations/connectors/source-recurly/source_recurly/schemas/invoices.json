@@ -32,20 +32,7 @@
       "maxLength": 256
     },
     "account": {
-      "type": "object",
-      "title": "Account mini details",
-      "properties": {
-        "id": {
-          "type": ["null", "string"],
-          "maxLength": 13,
-          "readOnly": true
-        },
-        "code": {
-          "type": ["null", "string"],
-          "description": "The unique identifier of the account.",
-          "maxLength": 50
-        }
-      }
+      "$ref": "account_details.json"
     },
     "billing_info_id": {
       "type": ["null", "string"],

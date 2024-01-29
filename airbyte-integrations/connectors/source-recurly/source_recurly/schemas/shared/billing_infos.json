@@ -7,6 +7,9 @@
       "maxLength": 13,
       "readOnly": true
     },
+    "object": {
+      "type": ["null", "string"]
+    },
     "account_id": {
       "type": "string",
       "maxLength": 13,
@@ -83,6 +86,9 @@
           "description": "Visa, MasterCard, American Express, Discover, JCB, etc.",
           "type": ["null", "string"],
           "maxLength": 256
+        },
+        "object": {
+          "type": ["null", "string"]
         },
         "first_six": {
           "type": ["null", "string"],
@@ -191,6 +197,17 @@
       "format": "date-time",
       "description": "When the billing information was last changed.",
       "readOnly": true
+    },
+    "updated_by": {
+      "type": ["null", "object"],
+      "properties": {
+        "ip": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

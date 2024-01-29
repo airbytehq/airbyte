@@ -9,6 +9,9 @@
     "object": {
       "type": ["null", "string"]
     },
+    "hosted_login_token": {
+      "type": ["null", "string"]
+    },
     "code": {
       "type": ["null", "string"],
       "maxLength": 256
@@ -104,11 +107,18 @@
           "title": "Country",
           "description": "Country, 2-letter ISO 3166-1 alpha-2 code.",
           "maxLength": 2
+        },
+        "geo_code": {
+          "type": ["null", "string"]
         }
       }
     },
     "custom_fields": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
     },
     "has_live_subscription": {
       "type": ["null", "boolean"]

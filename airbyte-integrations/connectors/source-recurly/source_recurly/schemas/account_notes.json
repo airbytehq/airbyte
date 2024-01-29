@@ -7,19 +7,15 @@
       "maxLength": 13,
       "readOnly": true
     },
+    "object": {
+      "type": ["null", "string"]
+    },
     "account_id": {
       "type": "string",
       "maxLength": 13
     },
     "user": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "readOnly": true,
-          "maxLength": 13
-        }
-      }
+      "$ref": "users.json"
     },
     "message": {
       "type": ["null", "string"],
