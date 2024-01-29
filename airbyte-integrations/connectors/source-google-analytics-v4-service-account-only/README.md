@@ -1,4 +1,4 @@
-# Google Analytics V4 Cloud Source
+# Google Analytics V4 (Service Account Only) Source
 
 This is the repository for the Google Analytics V4 source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/google-analytics-v4).

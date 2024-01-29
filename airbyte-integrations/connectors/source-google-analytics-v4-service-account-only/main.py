@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_google_analytics_v4_service_account_only import SourceGoogleAnalyticsV4CloudServiceAccountOnly
+from source_google_analytics_v4_service_account_only import SourceGoogleAnalyticsV4ServiceAccountOnly
 
 if __name__ == "__main__":
-    source = SourceGoogleAnalyticsV4CloudServiceAccountOnly()
+    source = SourceGoogleAnalyticsV4ServiceAccountOnly()
     launch(source, sys.argv[1:])
