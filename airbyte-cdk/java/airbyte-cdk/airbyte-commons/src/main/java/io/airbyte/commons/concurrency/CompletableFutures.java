@@ -18,10 +18,10 @@ public class CompletableFutures {
    * @param <T>
    */
   public static <T> List<T> allOf(final List<CompletableFuture<T>> futures) {
-//    return CompletableFuture
-//        .allOf(futures.toArray(new CompletableFuture[0]))
-//        .thenApply(v -> futures.stream().map(CompletableFuture::join).toList())
-//        .join();
+    // return CompletableFuture
+    // .allOf(futures.toArray(new CompletableFuture[0]))
+    // .thenApply(v -> futures.stream().map(CompletableFuture::join).toList())
+    // .join();
     return null;
   }
 
