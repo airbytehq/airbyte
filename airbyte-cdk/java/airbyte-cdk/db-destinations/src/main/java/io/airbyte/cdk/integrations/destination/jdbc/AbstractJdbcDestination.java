@@ -304,9 +304,9 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
   private TyperDeduper getV2TyperDeduper(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JdbcDatabase database) {
     final JdbcSqlGenerator sqlGenerator = getSqlGenerator();
     final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
-                                                             .map(override -> new CatalogParser(sqlGenerator, override))
-                                                             .orElse(new CatalogParser(sqlGenerator))
-                                                             .parseCatalog(catalog);
+        .map(override -> new CatalogParser(sqlGenerator, override))
+        .orElse(new CatalogParser(sqlGenerator))
+        .parseCatalog(catalog);
     final String databaseName = getDatabaseName(config);
     final var migrator = new JdbcV1V2Migrator(namingResolver, database, databaseName);
     final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
@@ -315,7 +315,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
     final TyperDeduper typerDeduper;
     if (disableTypeDedupe) {
       typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator,
-                                                              8);
+          8);
     } else {
       typerDeduper =
           new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator, 8);

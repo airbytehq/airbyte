@@ -22,7 +22,7 @@ data:
           the schema and database of Airbyte's "raw" tables to be compatible with the new
           [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
           format. These changes will likely require updates to downstream dbt / SQL models.
-          Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync. 
+          Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync.
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/clickhouse
   supportsDbt: false

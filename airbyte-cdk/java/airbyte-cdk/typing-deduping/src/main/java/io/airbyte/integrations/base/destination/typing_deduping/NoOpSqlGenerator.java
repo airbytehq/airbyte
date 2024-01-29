@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import java.util.Optional;
@@ -37,7 +41,9 @@ public class NoOpSqlGenerator implements SqlGenerator {
   }
 
   @Override
-  public Sql updateTable(final StreamConfig stream, final String finalSuffix, final Optional minRawTimestamp,
+  public Sql updateTable(final StreamConfig stream,
+                         final String finalSuffix,
+                         final Optional minRawTimestamp,
                          final boolean useExpensiveSaferCasting) {
     return null;
   }
@@ -66,4 +72,5 @@ public class NoOpSqlGenerator implements SqlGenerator {
   public boolean shouldRetry(final Exception e) {
     return SqlGenerator.super.shouldRetry(e);
   }
+
 }

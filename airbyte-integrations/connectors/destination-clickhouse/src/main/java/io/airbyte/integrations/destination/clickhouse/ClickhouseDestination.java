@@ -131,4 +131,5 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   protected String getConfigSchemaKey() {
     return "database";
   }
+
 }

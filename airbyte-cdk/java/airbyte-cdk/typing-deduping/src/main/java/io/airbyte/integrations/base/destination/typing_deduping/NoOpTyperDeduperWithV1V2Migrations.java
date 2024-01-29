@@ -81,7 +81,8 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
       CompletableFuture.allOf(prepareTablesTasks.toArray(CompletableFuture[]::new)).join();
       reduceExceptions(prepareTablesTasks, "The following exceptions were thrown attempting to prepare tables:\n");
     } catch (NotImplementedError | NotImplementedException e) {
-      log.warn("Could not prepare schemas or tables because components are not implemented, this should not be required for this destination to succeed");
+      log.warn(
+          "Could not prepare schemas or tables because components are not implemented, this should not be required for this destination to succeed");
     }
   }
 

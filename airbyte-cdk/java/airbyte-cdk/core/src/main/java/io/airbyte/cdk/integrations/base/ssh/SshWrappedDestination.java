@@ -139,4 +139,5 @@ public class SshWrappedDestination implements Destination {
   public boolean isV2Destination() {
     return this.delegate.isV2Destination();
   }
+
 }
