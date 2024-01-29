@@ -26,8 +26,16 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.sources import Source
-from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, AirbyteStreamStatus, ConfiguredAirbyteCatalog, Level, TraceType, \
-    Type, AirbyteStateMessage
+from airbyte_protocol.models import (
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStreamStatus,
+    ConfiguredAirbyteCatalog,
+    Level,
+    TraceType,
+    Type,
+)
 from pydantic.error_wrappers import ValidationError
 
 
