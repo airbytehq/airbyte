@@ -4,48 +4,25 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "netPureProductMarginAggregate": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["object"]
-      },
-      "properties": {
-        "startDate": {
-          "type": ["null", "string"],
-          "format": "date"
-        },
-        "endDate": {
-          "type": ["null", "string"],
-          "format": "date"
-        },
-        "netPureProductMargin": {
-          "type": ["null", "number"]
-        }
-      }
+    "startDate": {
+      "type": ["null", "string"],
+      "format": "date"
     },
-    "netPureProductMarginByAsin": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["object"]
-      },
-      "properties": {
-        "startDate": {
-          "type": ["null", "string"],
-          "format": "date"
-        },
-        "endDate": {
-          "type": ["null", "string"],
-          "format": "date"
-        },
-        "asin": {
-          "type": ["null", "string"]
-        },
-        "netPureProductMargin": {
-          "type": ["null", "number"]
-        }
-      }
+    "endDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "asin": {
+      "type": ["null", "string"]
+    },
+    "netPureProductMargin": {
+      "type": ["null", "number"]
     },
     "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "queryEndDate": {
       "type": ["null", "string"],
       "format": "date"
     }

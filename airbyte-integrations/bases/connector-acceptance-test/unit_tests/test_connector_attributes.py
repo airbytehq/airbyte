@@ -75,3 +75,103 @@ async def test_streams_define_primary_key(mocker, stream_configs, excluded_strea
             connector_config={},
             docker_runner=docker_runner_mock
         )
+
+
+@pytest.mark.parametrize(
+    "metadata_yaml, should_raise_assert_error, expected_error",
+    [
+        pytest.param(
+            {"data": {"ab_internal": {"ql": 400}}},
+            True,
+            "The `allowedHosts` property is missing in `metadata.data` for `metadata.yaml`",
+        ),
+        pytest.param(
+            {"data": {"ab_internal": {"ql": 400}, "allowedHosts": {}}},
+            True,
+            "The `hosts` property is missing in `metadata.data.allowedHosts` for `metadata.yaml`",
+        ),
+        pytest.param(
+            {"data": {"ab_internal": {"ql": 400}, "allowedHosts": {"hosts": []}}},
+            True,
+            "'The `hosts` empty list is not allowed for `metadata.data.allowedHosts` for certified connectors",
+        ),
+        pytest.param(
+            {"data": {"ab_internal": {"ql": 400}, "allowedHosts": {"hosts": ["*.test.com"]}}},
+            False,
+            None,
+        ),
+    ],
+    ids=[
+        "No `allowedHosts`",
+        "Has `allowdHosts` but no `hosts`",
+        "Has `hosts` but it's empty list",
+        "Has non-empty `hosts`",
+    ]
+)
+async def test_certified_connector_has_allowed_hosts(metadata_yaml, should_raise_assert_error, expected_error) -> None:
+    t = test_core.TestConnectorAttributes()
+        
+    if should_raise_assert_error:
+        with pytest.raises(AssertionError) as e:
+            await t.test_certified_connector_has_allowed_hosts(
+                operational_certification_test=True,
+                allowed_hosts_test=True,
+                connector_metadata=metadata_yaml
+            )
+        assert expected_error in repr(e.value)
+    else:
+        await t.test_certified_connector_has_allowed_hosts(
+            operational_certification_test=True,
+            allowed_hosts_test=True,
+            connector_metadata=metadata_yaml
+        )
+        
+
+@pytest.mark.parametrize(
+    "metadata_yaml, should_raise_assert_error, expected_error",
+    [
+        pytest.param(
+            {"data": {"ab_internal": {"ql": 400}}},
+            True,
+            "The `suggestedStreams` property is missing in `metadata.data` for `metadata.yaml`",
+        ),
+        pytest.param(
+            {"data": {"ab_internal": {"ql": 400}, "suggestedStreams": {}}},
+            True,
+            "The `streams` property is missing in `metadata.data.suggestedStreams` for `metadata.yaml`",
+        ),
+        pytest.param(
+            {"data": {"ab_internal": {"ql": 400}, "suggestedStreams": {"streams": []}}},
+            True,
+            "'The `streams` empty list is not allowed for `metadata.data.suggestedStreams` for certified connectors",
+        ),
+        pytest.param(
+            {"data": {"ab_internal": {"ql": 400}, "suggestedStreams": {"streams": ["stream_1", "stream_2"]}}},
+            False,
+            None,
+        ),
+    ],
+    ids=[
+        "No `suggestedStreams`",
+        "Has `suggestedStreams` but no `streams`",
+        "Has `streams` but it's empty list",
+        "Has non-empty `streams`",
+    ]
+)
+async def test_certified_connector_has_suggested_streams(metadata_yaml, should_raise_assert_error, expected_error) -> None:
+    t = test_core.TestConnectorAttributes()
+        
+    if should_raise_assert_error:
+        with pytest.raises(AssertionError) as e:
+            await t.test_certified_connector_has_suggested_streams(
+                operational_certification_test=True,
+                suggested_streams_test=True,
+                connector_metadata=metadata_yaml
+            )
+        assert expected_error in repr(e.value)
+    else:
+        await t.test_certified_connector_has_suggested_streams(
+            operational_certification_test=True,
+            suggested_streams_test=True,
+            connector_metadata=metadata_yaml
+        )
