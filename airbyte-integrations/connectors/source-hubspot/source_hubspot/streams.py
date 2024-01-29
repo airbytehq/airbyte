@@ -2431,15 +2431,12 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
                         "occurredAfter": from_datetime.to_iso8601_string(),
                         "occurredBefore": to_datetime.to_iso8601_string(),
                         "objectId": object_id,
-                        "objectType": self.object_type
+                        "objectType": self.object_type,
                     }
                     # Shift time window to the next checkpoint interval
                     from_datetime = to_datetime
             else:
-                yield {
-                        "objectId": object_id,
-                        "objectType": self.object_type
-                }
+                yield {"objectId": object_id, "objectType": self.object_type}
 
     @property
     def object_type(self) -> str:
